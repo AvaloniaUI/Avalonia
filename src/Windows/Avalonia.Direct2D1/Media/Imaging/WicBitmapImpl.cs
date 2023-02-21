@@ -1,19 +1,20 @@
 using System;
 using System.IO;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
 using AlphaFormat = Avalonia.Platform.AlphaFormat;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
-using Avalonia.Metadata;
+using Avalonia.Platform;
+using PixelFormat = SharpDX.WIC.PixelFormat;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// A WIC implementation of a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
     /// </summary>
-    [Unstable]
-    public class WicBitmapImpl : BitmapImpl
+    internal class WicBitmapImpl : BitmapImpl, IReadableBitmapImpl
     {
         private readonly BitmapDecoder _decoder;
 
@@ -197,5 +198,38 @@ namespace Avalonia.Direct2D1.Media
                 encoder.Commit();
             }
         }
+        
+        class LockedBitmap : ILockedFramebuffer
+        {
+            private readonly WicBitmapImpl _parent;
+            private readonly BitmapLock _lock;
+            private readonly APixelFormat _format;
+
+            public LockedBitmap(WicBitmapImpl parent, BitmapLock l, APixelFormat format)
+            {
+                _parent = parent;
+                _lock = l;
+                _format = format;
+            }
+
+
+            public void Dispose()
+            {
+                _lock.Dispose();
+                _parent.Version++;
+            }
+
+            public IntPtr Address => _lock.Data.DataPointer;
+            public PixelSize Size => _lock.Size.ToAvalonia();
+            public int RowBytes => _lock.Stride;
+            public Vector Dpi => _parent.Dpi;
+            public APixelFormat Format => _format;
+
+        }
+
+        APixelFormat? IReadableBitmapImpl.Format => PixelFormat;
+
+        public ILockedFramebuffer Lock() =>
+            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
     }
 }

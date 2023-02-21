@@ -13,14 +13,14 @@ namespace Avalonia.PropertyStore
 
         public SourceUntypedBindingEntry(
             ValueFrame frame, 
-            StyledPropertyBase<TTarget> property,
+            StyledProperty<TTarget> property,
             IObservable<object?> source)
                 : base(frame, property, source)
         {
             _validate = property.ValidateValue;
         }
 
-        public new StyledPropertyBase<TTarget> Property => (StyledPropertyBase<TTarget>)base.Property;
+        public new StyledProperty<TTarget> Property => (StyledProperty<TTarget>)base.Property;
 
         protected override BindingValue<TTarget> ConvertAndValidate(object? value)
         {
@@ -31,5 +31,7 @@ namespace Avalonia.PropertyStore
         {
             throw new NotSupportedException();
         }
+
+        protected override TTarget GetDefaultValue(Type ownerType) => Property.GetDefaultValue(ownerType);
     }
 }

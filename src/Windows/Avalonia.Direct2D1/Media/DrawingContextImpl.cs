@@ -11,15 +11,13 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 using BitmapInterpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode;
-using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
-    [Unstable]
-    public class DrawingContextImpl : IDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly ILayerFactory _layerFactory;
@@ -390,13 +388,13 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Item.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 
-                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
+                _renderTarget.DrawGlyphRun(glyphRun.Item.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
                     brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
@@ -443,14 +441,15 @@ namespace Avalonia.Direct2D1.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
             if (opacity < 1)
             {
                 var parameters = new LayerParameters
                 {
-                    ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                    ContentBounds = bounds.ToDirect2D(),
                     MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
                     Opacity = (float)opacity,
                 };

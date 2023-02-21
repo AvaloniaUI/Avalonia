@@ -88,8 +88,13 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void DrawLine(IPen pen, Point p1, Point p2)
+    public void DrawLine(IPen? pen, Point p1, Point p2)
     {
+        if (pen is null)
+        {
+            return;
+        }
+
         var next = NextDrawAs<LineNode>();
 
         if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
@@ -159,8 +164,13 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     public object? GetFeature(Type t) => null;
 
     /// <inheritdoc/>
-    public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+    public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
     {
+        if (foreground is null)
+        {
+            return;
+        }
+
         var next = NextDrawAs<GlyphRunNode>();
 
         if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
@@ -303,13 +313,13 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void PushOpacity(double opacity)
+    public void PushOpacity(double opacity, Rect bounds)
     {
         var next = NextDrawAs<OpacityNode>();
 
-        if (next == null || !next.Item.Equals(opacity))
+        if (next == null || !next.Item.Equals(opacity, bounds))
         {
-            Add(new OpacityNode(opacity));
+            Add(new OpacityNode(opacity, bounds));
         }
         else
         {

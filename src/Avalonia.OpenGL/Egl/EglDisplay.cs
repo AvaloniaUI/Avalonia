@@ -14,14 +14,14 @@ namespace Avalonia.OpenGL.Egl
         private readonly EglDisplayOptions _options;
         private EglConfigInfo _config;
         private bool _isLost;
-        private object _lock = new();
+        private readonly object _lock = new();
         
         public bool SupportsSharing { get; }
 
         public IntPtr Handle => _display;
         public IntPtr Config => _config.Config;
         internal bool SingleContext => !_options.SupportsMultipleContexts;
-        private List<EglContext> _contexts = new();
+        private readonly List<EglContext> _contexts = new();
         
         public EglDisplay() : this(new EglDisplayCreationOptions
         {
@@ -38,7 +38,7 @@ namespace Avalonia.OpenGL.Egl
         
         public EglDisplay(IntPtr display, EglDisplayOptions options)
         {
-            _egl = options.Egl;
+            _egl = options.Egl ?? new EglInterface();
             SupportsSharing = options.SupportsContextSharing;
             _display = display;
             _options = options;
@@ -49,7 +49,7 @@ namespace Avalonia.OpenGL.Egl
         }
         
         public EglInterface EglInterface => _egl;
-        public EglContext CreateContext(EglContextOptions options)
+        public EglContext CreateContext(EglContextOptions? options)
         {
             if (SingleContext && _contexts.Any())
                 throw new OpenGlException("This EGLDisplay can only have one active context");
@@ -93,7 +93,7 @@ namespace Avalonia.OpenGL.Egl
 
                 var rv = new EglContext(this, _egl, share, ctx, offscreenSurface,
                     _config.Version, _config.SampleCount, _config.StencilSize,
-                    options.DisposeCallback, options.ExtraFeatures);
+                    options.DisposeCallback, options.ExtraFeatures ?? new());
                 _contexts.Add(rv);
                 return rv;
             }
@@ -129,7 +129,7 @@ namespace Avalonia.OpenGL.Egl
 
         protected virtual bool DisplayLockIsSharedWithContexts => false;
         
-        internal object ContextSharedSyncRoot => DisplayLockIsSharedWithContexts ? _lock : null;
+        internal object? ContextSharedSyncRoot => DisplayLockIsSharedWithContexts ? _lock : null;
 
         internal void OnContextLost(EglContext context)
         {
@@ -171,7 +171,6 @@ namespace Avalonia.OpenGL.Egl
                 if (_display != IntPtr.Zero)
                     _egl.Terminate(_display);
                 _display = IntPtr.Zero;
-                _config = null;
                 _options.DisposeCallback?.Invoke();
             }
         }

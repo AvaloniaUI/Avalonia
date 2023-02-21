@@ -20,7 +20,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    class AvaloniaX11Platform : IWindowingPlatform
+    internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
@@ -30,13 +30,12 @@ namespace Avalonia.X11
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
-        public PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
         [DllImport("libc")]
-        static extern void setlocale(int type, string s);
+        private static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
@@ -103,12 +102,8 @@ namespace Avalonia.X11
             }
 
             var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
-            
-            if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
-            else
-                RenderInterface = new(gl);
 
+            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -143,7 +138,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        static bool EnableIme(X11PlatformOptions options)
+        private static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -165,7 +160,7 @@ namespace Avalonia.X11
             return isCjkLocale;
         }
 
-        static bool ShouldUseXim()
+        private static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
@@ -226,18 +221,7 @@ namespace Avalonia
         /// The default value is true.
         /// </summary>
         public bool UseDBusFilePicker { get; set; } = true;
-
-        /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-
-        public bool UseCompositor { get; set; } = true;
-
+        
         /// <summary>
         /// Determines whether to use IME.
         /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.

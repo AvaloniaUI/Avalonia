@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 
@@ -15,7 +14,7 @@ public partial class Compositor
     /// <returns></returns>
     public CompositionTarget CreateCompositionTarget(Func<IEnumerable<object>> surfaces)
     {
-        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces));
+        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces, DiagnosticTextRenderer));
     }
     
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
@@ -35,4 +34,8 @@ public partial class Compositor
         new(this, new ServerCompositionSolidColorVisual(Server));
 
     public CompositionCustomVisual CreateCustomVisual(CompositionCustomVisualHandler handler) => new(this, handler);
+
+    public CompositionSurfaceVisual CreateSurfaceVisual() => new(this, new ServerCompositionSurfaceVisual(_server));
+
+    public CompositionDrawingSurface CreateDrawingSurface() => new(this);
 }

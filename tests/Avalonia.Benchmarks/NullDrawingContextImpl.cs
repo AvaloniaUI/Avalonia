@@ -44,7 +44,7 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
         }
 
@@ -65,7 +65,7 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
         }
 

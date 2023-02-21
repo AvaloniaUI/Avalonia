@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Utils
                     {
                         if (child is Control childElement)
                         {
-                            parent = childElement.Parent;
+                            parent = childElement.VisualParent;
                         }
                     }
                     child = parent;

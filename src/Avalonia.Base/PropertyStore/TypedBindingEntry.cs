@@ -11,7 +11,7 @@ namespace Avalonia.PropertyStore
     {
         public TypedBindingEntry(
             ValueFrame frame, 
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<T> source)
                 : base(frame, property, source)
         {
@@ -19,13 +19,13 @@ namespace Avalonia.PropertyStore
 
         public TypedBindingEntry(
             ValueFrame frame,
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<BindingValue<T>> source)
                 : base(frame, property, source)
         {
         }
 
-        public new StyledPropertyBase<T> Property => (StyledPropertyBase<T>)base.Property;
+        public new StyledProperty<T> Property => (StyledProperty<T>)base.Property;
 
         protected override BindingValue<T> ConvertAndValidate(T value)
         {
@@ -48,5 +48,7 @@ namespace Avalonia.PropertyStore
             
             return value;
         }
+
+        protected override T GetDefaultValue(Type ownerType) => Property.GetDefaultValue(ownerType);
     }
 }

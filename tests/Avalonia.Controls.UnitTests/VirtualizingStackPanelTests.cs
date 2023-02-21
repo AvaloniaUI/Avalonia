@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -281,6 +282,82 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Removing_Range_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.RemoveRange(0, 80);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 10, 10);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
+        }
+
+        [Fact]
+        public void Removing_Range_To_Have_Less_Than_A_Page_Of_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.RemoveRange(0, 95);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 5);
+            Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
+        public void Resetting_Collection_To_Have_Less_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new ResettingCollection(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.Reset(Enumerable.Range(0, 20).Select(x => $"Item {x}"));
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 10, 10);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
+        }
+
+        [Fact]
+        public void Resetting_Collection_To_Have_Less_Than_A_Page_Of_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new ResettingCollection(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.Reset(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 5);
+            Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
         public void NthChild_Selector_Works()
         {
             using var app = App();
@@ -437,5 +514,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(IEnumerable<string> items)
+            {
+                AddRange(items);
+            }
+
+            public void Reset(IEnumerable<string> items)
+            {
+                Clear();
+                AddRange(items);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        }
     }
 }

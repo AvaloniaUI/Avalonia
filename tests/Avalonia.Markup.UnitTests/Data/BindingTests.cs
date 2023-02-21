@@ -334,7 +334,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Value;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.IsType<DefaultValueConverter>(((BindingExpression)result).Converter);
         }
@@ -350,7 +350,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Value;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.Same(converter.Object, ((BindingExpression)result).Converter);
         }
@@ -367,7 +367,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Bar",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Value;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
         }
@@ -648,15 +648,68 @@ namespace Avalonia.Markup.UnitTests.Data
             };
         }
 
+        [Fact]
+        public void Binding_Producing_Default_Value_Should_Result_In_Correct_Priority()
+        {
+            var defaultValue = StyledPropertyClass.NullableDoubleProperty.GetDefaultValue(typeof(StyledPropertyClass));
+
+            var vm = new NullableValuesViewModel() { NullableDouble = defaultValue };
+            var target = new StyledPropertyClass();
+
+            target.Bind(StyledPropertyClass.NullableDoubleProperty, new Binding(nameof(NullableValuesViewModel.NullableDouble)) { Source = vm });
+
+            Assert.Equal(BindingPriority.LocalValue, target.GetDiagnosticInternal(StyledPropertyClass.NullableDoubleProperty).Priority);
+            Assert.Equal(defaultValue, target.GetValue(StyledPropertyClass.NullableDoubleProperty));
+        }
+
+        [Fact]
+        public void Binding_Non_Nullable_ValueType_To_Null_Reverts_To_Default_Value()
+        {
+            var source = new NullableValuesViewModel { NullableDouble = 42 };
+            var target = new StyledPropertyClass();
+            var binding = new Binding(nameof(source.NullableDouble)) { Source = source };
+
+            target.Bind(StyledPropertyClass.DoubleValueProperty, binding);
+            Assert.Equal(42, target.DoubleValue);
+
+            source.NullableDouble = null;
+
+            Assert.Equal(12.3, target.DoubleValue);
+        }
+
+        [Fact]
+        public void Binding_Nullable_ValueType_To_Null_Sets_Value_To_Null()
+        {
+            var source = new NullableValuesViewModel { NullableDouble = 42 };
+            var target = new StyledPropertyClass();
+            var binding = new Binding(nameof(source.NullableDouble)) { Source = source };
+
+            target.Bind(StyledPropertyClass.NullableDoubleProperty, binding);
+            Assert.Equal(42, target.NullableDouble);
+
+            source.NullableDouble = null;
+
+            Assert.Null(target.NullableDouble);
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =
-                        AvaloniaProperty.Register<StyledPropertyClass, double>(nameof(DoubleValue));
+                        AvaloniaProperty.Register<StyledPropertyClass, double>(nameof(DoubleValue), 12.3);
 
             public double DoubleValue
             {
                 get { return GetValue(DoubleValueProperty); }
                 set { SetValue(DoubleValueProperty, value); }
+            }
+            
+            public static StyledProperty<double?> NullableDoubleProperty = 
+                AvaloniaProperty.Register<StyledPropertyClass, double?>(nameof(NullableDoubleProperty), -1);
+
+            public double? NullableDouble
+            {
+                get => GetValue(NullableDoubleProperty);
+                set => SetValue(NullableDoubleProperty, value);
             }
         }
 
@@ -673,6 +726,21 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 get { return _doubleValue; }
                 set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
+            }
+        }
+
+        private class NullableValuesViewModel : INotifyPropertyChanged
+        {
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private double? _nullableDouble;
+            public double? NullableDouble
+            {
+                get => _nullableDouble; set
+                {
+                    _nullableDouble = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NullableDouble)));
+                }
             }
         }
 

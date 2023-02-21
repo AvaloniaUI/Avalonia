@@ -1,14 +1,12 @@
 import { avaloniaDb, fileBookmarksStore } from "./indexedDb";
 import { StorageItem, StorageItems } from "./storageItem";
+import { showOpenFilePicker, showDirectoryPicker, FileSystemFileHandle } from "native-file-system-adapter";
 
 declare global {
     type WellKnownDirectory = "desktop" | "documents" | "downloads" | "music" | "pictures" | "videos";
-    type StartInDirectory = WellKnownDirectory | FileSystemHandle;
-    interface OpenFilePickerOptions {
-        startIn?: StartInDirectory;
-    }
-    interface SaveFilePickerOptions {
-        startIn?: StartInDirectory;
+    interface FilePickerAcceptType {
+        description?: string | undefined;
+        accept: Record<string, string | string[]>;
     }
 }
 
@@ -16,39 +14,40 @@ export class StorageProvider {
     public static async selectFolderDialog(
         startIn: StorageItem | null): Promise<StorageItem> {
         // 'Picker' API doesn't accept "null" as a parameter, so it should be set to undefined.
-        const options: DirectoryPickerOptions = {
-            startIn: (startIn?.handle ?? undefined)
+        const options = {
+            startIn: (startIn?.wellKnownType ?? startIn?.handle ?? undefined)
         };
 
-        const handle = await window.showDirectoryPicker(options);
+        const handle = await showDirectoryPicker(options as any);
         return new StorageItem(handle);
     }
 
     public static async openFileDialog(
         startIn: StorageItem | null, multiple: boolean,
         types: FilePickerAcceptType[] | null, excludeAcceptAllOption: boolean): Promise<StorageItems> {
-        const options: OpenFilePickerOptions = {
-            startIn: (startIn?.handle ?? undefined),
+        const options = {
+            startIn: (startIn?.wellKnownType ?? startIn?.handle ?? undefined),
             multiple,
             excludeAcceptAllOption,
             types: (types ?? undefined)
         };
 
-        const handles = await window.showOpenFilePicker(options);
-        return new StorageItems(handles.map((handle: FileSystemHandle) => new StorageItem(handle)));
+        const handles = await showOpenFilePicker(options);
+        return new StorageItems(handles.map((handle: FileSystemFileHandle) => new StorageItem(handle)));
     }
 
     public static async saveFileDialog(
         startIn: StorageItem | null, suggestedName: string | null,
         types: FilePickerAcceptType[] | null, excludeAcceptAllOption: boolean): Promise<StorageItem> {
-        const options: SaveFilePickerOptions = {
-            startIn: (startIn?.handle ?? undefined),
+        const options = {
+            startIn: (startIn?.wellKnownType ?? startIn?.handle ?? undefined),
             suggestedName: (suggestedName ?? undefined),
             excludeAcceptAllOption,
             types: (types ?? undefined)
         };
 
-        const handle = await window.showSaveFilePicker(options);
+        // Always prefer native save file picker, as polyfill solutions are not reliable.
+        const handle = await (globalThis as any).showSaveFilePicker(options);
         return new StorageItem(handle);
     }
 
@@ -62,9 +61,9 @@ export class StorageProvider {
         }
     }
 
-    public static createAcceptType(description: string, mimeTypes: string[]): FilePickerAcceptType {
+    public static createAcceptType(description: string, mimeTypes: string[], extensions: string[] | undefined): FilePickerAcceptType {
         const accept: Record<string, string[]> = {};
-        mimeTypes.forEach(a => { accept[a] = []; });
+        mimeTypes.forEach(a => { accept[a] = extensions ?? []; });
         return { description, accept };
     }
 }

@@ -49,7 +49,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        void DrawLine(IPen pen, Point p1, Point p2);
+        void DrawLine(IPen? pen, Point p1, Point p2);
 
         /// <summary>
         /// Draws a geometry.
@@ -91,7 +91,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun);
+        void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
@@ -128,7 +128,7 @@ namespace Avalonia.Platform
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
-        void PushOpacity(double opacity);
+        void PushOpacity(double opacity, Rect bounds);
 
         /// <summary>
         /// Pops the latest pushed opacity value.

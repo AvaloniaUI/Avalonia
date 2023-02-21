@@ -9,6 +9,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Headless
 {
@@ -29,6 +30,7 @@ namespace Avalonia.Headless
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -49,6 +51,7 @@ namespace Avalonia.Headless
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
+        public bool IsLost => false;
         public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
@@ -118,21 +121,27 @@ namespace Avalonia.Headless
             return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(
+            IGlyphTypeface glyphTypeface, 
+            double fontRenderingEmSize,
+            IReadOnlyList<GlyphInfo> glyphInfos, 
+            Point baselineOrigin)
         {
             return new HeadlessGlyphRunStub();
         }
 
         class HeadlessGlyphRunStub : IGlyphRunImpl
         {
+            public Size Size => new Size(8, 12);
+
+            public Point BaselineOrigin => new Point(0, 8);
+
             public void Dispose()
             {
             }
 
             public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-            {
-                throw new NotImplementedException();
-            }
+                => Array.Empty<float>();
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -343,6 +352,8 @@ namespace Avalonia.Headless
 
             }
 
+            public PixelFormat? Format { get; }
+
             public ILockedFramebuffer Lock()
             {
                 Version++;
@@ -381,7 +392,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect rect)
             {
 
             }
@@ -462,7 +473,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 
             }

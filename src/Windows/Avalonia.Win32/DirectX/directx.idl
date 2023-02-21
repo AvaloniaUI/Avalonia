@@ -10,6 +10,7 @@
 @clr-map SIZE Avalonia.Win32.Interop.UnmanagedMethods.SIZE
 @clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
 @clr-map HWND IntPtr
+@clr-map HANDLE IntPtr
 @clr-map BOOL int
 @clr-map DWORD int
 @clr-map SIZE_T IntPtr
@@ -35,6 +36,8 @@
 @clr-map DXGI_SHARED_RESOURCE void*
 @clr-map LUID ulong
 @clr-map LPSTR ushort*
+@clr-map LPWSTR ushort*
+@clr-map LPCWSTR ushort*
 
 
 enum DXGI_FORMAT
@@ -259,10 +262,28 @@ interface IDXGISurface : IDXGIDeviceSubObject
     HRESULT Unmap();
 }
 
+[uuid( 035f3ab4-482e-4e50-b41f-8a7f8bd8960b)]
+interface IDXGIResource : IDXGIDeviceSubObject
+{
+    HRESULT GetSharedHandle( [out, annotation("_Out_")] HANDLE * pSharedHandle );
+    HRESULT GetUsage( [out] DXGI_USAGE * pUsage );
+    HRESULT SetEvictionPriority( [in] UINT EvictionPriority );
+    HRESULT GetEvictionPriority( [out, retval, annotation("_Out_")] UINT* pEvictionPriority );
+};
+
+
+[ uuid( 9d8e1289-d7b3-465f-8126-250e349af85d)]
+interface IDXGIKeyedMutex :
+    IDXGIDeviceSubObject
+{
+    HRESULT AcquireSync( [in] UINT64 Key, [in] uint dwMilliseconds);
+    HRESULT ReleaseSync( [in] UINT64 Key);
+};
+
 [uuid(770aae78-f26f-4dba-a829-253c83d1b387)]
 interface IDXGIFactory1 : IDXGIFactory
 {
-    HRESULT EnumAdapters1([in] UINT Adapter, [out, annotation("_COM_Outptr_")] IDXGIAdapter1** ppAdapter);
+    int EnumAdapters1([in] UINT Adapter, [out] void** ppAdapter);
     BOOL IsCurrent();
 }
 
@@ -339,9 +360,9 @@ interface ID3D11Device : IUnknown
         IntPtr pInitialData,
         [out, retval] IUnknown**  ppTexture1D );
     HRESULT CreateTexture2D(
-        IntPtr  pDesc,
+        D3D11_TEXTURE2D_DESC*  pDesc,
         IntPtr pInitialData,
-        [out, retval] IUnknown**  ppTexture2D );
+        [out, retval] ID3D11Texture2D**  ppTexture2D );
     HRESULT CreateTexture3D(
         IntPtr pDesc,
         IntPtr pInitialData,
@@ -481,3 +502,49 @@ interface ID3D11Device : IUnknown
     HRESULT SetExceptionMode( UINT RaiseFlags );
     UINT GetExceptionMode();
 }
+
+[uuid(a04bfb29-08ef-43d6-a49c-a9bdbdcbe686)]
+interface ID3D11Device1 : ID3D11Device
+{
+    void GetImmediateContext1( void** ppImmediateContext );
+
+    HRESULT CreateDeferredContext1(
+            UINT ContextFlags, // Reserved parameter; must be 0
+            [out, retval] IUnknown** ppDeferredContext );
+
+    HRESULT CreateBlendState1(
+        void* pBlendStateDesc,
+        [out, retval] IUnknown** ppBlendState );
+
+    HRESULT CreateRasterizerState1(
+        void* pRasterizerDesc,
+        [out, retval] IUnknown** ppRasterizerState );
+
+    HRESULT CreateDeviceContextState(
+        UINT Flags,
+        void* pFeatureLevels,
+        UINT FeatureLevels,
+        UINT SDKVersion,
+        GUID* EmulatedInterface,
+        void* pChosenFeatureLevel,
+        [out, retval] IUnknown** ppContextState);
+
+    HRESULT OpenSharedResource1(
+        IntPtr hResource,
+        Guid* ReturnedInterface,
+        [out, retval] IUnknown** ppResource);
+
+    HRESULT OpenSharedResourceByName(
+        LPCWSTR lpName,
+        DWORD dwDesiredAccess,
+        REFIID returnedInterface,
+        void** ppResource);
+};
+
+
+[uuid( 6f15aaf2-d208-4e89-9ab4-489535d34f9c)]
+interface ID3D11Texture2D : IUnknown
+{
+    // Just a marker interface for now
+};
+

@@ -14,8 +14,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Source"/> property.
         /// </summary>
-        public static readonly StyledProperty<IImage> SourceProperty =
-            AvaloniaProperty.Register<Image, IImage>(nameof(Source));
+        public static readonly StyledProperty<IImage?> SourceProperty =
+            AvaloniaProperty.Register<Image, IImage?>(nameof(Source));
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -42,7 +42,7 @@ namespace Avalonia.Controls
         /// Gets or sets the image that will be displayed.
         /// </summary>
         [Content]
-        public IImage Source
+        public IImage? Source
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
@@ -66,13 +66,14 @@ namespace Avalonia.Controls
             set { SetValue(StretchDirectionProperty, value); }
         }
 
+        /// <inheritdoc />
         protected override bool BypassFlowDirectionPolicies => true;
         
         /// <summary>
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var source = Source;
 

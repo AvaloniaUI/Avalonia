@@ -1,5 +1,4 @@
 ﻿using Avalonia.Media.Imaging;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Media.Immutable
 {
@@ -25,17 +24,17 @@ namespace Avalonia.Media.Immutable
         /// <param name="tileMode">The tile mode.</param>
         /// <param name="bitmapInterpolationMode">Controls the quality of interpolation.</param>
         public ImmutableVisualBrush(
-            Visual visual,
+            Visual? visual,
             AlignmentX alignmentX = AlignmentX.Center,
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
             double opacity = 1,
             ImmutableTransform? transform = null,
-            RelativePoint transformOrigin = new RelativePoint(),
+            RelativePoint transformOrigin = default,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
             TileMode tileMode = TileMode.None,
-            Imaging.BitmapInterpolationMode bitmapInterpolationMode = Imaging.BitmapInterpolationMode.Default)
+            BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
             : base(
                   alignmentX,
                   alignmentY,
@@ -62,6 +61,6 @@ namespace Avalonia.Media.Immutable
         }
 
         /// <inheritdoc/>
-        public Visual Visual { get; }
+        public Visual? Visual { get; }
     }
 }

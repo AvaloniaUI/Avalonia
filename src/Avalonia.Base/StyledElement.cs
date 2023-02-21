@@ -28,7 +28,7 @@ namespace Avalonia
     public class StyledElement : Animatable, 
         IDataContextProvider, 
         ILogical,
-        IResourceHost,
+        IThemeVariantHost,
         IStyleHost,
         IStyleable,
         ISetLogicalParent,
@@ -41,7 +41,11 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             AvaloniaProperty.Register<StyledElement, object?>(
                 nameof(DataContext),
+                defaultValue: null,
                 inherits: true,
+                defaultBindingMode: BindingMode.OneWay,
+                validate: null,
+                coerce: null,
                 notifying: DataContextNotifying);
 
         /// <summary>
@@ -139,6 +143,9 @@ namespace Avalonia
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        /// <inheritdoc />
+        public event EventHandler? ActualThemeVariantChanged;
+        
         /// <summary>
         /// Gets or sets the name of the styled element.
         /// </summary>
@@ -295,6 +302,9 @@ namespace Avalonia
         /// </summary>
         public StyledElement? Parent { get; private set; }
 
+        /// <inheritdoc />
+        public ThemeVariant ActualThemeVariant => GetValue(ThemeVariant.ActualThemeVariantProperty);
+        
         /// <summary>
         /// Gets the styled element's logical parent.
         /// </summary>
@@ -439,11 +449,11 @@ namespace Avalonia
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
-        bool IResourceNode.TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             value = null;
-            return (_resources?.TryGetResource(key, out value) ?? false) ||
-                   (_styles?.TryGetResource(key, out value) ?? false);
+            return (_resources?.TryGetResource(key, theme, out value) ?? false) ||
+                   (_styles?.TryGetResource(key, theme, out value) ?? false);
         }
 
         /// <summary>
@@ -494,13 +504,7 @@ namespace Avalonia
                     NotifyResourcesChanged();
                 }
 
-#nullable disable
-                RaisePropertyChanged(
-                    ParentProperty,
-                    new Optional<StyledElement>(old),
-                    new BindingValue<StyledElement>(Parent),
-                    BindingPriority.LocalValue);
-#nullable enable
+                RaisePropertyChanged(ParentProperty, old, Parent);
             }
         }
 
@@ -620,7 +624,20 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
+            {
                 OnControlThemeChanged();
+            }
+            else if (change.Property == ThemeVariant.RequestedThemeVariantProperty)
+            {
+                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
+                    SetValue(ThemeVariant.ActualThemeVariantProperty, themeVariant);
+                else
+                    ClearValue(ThemeVariant.ActualThemeVariantProperty);
+            }
+            else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
+            {
+                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private protected virtual void OnControlThemeChanged()
@@ -658,7 +675,7 @@ namespace Avalonia
         {
             var theme = Theme;
 
-            // Explitly set Theme property takes precedence.
+            // Explicitly set Theme property takes precedence.
             if (theme is not null)
                 return theme;
 

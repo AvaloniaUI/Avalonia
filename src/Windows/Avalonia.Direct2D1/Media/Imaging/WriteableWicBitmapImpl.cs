@@ -6,7 +6,7 @@ using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
+    internal class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
         public WriteableWicBitmapImpl(Stream stream, int decodeSize, bool horizontal,
             Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode)
@@ -29,35 +29,6 @@ namespace Avalonia.Direct2D1.Media.Imaging
         {
         }
 
-        class LockedBitmap : ILockedFramebuffer
-        {
-            private readonly WriteableWicBitmapImpl _parent;
-            private readonly BitmapLock _lock;
-            private readonly PixelFormat _format;
-
-            public LockedBitmap(WriteableWicBitmapImpl parent, BitmapLock l, PixelFormat format)
-            {
-                _parent = parent;
-                _lock = l;
-                _format = format;
-            }
-
-
-            public void Dispose()
-            {
-                _lock.Dispose();
-                _parent.Version++;
-            }
-
-            public IntPtr Address => _lock.Data.DataPointer;
-            public PixelSize Size => _lock.Size.ToAvalonia();
-            public int RowBytes => _lock.Stride;
-            public Vector Dpi => _parent.Dpi;
-            public PixelFormat Format => _format;
-
-        }
-
-        public ILockedFramebuffer Lock() =>
-            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
+        public PixelFormat? Format => PixelFormat;
     }
 }

@@ -10,102 +10,12 @@ using Avalonia.VisualTree;
 namespace Avalonia.Rendering
 {
     /// <summary>
-    /// A renderer which renders the state of the visual tree without an intermediate scene graph
-    /// representation.
+    /// This class is used to render the visual tree into a DrawingContext by doing
+    /// a simple tree traversal.
+    /// It's currently used mostly for RenderTargetBitmap.Render and VisualBrush
     /// </summary>
-    /// <remarks>
-    /// The immediate renderer supports only clip-bound-based hit testing; a control's geometry is
-    /// not taken into account.
-    /// </remarks>
-    public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
+    internal class ImmediateRenderer : IVisualBrushRenderer//, IRenderer
     {
-        private readonly Visual _root;
-        private readonly Func<IRenderTarget> _renderTargetFactory;
-        private readonly PlatformRenderInterfaceContextManager? _renderContext;
-        private readonly IRenderRoot? _renderRoot;
-        private bool _updateTransformedBounds = true;
-        private IRenderTarget? _renderTarget;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
-        /// </summary>
-        /// <param name="root">The control to render.</param>
-        /// <param name="renderTargetFactory">The target render factory.</param>
-        /// <param name="renderContext">The render contex.</param>
-        public ImmediateRenderer(Visual root, Func<IRenderTarget> renderTargetFactory, 
-            PlatformRenderInterfaceContextManager? renderContext = null)
-        {
-            _root = root ?? throw new ArgumentNullException(nameof(root));
-            _renderTargetFactory = renderTargetFactory;
-            _renderContext = renderContext;
-            _renderRoot = root as IRenderRoot;
-        }
-
-        private ImmediateRenderer(Visual root, Func<IRenderTarget> renderTargetFactory, bool updateTransformedBounds)
-        {
-            _root = root ?? throw new ArgumentNullException(nameof(root));
-            _renderTargetFactory = renderTargetFactory;
-            _renderRoot = root as IRenderRoot;
-            _updateTransformedBounds = updateTransformedBounds;
-        }
-
-        /// <inheritdoc/>
-        public bool DrawFps { get; set; }
-
-        /// <inheritdoc/>
-        public bool DrawDirtyRects { get; set; }
-
-        /// <inheritdoc/>
-        public event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
-
-        /// <inheritdoc/>
-        public void Paint(Rect rect)
-        {
-            if (_renderTarget == null)
-            {
-                _renderTarget = _renderTargetFactory();
-            }
-
-            try
-            {
-                using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
-                {
-                    context.PlatformImpl.Clear(Colors.Transparent);
-
-                    using (context.PushTransformContainer())
-                    {
-                        Render(context, _root, _root.Bounds);
-                    }
-
-                    if (DrawDirtyRects)
-                    {
-                        var color = (uint)new Random().Next(0xffffff) | 0x44000000;
-                        context.FillRectangle(
-                            new SolidColorBrush(color),
-                            rect);
-                    }
-
-                    if (DrawFps)
-                    {
-                        RenderFps(context, _root.Bounds, null);
-                    }
-                }
-            }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logger.TryGet(LogEventLevel.Information, LogArea.Animations)?.Log(this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget.Dispose();
-                _renderTarget = null;
-            }
-
-            SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
-        }
-
-        /// <inheritdoc/>
-        public void Resized(Size size)
-        {
-        }
-
         /// <summary>
         /// Renders a visual to a render target.
         /// </summary>
@@ -113,11 +23,8 @@ namespace Avalonia.Rendering
         /// <param name="target">The render target.</param>
         public static void Render(Visual visual, IRenderTarget target)
         {
-            using (var renderer = new ImmediateRenderer(visual, () => target, updateTransformedBounds: false))
-            using (var context = new DrawingContext(target.CreateDrawingContext(renderer)))
-            {
-                renderer.Render(context, visual, visual.Bounds);
-            }
+            using var context = new DrawingContext(target.CreateDrawingContext(new ImmediateRenderer()));
+            Render(context, visual, visual.Bounds);
         }
 
         /// <summary>
@@ -127,77 +34,9 @@ namespace Avalonia.Rendering
         /// <param name="context">The drawing context.</param>
         public static void Render(Visual visual, DrawingContext context)
         {
-            using (var renderer = new ImmediateRenderer(visual, 
-                       () => throw new InvalidOperationException("This is not supposed to be called"),
-                       updateTransformedBounds: false))
-            {
-                renderer.Render(context, visual, visual.Bounds);
-            }
+            Render(context, visual, visual.Bounds);
         }
-
-        /// <inheritdoc/>
-        public void AddDirty(Visual visual)
-        {
-            if (!visual.Bounds.IsDefault)
-            {
-                var m = visual.TransformToVisual(_root);
-
-                if (m.HasValue)
-                {
-                    var bounds = new Rect(visual.Bounds.Size).TransformToAABB(m.Value);
-
-                    //use transformedbounds as previous render state of the visual bounds
-                    //so we can invalidate old and new bounds of a control in case it moved/shrinked
-                    if (visual.TransformedBounds.HasValue)
-                    {
-                        var trb = visual.TransformedBounds.Value;
-                        var trBounds = trb.Bounds.TransformToAABB(trb.Transform);
-
-                        if (trBounds != bounds)
-                        {
-                            _renderRoot?.Invalidate(trBounds);
-                        }
-                    }
-
-                    _renderRoot?.Invalidate(bounds);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Ends the operation of the renderer.
-        /// </summary>
-        public void Dispose()
-        {
-            _renderTarget?.Dispose();
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter)
-        {
-            return HitTest(root, p, filter);
-        }
-
-        public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool> filter)
-        {
-            return HitTest(root, p, filter).FirstOrDefault();
-        }
-
-        /// <inheritdoc/>
-        public void RecalculateChildren(Visual visual) => AddDirty(visual);
-
-        /// <inheritdoc/>
-        public void Start()
-        {
-        }
-
-        /// <inheritdoc/>
-        public void Stop()
-        {
-        }
-
-        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType) =>
-            new(_renderContext?.Value?.TryGetFeature(featureType));
+        
 
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
@@ -209,24 +48,15 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
-            var visual = brush.Visual;
-            Render(new DrawingContext(context), visual, visual.Bounds);
+            if (brush.Visual is { } visual)
+            {
+                Render(new DrawingContext(context), visual, visual.Bounds);
+            }
         }
 
         internal static void Render(Visual visual, DrawingContext context, bool updateTransformedBounds)
         {
-            using var renderer = new ImmediateRenderer(visual, 
-                () => throw new InvalidOperationException("This is not supposed to be called"),
-                updateTransformedBounds);
-            renderer.Render(context, visual, visual.Bounds);
-        }
-
-        private static void ClearTransformedBounds(Visual visual)
-        {
-            foreach (var e in visual.GetSelfAndVisualDescendants())
-            {
-                visual.SetTransformedBounds(null);
-            }
+            Render(context, visual, visual.Bounds);
         }
 
         private static Rect GetTransformedBounds(Visual visual)
@@ -244,45 +74,8 @@ namespace Avalonia.Rendering
             }
         }
 
-        private static IEnumerable<Visual> HitTest(
-           Visual visual,
-           Point p,
-           Func<Visual, bool>? filter)
-        {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
-            if (filter?.Invoke(visual) != false)
-            {
-                bool containsPoint;
-
-                if (visual is ICustomSimpleHitTest custom)
-                {
-                    containsPoint = custom.HitTest(p);
-                }
-                else
-                {
-                    containsPoint = visual.TransformedBounds?.Contains(p) == true;
-                }
-
-                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
-                {
-                    foreach (var child in visual.VisualChildren.SortByZIndex())
-                    {
-                        foreach (var result in HitTest(child, p, filter))
-                        {
-                            yield return result;
-                        }
-                    }
-                }
-
-                if (containsPoint)
-                {
-                    yield return visual;
-                }
-            }
-        }
-
-        private void Render(DrawingContext context, Visual visual, Rect clipRect)
+        private static void Render(DrawingContext context, Visual visual, Rect clipRect)
         {
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
@@ -324,7 +117,7 @@ namespace Avalonia.Rendering
                 }
 
                 using (context.PushPostTransform(m))
-                using (context.PushOpacity(opacity))
+                using (context.PushOpacity(opacity, bounds))
                 using (clipToBounds
 #pragma warning disable CS0618 // Type or member is obsolete
                     ? visual is IVisualWithRoundRectClip roundClipVisual
@@ -338,15 +131,7 @@ namespace Avalonia.Rendering
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
-
-#pragma warning disable 0618
-                    var transformed =
-                        new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
-#pragma warning restore 0618
-
-                    if (_updateTransformedBounds)
-                        visual.SetTransformedBounds(transformed);
-
+                    
                     var childrenEnumerable = visual.HasNonUniformZIndexChildren
                         ? visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
                         : (IEnumerable<Visual>)visual.VisualChildren;
@@ -362,17 +147,8 @@ namespace Avalonia.Rendering
                                 : clipRect;
                             Render(context, child, childClipRect);
                         }
-                        else if (_updateTransformedBounds)
-                        {
-                            ClearTransformedBounds(child);
-                        }
                     }
                 }
-            }
-
-            if (!visual.IsVisible && _updateTransformedBounds)
-            {
-                ClearTransformedBounds(visual);
             }
         }
     }

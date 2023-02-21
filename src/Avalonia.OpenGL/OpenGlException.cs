@@ -5,13 +5,13 @@ namespace Avalonia.OpenGL
 {
     public class OpenGlException : Exception
     {
-        public int? ErrorCode { get; private set; }
+        public int? ErrorCode { get; }
 
-        public OpenGlException(string message) : base(message)
+        public OpenGlException(string? message) : base(message)
         {
         }
 
-        private OpenGlException(string message, int errorCode) : base(message)
+        private OpenGlException(string? message, int errorCode) : base(message)
         {
             ErrorCode = errorCode;
         }
@@ -26,6 +26,9 @@ namespace Avalonia.OpenGL
             var err = gl.GetError();
             return GetFormattedException(funcName, (GlErrors)err, err);
         }
+
+        public static OpenGlException GetFormattedException(string funcName, int errorCode) =>
+            GetFormattedException(funcName, (GlErrors)errorCode, errorCode);
 
         public static OpenGlException GetFormattedEglException(string funcName, int errorCode) =>
             GetFormattedException(funcName, (EglErrors)errorCode,errorCode);

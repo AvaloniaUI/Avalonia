@@ -95,9 +95,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    clusters.AddRange(shapedRun.IsReversed ?
-                        shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
-                        shapedRun.ShapedBuffer.GlyphClusters);
+                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+
+                    clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
 
                 var nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
@@ -142,9 +142,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    clusters.AddRange(shapedRun.IsReversed ?
-                        shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
-                        shapedRun.ShapedBuffer.GlyphClusters);
+                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+
+                    clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
 
                 clusters.Reverse();
@@ -247,7 +247,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var clusters = textLine.TextRuns.Cast<ShapedTextRun>().SelectMany(x => x.ShapedBuffer.GlyphClusters)
+                var clusters = textLine.TextRuns
+                    .Cast<ShapedTextRun>()
+                    .SelectMany(x => x.ShapedBuffer.GlyphInfos, (_, glyph) => glyph.GlyphCluster)
                     .ToArray();
 
                 var previousCharacterHit = new CharacterHit(text.Length);
@@ -313,11 +315,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var glyphRun = textRun.GlyphRun;
 
-                    for (var i = 0; i < glyphRun.GlyphClusters!.Count; i++)
+                    for (var i = 0; i < glyphRun.GlyphInfos.Count; i++)
                     {
-                        var cluster = glyphRun.GlyphClusters[i];
+                        var cluster = glyphRun.GlyphInfos[i].GlyphCluster;
 
-                        var advance = glyphRun.GlyphAdvances[i];
+                        var advance = glyphRun.GlyphInfos[i].GlyphAdvance;
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
@@ -602,19 +604,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, 20);
 
-                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(144.0234375, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 30);
 
-                Assert.Equal(3, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(216.03515625, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 40);
 
-                Assert.Equal(4, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
             }
@@ -656,7 +658,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     Assert.Equal(TextTestHelper.GetStartCharIndex(run.Text), bounds.TextSourceCharacterIndex);
                     Assert.Equal(run, bounds.TextRun);
-                    Assert.Equal(run.Size.Width, bounds.Rectangle.Width);
+                    Assert.Equal(run.Size.Width, bounds.Rectangle.Width, 2);
                 }
 
                 for (var i = 0; i < textBounds.Count; i++)
@@ -665,19 +667,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (lastBounds != null)
                     {
-                        Assert.Equal(lastBounds.Rectangle.Right, currentBounds.Rectangle.Left);
+                        Assert.Equal(lastBounds.Rectangle.Right, currentBounds.Rectangle.Left, 2);
                     }
 
                     var sumOfRunWidth = currentBounds.TextRunBounds.Sum(x => x.Rectangle.Width);
 
-                    Assert.Equal(sumOfRunWidth, currentBounds.Rectangle.Width);
+                    Assert.Equal(sumOfRunWidth, currentBounds.Rectangle.Width, 2);
 
                     lastBounds = currentBounds;
                 }
 
                 var sumOfBoundsWidth = textBounds.Sum(x => x.Rectangle.Width);
 
-                Assert.Equal(lineWidth, sumOfBoundsWidth);
+                Assert.Equal(lineWidth, sumOfBoundsWidth, 2);
             }
         }
 
@@ -750,7 +752,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                var currentClusters = shapedBuffer.GlyphClusters.ToList();
+                var currentClusters = shapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster).ToList();
 
                 foreach (var currentCluster in currentClusters)
                 {
@@ -783,11 +785,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                for (var index = 0; index < shapedBuffer.GlyphAdvances.Count; index++)
+                for (var index = 0; index < shapedBuffer.GlyphInfos.Length; index++)
                 {
-                    var currentCluster = shapedBuffer.GlyphClusters[index];
+                    var currentCluster = shapedBuffer.GlyphInfos[index].GlyphCluster;
 
-                    var advance = shapedBuffer.GlyphAdvances[index];
+                    var advance = shapedBuffer.GlyphInfos[index].GlyphAdvance;
 
                     if (lastCluster != currentCluster)
                     {
@@ -845,7 +847,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, textLine.Length);
 
-                Assert.Equal(6, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 1);
@@ -855,7 +857,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, firstRun.Length + 1);
 
-                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width + 14, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(1, firstRun.Length);
@@ -865,7 +867,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, 1 + firstRun.Length);
 
-                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width + 14, textBounds.Sum(x => x.Rectangle.Width));
             }
         }
@@ -956,14 +958,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(secondRun.Size.Width, textBounds[1].Rectangle.Width);
                 Assert.Equal(7.201171875, textBounds[0].Rectangle.Width);
-                Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right);
-                Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left);
+
+                Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right, 2);
+                Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left, 2);
 
                 textBounds = textLine.GetTextBounds(0, text.Length);
 
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(7, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
-                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width), 2);
             }
         }
 

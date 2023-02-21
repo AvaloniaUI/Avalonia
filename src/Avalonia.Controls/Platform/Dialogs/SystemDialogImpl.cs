@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 
 #nullable enable
 
@@ -26,9 +27,7 @@ namespace Avalonia.Controls.Platform
 
                 var files = await filePicker.OpenFilePickerAsync(options);
                 return files
-                    .Select(file => file.TryGetUri(out var fullPath)
-                        ? fullPath.LocalPath
-                        : file.Name)
+                    .Select(file => file.TryGetLocalPath() ?? file.Name)
                     .ToArray();
             }
             else if (dialog is SaveFileDialog saveDialog)
@@ -47,9 +46,7 @@ namespace Avalonia.Controls.Platform
                     return null;
                 }
 
-                var filePath = file.TryGetUri(out var fullPath)
-                    ? fullPath.LocalPath
-                    : file.Name;
+                var filePath = file.TryGetLocalPath() ?? file.Name;
                 return new[] { filePath };
             }
             return null;
@@ -67,7 +64,7 @@ namespace Avalonia.Controls.Platform
 
             var folders = await filePicker.OpenFolderPickerAsync(options);
             return folders
-                .Select(f => f.TryGetUri(out var uri) ? uri.LocalPath : null)
+                .Select(folder => folder.TryGetLocalPath() ?? folder.Name)
                 .FirstOrDefault(u => u is not null);
         }
     }

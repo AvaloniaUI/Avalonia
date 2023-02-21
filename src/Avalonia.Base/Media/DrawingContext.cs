@@ -240,13 +240,13 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush? foreground, GlyphRun glyphRun)
         {
             _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
 
             if (foreground != null)
             {
-                PlatformImpl.DrawGlyphRun(foreground, glyphRun);
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun.PlatformImpl);
             }
         }
 
@@ -361,11 +361,12 @@ namespace Avalonia.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public PushedState PushOpacity(double opacity)
+        public PushedState PushOpacity(double opacity, Rect bounds)
         //TODO: Eliminate platform-specific push opacity call
         {
-            PlatformImpl.PushOpacity(opacity);
+            PlatformImpl.PushOpacity(opacity, bounds);
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
 

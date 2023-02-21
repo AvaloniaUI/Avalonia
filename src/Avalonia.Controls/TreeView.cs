@@ -3,17 +3,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Avalonia.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Utils;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -132,6 +128,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the selected items.
         /// </summary>
+        [AllowNull]
         public IList SelectedItems
         {
             get
@@ -144,7 +141,6 @@ namespace Avalonia.Controls
 
                 return _selectedItems;
             }
-
             set
             {
                 if (value?.IsFixedSize == true || value?.IsReadOnly == true)
@@ -167,9 +163,9 @@ namespace Avalonia.Controls
         {
             item.IsExpanded = true;
 
-            if (item.Presenter?.Panel != null)
+            if (item.Presenter?.Panel is { } panel)
             {
-                foreach (var child in item.Presenter.Panel.Children)
+                foreach (var child in panel.Children)
                 {
                     if (child is TreeViewItem treeViewItem)
                     {
@@ -575,7 +571,7 @@ namespace Avalonia.Controls
                     {
                         var previous = (TreeViewItem)parentItemsControl.ContainerFromIndex(index - 1)!;
                         result = previous.IsExpanded && previous.ItemCount > 0 ?
-                            (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1)! :
+                            (TreeViewItem)previous.ContainerFromIndex(previous.ItemCount - 1)! :
                             previous;
                     }
                     else
@@ -589,7 +585,7 @@ namespace Avalonia.Controls
                 case NavigationDirection.Right:
                     if (from?.IsExpanded == true && intoChildren && from.ItemCount > 0)
                     {
-                        result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0)!;
+                        result = (TreeViewItem)from.ContainerFromIndex(0)!;
                     }
                     else if (index < parent?.ItemCount - 1)
                     {
@@ -865,7 +861,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private void MarkContainerSelected(Control container, bool selected)
+        private void MarkContainerSelected(Control? container, bool selected)
         {
             if (container == null)
             {

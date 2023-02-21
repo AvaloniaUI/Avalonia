@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -548,6 +550,98 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.Presenter.ApplyTemplate();
 
                 Assert.Equal(dataContext.ListProperty[0], (string)((ContentPresenter)target.Presenter.Panel.Children[0]).Content);
+            }
+        }
+        
+        [Fact]
+        public void InfersDataTemplateTypeFromParentDataGridItemsType()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <local:DataGridLikeControl Items='{CompiledBinding ListProperty}' Name='target'>
+        <local:DataGridLikeControl.Columns>
+            <local:DataGridLikeColumn Binding='{CompiledBinding Length}'>
+                <local:DataGridLikeColumn.Template>
+                    <DataTemplate>
+                        <TextBlock Text='{CompiledBinding Length}' />
+                    </DataTemplate>
+                </local:DataGridLikeColumn.Template>
+            </local:DataGridLikeColumn>
+        </local:DataGridLikeControl.Columns>
+    </local:DataGridLikeControl>
+</Window>");
+                var target = window.FindControl<DataGridLikeControl>("target");
+                var column = target!.Columns.Single();
+
+                var dataContext = new TestDataContext();
+
+                dataContext.ListProperty.Add("Test");
+
+                window.DataContext = dataContext;
+
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+
+                // Assert DataGridLikeColumn.Binding data type.
+                var compiledPath = ((CompiledBindingExtension)column.Binding).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                Assert.Equal(typeof(int), node.Property.PropertyType);
+                
+                // Assert DataGridLikeColumn.Template data type by evaluating the template.
+                var firstItem = dataContext.ListProperty[0];
+                var textBlockFromTemplate = (TextBlock)column.Template.Build(firstItem);
+                textBlockFromTemplate.DataContext = firstItem;
+                Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
+            }
+        }
+        
+        [Fact]
+        public void ExplicitDataTypeStillWorksOnDataGridLikeControls()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <local:DataGridLikeControl Name='target'>
+        <local:DataGridLikeControl.Columns>
+            <local:DataGridLikeColumn Binding='{CompiledBinding Length}' x:DataType='x:String'>
+                <local:DataGridLikeColumn.Template>
+                    <DataTemplate x:DataType='x:String'>
+                        <TextBlock Text='{CompiledBinding Length}' />
+                    </DataTemplate>
+                </local:DataGridLikeColumn.Template>
+            </local:DataGridLikeColumn>
+        </local:DataGridLikeControl.Columns>
+    </local:DataGridLikeControl>
+</Window>");
+                var target = window.FindControl<DataGridLikeControl>("target");
+                var column = target!.Columns.Single();
+
+                var dataContext = new TestDataContext();
+                dataContext.ListProperty.Add("Test");
+                target.Items = dataContext.ListProperty;
+
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+
+                // Assert DataGridLikeColumn.Binding data type.
+                var compiledPath = ((CompiledBindingExtension)column.Binding).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                Assert.Equal(typeof(int), node.Property.PropertyType);
+                
+                // Assert DataGridLikeColumn.Template data type by evaluating the template.
+                var firstItem = dataContext.ListProperty[0];
+                var textBlockFromTemplate = (TextBlock)column.Template.Build(firstItem);
+                textBlockFromTemplate.DataContext = firstItem;
+                Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
             }
         }
 
@@ -1834,5 +1928,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class AssignBindingControl : Control
     {
         [AssignBinding] public IBinding X { get; set; }
+    }
+
+    public class DataGridLikeControl : Control
+    {
+        public static readonly DirectProperty<DataGridLikeControl, IEnumerable?> ItemsProperty =
+            ItemsControl.ItemsProperty.AddOwner<DataGridLikeControl>(o => o.Items, (o, v) => o.Items = v);
+
+        private IEnumerable _items;
+        public IEnumerable Items
+        {
+            get { return _items; }
+            set { SetAndRaise(ItemsProperty, ref _items, value); }
+        }
+
+        public AvaloniaList<DataGridLikeColumn> Columns { get; } = new();
+    }
+
+    public class DataGridLikeColumn
+    {
+        [AssignBinding]
+        [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
+        public IBinding Binding { get; set; }
+        
+        [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
+        public IDataTemplate Template { get; set; }
     }
 }

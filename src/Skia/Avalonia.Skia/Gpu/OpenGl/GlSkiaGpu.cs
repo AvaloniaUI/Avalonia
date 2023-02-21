@@ -3,19 +3,22 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Imaging;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using SkiaSharp;
+using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    class GlSkiaGpu : IOpenGlAwareSkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature
+    internal class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature
     {
-        private GRContext _grContext;
-        private IGlContext _glContext;
-        private List<Action> _postDisposeCallbacks = new();
+        private readonly GRContext _grContext;
+        private readonly IGlContext _glContext;
+        public GRContext GrContext => _grContext;
+        public IGlContext GlContext => _glContext;
+        private readonly List<Action> _postDisposeCallbacks = new();
         private bool? _canCreateSurfaces;
+        private readonly IExternalObjectsRenderInterfaceContextFeature? _externalObjectsFeature;
 
         public GlSkiaGpu(IGlContext context, long? maxResourceBytes)
         {
@@ -32,10 +35,13 @@ namespace Avalonia.Skia
                         _grContext.SetResourceCacheLimit(maxResourceBytes.Value);
                     }
                 }
+
+                context.TryGetFeature<IGlContextExternalObjectsFeature>(out var externalObjects);
+                _externalObjectsFeature = new GlSkiaExternalObjectsFeature(this, externalObjects);
             }
         }
 
-        class SurfaceWrapper : IGlPlatformSurface
+        private class SurfaceWrapper : IGlPlatformSurface
         {
             private readonly object _surface;
 
@@ -51,7 +57,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
+        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
@@ -69,7 +75,7 @@ namespace Avalonia.Skia
             return null;
         }
 
-        public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session)
         {
             // Only windows platform needs our FBO trickery
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -100,11 +106,37 @@ namespace Avalonia.Skia
 
         public bool CanCreateSharedContext => _glContext.CanCreateSharedContext;
 
-        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+        public IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null) =>
             _glContext.CreateSharedContext(preferredVersions);
 
-        public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi) => new GlOpenGlBitmapImpl(_glContext, size, dpi);
-        
+        public ICompositionImportableOpenGlSharedTexture CreateSharedTextureForComposition(IGlContext context, PixelSize size)
+        {
+            if (!context.IsSharedWith(_glContext))
+                throw new InvalidOperationException("Contexts do not belong to the same share group");
+            
+            using (context.EnsureCurrent())
+            {
+                var gl = context.GlInterface;
+                gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out int oldTexture);
+                var tex = gl.GenTexture();
+
+                var format = context.Version.Type == GlProfileType.OpenGLES && context.Version.Major == 2
+                    ? GL_RGBA
+                    : GL_RGBA8;
+                
+                gl.BindTexture(GL_TEXTURE_2D, tex);
+                gl.TexImage2D(GL_TEXTURE_2D, 0,
+                    format, size.Width, size.Height,
+                    0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+
+                gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                gl.BindTexture(GL_TEXTURE_2D, oldTexture);
+                
+                return new GlSkiaSharedTextureForComposition(context, tex, format, size);
+            }
+        }
+
         public void Dispose()
         {
             if (_glContext.IsLost)
@@ -121,10 +153,12 @@ namespace Avalonia.Skia
         public bool IsLost => _glContext.IsLost;
         public IDisposable EnsureCurrent() => _glContext.EnsureCurrent();
 
-        public object TryGetFeature(Type featureType)
+        public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IOpenGlTextureSharingRenderInterfaceContextFeature))
                 return this;
+            if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
+                return _externalObjectsFeature;
             return null;
         }
         

@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using Avalonia.Styling;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
 
@@ -42,16 +43,16 @@ namespace ControlCatalog
             {
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    App.SetThemeVariant(theme);
-                    
-                    ((TopLevel?)this.GetVisualRoot())?.PlatformImpl?.SetFrameThemeVariant(theme switch
-                    {
-                        CatalogTheme.FluentLight => PlatformThemeVariant.Light,
-                        CatalogTheme.FluentDark => PlatformThemeVariant.Dark,
-                        CatalogTheme.SimpleLight => PlatformThemeVariant.Light,
-                        CatalogTheme.SimpleDark => PlatformThemeVariant.Dark,
-                        _ => throw new ArgumentOutOfRangeException()
-                    });
+                    App.SetCatalogThemes(theme);
+                }
+            };
+            var themeVariants = this.Get<ComboBox>("ThemeVariants");
+            themeVariants.SelectedItem = Application.Current!.RequestedThemeVariant;
+            themeVariants.SelectionChanged += (sender, e) =>
+            {
+                if (themeVariants.SelectedItem is ThemeVariant themeVariant)
+                {
+                    Application.Current!.RequestedThemeVariant = themeVariant;
                 }
             };
 
@@ -60,7 +61,7 @@ namespace ControlCatalog
             {
                 if (flowDirections.SelectedItem is FlowDirection flowDirection)
                 {
-                    this.FlowDirection = flowDirection;
+                    TopLevel.GetTopLevel(this).FlowDirection = flowDirection;
                 }
             };
 
@@ -118,25 +119,13 @@ namespace ControlCatalog
 
         private void PlatformSettingsOnColorValuesChanged(object? sender, PlatformColorValues e)
         {
-            var themes = this.Get<ComboBox>("Themes");
-            var currentTheme = (CatalogTheme?)themes.SelectedItem ?? CatalogTheme.FluentLight;
-            var newTheme = (currentTheme, e.ThemeVariant) switch
-            {
-                (CatalogTheme.FluentDark, PlatformThemeVariant.Light) => CatalogTheme.FluentLight,
-                (CatalogTheme.FluentLight, PlatformThemeVariant.Dark) => CatalogTheme.FluentDark,
-                (CatalogTheme.SimpleDark, PlatformThemeVariant.Light) => CatalogTheme.SimpleLight,
-                (CatalogTheme.SimpleLight, PlatformThemeVariant.Dark) => CatalogTheme.SimpleDark,
-                _ => currentTheme
-            };
-            themes.SelectedItem = newTheme;
-
             Application.Current!.Resources["SystemAccentColor"] = e.AccentColor1;
             Application.Current.Resources["SystemAccentColorDark1"] = ChangeColorLuminosity(e.AccentColor1, -0.3);
             Application.Current.Resources["SystemAccentColorDark2"] = ChangeColorLuminosity(e.AccentColor1, -0.5);
             Application.Current.Resources["SystemAccentColorDark3"] = ChangeColorLuminosity(e.AccentColor1, -0.7);
-            Application.Current.Resources["SystemAccentColorLight1"] = ChangeColorLuminosity(e.AccentColor1, -0.3);
-            Application.Current.Resources["SystemAccentColorLight2"] = ChangeColorLuminosity(e.AccentColor1, -0.5);
-            Application.Current.Resources["SystemAccentColorLight3"] = ChangeColorLuminosity(e.AccentColor1, -0.7);
+            Application.Current.Resources["SystemAccentColorLight1"] = ChangeColorLuminosity(e.AccentColor1, 0.3);
+            Application.Current.Resources["SystemAccentColorLight2"] = ChangeColorLuminosity(e.AccentColor1, 0.5);
+            Application.Current.Resources["SystemAccentColorLight3"] = ChangeColorLuminosity(e.AccentColor1, 0.7);
 
             static Color ChangeColorLuminosity(Color color, double luminosityFactor)
             {

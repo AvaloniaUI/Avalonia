@@ -13,14 +13,14 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);
 
-        public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<DrawingGroup, Transform>(nameof(Transform));
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            AvaloniaProperty.Register<DrawingGroup, Transform?>(nameof(Transform));
 
-        public static readonly StyledProperty<Geometry> ClipGeometryProperty =
-            AvaloniaProperty.Register<DrawingGroup, Geometry>(nameof(ClipGeometry));
+        public static readonly StyledProperty<Geometry?> ClipGeometryProperty =
+            AvaloniaProperty.Register<DrawingGroup, Geometry?>(nameof(ClipGeometry));
 
-        public static readonly StyledProperty<IBrush> OpacityMaskProperty =
-            AvaloniaProperty.Register<DrawingGroup, IBrush>(nameof(OpacityMask));
+        public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
+            AvaloniaProperty.Register<DrawingGroup, IBrush?>(nameof(OpacityMask));
 
         public static readonly DirectProperty<DrawingGroup, DrawingCollection> ChildrenProperty =
             AvaloniaProperty.RegisterDirect<DrawingGroup, DrawingCollection>(
@@ -36,19 +36,19 @@ namespace Avalonia.Media
             set => SetValue(OpacityProperty, value);
         }
 
-        public Transform Transform
+        public Transform? Transform
         {
             get => GetValue(TransformProperty);
             set => SetValue(TransformProperty, value);
         }
 
-        public Geometry ClipGeometry
+        public Geometry? ClipGeometry
         {
             get => GetValue(ClipGeometryProperty);
             set => SetValue(ClipGeometryProperty, value);
         }
 
-        public IBrush OpacityMask
+        public IBrush? OpacityMask
         {
             get => GetValue(OpacityMaskProperty);
             set => SetValue(OpacityMaskProperty, value);
@@ -74,10 +74,12 @@ namespace Avalonia.Media
 
         public override void Draw(DrawingContext context)
         {
+            var bounds = GetBounds();
+
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
-            using (context.PushOpacity(Opacity))
+            using (context.PushOpacity(Opacity, bounds))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -159,7 +161,7 @@ namespace Avalonia.Media
 
             public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
             {
-                if (((brush == null) && (pen == null)) || (geometry == null))
+                if ((brush == null) && (pen == null))
                 {
                     return;
                 }
@@ -167,25 +169,24 @@ namespace Avalonia.Media
                 AddNewGeometryDrawing(brush, pen, new PlatformGeometry(geometry));
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
             {
-                if (foreground == null || glyphRun == null)
+                if (foreground == null)
                 {
                     return;
                 }
 
-                // Add a GlyphRunDrawing to the Drawing graph
                 GlyphRunDrawing glyphRunDrawing = new GlyphRunDrawing
                 {
                     Foreground = foreground,
-                    GlyphRun = glyphRun,
+                    GlyphRun = new GlyphRun(glyphRun)
                 };
 
                 // Add Drawing to the Drawing graph
                 AddDrawing(glyphRunDrawing);
             }
 
-            public void DrawLine(IPen pen, Point p1, Point p2)
+            public void DrawLine(IPen? pen, Point p1, Point p2)
             {
                 if (pen == null)
                 {
@@ -285,7 +286,7 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect bounds)
             {
                 throw new NotImplementedException();
             }

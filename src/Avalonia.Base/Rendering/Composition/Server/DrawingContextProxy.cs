@@ -66,7 +66,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         _impl.DrawBitmap(source, opacityMask, opacityMaskRect, destRect);
     }
 
-    public void DrawLine(IPen pen, Point p1, Point p2)
+    public void DrawLine(IPen? pen, Point p1, Point p2)
     {
         _impl.DrawLine(pen, p1, p2);
     }
@@ -86,7 +86,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         _impl.DrawEllipse(brush, pen, rect);
     }
 
-    public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+    public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
     {
         _impl.DrawGlyphRun(foreground, glyphRun);
     }
@@ -111,9 +111,9 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         _impl.PopClip();
     }
 
-    public void PushOpacity(double opacity)
+    public void PushOpacity(double opacity, Rect bounds)
     {
-        _impl.PushOpacity(opacity);
+        _impl.PushOpacity(opacity, bounds);
     }
 
     public void PopOpacity()

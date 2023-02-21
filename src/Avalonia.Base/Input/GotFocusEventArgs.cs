@@ -7,19 +7,18 @@ namespace Avalonia.Input
     /// </summary>
     public class GotFocusEventArgs : RoutedEventArgs
     {
-        internal GotFocusEventArgs()
+        public GotFocusEventArgs() : base(InputElement.GotFocusEvent)
         {
-
         }
 
         /// <summary>
         /// Gets or sets a value indicating how the change in focus occurred.
         /// </summary>
-        public NavigationMethod NavigationMethod { get; set; }
+        public NavigationMethod NavigationMethod { get; init; }
 
         /// <summary>
         /// Gets or sets any key modifiers active at the time of focus.
         /// </summary>
-        public KeyModifiers KeyModifiers { get; set; }
+        public KeyModifiers KeyModifiers { get; init; }
     }
 }

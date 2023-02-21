@@ -34,12 +34,17 @@
                                   Content="{TemplateBinding Content}"
                                   Extent="{TemplateBinding Extent, Mode=TwoWay}"
                                   Padding="{TemplateBinding Padding}"
+                                  HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                  VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                  HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                  VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
                                   Offset="{TemplateBinding Offset, Mode=TwoWay}"
                                   Viewport="{TemplateBinding Viewport, Mode=TwoWay}"
                                   IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
             <ScrollContentPresenter.GestureRecognizers>
               <ScrollGestureRecognizer CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                       CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
+                                       CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+                                       IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}"/>
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"

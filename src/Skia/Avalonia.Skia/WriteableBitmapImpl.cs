@@ -15,7 +15,7 @@ namespace Avalonia.Skia
     {
         private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
         private readonly SKBitmap _bitmap;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         
         /// <summary>
         /// Create a WriteableBitmap from given stream.
@@ -154,6 +154,8 @@ namespace Avalonia.Skia
             }
         }
 
+        public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
+
         /// <inheritdoc />
         public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);
 
@@ -203,8 +205,8 @@ namespace Avalonia.Skia
                 _bitmap.NotifyPixelsChanged();
                 _parent.Version++;
                 Monitor.Exit(_parent._lock);
-                _bitmap = null;
-                _parent = null;
+                _bitmap = null!;
+                _parent = null!;
             }
             
             /// <inheritdoc />

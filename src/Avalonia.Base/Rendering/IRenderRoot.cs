@@ -1,6 +1,4 @@
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
@@ -24,12 +22,6 @@ namespace Avalonia.Rendering
         /// The scaling factor to use in rendering.
         /// </summary>
         double RenderScaling { get; }
-
-        /// <summary>
-        /// Adds a rectangle to the window's dirty region.
-        /// </summary>
-        /// <param name="rect">The rectangle.</param>
-        void Invalidate(Rect rect);
 
         /// <summary>
         /// Converts a point from screen to client coordinates.

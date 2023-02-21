@@ -12,6 +12,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Key = Avalonia.Input.Key;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MouseButton = System.Windows.Input.MouseButton;
@@ -42,13 +43,6 @@ namespace Avalonia.Win32.Interop.Wpf
             protected override void OnMeasureInvalidated()
             {
                 ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
-            }
-
-            protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
-            {
-                ClientSize = clientSize;
-                LayoutManager.ExecuteLayoutPass();
-                Renderer?.Resized(clientSize);
             }
 
             public Size AllocatedSize => ClientSize;
@@ -90,8 +84,7 @@ namespace Avalonia.Win32.Interop.Wpf
         
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var mgr = new PlatformRenderInterfaceContextManager(null);
-            return new ImmediateRenderer((Visual)root, () => mgr.CreateRenderTarget(_surfaces), mgr);
+            return new CompositingRenderer(root, Win32Platform.Compositor, () => _surfaces);
         }
 
         public void Dispose()
@@ -134,7 +127,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
         }
 
-        void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
+
 
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
@@ -223,7 +216,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 (Key)e.Key,
                 GetModifiers(null)));
 
-        protected override void OnTextInput(TextCompositionEventArgs e) 
+        protected override void OnTextInput(TextCompositionEventArgs e)
             => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, e.Text));
 
         void ITopLevelImpl.SetCursor(ICursorImpl cursor)
@@ -261,5 +254,7 @@ namespace Avalonia.Win32.Interop.Wpf
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+        
+        public object TryGetFeature(Type featureType) => null;
     }
 }

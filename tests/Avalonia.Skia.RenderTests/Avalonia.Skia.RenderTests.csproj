@@ -2,12 +2,13 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
+    <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />

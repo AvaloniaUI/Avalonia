@@ -30,14 +30,19 @@ namespace Avalonia.Rendering.Composition
         private BatchStreamObjectPool<object?> _batchObjectPool = new();
         private BatchStreamMemoryPool _batchMemoryPool = new();
         private List<CompositionObject> _objectsForSerialization = new();
-        private Queue<Action<Task>> _invokeBeforeCommit = new();
+        private Queue<Action> _invokeBeforeCommitWrite = new(), _invokeBeforeCommitRead = new();
         internal ServerCompositor Server => _server;
         private Task? _pendingBatch;
         private readonly object _pendingBatchLock = new();
         private List<Action> _pendingServerCompositorJobs = new();
+        private DiagnosticTextRenderer? _diagnosticTextRenderer;
 
         internal IEasing DefaultEasing { get; }
-        
+
+        private DiagnosticTextRenderer DiagnosticTextRenderer
+            => _diagnosticTextRenderer ??= new(Typeface.Default.GlyphTypeface, 12.0);
+
+        internal event Action? AfterCommit;
 
         /// <summary>
         /// Creates a new compositor on a specified render loop that would use a particular GPU
@@ -77,16 +82,31 @@ namespace Avalonia.Rendering.Composition
 
             return _nextCommit.Task;
         }
-        
+
         internal Task Commit()
+        {
+            try
+            {
+                return CommitCore();
+            }
+            finally
+            {
+                if (_invokeBeforeCommitWrite.Count > 0)
+                    RequestCommitAsync();
+                AfterCommit?.Invoke();
+            }
+        }
+        
+        Task CommitCore()
         {
             Dispatcher.UIThread.VerifyAccess();
             using var noPump = NonPumpingLockHelper.Use();
             
             _nextCommit ??= new TaskCompletionSource<int>();
 
-            while (_invokeBeforeCommit.Count > 0)
-                _invokeBeforeCommit.Dequeue()(_nextCommit.Task);
+            (_invokeBeforeCommitRead, _invokeBeforeCommitWrite) = (_invokeBeforeCommitWrite, _invokeBeforeCommitRead);
+            while (_invokeBeforeCommitRead.Count > 0)
+                _invokeBeforeCommitRead.Dequeue()();
             
             var batch = new Batch(_nextCommit);
             
@@ -109,6 +129,7 @@ namespace Avalonia.Rendering.Composition
                         writer.WriteObject(job);
                     writer.WriteObject(ServerCompositor.RenderThreadJobsEndMarker);
                 }
+                _pendingServerCompositorJobs.Clear();
             }
             
             batch.CommittedAt = Server.Clock.Elapsed;
@@ -138,34 +159,73 @@ namespace Avalonia.Rendering.Composition
             RequestCommitAsync();
         }
 
-        internal void InvokeBeforeNextCommit(Action<Task> action)
+        /// <summary>
+        /// Enqueues a callback to be called before the next scheduled commit.
+        /// If there is no scheduled commit it automatically schedules one
+        /// This is useful for updating your composition tree objects after binding
+        /// and layout passes have completed
+        /// </summary>
+        public void RequestCompositionUpdate(Action action)
         {
             Dispatcher.UIThread.VerifyAccess();
-            _invokeBeforeCommit.Enqueue(action);
+            _invokeBeforeCommitWrite.Enqueue(action);
             RequestCommitAsync();
         }
 
-        /// <summary>
-        /// Attempts to query for a feature from the platform render interface
-        /// </summary>
-        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        internal void PostServerJob(Action job)
         {
-            var tcs = new TaskCompletionSource<object?>();
-            _pendingServerCompositorJobs.Add(() =>
+            Dispatcher.UIThread.VerifyAccess();
+            _pendingServerCompositorJobs.Add(job);
+            RequestCommitAsync();
+        }
+
+        internal Task InvokeServerJobAsync(Action job) =>
+            InvokeServerJobAsync<object?>(() =>
+            {
+                job();
+                return null;
+            });
+
+        internal Task<T> InvokeServerJobAsync<T>(Func<T> job)
+        {
+            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+            PostServerJob(() =>
             {
                 try
                 {
-                    using (Server.RenderInterface.EnsureCurrent())
-                    {
-                        tcs.TrySetResult(Server.RenderInterface.Value.TryGetFeature(featureType));
-                    }
+                    tcs.SetResult(job());
                 }
                 catch (Exception e)
                 {
                     tcs.TrySetException(e);
                 }
             });
-            return new ValueTask<object?>(tcs.Task);
+            return tcs.Task;
         }
+
+        /// <summary>
+        /// Attempts to query for a feature from the platform render interface
+        /// </summary>
+        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType) =>
+            new(InvokeServerJobAsync(() =>
+            {
+                using (Server.RenderInterface.EnsureCurrent())
+                {
+                    return Server.RenderInterface.Value.TryGetFeature(featureType);
+                }
+            }));
+
+        public ValueTask<ICompositionGpuInterop?> TryGetCompositionGpuInterop() =>
+            new(InvokeServerJobAsync<ICompositionGpuInterop?>(() =>
+            {
+                using (Server.RenderInterface.EnsureCurrent())
+                {
+                    var feature = Server.RenderInterface.Value
+                        .TryGetFeature<IExternalObjectsRenderInterfaceContextFeature>();
+                    if (feature == null)
+                        return null;
+                    return new CompositionInterop(this, feature);
+                }
+            }));
     }
 }

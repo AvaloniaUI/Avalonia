@@ -741,6 +741,11 @@ namespace Avalonia.Media
                         null // no previous line break
                         );
 
+                    if(Current is null)
+                    {
+                        return false;
+                    }
+
                     // check if this line fits the text height
                     if (_totalHeight + Current.Height > _that._maxTextHeight)
                     {
@@ -779,7 +784,7 @@ namespace Avalonia.Media
                 // maybe there is no next line at all
                 if (Position + Current.Length < _that._text.Length)
                 {
-                    bool nextLineFits;
+                    bool nextLineFits = false;
 
                     if (_lineCount + 1 >= _that._maxLineCount)
                     {
@@ -795,7 +800,10 @@ namespace Avalonia.Media
                             currentLineBreak
                             );
 
-                        nextLineFits = (_totalHeight + Current.Height + _nextLine.Height <= _that._maxTextHeight);
+                        if(_nextLine != null)
+                        {
+                            nextLineFits = (_totalHeight + Current.Height + _nextLine.Height <= _that._maxTextHeight);
+                        }
                     }
 
                     if (!nextLineFits)
@@ -819,16 +827,22 @@ namespace Avalonia.Media
                                 _previousLineBreak
                                 );
 
-                            currentLineBreak = Current.TextLineBreak;
+                            if(Current != null)
+                            {
+                                currentLineBreak = Current.TextLineBreak;
+                            }
 
                             _that._defaultParaProps.SetTextWrapping(currentWrap);
                         }
                     }
                 }
 
-                _previousHeight = Current.Height;
+                if(Current != null)
+                {
+                    _previousHeight = Current.Height;
 
-                Length = Current.Length;
+                    Length = Current.Length;
+                }
 
                 _previousLineBreak = currentLineBreak;
 
@@ -838,7 +852,7 @@ namespace Avalonia.Media
             /// <summary>
             /// Wrapper of TextFormatter.FormatLine that auto-collapses the line if needed.
             /// </summary>
-            private TextLine FormatLine(ITextSource textSource, int textSourcePosition, double maxLineLength, TextParagraphProperties paraProps, TextLineBreak? lineBreak)
+            private TextLine? FormatLine(ITextSource textSource, int textSourcePosition, double maxLineLength, TextParagraphProperties paraProps, TextLineBreak? lineBreak)
             {
                 var line = _formatter.FormatLine(
                     textSource,
@@ -848,7 +862,7 @@ namespace Avalonia.Media
                     lineBreak
                     );
 
-                if (_that._trimming != TextTrimming.None && line.HasOverflowed && line.Length > 0)
+                if (line != null && _that._trimming != TextTrimming.None && line.HasOverflowed && line.Length > 0)
                 {
                     // what I really need here is the last displayed text run of the line
                     // textSourcePosition + line.Length - 1 works except the end of paragraph case,
@@ -1340,7 +1354,7 @@ namespace Avalonia.Media
                     {
                         var highlightBounds = currentLine.GetTextBounds(x0,x1 - x0);
 
-                        if (highlightBounds != null)
+                        if (highlightBounds.Count > 0)
                         {
                             foreach (var bound in highlightBounds)
                             {
@@ -1351,7 +1365,7 @@ namespace Avalonia.Media
                                     // Convert logical units (which extend leftward from the right edge
                                     // of the paragraph) to physical units.
                                     //
-                                    // Note that since rect is in logical units, rect.Right corresponds to 
+                                    // Note that since rect is in logical units, rect.Right corresponds to
                                     // the visual *left* edge of the rectangle in the RTL case. Specifically,
                                     // is the distance leftward from the right edge of the formatting rectangle
                                     // whose width is the paragraph width passed to FormatLine.
@@ -1370,7 +1384,7 @@ namespace Avalonia.Media
                                 else
                                 {
                                     accumulatedBounds = Geometry.Combine(accumulatedBounds, rectangleGeometry, GeometryCombineMode.Union);
-                                }                                  
+                                }
                             }
                         }
                     }
@@ -1601,11 +1615,11 @@ namespace Avalonia.Media
             }
 
             /// <inheritdoc/>
-            public TextRun? GetTextRun(int textSourceCharacterIndex)
+            public TextRun GetTextRun(int textSourceCharacterIndex)
             {
                 if (textSourceCharacterIndex >= _that._text.Length)
                 {
-                    return null;
+                    return new TextEndOfParagraph();
                 }
 
                 var thatFormatRider = new SpanRider(_that._formatRuns, _that._latestPosition, textSourceCharacterIndex);

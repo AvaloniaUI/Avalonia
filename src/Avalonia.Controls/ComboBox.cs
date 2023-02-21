@@ -1,19 +1,19 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Reactive;
-using Avalonia.Controls.Generators;
-using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
-using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -219,7 +219,7 @@ namespace Avalonia.Controls
                 }
                 else if (e.Key == Key.Up)
                 {
-                    SelectPrev();
+                    SelectPrevious();
                     e.Handled = true;
                 }
             }
@@ -250,7 +250,7 @@ namespace Avalonia.Controls
                         if (e.Delta.Y < 0)
                             SelectNext();
                         else
-                            SelectPrev();
+                            SelectPrevious();
 
                         e.Handled = true;
                     }
@@ -399,12 +399,12 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                var container = ContainerFromIndex(selectedIndex);
 
                 if (container == null && SelectedIndex != -1)
                 {
                     ScrollIntoView(Selection.SelectedIndex);
-                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                    container = ContainerFromIndex(selectedIndex);
                 }
 
                 if (container != null && CanFocus(container))
@@ -478,19 +478,40 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SelectNext()
-        {
-            if (ItemCount >= 1)
-            {
-                MoveSelection(NavigationDirection.Next, WrapSelection);
-            }
-        }
+        private void SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
+        private void SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
 
-        private void SelectPrev()
+        private void MoveSelection(int startIndex, int step, bool wrap)
         {
-            if (ItemCount >= 1)
+            static bool IsSelectable(object? o) => (o as AvaloniaObject)?.GetValue(IsEnabledProperty) ?? true;
+
+            var count = ItemCount;
+
+            for (int i = startIndex + step; i != startIndex; i += step)
             {
-                MoveSelection(NavigationDirection.Previous, WrapSelection);
+                if (i < 0 || i >= count)
+                {
+                    if (wrap)
+                    {
+                        if (i < 0)
+                            i += count;
+                        else if (i >= count)
+                            i %= count;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                var item = ItemsView[i];
+                var container = ContainerFromIndex(i);
+                
+                if (IsSelectable(item) && IsSelectable(container))
+                {
+                    SelectedIndex = i;
+                    break;
+                }
             }
         }
     }

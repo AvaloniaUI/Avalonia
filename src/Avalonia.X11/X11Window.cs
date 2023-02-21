@@ -27,11 +27,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
-        ITopLevelImplWithNativeMenuExporter,
-        ITopLevelImplWithNativeControlHost,
-        ITopLevelImplWithTextInputMethod,
-        ITopLevelImplWithStorageProvider
+    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -43,6 +39,9 @@ namespace Avalonia.X11
         private readonly MouseDevice _mouse;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
+        private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
+        private readonly IStorageProvider _storageProvider;
+        private readonly X11NativeControlHost _nativeControlHost;
         private PixelPoint? _position;
         private PixelSize _realSize;
         private IntPtr _handle;
@@ -60,7 +59,7 @@ namespace Avalonia.X11
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
 
-        enum XSyncState
+        private enum XSyncState
         {
             None,
             WaitConfigure,
@@ -199,8 +198,8 @@ namespace Avalonia.X11
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
-                NativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
-            NativeControlHost = new X11NativeControlHost(_platform, this);
+                _nativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
+            _nativeControlHost = new X11NativeControlHost(_platform, this);
             InitializeIme();
             
             XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
@@ -213,14 +212,14 @@ namespace Avalonia.X11
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
-            StorageProvider = new CompositeStorageProvider(new Func<Task<IStorageProvider>>[]
+            _storageProvider = new CompositeStorageProvider(new[]
             {
-                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreate(Handle) : Task.FromResult<IStorageProvider>(null),
-                () => GtkSystemDialog.TryCreate(this),
+                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider>(null),
+                () => GtkSystemDialog.TryCreate(this)
             });
         }
 
-        class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+        private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
             private readonly X11Window _window;
             private readonly IntPtr _display;
@@ -250,7 +249,7 @@ namespace Avalonia.X11
             public double Scaling => _window.RenderScaling;
         }
 
-        void UpdateMotifHints()
+        private void UpdateMotifHints()
         {
             var functions = MotifFunctions.Move | MotifFunctions.Close | MotifFunctions.Resize |
                             MotifFunctions.Minimize | MotifFunctions.Maximize;
@@ -279,7 +278,7 @@ namespace Avalonia.X11
                 PropertyMode.Replace, ref hints, 5);
         }
 
-        void UpdateSizeHints(PixelSize? preResize)
+        private void UpdateSizeHints(PixelSize? preResize)
         {
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
@@ -384,27 +383,10 @@ namespace Avalonia.X11
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action LostFocus { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
 
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-
-            return _platform.Options.UseDeferredRendering
-                ? _platform.Options.UseCompositor
-                    ? new CompositingRenderer(root, this._platform.Compositor, () => Surfaces)
-                    : new DeferredRenderer(root, loop, () => _platform.RenderInterface.CreateRenderTarget(Surfaces), _platform.RenderInterface)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                : new X11ImmediateRendererProxy((Visual)root, loop,
-                    () => _platform.RenderInterface.CreateRenderTarget(Surfaces),
-                    _platform.RenderInterface);
-        }
-
-        void OnEvent(ref XEvent ev)
+        private void OnEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.MapNotify)
             {
@@ -686,7 +668,7 @@ namespace Avalonia.X11
 
         }
 
-        static RawInputModifiers TranslateModifiers(XModifierMask state)
+        private static RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
             if (state.HasAllFlags(XModifierMask.Button1Mask))
@@ -722,16 +704,16 @@ namespace Avalonia.X11
         
         private double _scaling = 1;
 
-        void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
+        private void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
             ScheduleInput(args);
         }
 
-        void DispatchInput(RawInputEventArgs args)
+        private void DispatchInput(RawInputEventArgs args)
         {
             Input?.Invoke(args);
-            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrWhiteSpace(text.Text))
+            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
         }
 
@@ -764,8 +746,8 @@ namespace Avalonia.X11
             
             _rawEventGrouper.HandleEvent(args);
         }
-        
-        void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
+
+        private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
@@ -773,7 +755,7 @@ namespace Avalonia.X11
             ScheduleInput(mev, ref ev);
         }
 
-        void EnqueuePaint()
+        private void EnqueuePaint()
         {
             if (!_triggeredExpose)
             {
@@ -785,8 +767,8 @@ namespace Avalonia.X11
                 }, DispatcherPriority.Render);
             }
         }
-        
-        void DoPaint()
+
+        private void DoPaint()
         {
             Paint?.Invoke(new Rect());
             if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
@@ -813,7 +795,32 @@ namespace Avalonia.X11
             Cleanup();            
         }
 
-        void Cleanup()
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(ITopLevelNativeMenuExporter))
+            {
+                return _nativeMenuExporter;
+            }
+            
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            if (featureType == typeof(ITextInputMethodImpl))
+            {
+                return _ime;
+            }
+
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+
+            return null;
+        }
+
+        private void Cleanup()
         {
             if (_rawEventGrouper != null)
             {
@@ -864,7 +871,7 @@ namespace Avalonia.X11
             }
         }
 
-        bool ActivateTransientChildIfNeeded()
+        private bool ActivateTransientChildIfNeeded()
         {
             if (_disabled)
             {
@@ -916,9 +923,9 @@ namespace Avalonia.X11
             Resize(size, true, PlatformResizeReason.Layout);
         }
 
-        PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
-        
-        void Resize(Size clientSize, bool force, PlatformResizeReason reason)
+        private PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
+
+        private void Resize(Size clientSize, bool force, PlatformResizeReason reason)
         {
             if (!force && clientSize == ClientSize)
                 return;
@@ -1013,7 +1020,7 @@ namespace Avalonia.X11
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 
-        void SendNetWMMessage(IntPtr message_type, IntPtr l0,
+        private void SendNetWMMessage(IntPtr message_type, IntPtr l0,
             IntPtr? l1 = null, IntPtr? l2 = null, IntPtr? l3 = null, IntPtr? l4 = null)
         {
             var xev = new XEvent
@@ -1037,7 +1044,7 @@ namespace Avalonia.X11
 
         }
 
-        void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
+        private void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
         {
             var pos = GetCursorPos(_x11);
             XUngrabPointer(_x11.Display, new IntPtr(0));
@@ -1177,7 +1184,7 @@ namespace Avalonia.X11
             ChangeWMAtoms(!value, _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR);
         }
 
-        void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
+        private void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
         {
             if (atoms.Length != 1 && atoms.Length != 2)
                 throw new ArgumentException();
@@ -1212,9 +1219,6 @@ namespace Avalonia.X11
         }
 
         public IPopupPositioner PopupPositioner { get; }
-        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
-        public INativeControlHostImpl NativeControlHost { get; }
-        public ITextInputMethodImpl TextInputMethod => _ime;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
@@ -1231,8 +1235,6 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
-
-        public IStorageProvider StorageProvider { get; }
 
         public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
         {

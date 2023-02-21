@@ -34,7 +34,8 @@ namespace Avalonia.Markup.Xaml
     }
 
     
-    public class ConstructorArgumentAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class ConstructorArgumentAttribute : Attribute
     {
         public ConstructorArgumentAttribute(string name)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,8 +23,11 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
         using (var doc = new UIDocument(url))
         {
-            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl.Path;
-            Name = doc.LocalizedName ?? Path.GetFileName(_filePath) ?? url.FilePathUrl.LastPathComponent;
+            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl?.Path ?? string.Empty;
+            Name = doc.LocalizedName 
+                ?? System.IO.Path.GetFileName(_filePath) 
+                ?? url.FilePathUrl?.LastPathComponent
+                ?? string.Empty;
         }
     }
 
@@ -34,6 +36,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
     public bool CanBookmark => true;
 
     public string Name { get; }
+    public Uri Path => Url!;
 
     public Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
@@ -83,12 +86,6 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         }
     }
 
-    public bool TryGetUri([NotNullWhen(true)] out Uri uri)
-    {
-        uri = Url;
-        return uri is not null;
-    }
-
     public void Dispose()
     {
     }
@@ -99,11 +96,7 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
     public IOSStorageFile(NSUrl url) : base(url)
     {
     }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
+    
     public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
@@ -121,18 +114,34 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
     {
-        var content = NSFileManager.DefaultManager.GetDirectoryContent(Url, null, NSDirectoryEnumerationOptions.None, out var error);
+        var tcs = new TaskCompletionSource<IReadOnlyList<IStorageItem>>();
+
+        new NSFileCoordinator().CoordinateRead(Url,
+            NSFileCoordinatorReadingOptions.WithoutChanges,
+            out var error,
+            uri =>
+            {
+                var content = NSFileManager.DefaultManager.GetDirectoryContent(uri, null, NSDirectoryEnumerationOptions.None, out var error);
+                if (error is not null)
+                {
+                    tcs.TrySetException(new NSErrorException(error));
+                }
+                else
+                {
+                    var items = content
+                        .Select(u => u.HasDirectoryPath ? (IStorageItem)new IOSStorageFolder(u) : new IOSStorageFile(u))
+                        .ToArray();
+                    tcs.TrySetResult(items);
+                }
+            });
+        
         if (error is not null)
         {
-            return Task.FromException<IReadOnlyList<IStorageItem>>(new NSErrorException(error));
+            throw new NSErrorException(error);
         }
 
-        var items = content
-            .Select(u => u.HasDirectoryPath ? (IStorageItem)new IOSStorageFolder(u) : new IOSStorageFile(u))
-            .ToArray();
-
-        return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
+        return await tcs.Task;
     }
 }

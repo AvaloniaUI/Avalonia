@@ -9,7 +9,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    unsafe class X11PlatformThreading : IPlatformThreadingInterface
+    internal unsafe class X11PlatformThreading : IPlatformThreadingInterface
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _display;
@@ -19,7 +19,7 @@ namespace Avalonia.X11
         private Thread _mainThread;
 
         [StructLayout(LayoutKind.Explicit)]
-        struct epoll_data
+        private struct epoll_data
         {
             [FieldOffset(0)]
             public IntPtr ptr;
@@ -36,30 +36,30 @@ namespace Avalonia.X11
         private const int O_NONBLOCK = 2048;
         
         [StructLayout(LayoutKind.Sequential)]
-        struct epoll_event
+        private struct epoll_event
         {
             public uint events;
             public epoll_data data;
         }
         
         [DllImport("libc")]
-        extern static int epoll_create1(int size);
+        private extern static int epoll_create1(int size);
 
         [DllImport("libc")]
-        extern static int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
+        private extern static int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
 
         [DllImport("libc")]
-        extern static int epoll_wait(int epfd, epoll_event* events, int maxevents, int timeout);
+        private extern static int epoll_wait(int epfd, epoll_event* events, int maxevents, int timeout);
 
         [DllImport("libc")]
-        extern static int pipe2(int* fds, int flags);
+        private extern static int pipe2(int* fds, int flags);
         [DllImport("libc")]
-        extern static IntPtr write(int fd, void* buf, IntPtr count);
+        private extern static IntPtr write(int fd, void* buf, IntPtr count);
         
         [DllImport("libc")]
-        extern static IntPtr read(int fd, void* buf, IntPtr count);
-        
-        enum EventCodes
+        private extern static IntPtr read(int fd, void* buf, IntPtr count);
+
+        private enum EventCodes
         {
             X11 = 1,
             Signal =2
@@ -72,7 +72,7 @@ namespace Avalonia.X11
         private int _epoll;
         private Stopwatch _clock = Stopwatch.StartNew();
 
-        class X11Timer : IDisposable
+        private class X11Timer : IDisposable
         {
             private readonly X11PlatformThreading _parent;
 
@@ -104,7 +104,7 @@ namespace Avalonia.X11
             }
         }
 
-        List<X11Timer> _timers = new List<X11Timer>();
+        private List<X11Timer> _timers = new List<X11Timer>();
         
         public X11PlatformThreading(AvaloniaX11Platform platform)
         {
@@ -139,12 +139,12 @@ namespace Avalonia.X11
                 throw new X11Exception("Unable to attach signal pipe to epoll");
         }
 
-        int TimerComparer(X11Timer t1, X11Timer t2)
+        private int TimerComparer(X11Timer t1, X11Timer t2)
         {
             return t2.Priority - t1.Priority;
         }
 
-        void CheckSignaled()
+        private void CheckSignaled()
         {
             int buf = 0;
             while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
@@ -164,7 +164,7 @@ namespace Avalonia.X11
             Signaled?.Invoke(prio);
         }
 
-        unsafe void HandleX11(CancellationToken cancellationToken)
+        private unsafe void HandleX11(CancellationToken cancellationToken)
         {
             while (XPending(_display) != 0)
             {

@@ -6,7 +6,7 @@ namespace Avalonia.Metadata
     /// Maps an XML namespace to a CLR namespace for use in XAML.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public class XmlnsDefinitionAttribute : Attribute
+    public sealed class XmlnsDefinitionAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="XmlnsDefinitionAttribute"/> class.

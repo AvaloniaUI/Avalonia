@@ -1,8 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
-using Avalonia.Reactive;
-using Avalonia.Styling;
 
 namespace Avalonia
 {
@@ -28,6 +26,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(name, ownerType, metadata)
         {
+            Owner = ownerType;
         }
 
         /// <summary>
@@ -42,12 +41,13 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
+            Owner = ownerType;
         }
 
         /// <summary>
         /// Gets the type that registered the property.
         /// </summary>
-        public abstract Type Owner { get; }
+        public Type Owner { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.
@@ -150,6 +150,11 @@ namespace Avalonia
             }
 
             return null;
+        }
+
+        internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
+        {
+            RouteSetValue(o, value, BindingPriority.LocalValue);
         }
 
         /// <summary>

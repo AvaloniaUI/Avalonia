@@ -22,8 +22,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Stroke"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> StrokeProperty =
-            AvaloniaProperty.Register<TextDecoration, IBrush>(nameof(Stroke));
+        public static readonly StyledProperty<IBrush?> StrokeProperty =
+            AvaloniaProperty.Register<TextDecoration, IBrush?>(nameof(Stroke));
 
         /// <summary>
         /// Defines the <see cref="StrokeThicknessUnit"/> property.
@@ -34,8 +34,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="StrokeDashArray"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
-            AvaloniaProperty.Register<TextDecoration, AvaloniaList<double>>(nameof(StrokeDashArray));
+        public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty =
+            AvaloniaProperty.Register<TextDecoration, AvaloniaList<double>?>(nameof(StrokeDashArray));
 
         /// <summary>
         /// Defines the <see cref="StrokeDashOffset"/> property.
@@ -82,7 +82,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the <see cref="IBrush"/> that specifies how the <see cref="TextDecoration"/> is painted.
         /// </summary>
-        public IBrush Stroke
+        public IBrush? Stroke
         {
             get { return GetValue(StrokeProperty); }
             set { SetValue(StrokeProperty, value); }
@@ -101,7 +101,7 @@ namespace Avalonia.Media
         /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps
         /// that is used to draw the <see cref="TextDecoration"/>.
         /// </summary>
-        public AvaloniaList<double> StrokeDashArray
+        public AvaloniaList<double>? StrokeDashArray
         {
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
@@ -218,9 +218,9 @@ namespace Avalonia.Media
             {
                 var offsetY = glyphRun.BaselineOrigin.Y - origin.Y;
 
-                var intersections = glyphRun.GlyphRunImpl.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
+                var intersections = glyphRun.PlatformImpl.Item.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
 
-                if (intersections != null && intersections.Count > 0)
+                if (intersections.Count > 0)
                 {
                     var last = baselineOrigin.X;
                     var finalPos = last + glyphRun.Size.Width;

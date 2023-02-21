@@ -24,13 +24,38 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
 
+            IStorageFolder? lastSelectedDirectory = null;
+            bool ignoreTextChanged = false;
+
             var results = this.Get<ItemsControl>("PickerLastResults");
             var resultsVisible = this.Get<TextBlock>("PickerLastResultsVisible");
             var bookmarkContainer = this.Get<TextBox>("BookmarkContainer");
             var openedFileContent = this.Get<TextBox>("OpenedFileContent");
             var openMultiple = this.Get<CheckBox>("OpenMultiple");
+            var currentFolderBox = this.Get<AutoCompleteBox>("CurrentFolderBox");
 
-            IStorageFolder? lastSelectedDirectory = null;
+            currentFolderBox.TextChanged += async (sender, args) =>
+            {
+                if (ignoreTextChanged) return;
+
+                if (Enum.TryParse<WellKnownFolder>(currentFolderBox.Text, true, out var folderEnum))
+                {
+                    lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolderAsync(folderEnum);
+                }
+                else
+                {
+                    if (!Uri.TryCreate(currentFolderBox.Text, UriKind.Absolute, out var folderLink))
+                    {
+                        Uri.TryCreate("file://" + currentFolderBox.Text, UriKind.Absolute, out folderLink);
+                    }
+
+                    if (folderLink is not null)
+                    {
+                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
+                    }
+                }
+            };
+
 
             List<FileDialogFilter> GetFilters()
             {
@@ -57,7 +82,13 @@ namespace ControlCatalog.Pages
                 return new List<FilePickerFileType>
                             {
                                 FilePickerFileTypes.All,
-                                FilePickerFileTypes.TextPlain
+                                FilePickerFileTypes.TextPlain,
+                                new("Binary Log")
+                                {
+                                    Patterns = new[] { "*.binlog", "*.buildlog" },
+                                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
+                                    AppleUniformTypeIdentifiers = new []{ "public.data" }
+                                }
                             };
             }
 
@@ -84,7 +115,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Open multiple files",
                     Filters = GetFilters(),
-                    Directory = lastSelectedDirectory?.TryGetUri(out var path) == true ? path.LocalPath : null,
+                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
                     AllowMultiple = true
                 }.ShowAsync(GetWindow());
                 results.Items = result;
@@ -97,7 +128,7 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Save file",
                     Filters = filters,
-                    Directory = lastSelectedDirectory?.TryGetUri(out var path) == true ? path.LocalPath : null,
+                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
                     DefaultExtension = filters?.Any() == true ? "txt" : null,
                     InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
@@ -109,7 +140,7 @@ namespace ControlCatalog.Pages
                 var result = await new OpenFolderDialog()
                 {
                     Title = "Select folder",
-                    Directory = lastSelectedDirectory?.TryGetUri(out var path) == true ? path.LocalPath : null
+                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
                 }.ShowAsync(GetWindow());
                 if (string.IsNullOrEmpty(result))
                 {
@@ -117,7 +148,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    lastSelectedDirectory = new BclStorageFolder(new System.IO.DirectoryInfo(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
                     results.Items = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
@@ -127,7 +158,7 @@ namespace ControlCatalog.Pages
                 var result = await new OpenFileDialog()
                 {
                     Title = "Select both",
-                    Directory = lastSelectedDirectory?.TryGetUri(out var path) == true ? path.LocalPath : null,
+                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
                     AllowMultiple = true
                 }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
                 {
@@ -198,7 +229,7 @@ namespace ControlCatalog.Pages
                     ShowOverwritePrompt = false
                 });
 
-                if (file is not null && file.CanOpenWrite)
+                if (file is not null)
                 {
                     // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
@@ -210,7 +241,7 @@ namespace ControlCatalog.Pages
 #endif
                     await reader.WriteLineAsync(openedFileContent.Text);
 
-                    lastSelectedDirectory = await file.GetParentAsync();
+                    SetFolder(await file.GetParentAsync());
                 }
 
                 await SetPickerResult(file is null ? null : new[] { file });
@@ -226,7 +257,7 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(folders);
 
-                lastSelectedDirectory = folders.FirstOrDefault();
+                SetFolder(folders.FirstOrDefault());
             };
             this.Get<Button>("OpenFileFromBookmark").Click += async delegate
             {
@@ -243,10 +274,16 @@ namespace ControlCatalog.Pages
                     : null;
 
                 await SetPickerResult(folder is null ? null : new[] { folder });
-
-                lastSelectedDirectory = folder;
+                SetFolder(folder);
             };
 
+            void SetFolder(IStorageFolder? folder)
+            {
+                ignoreTextChanged = true;
+                lastSelectedDirectory = folder;
+                currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
+                ignoreTextChanged = false;
+            }
             async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
             {
                 items ??= Array.Empty<IStorageItem>();
@@ -267,40 +304,36 @@ namespace ControlCatalog.Pages
                     if (item is IStorageFile file)
                     {
                         resultText += @$"
-            CanOpenRead: {file.CanOpenRead}
-            CanOpenWrite: {file.CanOpenWrite}
             Content:
             ";
-                        if (file.CanOpenRead)
-                        {
 #if NET6_0_OR_GREATER
-                            await using var stream = await file.OpenReadAsync();
+                        await using var stream = await file.OpenReadAsync();
 #else
-                                        using var stream = await file.OpenReadAsync();
+                        using var stream = await file.OpenReadAsync();
 #endif
-                            using var reader = new System.IO.StreamReader(stream);
+                        using var reader = new System.IO.StreamReader(stream);
 
-                            // 4GB file test, shouldn't load more than 10000 chars into a memory.
-                            const int length = 10000;
-                            var buffer = ArrayPool<char>.Shared.Rent(length);
-                            try
-                            {
-                                var charsRead = await reader.ReadAsync(buffer, 0, length);
-                                resultText += new string(buffer, 0, charsRead);
-                            }
-                            finally
-                            {
-                                ArrayPool<char>.Shared.Return(buffer);
-                            }
+                        // 4GB file test, shouldn't load more than 10000 chars into a memory.
+                        const int length = 10000;
+                        var buffer = ArrayPool<char>.Shared.Rent(length);
+                        try
+                        {
+                            var charsRead = await reader.ReadAsync(buffer, 0, length);
+                            resultText += new string(buffer, 0, charsRead);
+                        }
+                        finally
+                        {
+                            ArrayPool<char>.Shared.Return(buffer);
                         }
                     }
 
                     openedFileContent.Text = resultText;
 
-                    lastSelectedDirectory = await item.GetParentAsync();
-                    if (lastSelectedDirectory is not null)
+                    var parent = await item.GetParentAsync();
+                    SetFolder(parent);
+                    if (parent is not null)
                     {
-                        mappedResults.Add(FullPathOrName(lastSelectedDirectory));
+                        mappedResults.Add(FullPathOrName(parent));
                     }
 
                     foreach (var selectedItem in items)
@@ -393,7 +426,7 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         private static string FullPathOrName(IStorageItem? item)
         {
             if (item is null) return "(null)";
-            return item.TryGetUri(out var uri) ? uri.ToString() : item.Name;
+            return item.Path is { IsAbsoluteUri: true } path ? path.ToString() : item.Name;
         }
 
         Window GetWindow() => TopLevel.GetTopLevel(this) as Window ?? throw new NullReferenceException("Invalid Owner");

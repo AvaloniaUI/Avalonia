@@ -260,17 +260,7 @@ namespace Avalonia.Dialogs.Internal
 
         public void Navigate(IStorageFolder path, string initialSelectionName = null)
         {
-            string fullDirectoryPath;
-
-            if (path?.TryGetUri(out var fullDirectoryUri) == true
-                && fullDirectoryUri.IsAbsoluteUri)
-            {
-                fullDirectoryPath = fullDirectoryUri.LocalPath;
-            }
-            else
-            {
-                fullDirectoryPath = Directory.GetCurrentDirectory();
-            }
+            var fullDirectoryPath = path?.TryGetLocalPath() ?? Directory.GetCurrentDirectory();
             
             Navigate(fullDirectoryPath, initialSelectionName);
         }

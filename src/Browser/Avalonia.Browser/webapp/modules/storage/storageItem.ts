@@ -1,54 +1,76 @@
 import { avaloniaDb, fileBookmarksStore } from "./indexedDb";
+import { FileSystemFileHandle, FileSystemDirectoryHandle, FileSystemWritableFileStream } from "native-file-system-adapter";
+import { Caniuse } from "../avalonia";
 
 export class StorageItem {
-    constructor(public handle: FileSystemHandle, private readonly bookmarkId?: string) { }
-
-    public get name(): string {
-        return this.handle.name;
+    constructor(
+        public handle?: FileSystemFileHandle | FileSystemDirectoryHandle,
+        private readonly bookmarkId?: string,
+        public wellKnownType?: WellKnownDirectory
+    ) {
     }
 
-    public get kind(): string {
-        return this.handle.kind;
+    public get name(): string {
+        if (this.handle) {
+            return this.handle.name;
+        }
+        return this.wellKnownType ?? "";
+    }
+
+    public get kind(): "file" | "directory" {
+        if (this.handle) {
+            return this.handle.kind;
+        }
+        return "directory";
+    }
+
+    public static createWellKnownDirectory(type: WellKnownDirectory) {
+        return new StorageItem(undefined, undefined, type);
     }
 
     public static async openRead(item: StorageItem): Promise<Blob> {
-        if (!(item.handle instanceof FileSystemFileHandle)) {
+        if (!item.handle || item.kind !== "file") {
             throw new Error("StorageItem is not a file");
         }
 
         await item.verityPermissions("read");
 
-        const file = await item.handle.getFile();
+        const file = await (item.handle as FileSystemFileHandle).getFile();
         return file;
     }
 
     public static async openWrite(item: StorageItem): Promise<FileSystemWritableFileStream> {
-        if (!(item.handle instanceof FileSystemFileHandle)) {
+        if (!item.handle || item.kind !== "file") {
             throw new Error("StorageItem is not a file");
         }
 
         await item.verityPermissions("readwrite");
 
-        return await item.handle.createWritable({ keepExistingData: true });
+        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: true });
     }
 
     public static async getProperties(item: StorageItem): Promise<{ Size: number; LastModified: number; Type: string } | null> {
-        const file = item.handle instanceof FileSystemFileHandle &&
-            await item.handle.getFile();
+        // getFile can fail with an exception depending if we use polyfill with a save file dialog or not.
+        try {
+            const file = item.handle instanceof FileSystemFileHandle &&
+                await item.handle.getFile();
 
-        if (!file) {
+            if (!file) {
+                return null;
+            }
+
+            return {
+                Size: file.size,
+                LastModified: file.lastModified,
+                Type: file.type
+            };
+        } catch {
             return null;
         }
-
-        return {
-            Size: file.size,
-            LastModified: file.lastModified,
-            Type: file.type
-        };
     }
 
     public static async getItems(item: StorageItem): Promise<StorageItems> {
-        if (item.handle.kind !== "directory") {
+        if (item.kind !== "directory" || !item.handle) {
             return new StorageItems([]);
         }
 
@@ -59,7 +81,16 @@ export class StorageItem {
         return new StorageItems(items);
     }
 
-    private async verityPermissions(mode: FileSystemPermissionMode): Promise<void | never> {
+    private async verityPermissions(mode: "read" | "readwrite"): Promise<void | never> {
+        if (!this.handle) {
+            return;
+        }
+
+        // If we are using polyfill, let it decide permissions by itself, we can't request anything in this case.
+        if (!Caniuse.hasNativeFilePicker()) {
+            return;
+        }
+
         if (await this.handle.queryPermission({ mode }) === "granted") {
             return;
         }
@@ -69,10 +100,15 @@ export class StorageItem {
         }
     }
 
-    public static async saveBookmark(item: StorageItem): Promise<string> {
+    public static async saveBookmark(item: StorageItem): Promise<string | null> {
         // If file was previously bookmarked, just return old one.
         if (item.bookmarkId) {
             return item.bookmarkId;
+        }
+
+        // Bookmarks are not supported with polyfill.
+        if (!item.handle || !Caniuse.hasNativeFilePicker()) {
+            return null;
         }
 
         const connection = await avaloniaDb.connect();
@@ -85,7 +121,7 @@ export class StorageItem {
     }
 
     public static async deleteBookmark(item: StorageItem): Promise<void> {
-        if (!item.bookmarkId) {
+        if (!item.bookmarkId || !Caniuse.hasNativeFilePicker()) {
             return;
         }
 

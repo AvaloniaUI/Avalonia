@@ -20,9 +20,9 @@ internal class BrowserStorageProvider : IStorageProvider
 
     private readonly Lazy<Task> _lazyModule = new(() => AvaloniaModule.ImportStorage());
 
-    public bool CanOpen => StorageHelper.CanShowOpenFilePicker();
-    public bool CanSave => StorageHelper.CanShowSaveFilePicker();
-    public bool CanPickFolder => StorageHelper.CanShowDirectoryPicker();
+    public bool CanOpen => true;
+    public bool CanSave => StorageHelper.HasNativeFilePicker();
+    public bool CanPickFolder => true;
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
@@ -116,11 +116,38 @@ internal class BrowserStorageProvider : IStorageProvider
         return item is not null ? new JSStorageFolder(item) : null;
     }
 
+    public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
+    {
+        return Task.FromResult<IStorageFile?>(null);
+    }
+
+    public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
+    {
+        return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    public async Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
+    {
+        await _lazyModule.Value;
+        var directory = StorageHelper.CreateWellKnownDirectory(wellKnownFolder switch
+        {
+            WellKnownFolder.Desktop => "desktop",
+            WellKnownFolder.Documents => "documents",
+            WellKnownFolder.Downloads => "downloads",
+            WellKnownFolder.Music => "music",
+            WellKnownFolder.Pictures => "pictures",
+            WellKnownFolder.Videos => "videos",
+            _ => throw new ArgumentOutOfRangeException(nameof(wellKnownFolder), wellKnownFolder, null)
+        });
+
+        return new JSStorageFolder(directory);
+    }
+
     private static (JSObject[]? types, bool excludeAllOption) ConvertFileTypes(IEnumerable<FilePickerFileType>? input)
     {
         var types = input?
             .Where(t => t.MimeTypes?.Any() == true && t != FilePickerFileTypes.All)
-            .Select(t => StorageHelper.CreateAcceptType(t.Name, t.MimeTypes!.ToArray()))
+            .Select(t => StorageHelper.CreateAcceptType(t.Name, t.MimeTypes!.ToArray(), t.TryGetExtensions()?.ToArray()))
             .ToArray();
         if (types?.Length == 0)
         {
@@ -145,12 +172,7 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
     internal JSObject FileHandle => _fileHandle ?? throw new ObjectDisposedException(nameof(JSStorageItem));
 
     public string Name => FileHandle.GetPropertyAsString("name") ?? string.Empty;
-
-    public bool TryGetUri([NotNullWhen(true)] out Uri? uri)
-    {
-        uri = new Uri(Name, UriKind.Relative);
-        return false;
-    }
+    public Uri Path => new Uri(Name, UriKind.Relative);
 
     public async Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
@@ -164,10 +186,15 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
             dateModified: lastModified > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(lastModified.Value) : null);
     }
 
-    public bool CanBookmark => true;
+    public bool CanBookmark => StorageHelper.HasNativeFilePicker();
 
     public Task<string?> SaveBookmarkAsync()
     {
+        if (!CanBookmark)
+        {
+            return Task.FromResult<string?>(null);
+        }
+
         return StorageHelper.SaveBookmark(FileHandle);
     }
 
@@ -178,6 +205,11 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
 
     public Task ReleaseBookmarkAsync()
     {
+        if (!CanBookmark)
+        {
+            return Task.CompletedTask;
+        }
+
         return StorageHelper.DeleteBookmark(FileHandle);
     }
 
@@ -194,7 +226,6 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
     {
     }
 
-    public bool CanOpenRead => true;
     public async Task<Stream> OpenReadAsync()
     {
         try
@@ -208,7 +239,6 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
         }
     }
 
-    public bool CanOpenWrite => true;
     public async Task<Stream> OpenWriteAsync()
     {
         try

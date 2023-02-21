@@ -61,4 +61,22 @@ internal class CompositeStorageProvider : IStorageProvider
         var provider = await EnsureStorageProvider().ConfigureAwait(false);
         return await provider.OpenFolderBookmarkAsync(bookmark).ConfigureAwait(false);
     }
+
+    public async Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
+    {
+        var provider = await EnsureStorageProvider().ConfigureAwait(false);
+        return await provider.TryGetFileFromPathAsync(filePath).ConfigureAwait(false);
+    }
+
+    public async Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
+    {
+        var provider = await EnsureStorageProvider().ConfigureAwait(false);
+        return await provider.TryGetFolderFromPathAsync(folderPath).ConfigureAwait(false);
+    }
+
+    public async Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
+    {
+        var provider = await EnsureStorageProvider().ConfigureAwait(false);
+        return await provider.TryGetWellKnownFolderAsync(wellKnownFolder).ConfigureAwait(false);
+    }
 }

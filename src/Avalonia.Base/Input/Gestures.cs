@@ -45,6 +45,10 @@ namespace Avalonia.Input
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
+        public static readonly RoutedEvent<ScrollGestureInertiaStartingEventArgs> ScrollGestureInertiaStartingEvent =
+            RoutedEvent.Register<ScrollGestureInertiaStartingEventArgs>(
+                "ScrollGestureInertiaStarting", RoutingStrategies.Bubble, typeof(Gestures));
+
         public static readonly RoutedEvent<ScrollGestureEndedEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEndedEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Reactive;
@@ -11,46 +12,49 @@ namespace Avalonia.OpenGL.Egl
     {
         private readonly EglDisplay _disp;
         private readonly EglInterface _egl;
-        private readonly EglContext _sharedWith;
+        private readonly EglContext? _sharedWith;
         private bool _isLost;
         private IntPtr _context;
-        private readonly Action _disposeCallback;
+        private readonly Action? _disposeCallback;
         private readonly Dictionary<Type, object> _features;
         private readonly object _lock;
 
-        internal EglContext(EglDisplay display, EglInterface egl, EglContext sharedWith, IntPtr ctx, EglSurface offscreenSurface,
-            GlVersion version, int sampleCount, int stencilSize, Action disposeCallback, Dictionary<Type, object> features)
+        internal EglContext(EglDisplay display, EglInterface egl, EglContext? sharedWith, IntPtr ctx, EglSurface? offscreenSurface,
+            GlVersion version, int sampleCount, int stencilSize, Action? disposeCallback,
+            Dictionary<Type, Func<EglContext, object>> features)
         {
             _disp = display;
             _egl = egl;
             _sharedWith = sharedWith;
             _context = ctx;
             _disposeCallback = disposeCallback;
-            _features = features;
             OffscreenSurface = offscreenSurface;
             Version = version;
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             _lock = display.ContextSharedSyncRoot ?? new object();
             using (MakeCurrent())
+            {
                 GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, _egl.GetProcAddress);
+                _features = features.ToDictionary(x => x.Key, x => x.Value(this));
+            }
         }
 
         public IntPtr Context =>
             _context == IntPtr.Zero ? throw new ObjectDisposedException(nameof(EglContext)) : _context; 
-        public EglSurface OffscreenSurface { get; }
+        public EglSurface? OffscreenSurface { get; }
         public GlVersion Version { get; }
         public GlInterface GlInterface { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
         public EglDisplay Display => _disp;
 
-        class RestoreContext : IDisposable
+        private class RestoreContext : IDisposable
         {
             private readonly EglInterface _egl;
             private readonly object _l;
             private readonly IntPtr _display;
-            public IntPtr _context, _read, _draw;
+            private readonly IntPtr _context, _read, _draw;
 
             public RestoreContext(EglInterface egl, IntPtr defDisplay, object l)
             {
@@ -74,7 +78,7 @@ namespace Avalonia.OpenGL.Egl
 
         public IDisposable MakeCurrent() => MakeCurrent(OffscreenSurface);
 
-        public IDisposable MakeCurrent(EglSurface surface)
+        public IDisposable MakeCurrent(EglSurface? surface)
         {
             if (IsLost)
                 throw new PlatformGraphicsContextLostException();
@@ -143,7 +147,7 @@ namespace Avalonia.OpenGL.Egl
 
         public bool CanCreateSharedContext => _disp.SupportsSharing;
 
-        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null) =>
             _disp.CreateContext(new EglContextOptions
             {
                 ShareWith = _sharedWith ?? this
@@ -155,6 +159,14 @@ namespace Avalonia.OpenGL.Egl
         {
             if(_context == IntPtr.Zero)
                 return;
+            
+            foreach(var f in _features.ToList())
+                if (f.Value is IDisposable d)
+                {
+                    d.Dispose();
+                    _features.Remove(f.Key);
+                }
+
             _egl.DestroyContext(_disp.Handle, Context);
             OffscreenSurface?.Dispose();
             _context = IntPtr.Zero;
@@ -162,9 +174,9 @@ namespace Avalonia.OpenGL.Egl
             _disposeCallback?.Invoke();
         }
 
-        public object TryGetFeature(Type featureType)
+        public object? TryGetFeature(Type featureType)
         {
-            if (_features?.TryGetValue(featureType, out var feature) == true)
+            if (_features.TryGetValue(featureType, out var feature))
                 return feature;
             return null;
         }

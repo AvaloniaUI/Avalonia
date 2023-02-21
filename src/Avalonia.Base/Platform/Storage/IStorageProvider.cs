@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 
@@ -53,4 +55,35 @@ public interface IStorageProvider
     /// <param name="bookmark">Bookmark ID.</param>
     /// <returns>Bookmarked folder or null if OS denied request.</returns>
     Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark);
+
+    /// <summary>
+    /// Attempts to read file from the file-system by its path.
+    /// </summary>
+    /// <param name="filePath">The path of the item to retrieve in Uri format.</param>
+    /// <remarks>
+    /// Uri path is usually expected to be an absolute path with "file" scheme.
+    /// But it can be an uri with "content" scheme on the Android.
+    /// It also might ask user for the permission, and throw an exception if it was denied.
+    /// </remarks>
+    /// <returns>File or null if it doesn't exist.</returns>
+    Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath);
+    
+    /// <summary>
+    /// Attempts to read folder from the file-system by its path.
+    /// </summary>
+    /// <param name="folderPath">The path of the folder to retrieve in Uri format.</param>
+    /// <remarks>
+    /// Uri path is usually expected to be an absolute path with "file" scheme.
+    /// But it can be an uri with "content" scheme on the Android. 
+    /// It also might ask user for the permission, and throw an exception if it was denied.
+    /// </remarks>
+    /// <returns>Folder or null if it doesn't exist.</returns>
+    Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath);
+    
+    /// <summary>
+    /// Attempts to read folder from the file-system by its path
+    /// </summary>
+    /// <param name="wellKnownFolder">Well known folder identifier.</param>
+    /// <returns>Folder or null if it doesn't exist.</returns>
+    Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder);
 }

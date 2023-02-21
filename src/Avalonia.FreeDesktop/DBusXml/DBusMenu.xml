@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+A library to allow applications to provide simple indications of
+information to be displayed to users of the application through the
+interface shell.
+
+Copyright 2009 Canonical Ltd.
+
+Authors:
+    Ted Gould <ted@canonical.com>
+    Aurélien Gâteau <aurelien.gateau@canonical.com>
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of either or both of the following licenses:
+
+1) the GNU Lesser General Public License version 3, as published by the 
+Free Software Foundation; and/or
+2) the GNU Lesser General Public License version 2.1, as published by 
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranties of 
+MERCHANTABILITY, SATISFACTORY QUALITY or FITNESS FOR A PARTICULAR 
+PURPOSE.  See the applicable version of the GNU Lesser General Public 
+License for more details.
+
+You should have received a copy of both the GNU Lesser General Public 
+License version 3 and version 2.1 along with this program.  If not, see 
+<http://www.gnu.org/licenses/>
+-->
+<node name="/" xmlns:dox="http://www.canonical.com/dbus/dox.dtd">
+    <dox:d><![CDATA[
+    @mainpage
+
+    The goal of DBusMenu is to expose menus on DBus.
+    
+    Main interface is documented here: @ref com::canonical::dbusmenu
+    ]]></dox:d>
+	<interface name="com.canonical.dbusmenu">
+		<dox:d><![CDATA[
+		A DBus interface to expose menus on DBus.
+
+		Menu items are represented with a unique numeric id and a dictionary of
+		properties.
+
+		To reduce the amount of DBus traffic, a property should only be returned
+		if its value is not the default value.
+
+		Available properties are:
+
+		<table>
+		<tr>
+			<th>Name</th>
+			<th>Type</th>
+			<th>Description</th>
+			<th>Default Value</th>
+		</tr>
+		<tr>
+			<td>type</td>
+			<td>String</td>
+			<td>Can be one of:
+			- "standard": an item which can be clicked to trigger an action or
+			  show another menu
+			- "separator": a separator
+
+			Vendor specific types can be added by prefixing them with
+			"x-<vendor>-".
+			</td>
+			<td>"standard"</td>
+		</tr>
+		<tr>
+			<td>label</td>
+			<td>string</td>
+			<td>Text of the item, except that:
+			-# two consecutive underscore characters "__" are displayed as a
+			single underscore,
+			-# any remaining underscore characters are not displayed at all,
+			-# the first of those remaining underscore characters (unless it is
+			the last character in the string) indicates that the following
+			character is the access key.
+			</td>
+			<td>""</td>
+		</tr>
+		<tr>
+			<td>enabled</td>
+			<td>boolean</td>
+			<td>Whether the item can be activated or not.</td>
+			<td>true</td>
+		</tr>
+		<tr>
+			<td>visible</td>
+			<td>boolean</td>
+			<td>True if the item is visible in the menu.</td>
+			<td>true</td>
+		</tr>
+		<tr>
+			<td>icon-name</td>
+			<td>string</td>
+			<td>Icon name of the item, following the freedesktop.org icon spec.</td>
+			<td>""</td>
+		</tr>
+		<tr>
+			<td>icon-data</td>
+			<td>binary</td>
+			<td>PNG data of the icon.</td>
+			<td>Empty</td>
+		</tr>
+		<tr>
+			<td>shortcut</td>
+			<td>array of arrays of strings</td>
+			<td>The shortcut of the item. Each array represents the key press
+			in the list of keypresses. Each list of strings contains a list of
+			modifiers and then the key that is used. The modifier strings
+			allowed are: "Control", "Alt", "Shift" and "Super".
+
+			- A simple shortcut like Ctrl+S is represented as:
+			  [["Control", "S"]]
+			- A complex shortcut like Ctrl+Q, Alt+X is represented as:
+			  [["Control", "Q"], ["Alt", "X"]]</td>
+			<td>Empty</td>
+		</tr>
+		<tr>
+			<td>toggle-type</td>
+			<td>string</td>
+			<td>
+			If the item can be toggled, this property should be set to:
+			- "checkmark": Item is an independent togglable item
+			- "radio": Item is part of a group where only one item can be
+			  toggled at a time
+			- "": Item cannot be toggled
+			</td>
+			<td>""</td>
+		</tr>
+		<tr>
+			<td>toggle-state</td>
+			<td>int</td>
+			<td>
+			Describe the current state of a "togglable" item. Can be one of:
+			- 0 = off
+			- 1 = on
+			- anything else = indeterminate
+
+			Note:
+			The implementation does not itself handle ensuring that only one
+			item in a radio group is set to "on", or that a group does not have
+			"on" and "indeterminate" items simultaneously; maintaining this
+			policy is up to the toolkit wrappers.
+			</td>
+			<td>-1</td>
+		</tr>
+		<tr>
+			<td>children-display</td>
+			<td>string</td>
+			<td>
+			If the menu item has children this property should be set to
+			"submenu".
+			</td>
+			<td>""</td>
+		</tr>
+		<tr>
+			<td>disposition</td>
+			<td>string</td>
+			<td>
+			How the menuitem feels the information it's displaying to the
+			user should be presented.
+			- "normal" a standard menu item
+			- "informative" providing additional information to the user
+			- "warning" looking at potentially harmful results
+			- "alert" something bad could potentially happen
+			</td>
+			<td>"normal"</td>
+		</tr>
+		</table>
+
+		Vendor specific properties can be added by prefixing them with
+		"x-<vendor>-".
+		]]></dox:d>
+
+<!-- Properties -->
+		<property name="Version" type="u" access="read">
+			<dox:d>
+			Provides the version of the DBusmenu API that this API is
+			implementing.
+			</dox:d>
+		</property>
+
+		<property name="TextDirection" type="s" access="read">
+			<dox:d>
+			Represents the way the text direction of the application.  This
+			allows the server to handle mismatches intelligently.  For left-
+			to-right the string is "ltr" for right-to-left it is "rtl".
+			</dox:d>
+		</property>
+
+		<property name="Status" type="s" access="read">
+			<dox:d>
+			Tells if the menus are in a normal state or they believe that they
+			could use some attention.  Cases for showing them would be if help
+			were referring to them or they accessors were being highlighted.
+			This property can have two values: "normal" in almost all cases and
+			"notice" when they should have a higher priority to be shown.
+			</dox:d>
+		</property>
+
+		<property name="IconThemePath" type="as" access="read">
+			<dox:d>
+			A list of directories that should be used for finding icons using
+			the icon naming spec.  Idealy there should only be one for the icon
+			theme, but additional ones are often added by applications for
+			app specific icons.
+			</dox:d>
+		</property>
+
+<!-- Functions -->
+
+		<method name="GetLayout">
+			<dox:d>
+			  Provides the layout and propertiers that are attached to the entries
+			  that are in the layout.  It only gives the items that are children
+			  of the item that is specified in @a parentId.  It will return all of the
+			  properties or specific ones depending of the value in @a propertyNames.
+
+			  The format is recursive, where the second 'v' is in the same format
+			  as the original 'a(ia{sv}av)'.  Its content depends on the value
+			  of @a recursionDepth.
+			</dox:d>
+			<arg type="i" name="parentId" direction="in">
+				<dox:d>The ID of the parent node for the layout.  For
+				grabbing the layout from the root node use zero.</dox:d>
+			</arg>
+			<arg type="i" name="recursionDepth" direction="in">
+				<dox:d>
+				  The amount of levels of recursion to use.  This affects the
+				  content of the second variant array.
+				  - -1: deliver all the items under the @a parentId.
+				  - 0: no recursion, the array will be empty.
+				  - n: array will contains items up to 'n' level depth.
+				</dox:d>
+			</arg>
+			<arg type="as" name="propertyNames" direction="in" >
+				<dox:d>
+					The list of item properties we are
+					interested in.  If there are no entries in the list all of
+					the properties will be sent.
+				</dox:d>
+			</arg>
+			<arg type="u" name="revision" direction="out">
+				<dox:d>The revision number of the layout.  For matching
+				with layoutUpdated signals.</dox:d>
+			</arg>
+			<arg type="(ia{sv}av)" name="layout" direction="out">
+				<dox:d>The layout, as a recursive structure.</dox:d>
+			</arg>
+		</method>
+
+		<method name="GetGroupProperties">
+			<dox:d>
+			Returns the list of items which are children of @a parentId.
+			</dox:d>
+			<arg type="ai" name="ids" direction="in" >
+				<dox:d>
+					A list of ids that we should be finding the properties
+					on.  If the list is empty, all menu items should be sent.
+				</dox:d>
+			</arg>
+			<arg type="as" name="propertyNames" direction="in" >
+				<dox:d>
+					The list of item properties we are
+					interested in.  If there are no entries in the list all of
+					the properties will be sent.
+				</dox:d>
+			</arg>
+			<arg type="a(ia{sv})" name="properties" direction="out" >
+				<dox:d>
+					An array of property values.
+					An item in this area is represented as a struct following
+					this format:
+					@li id unsigned the item id
+					@li properties map(string => variant) the requested item properties
+				</dox:d>
+			</arg>
+		</method>
+
+		<method name="GetProperty">
+			<dox:d>
+			  Get a signal property on a single item.  This is not useful if you're
+			  going to implement this interface, it should only be used if you're
+			  debugging via a commandline tool.
+			</dox:d>
+			<arg type="i" name="id" direction="in">
+				<dox:d>the id of the item which received the event</dox:d>
+			</arg>
+			<arg type="s" name="name" direction="in">
+				<dox:d>the name of the property to get</dox:d>
+			</arg>
+			<arg type="v" name="value" direction="out">
+				<dox:d>the value of the property</dox:d>
+			</arg>
+		</method>
+
+		<method name="Event">
+			<dox:d><![CDATA[
+			This is called by the applet to notify the application an event happened on a
+			menu item.
+
+			@a type can be one of the following:
+
+			@li "clicked"
+			@li "hovered"
+			@li "opened"
+			@li "closed"
+
+			Vendor specific events can be added by prefixing them with "x-<vendor>-"
+			]]></dox:d>
+			<arg type="i" name="id" direction="in" >
+				<dox:d>the id of the item which received the event</dox:d>
+			</arg>
+			<arg type="s" name="eventId" direction="in" >
+				<dox:d>the type of event</dox:d>
+			</arg>
+			<arg type="v" name="data" direction="in" >
+				<dox:d>event-specific data</dox:d>
+			</arg>
+			<arg type="u" name="timestamp" direction="in" >
+				<dox:d>The time that the event occured if available or the time the message was sent if not</dox:d>
+			</arg>
+		</method>
+
+		<method name="EventGroup">
+			<dox:d>
+				Used to pass a set of events as a single message for possibily several
+				different menuitems.  This is done to optimize DBus traffic.
+			</dox:d>
+			<arg type="a(isvu)" name="events" direction="in">
+				<dox:d>
+					An array of all the events that should be passed.  This tuple should
+					match the parameters of the 'Event' signal.  Which is roughly:
+					id, eventID, data and timestamp.
+				</dox:d>
+			</arg>
+			<arg type="ai" name="idErrors" direction="out">
+				<dox:d>
+					I list of menuitem IDs that couldn't be found.  If none of the ones
+					in the list can be found, a DBus error is returned.
+				</dox:d>
+			</arg>
+		</method>
+
+		<method name="AboutToShow">
+			<dox:d>
+			This is called by the applet to notify the application that it is about
+			to show the menu under the specified item.
+			</dox:d>
+			<arg type="i" name="id" direction="in">
+				<dox:d>
+				Which menu item represents the parent of the item about to be shown.
+				</dox:d>
+			</arg>
+			<arg type="b" name="needUpdate" direction="out">
+				<dox:d>
+				Whether this AboutToShow event should result in the menu being updated.
+				</dox:d>
+			</arg>
+		</method>
+
+		<method name="AboutToShowGroup">
+			<dox:d>
+				A function to tell several menus being shown that they are about to
+				be shown to the user.  This is likely only useful for programitc purposes
+				so while the return values are returned, in general, the singular function
+				should be used in most user interacation scenarios.
+			</dox:d>
+			<arg type="ai" name="ids" direction="in">
+				<dox:d>
+					The IDs of the menu items who's submenus are being shown.
+				</dox:d>
+			</arg>
+			<arg type="ai" name="updatesNeeded" direction="out">
+				<dox:d>
+					The IDs of the menus that need updates.  Note: if no update information
+					is needed the DBus message should set the no reply flag.
+				</dox:d>
+			</arg>
+			<arg type="ai" name="idErrors" direction="out">
+				<dox:d>
+					I list of menuitem IDs that couldn't be found.  If none of the ones
+					in the list can be found, a DBus error is returned.
+				</dox:d>
+			</arg>
+		</method>
+
+<!-- Signals -->
+		<signal name="ItemsPropertiesUpdated">
+			<dox:d>
+			Triggered when there are lots of property updates across many items
+			so they all get grouped into a single dbus message.  The format is
+			the ID of the item with a hashtable of names and values for those
+			properties.
+			</dox:d>
+			<arg type="a(ia{sv})" name="updatedProps" direction="out" />
+			<arg type="a(ias)" name="removedProps" direction="out" />
+		</signal>
+		<signal name="LayoutUpdated">
+			<dox:d>
+			Triggered by the application to notify display of a layout update, up to
+			revision
+			</dox:d>
+			<arg type="u" name="revision" direction="out" >
+				<dox:d>The revision of the layout that we're currently on</dox:d>
+			</arg>
+			<arg type="i" name="parent" direction="out" >
+				<dox:d>
+				If the layout update is only of a subtree, this is the
+				parent item for the entries that have changed.  It is zero if
+				the whole layout should be considered invalid.
+				</dox:d>
+			</arg>
+		</signal>
+		<signal name="ItemActivationRequested">
+			<dox:d>
+			  The server is requesting that all clients displaying this
+			  menu open it to the user.  This would be for things like
+			  hotkeys that when the user presses them the menu should
+			  open and display itself to the user.
+			</dox:d>
+			<arg type="i" name="id" direction="out" >
+				<dox:d>ID of the menu that should be activated</dox:d>
+			</arg>
+			<arg type="u" name="timestamp" direction="out" >
+				<dox:d>The time that the event occured</dox:d>
+			</arg>
+		</signal>
+
+<!-- End of interesting stuff -->
+
+	</interface>
+</node>

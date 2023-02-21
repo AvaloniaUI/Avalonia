@@ -51,9 +51,7 @@ namespace Avalonia.Dialogs
 
             var files = await impl.OpenFilePickerAsync(dialog.ToFilePickerOpenOptions());
             return files
-                .Select(file => file.TryGetUri(out var fullPath)
-                    ? fullPath.LocalPath
-                    : file.Name)
+                .Select(file => file.TryGetLocalPath() ?? file.Name)
                 .ToArray();
         }
     }

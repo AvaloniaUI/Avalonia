@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using SkiaSharp;
-#nullable enable
 
 namespace Avalonia.Skia
 {
-    /// <inheritdoc />
-    [Unstable]
-    public class GlyphRunImpl : IGlyphRunImpl
+    internal class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl(SKTextBlob textBlob)
+        public GlyphRunImpl(SKTextBlob textBlob, Size size, Point baselineOrigin)
         {
-            TextBlob = textBlob ?? throw new ArgumentNullException (nameof (textBlob));
+            TextBlob = textBlob ?? throw new ArgumentNullException(nameof(textBlob));
+
+            Size = size;
+
+            BaselineOrigin = baselineOrigin;
         }
 
         /// <summary>
         ///     Gets the text blob to draw.
         /// </summary>
         public SKTextBlob TextBlob { get; }
+
+        public Size Size { get; }
+
+        public Point BaselineOrigin { get; }
 
         public IReadOnlyList<float> GetIntersections(float upperBound, float lowerBound) => 
             TextBlob.GetIntercepts(lowerBound, upperBound);

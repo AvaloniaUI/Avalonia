@@ -7,7 +7,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
 {
-    public abstract class IndexerNodeBase : SettableNode,
+    internal abstract class IndexerNodeBase : SettableNode,
         IWeakEventSubscriber<NotifyCollectionChangedEventArgs>,
         IWeakEventSubscriber<PropertyChangedEventArgs>
     {
@@ -22,7 +22,7 @@ namespace Avalonia.Data.Core
 
             if (target is INotifyPropertyChanged inpc)
             {
-                WeakEvents.PropertyChanged.Subscribe(inpc, this);
+                WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
             }
             
             ValueChanged(GetValue(target));
@@ -39,7 +39,7 @@ namespace Avalonia.Data.Core
 
                 if (target is INotifyPropertyChanged inpc)
                 {
-                    WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
+                    WeakEvents.ThreadSafePropertyChanged.Unsubscribe(inpc, this);
                 }
             }
         }
