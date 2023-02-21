@@ -13,6 +13,9 @@ namespace Avalonia.Media
     {
         private static readonly HashSet<AvaloniaProperty> s_registeredProperties = new();
 
+        private static readonly AnonymousObserver<AvaloniaPropertyChangedEventArgs> s_referenceTypePropertyChangeObserver = new(OnMediaRenderPropertyChanged);
+        private static readonly AnonymousObserver<AvaloniaPropertyChangedEventArgs> s_valueTypePropertyChangeObserver = new(OnMediaRenderPropertyChanged_Struct);
+
         /// <summary>
         /// Marks one or more instances of <see cref="AvaloniaProperty"/> as affecting the appearance of the owner type.
         /// </summary>
@@ -22,7 +25,7 @@ namespace Avalonia.Media
             {
                 if (s_registeredProperties.Add(property))
                 {
-                    property.Changed.Subscribe(property.PropertyType.IsValueType ? OnMediaRenderPropertyChanged_Struct : OnMediaRenderPropertyChanged);
+                    property.Changed.Subscribe(property.PropertyType.IsValueType ? s_valueTypePropertyChangeObserver : s_referenceTypePropertyChangeObserver);
                 }
             }
         }
