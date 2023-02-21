@@ -1,0 +1,89 @@
+<node>
+	<interface name="org.freedesktop.DBus">
+		<method name="Hello">
+			<arg type="s" direction="out"></arg>
+		</method>
+		<method name="RequestName">
+			<arg type="s" direction="in"></arg>
+			<arg type="u" direction="in"></arg>
+			<arg type="u" direction="out"></arg>
+		</method>
+		<method name="ReleaseName">
+			<arg type="s" direction="in"></arg>
+			<arg type="u" direction="out"></arg>
+		</method>
+		<method name="StartServiceByName">
+			<arg type="s" direction="in"></arg>
+			<arg type="u" direction="in"></arg>
+			<arg type="u" direction="out"></arg>
+		</method>
+		<method name="UpdateActivationEnvironment">
+			<arg type="a{ss}" direction="in"></arg>
+		</method>
+		<method name="NameHasOwner">
+			<arg type="s" direction="in"></arg>
+			<arg type="b" direction="out"></arg>
+		</method>
+		<method name="ListNames">
+			<arg type="as" direction="out"></arg>
+		</method>
+		<method name="ListActivatableNames">
+			<arg type="as" direction="out"></arg>
+		</method>
+		<method name="AddMatch">
+			<arg type="s" direction="in"></arg>
+		</method>
+		<method name="RemoveMatch">
+			<arg type="s" direction="in"></arg>
+		</method>
+		<method name="GetNameOwner">
+			<arg type="s" direction="in"></arg>
+			<arg type="s" direction="out"></arg>
+		</method>
+		<method name="ListQueuedOwners">
+			<arg type="s" direction="in"></arg>
+			<arg type="as" direction="out"></arg>
+		</method>
+		<method name="GetConnectionUnixUser">
+			<arg type="s" direction="in"></arg>
+			<arg type="u" direction="out"></arg>
+		</method>
+		<method name="GetConnectionUnixProcessID">
+			<arg type="s" direction="in"></arg>
+			<arg type="u" direction="out"></arg>
+		</method>
+		<method name="GetAdtAuditSessionData">
+			<arg type="s" direction="in"></arg>
+			<arg type="ay" direction="out"></arg>
+		</method>
+		<method name="GetConnectionSELinuxSecurityContext">
+			<arg type="s" direction="in"></arg>
+			<arg type="ay" direction="out"></arg>
+		</method>
+		<method name="ReloadConfig"></method>
+		<method name="GetId">
+			<arg type="s" direction="out"></arg>
+		</method>
+		<method name="GetConnectionCredentials">
+			<arg type="s" direction="in"></arg>
+			<arg type="a{sv}" direction="out"></arg>
+		</method>
+		<signal name="NameOwnerChanged">
+			<arg type="s"></arg>
+			<arg type="s"></arg>
+			<arg type="s"></arg>
+		</signal>
+		<signal name="NameLost">
+			<arg type="s"></arg>
+		</signal>
+		<signal name="NameAcquired">
+			<arg type="s"></arg>
+		</signal>
+		<property name="Features" type="as" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"></annotation>
+		</property>
+		<property name="Interfaces" type="as" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"></annotation>
+		</property>
+	</interface>
+</node>
