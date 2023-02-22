@@ -6,6 +6,7 @@ import { StreamHelper } from "./avalonia/stream";
 import { ShareHelper } from "./avalonia/share";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 import { NavigationHelper } from "./avalonia/navigationHelper";
+import { GeneralHelpers } from "./avalonia/generalHelpers";
 
 export {
     Caniuse,
@@ -17,5 +18,6 @@ export {
     StreamHelper,
     ShareHelper,
     NativeControlHost,
-    NavigationHelper
+    NavigationHelper,
+    GeneralHelpers
 };

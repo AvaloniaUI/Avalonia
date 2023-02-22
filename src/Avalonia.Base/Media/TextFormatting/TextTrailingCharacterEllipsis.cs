@@ -12,10 +12,13 @@
         /// <param name="ellipsis">Text used as collapsing symbol.</param>
         /// <param name="width">Width in which collapsing is constrained to.</param>
         /// <param name="textRunProperties">Text run properties of ellipsis symbol.</param>
-        public TextTrailingCharacterEllipsis(string ellipsis, double width, TextRunProperties textRunProperties)
+        /// <param name="flowDirection">The flow direction of the collapsed line.</param>
+        public TextTrailingCharacterEllipsis(string ellipsis, double width, 
+            TextRunProperties textRunProperties, FlowDirection flowDirection)
         {
             Width = width;
             Symbol = new TextCharacters(ellipsis, textRunProperties);
+            FlowDirection = flowDirection;
         }
 
         /// <inheritdoc/>
@@ -23,6 +26,8 @@
 
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
+
+        public override FlowDirection FlowDirection { get; }
 
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)

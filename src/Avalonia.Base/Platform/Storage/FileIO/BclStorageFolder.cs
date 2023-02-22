@@ -9,15 +9,6 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal class BclStorageFolder : IStorageBookmarkFolder
 {
-    public BclStorageFolder(string path)
-    {
-        DirectoryInfo = new DirectoryInfo(path);
-        if (!DirectoryInfo.Exists)
-        {
-            throw new ArgumentException("Directory must exist");
-        }
-    }
-
     public BclStorageFolder(DirectoryInfo directoryInfo)
     {
         DirectoryInfo = directoryInfo ?? throw new ArgumentNullException(nameof(directoryInfo));

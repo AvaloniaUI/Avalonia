@@ -14,7 +14,7 @@ namespace Avalonia.Diagnostics.Controls
         public event EventHandler? Closed;
 
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            StyledElement.RequestedThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
         
         public Application(Avalonia.Application application)
         {

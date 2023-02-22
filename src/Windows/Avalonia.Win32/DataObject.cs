@@ -10,6 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
 using Avalonia.Input;
 using Avalonia.MicroCom;
+using Avalonia.Platform.Storage;
 using Avalonia.Win32.Interop;
 
 using FORMATETC = Avalonia.Win32.Interop.FORMATETC;
@@ -122,16 +123,6 @@ namespace Avalonia.Win32
         IEnumerable<string> IDataObject.GetDataFormats()
         {
             return _wrapped.GetDataFormats();
-        }
-
-        IEnumerable<string>? IDataObject.GetFileNames()
-        {
-            return _wrapped.GetFileNames();
-        }
-
-        string? IDataObject.GetText()
-        {
-            return _wrapped.GetText();
         }
 
         object? IDataObject.Get(string dataFormat)
@@ -260,8 +251,12 @@ namespace Avalonia.Win32
             object data = _wrapped.Get(dataFormat)!;
             if (dataFormat == DataFormats.Text || data is string)
                 return WriteStringToHGlobal(ref hGlobal, Convert.ToString(data) ?? string.Empty);
+#pragma warning disable CS0618 // Type or member is obsolete
             if (dataFormat == DataFormats.FileNames && data is IEnumerable<string> files)
                 return WriteFileListToHGlobal(ref hGlobal, files);
+#pragma warning restore CS0618 // Type or member is obsolete
+            if (dataFormat == DataFormats.Files && data is IEnumerable<IStorageItem> items)
+                return WriteFileListToHGlobal(ref hGlobal, items.Select(f => f.TryGetLocalPath()).Where(f => f is not null)!);
             if (data is Stream stream)
             {
                 var length = (int)(stream.Length - stream.Position);

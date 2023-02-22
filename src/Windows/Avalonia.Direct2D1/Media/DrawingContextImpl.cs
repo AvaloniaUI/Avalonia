@@ -441,14 +441,15 @@ namespace Avalonia.Direct2D1.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
             if (opacity < 1)
             {
                 var parameters = new LayerParameters
                 {
-                    ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                    ContentBounds = bounds.ToDirect2D(),
                     MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
                     Opacity = (float)opacity,
                 };
