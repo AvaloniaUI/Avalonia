@@ -36,7 +36,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var framebuffer = _platformSurface.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
@@ -55,7 +55,6 @@ namespace Avalonia.Skia
             {
                 Surface = _framebufferSurface,
                 Dpi = framebuffer.Dpi,
-                VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true
             };
 

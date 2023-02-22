@@ -7,7 +7,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A node in the scene graph which represents an image draw.
     /// </summary>
-    internal class ImageNode : DrawOperation
+    internal class ImageNode : DrawOperationWithTransform
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageNode"/> class.
@@ -21,19 +21,13 @@ namespace Avalonia.Rendering.SceneGraph
         public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
             : base(destRect, transform)
         {
-            Transform = transform;
             Source = source.Clone();
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
             SourceVersion = Source.Item.Version;
-        }        
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
+        }
 
         /// <summary>
         /// Gets the image to draw.
@@ -69,14 +63,6 @@ namespace Avalonia.Rendering.SceneGraph
         public BitmapInterpolationMode BitmapInterpolationMode { get; }
         
         /// <summary>
-        /// The bitmap blending mode.
-        /// </summary>
-        /// <value>
-        /// The blending mode.
-        /// </value>
-        public BitmapBlendingMode BitmapBlendingMode { get; }
-
-        /// <summary>
         /// Determines if this draw operation equals another.
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
@@ -104,12 +90,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            context.Transform = Transform;
             context.DrawBitmap(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
+        public override bool HitTest(Point p) => DestRect.ContainsExclusive(p);
 
         public override void Dispose()
         {

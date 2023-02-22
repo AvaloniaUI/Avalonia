@@ -55,7 +55,7 @@ public class CompositingRenderer : IRendererWithCompositor
     {
         _root = root;
         _compositor = compositor;
-        _recordingContext = new DrawingContext(_recorder);
+        _recordingContext = _recorder;
         CompositionTarget = compositor.CreateCompositionTarget(surfaces);
         CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;

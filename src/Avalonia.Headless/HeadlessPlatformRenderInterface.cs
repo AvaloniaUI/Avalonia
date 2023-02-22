@@ -325,7 +325,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
@@ -491,7 +491,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
