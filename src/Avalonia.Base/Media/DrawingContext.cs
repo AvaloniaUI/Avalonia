@@ -14,7 +14,7 @@ namespace Avalonia.Media
             ThreadSafeObjectPool<Stack<RestoreState>>.Default;
 
         private Stack<RestoreState>? _states;
-        
+
         internal DrawingContext()
         {
             
@@ -22,14 +22,15 @@ namespace Avalonia.Media
 
         public void Dispose()
         {
-            if(_states == null)
-                return;
-            while (_states.Count > 0) 
-                _states.Pop().Dispose();
-            
-            StateStackPool.Return(_states);
-            _states = null;
-            
+            if (_states != null)
+            {
+                while (_states.Count > 0)
+                    _states.Pop().Dispose();
+
+                StateStackPool.Return(_states);
+                _states = null;
+            }
+
             DisposeCore();
         }
         
