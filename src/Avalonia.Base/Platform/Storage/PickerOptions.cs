@@ -12,6 +12,8 @@ public class PickerOptions
 
     /// <summary>
     /// Gets or sets the initial location where the file open picker looks for files to present to the user.
+    /// Can be obtained from previously picked folder or using <see cref="IStorageProvider.TryGetFolderFromPathAsync"/>
+    /// or <see cref="IStorageProvider.TryGetWellKnownFolderAsync"/>.
     /// </summary>
     public IStorageFolder? SuggestedStartLocation { get; set; }
 }
