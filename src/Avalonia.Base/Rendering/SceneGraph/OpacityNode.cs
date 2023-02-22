@@ -12,9 +12,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// opacity push.
         /// </summary>
         /// <param name="opacity">The opacity to push.</param>
-        public OpacityNode(double opacity)
+        /// <param name="bounds">The bounds.</param>
+        public OpacityNode(double opacity, Rect bounds)
         {
             Opacity = opacity;
+            Bounds = bounds;
         }
 
         /// <summary>
@@ -26,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public Rect Bounds => default;
+        public Rect Bounds { get; }
 
         /// <summary>
         /// Gets the opacity to be pushed or null if the operation represents a pop.
@@ -40,19 +42,20 @@ namespace Avalonia.Rendering.SceneGraph
         /// Determines if this draw operation equals another.
         /// </summary>
         /// <param name="opacity">The opacity of the other draw operation.</param>
+        /// <param name="bounds">The bounds of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(double? opacity) => Opacity == opacity;
+        public bool Equals(double? opacity, Rect bounds) => Opacity == opacity && Bounds == bounds;
 
         /// <inheritdoc/>
         public void Render(IDrawingContextImpl context)
         {
             if (Opacity.HasValue)
             {
-                context.PushOpacity(Opacity.Value);
+                context.PushOpacity(Opacity.Value, Bounds);
             }
             else
             {

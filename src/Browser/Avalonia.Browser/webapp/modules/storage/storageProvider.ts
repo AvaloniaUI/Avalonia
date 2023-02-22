@@ -19,7 +19,7 @@ export class StorageProvider {
         };
 
         const handle = await showDirectoryPicker(options as any);
-        return new StorageItem(handle);
+        return StorageItem.createFromHandle(handle);
     }
 
     public static async openFileDialog(
@@ -33,7 +33,7 @@ export class StorageProvider {
         };
 
         const handles = await showOpenFilePicker(options);
-        return new StorageItems(handles.map((handle: FileSystemFileHandle) => new StorageItem(handle)));
+        return new StorageItems(handles.map((handle: FileSystemFileHandle) => StorageItem.createFromHandle(handle)));
     }
 
     public static async saveFileDialog(
@@ -48,14 +48,14 @@ export class StorageProvider {
 
         // Always prefer native save file picker, as polyfill solutions are not reliable.
         const handle = await (globalThis as any).showSaveFilePicker(options);
-        return new StorageItem(handle);
+        return StorageItem.createFromHandle(handle);
     }
 
     public static async openBookmark(key: string): Promise<StorageItem | null> {
         const connection = await avaloniaDb.connect();
         try {
             const handle = await connection.get(fileBookmarksStore, key);
-            return handle && new StorageItem(handle, key);
+            return handle && StorageItem.createFromHandle(handle, key);
         } finally {
             connection.close();
         }
