@@ -292,12 +292,14 @@
 {
     if (_parent == nullptr)
         return;
-        
+    
     _parent->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
         @try {
-        [self invalidateShadow];
+            [self invalidateShadow];
+            if (self->_parent != nullptr)
+                self->_parent->BringToFront();
         }
         @finally{
         }
