@@ -37,7 +37,6 @@ namespace Avalonia.Styling.Activators
         protected override void Initialize()
         {
             _provider.ChildIndexChanged += ChildIndexChanged;
-            _provider.TotalCountChanged += TotalCountChanged;
         }
 
         protected override void Deinitialize()
@@ -48,9 +47,11 @@ namespace Avalonia.Styling.Activators
         private void ChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
         {
             // Run matching again if:
-            // 1. e.Child is null, when all children indices were changed.
-            // 2. Subscribed child index was changed.
-            if (e.Child is null || e.Child == _control)
+            // 1. Subscribed child index was changed
+            // 2. Child indexes were reset
+            // 3. We're a reversed (nth-last-child) selector and total count has changed
+            if ((e.Child == _control || e.Action == ChildIndexChangedAction.ChildIndexesReset) ||
+                (_reversed && e.Action == ChildIndexChangedAction.TotalCountChanged))
             {
                 // We're using the _index field to pass the index of the child to EvaluateIsActive
                 // *only* when the active state is re-evaluated via this event handler. The docs

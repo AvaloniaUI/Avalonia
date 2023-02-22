@@ -35,7 +35,6 @@ namespace Avalonia.Controls
         }
 
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
-        private EventHandler<EventArgs>? _totalCountChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
@@ -65,12 +64,6 @@ namespace Avalonia.Controls
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
-        }
-
-        event EventHandler<EventArgs>? IChildIndexProvider.TotalCountChanged
-        {
-            add => _totalCountChanged += value;
-            remove => _totalCountChanged -= value;
         }
 
         /// <summary>
@@ -161,7 +154,7 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
             InvalidateMeasureOnChildrenChanged();
         }
 
@@ -173,7 +166,7 @@ namespace Avalonia.Controls
         private void ChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
-                _totalCountChanged?.Invoke(this, EventArgs.Empty);
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
         }
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)

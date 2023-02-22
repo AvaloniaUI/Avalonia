@@ -28,10 +28,5 @@ namespace Avalonia.LogicalTree
         /// Notifies subscriber when a child's index was changed.
         /// </summary>
         event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
-
-        /// <summary>
-        /// Notifies subscriber when the total child count changes.
-        /// </summary>
-        event EventHandler<EventArgs>? TotalCountChanged;
     }
 }
