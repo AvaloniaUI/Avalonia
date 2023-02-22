@@ -42,7 +42,6 @@ namespace Avalonia.Controls
         public Panel()
         {
             Children.CollectionChanged += ChildrenChanged;
-            Children.PropertyChanged += ChildrenPropertyChanged;
         }
 
         /// <summary>
@@ -62,8 +61,19 @@ namespace Avalonia.Controls
 
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
-            add => _childIndexChanged += value;
-            remove => _childIndexChanged -= value;
+            add
+            {
+                if (_childIndexChanged is null)
+                    Children.PropertyChanged += ChildrenPropertyChanged;
+                _childIndexChanged += value;
+            }
+
+            remove
+            {
+                _childIndexChanged -= value;
+                if (_childIndexChanged is null)
+                    Children.PropertyChanged -= ChildrenPropertyChanged;
+            }
         }
 
         /// <summary>
