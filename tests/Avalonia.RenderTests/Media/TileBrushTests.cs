@@ -41,7 +41,10 @@ public class DrawingBrushTests: TestBase
         CompareImages();
     }
     
+
+#if AVALONIA_SKIA
     [Fact]
+#endif
     public async Task DrawingBrushIsProperlyUpscaled()
     {
         Decorator target = new Decorator

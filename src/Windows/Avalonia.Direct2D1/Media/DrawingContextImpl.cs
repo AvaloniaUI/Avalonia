@@ -545,7 +545,7 @@ namespace Avalonia.Direct2D1.Media
                             }
 
                             return new ImageBrushImpl(
-                                sceneBrush,
+                                sceneBrushContent.Brush,
                                 _deviceContext,
                                 new D2DBitmapImpl(intermediate.Bitmap),
                                 destinationSize);
