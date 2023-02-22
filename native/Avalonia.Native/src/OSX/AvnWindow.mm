@@ -298,7 +298,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         @try {
             [self invalidateShadow];
-            self->_parent->BringToFront();
+            if (self->_parent != nullptr)
+                self->_parent->BringToFront();
         }
         @finally{
         }
