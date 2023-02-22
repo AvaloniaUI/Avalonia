@@ -27,8 +27,7 @@ namespace Avalonia.Media
                 while (_states.Count > 0)
                     _states.Pop().Dispose();
 
-                StateStackPool.Return(_states);
-                _states = null;
+                StateStackPool.ReturnAndSetNull(ref _states);
             }
 
             DisposeCore();

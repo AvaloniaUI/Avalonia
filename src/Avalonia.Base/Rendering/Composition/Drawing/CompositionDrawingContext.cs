@@ -54,7 +54,7 @@ internal sealed class CompositionDrawingContext : DrawingContext, IDrawingContex
         if (_transforms != null)
         {
             _transforms.Clear();
-            TransformStackPool.Return(_transforms);
+            TransformStackPool.ReturnAndSetNull(ref _transforms);
         }
 
         if (_needsToPopOpacityMask != null)

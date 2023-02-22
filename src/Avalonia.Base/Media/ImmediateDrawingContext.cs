@@ -354,12 +354,10 @@ namespace Avalonia.Media
                 throw new ObjectDisposedException(nameof(DrawingContext));
             while (_states.Count != 0)
                 _states.Peek().Dispose();
-            StateStackPool.Return(_states);
-            _states = null;
+            StateStackPool.ReturnAndSetNull(ref _states);
             if (_transformContainers.Count != 0)
                 throw new InvalidOperationException("Transform container stack is non-empty");
-            TransformStackPool.Return(_transformContainers);
-            _transformContainers = null;
+            TransformStackPool.ReturnAndSetNull(ref _transformContainers);
             if (_ownsImpl)
                 PlatformImpl.Dispose();
         }

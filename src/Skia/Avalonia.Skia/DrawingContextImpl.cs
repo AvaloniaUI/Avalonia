@@ -1021,8 +1021,6 @@ namespace Avalonia.Skia
 
             using var picture = pictureTarget.GetPicture();
 
-            ImageSavingHelper.SavePicture(picture, 1, "/tmp/snap.png");
-
             var paintTransform =
                 tileBrush.TileMode != TileMode.None
                     ? SKMatrix.CreateTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)

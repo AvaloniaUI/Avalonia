@@ -86,17 +86,19 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
 
     protected override void PopBitmapBlendModeCore() => _impl.PopBitmapBlendMode();
 
-    protected override void PopTransformCore() => _impl.Transform =
-        (_transforms ?? throw new ObjectDisposedException(nameof(PlatformDrawingContext))).Pop();
-        
+    protected override void PopTransformCore() =>
+        _impl.Transform =
+            (_transforms ?? throw new ObjectDisposedException(nameof(PlatformDrawingContext))).Pop();
+
     protected override void DisposeCore()
     {
         if (_ownsImpl)
             _impl.Dispose();
         if (_transforms != null)
         {
-            TransformStackPool.Return(_transforms);
-            _transforms = null;
+            if (_transforms.Count != 0)
+                throw new InvalidOperationException("Not all states are disposed");
+            TransformStackPool.ReturnAndSetNull(ref _transforms);
         }
     }
 
