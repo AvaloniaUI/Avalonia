@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Automation.Peers
             {
                 if (e.Property == RadioButton.IsCheckedProperty)
                 {
-                    RaiseToggleStatePropertyChangedEvent((bool)e.OldValue, (bool)e.NewValue);
+                    RaiseToggleStatePropertyChangedEvent((bool?)e.OldValue, (bool?)e.NewValue);
                 }
                 
             };
