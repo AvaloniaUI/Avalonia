@@ -65,7 +65,7 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
         }
 

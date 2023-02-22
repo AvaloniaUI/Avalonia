@@ -74,10 +74,12 @@ namespace Avalonia.Media
 
         public override void Draw(DrawingContext context)
         {
+            var bounds = GetBounds();
+
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
-            using (context.PushOpacity(Opacity))
+            using (context.PushOpacity(Opacity, bounds))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -284,7 +286,7 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect bounds)
             {
                 throw new NotImplementedException();
             }
