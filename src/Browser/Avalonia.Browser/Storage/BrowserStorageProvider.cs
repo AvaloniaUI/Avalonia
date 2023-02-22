@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform.Storage;
@@ -18,15 +16,13 @@ internal class BrowserStorageProvider : IStorageProvider
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
 
-    private readonly Lazy<Task> _lazyModule = new(() => AvaloniaModule.ImportStorage());
-
     public bool CanOpen => true;
     public bool CanSave => StorageHelper.HasNativeFilePicker();
     public bool CanPickFolder => true;
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         var (types, excludeAll) = ConvertFileTypes(options.FileTypeFilter);
@@ -60,7 +56,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         var (types, excludeAll) = ConvertFileTypes(options.FileTypeChoices);
@@ -88,7 +84,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         try
@@ -104,14 +100,14 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var item = await StorageHelper.OpenBookmark(bookmark);
         return item is not null ? new JSStorageFile(item) : null;
     }
 
     public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var item = await StorageHelper.OpenBookmark(bookmark);
         return item is not null ? new JSStorageFolder(item) : null;
     }
@@ -128,7 +124,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var directory = StorageHelper.CreateWellKnownDirectory(wellKnownFolder switch
         {
             WellKnownFolder.Desktop => "desktop",

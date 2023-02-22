@@ -407,7 +407,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.False(textLine.HasCollapsed);
 
-                TextCollapsingProperties collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, defaultProperties));
+                TextCollapsingProperties collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, defaultProperties, FlowDirection.LeftToRight));
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
 

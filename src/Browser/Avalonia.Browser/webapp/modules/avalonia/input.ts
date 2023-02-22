@@ -174,6 +174,28 @@ export class InputHelper {
         };
     }
 
+    public static subscribeDropEvents(
+        element: HTMLInputElement,
+        dragEvent: (args: any) => boolean
+    ) {
+        const dragHandler = (args: Event) => {
+            if (dragEvent(args as any)) {
+                args.preventDefault();
+            }
+        };
+        element.addEventListener("dragover", dragHandler);
+        element.addEventListener("dragenter", dragHandler);
+        element.addEventListener("dragleave", dragHandler);
+        element.addEventListener("drop", dragHandler);
+
+        return () => {
+            element.removeEventListener("dragover", dragHandler);
+            element.removeEventListener("dragenter", dragHandler);
+            element.removeEventListener("dragleave", dragHandler);
+            element.removeEventListener("drop", dragHandler);
+        };
+    }
+
     public static getCoalescedEvents(pointerEvent: PointerEvent): PointerEvent[] {
         return pointerEvent.getCoalescedEvents();
     }

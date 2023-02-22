@@ -27,16 +27,6 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            if (lineImpl.NewLineLength > 0)
-            {
-                return;
-            }
-
-            if (lineImpl.TextLineBreak is { TextEndOfLine: not null, IsSplit: false })
-            {
-                return;
-            }
-
             var breakOportunities = new Queue<int>();
 
             var currentPosition = textLine.FirstTextSourceIndex;
@@ -97,7 +87,8 @@ namespace Avalonia.Media.TextFormatting
                             continue;
                         }
 
-                        var glyphIndex = glyphRun.FindGlyphIndex(characterIndex);
+                        var offset = Math.Max(0, currentPosition - glyphRun.Metrics.FirstCluster);
+                        var glyphIndex = glyphRun.FindGlyphIndex(characterIndex - offset);
                         var glyphInfo = shapedBuffer.GlyphInfos[glyphIndex];
 
                         shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,

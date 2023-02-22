@@ -106,6 +106,8 @@ namespace Avalonia.Browser
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp,
                 OnPointerCancel, OnWheel);
 
+            InputHelper.SubscribeDropEvents(_containerElement, OnDragEvent);
+            
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
             _dpi = DomHelper.ObserveDpi(OnDpiChanged);
@@ -293,6 +295,59 @@ namespace Avalonia.Browser
             return modifiers;
         }
 
+        public bool OnDragEvent(JSObject args)
+        {
+            var eventType = args?.GetPropertyAsString("type") switch
+            {
+                "dragenter" => RawDragEventType.DragEnter,
+                "dragover" => RawDragEventType.DragOver,
+                "dragleave" => RawDragEventType.DragLeave,
+                "drop" => RawDragEventType.Drop,
+                _ => (RawDragEventType)(int)-1
+            };
+            var dataObject = args?.GetPropertyAsJSObject("dataTransfer");
+            if (args is null || eventType < 0 || dataObject is null)
+            {
+                return false;
+            }
+
+            // If file is dropped, we need storage js to be referenced.
+            // TODO: restructure JS files, so it's not needed.
+            _ = AvaloniaModule.ImportStorage();
+
+            var position = new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY"));
+            var modifiers = GetModifiers(args);
+
+            var effectAllowedStr = dataObject.GetPropertyAsString("effectAllowed") ?? "none";
+            var effectAllowed = DragDropEffects.None;
+            if (effectAllowedStr.Contains("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Copy;
+            }
+            if (effectAllowedStr.Contains("link", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Link;
+            }
+            if (effectAllowedStr.Contains("move", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Move;
+            }
+            if (effectAllowedStr.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Move | DragDropEffects.Copy | DragDropEffects.Link;
+            }
+            if (effectAllowed == DragDropEffects.None)
+            {
+                return false;
+            }
+
+            var dropEffect = _topLevelImpl.RawDragEvent(eventType, position, modifiers, new BrowserDataObject(dataObject), effectAllowed);
+            dataObject.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
+
+            return eventType is RawDragEventType.Drop or RawDragEventType.DragOver
+                   && dropEffect != DragDropEffects.None;
+        }
+        
         private bool OnKeyDown (string code, string key, int modifier)
         {
             var handled = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);

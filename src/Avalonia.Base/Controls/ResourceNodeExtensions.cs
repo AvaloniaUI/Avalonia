@@ -138,18 +138,18 @@ namespace Avalonia.Controls
             protected override void Initialize()
             {
                 _target.ResourcesChanged += ResourcesChanged;
-                if (_target is StyledElement themeStyleable)
+                if (_target is IThemeVariantHost themeVariantHost)
                 {
-                    themeStyleable.PropertyChanged += PropertyChanged;
+                    themeVariantHost.ActualThemeVariantChanged += ActualThemeVariantChanged;
                 }
             }
 
             protected override void Deinitialize()
             {
                 _target.ResourcesChanged -= ResourcesChanged;
-                if (_target is StyledElement themeStyleable)
+                if (_target is IThemeVariantHost themeVariantHost)
                 {
-                    themeStyleable.PropertyChanged -= PropertyChanged;
+                    themeVariantHost.ActualThemeVariantChanged -= ActualThemeVariantChanged;
                 }
             }
 
@@ -163,18 +163,15 @@ namespace Avalonia.Controls
                 PublishNext(GetValue());
             }
 
-            private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+            private void ActualThemeVariantChanged(object? sender, EventArgs e)
             {
-                if (e.Property == StyledElement.ActualThemeVariantProperty)
-                {
-                    PublishNext(GetValue());
-                }
+                PublishNext(GetValue());
             }
 
             private object? GetValue()
             {
-                if (_target is not StyledElement themeStyleable
-                    || !_target.TryFindResource(_key, themeStyleable.ActualThemeVariant, out var value))
+                if (_target is not IThemeVariantHost themeVariantHost
+                    || !_target.TryFindResource(_key, themeVariantHost.ActualThemeVariant, out var value))
                 {
                     value = _target.FindResource(_key) ?? AvaloniaProperty.UnsetValue;
                 }
@@ -236,9 +233,9 @@ namespace Avalonia.Controls
                 {
                     _owner.ResourcesChanged -= ResourcesChanged;
                 }
-                if (_owner is StyledElement styleable)
+                if (_owner is IThemeVariantHost themeVariantHost)
                 {
-                    styleable.PropertyChanged += PropertyChanged;
+                    themeVariantHost.ActualThemeVariantChanged += ActualThemeVariantChanged;
                 }
 
                 _owner = _target.Owner;
@@ -247,20 +244,18 @@ namespace Avalonia.Controls
                 {
                     _owner.ResourcesChanged += ResourcesChanged;
                 }
-                if (_owner is StyledElement styleable2)
+                if (_owner is IThemeVariantHost themeVariantHost2)
                 {
-                    styleable2.PropertyChanged += PropertyChanged;
+                    themeVariantHost2.ActualThemeVariantChanged -= ActualThemeVariantChanged;
                 }
+
 
                 PublishNext();
             }
 
-            private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+            private void ActualThemeVariantChanged(object? sender, EventArgs e)
             {
-                if (e.Property == StyledElement.ActualThemeVariantProperty)
-                {
-                    PublishNext();
-                }
+                PublishNext();
             }
 
             private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
@@ -270,8 +265,8 @@ namespace Avalonia.Controls
 
             private object? GetValue()
             {
-                if (!(_target.Owner is StyledElement themeStyleable)
-                    || !_target.Owner.TryFindResource(_key, themeStyleable.ActualThemeVariant, out var value))
+                if (!(_target.Owner is IThemeVariantHost themeVariantHost)
+                    || !_target.Owner.TryFindResource(_key, themeVariantHost.ActualThemeVariant, out var value))
                 {
                     value = _target.Owner?.FindResource(_key) ?? AvaloniaProperty.UnsetValue;
                 }
