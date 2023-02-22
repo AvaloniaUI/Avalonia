@@ -238,7 +238,7 @@
 
 -(BOOL)canBecomeKeyWindow
 {
-    if(_canBecomeKeyWindow)
+    if(_canBecomeKeyWindow && !_closed)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
         auto parent = dynamic_cast<WindowImpl*>(_parent.getRaw());
