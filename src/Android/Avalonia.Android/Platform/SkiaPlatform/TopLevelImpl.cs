@@ -28,6 +28,7 @@ using AndroidRect = Android.Graphics.Rect;
 using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Text;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
