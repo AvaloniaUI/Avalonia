@@ -11,12 +11,24 @@ public static class StorageProviderExtensions
     /// <inheritdoc cref="IStorageProvider.TryGetFileFromPathAsync"/>
     public static Task<IStorageFile?> TryGetFileFromPathAsync(this IStorageProvider provider, string filePath)
     {
+        // We can avoid double escaping of the path by checking for BclStorageProvider.
+        if (provider is BclStorageProvider)
+        {
+            return Task.FromResult(StorageProviderHelpers.TryCreateBclStorageItem(filePath) as IStorageFile);
+        }
+        
         return provider.TryGetFileFromPathAsync(StorageProviderHelpers.FilePathToUri(filePath));
     }
 
     /// <inheritdoc cref="IStorageProvider.TryGetFolderFromPathAsync"/>
     public static Task<IStorageFolder?> TryGetFolderFromPathAsync(this IStorageProvider provider, string folderPath)
     {
+        // We can avoid double escaping of the path by checking for BclStorageProvider.
+        if (provider is BclStorageProvider)
+        {
+            return Task.FromResult(StorageProviderHelpers.TryCreateBclStorageItem(folderPath) as IStorageFolder);
+        }
+
         return provider.TryGetFolderFromPathAsync(StorageProviderHelpers.FilePathToUri(folderPath));
     }
 

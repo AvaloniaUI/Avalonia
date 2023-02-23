@@ -658,7 +658,7 @@ namespace Avalonia.Media.TextFormatting
                                         currentX += drawableTextRun.Size.Width;
                                     }
 
-                                    if(lastRunIndex - 1 < 0)
+                                    if (lastRunIndex - 1 < 0)
                                     {
                                         break;
                                     }
@@ -685,7 +685,7 @@ namespace Avalonia.Media.TextFormatting
                                         directionalWidth -= drawableTextRun.Size.Width;
                                     }
 
-                                    if(firstRunIndex + 1 == _textRuns.Length)
+                                    if (firstRunIndex + 1 == _textRuns.Length)
                                     {
                                         break;
                                     }
@@ -1097,7 +1097,7 @@ namespace Avalonia.Media.TextFormatting
 
             var runWidth = endX - startX;
 
-            return new TextRunBounds(new Rect(Start + startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
+            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
         }
 
         public override void Dispose()
@@ -1439,13 +1439,6 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (index == lastRunIndex)
-                            {
-                                width = widthIncludingWhitespace + textRun.GlyphRun.Metrics.Width;
-                                trailingWhitespaceLength = textRun.GlyphRun.Metrics.TrailingWhitespaceLength;
-                                newLineLength += textRun.GlyphRun.Metrics.NewLineLength;
-                            }
-
                             widthIncludingWhitespace += textRun.Size.Width;
 
                             break;
@@ -1454,12 +1447,6 @@ namespace Avalonia.Media.TextFormatting
                     case DrawableTextRun drawableTextRun:
                         {
                             widthIncludingWhitespace += drawableTextRun.Size.Width;
-
-                            if (index == lastRunIndex)
-                            {
-                                width = widthIncludingWhitespace;
-                                trailingWhitespaceLength = 0;
-                            }
 
                             if (drawableTextRun.Size.Height > height)
                             {
@@ -1473,6 +1460,32 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
+                }
+            }
+
+            width = widthIncludingWhitespace;
+
+            for (var i = _textRuns.Length - 1; i >= 0; i--)
+            {
+                var currentRun = _textRuns[i];
+
+                if(currentRun is ShapedTextRun shapedText)
+                {
+                    var glyphRun = shapedText.GlyphRun;
+                    var glyphRunMetrics = glyphRun.Metrics;
+
+                    newLineLength += glyphRunMetrics.NewLineLength;
+
+                    if (glyphRunMetrics.TrailingWhitespaceLength == 0)
+                    {
+                        break;
+                    }
+
+                    trailingWhitespaceLength += glyphRunMetrics.TrailingWhitespaceLength;
+
+                    var whitespaceWidth = glyphRun.Size.Width - glyphRunMetrics.Width;
+
+                    width -= whitespaceWidth;
                 }
             }
 
@@ -1543,7 +1556,7 @@ namespace Avalonia.Media.TextFormatting
 
                     return Math.Max(0, start);
                 case TextAlignment.Right:
-                    return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace);
+                    return Math.Max(0, _paragraphWidth - width);
 
                 default:
                     return 0;
