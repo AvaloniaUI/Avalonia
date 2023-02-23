@@ -13,6 +13,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -85,16 +86,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PointerEnteredItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnteredItemEvent =
-            RoutedEvent.Register<MenuItem, PointerEventArgs>(
+        public static readonly RoutedEvent<RoutedEventArgs> PointerEnteredItemEvent =
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>(
                 nameof(PointerEnteredItem),
                 RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerExitedItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerExitedItemEvent =
-            RoutedEvent.Register<MenuItem, PointerEventArgs>(
+        public static readonly RoutedEvent<RoutedEventArgs> PointerExitedItemEvent =
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>(
                 nameof(PointerExitedItem),
                 RoutingStrategies.Bubble);
 
@@ -184,7 +185,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// A bubbling version of the <see cref="InputElement.PointerEntered"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerEnteredItem
+        public event EventHandler<RoutedEventArgs>? PointerEnteredItem
         {
             add { AddHandler(PointerEnteredItemEvent, value); }
             remove { RemoveHandler(PointerEnteredItemEvent, value); }
@@ -196,7 +197,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// A bubbling version of the <see cref="InputElement.PointerExited"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerExitedItem
+        public event EventHandler<RoutedEventArgs>? PointerExitedItem
         {
             add { AddHandler(PointerExitedItemEvent, value); }
             remove { RemoveHandler(PointerExitedItemEvent, value); }
@@ -442,20 +443,14 @@ namespace Avalonia.Controls
         protected override void OnPointerEntered(PointerEventArgs e)
         {
             base.OnPointerEntered(e);
-
-            var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.KeyModifiers));
+            RaiseEvent(new RoutedEventArgs(PointerEnteredItemEvent));
         }
 
         /// <inheritdoc/>
         protected override void OnPointerExited(PointerEventArgs e)
         {
             base.OnPointerExited(e);
-
-            var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.KeyModifiers));
+            RaiseEvent(new RoutedEventArgs(PointerExitedItemEvent));
         }
 
         /// <summary>
