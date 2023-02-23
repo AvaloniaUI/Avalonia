@@ -55,6 +55,8 @@ namespace Avalonia.Android.Platform
                 _usesLegacyLayouts = true;
                 _activity.Window.DecorView.ViewTreeObserver.AddOnGlobalLayoutListener(this);
             }
+
+            _displayEdgeToEdge = !activity.Window.DecorView.FitsSystemWindows;
         }
 
         public Thickness GetSafeAreaPadding()
