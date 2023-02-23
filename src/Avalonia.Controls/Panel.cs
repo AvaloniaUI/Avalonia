@@ -1,13 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -27,6 +26,16 @@ namespace Avalonia.Controls
             Border.BackgroundProperty.AddOwner<Panel>();
 
         /// <summary>
+        /// Defines the <see cref="IsItemsHost"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Panel, bool> IsItemsHostProperty =
+            AvaloniaProperty.RegisterDirect<Panel, bool>(
+                nameof(IsItemsHost),
+                o => o.IsItemsHost,
+                (o, v) => o.IsItemsHost = v,
+                unsetValue: false);
+
+        /// <summary>
         /// Initializes static members of the <see cref="Panel"/> class.
         /// </summary>
         static Panel()
@@ -34,6 +43,7 @@ namespace Avalonia.Controls
             AffectsRender<Panel>(BackgroundProperty);
         }
 
+        private bool _isItemsHost;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
@@ -57,6 +67,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets whether the <see cref="Panel"/> hosts the items created by an <see cref="ItemsPresenter"/>.
+        /// </summary>
+        public bool IsItemsHost
+        {
+            get => _isItemsHost;
+            set => SetAndRaise(IsItemsHostProperty, ref _isItemsHost, value);
         }
 
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
@@ -129,24 +148,29 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            List<Control> controls;
-
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    controls = e.NewItems!.OfType<Control>().ToList();
-                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Control>().ToList());
+                    }
                     VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:
-                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
-                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
+                    }
+                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    controls = e.OldItems!.OfType<Control>().ToList();
-                    LogicalChildren.RemoveAll(controls);
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.RemoveAll(e.OldItems!.OfType<Control>().ToList());
+                    }
                     VisualChildren.RemoveAll(e.OldItems!.OfType<Visual>());
                     break;
 
@@ -155,7 +179,10 @@ namespace Avalonia.Controls
                     {
                         var index = i + e.OldStartingIndex;
                         var child = (Control)e.NewItems![i]!;
-                        LogicalChildren[index] = child;
+                        if (!IsItemsHost)
+                        {
+                            LogicalChildren[index] = child;
+                        }
                         VisualChildren[index] = child;
                     }
                     break;
@@ -200,6 +227,7 @@ namespace Avalonia.Controls
             return child is Control control ? Children.IndexOf(control) : -1;
         }
 
+        /// <inheritdoc />
         public bool TryGetTotalCount(out int count)
         {
             count = Children.Count;

@@ -74,6 +74,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Panel_Should_Have_ItemsHost_Set_To_True()
+        {
+            var target = new ItemsControl();
+
+            target.Template = GetTemplate();
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            Assert.True(target.Presenter.Panel!.IsItemsHost);
+        }
+
+        [Fact]
         public void Container_Should_Have_TemplatedParent_Set_To_Null()
         {
             var target = new ItemsControl();
@@ -634,7 +647,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = target.Presenter.Panel.LogicalChildren[0];
+            var item = target.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TextBlock)item));
         }
 
