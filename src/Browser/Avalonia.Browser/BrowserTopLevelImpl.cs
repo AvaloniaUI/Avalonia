@@ -170,6 +170,15 @@ namespace Avalonia.Browser
 
             return false;
         }
+        
+        public DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers, BrowserDataObject dataObject, DragDropEffects dropEffect)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataObject, dropEffect, modifiers);
+            Console.WriteLine($"{eventArgs.Location} {eventArgs.Effects} {eventArgs.Type} {eventArgs.KeyModifiers}");
+            Input?.Invoke(eventArgs);
+            return eventArgs.Effects;
+        }
 
         public void Dispose()
         {

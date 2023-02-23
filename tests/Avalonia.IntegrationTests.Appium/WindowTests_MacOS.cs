@@ -150,6 +150,18 @@ namespace Avalonia.IntegrationTests.Appium
             windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("Normal", windowState.Text);
         }
+        
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent_After_Modal_Closed()
+        {
+            using (OpenWindow(new PixelSize(200, 300), ShowWindowMode.Owned, WindowStartupLocation.Manual))
+            {
+                OpenWindow(null, ShowWindowMode.Modal, WindowStartupLocation.Manual).Dispose();
+                
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
+                Assert.Equal(1, secondaryWindowIndex);
+            }
+        }
 
         [PlatformFact(TestPlatforms.MacOS)]
         public void Does_Not_Switch_Space_From_FullScreen_To_Main_Desktop_When_FullScreen_Window_Clicked()

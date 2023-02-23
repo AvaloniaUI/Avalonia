@@ -5,6 +5,7 @@ import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 import { NavigationHelper } from "./avalonia/navigationHelper";
+import { GeneralHelpers } from "./avalonia/generalHelpers";
 
 export {
     Caniuse,
@@ -15,5 +16,6 @@ export {
     AvaloniaDOM,
     StreamHelper,
     NativeControlHost,
-    NavigationHelper
+    NavigationHelper,
+    GeneralHelpers
 };

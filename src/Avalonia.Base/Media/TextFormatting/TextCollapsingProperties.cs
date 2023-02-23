@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Media.TextFormatting
+﻿using System.Collections.Generic;
+
+namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Properties of text collapsing.
@@ -14,6 +16,11 @@
         /// Gets the text run that is used as collapsing symbol.
         /// </summary>
         public abstract TextRun Symbol { get; }
+
+        /// <summary>
+        /// Gets the flow direction that is used for collapsing.
+        /// </summary>
+        public abstract FlowDirection FlowDirection { get; }
 
         /// <summary>
         /// Collapses given text line.

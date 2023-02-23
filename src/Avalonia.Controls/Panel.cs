@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -60,8 +61,19 @@ namespace Avalonia.Controls
 
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
-            add => _childIndexChanged += value;
-            remove => _childIndexChanged -= value;
+            add
+            {
+                if (_childIndexChanged is null)
+                    Children.PropertyChanged += ChildrenPropertyChanged;
+                _childIndexChanged += value;
+            }
+
+            remove
+            {
+                _childIndexChanged -= value;
+                if (_childIndexChanged is null)
+                    Children.PropertyChanged -= ChildrenPropertyChanged;
+            }
         }
 
         /// <summary>
@@ -152,13 +164,19 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
             InvalidateMeasureOnChildrenChanged();
         }
 
         private protected virtual void InvalidateMeasureOnChildrenChanged()
         {
             InvalidateMeasure();
+        }
+
+        private void ChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
         }
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)

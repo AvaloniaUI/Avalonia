@@ -2,44 +2,35 @@
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Tmds.DBus.SourceGenerator;
 
-namespace Avalonia.FreeDesktop;
-
-internal class DBusPlatformSettings : DefaultPlatformSettings
+namespace Avalonia.FreeDesktop
 {
-    private readonly IDBusSettings? _settings;
-    private PlatformColorValues? _lastColorValues;
-
-    public DBusPlatformSettings()
+    internal class DBusPlatformSettings : DefaultPlatformSettings
     {
-        _settings = DBusHelper.TryInitialize()?
-            .CreateProxy<IDBusSettings>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+        private readonly OrgFreedesktopPortalSettings? _settings;
+        private PlatformColorValues? _lastColorValues;
 
-        if (_settings is not null)
+        public DBusPlatformSettings()
         {
+            if (DBusHelper.Connection is null)
+                return;
+
+            _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
-
-            _ = TryGetInitialValue();
+            _ = TryGetInitialValueAsync();
         }
-    }
 
-    public override PlatformColorValues GetColorValues()
-    {
-        return _lastColorValues ?? base.GetColorValues();
-    }
-
-    private async Task TryGetInitialValue()
-    {
-        var colorSchemeTask = _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
-        if (colorSchemeTask.Status == TaskStatus.RanToCompletion)
+        public override PlatformColorValues GetColorValues()
         {
-            _lastColorValues = GetColorValuesFromSetting(colorSchemeTask.Result);
+            return _lastColorValues ?? base.GetColorValues();
         }
-        else
+
+        private async Task TryGetInitialValueAsync()
         {
             try
             {
-                var value = await colorSchemeTask;
+                var value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
                 _lastColorValues = GetColorValuesFromSetting(value);
                 OnColorValuesChanged(_lastColorValues);
             }
@@ -49,29 +40,31 @@ internal class DBusPlatformSettings : DefaultPlatformSettings
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, "Unable to get setting value", ex);
             }
         }
-    }
-    
-    private void SettingsChangedHandler((string @namespace, string key, object value) tuple)
-    {
-        if (tuple.@namespace == "org.freedesktop.appearance"
-            && tuple.key == "color-scheme")
+
+        private void SettingsChangedHandler(Exception? exception, (string @namespace, string key, DBusVariantItem value) valueTuple)
         {
-            /*
-            <member>0: No preference</member>
-            <member>1: Prefer dark appearance</member>
-            <member>2: Prefer light appearance</member>
-            */
-            _lastColorValues = GetColorValuesFromSetting(tuple.value);
-            OnColorValuesChanged(_lastColorValues);
+            if (exception is not null)
+                return;
+
+            if (valueTuple is ("org.freedesktop.appearance", "color-scheme", { } value))
+            {
+                /*
+                <member>0: No preference</member>
+                <member>1: Prefer dark appearance</member>
+                <member>2: Prefer light appearance</member>
+                */
+                _lastColorValues = GetColorValuesFromSetting(value);
+                OnColorValuesChanged(_lastColorValues);
+            }
         }
-    }
-    
-    private static PlatformColorValues GetColorValuesFromSetting(object value)
-    {
-        var isDark = value?.ToString() == "1";
-        return new PlatformColorValues
+
+        private static PlatformColorValues GetColorValuesFromSetting(DBusVariantItem value)
         {
-            ThemeVariant = isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light
-        };
+            var isDark = ((value.Value as DBusVariantItem)!.Value as DBusUInt32Item)!.Value == 1;
+            return new PlatformColorValues
+            {
+                ThemeVariant = isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light
+            };
+        }
     }
 }
