@@ -61,7 +61,7 @@ namespace Avalonia.Styling
             {
                 return subscribe
                     ? new SelectorMatch(new NthChildActivator(logical, childIndexProvider, Step, Offset, _reversed))
-                    : Evaluate(logical, childIndexProvider, Step, Offset, _reversed);
+                    : Evaluate(childIndexProvider.GetChildIndex(logical), childIndexProvider, Step, Offset, _reversed);
             }
             else
             {
@@ -70,10 +70,9 @@ namespace Avalonia.Styling
         }
 
         internal static SelectorMatch Evaluate(
-            ILogical logical, IChildIndexProvider childIndexProvider,
+            int index, IChildIndexProvider childIndexProvider,
             int step, int offset, bool reversed)
         {
-            var index = childIndexProvider.GetChildIndex(logical);
             if (index < 0)
             {
                 return SelectorMatch.NeverThisInstance;

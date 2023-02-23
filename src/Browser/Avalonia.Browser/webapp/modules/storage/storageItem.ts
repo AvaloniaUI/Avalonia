@@ -3,8 +3,9 @@ import { FileSystemFileHandle, FileSystemDirectoryHandle, FileSystemWritableFile
 import { Caniuse } from "../avalonia";
 
 export class StorageItem {
-    constructor(
+    private constructor(
         public handle?: FileSystemFileHandle | FileSystemDirectoryHandle,
+        private readonly file?: File,
         private readonly bookmarkId?: string,
         public wellKnownType?: WellKnownDirectory
     ) {
@@ -14,6 +15,9 @@ export class StorageItem {
         if (this.handle) {
             return this.handle.name;
         }
+        if (this.file) {
+            return this.file.name;
+        }
         return this.wellKnownType ?? "";
     }
 
@@ -21,14 +25,29 @@ export class StorageItem {
         if (this.handle) {
             return this.handle.kind;
         }
+        if (this.file) {
+            return "file";
+        }
         return "directory";
     }
 
+    public static createFromHandle(handle: FileSystemFileHandle | FileSystemDirectoryHandle, bookmarkId?: string) {
+        return new StorageItem(handle, undefined, bookmarkId, undefined);
+    }
+
+    public static createFromFile(file: File) {
+        return new StorageItem(undefined, file, undefined, undefined);
+    }
+
     public static createWellKnownDirectory(type: WellKnownDirectory) {
-        return new StorageItem(undefined, undefined, type);
+        return new StorageItem(undefined, undefined, undefined, type);
     }
 
     public static async openRead(item: StorageItem): Promise<Blob> {
+        if (item.file) {
+            return item.file;
+        }
+
         if (!item.handle || item.kind !== "file") {
             throw new Error("StorageItem is not a file");
         }
@@ -41,7 +60,7 @@ export class StorageItem {
 
     public static async openWrite(item: StorageItem): Promise<FileSystemWritableFileStream> {
         if (!item.handle || item.kind !== "file") {
-            throw new Error("StorageItem is not a file");
+            throw new Error("StorageItem is not a writeable file");
         }
 
         await item.verityPermissions("readwrite");
@@ -52,8 +71,9 @@ export class StorageItem {
     public static async getProperties(item: StorageItem): Promise<{ Size: number; LastModified: number; Type: string } | null> {
         // getFile can fail with an exception depending if we use polyfill with a save file dialog or not.
         try {
-            const file = item.handle instanceof FileSystemFileHandle &&
-                await item.handle.getFile();
+            const file = item.handle && "getFile" in item.handle
+                ? await item.handle.getFile()
+                : item.file;
 
             if (!file) {
                 return null;
@@ -143,5 +163,17 @@ export class StorageItems {
 
     public static itemsArray(instance: StorageItems): StorageItem[] {
         return instance.items;
+    }
+
+    public static filesToItemsArray(files: File[]): StorageItem[] {
+        if (!files) {
+            return [];
+        }
+
+        const retItems = [];
+        for (let i = 0; i < files.length; i++) {
+            retItems[i] = StorageItem.createFromFile(files[i]);
+        }
+        return retItems;
     }
 }

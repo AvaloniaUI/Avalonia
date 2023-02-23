@@ -69,7 +69,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 new Matrix(),
                 Brushes.Black,
                 null,
-                geometry, default);
+                geometry);
 
             geometryNode.HitTest(new Point());
         }
@@ -77,7 +77,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         private class TestRectangleDrawOperation : RectangleNode
         {
             public TestRectangleDrawOperation(Rect bounds, Matrix transform, Pen pen) 
-                : base(transform, pen.Brush, pen, bounds, new BoxShadows())
+                : base(transform, pen.Brush?.ToImmutable(), pen, bounds, new BoxShadows())
             {
 
             }

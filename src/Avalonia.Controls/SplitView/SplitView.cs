@@ -1,77 +1,16 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using System;
+using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
-using System;
-using Avalonia.Reactive;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
-using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
-    /// <summary>
-    /// Defines constants for how the SplitView Pane should display
-    /// </summary>
-    public enum SplitViewDisplayMode
-    {
-        /// <summary>
-        /// Pane is displayed next to content, and does not auto collapse
-        /// when tapped outside
-        /// </summary>
-        Inline,
-        /// <summary>
-        /// Pane is displayed next to content. When collapsed, pane is still
-        /// visible according to CompactPaneLength. Pane does not auto collapse
-        /// when tapped outside
-        /// </summary>
-        CompactInline,
-        /// <summary>
-        /// Pane is displayed above content. Pane collapses when tapped outside
-        /// </summary>
-        Overlay,
-        /// <summary>
-        /// Pane is displayed above content. When collapsed, pane is still
-        /// visible according to CompactPaneLength. Pane collapses when tapped outside
-        /// </summary>
-        CompactOverlay
-    }
-
-    /// <summary>
-    /// Defines constants for where the Pane should appear
-    /// </summary>
-    public enum SplitViewPanePlacement
-    {
-        Left,
-        Right
-    }
-
-    public class SplitViewTemplateSettings : AvaloniaObject
-    {
-        internal SplitViewTemplateSettings() { }
-
-        public static readonly StyledProperty<double> ClosedPaneWidthProperty =
-            AvaloniaProperty.Register<SplitViewTemplateSettings, double>(nameof(ClosedPaneWidth), 0d);
-
-        public static readonly StyledProperty<GridLength> PaneColumnGridLengthProperty =
-            AvaloniaProperty.Register<SplitViewTemplateSettings, GridLength>(nameof(PaneColumnGridLength));
-
-        public double ClosedPaneWidth
-        {
-            get => GetValue(ClosedPaneWidthProperty);
-            internal set => SetValue(ClosedPaneWidthProperty, value);
-        }
-
-        public GridLength PaneColumnGridLength
-        {
-            get => GetValue(PaneColumnGridLengthProperty);
-            internal set => SetValue(PaneColumnGridLengthProperty, value);
-        }
-    }
-
     /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
@@ -93,26 +32,34 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CompactPaneLength"/> property
         /// </summary>
         public static readonly StyledProperty<double> CompactPaneLengthProperty =
-            AvaloniaProperty.Register<SplitView, double>(nameof(CompactPaneLength), defaultValue: 48);
+            AvaloniaProperty.Register<SplitView, double>(
+                nameof(CompactPaneLength),
+                defaultValue: 48);
 
         /// <summary>
         /// Defines the <see cref="DisplayMode"/> property
         /// </summary>
         public static readonly StyledProperty<SplitViewDisplayMode> DisplayModeProperty =
-            AvaloniaProperty.Register<SplitView, SplitViewDisplayMode>(nameof(DisplayMode), defaultValue: SplitViewDisplayMode.Overlay);
+            AvaloniaProperty.Register<SplitView, SplitViewDisplayMode>(
+                nameof(DisplayMode),
+                defaultValue: SplitViewDisplayMode.Overlay);
 
         /// <summary>
         /// Defines the <see cref="IsPaneOpen"/> property
         /// </summary>
-        public static readonly DirectProperty<SplitView, bool> IsPaneOpenProperty =
-            AvaloniaProperty.RegisterDirect<SplitView, bool>(nameof(IsPaneOpen),
-                x => x.IsPaneOpen, (x, v) => x.IsPaneOpen = v);
+        public static readonly StyledProperty<bool> IsPaneOpenProperty =
+            AvaloniaProperty.Register<SplitView, bool>(
+                nameof(IsPaneOpen),
+                defaultValue: false,
+                coerce: CoerceIsPaneOpen);
 
         /// <summary>
         /// Defines the <see cref="OpenPaneLength"/> property
         /// </summary>
         public static readonly StyledProperty<double> OpenPaneLengthProperty =
-            AvaloniaProperty.Register<SplitView, double>(nameof(OpenPaneLength), defaultValue: 320);
+            AvaloniaProperty.Register<SplitView, double>(
+                nameof(OpenPaneLength),
+                defaultValue: 320);
 
         /// <summary>
         /// Defines the <see cref="PaneBackground"/> property
@@ -150,7 +97,38 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<SplitViewTemplateSettings> TemplateSettingsProperty =
             AvaloniaProperty.Register<SplitView, SplitViewTemplateSettings>(nameof(TemplateSettings));
 
-        private bool _isPaneOpen;
+        /// <summary>
+        /// Defines the <see cref="PaneClosed"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> PaneClosedEvent =
+            RoutedEvent.Register<SplitView, RoutedEventArgs>(
+                nameof(PaneClosed),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PaneClosing"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<CancelRoutedEventArgs> PaneClosingEvent =
+            RoutedEvent.Register<SplitView, CancelRoutedEventArgs>(
+                nameof(PaneClosing),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PaneOpened"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> PaneOpenedEvent =
+            RoutedEvent.Register<SplitView, RoutedEventArgs>(
+                nameof(PaneOpened),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PaneOpening"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<CancelRoutedEventArgs> PaneOpeningEvent =
+            RoutedEvent.Register<SplitView, CancelRoutedEventArgs>(
+                nameof(PaneOpening),
+                RoutingStrategies.Bubble);
+
         private Panel? _pane;
         private IDisposable? _pointerDisposable;
 
@@ -164,12 +142,6 @@ namespace Avalonia.Controls
 
         static SplitView()
         {
-            UseLightDismissOverlayModeProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnUseLightDismissChanged(v));
-            CompactPaneLengthProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnCompactPaneLengthChanged(v));
-            PanePlacementProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnPanePlacementChanged(v));
-            DisplayModeProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnDisplayModeChanged(v));
-
-            PaneProperty.Changed.AddClassHandler<SplitView>((x, e) => x.PaneChanged(e));
         }
 
         /// <summary>
@@ -196,37 +168,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsPaneOpen
         {
-            get => _isPaneOpen;
-            set
-            {
-                if (value == _isPaneOpen)
-                {
-                    return;
-                }
-
-                if (value)
-                {
-                    OnPaneOpening(this, EventArgs.Empty);
-                    SetAndRaise(IsPaneOpenProperty, ref _isPaneOpen, value);
-
-                    PseudoClasses.Add(":open");
-                    PseudoClasses.Remove(":closed");
-                    OnPaneOpened(this, EventArgs.Empty);
-                }
-                else
-                {
-                    SplitViewPaneClosingEventArgs args = new SplitViewPaneClosingEventArgs(false);
-                    OnPaneClosing(this, args);
-                    if (!args.Cancel)
-                    {
-                        SetAndRaise(IsPaneOpenProperty, ref _isPaneOpen, value);
-
-                        PseudoClasses.Add(":closed");
-                        PseudoClasses.Remove(":open");
-                        OnPaneClosed(this, EventArgs.Empty);
-                    }
-                }
-            }
+            get => GetValue(IsPaneOpenProperty);
+            set => SetValue(IsPaneOpenProperty, value);
         }
 
         /// <summary>
@@ -297,24 +240,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Fired when the pane is closed
+        /// Fired when the pane is closed.
         /// </summary>
-        public event EventHandler<EventArgs>? PaneClosed;
+        public event EventHandler<RoutedEventArgs>? PaneClosed
+        {
+            add => AddHandler(PaneClosedEvent, value);
+            remove => RemoveHandler(PaneClosedEvent, value);
+        }
 
         /// <summary>
-        /// Fired when the pane is closing
+        /// Fired when the pane is closing.
         /// </summary>
-        public event EventHandler<SplitViewPaneClosingEventArgs>? PaneClosing;
+        /// <remarks>
+        /// The event args <see cref="CancelRoutedEventArgs.Cancel"/> property may be set to true to cancel the event
+        /// and keep the pane open.
+        /// </remarks>
+        public event EventHandler<CancelRoutedEventArgs>? PaneClosing
+        {
+            add => AddHandler(PaneClosingEvent, value);
+            remove => RemoveHandler(PaneClosingEvent, value);
+        }
 
         /// <summary>
-        /// Fired when the pane is opened
+        /// Fired when the pane is opened.
         /// </summary>
-        public event EventHandler<EventArgs>? PaneOpened;
+        public event EventHandler<RoutedEventArgs>? PaneOpened
+        {
+            add => AddHandler(PaneOpenedEvent, value);
+            remove => RemoveHandler(PaneOpenedEvent, value);
+        }
 
         /// <summary>
-        /// Fired when the pane is opening
+        /// Fired when the pane is opening.
         /// </summary>
-        public event EventHandler<EventArgs>? PaneOpening;
+        /// <remarks>
+        /// The event args <see cref="CancelRoutedEventArgs.Cancel"/> property may be set to true to cancel the event
+        /// and keep the pane closed.
+        /// </remarks>
+        public event EventHandler<CancelRoutedEventArgs>? PaneOpening
+        {
+            add => AddHandler(PaneOpeningEvent, value);
+            remove => RemoveHandler(PaneOpeningEvent, value);
+        }
 
         protected override bool RegisterContentPresenter(IContentPresenter presenter)
         {
@@ -351,6 +318,89 @@ namespace Avalonia.Controls
             _pointerDisposable?.Dispose();
         }
 
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == CompactPaneLengthProperty)
+            {
+                var newLen = change.GetNewValue<double>();
+                var displayMode = DisplayMode;
+                if (displayMode == SplitViewDisplayMode.CompactInline)
+                {
+                    TemplateSettings.ClosedPaneWidth = newLen;
+                }
+                else if (displayMode == SplitViewDisplayMode.CompactOverlay)
+                {
+                    TemplateSettings.ClosedPaneWidth = newLen;
+                    TemplateSettings.PaneColumnGridLength = new GridLength(newLen, GridUnitType.Pixel);
+                }
+            }
+            else if (change.Property == DisplayModeProperty)
+            {
+                var oldState = GetPseudoClass(change.GetOldValue<SplitViewDisplayMode>());
+                var newState = GetPseudoClass(change.GetNewValue<SplitViewDisplayMode>());
+
+                PseudoClasses.Remove($":{oldState}");
+                PseudoClasses.Add($":{newState}");
+
+                var (closedPaneWidth, paneColumnGridLength) = change.GetNewValue<SplitViewDisplayMode>() switch
+                {
+                    SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
+                    SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
+                    SplitViewDisplayMode.Inline => (0, new GridLength(0, GridUnitType.Auto)),
+                    SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
+                    _ => throw new NotImplementedException(),
+                };
+                TemplateSettings.ClosedPaneWidth = closedPaneWidth;
+                TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
+            }
+            else if (change.Property == IsPaneOpenProperty)
+            {
+                bool isPaneOpen = change.GetNewValue<bool>();
+
+                if (isPaneOpen)
+                {
+                    PseudoClasses.Add(":open");
+                    PseudoClasses.Remove(":closed");
+
+                    OnPaneOpened(new RoutedEventArgs(PaneOpenedEvent, this));
+                }
+                else
+                {
+                    PseudoClasses.Add(":closed");
+                    PseudoClasses.Remove(":open");
+
+                    OnPaneClosed(new RoutedEventArgs(PaneClosedEvent, this));
+                }
+            }
+            else if (change.Property == PaneProperty)
+            {
+                if (change.OldValue is ILogical oldChild)
+                {
+                    LogicalChildren.Remove(oldChild);
+                }
+
+                if (change.NewValue is ILogical newChild)
+                {
+                    LogicalChildren.Add(newChild);
+                }
+            }
+            else if (change.Property == PanePlacementProperty)
+            {
+                var oldState = GetPseudoClass(change.GetOldValue<SplitViewPanePlacement>());
+                var newState = GetPseudoClass(change.GetNewValue<SplitViewPanePlacement>());
+                PseudoClasses.Remove($":{oldState}");
+                PseudoClasses.Add($":{newState}");
+            }
+            else if (change.Property == UseLightDismissOverlayModeProperty)
+            {
+                var mode = change.GetNewValue<bool>();
+                PseudoClasses.Set(":lightdismiss", mode);
+            }
+        }
+
         private void PointerPressedOutside(object? sender, PointerPressedEventArgs e)
         {
             if (!IsPaneOpen)
@@ -384,7 +434,7 @@ namespace Avalonia.Controls
             }
             if (closePane)
             {
-                IsPaneOpen = false;
+                SetCurrentValue(IsPaneOpenProperty, false);
                 e.Handled = true;
             }
         }
@@ -394,41 +444,29 @@ namespace Avalonia.Controls
             return (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay);
         }
 
-        protected virtual void OnPaneOpening(SplitView sender, EventArgs args)
+        protected virtual void OnPaneOpening(CancelRoutedEventArgs args)
         {
-            PaneOpening?.Invoke(sender, args);
+            RaiseEvent(args);
         }
 
-        protected virtual void OnPaneOpened(SplitView sender, EventArgs args)
+        protected virtual void OnPaneOpened(RoutedEventArgs args)
         {
-            PaneOpened?.Invoke(sender, args);
+            RaiseEvent(args);
         }
 
-        protected virtual void OnPaneClosing(SplitView sender, SplitViewPaneClosingEventArgs args)
+        protected virtual void OnPaneClosing(CancelRoutedEventArgs args)
         {
-            PaneClosing?.Invoke(sender, args);
+            RaiseEvent(args);
         }
 
-        protected virtual void OnPaneClosed(SplitView sender, EventArgs args)
+        protected virtual void OnPaneClosed(RoutedEventArgs args)
         {
-            PaneClosed?.Invoke(sender, args);
+            RaiseEvent(args);
         }
 
-        private void OnCompactPaneLengthChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var newLen = (double)e.NewValue!;
-            var displayMode = DisplayMode;
-            if (displayMode == SplitViewDisplayMode.CompactInline)
-            {
-                TemplateSettings.ClosedPaneWidth = newLen;
-            }
-            else if (displayMode == SplitViewDisplayMode.CompactOverlay)
-            {
-                TemplateSettings.ClosedPaneWidth = newLen;
-                TemplateSettings.PaneColumnGridLength = new GridLength(newLen, GridUnitType.Pixel);
-            }
-        }
-
+        /// <summary>
+        /// Gets the appropriate PseudoClass for the given <see cref="SplitViewDisplayMode"/>.
+        /// </summary>
         private static string GetPseudoClass(SplitViewDisplayMode mode)
         {
             return mode switch
@@ -441,6 +479,9 @@ namespace Avalonia.Controls
             };
         }
         
+        /// <summary>
+        /// Gets the appropriate PseudoClass for the given <see cref="SplitViewPanePlacement"/>.
+        /// </summary>
         private static string GetPseudoClass(SplitViewPanePlacement placement)
         {
             return placement switch
@@ -451,51 +492,47 @@ namespace Avalonia.Controls
             };
         }
 
-        private void OnPanePlacementChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <summary>
+        /// Called when the <see cref="IsPaneOpen"/> property has to be coerced.
+        /// </summary>
+        /// <param name="value">The value to coerce.</param>
+        protected virtual bool OnCoerceIsPaneOpen(bool value)
         {
-            var oldState = GetPseudoClass(e.GetOldValue<SplitViewPanePlacement>());
-            var newState = GetPseudoClass(e.GetNewValue<SplitViewPanePlacement>());
-            PseudoClasses.Remove($":{oldState}");
-            PseudoClasses.Add($":{newState}");
-        }
+            CancelRoutedEventArgs eventArgs;
 
-        private void OnDisplayModeChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var oldState = GetPseudoClass(e.GetOldValue<SplitViewDisplayMode>());
-            var newState = GetPseudoClass(e.GetNewValue<SplitViewDisplayMode>());
-
-            PseudoClasses.Remove($":{oldState}");
-            PseudoClasses.Add($":{newState}");
-
-            var (closedPaneWidth, paneColumnGridLength) = e.GetNewValue<SplitViewDisplayMode>() switch
+            if (value)
             {
-                SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
-                SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
-                SplitViewDisplayMode.Inline => (0, new GridLength(0, GridUnitType.Auto)),
-                SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
-                _ => throw new NotImplementedException(),
-            };
-            TemplateSettings.ClosedPaneWidth = closedPaneWidth;
-            TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
-        }
-
-        private void OnUseLightDismissChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var mode = (bool)e.NewValue!;
-            PseudoClasses.Set(":lightdismiss", mode);
-        }
-
-        private void PaneChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.OldValue is ILogical oldChild)
+                eventArgs = new CancelRoutedEventArgs(PaneOpeningEvent, this);
+                OnPaneOpening(eventArgs);
+            }
+            else
             {
-                LogicalChildren.Remove(oldChild);
+                eventArgs = new CancelRoutedEventArgs(PaneClosingEvent, this);
+                OnPaneClosing(eventArgs);
             }
 
-            if (e.NewValue is ILogical newChild)
+            if (eventArgs.Cancel)
             {
-                LogicalChildren.Add(newChild);
+                return !value;
             }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Coerces/validates the <see cref="IsPaneOpen"/> property value.
+        /// </summary>
+        /// <param name="instance">The <see cref="SplitView"/> instance.</param>
+        /// <param name="value">The value to coerce.</param>
+        /// <returns>The coerced/validated value.</returns>
+        private static bool CoerceIsPaneOpen(AvaloniaObject instance, bool value)
+        {
+            if (instance is SplitView splitView)
+            {
+                return splitView.OnCoerceIsPaneOpen(value);
+            }
+
+            return value;
         }
     }
 }

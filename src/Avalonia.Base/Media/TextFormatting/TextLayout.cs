@@ -352,7 +352,7 @@ namespace Avalonia.Media.TextFormatting
 
             var lastTrailingIndex = 0;
 
-            if(_paragraphProperties.FlowDirection== FlowDirection.LeftToRight)
+            if (_paragraphProperties.FlowDirection == FlowDirection.LeftToRight)
             {
                 lastTrailingIndex = textLine.FirstTextSourceIndex + textLine.Length;
 
@@ -377,7 +377,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     lastTrailingIndex += textEndOfLine.Length;
                 }
-            }       
+            }
 
             var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
@@ -553,26 +553,18 @@ namespace Avalonia.Media.TextFormatting
 
                 if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
                 {
-                    var whitespaceWidth = 0d;
+                    var justificationWidth = MaxWidth;
 
-                    for (var i = 0; i < textLines.Count; i++)
+                    if (_paragraphProperties.TextWrapping != TextWrapping.NoWrap)
                     {
-                        var line = textLines[i];
-                        var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
-
-                        if (lineWhitespaceWidth > whitespaceWidth)
-                        {
-                            whitespaceWidth = lineWhitespaceWidth;
-                        }
+                        justificationWidth = width;
                     }
-
-                    var justificationWidth = width - whitespaceWidth;
 
                     if (justificationWidth > 0)
                     {
                         var justificationProperties = new InterWordJustification(justificationWidth);
 
-                        for (var i = 0; i < textLines.Count - 1; i++)
+                        for (var i = 0; i < textLines.Count; i++)
                         {
                             var line = textLines[i];
 
@@ -597,12 +589,13 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
         private TextCollapsingProperties? GetCollapsingProperties(double width)
         {
-            if(_textTrimming == TextTrimming.None)
+            if (_textTrimming == TextTrimming.None)
             {
                 return null;
             }
 
-            return _textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties));
+            return _textTrimming.CreateCollapsingProperties(
+                new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties, _paragraphProperties.FlowDirection));
         }
 
         public void Dispose()
