@@ -373,7 +373,7 @@ namespace Avalonia.Controls.Primitives
                 ignorePropertyChanged = true;
 
                 // Always keep the two color properties in sync
-                HsvColor = Color.ToHsv();
+                SetCurrentValue(HsvColorProperty, Color.ToHsv());
 
                 SetColorToSliderValues();
                 UpdateBackground();
@@ -403,7 +403,7 @@ namespace Avalonia.Controls.Primitives
                 ignorePropertyChanged = true;
 
                 // Always keep the two color properties in sync
-                Color = HsvColor.ToRgb();
+                SetCurrentValue(ColorProperty, HsvColor.ToRgb());
 
                 SetColorToSliderValues();
                 UpdateBackground();
@@ -440,13 +440,13 @@ namespace Avalonia.Controls.Primitives
 
                 if (ColorModel == ColorModel.Hsva)
                 {
-                    HsvColor = hsvColor;
-                    Color = hsvColor.ToRgb();
+                    SetCurrentValue(HsvColorProperty, hsvColor);
+                    SetCurrentValue(ColorProperty, hsvColor.ToRgb());
                 }
                 else
                 {
-                    Color = color;
-                    HsvColor = color.ToHsv();
+                    SetCurrentValue(ColorProperty, color);
+                    SetCurrentValue(HsvColorProperty, color.ToHsv());
                 }
 
                 UpdatePseudoClasses();

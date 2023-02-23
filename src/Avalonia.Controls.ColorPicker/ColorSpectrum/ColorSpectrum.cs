@@ -403,7 +403,7 @@ namespace Avalonia.Controls.Primitives
 
                     _updatingHsvColor = true;
                     Hsv newHsv = (new Rgb(color)).ToHsv();
-                    HsvColor = newHsv.ToHsvColor(color.A / 255.0);
+                    SetCurrentValue(HsvColorProperty, newHsv.ToHsvColor(color.A / 255.0));
                     _updatingHsvColor = false;
 
                     UpdateEllipse();
@@ -509,15 +509,15 @@ namespace Avalonia.Controls.Primitives
                 {
                     case ColorSpectrumComponents.HueSaturation:
                     case ColorSpectrumComponents.SaturationHue:
-                        ThirdComponent = (ColorComponent)HsvComponent.Value;
+                        SetCurrentValue(ThirdComponentProperty, (ColorComponent)HsvComponent.Value);
                         break;
                     case ColorSpectrumComponents.HueValue:
                     case ColorSpectrumComponents.ValueHue:
-                        ThirdComponent = (ColorComponent)HsvComponent.Saturation;
+                        SetCurrentValue(ThirdComponentProperty, (ColorComponent)HsvComponent.Saturation);
                         break;
                     case ColorSpectrumComponents.SaturationValue:
                     case ColorSpectrumComponents.ValueSaturation:
-                        ThirdComponent = (ColorComponent)HsvComponent.Hue;
+                        SetCurrentValue(ThirdComponentProperty, (ColorComponent)HsvComponent.Hue);
                         break;
                 }
 
@@ -534,7 +534,7 @@ namespace Avalonia.Controls.Primitives
             _updatingColor = true;
             Rgb newRgb = (new Hsv(hsvColor)).ToRgb();
 
-            Color = newRgb.ToColor(hsvColor.A);
+            SetCurrentValue(ColorProperty, newRgb.ToColor(hsvColor.A));
 
             _updatingColor = false;
 
@@ -608,8 +608,8 @@ namespace Avalonia.Controls.Primitives
             Rgb newRgb = newHsv.ToRgb();
             double alpha = HsvColor.A;
 
-            Color = newRgb.ToColor(alpha);
-            HsvColor = newHsv.ToHsvColor(alpha);
+            SetCurrentValue(ColorProperty, newRgb.ToColor(alpha));
+            SetCurrentValue(HsvColorProperty, newHsv.ToHsvColor(alpha));
 
             UpdateEllipse();
             UpdatePseudoClasses();

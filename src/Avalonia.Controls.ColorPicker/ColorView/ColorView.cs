@@ -50,7 +50,7 @@ namespace Avalonia.Controls
 
                 if (convertedColor is Color color)
                 {
-                    Color = color;
+                    SetCurrentValue(ColorProperty, color);
                 }
 
                 // Re-apply the hex value
@@ -167,7 +167,7 @@ namespace Avalonia.Controls
                 // The work-around for this is done here where SelectedIndex is forcefully
                 // synchronized with whatever the TabControl property value is. This is
                 // possible since selection validation is already done by this method.
-                SelectedIndex = _tabControl.SelectedIndex;
+                SetCurrentValue(SelectedIndexProperty, _tabControl.SelectedIndex);
             }
 
             return;
@@ -211,7 +211,7 @@ namespace Avalonia.Controls
             {
                 ignorePropertyChanged = true;
 
-                HsvColor = Color.ToHsv();
+                SetCurrentValue(HsvColorProperty, Color.ToHsv());
                 SetColorToHexTextBox();
 
                 OnColorChanged(new ColorChangedEventArgs(
@@ -224,7 +224,7 @@ namespace Avalonia.Controls
             {
                 ignorePropertyChanged = true;
 
-                Color = HsvColor.ToRgb();
+                SetCurrentValue(ColorProperty, HsvColor.ToRgb());
                 SetColorToHexTextBox();
 
                 OnColorChanged(new ColorChangedEventArgs(
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                 // bound properties controlling the palette grid
                 if (palette != null)
                 {
-                    PaletteColumnCount = palette.ColorCount;
+                    SetCurrentValue(PaletteColumnCountProperty, palette.ColorCount);
 
                     List<Color> newPaletteColors = new List<Color>();
                     for (int shadeIndex = 0; shadeIndex < palette.ShadeCount; shadeIndex++)
@@ -252,14 +252,14 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    PaletteColors = newPaletteColors;
+                    SetCurrentValue(PaletteColorsProperty, newPaletteColors);
                 }
             }
             else if (change.Property == IsAlphaEnabledProperty)
             {
                 // Manually coerce the HsvColor value
                 // (Color will be coerced automatically if HsvColor changes)
-                HsvColor = OnCoerceHsvColor(HsvColor);
+                SetCurrentValue(HsvColorProperty,  OnCoerceHsvColor(HsvColor));
             }
             else if (change.Property == IsColorComponentsVisibleProperty ||
                      change.Property == IsColorPaletteVisibleProperty ||
