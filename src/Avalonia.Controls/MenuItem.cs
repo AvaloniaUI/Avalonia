@@ -309,7 +309,12 @@ namespace Avalonia.Controls
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
-        bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
+        bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap)
+        {
+            if (Presenter?.Panel is null)
+                (VisualRoot as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            return MoveSelection(direction, wrap);
+        }
 
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem
