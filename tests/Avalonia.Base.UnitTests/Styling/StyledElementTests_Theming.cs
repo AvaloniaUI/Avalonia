@@ -104,7 +104,7 @@ public class StyledElementTests_Theming
             target.Theme = null;
             Assert.Equal("style", target.Tag);
         }
-        
+
         [Fact]
         public void TemplatedParent_Theme_Is_Detached_From_Template_Controls_When_Theme_Property_Cleared()
         {
@@ -539,12 +539,42 @@ public class StyledElementTests_Theming
             Assert.Same(target.Theme, theme3);
         }
 
+        [Fact]
+        public void TemplatedParent_Theme_Change_Applies_To_Children()
+        {
+            var theme = CreateDerivedTheme();
+            var target = CreateTarget();
+
+            Assert.Null(target.Theme);
+            Assert.Null(target.Template);
+
+            var root = CreateRoot(target, theme.BasedOn);
+
+            Assert.NotNull(target.Theme);
+            Assert.NotNull(target.Template);
+
+            root.Styles.Add(new Style(x => x.OfType<ThemedControl>().Class("foo"))
+            {
+                Setters = { new Setter(StyledElement.ThemeProperty, theme) }
+            });
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            var border = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal(Brushes.Red, border.Background);
+
+            target.Classes.Add("foo");
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(Brushes.Green, border.Background);
+        }
+
         private static ThemedControl CreateTarget()
         {
             return new ThemedControl();
         }
 
-        private static TestRoot CreateRoot(Control child)
+        private static TestRoot CreateRoot(Control child, ControlTheme? theme = null)
         {
             var result = new TestRoot()
             {
@@ -552,7 +582,7 @@ public class StyledElementTests_Theming
                 {
                     new Style(x => x.OfType<ThemedControl>())
                     {
-                        Setters = { new Setter(StyledElement.ThemeProperty, CreateTheme()) }
+                        Setters = { new Setter(StyledElement.ThemeProperty, theme ?? CreateTheme()) }
                     }
                 }
             };
@@ -580,8 +610,8 @@ public class StyledElementTests_Theming
             {
                 new Style(x => x.Nesting().Template().OfType<Border>())
                 {
-                    Setters = 
-                    { 
+                    Setters =
+                    {
                         new Setter(Border.BackgroundProperty, Brushes.Red),
                         new Setter(Control.TagProperty, tag),
                     }

@@ -374,7 +374,7 @@ namespace Avalonia
         /// </returns>
         public bool ApplyStyling()
         {
-            if (_initCount == 0 && (!_stylesApplied || !_themeApplied))
+            if (_initCount == 0 && (!_stylesApplied || !_themeApplied || !_templatedParentThemeApplied))
             {
                 GetValueStore().BeginStyling();
 
