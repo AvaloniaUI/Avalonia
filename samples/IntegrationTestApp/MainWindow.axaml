@@ -25,6 +25,7 @@
     <StackPanel DockPanel.Dock="Bottom" Margin="4" Orientation="Horizontal">
       <TextBlock Margin="0,0,4,0">WindowState:</TextBlock>
       <TextBlock Name="MainWindowState" Text="{Binding WindowState}"/>
+      <TextBlock Name="AppOverlayPopups" Margin="8 0"/>
     </StackPanel>
     
     <TabControl TabStripPlacement="Left" Name="MainTabs">
