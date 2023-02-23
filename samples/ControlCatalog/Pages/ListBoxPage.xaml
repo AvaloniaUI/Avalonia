@@ -10,7 +10,7 @@
         <Setter Property="FontWeight" Value="Bold" />
       </Style>
       <Style Selector="ListBox ListBoxItem:nth-last-child(5n+4)">
-        <Setter Property="Foreground" Value="Blue" />
+        <Setter Property="Background" Value="Blue" />
         <Setter Property="FontWeight" Value="Bold" />
       </Style>
     </DockPanel.Styles>
