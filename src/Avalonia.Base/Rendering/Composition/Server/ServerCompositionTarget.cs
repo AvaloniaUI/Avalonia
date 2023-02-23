@@ -151,7 +151,7 @@ namespace Avalonia.Rendering.Composition.Server
             Readback.CompleteWrite(Revision);
 
             _redrawRequested = false;
-            using (var targetContext = _renderTarget.CreateDrawingContext(null))
+            using (var targetContext = _renderTarget.CreateDrawingContext())
             {
                 var layerSize = Size * Scaling;
                 if (layerSize != _layerSize || _layer == null || _layer.IsCorrupted)
@@ -165,12 +165,11 @@ namespace Avalonia.Rendering.Composition.Server
 
                 if (!_dirtyRect.IsDefault)
                 {
-                    var visualBrushHelper = new CompositorDrawingContextProxy.VisualBrushRenderer();
-                    using (var context = _layer.CreateDrawingContext(visualBrushHelper))
+                    using (var context = _layer.CreateDrawingContext())
                     {
                         context.PushClip(_dirtyRect);
                         context.Clear(Colors.Transparent);
-                        Root.Render(new CompositorDrawingContextProxy(context, visualBrushHelper), _dirtyRect);
+                        Root.Render(new CompositorDrawingContextProxy(context), _dirtyRect);
                         context.PopClip();
                     }
                 }

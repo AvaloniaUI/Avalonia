@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -8,22 +9,27 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace RenderDemo.Pages
 {
     public class CustomSkiaPage : Control
     {
+        private readonly GlyphRun _noSkia;
         public CustomSkiaPage()
         {
             ClipToBounds = true;
+            var text = "Current rendering API is not Skia";
+            var glyphs = text.Select(ch => Typeface.Default.GlyphTypeface.GetGlyph(ch)).ToArray();
+            _noSkia = new GlyphRun(Typeface.Default.GlyphTypeface, 12, text.AsMemory(), glyphs);
         }
         
         class CustomDrawOp : ICustomDrawOperation
         {
-            private readonly FormattedText _noSkia;
+            private readonly GlyphRun _noSkia;
 
-            public CustomDrawOp(Rect bounds, FormattedText noSkia)
+            public CustomDrawOp(Rect bounds, GlyphRun noSkia)
             {
                 _noSkia = noSkia;
                 Bounds = bounds;
@@ -42,10 +48,7 @@ namespace RenderDemo.Pages
             {
                 var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
                 if (leaseFeature == null)
-                    using (var c = new DrawingContext(context, false))
-                    {
-                        c.DrawText(_noSkia, new Point());
-                    }
+                    context.DrawGlyphRun(Brushes.Black, _noSkia.PlatformImpl);
                 else
                 {
                     using var lease = leaseFeature.Lease();
@@ -114,10 +117,7 @@ namespace RenderDemo.Pages
         
         public override void Render(DrawingContext context)
         {
-            var noSkia = new FormattedText("Current rendering API is not Skia", CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight, Typeface.Default, 12, Brushes.Black);
-
-            context.Custom(new CustomDrawOp(new Rect(0, 0, Bounds.Width, Bounds.Height), noSkia));
+            context.Custom(new CustomDrawOp(new Rect(0, 0, Bounds.Width, Bounds.Height), _noSkia));
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
         }
     }
