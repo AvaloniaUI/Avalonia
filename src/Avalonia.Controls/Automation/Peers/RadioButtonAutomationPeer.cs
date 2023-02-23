@@ -15,7 +15,6 @@ namespace Avalonia.Controls.Automation.Peers
                 {
                     RaiseToggleStatePropertyChangedEvent((bool?)e.OldValue, (bool?)e.NewValue);
                 }
-                
             };
         }
 
@@ -31,13 +30,7 @@ namespace Avalonia.Controls.Automation.Peers
 
         public bool IsSelected => ((RadioButton)Owner).IsChecked == true;
 
-        public ISelectionProvider? SelectionContainer
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public ISelectionProvider? SelectionContainer => null;
 
         public void AddToSelection()
         {
