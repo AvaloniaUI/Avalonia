@@ -28,7 +28,7 @@ namespace Avalonia
     public class StyledElement : Animatable, 
         IDataContextProvider, 
         ILogical,
-        IResourceHost,
+        IThemeVariantHost,
         IStyleHost,
         IStyleable,
         ISetLogicalParent,
@@ -74,23 +74,6 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<ControlTheme?> ThemeProperty =
             AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
-
-        /// <summary>
-        /// Defines the <see cref="ActualThemeVariant"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            AvaloniaProperty.Register<StyledElement, ThemeVariant>(
-                nameof(ThemeVariant),
-                inherits: true,
-                defaultValue: ThemeVariant.Light);
-
-        /// <summary>
-        /// Defines the RequestedThemeVariant property.
-        /// </summary>
-        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            AvaloniaProperty.Register<StyledElement, ThemeVariant?>(
-                nameof(ThemeVariant),
-                defaultValue: ThemeVariant.Default);
 
         private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
@@ -160,6 +143,9 @@ namespace Avalonia
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        /// <inheritdoc />
+        public event EventHandler? ActualThemeVariantChanged;
+        
         /// <summary>
         /// Gets or sets the name of the styled element.
         /// </summary>
@@ -279,15 +265,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the UI theme that is currently used by the element, which might be different than the <see cref="RequestedThemeVariantProperty"/>.
-        /// </summary>
-        /// <returns>
-        /// If current control is contained in the ThemeVariantScope, TopLevel or Application with non-default RequestedThemeVariant, that value will be returned.
-        /// Otherwise, current OS theme variant is returned.
-        /// </returns>
-        public ThemeVariant ActualThemeVariant => GetValue(ActualThemeVariantProperty);
-
-        /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
         protected internal IAvaloniaList<ILogical> LogicalChildren
@@ -325,6 +302,9 @@ namespace Avalonia
         /// </summary>
         public StyledElement? Parent { get; private set; }
 
+        /// <inheritdoc />
+        public ThemeVariant ActualThemeVariant => GetValue(ThemeVariant.ActualThemeVariantProperty);
+        
         /// <summary>
         /// Gets the styled element's logical parent.
         /// </summary>
@@ -394,7 +374,7 @@ namespace Avalonia
         /// </returns>
         public bool ApplyStyling()
         {
-            if (_initCount == 0 && (!_stylesApplied || !_themeApplied))
+            if (_initCount == 0 && (!_stylesApplied || !_themeApplied || !_templatedParentThemeApplied))
             {
                 GetValueStore().BeginStyling();
 
@@ -524,13 +504,7 @@ namespace Avalonia
                     NotifyResourcesChanged();
                 }
 
-#nullable disable
-                RaisePropertyChanged(
-                    ParentProperty,
-                    new Optional<StyledElement>(old),
-                    new BindingValue<StyledElement>(Parent),
-                    BindingPriority.LocalValue);
-#nullable enable
+                RaisePropertyChanged(ParentProperty, old, Parent);
             }
         }
 
@@ -650,13 +624,19 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
+            {
                 OnControlThemeChanged();
-            else if (change.Property == RequestedThemeVariantProperty)
+            }
+            else if (change.Property == ThemeVariant.RequestedThemeVariantProperty)
             {
                 if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
-                    SetValue(ActualThemeVariantProperty, themeVariant);
+                    SetValue(ThemeVariant.ActualThemeVariantProperty, themeVariant);
                 else
-                    ClearValue(ActualThemeVariantProperty);
+                    ClearValue(ThemeVariant.ActualThemeVariantProperty);
+            }
+            else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
+            {
+                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 

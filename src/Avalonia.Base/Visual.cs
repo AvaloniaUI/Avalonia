@@ -573,7 +573,7 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(Visual? oldParent, Visual? newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(VisualParentProperty, oldParent, newParent);
         }
 
         internal override ParametrizedLogger? GetBindingWarningLogger(

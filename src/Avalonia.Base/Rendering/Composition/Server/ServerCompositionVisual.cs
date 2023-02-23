@@ -41,27 +41,29 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
 
             Root!.RenderedVisuals++;
-            
-            if (Opacity != 1)
-                canvas.PushOpacity(Opacity);
+
+            var boundsRect = new Rect(new Size(Size.X, Size.Y));
+
             if (AdornedVisual != null)
             {
                 canvas.PostTransform = Matrix.Identity;
                 canvas.Transform = Matrix.Identity;
-                canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
+                if (AdornerIsClipped)
+                    canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
             }
             var transform = GlobalTransformMatrix;
             canvas.PostTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
-            
-            var boundsRect = new Rect(new Size(Size.X, Size.Y));
+
+            if (Opacity != 1)
+                canvas.PushOpacity(Opacity, boundsRect);
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
             if(OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
-            
+
             RenderCore(canvas, currentTransformedClip);
             
             // Hack to force invalidation of SKMatrix
@@ -74,7 +76,7 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopGeometryClip();
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PopClip();
-            if (AdornedVisual != null)
+            if (AdornedVisual != null && AdornerIsClipped)
                 canvas.PopClip();
             if(Opacity != 1)
                 canvas.PopOpacity();

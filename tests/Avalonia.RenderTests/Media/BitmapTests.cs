@@ -76,10 +76,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var r = Avalonia.AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using(var cpuContext = r.CreateBackendContext(null))
             using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
-            using (var ctx = target.CreateDrawingContext(null))
+            using (var ctx = target.CreateDrawingContext())
             {
                 ctx.Clear(Colors.Transparent);
-                ctx.PushOpacity(0.8);
+                ctx.PushOpacity(0.8, new Rect(0, 0, 80, 80));
                 ctx.DrawRectangle(Brushes.Chartreuse, null, new Rect(0, 0, 20, 100));
                 ctx.DrawRectangle(Brushes.Crimson, null, new Rect(20, 0, 20, 100));
                 ctx.DrawRectangle(Brushes.Gold,null, new Rect(40, 0, 20, 100));
@@ -90,7 +90,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             fb.Deallocate();
             using (var rtb = new RenderTargetBitmap(new PixelSize(100, 100), new Vector(96, 96)))
             {
-                using (var ctx = rtb.CreateDrawingContext(null))
+                using (var ctx = rtb.CreateDrawingContext())
                 {
                     ctx.DrawRectangle(Brushes.Blue, null, new Rect(0, 0, 100, 100));
                     ctx.DrawRectangle(Brushes.Pink, null, new Rect(0, 20, 100, 10));

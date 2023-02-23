@@ -43,13 +43,16 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> wheel);
 
-
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeInputEvents(
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.Boolean>>]
         Func<string, bool> input);
 
+    [JSImport("InputHelper.subscribeDropEvents", AvaloniaModule.MainModuleName)]
+    public static partial void SubscribeDropEvents(JSObject containerElement,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>] Func<JSObject, bool> dragEvent);
+    
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
     [return: JSMarshalAs<JSType.Array<JSType.Object>>]
     public static partial JSObject[] GetCoalescedEvents(JSObject pointerEvent);

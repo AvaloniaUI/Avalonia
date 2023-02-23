@@ -148,32 +148,37 @@ namespace Avalonia.Media.TextFormatting
 
         internal SplitResult<ShapedTextRun> Split(int length)
         {
-            if (IsReversed)
+            var isReversed = IsReversed;
+
+            if (isReversed)
             {
                 Reverse();
-            }
 
+                length = Length - length;
+            }
 #if DEBUG
-            if(length == 0)
+            if (length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-#endif
-            
+#endif          
             var splitBuffer = ShapedBuffer.Split(length);
 
             var first = new ShapedTextRun(splitBuffer.First, Properties);
 
-            #if DEBUG
+#if DEBUG
 
             if (first.Length != length)
             {
                 throw new InvalidOperationException("Split length mismatch.");
             }
-
 #endif
-
             var second = new ShapedTextRun(splitBuffer.Second!, Properties);
+
+            if (isReversed)
+            {
+                return new SplitResult<ShapedTextRun>(second, first);
+            }
 
             return new SplitResult<ShapedTextRun>(first, second);
         }

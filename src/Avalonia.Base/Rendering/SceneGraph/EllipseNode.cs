@@ -14,32 +14,19 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public EllipseNode(
             Matrix transform, 
-            IBrush? brush, 
+            IImmutableBrush? brush, 
             IPen? pen, 
-            Rect rect, 
-            IDisposable? aux = null) 
-            : base(rect.Inflate(pen?.Thickness ?? 0), transform, aux)
+            Rect rect) 
+            : base(rect.Inflate(pen?.Thickness ?? 0), transform, brush)
         {
-            Transform = transform;
-            Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
         }
 
         /// <summary>
-        /// Gets the fill brush.
-        /// </summary>
-        public IBrush? Brush { get; }
-
-        /// <summary>
         /// Gets the stroke pen.
         /// </summary>
         public ImmutablePen? Pen { get; }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
 
         /// <summary>
         /// Gets the rect of the ellipse to draw.
@@ -54,21 +41,10 @@ namespace Avalonia.Rendering.SceneGraph
                    rect.Equals(Rect);
         }
 
-        public override void Render(IDrawingContextImpl context)
-        {
-            context.Transform = Transform;
-            context.DrawEllipse(Brush, Pen, Rect);
-        }
+        public override void Render(IDrawingContextImpl context) => context.DrawEllipse(Brush, Pen, Rect);
 
         public override bool HitTest(Point p)
         {
-            if (!Transform.TryInvert(out Matrix inverted))
-            {
-                return false;
-            }
-
-            p *= inverted;
-
             var center = Rect.Center;
 
             var strokeThickness = Pen?.Thickness ?? 0;
@@ -111,6 +87,11 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             return false;
+        }
+
+        public override void Dispose()
+        {
+            (Brush as ISceneBrushContent)?.Dispose();
         }
     }
 }

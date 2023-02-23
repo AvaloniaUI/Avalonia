@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
@@ -145,6 +147,11 @@ namespace Avalonia.Controls
             {
                 _groupManager?.Remove(this, GroupName);
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new RadioButtonAutomationPeer(this);
         }
 
         private void SetGroupName(string? newGroupName)
