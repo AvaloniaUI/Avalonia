@@ -37,7 +37,7 @@ namespace Avalonia.Skia
 
                 var usedCulture = culture ?? CultureInfo.CurrentCulture;
 
-                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, i => new Language(usedCulture));
+                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
@@ -170,7 +170,7 @@ namespace Avalonia.Skia
                 return segment.Array.AsMemory();
             }
 
-            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char> memoryManager, out start, out length))
+            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char>? memoryManager, out start, out length))
             {
                 return memoryManager.Memory;
             }

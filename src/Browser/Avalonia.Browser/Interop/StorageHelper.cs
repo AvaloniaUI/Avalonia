@@ -46,6 +46,9 @@ internal static partial class StorageHelper
 
     [JSImport("StorageItems.itemsArray", AvaloniaModule.StorageModuleName)]
     public static partial JSObject[] ItemsArray(JSObject item);
+    
+    [JSImport("StorageItems.filesToItemsArray", AvaloniaModule.StorageModuleName)]
+    public static partial JSObject[] FilesToItemsArray(JSObject item);
 
     [JSImport("StorageProvider.createAcceptType", AvaloniaModule.StorageModuleName)]
     public static partial JSObject CreateAcceptType(string description, string[] mimeTypes, string[]? extensions);

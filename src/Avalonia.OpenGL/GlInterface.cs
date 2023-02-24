@@ -73,9 +73,6 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glFinish")]
         public partial void Finish();
 
-        [GetProcAddress("glGetIntegerv")]
-        public partial void GetIntegerv(int name, out int rv);
-
         [GetProcAddress("glGenFramebuffers")]
         public partial void GenFramebuffers(int count, int* res);
 

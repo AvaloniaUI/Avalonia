@@ -325,7 +325,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
@@ -392,7 +392,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect rect)
             {
 
             }
@@ -491,7 +491,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }

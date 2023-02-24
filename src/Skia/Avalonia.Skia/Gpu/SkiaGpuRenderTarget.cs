@@ -22,7 +22,7 @@ namespace Avalonia.Skia
             _renderTarget.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var session = _renderTarget.BeginRenderingSession();
 
@@ -31,7 +31,6 @@ namespace Avalonia.Skia
                 GrContext = session.GrContext,
                 Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
-                VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true,
                 Gpu = _skiaGpu,
                 CurrentSession =  session

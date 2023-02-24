@@ -34,6 +34,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<Control?> AdornerProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Control?>("Adorner");
 
+        /// <summary>
+        /// Defines the <see cref="DefaultFocusAdorner"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITemplate<Control>?> DefaultFocusAdornerProperty =
+            AvaloniaProperty.Register<Control, ITemplate<Control>?>(nameof(DefaultFocusAdorner));
+        
         private static readonly AttachedProperty<AdornedElementInfo?> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo?>("AdornedElementInfo");
 
@@ -86,6 +92,15 @@ namespace Avalonia.Controls.Primitives
             visual.SetValue(AdornerProperty, adorner);
         }
 
+        /// <summary>
+        /// Gets or sets the default control's focus adorner.
+        /// </summary>
+        public ITemplate<Control>? DefaultFocusAdorner
+        {
+            get => GetValue(DefaultFocusAdornerProperty);
+            set => SetValue(DefaultFocusAdornerProperty, value);
+        }
+        
         private static void AdornerChanged(AvaloniaPropertyChangedEventArgs<Control?> e)
         {
             if (e.Sender is Visual visual)
@@ -279,8 +294,11 @@ namespace Avalonia.Controls.Primitives
         private void UpdateAdornedElement(Visual adorner, Visual? adorned)
         {
             if (adorner.CompositionVisual != null)
+            {
                 adorner.CompositionVisual.AdornedVisual = adorned?.CompositionVisual;
-            
+                adorner.CompositionVisual.AdornerIsClipped = GetIsClipEnabled(adorner);
+            }
+
             var info = adorner.GetValue(s_adornedElementInfoProperty);
 
             if (info != null)

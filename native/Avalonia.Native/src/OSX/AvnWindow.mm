@@ -238,7 +238,7 @@
 
 -(BOOL)canBecomeKeyWindow
 {
-    if(_canBecomeKeyWindow)
+    if(_canBecomeKeyWindow && !_closed)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
         auto parent = dynamic_cast<WindowImpl*>(_parent.getRaw());
@@ -292,12 +292,14 @@
 {
     if (_parent == nullptr)
         return;
-        
+    
     _parent->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
         @try {
-        [self invalidateShadow];
+            [self invalidateShadow];
+            if (self->_parent != nullptr)
+                self->_parent->BringToFront();
         }
         @finally{
         }

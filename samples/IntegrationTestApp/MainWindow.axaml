@@ -56,6 +56,16 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="RadioButton">
+        <StackPanel Orientation="Vertical">
+          <RadioButton Name="BasicRadioButton">Sample RadioButton</RadioButton>
+          <StackPanel Orientation="Vertical">
+            <RadioButton Name="ThreeStatesRadioButton1" IsChecked="True" IsThreeState="True">Three States: Option 1</RadioButton>
+            <RadioButton Name="ThreeStatesRadioButton2" IsChecked="False" IsThreeState="True">Three States: Option 2</RadioButton>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+      
       <TabItem Header="CheckBox">
         <StackPanel>
           <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>
@@ -152,6 +162,9 @@
             <Button Name="ShowTransparentPopup">Transparent Popup</Button>
           </StackPanel>
         </Grid>
+      </TabItem>
+      <TabItem Header="SliderTab">
+          <Slider VerticalAlignment="Top" Name="Slider" Value="30"/>
       </TabItem>
     </TabControl>
   </DockPanel>

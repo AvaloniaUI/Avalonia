@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -11,20 +12,9 @@ namespace Avalonia.Skia
     internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
-        private SKPathMeasure _pathMeasureCache;
+        private SKPathMeasure? _cachedPathMeasure;
 
-        private SKPathMeasure CachedPathMeasure
-        {
-            get
-            {
-                if (_pathMeasureCache is null)
-                {
-                    _pathMeasureCache = new SKPathMeasure(EffectivePath);
-                }
-
-                return _pathMeasureCache;
-            }
-        }
+        private SKPathMeasure CachedPathMeasure => _cachedPathMeasure ??= new SKPathMeasure(EffectivePath!);
 
         /// <inheritdoc />
         public abstract Rect Bounds { get; }
@@ -37,11 +27,11 @@ namespace Avalonia.Skia
                 if (EffectivePath is null)
                     return 0;
 
-                return (double)CachedPathMeasure?.Length;
+                return CachedPathMeasure.Length;
             }
         }
 
-        public abstract SKPath EffectivePath { get; }
+        public abstract SKPath? EffectivePath { get; }
 
         /// <inheritdoc />
         public bool FillContains(Point point)
@@ -50,7 +40,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public bool StrokeContains(IPen pen, Point point)
+        public bool StrokeContains(IPen? pen, Point point)
         {
             // Skia requires to compute stroke path to check for point containment.
             // Due to that we are caching using stroke width.
@@ -98,21 +88,26 @@ namespace Avalonia.Skia
         /// <param name="path">Path to check.</param>
         /// <param name="point">Point.</param>
         /// <returns>True, if point is contained in a path.</returns>
-        private static bool PathContainsCore(SKPath path, Point point)
+        private static bool PathContainsCore(SKPath? path, Point point)
         {
-            return path.Contains((float)point.X, (float)point.Y);
+            return path is not null && path.Contains((float)point.X, (float)point.Y);
         }
 
         /// <inheritdoc />
-        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        public IGeometryImpl? Intersect(IGeometryImpl geometry)
         {
-            var result = EffectivePath.Op(((GeometryImpl)geometry).EffectivePath, SKPathOp.Intersect);
+            if (EffectivePath is { } path
+                && (geometry as GeometryImpl)?.EffectivePath is { } otherPath
+                && path.Op(otherPath, SKPathOp.Intersect) is { } result)
+            {
+                return new StreamGeometryImpl(result);
+            }
 
-            return result == null ? null : new StreamGeometryImpl(result);
+            return null;
         }
 
         /// <inheritdoc />
-        public Rect GetRenderBounds(IPen pen)
+        public Rect GetRenderBounds(IPen? pen)
         {
             var strokeWidth = (float)(pen?.Thickness ?? 0);
 
@@ -161,7 +156,7 @@ namespace Avalonia.Skia
         }
 
         public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure,
-            out IGeometryImpl segmentGeometry)
+            [NotNullWhen(true)] out IGeometryImpl? segmentGeometry)
         {
             if (EffectivePath is null)
             {
@@ -203,7 +198,7 @@ namespace Avalonia.Skia
             /// <summary>
             /// Cached contour path.
             /// </summary>
-            public SKPath CachedStrokePath { get; private set; }
+            public SKPath? CachedStrokePath { get; private set; }
 
             /// <summary>
             /// Cached geometry render bounds.
@@ -244,6 +239,7 @@ namespace Avalonia.Skia
             public void Invalidate()
             {
                 CachedStrokePath?.Dispose();
+                CachedStrokePath = null;
                 CachedGeometryRenderBounds = default;
                 _cachedStrokeWidth = default;
             }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,8 +23,11 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
         using (var doc = new UIDocument(url))
         {
-            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl.Path;
-            Name = doc.LocalizedName ?? System.IO.Path.GetFileName(_filePath) ?? url.FilePathUrl.LastPathComponent;
+            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl?.Path ?? string.Empty;
+            Name = doc.LocalizedName 
+                ?? System.IO.Path.GetFileName(_filePath) 
+                ?? url.FilePathUrl?.LastPathComponent
+                ?? string.Empty;
         }
     }
 

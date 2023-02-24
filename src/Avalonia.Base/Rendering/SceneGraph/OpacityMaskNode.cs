@@ -18,26 +18,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="mask">The opacity mask to push.</param>
         /// <param name="bounds">The bounds of the mask.</param>
         /// <param name="aux">Auxiliary data required to draw the brush.</param>
-        public OpacityMaskNode(IBrush mask, Rect bounds, IDisposable? aux = null)
-            : base(default, Matrix.Identity, aux)
+        public OpacityMaskNode(IImmutableBrush mask, Rect bounds)
+            : base(default, Matrix.Identity, mask)
         {
-            Mask = mask.ToImmutable();
             MaskBounds = bounds;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OpacityMaskNode"/> class that represents an
-        /// opacity mask pop.
-        /// </summary>
-        public OpacityMaskNode()
-            : base(default, Matrix.Identity, null)
-        {
-        }
-
-        /// <summary>
-        /// Gets the mask to be pushed or null if the operation represents a pop.
-        /// </summary>
-        public IBrush? Mask { get; }
 
         /// <summary>
         /// Gets the bounds of the opacity mask or null if the operation represents a pop.
@@ -58,19 +43,23 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(IBrush? mask, Rect? bounds) => Mask == mask && MaskBounds == bounds;
+        public bool Equals(IBrush? mask, Rect? bounds) => Equals(Brush, mask) && MaskBounds == bounds;
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            if (Mask != null)
-            {
-                context.PushOpacityMask(Mask, MaskBounds!.Value);
-            }
-            else
-            {
-                context.PopOpacityMask();
-            }
+            context.PushOpacityMask(Brush!, MaskBounds!.Value);
         }
+    }
+
+    internal class OpacityMaskPopNode : DrawOperation
+    {
+        public OpacityMaskPopNode() : base(default, Matrix.Identity)
+        {
+        }
+
+        public override bool HitTest(Point p) => false;
+
+        public override void Render(IDrawingContextImpl context) => context.PopOpacityMask();
     }
 }

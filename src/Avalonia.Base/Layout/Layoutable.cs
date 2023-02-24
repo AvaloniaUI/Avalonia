@@ -798,6 +798,12 @@ namespace Avalonia.Layout
             InvalidateMeasure();
         }
 
+        internal override void OnTemplatedParentControlThemeChanged()
+        {
+            base.OnTemplatedParentControlThemeChanged();
+            InvalidateMeasure();
+        }
+
         /// <summary>
         /// Called when the layout manager raises a LayoutUpdated event.
         /// </summary>
