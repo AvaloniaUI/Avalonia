@@ -310,12 +310,7 @@ namespace Avalonia.Controls
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
-        bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap)
-        {
-            if (Presenter?.Panel is null)
-                (VisualRoot as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
-            return MoveSelection(direction, wrap);
-        }
+        bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem
@@ -686,6 +681,12 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void PopupOpened(object? sender, EventArgs e)
         {
+            // If we're using overlay popups, there's a chance we need to do a layout pass before
+            // the child items are added to the visual tree. If we don't do this here, then
+            // selection breaks.
+            if (Presenter?.IsAttachedToVisualTree == false)
+                UpdateLayout();
+
             var selected = SelectedIndex;
 
             if (selected != -1)
@@ -703,6 +704,11 @@ namespace Avalonia.Controls
         private void PopupClosed(object? sender, EventArgs e)
         {
             SelectedItem = null;
+        }
+
+        private void UpdateLayout()
+        {
+            (VisualRoot as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
