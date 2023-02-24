@@ -32,7 +32,9 @@ namespace Avalonia.Controls
              AvaloniaProperty.Register<MaskedTextBox, string?>(nameof(Mask), string.Empty);
 
         public static new readonly StyledProperty<char> PasswordCharProperty =
-             AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PasswordChar), '\0');
+#pragma warning disable AVP1013 // AvaloniaProperty owners should not be added superfluously
+            TextBox.PasswordCharProperty.AddOwner<MaskedTextBox>();
+#pragma warning restore AVP1013 // AvaloniaProperty owners should not be added superfluously
 
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
@@ -50,6 +52,12 @@ namespace Avalonia.Controls
         private bool _ignoreTextChanges;
 
         private bool _resetOnSpace = true;
+
+        static MaskedTextBox()
+        {
+            PasswordCharProperty
+                .OverrideDefaultValue<MaskedTextBox>('\0');
+        }
 
         public MaskedTextBox() { }
 
