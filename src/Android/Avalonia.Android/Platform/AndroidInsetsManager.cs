@@ -67,7 +67,7 @@ namespace Avalonia.Android.Platform
             {
                 var renderScaling = _topLevel.RenderScaling;
 
-                var inset = insets.GetInsets((DisplayEdgeToEdge ? WindowInsetsCompat.Type.SystemBars() | WindowInsetsCompat.Type.DisplayCutout() : 0 ) | WindowInsetsCompat.Type.Ime());
+                var inset = insets.GetInsets((DisplayEdgeToEdge ? WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() | WindowInsetsCompat.Type.DisplayCutout() : 0 ) | WindowInsetsCompat.Type.Ime());
                 var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
                 var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 
@@ -143,7 +143,7 @@ namespace Avalonia.Android.Platform
             {
                 var compat = ViewCompat.GetRootWindowInsets(_topLevel.View);
 
-                return compat?.IsVisible(WindowInsetsCompat.Type.SystemBars());
+                return compat?.IsVisible(WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars());
             }
             set
             {
@@ -158,11 +158,11 @@ namespace Avalonia.Android.Platform
 
                 if (value == null || value.Value)
                 {
-                    compat?.Show(WindowInsetsCompat.Type.SystemBars());
+                    compat?.Show(WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars());
                 }
                 else
                 {
-                    compat?.Hide(WindowInsetsCompat.Type.SystemBars());
+                    compat?.Hide(WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars());
 
                     if (compat != null)
                     {
@@ -194,7 +194,7 @@ namespace Avalonia.Android.Platform
                     {
                         var renderScaling = InsetsManager._topLevel.RenderScaling;
 
-                        var inset = insets.GetInsets((InsetsManager.DisplayEdgeToEdge ? WindowInsetsCompat.Type.SystemBars() | WindowInsetsCompat.Type.DisplayCutout() : 0) | WindowInsetsCompat.Type.Ime());
+                        var inset = insets.GetInsets((InsetsManager.DisplayEdgeToEdge ? WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() | WindowInsetsCompat.Type.DisplayCutout() : 0) | WindowInsetsCompat.Type.Ime());
                         var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
                         var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 
