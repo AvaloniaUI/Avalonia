@@ -306,25 +306,8 @@ namespace ControlCatalog.Pages
                         resultText += @$"
             Content:
             ";
-#if NET6_0_OR_GREATER
-                        await using var stream = await file.OpenReadAsync();
-#else
-                        using var stream = await file.OpenReadAsync();
-#endif
-                        using var reader = new System.IO.StreamReader(stream);
 
-                        // 4GB file test, shouldn't load more than 10000 chars into a memory.
-                        const int length = 10000;
-                        var buffer = ArrayPool<char>.Shared.Rent(length);
-                        try
-                        {
-                            var charsRead = await reader.ReadAsync(buffer, 0, length);
-                            resultText += new string(buffer, 0, charsRead);
-                        }
-                        finally
-                        {
-                            ArrayPool<char>.Shared.Return(buffer);
-                        }
+                        resultText += await ReadTextFromFile(file, 10000);
                     }
 
                     openedFileContent.Text = resultText;
@@ -351,6 +334,28 @@ namespace ControlCatalog.Pages
 
                 results.Items = mappedResults;
                 resultsVisible.IsVisible = mappedResults.Any();
+            }
+        }
+
+        public static async Task<string> ReadTextFromFile(IStorageFile file, int length)
+        {
+#if NET6_0_OR_GREATER
+            await using var stream = await file.OpenReadAsync();
+#else
+            using var stream = await file.OpenReadAsync();
+#endif
+            using var reader = new System.IO.StreamReader(stream);
+
+            // 4GB file test, shouldn't load more than 10000 chars into a memory.
+            var buffer = ArrayPool<char>.Shared.Rent(length);
+            try
+            {
+                var charsRead = await reader.ReadAsync(buffer, 0, length);
+                return new string(buffer, 0, charsRead);
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
             }
         }
 

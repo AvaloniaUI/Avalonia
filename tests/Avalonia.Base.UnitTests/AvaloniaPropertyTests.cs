@@ -198,6 +198,7 @@ namespace Avalonia.Base.UnitTests
                     defaultBindingMode: BindingMode.OneWay,
                     validate: null,
                     coerce: null,
+                    enableDataValidation: false,
                     notifying: FooNotifying);
 
             public int NotifyCount { get; private set; }

@@ -161,7 +161,7 @@ namespace Avalonia.Controls
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
         }
-
+        
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
@@ -403,7 +403,7 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = GetValue(FocusAdornerProperty);
+                        var template = GetValue(FocusAdornerProperty) ?? adornerLayer.DefaultFocusAdorner;
 
                         if (template != null)
                         {

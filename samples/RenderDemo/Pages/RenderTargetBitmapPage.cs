@@ -28,13 +28,11 @@ namespace RenderDemo.Pages
         readonly Stopwatch _st = Stopwatch.StartNew();
         public override void Render(DrawingContext context)
         {
-            using (var ctxi = _bitmap.CreateDrawingContext(null))
-            using(var ctx = new DrawingContext(ctxi, false))
+            using (var ctx = _bitmap.CreateDrawingContext())
             using (ctx.PushPostTransform(Matrix.CreateTranslation(-100, -100)
                                          * Matrix.CreateRotation(_st.Elapsed.TotalSeconds)
                                          * Matrix.CreateTranslation(100, 100)))
             {
-                ctxi.Clear(default);
                 ctx.FillRectangle(Brushes.Fuchsia, new Rect(50, 50, 100, 100));
             }
 

@@ -281,11 +281,12 @@ namespace Avalonia.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public PushedState PushOpacity(double opacity)
+        public PushedState PushOpacity(double opacity, Rect bounds)
         //TODO: Eliminate platform-specific push opacity call
         {
-            PlatformImpl.PushOpacity(opacity);
+            PlatformImpl.PushOpacity(opacity, bounds);
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
 
@@ -353,12 +354,10 @@ namespace Avalonia.Media
                 throw new ObjectDisposedException(nameof(DrawingContext));
             while (_states.Count != 0)
                 _states.Peek().Dispose();
-            StateStackPool.Return(_states);
-            _states = null;
+            StateStackPool.ReturnAndSetNull(ref _states);
             if (_transformContainers.Count != 0)
                 throw new InvalidOperationException("Transform container stack is non-empty");
-            TransformStackPool.Return(_transformContainers);
-            _transformContainers = null;
+            TransformStackPool.ReturnAndSetNull(ref _transformContainers);
             if (_ownsImpl)
                 PlatformImpl.Dispose();
         }

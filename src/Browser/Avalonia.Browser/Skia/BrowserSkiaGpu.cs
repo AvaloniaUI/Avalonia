@@ -21,7 +21,7 @@ namespace Avalonia.Browser.Skia
             return null;
         }
 
-        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session)
         {
             return null;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
@@ -27,5 +28,12 @@ namespace Avalonia.PropertyStore
 
         object? IValueEntry.GetValue() => _value;
         T IValueEntry<T>.GetValue() => _value;
+
+        bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
+        {
+            state = BindingValueType.Value;
+            error = null;
+            return false;
+        }
     }
 }

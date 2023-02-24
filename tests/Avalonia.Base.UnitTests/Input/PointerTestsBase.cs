@@ -55,20 +55,29 @@ public abstract class PointerTestsBase
         return root;
     }
 
+    protected static RawPointerEventArgs CreateRawPointerArgs(
+        IPointerDevice pointerDevice,
+        IInputRoot root,
+        RawPointerEventType type,
+        Point? position = default)
+    {
+        return new RawPointerEventArgs(pointerDevice, 0, root, type, position ?? default, default);
+    }
+
     protected static RawPointerEventArgs CreateRawPointerMovedArgs(
         IPointerDevice pointerDevice,
         IInputRoot root,
-        Point? positition = null)
+        Point? position = null)
     {
         return new RawPointerEventArgs(pointerDevice, 0, root, RawPointerEventType.Move,
-            positition ?? default, default);
+            position ?? default, default);
     }
 
     protected static PointerEventArgs CreatePointerMovedArgs(
-        IInputRoot root, IInputElement? source, Point? positition = null)
+        IInputRoot root, IInputElement? source, Point? position = null)
     {
         return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, (Visual)root,
-            positition ?? default, default, PointerPointProperties.None, KeyModifiers.None);
+            position ?? default, default, PointerPointProperties.None, KeyModifiers.None);
     }
 
     protected static Mock<IPointerDevice> CreatePointerDeviceMock(

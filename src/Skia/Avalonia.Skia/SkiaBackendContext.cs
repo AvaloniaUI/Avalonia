@@ -9,9 +9,9 @@ namespace Avalonia.Skia;
 
 internal class SkiaContext : IPlatformRenderInterfaceContext
 {
-    private ISkiaGpu _gpu;
+    private ISkiaGpu? _gpu;
 
-    public SkiaContext(ISkiaGpu gpu)
+    public SkiaContext(ISkiaGpu? gpu)
     {
         _gpu = gpu;
     }
@@ -25,10 +25,10 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
     /// <inheritdoc />
     public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
     {
-        if (!(surfaces is IList))
+        if (surfaces is not IList)
             surfaces = surfaces.ToList();
-        var gpuRenderTarget = _gpu?.TryCreateRenderTarget(surfaces);
-        if (gpuRenderTarget != null)
+
+        if (_gpu?.TryCreateRenderTarget(surfaces) is { } gpuRenderTarget)
         {
             return new SkiaGpuRenderTarget(_gpu, gpuRenderTarget);
         }
@@ -43,7 +43,7 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
             "Don't know how to create a Skia render target from any of provided surfaces");
     }
 
-    public bool IsLost => _gpu.IsLost;
+    public bool IsLost => _gpu?.IsLost ?? false;
 
-    public object TryGetFeature(Type featureType) => _gpu?.TryGetFeature(featureType);
+    public object? TryGetFeature(Type featureType) => _gpu?.TryGetFeature(featureType);
 }
