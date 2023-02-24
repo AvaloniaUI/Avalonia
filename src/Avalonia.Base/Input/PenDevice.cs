@@ -131,6 +131,7 @@ namespace Avalonia.Input
 
                 source?.RaiseEvent(e);
                 pointer.Capture(null);
+                _lastMouseDownButton = default;
                 return e.Handled;
             }
 
