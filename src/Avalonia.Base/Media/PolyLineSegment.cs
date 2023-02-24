@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Avalonia.Collections;
 
 namespace Avalonia.Media
 {
@@ -20,7 +19,7 @@ namespace Avalonia.Media
         /// <value>
         /// The points.
         /// </value>
-        public AvaloniaList<Point> Points
+        public Points Points
         {
             get => GetValue(PointsProperty);
             set => SetValue(PointsProperty, value);
