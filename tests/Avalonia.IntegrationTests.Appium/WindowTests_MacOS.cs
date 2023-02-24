@@ -16,7 +16,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public WindowTests_MacOS(TestAppFixture fixture)
+        public WindowTests_MacOS(DefaultAppFixture fixture)
         {
             var retry = 0;
 

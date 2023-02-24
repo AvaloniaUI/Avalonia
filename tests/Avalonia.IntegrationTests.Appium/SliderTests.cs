@@ -10,7 +10,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public SliderTests(TestAppFixture fixture)
+        public SliderTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
