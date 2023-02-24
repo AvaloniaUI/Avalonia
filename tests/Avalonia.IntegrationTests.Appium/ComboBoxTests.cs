@@ -4,12 +4,11 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
-    [Collection("Default")]
-    public class ComboBoxTests
+    public abstract class ComboBoxTests
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public ComboBoxTests(TestAppFixture fixture)
+        public ComboBoxTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
@@ -152,6 +151,18 @@ namespace Avalonia.IntegrationTests.Appium
             item.SendKeys(Keys.Escape);
 
             Assert.Equal(string.Empty, comboBox.GetComboBoxValue());
+        }
+
+        [Collection("Default")]
+        public class Default : ComboBoxTests
+        {
+            public Default(DefaultAppFixture fixture) : base(fixture) { }
+        }
+
+        [Collection("OverlayPopups")]
+        public class OverlayPopups : ComboBoxTests
+        {
+            public OverlayPopups(OverlayPopupsAppFixture fixture) : base(fixture) { }
         }
     }
 }
