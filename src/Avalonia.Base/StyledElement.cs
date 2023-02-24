@@ -46,6 +46,7 @@ namespace Avalonia
                 defaultBindingMode: BindingMode.OneWay,
                 validate: null,
                 coerce: null,
+                enableDataValidation: false,
                 notifying: DataContextNotifying);
 
         /// <summary>

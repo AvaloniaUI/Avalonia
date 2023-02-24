@@ -12,10 +12,11 @@ namespace Avalonia.PropertyStore
         private readonly Func<object?, bool>? _validate;
 
         public UntypedBindingEntry(
+            AvaloniaObject target,
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<object?> source)
-            : base(frame, property, source)
+            : base(target, frame, property, source)
         {
             _validate = ((IStyledPropertyAccessor)property).ValidateValue;
         }
