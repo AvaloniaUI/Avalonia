@@ -99,7 +99,7 @@ namespace Avalonia.Skia
         {
             SKTypeface? skTypeface = null;
 
-            if(typeface.FontFamily.Key is not null null)
+            if(typeface.FontFamily.Key is not null)
             {
                 var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
 

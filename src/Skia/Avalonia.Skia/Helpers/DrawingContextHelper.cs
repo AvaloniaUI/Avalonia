@@ -13,7 +13,6 @@ namespace Avalonia.Skia.Helpers
         /// </summary>
         /// <param name="canvas"></param>
         /// <param name="dpi"></param>
-        /// <param name="visualBrushRenderer"></param>
         /// <returns>DrawingContext</returns>
         public static IDrawingContextImpl WrapSkiaCanvas(SKCanvas canvas, Vector dpi)
         {
