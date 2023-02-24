@@ -16,11 +16,13 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
         /// <param name="coerce">A value coercion callback.</param>
+        /// <param name="enableDataValidation">Whether the property is interested in data validation.</param>
         public StyledPropertyMetadata(
             Optional<TValue> defaultValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
-            Func<AvaloniaObject, TValue, TValue>? coerce = null)
-                : base(defaultBindingMode)
+            Func<AvaloniaObject, TValue, TValue>? coerce = null,
+            bool enableDataValidation = false)
+                : base(defaultBindingMode, enableDataValidation)
         {
             _defaultValue = defaultValue;
             CoerceValue = coerce;

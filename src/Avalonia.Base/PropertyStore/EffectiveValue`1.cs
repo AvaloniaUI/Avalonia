@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -61,6 +62,12 @@ namespace Avalonia.PropertyStore
             UpdateValueEntry(value, priority);
 
             SetAndRaiseCore(owner,  (StyledProperty<T>)value.Property, GetValue(value), priority, false);
+
+            if (priority > BindingPriority.LocalValue &&
+                value.GetDataValidationState(out var state, out var error))
+            {
+                owner.Owner.OnUpdateDataValidation(value.Property, state, error);
+            }
         }
 
         public void SetLocalValueAndRaise(
@@ -128,12 +135,10 @@ namespace Avalonia.PropertyStore
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
         {
-            UnsubscribeValueEntries();
-            DisposeAndRaiseUnset(owner, (StyledProperty<T>)property);
-        }
+            ValueEntry?.Unsubscribe();
+            BaseValueEntry?.Unsubscribe();
 
-        public void DisposeAndRaiseUnset(ValueStore owner, StyledProperty<T> property)
-        {
+            var p = (StyledProperty<T>)property;
             BindingPriority priority;
             T oldValue;
 
@@ -150,9 +155,16 @@ namespace Avalonia.PropertyStore
 
             if (!EqualityComparer<T>.Default.Equals(oldValue, Value))
             {
-                owner.Owner.RaisePropertyChanged(property, Value, oldValue, priority, true);
+                owner.Owner.RaisePropertyChanged(p, Value, oldValue, priority, true);
                 if (property.Inherits)
-                    owner.OnInheritedEffectiveValueDisposed(property, Value);
+                    owner.OnInheritedEffectiveValueDisposed(p, Value);
+            }
+
+            if (ValueEntry?.GetDataValidationState(out _, out _) ??
+                BaseValueEntry?.GetDataValidationState(out _, out _) ??
+                false)
+            {
+                owner.Owner.OnUpdateDataValidation(p, BindingValueType.UnsetValue, null);
             }
         }
 
