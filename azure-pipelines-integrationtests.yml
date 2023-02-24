@@ -21,8 +21,6 @@ jobs:
     displayName: 'Use .NET Core SDK 7.0.101'
     inputs:
       version: 7.0.101
-      
-  - script: system_profiler SPDisplaysDataType |grep Resolution
   
   - script: |
       pkill node
