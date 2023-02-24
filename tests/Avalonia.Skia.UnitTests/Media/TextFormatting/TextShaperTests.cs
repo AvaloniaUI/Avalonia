@@ -19,10 +19,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var shapedBuffer = TextShaper.Current.ShapeText(text, options);
                 
                 Assert.Equal(shapedBuffer.Length, text.Length);
-                Assert.Equal(shapedBuffer.GlyphInfos.Length, text.Length);
-                Assert.Equal(0, shapedBuffer.GlyphInfos[0].GlyphCluster);
-                Assert.Equal(1, shapedBuffer.GlyphInfos[1].GlyphCluster);
-                Assert.Equal(1, shapedBuffer.GlyphInfos[2].GlyphCluster);
+                Assert.Equal(shapedBuffer.Length, text.Length);
+                Assert.Equal(0, shapedBuffer[0].GlyphCluster);
+                Assert.Equal(1, shapedBuffer[1].GlyphCluster);
+                Assert.Equal(1, shapedBuffer[2].GlyphCluster);
             }
         }
 
@@ -36,7 +36,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var shapedBuffer = TextShaper.Current.ShapeText(text, options);
 
                 Assert.Equal(shapedBuffer.Length, text.Length);
-                Assert.Equal(100, shapedBuffer.GlyphInfos[0].GlyphAdvance);
+                Assert.Equal(100, shapedBuffer[0].GlyphAdvance);
             }
         }
 

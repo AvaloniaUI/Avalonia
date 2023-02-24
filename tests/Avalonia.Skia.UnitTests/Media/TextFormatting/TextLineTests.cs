@@ -95,7 +95,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+                    var runClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster);
 
                     clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
@@ -142,7 +142,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+                    var runClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster);
 
                     clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
@@ -249,7 +249,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var clusters = textLine.TextRuns
                     .Cast<ShapedTextRun>()
-                    .SelectMany(x => x.ShapedBuffer.GlyphInfos, (_, glyph) => glyph.GlyphCluster)
+                    .SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster)
                     .ToArray();
 
                 var previousCharacterHit = new CharacterHit(text.Length);
@@ -752,7 +752,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                var currentClusters = shapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster).ToList();
+                var currentClusters = shapedBuffer.Select(glyph => glyph.GlyphCluster).ToList();
 
                 foreach (var currentCluster in currentClusters)
                 {
@@ -785,11 +785,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                for (var index = 0; index < shapedBuffer.GlyphInfos.Length; index++)
+                for (var index = 0; index < shapedBuffer.Length; index++)
                 {
-                    var currentCluster = shapedBuffer.GlyphInfos[index].GlyphCluster;
+                    var currentCluster = shapedBuffer[index].GlyphCluster;
 
-                    var advance = shapedBuffer.GlyphInfos[index].GlyphAdvance;
+                    var advance = shapedBuffer[index].GlyphAdvance;
 
                     if (lastCluster != currentCluster)
                     {
