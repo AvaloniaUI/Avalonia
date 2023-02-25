@@ -28,7 +28,7 @@
     </Style>
 
     <Style Selector="ListBoxItem.handled" >
-      <Setter Property="Background" Value="#d9ffdc" />
+      <Setter Property="Background" Value="#34c940" />
       <Setter Property="Foreground" Value="Black" />
     </Style>
   </UserControl.Styles>
@@ -129,7 +129,7 @@
 
       </DockPanel>
 
-      <StackPanel Orientation="Horizontal" Grid.Row="3" Spacing="2" Margin="0,2">
+      <StackPanel Orientation="Horizontal" Grid.Row="3" Spacing="2" Margin="2">
         <Button Content="Clear" Command="{Binding Clear}" />
       </StackPanel>
 

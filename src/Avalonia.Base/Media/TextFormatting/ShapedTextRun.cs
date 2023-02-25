@@ -85,7 +85,7 @@ namespace Avalonia.Media.TextFormatting
         {
             _glyphRun = null;
 
-            ShapedBuffer.GlyphInfos.Span.Reverse();
+            ShapedBuffer.Reverse();
 
             IsReversed = !IsReversed;
         }
@@ -106,7 +106,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
-                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
+                var advance = ShapedBuffer[i].GlyphAdvance;
 
                 if (currentWidth + advance > availableWidth)
                 {
@@ -130,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
             {
-                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
+                var advance = ShapedBuffer[i].GlyphAdvance;
 
                 if (width + advance > availableWidth)
                 {

@@ -3,6 +3,7 @@
   <ControlTheme x:Key="{x:Type ComboBox}"
                 TargetType="ComboBox">
     <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
