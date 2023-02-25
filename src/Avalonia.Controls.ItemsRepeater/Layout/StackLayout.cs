@@ -26,7 +26,7 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            StackPanel.OrientationProperty.AddOwner<StackPanel>();
+            StackPanel.OrientationProperty.AddOwner<StackLayout>();
 
         /// <summary>
         /// Defines the <see cref="Spacing"/> property.
