@@ -25,7 +25,7 @@ jobs:
   - script: system_profiler SPDisplaysDataType |grep Resolution
   
   - script: |
-      xcode-select -s /Applications/Xcode.app/Contents/Developer
+      sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
       appium &
       pkill IntegrationTestApp
