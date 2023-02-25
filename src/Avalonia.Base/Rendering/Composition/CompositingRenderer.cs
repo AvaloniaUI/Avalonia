@@ -225,7 +225,7 @@ public class CompositingRenderer : IRendererWithCompositor
             sortedChildren.Dispose();
         }
         else
-            foreach (var ch in v.GetVisualChildren())
+            foreach (var ch in visualChildren)
             {
                 var compositionChild = ch.CompositionVisual;
                 if (compositionChild != null)
