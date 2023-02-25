@@ -6,16 +6,16 @@ using Avalonia.Threading;
 
 namespace Avalonia.Headless
 {
-    class HeadlessPlatformThreadingInterface : IPlatformThreadingInterface
+    internal class HeadlessPlatformThreadingInterface : IPlatformThreadingInterface
     {
         public HeadlessPlatformThreadingInterface()
         {
             _thread = Thread.CurrentThread;
         }
         
-        private AutoResetEvent _event = new AutoResetEvent(false);
-        private Thread _thread;
-        private object _lock = new object();
+        private readonly AutoResetEvent _event = new AutoResetEvent(false);
+        private readonly Thread? _thread;
+        private readonly object _lock = new object();
         private DispatcherPriority? _signaledPriority;
 
         public void RunLoop(CancellationToken cancellationToken)
@@ -40,7 +40,7 @@ namespace Avalonia.Headless
                 interval = TimeSpan.FromMilliseconds(10);
 
             var stopped = false;
-            Timer timer = null;
+            Timer? timer = null;
             timer = new Timer(_ =>
             {
                 if (stopped)
@@ -55,7 +55,7 @@ namespace Avalonia.Headless
                     finally
                     {
                         if (!stopped)
-                            timer.Change(interval, Timeout.InfiniteTimeSpan);
+                            timer?.Change(interval, Timeout.InfiniteTimeSpan);
                     }
                 });
             },
@@ -81,6 +81,6 @@ namespace Avalonia.Headless
         }
 
         public bool CurrentThreadIsLoopThread => _thread == Thread.CurrentThread;
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action<DispatcherPriority?>? Signaled;
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Utilities;
 
 #nullable enable
 
 namespace Avalonia.Platform
 {
-    public static class ScreenHelper
+    internal static class ScreenHelper
     {
         public static Screen? ScreenFromPoint(PixelPoint point, IReadOnlyList<Screen> screens)
         {

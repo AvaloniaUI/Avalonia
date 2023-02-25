@@ -18,20 +18,20 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
+    internal class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
     {
-        private IKeyboardDevice _keyboard;
-        private Stopwatch _st = Stopwatch.StartNew();
-        private Pointer _mousePointer;
-        private WriteableBitmap _lastRenderedFrame;
-        private object _sync = new object();
+        private readonly IKeyboardDevice _keyboard;
+        private readonly Stopwatch _st = Stopwatch.StartNew();
+        private readonly Pointer _mousePointer;
+        private WriteableBitmap? _lastRenderedFrame;
+        private readonly object _sync = new object();
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(bool isPopup)
         {
             IsPopup = isPopup;
             Surfaces = new object[] { this };
-            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+            _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             MouseDevice = new MouseDevice(_mousePointer);
             ClientSize = new Size(1024, 768);
@@ -49,13 +49,13 @@ namespace Avalonia.Headless
         public double RenderScaling { get; } = 1;
         public double DesktopScaling => RenderScaling;
         public IEnumerable<object> Surfaces { get; }
-        public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
-        public Action<double> ScalingChanged { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces);
+            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor!, () => Surfaces);
 
         public void Invalidate(Rect rect)
         {
@@ -66,18 +66,18 @@ namespace Avalonia.Headless
             InputRoot = inputRoot;
         }
 
-        public IInputRoot InputRoot { get; set; }
+        public IInputRoot? InputRoot { get; set; }
 
         public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
 
         public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
 
         }
 
-        public Action Closed { get; set; }
+        public Action? Closed { get; set; }
         public IMouseDevice MouseDevice { get; }
 
         public void Show(bool activate, bool isDialog)
@@ -102,14 +102,14 @@ namespace Avalonia.Headless
         }
 
         public PixelPoint Position { get; set; }
-        public Action<PixelPoint> PositionChanged { get; set; }
+        public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
             Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
         }
 
-        public Action Deactivated { get; set; }
-        public Action Activated { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
         public IPlatformHandle Handle { get; } = new PlatformHandle(IntPtr.Zero, "STUB");
         public Size MaxClientSize { get; } = new Size(1920, 1280);
         public void Resize(Size clientSize, PlatformResizeReason reason)
@@ -124,7 +124,7 @@ namespace Avalonia.Headless
                 });
         }
 
-        void DoResize(Size clientSize)
+        private void DoResize(Size clientSize)
         {
             // Uncomment this check and experience a weird bug in layout engine
             if (ClientSize != clientSize)
@@ -146,8 +146,8 @@ namespace Avalonia.Headless
 
         public IScreenImpl Screen { get; } = new HeadlessScreensStub();
         public WindowState WindowState { get; set; }
-        public Action<WindowState> WindowStateChanged { get; set; }
-        public void SetTitle(string title)
+        public Action<WindowState>? WindowStateChanged { get; set; }
+        public void SetTitle(string? title)
         {
 
         }
@@ -157,7 +157,7 @@ namespace Avalonia.Headless
 
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
 
         }
@@ -172,9 +172,9 @@ namespace Avalonia.Headless
 
         }
 
-        public Func<WindowCloseReason, bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool>? Closing { get; set; }
 
-        class FramebufferProxy : ILockedFramebuffer
+        private class FramebufferProxy : ILockedFramebuffer
         {
             private readonly ILockedFramebuffer _fb;
             private readonly Action _onDispose;
@@ -215,7 +215,7 @@ namespace Avalonia.Headless
             });
         }
 
-        public IRef<IWriteableBitmapImpl> GetLastRenderedFrame()
+        public IRef<IWriteableBitmapImpl>? GetLastRenderedFrame()
         {
             lock (_sync)
                 return _lastRenderedFrame?.PlatformImpl?.CloneAs<IWriteableBitmapImpl>();
@@ -224,19 +224,19 @@ namespace Avalonia.Headless
         private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
 
         // TODO: Hook recent Popup changes. 
-        IPopupPositioner IPopupImpl.PopupPositioner => null;
+        IPopupPositioner IPopupImpl.PopupPositioner => null!;
 
         public Size MaxAutoSizeHint => new Size(1920, 1080);
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
         public bool IsClientAreaExtendedToDecorations => false;
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public bool NeedsManagedDecorations => false;
 
@@ -244,32 +244,27 @@ namespace Avalonia.Headless
 
         public Thickness OffScreenMargin => new Thickness();
 
-        public Action LostFocus { get; set; }
+        public Action? LostFocus { get; set; }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
-        public object TryGetFeature(Type featureType)
+        public object? TryGetFeature(Type featureType)
         {
-            if (featureType == typeof(IStorageProvider))
-            {
-                return new NoopStorageProvider();
-            }
-
             return null;
         }
 
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyDown, key, modifiers));
+            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyDown, key, modifiers));
         }
 
         void IHeadlessWindow.KeyRelease(Key key, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyUp, key, modifiers));
+            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyUp, key, modifiers));
         }
 
         void IHeadlessWindow.MouseDown(Point point, int button, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot,
+            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,
                 button == 0 ? RawPointerEventType.LeftButtonDown :
                 button == 1 ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.RightButtonDown,
                 point, modifiers));
@@ -277,13 +272,13 @@ namespace Avalonia.Headless
 
         void IHeadlessWindow.MouseMove(Point point, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot,
+            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,
                 RawPointerEventType.Move, point, modifiers));
         }
 
         void IHeadlessWindow.MouseUp(Point point, int button, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot,
+            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,
                 button == 0 ? RawPointerEventType.LeftButtonUp :
                 button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
                 point, modifiers));
@@ -291,14 +286,14 @@ namespace Avalonia.Headless
         
         void IHeadlessWindow.MouseWheel(Point point, Vector delta, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot,
+            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot!,
                 point, delta, modifiers));
         }
         
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
-            Input?.Invoke(new RawDragEvent(device, type, InputRoot, point, data, effects, modifiers));
+            Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));
         }
 
         void IWindowImpl.Move(PixelPoint point)
@@ -306,7 +301,7 @@ namespace Avalonia.Headless
 
         }
 
-        public IPopupImpl CreatePopup()
+        public IPopupImpl? CreatePopup()
         {
             // TODO: Hook recent Popup changes. 
             return null;

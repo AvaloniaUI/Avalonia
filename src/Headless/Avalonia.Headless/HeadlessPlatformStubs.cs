@@ -18,17 +18,17 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessClipboardStub : IClipboard
+    internal class HeadlessClipboardStub : IClipboard
     {
-        private string _text;
-        private IDataObject _data;
+        private string? _text;
+        private IDataObject? _data;
 
-        public Task<string> GetTextAsync()
+        public Task<string?> GetTextAsync()
         {
             return Task.Run(() => _text);
         }
 
-        public Task SetTextAsync(string text)
+        public Task SetTextAsync(string? text)
         {
             return Task.Run(() => _text = text);
         }
@@ -45,16 +45,29 @@ namespace Avalonia.Headless
 
         public Task<string[]> GetFormatsAsync()
         {
-            throw new NotImplementedException();
+            return Task.Run(() =>
+            {
+                if (_data is not null)
+                {
+                    return _data.GetDataFormats().ToArray();
+                }
+
+                if (_text is not null)
+                {
+                    return new[] { DataFormats.Text };
+                }
+
+                return Array.Empty<string>();
+            });
         }
 
-        public async Task<object> GetDataAsync(string format)
+        public async Task<object?> GetDataAsync(string format)
         {
             return await Task.Run(() => _data);
         }
     }
 
-    class HeadlessCursorFactoryStub : ICursorFactory
+    internal class HeadlessCursorFactoryStub : ICursorFactory
     {
         public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
         public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
@@ -65,7 +78,7 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessGlyphTypefaceImpl : IGlyphTypeface
+    internal class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
         public FontMetrics Metrics => new FontMetrics
         {
@@ -117,7 +130,7 @@ namespace Avalonia.Headless
 
         public bool TryGetTable(uint tag, out byte[] table)
         {
-            table = null;
+            table = null!;
             return false;
         }
 
@@ -133,7 +146,7 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessTextShaperStub : ITextShaperImpl
+    internal class HeadlessTextShaperStub : ITextShaperImpl
     {
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
@@ -145,7 +158,7 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessFontManagerStub : IFontManagerImpl
+    internal class HeadlessFontManagerStub : IFontManagerImpl
     {
         public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
@@ -163,17 +176,16 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
-            FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
         {
             typeface = new Typeface("Arial", fontStyle, fontWeight, fontStretch);
             return true;
         }
     }
 
-    class HeadlessIconLoaderStub : IPlatformIconLoader
+    internal class HeadlessIconLoaderStub : IPlatformIconLoader
     {
-
-        class IconStub : IWindowIconImpl
+        private class IconStub : IWindowIconImpl
         {
             public void Save(Stream outputStream)
             {
@@ -196,7 +208,7 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessScreensStub : IScreenImpl
+    internal class HeadlessScreensStub : IScreenImpl
     {
         public int ScreenCount { get; } = 1;
 
@@ -206,40 +218,19 @@ namespace Avalonia.Headless
                 new PixelRect(0, 0, 1920, 1280), true),
         };
 
-        public Screen ScreenFromPoint(PixelPoint point)
+        public Screen? ScreenFromPoint(PixelPoint point)
         {
             return ScreenHelper.ScreenFromPoint(point, AllScreens);
         }
 
-        public Screen ScreenFromRect(PixelRect rect)
+        public Screen? ScreenFromRect(PixelRect rect)
         {
             return ScreenHelper.ScreenFromRect(rect, AllScreens);
         }
 
-        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             return ScreenHelper.ScreenFromWindow(window, AllScreens);
-        }
-    }
-
-    internal class NoopStorageProvider : BclStorageProvider
-    {
-        public override bool CanOpen => false;
-        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
-        {
-            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
-        }
-
-        public override bool CanSave => false;
-        public override Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
-        {
-            return Task.FromResult<IStorageFile>(null);
-        }
-
-        public override bool CanPickFolder => false;
-        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
-        {
-            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
         }
     }
 }

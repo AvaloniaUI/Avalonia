@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Avalonia.Reactive;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
@@ -14,11 +12,12 @@ namespace Avalonia.Headless
 {
     public static class AvaloniaHeadlessPlatform
     {
-        internal static Compositor Compositor { get; private set; }
-        class RenderTimer : DefaultRenderTimer
+        internal static Compositor? Compositor { get; private set; }
+
+        private class RenderTimer : DefaultRenderTimer
         {
             private readonly int _framesPerSecond;
-            private Action _forceTick; 
+            private Action? _forceTick; 
             protected override IDisposable StartCore(Action<TimeSpan> tick)
             {
                 bool cancelled = false;
@@ -46,7 +45,7 @@ namespace Avalonia.Headless
             public void ForceTick() => _forceTick?.Invoke();
         }
 
-        class HeadlessWindowingPlatform : IWindowingPlatform
+        private class HeadlessWindowingPlatform : IWindowingPlatform
         {
             public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false);
 
@@ -54,7 +53,7 @@ namespace Avalonia.Headless
 
             public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
 
-            public ITrayIconImpl CreateTrayIcon() => null;
+            public ITrayIconImpl? CreateTrayIcon() => null;
         }
         
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)

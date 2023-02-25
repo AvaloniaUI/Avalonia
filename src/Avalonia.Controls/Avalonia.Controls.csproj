@@ -16,5 +16,6 @@
     <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.LeakTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Headless, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 </Project>

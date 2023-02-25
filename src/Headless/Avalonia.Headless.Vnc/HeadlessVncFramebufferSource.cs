@@ -17,7 +17,7 @@ namespace Avalonia.Headless.Vnc
         private VncButton _previousButtons;
         public HeadlessVncFramebufferSource(VncServerSession session, Window window)
         {
-            Window = (IHeadlessWindow)window.PlatformImpl;
+            Window = window.PlatformImpl as IHeadlessWindow ?? throw new InvalidOperationException("Invalid window parameter");
             session.PointerChanged += (_, args) =>
             {
                 var pt = new Point(args.X, args.Y);
