@@ -179,17 +179,9 @@ namespace Avalonia.DesignerSupport.Remote
             var entryPoint = asm.EntryPoint;
             if (entryPoint == null)
                 throw Die($"Assembly {args.AppPath} doesn't have an entry point");
-            var builderMethod = entryPoint.DeclaringType.GetMethod(
-                BuilderMethodName,
-                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
-                null,
-                Array.Empty<Type>(),
-                null);
-            if (builderMethod == null)
-                throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
+            Log($"Obtaining AppBuilder instance from {entryPoint.DeclaringType!.FullName}");
+            var appBuilder = AppBuilder.Configure(entryPoint.DeclaringType);
             Design.IsDesignMode = true;
-            Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
-            var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
             var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer));
             transport = initializer.ConfigureApp(transport, args, appBuilder);
