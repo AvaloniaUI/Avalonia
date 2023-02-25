@@ -24,7 +24,7 @@ internal class AvaloniaTestRunner<TAppBuilderEntry> : XunitTestAssemblyRunner
 
     public override void Dispose()
     {
-        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource?.Cancel();
         base.Dispose();
     }
 
