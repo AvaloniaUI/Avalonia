@@ -215,10 +215,19 @@ namespace Avalonia.Headless
             });
         }
 
-        public IRef<IWriteableBitmapImpl>? GetLastRenderedFrame()
+        public Bitmap? GetLastRenderedFrame()
         {
             lock (_sync)
-                return _lastRenderedFrame?.PlatformImpl?.CloneAs<IWriteableBitmapImpl>();
+            {
+                if (_lastRenderedFrame is null)
+                {
+                    return null;
+                }
+
+                using var lockedFramebuffer = _lastRenderedFrame.Lock();
+                return new Bitmap(lockedFramebuffer.Format, AlphaFormat.Opaque, lockedFramebuffer.Address,
+                    lockedFramebuffer.Size, lockedFramebuffer.Dpi, lockedFramebuffer.RowBytes);
+            }
         }
 
         private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
