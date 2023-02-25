@@ -1,13 +1,10 @@
-﻿using System.IO;
-using System.Linq;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Xunit;
 
-namespace Avalonia.Headless.XUnit.Tests;
+namespace Avalonia.Headless.UnitTests;
 
 public class RenderingTests
 {
@@ -32,8 +29,7 @@ public class RenderingTests
 
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-
-        var frame = ((IHeadlessWindow)window.PlatformImpl!).GetLastRenderedFrame();
+        var frame = window.CaptureRenderedFrame();
         Assert.NotNull(frame);
     }
 }

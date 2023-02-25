@@ -1,9 +1,10 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Xunit;
 
-namespace Avalonia.Headless.XUnit.Tests;
+namespace Avalonia.Headless.UnitTests;
 
 public class InputTests
 {
@@ -27,10 +28,8 @@ public class InputTests
         };
         window.Show();
 
-        Dispatcher.UIThread.RunJobs();
-
-        ((IHeadlessWindow)window.PlatformImpl!).MouseDown(new Point(50, 50), 0);
-        ((IHeadlessWindow)window.PlatformImpl!).MouseUp(new Point(50, 50), 0);
+        window.MouseDown(new Point(50, 50), MouseButton.Left);
+        window.MouseUp(new Point(50, 50), MouseButton.Left);
         
         Assert.True(buttonClicked);
     }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Xunit;
 
-namespace Avalonia.Headless.XUnit.Tests;
+namespace Avalonia.Headless.UnitTests;
 
 public class ThreadingTests
 {

@@ -271,12 +271,18 @@ namespace Avalonia.Headless
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyUp, key, modifiers));
         }
 
-        void IHeadlessWindow.MouseDown(Point point, int button, RawInputModifiers modifiers)
+        void IHeadlessWindow.MouseDown(Point point, MouseButton button, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,
-                button == 0 ? RawPointerEventType.LeftButtonDown :
-                button == 1 ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.RightButtonDown,
-                point, modifiers));
+                button switch
+                {
+                    MouseButton.Left => RawPointerEventType.LeftButtonDown,
+                    MouseButton.Right => RawPointerEventType.RightButtonDown,
+                    MouseButton.Middle => RawPointerEventType.MiddleButtonDown,
+                    MouseButton.XButton1 => RawPointerEventType.XButton1Down,
+                    MouseButton.XButton2 => RawPointerEventType.XButton2Down,
+                    _ => RawPointerEventType.Move,
+                }, point, modifiers));
         }
 
         void IHeadlessWindow.MouseMove(Point point, RawInputModifiers modifiers)
@@ -285,12 +291,18 @@ namespace Avalonia.Headless
                 RawPointerEventType.Move, point, modifiers));
         }
 
-        void IHeadlessWindow.MouseUp(Point point, int button, RawInputModifiers modifiers)
+        void IHeadlessWindow.MouseUp(Point point, MouseButton button, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,
-                button == 0 ? RawPointerEventType.LeftButtonUp :
-                button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
-                point, modifiers));
+                button switch
+                {
+                    MouseButton.Left => RawPointerEventType.LeftButtonUp,
+                    MouseButton.Right => RawPointerEventType.RightButtonUp,
+                    MouseButton.Middle => RawPointerEventType.MiddleButtonUp,
+                    MouseButton.XButton1 => RawPointerEventType.XButton1Up,
+                    MouseButton.XButton2 => RawPointerEventType.XButton2Up,
+                    _ => RawPointerEventType.Move,
+                }, point, modifiers));
         }
         
         void IHeadlessWindow.MouseWheel(Point point, Vector delta, RawInputModifiers modifiers)

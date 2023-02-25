@@ -6,15 +6,15 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    public interface IHeadlessWindow
+    internal interface IHeadlessWindow
     {
         Bitmap? GetLastRenderedFrame();
         void KeyPress(Key key, RawInputModifiers modifiers);
         void KeyRelease(Key key, RawInputModifiers modifiers);
-        void MouseDown(Point point, int button, RawInputModifiers modifiers = RawInputModifiers.None);
+        void MouseDown(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseMove(Point point, RawInputModifiers modifiers = RawInputModifiers.None);
-        void MouseUp(Point point, int button, RawInputModifiers modifiers = RawInputModifiers.None);
+        void MouseUp(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseWheel(Point point, Vector delta, RawInputModifiers modifiers = RawInputModifiers.None);
-        void DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers);
+        void DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None);
     }
 }
