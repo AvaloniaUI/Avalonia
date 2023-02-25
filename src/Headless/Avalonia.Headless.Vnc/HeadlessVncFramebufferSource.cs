@@ -10,22 +10,28 @@ namespace Avalonia.Headless.Vnc
 {
     public class HeadlessVncFramebufferSource : IVncFramebufferSource
     {
-        public IHeadlessWindow Window { get; set; }
+        public Window Window { get; set; }
         private object _lock = new object();
         public VncFramebuffer _framebuffer = new VncFramebuffer("Avalonia", 1, 1, VncPixelFormat.RGB32);
 
         private VncButton _previousButtons;
         public HeadlessVncFramebufferSource(VncServerSession session, Window window)
         {
-            Window = window.PlatformImpl as IHeadlessWindow ?? throw new InvalidOperationException("Invalid window parameter");
+            Window = window;
             session.PointerChanged += (_, args) =>
             {
                 var pt = new Point(args.X, args.Y);
                     
                 var buttons = (VncButton)args.PressedButtons;
 
-                int TranslateButton(VncButton vncButton) =>
-                    vncButton == VncButton.Left ? 0 : vncButton == VncButton.Right ? 1 : 2;
+                MouseButton TranslateButton(VncButton vncButton) =>
+                    vncButton switch
+                    {
+                        VncButton.Left => MouseButton.Left,
+                        VncButton.Middle => MouseButton.Middle,
+                        VncButton.Right => MouseButton.Right,
+                        _ => MouseButton.None
+                    };
 
                 var modifiers = (RawInputModifiers)(((int)buttons & 7) << 4);
                 
@@ -58,34 +64,25 @@ namespace Avalonia.Headless.Vnc
 
         private static VncButton[] CheckedButtons = new[] {VncButton.Left, VncButton.Middle, VncButton.Right}; 
 
-        public VncFramebuffer Capture()
+        public unsafe VncFramebuffer Capture()
         {
             lock (_lock)
             {
                 using (var bmpRef = Window.GetLastRenderedFrame())
                 {
-                    if (bmpRef?.Item == null)
+                    if (bmpRef == null)
                         return _framebuffer;
-                    var bmp = bmpRef.Item;
+                    var bmp = bmpRef;
                     if (bmp.PixelSize.Width != _framebuffer.Width || bmp.PixelSize.Height != _framebuffer.Height)
                     {
                         _framebuffer = new VncFramebuffer("Avalonia", bmp.PixelSize.Width, bmp.PixelSize.Height,
                             VncPixelFormat.RGB32);
                     }
 
-                    using (var fb = bmp.Lock())
+                    var buffer = _framebuffer.GetBuffer();
+                    fixed (byte* bufferPtr = buffer)
                     {
-                        var buf = _framebuffer.GetBuffer();
-                        if (_framebuffer.Stride == fb.RowBytes)
-                            Marshal.Copy(fb.Address, buf, 0, buf.Length);
-                        else
-                            for (var y = 0; y < fb.Size.Height; y++)
-                            {
-                                var sourceStart = fb.RowBytes * y;
-                                var dstStart = _framebuffer.Stride * y;
-                                var row = fb.Size.Width * 4;
-                                Marshal.Copy(new IntPtr(sourceStart + fb.Address.ToInt64()), buf, dstStart, row);
-                            }
+                        bmp.CopyPixels(new PixelRect(default, bmp.PixelSize), (IntPtr)bufferPtr, buffer.Length, _framebuffer.Stride);
                     }
                 }
             }
