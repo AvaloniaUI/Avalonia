@@ -69,7 +69,7 @@ namespace Avalonia.Headless.Vnc
         {
             lock (_lock)
             {
-                using (var bmpRef = Window.CaptureRenderedFrame())
+                using (var bmpRef = Window.GetLastRenderedFrame())
                 {
                     if (bmpRef == null)
                         return _framebuffer;
