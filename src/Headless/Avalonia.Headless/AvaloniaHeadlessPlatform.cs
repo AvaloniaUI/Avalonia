@@ -72,7 +72,11 @@ namespace Avalonia.Headless
             Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
         }
 
-
+        /// <summary>
+        /// Forces renderer to process a rendering timer tick.
+        /// Use this method before calling <see cref="HeadlessWindowExtensions.GetLastRenderedFrame"/>. 
+        /// </summary>
+        /// <param name="count">Count of frames to be ticked on the timer.</param>
         public static void ForceRenderTimerTick(int count = 1)
         {
             var timer = AvaloniaLocator.Current.GetService<IRenderTimer>() as RenderTimer;

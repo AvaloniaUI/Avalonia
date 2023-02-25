@@ -27,8 +27,6 @@ public class RenderingTests
         };
         window.Show();
 
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         var frame = window.CaptureRenderedFrame();
         Assert.NotNull(frame);
     }

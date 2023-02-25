@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
@@ -68,7 +69,7 @@ namespace Avalonia.Headless.Vnc
         {
             lock (_lock)
             {
-                using (var bmpRef = Window.GetLastRenderedFrame())
+                using (var bmpRef = Window.CaptureRenderedFrame())
                 {
                     if (bmpRef == null)
                         return _framebuffer;

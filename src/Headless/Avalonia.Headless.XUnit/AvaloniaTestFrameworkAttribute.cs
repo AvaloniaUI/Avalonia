@@ -5,7 +5,7 @@ using Xunit.Sdk;
 namespace Avalonia.Headless.XUnit;
 
 /// <summary>
-/// 
+/// Sets up global avalonia test framework using avalonia application builder passed as a parameter.
 /// </summary>
 [TestFrameworkDiscoverer("Avalonia.Headless.XUnit.AvaloniaTestFrameworkTypeDiscoverer", "Avalonia.Headless.XUnit")]
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
