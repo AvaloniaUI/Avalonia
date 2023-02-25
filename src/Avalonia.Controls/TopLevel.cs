@@ -387,10 +387,13 @@ namespace Avalonia.Controls
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
         
+        /// <summary>
+        /// File System storage service used for file pickers and bookmarks.
+        /// </summary>
         public IStorageProvider StorageProvider => _storageProvider
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
-            ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
+            ?? new NoopStorageProvider();
         
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
