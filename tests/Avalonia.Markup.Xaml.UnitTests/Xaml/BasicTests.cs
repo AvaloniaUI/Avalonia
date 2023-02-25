@@ -702,9 +702,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 // EndInit should be second-to-last operation, as last operation will be
                 // caused by styling being applied on EndInit.
-                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 2]);
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 3]);
 
                 // Caused by styling.
+                Assert.Equal("Property FontFamily Changed", tracker.Order[tracker.Order.Count - 2]);
                 Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }
