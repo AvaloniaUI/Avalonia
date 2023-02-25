@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Input;
 using Silk.NET.Vulkan;
 using SilkNetDemo;
 
@@ -25,7 +24,7 @@ namespace Avalonia.Vulkan
             var commandPoolCreateInfo = new CommandPoolCreateInfo
             {
                 SType = StructureType.CommandPoolCreateInfo,
-                Flags = CommandPoolCreateFlags.CommandPoolCreateResetCommandBufferBit,
+                Flags = CommandPoolCreateFlags.ResetCommandBufferBit,
                 QueueFamilyIndex = queueFamilyIndex
             };
 
@@ -109,7 +108,7 @@ namespace Avalonia.Vulkan
                 var fenceCreateInfo = new FenceCreateInfo()
                 {
                     SType = StructureType.FenceCreateInfo,
-                    Flags = FenceCreateFlags.FenceCreateSignaledBit
+                    Flags = FenceCreateFlags.SignaledBit
                 };
 
                 api.CreateFence(device, fenceCreateInfo, null, out _fence);
@@ -134,7 +133,7 @@ namespace Avalonia.Vulkan
                     var beginInfo = new CommandBufferBeginInfo
                     {
                         SType = StructureType.CommandBufferBeginInfo,
-                        Flags = CommandBufferUsageFlags.CommandBufferUsageOneTimeSubmitBit
+                        Flags = CommandBufferUsageFlags.OneTimeSubmitBit
                     };
 
                     _api.BeginCommandBuffer(InternalHandle, beginInfo);

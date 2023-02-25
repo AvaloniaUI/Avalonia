@@ -19,11 +19,13 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="prefixLength">Length of leading prefix.</param>
         /// <param name="width">width in which collapsing is constrained to</param>
         /// <param name="textRunProperties">text run properties of ellipsis symbol</param>
+        /// <param name="flowDirection">the flow direction of the collapes line.</param>
         public TextLeadingPrefixCharacterEllipsis(
             string ellipsis,
             int prefixLength,
             double width,
-            TextRunProperties textRunProperties)
+            TextRunProperties textRunProperties,
+            FlowDirection flowDirection)
         {
             if (_prefixLength < 0)
             {
@@ -33,6 +35,7 @@ namespace Avalonia.Media.TextFormatting
             _prefixLength = prefixLength;
             Width = width;
             Symbol = new TextCharacters(ellipsis, textRunProperties);
+            FlowDirection = flowDirection;
         }
 
         /// <inheritdoc/>
@@ -40,6 +43,8 @@ namespace Avalonia.Media.TextFormatting
 
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
+
+        public override FlowDirection FlowDirection { get; }
 
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)
@@ -86,7 +91,6 @@ namespace Avalonia.Media.TextFormatting
 
                                     RentedList<TextRun>? rentedPreSplitRuns = null;
                                     RentedList<TextRun>? rentedPostSplitRuns = null;
-                                    TextRun[]? results;
 
                                     try
                                     {
@@ -113,9 +117,7 @@ namespace Avalonia.Media.TextFormatting
 
                                         if (measuredLength <= _prefixLength || effectivePostSplitRuns is null)
                                         {
-                                            results = collapsedRuns.ToArray();
-                                            objectPool.TextRunLists.Return(ref collapsedRuns);
-                                            return results;
+                                            return collapsedRuns.ToArray();
                                         }
 
                                         var availableSuffixWidth = availableWidth;
@@ -157,16 +159,15 @@ namespace Avalonia.Media.TextFormatting
                                                 }
                                             }
                                         }
+
+                                        return collapsedRuns.ToArray();
                                     }
                                     finally
                                     {
                                         objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
                                         objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
+                                        objectPool.TextRunLists.Return(ref collapsedRuns);
                                     }
-
-                                    results = collapsedRuns.ToArray();
-                                    objectPool.TextRunLists.Return(ref collapsedRuns);
-                                    return results;
                                 }
 
                                 return new TextRun[] { shapedSymbol };

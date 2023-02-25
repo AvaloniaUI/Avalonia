@@ -11,7 +11,7 @@ namespace Avalonia.Media
     /// Describes how an area is painted.
     /// </summary>
     [TypeConverter(typeof(BrushConverter))]
-    public abstract class Brush : Animatable
+    public abstract class Brush : Animatable, IBrush
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.

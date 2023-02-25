@@ -69,26 +69,16 @@ namespace Avalonia.Headless
     {
         public FontMetrics Metrics => new FontMetrics
         {
-
+            DesignEmHeight = 1,
+            Ascent = 8,
+            Descent = 4,
+            LineGap = 0,
+            UnderlinePosition = 2,
+            UnderlineThickness = 1,
+            StrikethroughPosition = 2,
+            StrikethroughThickness = 1,
+            IsFixedPitch = true
         };
-
-        public short DesignEmHeight => 10;
-
-        public int Ascent => 5;
-
-        public int Descent => 5;
-
-        public int LineGap => 2;
-
-        public int UnderlinePosition => 5;
-
-        public int UnderlineThickness => 5;
-
-        public int StrikethroughPosition => 5;
-
-        public int StrikethroughThickness => 2;
-
-        public bool IsFixedPitch => true;
 
         public int GlyphCount => 1337;
 
@@ -112,7 +102,7 @@ namespace Avalonia.Headless
 
         public int GetGlyphAdvance(ushort glyph)
         {
-            return 1;
+            return 12;
         }
 
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
@@ -136,7 +126,7 @@ namespace Avalonia.Headless
             metrics = new GlyphMetrics
             {
                 Height = 10,
-                Width = 10
+                Width = 8
             };
 
             return true;

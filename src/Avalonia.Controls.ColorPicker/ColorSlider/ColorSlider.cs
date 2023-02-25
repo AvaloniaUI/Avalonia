@@ -41,18 +41,6 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-        }
-
-        /// <inheritdoc/>
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
-        }
-
         /// <summary>
         /// Updates the visual state of the control by applying latest PseudoClasses.
         /// </summary>
@@ -123,28 +111,25 @@ namespace Avalonia.Controls.Primitives
                     IsAlphaMaxForced,
                     IsSaturationValueMaxForced);
 
-                if (bgraPixelData != null)
+                if (_backgroundBitmap != null)
                 {
-                    if (_backgroundBitmap != null)
-                    {
-                        // TODO: CURRENTLY DISABLED DUE TO INTERMITTENT CRASHES IN SKIA/RENDERER
-                        //
-                        // Re-use the existing WriteableBitmap
-                        // This assumes the height, width and byte counts are the same and must be set to null
-                        // elsewhere if that assumption is ever not true.
-                        // ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bgraPixelData);
+                    // TODO: CURRENTLY DISABLED DUE TO INTERMITTENT CRASHES IN SKIA/RENDERER
+                    //
+                    // Re-use the existing WriteableBitmap
+                    // This assumes the height, width and byte counts are the same and must be set to null
+                    // elsewhere if that assumption is ever not true.
+                    // ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bgraPixelData);
 
-                        // TODO: ALSO DISABLED DISPOSE DUE TO INTERMITTENT CRASHES
-                        //_backgroundBitmap?.Dispose();
-                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
-                    }
-                    else
-                    {
-                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
-                    }
-
-                    Background = new ImageBrush(_backgroundBitmap);
+                    // TODO: ALSO DISABLED DISPOSE DUE TO INTERMITTENT CRASHES
+                    //_backgroundBitmap?.Dispose();
+                    _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
                 }
+                else
+                {
+                    _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
+                }
+
+                Background = new ImageBrush(_backgroundBitmap);
             }
         }
 

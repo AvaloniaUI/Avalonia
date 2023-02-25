@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
@@ -68,11 +69,11 @@ namespace Avalonia.Controls.Remote
             base.ArrangeCore(finalRect);
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             if (_lastFrame != null && _lastFrame.Width != 0 && _lastFrame.Height != 0)
             {
-                var fmt = (PixelFormat) _lastFrame.Format;
+                var fmt = new PixelFormat((PixelFormatEnum) _lastFrame.Format);
                 if (_bitmap == null || _bitmap.PixelSize.Width != _lastFrame.Width ||
                     _bitmap.PixelSize.Height != _lastFrame.Height)
                 {

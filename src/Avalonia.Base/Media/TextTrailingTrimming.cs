@@ -17,10 +17,10 @@ namespace Avalonia.Media
         {
             if (_isWordBased)
             {
-                return new TextTrailingWordEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties);
+                return new TextTrailingWordEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties, createInfo.FlowDirection);
             }
 
-            return new TextTrailingCharacterEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties);
+            return new TextTrailingCharacterEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties, createInfo.FlowDirection);
         }
 
         public override string ToString()

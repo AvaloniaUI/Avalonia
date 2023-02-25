@@ -6,7 +6,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a node in the low-level scene graph that represents geometry.
     /// </summary>
-    public interface IDrawOperation : IDisposable
+    internal interface IDrawOperation : IDisposable
     {
         /// <summary>
         /// Gets the bounds of the visible content in the node in global coordinates.
@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="p">The point in global coordinates.</param>
         /// <returns>True if the point hits the node's geometry; otherwise false.</returns>
         /// <remarks>
-        /// This method does not recurse to child <see cref="IVisualNode"/>s, if you want
+        /// This method does not recurse to childs, if you want
         /// to hit test children they must be hit tested manually.
         /// </remarks>
         bool HitTest(Point p);
@@ -29,5 +29,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="context">The drawing context.</param>
         void Render(IDrawingContextImpl context);
+    }
+
+    internal interface IDrawOperationWithTransform : IDrawOperation
+    {
+        /// <summary>
+        /// Gets the transform with which the node will be drawn.
+        /// </summary>
+        Matrix Transform { get; }
     }
 }

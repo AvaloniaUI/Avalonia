@@ -8,6 +8,10 @@ namespace Avalonia.Input.GestureRecognizers
         : StyledElement, // It's not an "element" in any way, shape or form, but TemplateBinding refuse to work otherwise
             IGestureRecognizer
     {
+        // Pixels per second speed that is considered to be the stop of inertial scroll
+        internal const double InertialScrollSpeedEnd = 5;
+        public const double InertialResistance = 0.15;
+
         private bool _scrolling;
         private Point _trackedRootPoint;
         private IPointer? _tracking;
@@ -23,7 +27,8 @@ namespace Avalonia.Input.GestureRecognizers
         // Movement per second
         private Vector _inertia;
         private ulong? _lastMoveTimestamp;
-        
+        private bool _isScrollInertiaEnabled;
+
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
@@ -41,6 +46,15 @@ namespace Avalonia.Input.GestureRecognizers
                 nameof(CanVerticallyScroll),
                 o => o.CanVerticallyScroll,
                 (o, v) => o.CanVerticallyScroll = v);
+
+        /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollGestureRecognizer, bool> IsScrollInertiaEnabledProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, bool>(
+                nameof(IsScrollInertiaEnabled),
+                o => o.IsScrollInertiaEnabled,
+                (o, v) => o.IsScrollInertiaEnabled = v);
 
         /// <summary>
         /// Defines the <see cref="ScrollStartDistance"/> property.
@@ -67,6 +81,15 @@ namespace Avalonia.Input.GestureRecognizers
         {
             get => _canVerticallyScroll;
             set => SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value);
+        }
+        
+        /// <summary>
+        /// Gets or sets whether the gesture should include inertia in it's behavior.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => _isScrollInertiaEnabled;
+            set => SetAndRaise(IsScrollInertiaEnabledProperty, ref _isScrollInertiaEnabled, value);
         }
 
         /// <summary>
@@ -96,9 +119,6 @@ namespace Avalonia.Input.GestureRecognizers
                 _trackedRootPoint = _pointerPressedPoint = e.GetPosition((Visual?)_target);
             }
         }
-        
-        // Pixels per second speed that is considered to be the stop of inertial scroll
-        private const double InertialScrollSpeedEnd = 5;
         
         public void PointerMoved(PointerEventArgs e)
         {
@@ -168,7 +188,8 @@ namespace Avalonia.Input.GestureRecognizers
                 if (_inertia == default
                     || e.Timestamp == 0
                     || _lastMoveTimestamp == 0
-                    || e.Timestamp - _lastMoveTimestamp > 200)
+                    || e.Timestamp - _lastMoveTimestamp > 200
+                    || !IsScrollInertiaEnabled)
                     EndGesture();
                 else
                 {
@@ -176,6 +197,7 @@ namespace Avalonia.Input.GestureRecognizers
                     var savedGestureId = _gestureId;
                     var st = Stopwatch.StartNew();
                     var lastTime = TimeSpan.Zero;
+                    _target!.RaiseEvent(new ScrollGestureInertiaStartingEventArgs(_gestureId, _inertia));
                     DispatcherTimer.Run(() =>
                     {
                         // Another gesture has started, finish the current one
@@ -187,7 +209,7 @@ namespace Avalonia.Input.GestureRecognizers
                         var elapsedSinceLastTick = st.Elapsed - lastTime;
                         lastTime = st.Elapsed;
 
-                        var speed = _inertia * Math.Pow(0.15, st.Elapsed.TotalSeconds);
+                        var speed = _inertia * Math.Pow(InertialResistance, st.Elapsed.TotalSeconds);
                         var distance = speed * elapsedSinceLastTick.TotalSeconds;
                         var scrollGestureEventArgs = new ScrollGestureEventArgs(_gestureId, distance);
                         _target!.RaiseEvent(scrollGestureEventArgs);

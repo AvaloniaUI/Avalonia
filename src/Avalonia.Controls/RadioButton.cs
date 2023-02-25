@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
@@ -147,6 +149,11 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new RadioButtonAutomationPeer(this);
+        }
+
         private void SetGroupName(string? newGroupName)
         {
             var oldGroupName = GroupName;
@@ -180,7 +187,7 @@ namespace Avalonia.Controls
                     var siblings = parent
                         .GetVisualChildren()
                         .OfType<RadioButton>()
-                        .Where(x => x != this);
+                        .Where(x => x != this && string.IsNullOrEmpty(x.GroupName));
 
                     foreach (var sibling in siblings)
                     {

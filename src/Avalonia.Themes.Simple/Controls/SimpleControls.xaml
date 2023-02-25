@@ -3,6 +3,7 @@
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/AdornerLayer.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Button.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RadioButton.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Expander.xaml" />
@@ -67,10 +68,10 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/SelectableTextBlock.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RefreshContainer.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RefreshVisualizer.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ThemeVariantScope.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Styles.Resources>
 
-  <StyleInclude Source="avares://Avalonia.Themes.Simple/Controls/FocusAdorner.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Simple/Controls/UserControl.xaml" />
 </Styles>

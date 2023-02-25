@@ -24,13 +24,13 @@ namespace Avalonia.Media.Immutable
         /// <param name="tileMode">The tile mode.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public ImmutableImageBrush(
-            IBitmap source,
+            IBitmap? source,
             AlignmentX alignmentX = AlignmentX.Center,
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
             double opacity = 1,
             ImmutableTransform? transform = null,
-            RelativePoint transformOrigin = new RelativePoint(),
+            RelativePoint transformOrigin = default,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
             TileMode tileMode = TileMode.None,
@@ -61,6 +61,6 @@ namespace Avalonia.Media.Immutable
         }
 
         /// <inheritdoc/>
-        public IBitmap Source { get; }
+        public IBitmap? Source { get; }
     }
 }

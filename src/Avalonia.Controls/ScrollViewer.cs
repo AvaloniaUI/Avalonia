@@ -152,6 +152,34 @@ namespace Avalonia.Controls
                 (o, v) => o.VerticalScrollBarValue = v);
 
         /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsType"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<SnapPointsType> HorizontalSnapPointsTypeProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsType>(
+                nameof(HorizontalSnapPointsType));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsType"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<SnapPointsType> VerticalSnapPointsTypeProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsType>(
+                nameof(VerticalSnapPointsType));
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<SnapPointsAlignment> HorizontalSnapPointsAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsAlignment>(
+                nameof(HorizontalSnapPointsAlignment));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<SnapPointsAlignment> VerticalSnapPointsAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsAlignment>(
+                nameof(VerticalSnapPointsAlignment));
+
+        /// <summary>
         /// Defines the VerticalScrollBarViewportSize property.
         /// </summary>
         /// <remarks>
@@ -191,6 +219,14 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<bool> IsScrollChainingEnabledProperty =
             AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
                 nameof(IsScrollChainingEnabled),
+                defaultValue: true);
+
+        /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollInertiaEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsScrollInertiaEnabled),
                 defaultValue: true);
 
         /// <summary>
@@ -422,6 +458,42 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets how scroll gesture reacts to the snap points along the horizontal axis.
+        /// </summary>
+        public SnapPointsType HorizontalSnapPointsType
+        {
+            get => GetValue(HorizontalSnapPointsTypeProperty);
+            set => SetValue(HorizontalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how scroll gesture reacts to the snap points along the vertical axis.
+        /// </summary>
+        public SnapPointsType VerticalSnapPointsType
+        {
+            get => GetValue(VerticalSnapPointsTypeProperty);
+            set => SetValue(VerticalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how the existing snap points are horizontally aligned versus the initial viewport.
+        /// </summary>
+        public SnapPointsAlignment HorizontalSnapPointsAlignment
+        {
+            get => GetValue(HorizontalSnapPointsAlignmentProperty); 
+            set => SetValue(HorizontalSnapPointsAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how the existing snap points are vertically aligned versus the initial viewport.
+        /// </summary>
+        public SnapPointsAlignment VerticalSnapPointsAlignment
+        {
+            get => GetValue(VerticalSnapPointsAlignmentProperty); 
+            set => SetValue(VerticalSnapPointsAlignmentProperty, value);
+        }
+
+        /// <summary>
         /// Gets a value that indicates whether scrollbars can hide itself when user is not interacting with it.
         /// </summary>
         public bool AllowAutoHide
@@ -442,6 +514,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsScrollChainingEnabledProperty);
             set => SetValue(IsScrollChainingEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => GetValue(IsScrollInertiaEnabledProperty);
+            set => SetValue(IsScrollInertiaEnabledProperty, value);
         }
 
         /// <summary>
@@ -545,6 +626,86 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the value of the HorizontalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsType GetHorizontalSnapPointsType(Control control)
+        {
+            return control.GetValue(HorizontalSnapPointsTypeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetHorizontalSnapPointsType(Control control, SnapPointsType value)
+        {
+            control.SetValue(HorizontalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsType GetVerticalSnapPointsType(Control control)
+        {
+            return control.GetValue(VerticalSnapPointsTypeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetVerticalSnapPointsType(Control control, SnapPointsType value)
+        {
+            control.SetValue(VerticalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsAlignment GetHorizontalSnapPointsAlignment(Control control)
+        {
+            return control.GetValue(HorizontalSnapPointsAlignmentProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetHorizontalSnapPointsAlignment(Control control, SnapPointsAlignment value)
+        {
+            control.SetValue(HorizontalSnapPointsAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsAlignment GetVerticalSnapPointsAlignment(Control control)
+        {
+            return control.GetValue(VerticalSnapPointsAlignmentProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetVerticalSnapPointsAlignment(Control control, SnapPointsAlignment value)
+        {
+            control.SetValue(VerticalSnapPointsAlignmentProperty, value);
+        }
+
+        /// <summary>
         /// Gets the value of the VerticalScrollBarVisibility attached property.
         /// </summary>
         /// <param name="control">The control to read the value from.</param>
@@ -612,6 +773,22 @@ namespace Avalonia.Controls
         public static void SetVerticalScrollBarVisibility(Control control, ScrollBarVisibility value)
         {
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
+        }
+
+        /// <summary>
+        /// Gets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public static bool GetIsScrollInertiaEnabled(Control control)
+        {
+            return control.GetValue(IsScrollInertiaEnabledProperty);
+        }
+
+        /// <summary>
+        /// Sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public static void SetIsScrollInertiaEnabled(Control control, bool value)
+        {
+            control.SetValue(IsScrollInertiaEnabledProperty, value);
         }
 
         /// <inheritdoc/>

@@ -26,6 +26,6 @@ namespace Avalonia.Platform
 
         bool CurrentThreadIsLoopThread { get; }
 
-        event Action<DispatcherPriority?> Signaled;
+        event Action<DispatcherPriority?>? Signaled;
     }
 }

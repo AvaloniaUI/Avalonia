@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Avalonia.Metadata;
 
 namespace Avalonia.Rendering

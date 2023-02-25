@@ -30,6 +30,7 @@ namespace Avalonia.Headless
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -120,7 +121,11 @@ namespace Avalonia.Headless
             return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
+        public IGlyphRunImpl CreateGlyphRun(
+            IGlyphTypeface glyphTypeface, 
+            double fontRenderingEmSize,
+            IReadOnlyList<GlyphInfo> glyphInfos, 
+            Point baselineOrigin)
         {
             return new HeadlessGlyphRunStub();
         }
@@ -136,9 +141,7 @@ namespace Avalonia.Headless
             }
 
             public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-            {
-                return null;
-            }
+                => Array.Empty<float>();
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -322,7 +325,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
@@ -348,6 +351,8 @@ namespace Avalonia.Headless
             {
 
             }
+
+            public PixelFormat? Format { get; }
 
             public ILockedFramebuffer Lock()
             {
@@ -387,7 +392,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect rect)
             {
 
             }
@@ -486,7 +491,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }

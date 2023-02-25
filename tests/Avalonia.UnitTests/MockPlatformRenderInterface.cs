@@ -34,15 +34,15 @@ namespace Avalonia.UnitTests
                 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 var m = new Mock<IDrawingContextImpl>();
                 m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
                     .Returns(() =>
                         {
                             var r = new Mock<IDrawingContextLayerImpl>();
-                            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
-                                .Returns(CreateDrawingContext(null));
+                            r.Setup(r => r.CreateDrawingContext())
+                                .Returns(CreateDrawingContext());
                             return r.Object;
                         }
                     );
@@ -149,7 +149,8 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             return new MockGlyphRun(glyphInfos);
         }
@@ -181,6 +182,8 @@ namespace Avalonia.UnitTests
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+
         public void Dispose()
         {
         }

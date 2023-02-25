@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Reactive;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls
 {
@@ -11,17 +12,17 @@ namespace Avalonia.Controls
 
         public static bool GetIsNativeMenuExported(TopLevel tl) => tl.GetValue(IsNativeMenuExportedProperty);
         
-        private static readonly AttachedProperty<NativeMenuInfo> s_nativeMenuInfoProperty =
-            AvaloniaProperty.RegisterAttached<NativeMenu, TopLevel, NativeMenuInfo>("___NativeMenuInfo");
-        
-        class NativeMenuInfo
+        private static readonly AttachedProperty<NativeMenuInfo?> s_nativeMenuInfoProperty =
+            AvaloniaProperty.RegisterAttached<NativeMenu, TopLevel, NativeMenuInfo?>("___NativeMenuInfo");
+
+        private sealed class NativeMenuInfo
         {
             public bool ChangingIsExported { get; set; }
             public ITopLevelNativeMenuExporter? Exporter { get; }
 
             public NativeMenuInfo(TopLevel target)
             {
-                Exporter = (target.PlatformImpl as ITopLevelImplWithNativeMenuExporter)?.NativeMenuExporter;
+                Exporter = target.PlatformImpl?.TryGetFeature<ITopLevelNativeMenuExporter>();
                 if (Exporter != null)
                 {
                     Exporter.OnIsNativeMenuExportedChanged += delegate
@@ -32,7 +33,7 @@ namespace Avalonia.Controls
             }
         }
 
-        static NativeMenuInfo GetInfo(TopLevel target)
+        private static NativeMenuInfo GetInfo(TopLevel target)
         {
             var rv = target.GetValue(s_nativeMenuInfoProperty);
             if (rv == null)
@@ -44,18 +45,18 @@ namespace Avalonia.Controls
             return rv;
         }
 
-        static void SetIsNativeMenuExported(TopLevel tl, bool value)
+        private static void SetIsNativeMenuExported(TopLevel tl, bool value)
         {
             GetInfo(tl).ChangingIsExported = true;
             tl.SetValue(IsNativeMenuExportedProperty, value);
         }
 
-        public static readonly AttachedProperty<NativeMenu> MenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("Menu");
+        public static readonly AttachedProperty<NativeMenu?> MenuProperty
+            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu?>("Menu");
 
-        public static void SetMenu(AvaloniaObject o, NativeMenu menu) => o.SetValue(MenuProperty, menu);
+        public static void SetMenu(AvaloniaObject o, NativeMenu? menu) => o.SetValue(MenuProperty, menu);
 
-        public static NativeMenu GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);
+        public static NativeMenu? GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);
         
         static NativeMenu()
         {

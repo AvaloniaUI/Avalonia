@@ -95,13 +95,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> CommandParameterProperty =
-            Button.CommandParameterProperty.AddOwner<MenuItem>();
+            Button.CommandParameterProperty.AddOwner<TrayIcon>();
 
         /// <summary>
         /// Defines the <see cref="TrayIcons"/> attached property.
         /// </summary>
-        public static readonly AttachedProperty<TrayIcons> IconsProperty
-            = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("Icons");
+        public static readonly AttachedProperty<TrayIcons?> IconsProperty
+            = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons?>("Icons");
 
         /// <summary>
         /// Defines the <see cref="Menu"/> property.
@@ -127,9 +127,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
 
-        public static void SetIcons(Application o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
+        public static void SetIcons(Application o, TrayIcons? trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
-        public static TrayIcons GetIcons(Application o) => o.GetValue(IconsProperty);
+        public static TrayIcons? GetIcons(Application o) => o.GetValue(IconsProperty);
         
         /// <summary>
         /// Gets or sets the <see cref="Command"/> property of a TrayIcon.
@@ -213,6 +213,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

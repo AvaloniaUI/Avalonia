@@ -8,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -119,7 +120,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
-        private bool _isOpenRequested = false;
+        private bool _isOpenRequested;
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
@@ -376,17 +377,23 @@ namespace Avalonia.Controls.Primitives
             popupHost.SetChild(Child);
             ((ISetLogicalParent)popupHost).SetParent(this);
 
-            if (InheritsTransform && placementTarget is Control c)
+            if (InheritsTransform)
             {
-                SubscribeToEventHandler<Control, EventHandler<AvaloniaPropertyChangedEventArgs>>(
-                    c,
-                    PlacementTargetPropertyChanged,
-                    (x, handler) => x.PropertyChanged += handler,
-                    (x, handler) => x.PropertyChanged -= handler).DisposeWith(handlerCleanup);
+                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
+                    .DisposeWith(handlerCleanup);
             }
             else
             {
                 popupHost.Transform = null;
+            }
+
+            if (popupHost is PopupRoot topLevelPopup)
+            {
+                topLevelPopup
+                    .Bind(
+                        ThemeVariantScope.ActualThemeVariantProperty,
+                        this.GetBindingObservable(ThemeVariantScope.ActualThemeVariantProperty))
+                    .DisposeWith(handlerCleanup);
             }
 
             UpdateHostPosition(popupHost, placementTarget);
@@ -520,6 +527,7 @@ namespace Avalonia.Controls.Primitives
             Close();
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -581,7 +589,7 @@ namespace Avalonia.Controls.Primitives
             var scaleX = 1.0;
             var scaleY = 1.0;
 
-            if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is Matrix m)
+            if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
             {
                 scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
                 scaleY = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
@@ -625,6 +633,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new PopupAutomationPeer(this);
@@ -725,7 +734,7 @@ namespace Avalonia.Controls.Primitives
 
                     while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
                     {
-                        e = e.Parent;
+                        e = e.VisualParent as Control;
                     }
 
                     if (e is object)
@@ -852,7 +861,7 @@ namespace Avalonia.Controls.Primitives
 
             var popupHost = _openState.PopupHost;
 
-            return popupHost != null && ((Visual)popupHost).IsVisualAncestorOf(visual);
+            return ((Visual)popupHost).IsVisualAncestorOf(visual);
         }
 
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;
@@ -872,13 +881,11 @@ namespace Avalonia.Controls.Primitives
                 Close();
             }
         }
-        
-        private void PlacementTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+
+        private void PlacementTargetTransformChanged(Visual v, Matrix? matrix)
         {
-            if (_openState is not null && e.Property == Visual.TransformedBoundsProperty)
-            {
+            if (_openState is not null)
                 UpdateHostSizing(_openState.PopupHost, _openState.TopLevel, _openState.PlacementTarget);
-            }
         }
 
         private void WindowLostFocus()

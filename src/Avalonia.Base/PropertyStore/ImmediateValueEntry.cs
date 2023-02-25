@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
@@ -9,7 +10,7 @@ namespace Avalonia.PropertyStore
 
         public ImmediateValueEntry(
             ImmediateValueFrame owner,
-            StyledPropertyBase<T> property, 
+            StyledProperty<T> property, 
             T value)
         {
             _owner = owner;
@@ -17,7 +18,7 @@ namespace Avalonia.PropertyStore
             Property = property;
         }
 
-        public StyledPropertyBase<T> Property { get; }
+        public StyledProperty<T> Property { get; }
         public bool HasValue => true;
         AvaloniaProperty IValueEntry.Property => Property;
 
@@ -27,5 +28,12 @@ namespace Avalonia.PropertyStore
 
         object? IValueEntry.GetValue() => _value;
         T IValueEntry<T>.GetValue() => _value;
+
+        bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
+        {
+            state = BindingValueType.Value;
+            error = null;
+            return false;
+        }
     }
 }

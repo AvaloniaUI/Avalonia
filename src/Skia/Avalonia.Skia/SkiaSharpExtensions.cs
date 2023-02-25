@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
@@ -111,7 +112,7 @@ namespace Avalonia.Skia
             return sm;
         }
 
-        public static SKColor ToSKColor(this Media.Color c)
+        public static SKColor ToSKColor(this Color c)
         {
             return new SKColor(c.R, c.G, c.B, c.A);
         }
@@ -125,6 +126,17 @@ namespace Avalonia.Skia
             if (fmt == PixelFormat.Rgba8888)
                 return SKColorType.Rgba8888;
             throw new ArgumentException("Unknown pixel format: " + fmt);
+        }
+
+        public static PixelFormat? ToAvalonia(this SKColorType colorType)
+        {
+            if (colorType == SKColorType.Rgb565)
+                return PixelFormats.Rgb565;
+            if (colorType == SKColorType.Bgra8888)
+                return PixelFormats.Bgra8888;
+            if (colorType == SKColorType.Rgba8888)
+                return PixelFormats.Rgba8888;
+            return null;
         }
 
         public static PixelFormat ToPixelFormat(this SKColorType fmt)
@@ -160,14 +172,14 @@ namespace Avalonia.Skia
             };
         }
 
-        public static SKShaderTileMode ToSKShaderTileMode(this Media.GradientSpreadMethod m)
+        public static SKShaderTileMode ToSKShaderTileMode(this GradientSpreadMethod m)
         {
             switch (m)
             {
                 default:
-                case Media.GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
-                case Media.GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
-                case Media.GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
+                case GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
+                case GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
+                case GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
             }
         }
 
@@ -204,7 +216,8 @@ namespace Avalonia.Skia
             };
         }
 
-        public static SKPath Clone(this SKPath src)
+        [return: NotNullIfNotNull(nameof(src))]
+        public static SKPath? Clone(this SKPath? src)
         {
             return src != null ? new SKPath(src) : null;
         }

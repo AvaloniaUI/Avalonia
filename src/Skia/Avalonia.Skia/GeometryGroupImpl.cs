@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using SkiaSharp;
 
-#nullable enable
-
 namespace Avalonia.Skia
 {
     /// <summary>
@@ -22,8 +20,10 @@ namespace Avalonia.Skia
             
             for (var i = 0; i < count; ++i)
             {
-                if (children[i]?.PlatformImpl is GeometryImpl child)
-                    path.AddPath(child.EffectivePath);
+                if (children[i].PlatformImpl is GeometryImpl { EffectivePath: { } effectivePath })
+                {
+                    path.AddPath(effectivePath);
+                }
             }
 
             EffectivePath = path;

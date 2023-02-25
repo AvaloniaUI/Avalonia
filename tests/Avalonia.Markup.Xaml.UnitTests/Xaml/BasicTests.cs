@@ -448,13 +448,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.True(style.Resources.Count > 0);
 
-            style.TryGetResource("Brush", out var brush);
+            style.TryGetResource("Brush", null, out var brush);
 
             Assert.NotNull(brush);
             Assert.IsAssignableFrom<ISolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
-            style.TryGetResource("Double", out var d);
+            style.TryGetResource("Double", null, out var d);
 
             Assert.Equal(10.0, d);
         }
@@ -702,9 +702,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 // EndInit should be second-to-last operation, as last operation will be
                 // caused by styling being applied on EndInit.
-                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 2]);
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 3]);
 
                 // Caused by styling.
+                Assert.Equal("Property FontFamily Changed", tracker.Order[tracker.Order.Count - 2]);
                 Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }

@@ -77,7 +77,8 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             throw new NotImplementedException();
         }
@@ -90,6 +91,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
         public bool SupportsIndividualRoundRects { get; set; }
         public AlphaFormat DefaultAlphaFormat { get; }
         public PixelFormat DefaultPixelFormat { get; }
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IFontManagerImpl CreateFontManager()
         {

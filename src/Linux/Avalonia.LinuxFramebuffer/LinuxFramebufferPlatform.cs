@@ -26,8 +26,8 @@ namespace Avalonia.LinuxFramebuffer
         private static readonly Stopwatch St = Stopwatch.StartNew();
         internal static uint Timestamp => (uint)St.ElapsedTicks;
         public static InternalPlatformThreadingInterface? Threading;
-        
-        internal static Compositor? Compositor { get; private set; }
+
+        internal static Compositor Compositor { get; private set; } = null!;
         
         
         LinuxFramebufferPlatform(IOutputBackend backend)
@@ -154,7 +154,7 @@ public static class LinuxFramebufferPlatformExtensions
         var lifetime = LinuxFramebufferPlatform.Initialize(builder, outputBackend, inputBackend);
         builder.SetupWithLifetime(lifetime);
         lifetime.Start(args);
-        builder.Instance.Run(lifetime.Token);
+        builder.Instance!.Run(lifetime.Token);
         return lifetime.ExitCode;
     }
 }

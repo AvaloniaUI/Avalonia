@@ -1,8 +1,5 @@
-#nullable enable
 using System;
-using System.Threading;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Win32.DirectX;
@@ -15,9 +12,12 @@ namespace Avalonia.Win32.OpenGl.Angle;
 internal class AngleExternalMemoryD3D11Texture2D : IGlExternalImageTexture
 {
     private readonly EglContext _context;
-    private ID3D11Texture2D _texture2D;
-    private EglSurface _eglSurface;
-    private IDXGIKeyedMutex _mutex;
+    private ID3D11Texture2D? _texture2D;
+    private EglSurface? _eglSurface;
+    private IDXGIKeyedMutex? _mutex;
+
+    private IDXGIKeyedMutex Mutex
+        => _mutex ?? throw new ObjectDisposedException(nameof(AngleExternalMemoryD3D11Texture2D));
 
     public unsafe AngleExternalMemoryD3D11Texture2D(EglContext context, ID3D11Texture2D texture2D, PlatformGraphicsExternalImageProperties props)
     {
@@ -40,14 +40,14 @@ internal class AngleExternalMemoryD3D11Texture2D : IGlExternalImageTexture
         int temp = 0;
         gl.GenTextures(1, &temp);
         TextureId = temp;
-        gl.BindTexture(GlConsts.GL_TEXTURE_2D, TextureId);
+        gl.BindTexture(GL_TEXTURE_2D, TextureId);
 
         if (_context.Display.EglInterface.BindTexImage(_context.Display.Handle, _eglSurface.DangerousGetHandle(),
                 EGL_BACK_BUFFER) == 0)
             
             throw OpenGlException.GetFormattedException("eglBindTexImage", _context.Display.EglInterface);
     }
-    
+
     public void Dispose()
     {
         
@@ -56,17 +56,15 @@ internal class AngleExternalMemoryD3D11Texture2D : IGlExternalImageTexture
                 _context.GlInterface.DeleteTexture(TextureId);
         TextureId = 0;
         _eglSurface?.Dispose();
-        _eglSurface = null!;
+        _eglSurface = null;
         _texture2D?.Dispose();
-        _texture2D = null!;
+        _texture2D = null;
         _mutex?.Dispose();
-        _mutex = null!;
+        _mutex = null;
     }
 
-
-    public void AcquireKeyedMutex(uint key) => _mutex.AcquireSync(key, int.MaxValue);
-
-    public void ReleaseKeyedMutex(uint key) => _mutex.ReleaseSync(key);
+    public void AcquireKeyedMutex(uint key) => Mutex.AcquireSync(key, int.MaxValue);
+    public void ReleaseKeyedMutex(uint key) => Mutex.ReleaseSync(key);
 
     public int TextureId { get; private set; }
     public int InternalFormat { get; }
@@ -75,7 +73,7 @@ internal class AngleExternalMemoryD3D11Texture2D : IGlExternalImageTexture
 
 internal class AngleExternalMemoryD3D11ExportedTexture2D : AngleExternalMemoryD3D11Texture2D, IGlExportableExternalImageTexture
 {
-    static IPlatformHandle GetHandle(ID3D11Texture2D texture2D)
+    private static IPlatformHandle GetHandle(ID3D11Texture2D texture2D)
     {
         using var resource = texture2D.QueryInterface<IDXGIResource>();
         return new PlatformHandle(resource.SharedHandle,

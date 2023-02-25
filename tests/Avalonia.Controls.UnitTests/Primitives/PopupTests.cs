@@ -18,6 +18,7 @@ using Avalonia.Input;
 using Avalonia.Rendering;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -563,7 +564,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
                 var windowImpl = Mock.Get(platform.CreateWindow());
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
@@ -1046,6 +1047,30 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Assert.True(raised);
                 }
             }            
+        }
+
+        [Fact]
+        public void Events_Should_Be_Routed_To_Popup_Parent()
+        {
+            using (CreateServices())
+            {
+                var popupContent = new Border();
+                var popup = new Popup { Child = popupContent };
+                var popupParent = new Border { Child = popup };
+                var root = PreparedWindow(popupParent);
+                var raised = 0;
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                popup.Open();
+                root.LayoutManager.ExecuteLayoutPass();
+
+                var ev = new RoutedEventArgs(Button.ClickEvent);
+
+                popupParent.AddHandler(Button.ClickEvent, (s, e) => ++raised);
+                popupContent.RaiseEvent(ev);
+
+                Assert.Equal(1, raised);
+            }
         }
 
         private IDisposable CreateServices()

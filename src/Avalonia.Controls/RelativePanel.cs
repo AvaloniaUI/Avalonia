@@ -33,13 +33,8 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             _childGraph.Clear();
-            foreach (Layoutable child in Children)
+            foreach (var child in Children)
             {
-                if (child == null)
-                {
-                    continue;
-                }
-
                 var node = _childGraph.AddNode(child);
 
                 node.AlignLeftWithNode = _childGraph.AddLink(node, GetDependencyElement(AlignLeftWithProperty, child));

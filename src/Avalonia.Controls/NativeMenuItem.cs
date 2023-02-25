@@ -137,7 +137,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> CommandParameterProperty =
-            Button.CommandParameterProperty.AddOwner<MenuItem>();
+            Button.CommandParameterProperty.AddOwner<NativeMenuItem>();
 
         public static readonly DirectProperty<NativeMenuItem, bool> IsEnabledProperty =
            AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(nameof(IsEnabled), o => o.IsEnabled, (o, v) => o.IsEnabled = v, true);

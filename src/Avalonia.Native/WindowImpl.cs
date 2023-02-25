@@ -11,14 +11,14 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly AvaloniaNativeGlPlatformGraphics _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
-        
+        private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
@@ -32,7 +32,7 @@ namespace Avalonia.Native
                 Init(_native = factory.CreateWindow(e, glFeature.SharedContext.Context), factory.CreateScreens());
             }
 
-            NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
+            _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -119,7 +119,8 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                    var window = _inputRoot as Window;
+                    var visual = window?.Renderer.HitTestFirst(e.Position, window, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {
@@ -209,8 +210,6 @@ namespace Avalonia.Native
 
         public Func<WindowCloseReason, bool> Closing { get; set; }
 
-        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
-
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
@@ -226,6 +225,16 @@ namespace Avalonia.Native
         public void SetEnabled(bool enable)
         {
             _native.SetEnabled(enable.AsComBool());
+        }
+
+        public override object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(ITopLevelNativeMenuExporter))
+            {
+                return _nativeMenuExporter;
+            }
+            
+            return base.TryGetFeature(featureType);
         }
     }
 }

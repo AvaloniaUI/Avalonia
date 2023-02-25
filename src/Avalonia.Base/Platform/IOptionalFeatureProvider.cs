@@ -23,5 +23,4 @@ public static class OptionalFeatureProviderExtensions
         rv = provider.TryGetFeature<T>();
         return rv != null;
     }
-        
 }

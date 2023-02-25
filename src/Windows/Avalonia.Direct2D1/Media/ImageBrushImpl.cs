@@ -1,13 +1,11 @@
 using Avalonia.Media;
-using Avalonia.Metadata;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public sealed class ImageBrushImpl : BrushImpl
+    internal sealed class ImageBrushImpl : BrushImpl
     {
         private readonly OptionalDispose<Bitmap> _bitmap;
 
@@ -97,7 +95,7 @@ namespace Avalonia.Direct2D1.Media
                 CompatibleRenderTargetOptions.None,
                 calc.IntermediateSize.ToSharpDX());
 
-            using (var context = new RenderTarget(result).CreateDrawingContext(null))
+            using (var context = new RenderTarget(result).CreateDrawingContext())
             {
                 var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
                 var rect = new Rect(bitmap.PixelSize.ToSizeWithDpi(dpi));

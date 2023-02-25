@@ -168,8 +168,9 @@ namespace Avalonia.Platform
         /// <param name="glyphTypeface">The glyph typeface.</param>
         /// <param name="fontRenderingEmSize">The font rendering em size.</param>
         /// <param name="glyphInfos">The list of glyphs.</param>
+        /// <param name="baselineOrigin">The baseline origin of the run. Can be null.</param>
         /// <returns>An <see cref="IGlyphRunImpl"/>.</returns>
-        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos);
+        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin);
 
         /// <summary>
         /// Creates a backend-specific object using a low-level API graphics context
@@ -196,6 +197,8 @@ namespace Avalonia.Platform
         /// Default <see cref="PixelFormat"/> used on this platform.
         /// </summary>
         public PixelFormat DefaultPixelFormat { get; }
+
+        bool IsSupportedBitmapPixelFormat(PixelFormat format);
     }
 
     [Unstable]

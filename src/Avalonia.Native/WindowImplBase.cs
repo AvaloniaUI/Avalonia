@@ -47,13 +47,12 @@ namespace Avalonia.Native
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        IFramebufferPlatformSurface
     {
         protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
-        private bool _deferredRendering = false;
         private bool _gpu = false;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
@@ -63,18 +62,18 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
+        private IStorageProvider _storageProvider;
+        private PlatformBehaviorInhibition _platformBehaviorInhibition;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature)
         {
             _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
-            _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
-            StorageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
@@ -89,6 +88,8 @@ namespace Avalonia.Native
             _savedLogicalSize = ClientSize;
             _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
+            _storageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
+            _platformBehaviorInhibition = new PlatformBehaviorInhibition(_factory.CreatePlatformBehaviorInhibition());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -365,25 +366,10 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-            
-            if (_deferredRendering)
+            return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
             {
-                if (AvaloniaNativePlatform.Compositor != null)
-                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
-                    {
-                        RenderOnlyOnRenderThread = false
-                    };
-                return new DeferredRenderer(root, loop,
-                    () => AvaloniaNativePlatform.RenderInterface!.CreateRenderTarget(Surfaces),
-                    AvaloniaNativePlatform.RenderInterface);
-            }
-
-            return new ImmediateRenderer((Visual)root,
-                () => AvaloniaNativePlatform.RenderInterface!.CreateRenderTarget(Surfaces), AvaloniaNativePlatform.RenderInterface);
+                RenderOnlyOnRenderThread = false
+            };
         }
 
         public virtual void Dispose()
@@ -517,7 +503,7 @@ namespace Avalonia.Native
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
@@ -525,9 +511,26 @@ namespace Avalonia.Native
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+            
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            if (featureType == typeof(IPlatformBehaviorInhibition))
+            {
+                return _platformBehaviorInhibition;
+            }
+
+            return null;
+        }
 
         public IPlatformHandle Handle { get; private set; }
-
-        public IStorageProvider StorageProvider { get; }
     }
 }

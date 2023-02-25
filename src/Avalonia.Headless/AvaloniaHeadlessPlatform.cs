@@ -68,12 +68,9 @@ namespace Avalonia.Headless
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
-                .Bind<IFontManagerImpl>().ToSingleton<HeadlessFontManagerStub>()
-                .Bind<ITextShaperImpl>().ToSingleton<HeadlessTextShaperStub>()
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-            if (opts.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
+            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
         }
 
 
@@ -88,7 +85,6 @@ namespace Avalonia.Headless
 
     public class AvaloniaHeadlessPlatformOptions
     {
-        public bool UseCompositor { get; set; } = true;
         public bool UseHeadlessDrawing { get; set; } = true;
     }
 
