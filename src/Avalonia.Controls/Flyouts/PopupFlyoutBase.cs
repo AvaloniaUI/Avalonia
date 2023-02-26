@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Diagnostics;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -13,11 +14,25 @@ namespace Avalonia.Controls.Primitives
 {
     public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     {
-        /// <summary>
-        /// Defines the <see cref="Placement"/> property
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementModeProperty"/>
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
-            AvaloniaProperty.Register<PopupFlyoutBase, PlacementMode>(nameof(Placement));
+            Popup.PlacementModeProperty.AddOwner<PopupFlyoutBase>();
+
+        /// <inheritdoc cref="Popup.HorizontalOffsetProperty"/>
+        public static readonly StyledProperty<double> HorizontalOffsetProperty =
+            Popup.HorizontalOffsetProperty.AddOwner<PopupFlyoutBase>();
+        
+        /// <inheritdoc cref="Popup.VerticalOffsetProperty"/>
+        public static readonly StyledProperty<double> VerticalOffsetProperty =
+            Popup.VerticalOffsetProperty.AddOwner<PopupFlyoutBase>();
+            
+        /// <inheritdoc cref="Popup.PlacementAnchorProperty"/>
+        public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
+            Popup.PlacementAnchorProperty.AddOwner<PopupFlyoutBase>();
+        
+        /// <inheritdoc cref="Popup.PlacementAnchorProperty"/>
+        public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
+            Popup.PlacementGravityProperty.AddOwner<PopupFlyoutBase>();
 
         /// <summary>
         /// Defines the <see cref="ShowMode"/> property
@@ -55,14 +70,43 @@ namespace Avalonia.Controls.Primitives
         protected Popup Popup => _popupLazy.Value;
 
         /// <summary>
-        /// Gets or sets the desired placement
+        /// Gets or sets the desired placement.
         /// </summary>
         public PlacementMode Placement
         {
             get => GetValue(PlacementProperty);
             set => SetValue(PlacementProperty, value);
         }
+        
+        /// <inheritdoc cref="Popup.PlacementGravity"/>
+        public PopupGravity PlacementGravity
+        {
+            get { return GetValue(PlacementGravityProperty); }
+            set { SetValue(PlacementGravityProperty, value); }
+        }
 
+        /// <inheritdoc cref="Popup.PlacementAnchor"/>
+        public PopupAnchor PlacementAnchor
+        {
+            get { return GetValue(PlacementAnchorProperty); }
+            set { SetValue(PlacementAnchorProperty, value); }
+        }
+
+        /// <inheritdoc cref="Popup.HorizontalOffset"/>
+        public double HorizontalOffset
+        {
+            get { return GetValue(HorizontalOffsetProperty); }
+            set { SetValue(HorizontalOffsetProperty, value); }
+        }
+
+        /// <inheritdoc cref="Popup.VerticalOffset"/>
+        public double VerticalOffset
+        {
+            get { return GetValue(VerticalOffsetProperty); }
+            set { SetValue(VerticalOffsetProperty, value); }
+        }
+
+        
         /// <summary>
         /// Gets or sets the desired ShowMode
         /// </summary>
@@ -379,6 +423,10 @@ namespace Avalonia.Controls.Primitives
                 sz = Popup.Child.DesiredSize;
             }
 
+            Popup.VerticalOffset = VerticalOffset;
+            Popup.HorizontalOffset = HorizontalOffset;
+            Popup.PlacementAnchor = PlacementAnchor;
+            Popup.PlacementGravity = PlacementGravity;
             if (showAtPointer)
             {
                 Popup.PlacementMode = PlacementMode.Pointer;
