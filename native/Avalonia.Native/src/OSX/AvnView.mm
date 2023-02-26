@@ -224,13 +224,13 @@
     return FALSE;
 }
 
-- (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
+- (bool)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
 
     if([self ignoreUserInput: triggerInputWhenDisabled])
     {
-        return;
+        return false;
     }
 
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
@@ -252,7 +252,7 @@
 
         if(delta.X == 0 && delta.Y == 0)
         {
-            return;
+            return false;
         }
     }
     else if (type == Magnify)
@@ -285,10 +285,15 @@
 
     if(_parent != nullptr)
     {
-        _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+        // Send the event to avalonia to process
+        // Then retrieve the result in order to decide on forwarding to powerpoint or not
+        return _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
     }
 
     [super mouseMoved:event];
+
+    // If we got here then most likely we need to forward the event to powerpoint
+    return false;
 }
 
 - (BOOL) resignFirstResponder
@@ -306,9 +311,13 @@
 {
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
-    [self mouseEvent:event withType:LeftButtonDown];
-    // [super mouseDown:event];
-    // TODO: We need to find a proper way to send click through to powerpoint underneath
+    bool eventHandled = [self mouseEvent:event withType:LeftButtonDown];
+
+    if (!eventHandled) {
+        // If Avalonia didn't handle the event, then forward
+        NSLog(@"Forwarding mouseDown to powerpoint");
+        [super mouseDown:event];
+    }
 }
 
 - (void)otherMouseDown:(NSEvent *)event
@@ -340,13 +349,25 @@
 {
     _isRightPressed = true;
     _lastMouseDownEvent = event;
-    [self mouseEvent:event withType:RightButtonDown];
+    bool eventHandled = [self mouseEvent:event withType:RightButtonDown];
+
+    if (!eventHandled) {
+        // If Avalonia didn't handle the event, then forward
+        NSLog(@"Forwarding rightMouseDown to powerpoint");
+        [super rightMouseDown:event];
+    }
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     _isLeftPressed = false;
-    [self mouseEvent:event withType:LeftButtonUp];
+    bool eventHandled = [self mouseEvent:event withType:LeftButtonUp];
+
+    if (!eventHandled) {
+        // If Avalonia didn't handle the event, then forward
+        NSLog(@"Forwarding mouseUp to powerpoint");
+        [super mouseUp:event];
+    }
 }
 
 - (void)otherMouseUp:(NSEvent *)event
@@ -375,13 +396,24 @@
 - (void)rightMouseUp:(NSEvent *)event
 {
     _isRightPressed = false;
-    [self mouseEvent:event withType:RightButtonUp];
+    bool eventHandled = [self mouseEvent:event withType:RightButtonUp];
+
+    if (!eventHandled) {
+        // If Avalonia didn't handle the event, then forward
+        NSLog(@"Forwarding rightMouseUp to powerpoint");
+        [super rightMouseUp:event];
+    }
 }
 
 - (void)mouseDragged:(NSEvent *)event
 {
-    [self mouseEvent:event withType:Move];
-    [super mouseDragged:event];
+    bool eventHandled = [self mouseEvent:event withType:Move];
+
+    if (!eventHandled) {
+        // If Avalonia didn't handle the event, then forward
+        NSLog(@"Forwarding mouseDragged to powerpoint");
+        [super mouseDragged:event];
+    }
 }
 
 - (void)otherMouseDragged:(NSEvent *)event
@@ -427,8 +459,12 @@
 
 - (void)mouseExited:(NSEvent *)event
 {
-    [self mouseEvent:event withType:LeaveWindow];
-    [super mouseExited:event];
+    bool eventHandled = [self mouseEvent:event withType:LeaveWindow];
+
+    if (!eventHandled) {
+        // If Avalonia didn't handle the event, then forward
+        [super mouseExited:event];
+    }
 }
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type

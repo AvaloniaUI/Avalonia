@@ -223,9 +223,10 @@ namespace Avalonia.Native
                 _parent.PositionChanged?.Invoke(position.ToAvaloniaPixelPoint());
             }
 
-            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            int IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
-                _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+                bool eventHandled = _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+                return eventHandled.AsComBool();
             }
 
             int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
@@ -322,10 +323,12 @@ namespace Avalonia.Native
             return false;
         }
 
-        public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+        public bool RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
+            bool eventHandled = false; // suppose event will go through (transparent area)
+
             if (_inputRoot is null) 
-                return;
+                return false;
             
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
@@ -359,8 +362,15 @@ namespace Avalonia.Native
                     {
                         Input?.Invoke(e);
                     }
+                    if (e.InputHitTestResult != null)
+                    {
+                        eventHandled = true;
+                    }
+
                     break;
             }
+
+            return eventHandled;
         }
 
         public void Resize(Size clientSize, PlatformResizeReason reason)

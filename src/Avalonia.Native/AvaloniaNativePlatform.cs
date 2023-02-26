@@ -87,7 +87,6 @@ namespace Avalonia.Native
 
             var applicationPlatform = new AvaloniaNativeApplicationPlatform();
 
-            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
@@ -96,6 +95,8 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
                 _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
+            // Moved initialize after MacOptions because we need to set DisableAppDelegate prior
+            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()

@@ -581,7 +581,7 @@ interface IAvnWindowBaseEvents : IUnknown
      void Deactivated();
      void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
      void PositionChanged(AvnPoint position);
-     void RawMouseEvent(AvnRawMouseEventType type,
+     bool RawMouseEvent(AvnRawMouseEventType type,
                                 uint timeStamp,
                                 AvnInputModifiers modifiers,
                                 AvnPoint point,
