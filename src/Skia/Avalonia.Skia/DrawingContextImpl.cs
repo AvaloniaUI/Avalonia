@@ -230,20 +230,21 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            if (brush is not null)
+            if (brush is not null && impl.FillPath != null)
             {
                 using (var fill = CreatePaint(_fillPaint, brush, size))
                 {
-                    Canvas.DrawPath(impl.EffectivePath, fill.Paint);
+                    Canvas.DrawPath(impl.FillPath, fill.Paint);
                 }
             }
 
             if (pen is not null
+                && impl.StrokePath != null
                 && TryCreatePaint(_strokePaint, pen, size.Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
             {
                 using (stroke)
                 {
-                    Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
+                    Canvas.DrawPath(impl.StrokePath, stroke.Paint);
                 }
             }
         }
@@ -639,7 +640,7 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Save();
-            Canvas.ClipPath(((GeometryImpl)clip).EffectivePath, SKClipOperation.Intersect, true);
+            Canvas.ClipPath(((GeometryImpl)clip).FillPath, SKClipOperation.Intersect, true);
         }
 
         /// <inheritdoc />
