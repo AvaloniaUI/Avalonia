@@ -107,8 +107,6 @@ namespace Avalonia.Media
             private readonly DrawingGroup _drawingGroup;
             private readonly IPlatformRenderInterface _platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-            private Matrix _transform;
-
             private bool _disposed;
 
             // Root drawing created by this DrawingContext.
