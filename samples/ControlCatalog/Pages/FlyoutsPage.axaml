@@ -136,6 +136,15 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
+                        <Button Content="Placement=Center">
+                            <Button.Flyout>
+                                <Flyout Placement="Center">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
                         <Button Content="Placement=TopEdgeAlignedLeft">
                             <Button.Flyout>
                                 <Flyout Placement="TopEdgeAlignedLeft">

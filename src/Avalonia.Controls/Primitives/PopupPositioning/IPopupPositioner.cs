@@ -464,21 +464,25 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
                 positionerParameters.Gravity = PopupGravity.BottomRight;
             }
+            else if (placement == PlacementMode.Center)
+            {
+                // Start with top left position, and add offset to move it to the center
+                var anchorRectangle = GetAnchorRectangle(topLevel, target, rect);
+                positionerParameters.AnchorRectangle = anchorRectangle; 
+                positionerParameters.Anchor = PopupAnchor.TopLeft;
+                positionerParameters.Gravity = PopupGravity.BottomRight;
+
+                var targetSize = positionerParameters.Size;
+                if (targetSize != default)
+                {
+                    positionerParameters.Offset += new Point(
+                        (anchorRectangle.Width - targetSize.Width) / 2,
+                        (anchorRectangle.Height - targetSize.Height) / 2);
+                }
+            }
             else
             {
-                if (target == null)
-                    throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-                var matrix = target.TransformToVisual(topLevel);
-                if (matrix == null)
-                {
-                    if (target.GetVisualRoot() == null)
-                        throw new InvalidOperationException("Target control is not attached to the visual tree");
-                    throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
-                }
-
-                var bounds = new Rect(default, target.Bounds.Size);
-                var anchorRect = rect ?? bounds;
-                positionerParameters.AnchorRectangle = anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
+                positionerParameters.AnchorRectangle = GetAnchorRectangle(topLevel, target, rect);
 
                 var parameters = placement switch
                 {
@@ -527,6 +531,23 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                     positionerParameters.Gravity |= PopupGravity.Right;
                 }
             }
+        }
+
+        private static Rect GetAnchorRectangle(TopLevel topLevel, Visual target, Rect? rect)
+        {
+            if (target == null)
+                throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
+            var matrix = target.TransformToVisual(topLevel);
+            if (matrix == null)
+            {
+                if (target.GetVisualRoot() == null)
+                    throw new InvalidOperationException("Target control is not attached to the visual tree");
+                throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
+            }
+
+            var bounds = new Rect(default, target.Bounds.Size);
+            var anchorRect = rect ?? bounds;
+            return anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
         }
     }
 

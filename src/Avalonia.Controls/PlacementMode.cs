@@ -31,6 +31,11 @@ namespace Avalonia.Controls
         /// Preferred location is above the target element.
         /// </summary>
         Top,
+        
+        /// <summary>
+        /// Preferred location is centered over the target element.
+        /// </summary>
+        Center,
 
         /// <summary>
         /// The popup is placed according to <see cref="Popup.PlacementAnchor"/> and <see cref="Popup.PlacementGravity"/> rules.
