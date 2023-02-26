@@ -29,8 +29,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Placement"/> property
         /// </summary>
-        public static readonly StyledProperty<FlyoutPlacementMode> PlacementProperty =
-            AvaloniaProperty.Register<FlyoutBase, FlyoutPlacementMode>(nameof(Placement));
+        public static readonly StyledProperty<PlacementMode> PlacementProperty =
+            AvaloniaProperty.Register<FlyoutBase, PlacementMode>(nameof(Placement));
 
         /// <summary>
         /// Defines the <see cref="ShowMode"/> property
@@ -87,7 +87,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the desired placement
         /// </summary>
-        public FlyoutPlacementMode Placement
+        public PlacementMode Placement
         {
             get => GetValue(PlacementProperty);
             set => SetValue(PlacementProperty, value);
@@ -452,92 +452,10 @@ namespace Avalonia.Controls.Primitives
             }
             else
             {
-                Popup.PlacementMode = PlacementMode.AnchorAndGravity;
+                Popup.PlacementMode = Placement;
                 Popup.PlacementConstraintAdjustment =
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideX |
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
-            }
-
-            var trgtBnds = Target?.Bounds ?? default;
-
-            switch (Placement)
-            {
-                case FlyoutPlacementMode.Top: //Above & centered
-                    Popup.PlacementRect = new Rect(0, 0, trgtBnds.Width - 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Top;
-                    break;
-
-                case FlyoutPlacementMode.TopEdgeAlignedLeft:
-                    Popup.PlacementRect = new Rect(0, 0, 0, 0);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;
-                    break;
-
-                case FlyoutPlacementMode.TopEdgeAlignedRight:
-                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 10, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;
-                    break;
-
-                case FlyoutPlacementMode.RightEdgeAlignedTop:
-                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomRight;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
-                    break;
-
-                case FlyoutPlacementMode.Right: //Right & centered
-                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 1, trgtBnds.Height);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Right;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
-                    break;
-
-                case FlyoutPlacementMode.RightEdgeAlignedBottom:
-                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, trgtBnds.Height - 1, 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
-                    break;
-
-                case FlyoutPlacementMode.Bottom: //Below & centered
-                    Popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, trgtBnds.Width, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Bottom;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
-                    break;
-
-                case FlyoutPlacementMode.BottomEdgeAlignedLeft:
-                    Popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomRight;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
-                    break;
-
-                case FlyoutPlacementMode.BottomEdgeAlignedRight:
-                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, trgtBnds.Height - 1, 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomLeft;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
-                    break;
-
-                case FlyoutPlacementMode.LeftEdgeAlignedTop:
-                    Popup.PlacementRect = new Rect(0, 0, 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomLeft;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Left;
-                    break;
-
-                case FlyoutPlacementMode.Left: //Left & centered
-                    Popup.PlacementRect = new Rect(0, 0, 1, trgtBnds.Height);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Left;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Left;
-                    break;
-
-                case FlyoutPlacementMode.LeftEdgeAlignedBottom:
-                    Popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, 1, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;
-                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.BottomLeft;
-                    break;
-
-                //includes Auto (not sure what determines that)...
-                default:
-                    //This is just FlyoutPlacementMode.Top behavior (above & centered)
-                    Popup.PlacementRect = new Rect(-sz.Width / 2, 0, sz.Width, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
-                    break;
             }
         }
 
