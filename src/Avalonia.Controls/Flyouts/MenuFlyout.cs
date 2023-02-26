@@ -7,7 +7,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
-    public class MenuFlyout : FlyoutBase
+    public class MenuFlyout : PopupFlyoutBase
     {
         public MenuFlyout()
         {

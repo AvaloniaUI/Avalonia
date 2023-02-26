@@ -3,7 +3,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
-    public class Flyout : FlyoutBase
+    public class Flyout : PopupFlyoutBase
     {
         /// <summary>
         /// Defines the <see cref="Content"/> property

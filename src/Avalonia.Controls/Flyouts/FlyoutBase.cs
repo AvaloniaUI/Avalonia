@@ -1,17 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
-using Avalonia.Controls.Diagnostics;
-using System.Linq;
-using Avalonia.Input;
-using Avalonia.Input.Platform;
-using Avalonia.Input.Raw;
-using Avalonia.Layout;
-using Avalonia.Logging;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
-    public abstract class FlyoutBase : AvaloniaObject, IPopupHostProvider
+    public abstract class FlyoutBase : AvaloniaObject
     {
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
@@ -27,79 +18,24 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.RegisterDirect<FlyoutBase, Control?>(nameof(Target), x => x.Target);
 
         /// <summary>
-        /// Defines the <see cref="Placement"/> property
-        /// </summary>
-        public static readonly StyledProperty<PlacementMode> PlacementProperty =
-            AvaloniaProperty.Register<FlyoutBase, PlacementMode>(nameof(Placement));
-
-        /// <summary>
-        /// Defines the <see cref="ShowMode"/> property
-        /// </summary>
-        public static readonly DirectProperty<FlyoutBase, FlyoutShowMode> ShowModeProperty =
-            AvaloniaProperty.RegisterDirect<FlyoutBase, FlyoutShowMode>(nameof(ShowMode),
-                x => x.ShowMode, (x, v) => x.ShowMode = v);
-
-        /// <summary>
-        /// Defines the <see cref="OverlayInputPassThroughElement"/> property
-        /// </summary>
-        public static readonly DirectProperty<FlyoutBase, IInputElement?> OverlayInputPassThroughElementProperty =
-            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>(
-                o => o._overlayInputPassThroughElement,
-                (o, v) => o._overlayInputPassThroughElement = v);
-
-        /// <summary>
         /// Defines the AttachedFlyout property
         /// </summary>
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
-        private readonly Lazy<Popup> _popupLazy;
         private bool _isOpen;
         private Control? _target;
-        private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
-        private Rect? _enlargedPopupRect;
-        private PixelRect? _enlargePopupRectScreenPixelRect;
-        private IDisposable? _transientDisposable;
-        private Action<IPopupHost?>? _popupHostChangedHandler;
-        private IInputElement? _overlayInputPassThroughElement;
 
-        static FlyoutBase()
-        {
-            Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
-        }
-
-        public FlyoutBase()
-        {
-            _popupLazy = new Lazy<Popup>(() => CreatePopup());
-        }
-
-        protected Popup Popup => _popupLazy.Value;
-
+        public event EventHandler? Opened;
+        public event EventHandler? Closed;
+        
         /// <summary>
         /// Gets whether this Flyout is currently Open
         /// </summary>
         public bool IsOpen
         {
             get => _isOpen;
-            private set => SetAndRaise(IsOpenProperty, ref _isOpen, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the desired placement
-        /// </summary>
-        public PlacementMode Placement
-        {
-            get => GetValue(PlacementProperty);
-            set => SetValue(PlacementProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the desired ShowMode
-        /// </summary>
-        public FlyoutShowMode ShowMode
-        {
-            get => _showMode;
-            set => SetAndRaise(ShowModeProperty, ref _showMode, value);
+            protected set => SetAndRaise(IsOpenProperty, ref _isOpen, value);
         }
 
         /// <summary>
@@ -108,32 +44,9 @@ namespace Avalonia.Controls.Primitives
         public Control? Target
         {
             get => _target;
-            private set => SetAndRaise(TargetProperty, ref _target, value);
+            protected set => SetAndRaise(TargetProperty, ref _target, value);
         }
-
-        /// <summary>
-        /// Gets or sets an element that should receive pointer input events even when underneath
-        /// the flyout's overlay.
-        /// </summary>
-        public IInputElement? OverlayInputPassThroughElement
-        {
-            get => _overlayInputPassThroughElement;
-            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
-        }
-
-        IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
-
-        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
-        {
-            add => _popupHostChangedHandler += value;
-            remove => _popupHostChangedHandler -= value;
-        }
-
-        public event EventHandler? Closed;
-        public event EventHandler<CancelEventArgs>? Closing;
-        public event EventHandler? Opened;
-        public event EventHandler? Opening;
-
+        
         public static FlyoutBase? GetAttachedFlyout(Control element)
         {
             return element.GetValue(AttachedFlyoutProperty);
@@ -150,380 +63,18 @@ namespace Avalonia.Controls.Primitives
             flyout?.ShowAt(flyoutOwner);
         }
 
-        /// <summary>
-        /// Shows the Flyout at the given Control
-        /// </summary>
-        /// <param name="placementTarget">The control to show the Flyout at</param>
-        public void ShowAt(Control placementTarget)
-        {
-            ShowAtCore(placementTarget);
-        }
-
-        /// <summary>
-        /// Shows the Flyout for the given control at the current pointer location, as in a ContextFlyout
-        /// </summary>
-        /// <param name="placementTarget">The target control</param>
-        /// <param name="showAtPointer">True to show at pointer</param>
-        public void ShowAt(Control placementTarget, bool showAtPointer)
-        {
-            ShowAtCore(placementTarget, showAtPointer);
-        }
-
-        /// <summary>
-        /// Hides the Flyout
-        /// </summary>
-        public void Hide()
-        {
-            HideCore();
-        }
-
-        /// <returns>True, if action was handled</returns>
-        protected virtual bool HideCore(bool canCancel = true)
-        {
-            if (!IsOpen)
-            {
-                return false;
-            }
-
-            if (canCancel)
-            {
-                if (CancelClosing())
-                {
-                    return false;
-                }
-            }
-
-            IsOpen = false;
-            Popup.IsOpen = false;
-
-            ((ISetLogicalParent)Popup).SetParent(null);
-
-            // Ensure this isn't active
-            _transientDisposable?.Dispose();
-            _transientDisposable = null;
-            _enlargedPopupRect = null;
-            _enlargePopupRectScreenPixelRect = null;
-
-            if (Target != null)
-            {
-                Target.DetachedFromVisualTree -= PlacementTarget_DetachedFromVisualTree;
-                Target.KeyUp -= OnPlacementTargetOrPopupKeyUp;
-            }
-
-            OnClosed();
-
-            return true;
-        }
-
-        /// <returns>True, if action was handled</returns>
-        protected virtual bool ShowAtCore(Control placementTarget, bool showAtPointer = false)
-        {
-            if (placementTarget == null)
-            {
-                throw new ArgumentNullException(nameof(placementTarget));
-            }
-
-            if (IsOpen)
-            {
-                if (placementTarget == Target)
-                {
-                    return false;
-                }
-                else // Close before opening a new one
-                {
-                    _ = HideCore(false);
-                }
-            }
-
-            if (Popup.Parent != null && Popup.Parent != placementTarget)
-            {
-                ((ISetLogicalParent)Popup).SetParent(null);
-            }
-
-            if (Popup.Parent == null || Popup.PlacementTarget != placementTarget)
-            {
-                Popup.PlacementTarget = Target = placementTarget;
-                ((ISetLogicalParent)Popup).SetParent(placementTarget);
-                Popup.SetValue(StyledElement.TemplatedParentProperty, placementTarget.TemplatedParent);
-            }
-
-            if (Popup.Child == null)
-            {
-                Popup.Child = CreatePresenter();
-            }
-
-            Popup.OverlayInputPassThroughElement = OverlayInputPassThroughElement;
-
-            if (CancelOpening())
-            {
-                return false;
-            }
-
-            PositionPopup(showAtPointer);
-            IsOpen = Popup.IsOpen = true;
-            OnOpened();
-
-            placementTarget.DetachedFromVisualTree += PlacementTarget_DetachedFromVisualTree;
-            placementTarget.KeyUp += OnPlacementTargetOrPopupKeyUp;
-
-            if (ShowMode == FlyoutShowMode.Standard)
-            {
-                // Try and focus content inside Flyout
-                if (Popup.Child.Focusable)
-                {
-                    FocusManager.Instance?.Focus(Popup.Child);
-                }
-                else
-                {
-                    var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
-                    if (nextFocus != null)
-                    {
-                        FocusManager.Instance?.Focus(nextFocus);
-                    }
-                }
-            }
-            else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
-            {
-                _transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
-            }
-
-            return true;
-        }
-
-        private void PlacementTarget_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            _ = HideCore(false);
-        }
-
-        private void HandleTransientDismiss(RawInputEventArgs args)
-        {
-            if (args is RawPointerEventArgs pArgs && pArgs.Type == RawPointerEventType.Move)
-            {
-                // In ShowMode = TransientWithDismissOnPointerMoveAway, the Flyout is kept
-                // shown as long as the pointer is within a certain px distance from the
-                // flyout itself. I'm not sure what WinUI uses, but I'm defaulting to 
-                // 100px, which seems about right
-                // enlargedPopupRect is the Flyout bounds enlarged 100px
-                // For windowed popups, enlargedPopupRect is in screen coordinates,
-                // for overlay popups, its in OverlayLayer coordinates
-
-                if (_enlargedPopupRect == null && _enlargePopupRectScreenPixelRect == null)
-                {
-                    // Only do this once when the Flyout opens & cache the result
-                    if (Popup?.Host is PopupRoot root)
-                    {
-                        // Get the popup root bounds and convert to screen coordinates
-                        
-                        var tmp = root.Bounds.Inflate(100);
-                        _enlargePopupRectScreenPixelRect = new PixelRect(root.PointToScreen(tmp.TopLeft), root.PointToScreen(tmp.BottomRight));
-                    }
-                    else if (Popup?.Host is OverlayPopupHost host)
-                    {
-                        // Overlay popups are in OverlayLayer coordinates, just use that
-                        _enlargedPopupRect = host.Bounds.Inflate(100);
-                    }
-
-                    return;
-                }
-
-                if (Popup?.Host is PopupRoot && pArgs.Root is Visual eventRoot)
-                {
-                    // As long as the pointer stays within the enlargedPopupRect
-                    // the flyout stays open. If it leaves, close it
-                    // Despite working in screen coordinates, leaving the TopLevel
-                    // window will not close this (as pointer events stop), which 
-                    // does match UWP
-                    var pt = eventRoot.PointToScreen(pArgs.Position);
-                    if (!_enlargePopupRectScreenPixelRect?.Contains(pt) ?? false)
-                    {
-                        HideCore(false);
-                    }
-                }
-                else if (Popup?.Host is OverlayPopupHost)
-                {
-                    // Same as above here, but just different coordinate space
-                    // so we don't need to translate
-                    if (!_enlargedPopupRect?.Contains(pArgs.Position) ?? false)
-                    {
-                        HideCore(false);
-                    }
-                }
-            }
-        }
-
-        protected virtual void OnOpening(CancelEventArgs args)
-        {
-            Opening?.Invoke(this, args);
-        }
-
+        public abstract void ShowAt(Control placementTarget);
+        
+        public abstract void Hide();
+        
         protected virtual void OnOpened()
         {
             Opened?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnClosing(CancelEventArgs args)
-        {
-            Closing?.Invoke(this, args);
-        }
-
         protected virtual void OnClosed()
         {
             Closed?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// Used to create the content the Flyout displays
-        /// </summary>
-        /// <returns></returns>
-        protected abstract Control CreatePresenter();
-
-        private Popup CreatePopup()
-        {
-            var popup = new Popup
-            {
-                WindowManagerAddShadowHint = false,
-                IsLightDismissEnabled = true,
-                //Note: This is required to prevent Button.Flyout from opening the flyout again after dismiss.
-                OverlayDismissEventPassThrough = false
-            };
-
-            popup.Opened += OnPopupOpened;
-            popup.Closed += OnPopupClosed;
-            popup.Closing += OnPopupClosing;
-            popup.KeyUp += OnPlacementTargetOrPopupKeyUp;
-            return popup;
-        }
-
-        private void OnPopupOpened(object? sender, EventArgs e)
-        {
-            IsOpen = true;
-
-            _popupHostChangedHandler?.Invoke(Popup.Host);
-        }
-
-        private void OnPopupClosing(object? sender, CancelEventArgs e)
-        {
-            if (IsOpen)
-            {
-                e.Cancel = CancelClosing();
-            }
-        }
-
-        private void OnPopupClosed(object? sender, EventArgs e)
-        {
-            HideCore(false);
-
-            _popupHostChangedHandler?.Invoke(null);
-        }
-
-        // This method is handling both popup logical tree and target logical tree.
-        private void OnPlacementTargetOrPopupKeyUp(object? sender, KeyEventArgs e)
-        {
-            if (!e.Handled
-                && IsOpen
-                && Target?.ContextFlyout == this)
-            {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-
-                if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
-                {
-                    e.Handled = HideCore();
-                }
-            }
-        }
-
-        private void PositionPopup(bool showAtPointer)
-        {
-            Size sz;
-            // Popup.Child can't be null here, it was set in ShowAtCore.
-            if (Popup.Child!.DesiredSize.IsDefault)
-            {
-                // Popup may not have been shown yet. Measure content
-                sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
-            }
-            else
-            {
-                sz = Popup.Child.DesiredSize;
-            }
-
-            if (showAtPointer)
-            {
-                Popup.PlacementMode = PlacementMode.Pointer;
-            }
-            else
-            {
-                Popup.PlacementMode = Placement;
-                Popup.PlacementConstraintAdjustment =
-                    PopupPositioning.PopupPositionerConstraintAdjustment.SlideX |
-                    PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
-            }
-        }
-
-        private static void OnContextFlyoutPropertyChanged(AvaloniaPropertyChangedEventArgs args)
-        {
-            if (args.Sender is Control c)
-            {
-                if (args.OldValue is FlyoutBase)
-                {
-                    c.ContextRequested -= OnControlContextRequested;
-                }
-                if (args.NewValue is FlyoutBase)
-                {
-                    c.ContextRequested += OnControlContextRequested;
-                }
-            }
-        }
-
-        private static void OnControlContextRequested(object? sender, ContextRequestedEventArgs e)
-        {
-            if (!e.Handled
-                && sender is Control control
-                && control.ContextFlyout is FlyoutBase flyout)
-            {
-                if (control.ContextMenu != null)
-                {
-                    Logger.TryGet(LogEventLevel.Verbose, "FlyoutBase")?.Log(control, "ContextMenu and ContextFlyout are both set, defaulting to ContextMenu");
-                    return;
-                }
-
-                // We do not support absolute popup positioning yet, so we ignore "point" at this moment.
-                var triggeredByPointerInput = e.TryGetPosition(null, out _);
-                e.Handled = flyout.ShowAtCore(control, triggeredByPointerInput);
-            }
-        }
-
-        private bool CancelClosing()
-        {
-            var eventArgs = new CancelEventArgs();
-            OnClosing(eventArgs);
-            return eventArgs.Cancel;
-        }
-
-        private bool CancelOpening()
-        {
-            var eventArgs = new CancelEventArgs();
-            OnOpening(eventArgs);
-            return eventArgs.Cancel;
-        }
-
-        internal static void SetPresenterClasses(Control? presenter, Classes classes)
-        {
-            if(presenter is null)
-            {
-                return;
-            }
-            //Remove any classes no longer in use, ignoring pseudo classes
-            for (int i = presenter.Classes.Count - 1; i >= 0; i--)
-            {
-                if (!classes.Contains(presenter.Classes[i]) &&
-                    !presenter.Classes[i].Contains(':'))
-                {
-                    presenter.Classes.RemoveAt(i);
-                }
-            }
-
-            //Add new classes
-            presenter.Classes.AddRange(classes);
         }
     }
 }

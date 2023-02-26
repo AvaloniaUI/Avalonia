@@ -176,7 +176,7 @@ namespace Avalonia.Controls
                 flyout.Opened += Flyout_Opened;
                 flyout.Closed += Flyout_Closed;
 
-                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(FlyoutBase.PlacementProperty).Subscribe(Flyout_PlacementPropertyChanged);
+                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(PopupFlyoutBase.PlacementProperty).Subscribe(Flyout_PlacementPropertyChanged);
             }
         }
 
