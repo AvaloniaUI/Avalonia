@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected internal override Interactive? InteractiveParent => (Interactive?)VisualParent;
+        protected internal override Interactive? InteractiveParent => Parent as Interactive;
 
         /// <inheritdoc />
         public void Dispose() => Hide();

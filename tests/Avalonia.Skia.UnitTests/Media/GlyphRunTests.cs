@@ -216,12 +216,12 @@ namespace Avalonia.Skia.UnitTests.Media
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
-                shapedBuffer.GlyphInfos,
+                shapedBuffer,
                 biDiLevel: shapedBuffer.BidiLevel);
 
             if(shapedBuffer.BidiLevel == 1)
             {
-                shapedBuffer.GlyphInfos.Span.Reverse();
+                shapedBuffer.Reverse();
             }
 
             return glyphRun;

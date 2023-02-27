@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -14,7 +8,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public RadioButtonTests(TestAppFixture fixture)
+        public RadioButtonTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 

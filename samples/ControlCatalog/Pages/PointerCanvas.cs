@@ -93,7 +93,7 @@ public class PointerCanvas : Control
     }
 
     private int _threadSleep;
-    public static DirectProperty<PointerCanvas, int> ThreadSleepProperty =
+    public static readonly DirectProperty<PointerCanvas, int> ThreadSleepProperty =
         AvaloniaProperty.RegisterDirect<PointerCanvas, int>(nameof(ThreadSleep), c => c.ThreadSleep, (c, v) => c.ThreadSleep = v);
 
     public int ThreadSleep
@@ -103,7 +103,7 @@ public class PointerCanvas : Control
     }
 
     private bool _drawOnlyPoints;
-    public static DirectProperty<PointerCanvas, bool> DrawOnlyPointsProperty =
+    public static readonly DirectProperty<PointerCanvas, bool> DrawOnlyPointsProperty =
         AvaloniaProperty.RegisterDirect<PointerCanvas, bool>(nameof(DrawOnlyPoints), c => c.DrawOnlyPoints, (c, v) => c.DrawOnlyPoints = v);
 
     public bool DrawOnlyPoints
@@ -113,8 +113,8 @@ public class PointerCanvas : Control
     }
 
     private string? _status;
-    public static DirectProperty<PointerCanvas, string?> StatusProperty =
-        AvaloniaProperty.RegisterDirect<PointerCanvas, string?>(nameof(DrawOnlyPoints), c => c.Status, (c, v) => c.Status = v,
+    public static readonly DirectProperty<PointerCanvas, string?> StatusProperty =
+        AvaloniaProperty.RegisterDirect<PointerCanvas, string?>(nameof(Status), c => c.Status, (c, v) => c.Status = v,
             defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public string? Status

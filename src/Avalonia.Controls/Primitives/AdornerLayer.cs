@@ -2,7 +2,6 @@ using System;
 using System.Collections.Specialized;
 using Avalonia.Media;
 using Avalonia.Reactive;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -38,7 +37,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="DefaultFocusAdorner"/> property.
         /// </summary>
         public static readonly StyledProperty<ITemplate<Control>?> DefaultFocusAdornerProperty =
-            AvaloniaProperty.Register<Control, ITemplate<Control>?>(nameof(DefaultFocusAdorner));
+            AvaloniaProperty.Register<AdornerLayer, ITemplate<Control>?>(nameof(DefaultFocusAdorner));
         
         private static readonly AttachedProperty<AdornedElementInfo?> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo?>("AdornedElementInfo");
