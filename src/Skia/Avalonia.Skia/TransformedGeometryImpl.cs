@@ -17,16 +17,27 @@ namespace Avalonia.Skia
         {
             SourceGeometry = source;
             Transform = transform;
+            var matrix = transform.ToSKMatrix();
 
-            var transformedPath = source.EffectivePath.Clone();
-            transformedPath?.Transform(transform.ToSKMatrix());
-
-            EffectivePath = transformedPath;
+            var transformedPath = StrokePath =  source.StrokePath.Clone();
+            transformedPath?.Transform(matrix);
+            
             Bounds = transformedPath?.TightBounds.ToAvaloniaRect() ?? default;
+            
+            if (ReferenceEquals(source.StrokePath, source.FillPath))
+                FillPath = transformedPath;
+            else if (source.FillPath != null)
+            {
+                FillPath = transformedPath = source.FillPath.Clone();
+                transformedPath.Transform(matrix);
+            }
         }
 
         /// <inheritdoc />
-        public override SKPath? EffectivePath { get; }
+        public override SKPath? StrokePath { get; }
+        
+        /// <inheritdoc />
+        public override SKPath? FillPath { get; }
 
         /// <inheritdoc />
         public IGeometryImpl SourceGeometry { get; }
