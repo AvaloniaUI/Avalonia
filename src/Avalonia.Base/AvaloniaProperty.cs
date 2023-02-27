@@ -225,13 +225,9 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-         /// <param name="validate">A value validation callback.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <param name="coerce">A value coercion callback.</param>
-        /// <param name="notifying">
-        /// A method that gets called before and after the property starts being notified on an
-        /// object; the bool argument will be true before and false afterwards. This callback is
-        /// intended to support IsDataContextChanging.
-        /// </param>
+        /// <param name="enableDataValidation">Whether the property is interested in data validation.</param>
         /// <returns>A <see cref="StyledProperty{TValue}"/></returns>
         public static StyledProperty<TValue> Register<TOwner, TValue>(
             string name,
@@ -240,7 +236,7 @@ namespace Avalonia
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
             Func<AvaloniaObject, TValue, TValue>? coerce = null,
-            Action<AvaloniaObject, bool>? notifying = null)
+            bool enableDataValidation = false)
                 where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -248,7 +244,43 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 defaultBindingMode: defaultBindingMode,
-                coerce: coerce);
+                coerce: coerce,
+                enableDataValidation: enableDataValidation);
+
+            var result = new StyledProperty<TValue>(
+                name,
+                typeof(TOwner),
+                metadata,
+                inherits,
+                validate);
+            AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
+            return result;
+        }
+
+        /// <inheritdoc cref="Register{TOwner, TValue}" />
+        /// <param name="notifying">
+        /// A method that gets called before and after the property starts being notified on an
+        /// object; the bool argument will be true before and false afterwards. This callback is
+        /// intended to support IsDataContextChanging.
+        /// </param>
+        internal static StyledProperty<TValue> Register<TOwner, TValue>(
+            string name,
+            TValue defaultValue,
+            bool inherits,
+            BindingMode defaultBindingMode,
+            Func<TValue, bool>? validate,
+            Func<AvaloniaObject, TValue, TValue>? coerce,
+            bool enableDataValidation,
+            Action<AvaloniaObject, bool>? notifying)
+                where TOwner : AvaloniaObject
+        {
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
+            var metadata = new StyledPropertyMetadata<TValue>(
+                defaultValue,
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce,
+                enableDataValidation: enableDataValidation);
 
             var result = new StyledProperty<TValue>(
                 name,
@@ -495,6 +527,13 @@ namespace Avalonia
             AvaloniaObject o,
             object? value,
             BindingPriority priority);
+
+        /// <summary>
+        /// Routes an untyped SetCurrentValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="value">The value.</param>
+        internal abstract void RouteSetCurrentValue(AvaloniaObject o, object? value);
 
         /// <summary>
         /// Routes an untyped Bind call to a typed call.

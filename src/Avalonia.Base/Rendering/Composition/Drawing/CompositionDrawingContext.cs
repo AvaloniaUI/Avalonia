@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -7,7 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
+using Avalonia.Threading;
 
 // Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
@@ -16,46 +17,60 @@ namespace Avalonia.Rendering.Composition;
 /// <summary>
 /// An IDrawingContextImpl implementation that builds <see cref="CompositionDrawList"/>
 /// </summary>
-internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
+internal sealed class CompositionDrawingContext : DrawingContext, IDrawingContextWithAcrylicLikeSupport
 {
     private CompositionDrawListBuilder _builder = new();
     private int _drawOperationIndex;
+    
+    private static ThreadSafeObjectPool<Stack<Matrix>> TransformStackPool { get; } =
+        ThreadSafeObjectPool<Stack<Matrix>>.Default;
 
-    /// <inheritdoc/>
+    private Stack<Matrix>? _transforms;
+
+    private static ThreadSafeObjectPool<Stack<bool>> OpacityMaskPopStackPool { get; } =
+        ThreadSafeObjectPool<Stack<bool>>.Default;
+
+    private Stack<bool>? _needsToPopOpacityMask;
+
     public Matrix Transform { get; set; } = Matrix.Identity;
-
-    /// <inheritdoc/>
-    public void Clear(Color color)
-    {
-        // Cannot clear a deferred scene.
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        // Nothing to do here since we allocate no unmanaged resources.
-    }
-
+    
     public void BeginUpdate(CompositionDrawList? list)
     {
         _builder.Reset(list);
         _drawOperationIndex = 0;
     }
 
-    public CompositionDrawList EndUpdate()
+    public CompositionDrawList? EndUpdate()
     {
+        // Make sure that any pending pop operations are completed
+        Dispose();
+        
         _builder.TrimTo(_drawOperationIndex);
-        return _builder.DrawOperations!;
+        return _builder.DrawOperations;
     }
+    
+    protected override void DisposeCore()
+    {
+        if (_transforms != null)
+        {
+            _transforms.Clear();
+            TransformStackPool.ReturnAndSetNull(ref _transforms);
+        }
 
-    /// <inheritdoc/>
-    public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
+        if (_needsToPopOpacityMask != null)
+        {
+            _needsToPopOpacityMask.Clear();
+            _needsToPopOpacityMask = null;
+        }
+    }
+    
+    protected override void DrawGeometryCore(IBrush? brush, IPen? pen, IGeometryImpl geometry)
     {
         var next = NextDrawAs<GeometryNode>();
 
         if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
         {
-            Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
+            Add(new GeometryNode(Transform, ConvertBrush(brush), pen, geometry));
         }
         else
         {
@@ -63,9 +78,8 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-        BitmapInterpolationMode bitmapInterpolationMode)
+    internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+        BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
     {
         var next = NextDrawAs<ImageNode>();
 
@@ -81,14 +95,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
-    {
-        // This method is currently only used to composite layers so shouldn't be called here.
-        throw new NotSupportedException();
-    }
-
-    /// <inheritdoc/>
-    public void DrawLine(IPen? pen, Point p1, Point p2)
+    protected override void DrawLineCore(IPen? pen, Point p1, Point p2)
     {
         if (pen is null)
         {
@@ -99,7 +106,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
         {
-            Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
+            Add(new LineNode(Transform, pen, p1, p2));
         }
         else
         {
@@ -108,14 +115,14 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect,
+    protected override void DrawRectangleCore(IBrush? brush, IPen? pen, RoundedRect rect,
         BoxShadows boxShadows = default)
     {
         var next = NextDrawAs<RectangleNode>();
 
         if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadows))
         {
-            Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CreateChildScene(brush)));
+            Add(new RectangleNode(Transform, ConvertBrush(brush), pen, rect, boxShadows));
         }
         else
         {
@@ -138,21 +145,21 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
+    protected override void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect)
     {
         var next = NextDrawAs<EllipseNode>();
 
         if (next == null || !next.Item.Equals(Transform, brush, pen, rect))
         {
-            Add(new EllipseNode(Transform, brush, pen, rect, CreateChildScene(brush)));
+            Add(new EllipseNode(Transform, ConvertBrush(brush), pen, rect));
         }
         else
         {
             ++_drawOperationIndex;
         }
     }
-
-    public void Custom(ICustomDrawOperation custom)
+    
+    public override void Custom(ICustomDrawOperation custom)
     {
         var next = NextDrawAs<CustomDrawOperation>();
         if (next == null || !next.Item.Equals(Transform, custom))
@@ -161,10 +168,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
             ++_drawOperationIndex;
     }
 
-    public object? GetFeature(Type t) => null;
-
-    /// <inheritdoc/>
-    public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+    public override void DrawGlyphRun(IBrush? foreground, GlyphRun glyphRun)
     {
         if (foreground is null)
         {
@@ -173,9 +177,9 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         var next = NextDrawAs<GlyphRunNode>();
 
-        if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
+        if (next == null || !next.Item.Equals(Transform, foreground, glyphRun.PlatformImpl))
         {
-            Add(new GlyphRunNode(Transform, foreground, glyphRun, CreateChildScene(foreground)));
+            Add(new GlyphRunNode(Transform, ConvertBrush(foreground)!, glyphRun.PlatformImpl));
         }
 
         else
@@ -184,13 +188,17 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    public IDrawingContextLayerImpl CreateLayer(Size size)
+    protected override void PushTransformCore(Matrix matrix)
     {
-        throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
+        _transforms ??= TransformStackPool.Get();
+        _transforms.Push(Transform);
+        Transform = matrix * Transform;
     }
+    
+    protected override void PopTransformCore() =>
+        Transform = (_transforms ?? throw new InvalidOperationException()).Pop();
 
-    /// <inheritdoc/>
-    public void PopClip()
+    protected override void PopClipCore()
     {
         var next = NextDrawAs<ClipNode>();
 
@@ -205,7 +213,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void PopGeometryClip()
+    protected override void PopGeometryClipCore()
     {
         var next = NextDrawAs<GeometryClipNode>();
 
@@ -219,8 +227,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void PopBitmapBlendMode()
+    protected override void PopBitmapBlendModeCore()
     {
         var next = NextDrawAs<BitmapBlendModeNode>();
 
@@ -234,8 +241,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void PopOpacity()
+    protected override void PopOpacityCore()
     {
         var next = NextDrawAs<OpacityNode>();
 
@@ -249,14 +255,16 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void PopOpacityMask()
+    protected override void PopOpacityMaskCore()
     {
+        if (!_needsToPopOpacityMask!.Pop())
+            return;
+        
         var next = NextDrawAs<OpacityMaskNode>();
 
         if (next == null || !next.Item.Equals(null, null))
         {
-            Add(new OpacityMaskNode());
+            Add(new OpacityMaskPopNode());
         }
         else
         {
@@ -264,8 +272,8 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void PushClip(Rect clip)
+
+    protected override void PushClipCore(Rect clip)
     {
         var next = NextDrawAs<ClipNode>();
 
@@ -279,8 +287,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc />
-    public void PushClip(RoundedRect clip)
+    protected override void PushClipCore(RoundedRect clip)
     {
         var next = NextDrawAs<ClipNode>();
 
@@ -294,32 +301,30 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void PushGeometryClip(IGeometryImpl? clip)
+    protected override void PushGeometryClipCore(Geometry clip)
     {
-        if (clip is null)
+        if (clip.PlatformImpl is null)
             return;
 
         var next = NextDrawAs<GeometryClipNode>();
 
-        if (next == null || !next.Item.Equals(Transform, clip))
+        if (next == null || !next.Item.Equals(Transform, clip.PlatformImpl))
         {
-            Add(new GeometryClipNode(Transform, clip));
+            Add(new GeometryClipNode(Transform, clip.PlatformImpl));
         }
         else
         {
             ++_drawOperationIndex;
         }
     }
-
-    /// <inheritdoc/>
-    public void PushOpacity(double opacity)
+    
+    protected override void PushOpacityCore(double opacity, Rect bounds)
     {
         var next = NextDrawAs<OpacityNode>();
 
-        if (next == null || !next.Item.Equals(opacity))
+        if (next == null || !next.Item.Equals(opacity, bounds))
         {
-            Add(new OpacityNode(opacity));
+            Add(new OpacityNode(opacity, bounds));
         }
         else
         {
@@ -327,23 +332,30 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
         }
     }
 
-    /// <inheritdoc/>
-    public void PushOpacityMask(IBrush mask, Rect bounds)
+    protected override void PushOpacityMaskCore(IBrush mask, Rect bounds)
     {
         var next = NextDrawAs<OpacityMaskNode>();
 
+        bool needsToPop = true;
         if (next == null || !next.Item.Equals(mask, bounds))
         {
-            Add(new OpacityMaskNode(mask, bounds, CreateChildScene(mask)));
+            var immutableMask = ConvertBrush(mask);
+            if (immutableMask != null)
+                Add(new OpacityMaskNode(immutableMask, bounds));
+            else
+                needsToPop = false;
         }
         else
         {
             ++_drawOperationIndex;
         }
+
+        _needsToPopOpacityMask ??= OpacityMaskPopStackPool.Get();
+        _needsToPopOpacityMask.Push(needsToPop);
     }
 
     /// <inheritdoc/>
-    public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+    protected override void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode)
     {
         var next = NextDrawAs<BitmapBlendModeNode>();
 
@@ -378,29 +390,12 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
             : null;
     }
     
-    private static IDisposable? CreateChildScene(IBrush? brush)
+    private IImmutableBrush? ConvertBrush(IBrush? brush)
     {
-        if (brush is VisualBrush visualBrush)
-        {
-            var visual = visualBrush.Visual;
-
-            if (visual != null)
-            {
-                // TODO: This is a temporary solution to make visual brush to work like it does with DeferredRenderer
-                // We should directly reference the corresponding CompositionVisual (which should
-                // be attached to the same composition target) like UWP does.
-                // Render-able visuals shouldn't be dangling unattached
-                (visual as IVisualBrushInitialize)?.EnsureInitialized();
-                
-                var recorder = new CompositionDrawingContext();
-                recorder.BeginUpdate(null);
-                ImmediateRenderer.Render(visual, new DrawingContext(recorder));
-                var drawList = recorder.EndUpdate();
-                drawList.Size = visual.Bounds.Size;
-
-                return drawList;
-            }
-        }
-        return null;
+        if (brush is IMutableBrush mutable)
+            return mutable.ToImmutable();
+        if (brush is ISceneBrush sceneBrush)
+            return sceneBrush.CreateContent();
+        return (IImmutableBrush?)brush;
     }
 }

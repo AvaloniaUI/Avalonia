@@ -28,7 +28,7 @@ namespace Avalonia
     public class StyledElement : Animatable, 
         IDataContextProvider, 
         ILogical,
-        IResourceHost,
+        IThemeVariantHost,
         IStyleHost,
         IStyleable,
         ISetLogicalParent,
@@ -41,7 +41,12 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             AvaloniaProperty.Register<StyledElement, object?>(
                 nameof(DataContext),
+                defaultValue: null,
                 inherits: true,
+                defaultBindingMode: BindingMode.OneWay,
+                validate: null,
+                coerce: null,
+                enableDataValidation: false,
                 notifying: DataContextNotifying);
 
         /// <summary>
@@ -70,23 +75,6 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<ControlTheme?> ThemeProperty =
             AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
-
-        /// <summary>
-        /// Defines the <see cref="ActualThemeVariant"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            AvaloniaProperty.Register<StyledElement, ThemeVariant>(
-                nameof(ThemeVariant),
-                inherits: true,
-                defaultValue: ThemeVariant.Light);
-
-        /// <summary>
-        /// Defines the RequestedThemeVariant property.
-        /// </summary>
-        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            AvaloniaProperty.Register<StyledElement, ThemeVariant?>(
-                nameof(ThemeVariant),
-                defaultValue: ThemeVariant.Default);
 
         private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
@@ -156,6 +144,9 @@ namespace Avalonia
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        /// <inheritdoc />
+        public event EventHandler? ActualThemeVariantChanged;
+        
         /// <summary>
         /// Gets or sets the name of the styled element.
         /// </summary>
@@ -275,15 +266,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the UI theme that is currently used by the element, which might be different than the <see cref="RequestedThemeVariantProperty"/>.
-        /// </summary>
-        /// <returns>
-        /// If current control is contained in the ThemeVariantScope, TopLevel or Application with non-default RequestedThemeVariant, that value will be returned.
-        /// Otherwise, current OS theme variant is returned.
-        /// </returns>
-        public ThemeVariant ActualThemeVariant => GetValue(ActualThemeVariantProperty);
-
-        /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
         protected internal IAvaloniaList<ILogical> LogicalChildren
@@ -321,6 +303,9 @@ namespace Avalonia
         /// </summary>
         public StyledElement? Parent { get; private set; }
 
+        /// <inheritdoc />
+        public ThemeVariant ActualThemeVariant => GetValue(ThemeVariant.ActualThemeVariantProperty);
+        
         /// <summary>
         /// Gets the styled element's logical parent.
         /// </summary>
@@ -390,7 +375,7 @@ namespace Avalonia
         /// </returns>
         public bool ApplyStyling()
         {
-            if (_initCount == 0 && (!_stylesApplied || !_themeApplied))
+            if (_initCount == 0 && (!_stylesApplied || !_themeApplied || !_templatedParentThemeApplied))
             {
                 GetValueStore().BeginStyling();
 
@@ -520,13 +505,7 @@ namespace Avalonia
                     NotifyResourcesChanged();
                 }
 
-#nullable disable
-                RaisePropertyChanged(
-                    ParentProperty,
-                    new Optional<StyledElement>(old),
-                    new BindingValue<StyledElement>(Parent),
-                    BindingPriority.LocalValue);
-#nullable enable
+                RaisePropertyChanged(ParentProperty, old, Parent);
             }
         }
 
@@ -646,13 +625,19 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
+            {
                 OnControlThemeChanged();
-            else if (change.Property == RequestedThemeVariantProperty)
+            }
+            else if (change.Property == ThemeVariant.RequestedThemeVariantProperty)
             {
                 if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
-                    SetValue(ActualThemeVariantProperty, themeVariant);
+                    SetValue(ThemeVariant.ActualThemeVariantProperty, themeVariant);
                 else
-                    ClearValue(ActualThemeVariantProperty);
+                    ClearValue(ThemeVariant.ActualThemeVariantProperty);
+            }
+            else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
+            {
+                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -818,8 +803,11 @@ namespace Avalonia
 
             if (theme.HasChildren)
             {
-                foreach (var child in theme.Children)
-                    ApplyStyle(child, null, type);
+                var children = theme.Children;
+                for (var i = 0; i < children.Count; i++)
+                {
+                    ApplyStyle(children[i], null, type);
+                }
             }
         }
 
@@ -831,8 +819,11 @@ namespace Avalonia
             
             if (host.IsStylesInitialized)
             {
-                foreach (var style in host.Styles)
-                    ApplyStyle(style, host, FrameType.Style);
+                var styles = host.Styles;
+                for (var i = 0; i < styles.Count; ++i)
+                {
+                    ApplyStyle(styles[i], host, FrameType.Style);
+                }
             }
         }
 
@@ -841,8 +832,11 @@ namespace Avalonia
             if (style is Style s)
                 s.TryAttach(this, host, type);
 
-            foreach (var child in style.Children)
-                ApplyStyle(child, host, type);
+            var children = style.Children;
+            for (var i = 0; i < children.Count; i++)
+            {
+                ApplyStyle(children[i], host, type);
+            }
         }
 
         private void ReevaluateImplicitTheme()

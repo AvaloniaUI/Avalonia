@@ -583,7 +583,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
-                                var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphInfos[0].GlyphCluster;
+                                var firstCluster = shapedTextCharacters.ShapedBuffer[0].GlyphCluster;
                                 var lastCluster = firstCluster;
 
                                 for (var j = 0; j < shapedTextCharacters.ShapedBuffer.Length; j++)

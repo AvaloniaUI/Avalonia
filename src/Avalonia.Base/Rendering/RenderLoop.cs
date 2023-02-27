@@ -87,6 +87,7 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <inheritdoc />
         public bool RunsInBackground => Timer.RunsInBackground;
 
         private void TimerTick(TimeSpan time)

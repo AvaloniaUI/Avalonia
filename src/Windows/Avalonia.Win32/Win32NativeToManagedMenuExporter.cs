@@ -1,12 +1,7 @@
-﻿using System.Collections.Generic;
-using Avalonia.Reactive;
+﻿using Avalonia.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Media.Imaging;
-using Avalonia.Utilities;
-
-#nullable enable
 
 namespace Avalonia.Win32
 {
@@ -19,7 +14,7 @@ namespace Avalonia.Win32
             _nativeMenu = nativeMenu;
         }
 
-        private AvaloniaList<MenuItem> Populate(NativeMenu nativeMenu)
+        private static AvaloniaList<MenuItem> Populate(NativeMenu nativeMenu)
         {
             var result = new AvaloniaList<MenuItem>();
             

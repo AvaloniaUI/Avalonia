@@ -1,13 +1,11 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public abstract class BitmapImpl : IBitmapImpl, IDisposable
+    internal abstract class BitmapImpl : IBitmapImpl, IDisposable
     {
         public abstract Vector Dpi { get; }
         public abstract PixelSize PixelSize { get; }

@@ -16,7 +16,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public WindowTests_MacOS(TestAppFixture fixture)
+        public WindowTests_MacOS(DefaultAppFixture fixture)
         {
             var retry = 0;
 
@@ -149,6 +149,18 @@ namespace Avalonia.IntegrationTests.Appium
             mainWindow = _session.FindElementByAccessibilityId("MainWindow");
             windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("Normal", windowState.Text);
+        }
+        
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent_After_Modal_Closed()
+        {
+            using (OpenWindow(new PixelSize(200, 300), ShowWindowMode.Owned, WindowStartupLocation.Manual))
+            {
+                OpenWindow(null, ShowWindowMode.Modal, WindowStartupLocation.Manual).Dispose();
+                
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
+                Assert.Equal(1, secondaryWindowIndex);
+            }
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
@@ -323,21 +335,49 @@ namespace Avalonia.IntegrationTests.Appium
             secondaryWindow.GetChromeButtons().close.Click();
         }
 
-        private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        [PlatformTheory(TestPlatforms.MacOS)]
+        [InlineData(ShowWindowMode.NonOwned)]
+        [InlineData(ShowWindowMode.Owned)]
+        [InlineData(ShowWindowMode.Modal)]
+        public void Window_Has_Disabled_Zoom_Button_When_CanResize_Is_False(ShowWindowMode mode)
+        {
+            using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+                var (_, _, zoomButton) = secondaryWindow.GetChromeButtons();
+                Assert.False(zoomButton.Enabled);
+            }
+        }
+        
+        private IDisposable OpenWindow(
+            PixelSize? size,
+            ShowWindowMode mode,
+            WindowStartupLocation location,
+            bool canResize = true)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
-            modeComboBox.Click();
-            _session.FindElementByName(mode.ToString()).SendClick();
+            if (modeComboBox.GetComboBoxValue() != mode.ToString())
+            {
+                modeComboBox.Click();
+                _session.FindElementByName(mode.ToString()).SendClick();
+            }
 
-            locationComboBox.Click();
-            _session.FindElementByName(location.ToString()).SendClick();
+            if (locationComboBox.GetComboBoxValue() != location.ToString())
+            {
+                locationComboBox.Click();
+                _session.FindElementByName(location.ToString()).SendClick();
+            }
+            
+            if (canResizeCheckBox.GetIsChecked() != canResize)
+                canResizeCheckBox.Click();
 
             return showButton.OpenWindowWithClick();
         }

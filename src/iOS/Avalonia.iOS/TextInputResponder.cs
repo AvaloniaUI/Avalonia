@@ -1,14 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using Avalonia.Controls.Presenters;
-using Foundation;
-using ObjCRuntime;
-using Avalonia.Input.TextInput;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using CoreGraphics;
+using Foundation;
+using ObjCRuntime;
 using UIKit;
 // ReSharper disable InconsistentNaming
 // ReSharper disable StringLiteralTypo
@@ -25,6 +24,9 @@ partial class AvaloniaView
     [Adopts("UIKeyInput")]
     partial class TextInputResponder : UIResponder, IUITextInput
     {
+        private static AvaloniaEmptyTextPosition? _emptyPosition;
+        private static AvaloniaEmptyTextPosition EmptyPosition => _emptyPosition ??= new();
+
         private class AvaloniaTextRange : UITextRange, INSCopying
         {
             private UITextPosition? _start;
@@ -67,6 +69,15 @@ partial class AvaloniaView
             public NSObject Copy(NSZone? zone) => new AvaloniaTextPosition(Index);
         }
 
+        private class AvaloniaEmptyTextPosition : UITextPosition, INSCopying
+        {
+            public AvaloniaEmptyTextPosition()
+            {
+
+            }
+            public NSObject Copy(NSZone? zone) => this;
+        }
+
         public TextInputResponder(AvaloniaView view, ITextInputMethodClient client)
         {
             _view = view;
@@ -93,7 +104,25 @@ partial class AvaloniaView
 
         public override NSString TextInputContextIdentifier => new NSString(Guid.NewGuid().ToString());
 
-        public override UITextInputMode TextInputMode => UITextInputMode.CurrentInputMode;
+        public override UITextInputMode TextInputMode
+        {
+            get
+            {
+                var mode = UITextInputMode.CurrentInputMode;
+                // Can be empty see https://developer.apple.com/documentation/uikit/uitextinputmode/1614522-activeinputmodes
+                if (mode is null && UITextInputMode.ActiveInputModes.Length > 0)
+                {
+                    mode = UITextInputMode.ActiveInputModes[0];
+                }
+                // See: https://stackoverflow.com/a/33337483/20894223
+                if (mode is null)
+                {
+                    using var tv = new UITextView();
+                    mode = tv.TextInputMode;
+                }
+                return mode;
+            }
+        }
 
         [DllImport("/usr/lib/libobjc.dylib")]
         private static extern void objc_msgSend(IntPtr receiver, IntPtr selector, IntPtr arg);
@@ -105,8 +134,8 @@ partial class AvaloniaView
         private readonly AvaloniaView _view;
         private string? _markedText;
 
-        
-        
+
+
         private void SurroundingTextChanged(object? sender, EventArgs e)
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "SurroundingTextChanged");
@@ -153,9 +182,9 @@ partial class AvaloniaView
                 switch (ReturnKeyType)
                 {
                     case UIReturnKeyType.Done:
-                        case UIReturnKeyType.Go:
-                        case UIReturnKeyType.Send:
-                        case UIReturnKeyType.Search:
+                    case UIReturnKeyType.Go:
+                    case UIReturnKeyType.Send:
+                    case UIReturnKeyType.Search:
                         ResignFirstResponder();
                         break;
                 }
@@ -164,7 +193,7 @@ partial class AvaloniaView
 
             TextInput(text);
         }
-        
+
         void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back);
 
         bool IUIKeyInput.HasText => true;
@@ -176,8 +205,8 @@ partial class AvaloniaView
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.TextInRange {start} {end}", r.StartIndex, r.EndIndex);
 
             string result = "";
-            if(string.IsNullOrEmpty(_markedText))
-                result = s.Text[r.StartIndex .. r.EndIndex];
+            if (string.IsNullOrEmpty(_markedText))
+                result = s.Text[r.StartIndex..r.EndIndex];
             else
             {
                 var span = new CombinedSpan3<char>(s.Text.AsSpan().Slice(0, s.CursorOffset),
@@ -214,7 +243,7 @@ partial class AvaloniaView
         void IUITextInput.UnmarkText()
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.UnmarkText");
-            if(_markedText == null)
+            if (_markedText == null)
                 return;
             var commitString = _markedText;
             _markedText = null;
@@ -239,15 +268,15 @@ partial class AvaloniaView
             Logger.TryGet(LogEventLevel.Debug, ImeLog)
                 ?.Log(null, "IUIKeyInput.GetPosition {start} {offset}", pos.Index, (int)offset);
 
-             var res = GetPositionCore(pos, offset);
-             Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                 ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
-             return res!;
+            var res = GetPositionCore(pos, offset);
+            Logger.TryGet(LogEventLevel.Debug, ImeLog)
+                ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
+            return res!;
         }
 
         private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition pos, nint offset)
         {
-            
+
             var end = pos.Index + (int)offset;
             if (end < 0)
                 return null!;
@@ -261,14 +290,14 @@ partial class AvaloniaView
         {
             var pos = (AvaloniaTextPosition)fromPosition;
             Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, "IUIKeyInput.GetPosition {start} {direction} {offset}", pos.Index,  inDirection, (int)offset);
+                ?.Log(null, "IUIKeyInput.GetPosition {start} {direction} {offset}", pos.Index, inDirection, (int)offset);
 
             var res = GetPositionCore(pos, inDirection, offset);
             Logger.TryGet(LogEventLevel.Debug, ImeLog)
                 ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
             return res!;
         }
-        
+
         private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition fromPosition, UITextLayoutDirection inDirection,
             nint offset)
         {
@@ -348,7 +377,7 @@ partial class AvaloniaView
 
         CGRect IUITextInput.GetFirstRectForRange(UITextRange range)
         {
-            
+
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetFirstRectForRange");
             // TODO: Query from the input client
@@ -377,11 +406,11 @@ partial class AvaloniaView
             if (presenter is { })
             {
                 var hitResult = presenter.TextLayout.HitTestPoint(new Point(point.X, point.Y));
-                
+
                 return new AvaloniaTextPosition(hitResult.TextPosition);
             }
 
-            return null;
+            return EmptyPosition;
         }
 
         UITextPosition IUITextInput.GetClosestPositionToPoint(CGPoint point, UITextRange withinRange)
@@ -440,7 +469,7 @@ partial class AvaloniaView
         NSDictionary? IUITextInput.MarkedTextStyle
         {
             get => null;
-            set {}
+            set { }
         }
 
         UITextPosition IUITextInput.BeginningOfDocument => _beginningOfDocument;
@@ -478,7 +507,7 @@ partial class AvaloniaView
             var res = base.ResignFirstResponder();
             if (res && ReferenceEquals(CurrentAvaloniaResponder, this))
             {
-                
+
                 Logger.TryGet(LogEventLevel.Debug, "IOSIME")
                     ?.Log(null, "Resigned first responder");
                 _client.SurroundingTextChanged -= SurroundingTextChanged;

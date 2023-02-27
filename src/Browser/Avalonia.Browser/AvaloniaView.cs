@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
@@ -15,10 +16,11 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using SkiaSharp;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Avalonia.Browser
 {
-    public partial class AvaloniaView : ITextInputMethodImpl
+    public class AvaloniaView : ITextInputMethodImpl
     {
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
         private readonly BrowserTopLevelImpl _topLevelImpl;
@@ -41,8 +43,9 @@ namespace Avalonia.Browser
         private bool _useGL;        
         private ITextInputMethodClient? _client;
 
+        /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
-            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id {divId} was not found in the html document."))
+            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id '{divId}' was not found in the html document."))
         {
         }
 
@@ -94,6 +97,7 @@ namespace Avalonia.Browser
 
             InputHelper.SubscribeTextEvents(
                 _inputElement,
+                OnBeforeInput,
                 OnTextInput,
                 OnCompositionStart,
                 OnCompositionUpdate,
@@ -102,6 +106,8 @@ namespace Avalonia.Browser
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp,
                 OnPointerCancel, OnWheel);
 
+            InputHelper.SubscribeDropEvents(_containerElement, OnDragEvent);
+            
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
             _dpi = DomHelper.ObserveDpi(OnDpiChanged);
@@ -289,6 +295,59 @@ namespace Avalonia.Browser
             return modifiers;
         }
 
+        public bool OnDragEvent(JSObject args)
+        {
+            var eventType = args?.GetPropertyAsString("type") switch
+            {
+                "dragenter" => RawDragEventType.DragEnter,
+                "dragover" => RawDragEventType.DragOver,
+                "dragleave" => RawDragEventType.DragLeave,
+                "drop" => RawDragEventType.Drop,
+                _ => (RawDragEventType)(int)-1
+            };
+            var dataObject = args?.GetPropertyAsJSObject("dataTransfer");
+            if (args is null || eventType < 0 || dataObject is null)
+            {
+                return false;
+            }
+
+            // If file is dropped, we need storage js to be referenced.
+            // TODO: restructure JS files, so it's not needed.
+            _ = AvaloniaModule.ImportStorage();
+
+            var position = new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY"));
+            var modifiers = GetModifiers(args);
+
+            var effectAllowedStr = dataObject.GetPropertyAsString("effectAllowed") ?? "none";
+            var effectAllowed = DragDropEffects.None;
+            if (effectAllowedStr.Contains("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Copy;
+            }
+            if (effectAllowedStr.Contains("link", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Link;
+            }
+            if (effectAllowedStr.Contains("move", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Move;
+            }
+            if (effectAllowedStr.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                effectAllowed |= DragDropEffects.Move | DragDropEffects.Copy | DragDropEffects.Link;
+            }
+            if (effectAllowed == DragDropEffects.None)
+            {
+                return false;
+            }
+
+            var dropEffect = _topLevelImpl.RawDragEvent(eventType, position, modifiers, new BrowserDataObject(dataObject), effectAllowed);
+            dataObject.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
+
+            return eventType is RawDragEventType.Drop or RawDragEventType.DragOver
+                   && dropEffect != DragDropEffects.None;
+        }
+        
         private bool OnKeyDown (string code, string key, int modifier)
         {
             var handled = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
@@ -314,6 +373,30 @@ namespace Avalonia.Browser
             }
 
             return _topLevelImpl.RawTextEvent(data);
+        }
+
+        private bool OnBeforeInput(JSObject arg, int start, int end)
+        {
+            var type = arg.GetPropertyAsString("inputType");
+            if (type != "deleteByComposition")
+            {
+                if (type == "deleteContentBackward")
+                {
+                    start = _inputElement.GetPropertyAsInt32("selectionStart");
+                    end = _inputElement.GetPropertyAsInt32("selectionEnd");
+                }
+                else
+                {
+                    start = -1;
+                    end = -1;
+                }
+            }
+
+            if(start != -1 && end != -1 && _client != null)
+            {
+                _client.SelectInSurroundingText(start, end);
+            }
+            return false;
         }
 
         private bool OnCompositionStart (JSObject args)
@@ -353,12 +436,10 @@ namespace Avalonia.Browser
         {
             if (_useGL && (_jsGlInfo == null))
             {
-                Console.WriteLine("nothing to render");
                 return;
             }
             if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
             {
-                Console.WriteLine("nothing to render");
                 return;
             }
 
@@ -431,7 +512,6 @@ namespace Avalonia.Browser
 
         void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
-            Console.WriteLine("Set Client");
             if (_client != null)
             {
                 _client.SurroundingTextChanged -= SurroundingTextChanged;
@@ -454,8 +534,6 @@ namespace Avalonia.Browser
                 var surroundingText = _client.SurroundingText;
 
                 InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
-
-                Console.WriteLine("Shown, focused and surrounded.");
             }
             else
             {

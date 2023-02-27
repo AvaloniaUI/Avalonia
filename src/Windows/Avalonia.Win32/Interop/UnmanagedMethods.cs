@@ -1,14 +1,12 @@
+#nullable enable
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-
-using Avalonia.MicroCom;
 using MicroCom.Runtime;
-using Avalonia.Win32.Win32Com;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169, 649
@@ -1092,7 +1090,7 @@ namespace Avalonia.Win32.Interop
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
         [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
-        unsafe internal static extern int GetMouseMovePointsEx(
+        internal static extern int GetMouseMovePointsEx(
             uint cbSize, MOUSEMOVEPOINT* pointsIn,
             MOUSEMOVEPOINT* pointsBufferOut, int nBufPoints, uint resolution);
 
@@ -1167,7 +1165,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CreateWindowEx(
            int dwExStyle,
            uint lpClassName,
-           string lpWindowName,
+           string? lpWindowName,
            uint dwStyle,
            int x,
            int y,
@@ -1218,7 +1216,7 @@ namespace Avalonia.Win32.Interop
         public static extern int GetMessageTime();
 
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
@@ -1255,7 +1253,7 @@ namespace Avalonia.Win32.Interop
             }
             else
             {
-                return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr((uint)value)).ToInt32();
+                return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr(value)).ToInt32();
             }
         }
 
@@ -1421,7 +1419,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
-        public static extern bool SetWindowText(IntPtr hwnd, string lpString);
+        public static extern bool SetWindowText(IntPtr hwnd, string? lpString);
 
         public enum ClassLongIndex : int
         {
@@ -1482,7 +1480,7 @@ namespace Avalonia.Win32.Interop
         internal static extern int CoCreateInstance(ref Guid clsid,
             IntPtr ignore1, int ignore2, ref Guid iid, [Out] out IntPtr pUnkOuter);
 
-        internal unsafe static T CreateInstance<T>(ref Guid clsid, ref Guid iid) where T : IUnknown
+        internal static T CreateInstance<T>(ref Guid clsid, ref Guid iid) where T : IUnknown
         {
             var hresult = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out IntPtr pUnk);
             if (hresult != 0)
@@ -1490,7 +1488,7 @@ namespace Avalonia.Win32.Interop
                 throw new COMException("CreateInstance", hresult);
             }
             using var unk = MicroComRuntime.CreateProxyFor<IUnknown>(pUnk, true);
-            return MicroComRuntime.QueryInterface<T>(unk);
+            return unk.QueryInterface<T>();
         }
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -1581,7 +1579,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [DllImport("user32")]
-        public static extern unsafe bool GetTouchInputInfo(
+        public static extern bool GetTouchInputInfo(
             IntPtr hTouchInput,
             uint cInputs,
             TOUCHINPUT* pInputs,
@@ -1680,7 +1678,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr GlobalSize(IntPtr hGlobal);
 
         [DllImport("shell32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
-        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
+        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder? lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
         internal static extern void DoDragDrop(IntPtr dataObject, IntPtr dropSource, int allowedEffects, [Out] out int finalEffect);
@@ -1734,7 +1732,7 @@ namespace Avalonia.Win32.Interop
 
             public DWM_BLURBEHIND(bool enabled)
             {
-                fEnable = enabled ? true : false;
+                fEnable = enabled;
                 hRgnBlur = IntPtr.Zero;
                 fTransitionOnMaximized = false;
                 dwFlags = DWM_BB.Enable;
@@ -1855,20 +1853,22 @@ namespace Avalonia.Win32.Interop
         [DllImport("imm32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         public static extern int ImmGetCompositionString(IntPtr hIMC, GCS dwIndex, [Out, Optional] IntPtr lpBuf, uint dwBufLen);
 
-        public static string ImmGetCompositionString(IntPtr hIMC, GCS dwIndex)
+        public static string? ImmGetCompositionString(IntPtr hIMC, GCS dwIndex)
         {
             int bufferLength = ImmGetCompositionString(hIMC, dwIndex, IntPtr.Zero, 0);
 
             if (bufferLength > 0)
             {
-                var buffer = new byte[bufferLength];
+                var buffer = bufferLength <= 64 ? stackalloc byte[bufferLength] : new byte[bufferLength];
 
-                fixed(byte* bufferPtr = buffer)
+                fixed (byte* bufferPtr = buffer)
                 {
-                    var error = ImmGetCompositionString(hIMC, dwIndex, (IntPtr)bufferPtr, (uint)bufferLength);
-
-                    return Marshal.PtrToStringUni((IntPtr)bufferPtr);
-                }           
+                    var result = ImmGetCompositionString(hIMC, dwIndex, (IntPtr)bufferPtr, (uint)bufferLength);
+                    if (result >= 0)
+                    {
+                        return Marshal.PtrToStringUni((IntPtr)bufferPtr);
+                    }
+                }
             }
 
             return null;
@@ -2380,7 +2380,7 @@ namespace Avalonia.Win32.Interop
         }
     }
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct _DROPFILES
     {
         public Int32 pFiles;
@@ -2390,7 +2390,7 @@ namespace Avalonia.Win32.Interop
         public bool fWide;
     }
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct STGMEDIUM
     {
         public TYMED tymed;
@@ -2398,7 +2398,7 @@ namespace Avalonia.Win32.Interop
         public IntPtr pUnkForRelease;
     }
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct FORMATETC
     {
         public ushort cfFormat;
@@ -2507,14 +2507,14 @@ namespace Avalonia.Win32.Interop
         public int uCallbackMessage;
         public IntPtr hIcon;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string szTip;
+        public string? szTip;
         public int dwState = 0;
         public int dwStateMask = 0;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-        public string szInfo;
+        public string? szInfo;
         public int uTimeoutOrVersion;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string szInfoTitle;
+        public string? szInfoTitle;
         public NIIF dwInfoFlags;
     }
 }

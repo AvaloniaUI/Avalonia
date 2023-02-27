@@ -7,22 +7,13 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal class BclStorageFile : IStorageBookmarkFile
 {
-    public BclStorageFile(string fileName)
-    {
-        FileInfo = new FileInfo(fileName);
-    }
-
     public BclStorageFile(FileInfo fileInfo)
     {
         FileInfo = fileInfo ?? throw new ArgumentNullException(nameof(fileInfo));
     }
 
     public FileInfo FileInfo { get; }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
+    
     public string Name => FileInfo.Name;
 
     public virtual bool CanBookmark => true;

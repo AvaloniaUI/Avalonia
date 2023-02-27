@@ -12,7 +12,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.X11
 {
-    partial class X11CursorFactory : ICursorFactory
+    internal partial class X11CursorFactory : ICursorFactory
     {
         private static readonly byte[] NullCursorData = new byte[] { 0 };
 
@@ -115,7 +115,7 @@ namespace Avalonia.X11
                
                 using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
                 using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext(null))
+                using (var ctx = renderTarget.CreateDrawingContext())
                 {
                     var r = new Rect(_pixelSize.ToSize(1)); 
                     ctx.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, r, r);
@@ -142,7 +142,7 @@ namespace Avalonia.X11
         }
     }
 
-    class CursorImpl : ICursorImpl
+    internal class CursorImpl : ICursorImpl
     {
         public CursorImpl() { }
         public CursorImpl(IntPtr handle) => Handle = handle;

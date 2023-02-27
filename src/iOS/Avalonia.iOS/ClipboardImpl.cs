@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    public class ClipboardImpl : IClipboard
+    internal class ClipboardImpl : IClipboard
     {
         public Task<string> GetTextAsync()
         {
@@ -16,19 +16,19 @@ namespace Avalonia.iOS
         public Task SetTextAsync(string text)
         {
             UIPasteboard.General.String = text;
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
             UIPasteboard.General.String = "";
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
-        public Task SetDataObjectAsync(IDataObject data) => throw new PlatformNotSupportedException();
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
-        public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-        public Task<object> GetDataAsync(string format) => throw new PlatformNotSupportedException();
+        public Task<object> GetDataAsync(string format) => Task.FromResult<object>(null);
     }
 }
