@@ -234,7 +234,7 @@ namespace Avalonia.Skia
                 if (image == null)
                     throw new NotSupportedException();
 
-                PixelFormat? pixelFormat = image.ColorType.ToAvalonia();
+                var pixelFormat = image.ColorType.ToAvalonia();
 
                 if (pixelFormat == null)
                     throw new NotSupportedException();
