@@ -14,7 +14,7 @@ namespace Avalonia.Skia
         private PathCache _pathCache;
         private SKPathMeasure? _cachedPathMeasure;
 
-        private SKPathMeasure CachedPathMeasure => _cachedPathMeasure ??= new SKPathMeasure(EffectivePath!);
+        private SKPathMeasure CachedPathMeasure => _cachedPathMeasure ??= new SKPathMeasure(StrokePath!);
 
         /// <inheritdoc />
         public abstract Rect Bounds { get; }
@@ -24,19 +24,20 @@ namespace Avalonia.Skia
         {
             get
             {
-                if (EffectivePath is null)
+                if (StrokePath is null)
                     return 0;
 
                 return CachedPathMeasure.Length;
             }
         }
 
-        public abstract SKPath? EffectivePath { get; }
+        public abstract SKPath? StrokePath { get; }
+        public abstract SKPath? FillPath { get; }
 
         /// <inheritdoc />
         public bool FillContains(Point point)
         {
-            return PathContainsCore(EffectivePath, point);
+            return PathContainsCore(FillPath, point);
         }
 
         /// <inheritdoc />
@@ -74,7 +75,7 @@ namespace Avalonia.Skia
                 var paint = SKPaintCache.Shared.Get();
                 paint.IsStroke = true;
                 paint.StrokeWidth = strokeWidth;
-                paint.GetFillPath(EffectivePath, strokePath);
+                paint.GetFillPath(StrokePath, strokePath);
 
                 SKPaintCache.Shared.ReturnReset(paint);
 
@@ -96,14 +97,10 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IGeometryImpl? Intersect(IGeometryImpl geometry)
         {
-            if (EffectivePath is { } path
-                && (geometry as GeometryImpl)?.EffectivePath is { } otherPath
-                && path.Op(otherPath, SKPathOp.Intersect) is { } result)
-            {
-                return new StreamGeometryImpl(result);
-            }
-
-            return null;
+            var other = geometry as GeometryImpl;
+            if (other == null)
+                return null;
+            return CombinedGeometryImpl.TryCreate(GeometryCombineMode.Intersect, this, other);
         }
 
         /// <inheritdoc />
@@ -128,7 +125,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool TryGetPointAtDistance(double distance, out Point point)
         {
-            if (EffectivePath is null)
+            if (StrokePath is null)
             {
                 point = new Point();
                 return false;
@@ -142,7 +139,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
         {
-            if (EffectivePath is null)
+            if (StrokePath is null)
             {
                 point = new Point();
                 tangent = new Point();
@@ -158,7 +155,7 @@ namespace Avalonia.Skia
         public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure,
             [NotNullWhen(true)] out IGeometryImpl? segmentGeometry)
         {
-            if (EffectivePath is null)
+            if (StrokePath is null)
             {
                 segmentGeometry = null;
                 return false;
@@ -172,7 +169,7 @@ namespace Avalonia.Skia
 
             if (res)
             {
-                segmentGeometry = new StreamGeometryImpl(_skPathSegment);
+                segmentGeometry = new StreamGeometryImpl(_skPathSegment, null);
             }
 
             return res;

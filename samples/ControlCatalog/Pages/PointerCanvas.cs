@@ -114,7 +114,7 @@ public class PointerCanvas : Control
 
     private string? _status;
     public static readonly DirectProperty<PointerCanvas, string?> StatusProperty =
-        AvaloniaProperty.RegisterDirect<PointerCanvas, string?>(nameof(DrawOnlyPoints), c => c.Status, (c, v) => c.Status = v,
+        AvaloniaProperty.RegisterDirect<PointerCanvas, string?>(nameof(Status), c => c.Status, (c, v) => c.Status = v,
             defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public string? Status
