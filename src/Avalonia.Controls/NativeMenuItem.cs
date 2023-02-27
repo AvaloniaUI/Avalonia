@@ -9,7 +9,6 @@ namespace Avalonia.Controls
 {
     public class NativeMenuItem : NativeMenuItemBase, INativeMenuItemExporterEventsImplBridge
     {
-        private ICommand? _command;
         private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
 
         class CanExecuteChangedSubscriber : IWeakEventSubscriber<EventArgs>
@@ -100,11 +99,8 @@ namespace Avalonia.Controls
             set => SetValue(ToggleTypeProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<NativeMenuItem>(
-                menuItem => menuItem.Command,
-                (menuItem, command) => menuItem.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<NativeMenuItem>(new(enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
@@ -130,19 +126,8 @@ namespace Avalonia.Controls
 
         public ICommand? Command
         {
-            get => _command;
-            set
-            {
-                if (_command != null)
-                    WeakEvents.CommandCanExecuteChanged.Unsubscribe(_command, _canExecuteChangedSubscriber);
-
-                SetAndRaise(CommandProperty, ref _command, value);
-
-                if (_command != null)
-                    WeakEvents.CommandCanExecuteChanged.Subscribe(_command, _canExecuteChangedSubscriber);
-
-                CanExecuteChanged();
-            }
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -179,6 +164,14 @@ namespace Avalonia.Controls
                 if (newMenu.Parent != null && newMenu.Parent != this)
                     throw new InvalidOperationException("NativeMenu already has a parent");
                 newMenu.Parent = this;
+            }
+            else if (change.Property == CommandProperty)
+            {
+                if (change.OldValue is ICommand oldCommand)
+                    WeakEvents.CommandCanExecuteChanged.Unsubscribe(oldCommand, _canExecuteChangedSubscriber);
+                if (change.NewValue is ICommand newCommand)
+                    WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
+                CanExecuteChanged();
             }
         }
     }

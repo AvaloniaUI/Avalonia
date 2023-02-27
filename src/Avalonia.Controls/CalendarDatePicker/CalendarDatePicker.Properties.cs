@@ -50,11 +50,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedDate"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
+        public static readonly StyledProperty<DateTime?> SelectedDateProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
-                o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v,
                 enableDataValidation: true, 
                 defaultBindingMode:BindingMode.TwoWay);
 
@@ -211,8 +209,8 @@ namespace Avalonia.Controls
         /// </exception>
         public DateTime? SelectedDate
         {
-            get => _selectedDate;
-            set => SetAndRaise(SelectedDateProperty, ref _selectedDate, value);
+            get => GetValue(SelectedDateProperty);
+            set => SetValue(SelectedDateProperty, value);
         }
 
         /// <summary>

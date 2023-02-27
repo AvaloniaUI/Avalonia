@@ -91,8 +91,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, string?> TextProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, string?>(nameof(Text), o => o.Text, (o, v) => o.Text = v,
+        public static readonly StyledProperty<string?> TextProperty =
+            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Text),
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
@@ -104,9 +104,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, decimal?> ValueProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, decimal?>(nameof(Value), updown => updown.Value,
-                (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+        public static readonly StyledProperty<decimal?> ValueProperty =
+            AvaloniaProperty.Register<NumericUpDown, decimal?>(nameof(Value), coerce: (s,v) => ((NumericUpDown)s).OnCoerceValue(v),
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
@@ -128,8 +128,6 @@ namespace Avalonia.Controls
 
         private IDisposable? _textBoxTextChangedSubscription;
 
-        private decimal? _value;
-        private string? _text;
         private bool _internalValueSet;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
@@ -250,8 +248,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Text
         {
-            get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         /// <summary>
@@ -270,12 +268,8 @@ namespace Avalonia.Controls
         /// </summary>
         public decimal? Value
         {
-            get { return _value; }
-            set
-            {
-                value = OnCoerceValue(value);
-                SetAndRaise(ValueProperty, ref _value, value);
-            }
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         /// <summary>
@@ -500,7 +494,7 @@ namespace Avalonia.Controls
                 SyncTextAndValueProperties(true, Text);
             }
         }
-        
+
         /// <summary>
         /// Called when the <see cref="Text"/> property value changed.
         /// </summary>
@@ -667,7 +661,7 @@ namespace Avalonia.Controls
             {
                 result = Minimum;
             }
-            
+
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
         }
 
@@ -677,7 +671,7 @@ namespace Avalonia.Controls
         private void OnDecrement()
         {
             decimal result;
-            
+
             if (Value.HasValue)
             {
                 result = Value.Value - Increment;
@@ -686,7 +680,7 @@ namespace Avalonia.Controls
             {
                 result = Maximum;
             }
-            
+
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
         }
 
@@ -704,7 +698,7 @@ namespace Avalonia.Controls
                 {
                     validDirections = ValidSpinDirections.Increase | ValidSpinDirections.Decrease;
                 }
-                
+
                 if (Value < Maximum)
                 {
                     validDirections = validDirections | ValidSpinDirections.Increase;
@@ -1058,7 +1052,7 @@ namespace Avalonia.Controls
             {
                 return null;
             }
-            
+
             if (TextConverter != null)
             {
                 var valueFromText = TextConverter.Convert(text, typeof(decimal?), null, CultureInfo.CurrentCulture);
