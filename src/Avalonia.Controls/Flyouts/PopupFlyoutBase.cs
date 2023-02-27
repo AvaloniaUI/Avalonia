@@ -37,9 +37,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="ShowMode"/> property
         /// </summary>
-        public static readonly DirectProperty<PopupFlyoutBase, FlyoutShowMode> ShowModeProperty =
-            AvaloniaProperty.RegisterDirect<PopupFlyoutBase, FlyoutShowMode>(nameof(ShowMode),
-                x => x.ShowMode, (x, v) => x.ShowMode = v);
+        public static readonly StyledProperty<FlyoutShowMode> ShowModeProperty =
+            AvaloniaProperty.Register<PopupFlyoutBase, FlyoutShowMode>(nameof(ShowMode));
 
         /// <summary>
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
@@ -50,7 +49,6 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o._overlayInputPassThroughElement = v);
         
         private readonly Lazy<Popup> _popupLazy;
-        private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
         private Rect? _enlargedPopupRect;
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
@@ -81,39 +79,38 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc cref="Popup.PlacementGravity"/>
         public PopupGravity PlacementGravity
         {
-            get { return GetValue(PlacementGravityProperty); }
-            set { SetValue(PlacementGravityProperty, value); }
+            get => GetValue(PlacementGravityProperty);
+            set => SetValue(PlacementGravityProperty, value);
         }
 
         /// <inheritdoc cref="Popup.PlacementAnchor"/>
         public PopupAnchor PlacementAnchor
         {
-            get { return GetValue(PlacementAnchorProperty); }
-            set { SetValue(PlacementAnchorProperty, value); }
+            get => GetValue(PlacementAnchorProperty);
+            set => SetValue(PlacementAnchorProperty, value);
         }
 
         /// <inheritdoc cref="Popup.HorizontalOffset"/>
         public double HorizontalOffset
         {
-            get { return GetValue(HorizontalOffsetProperty); }
-            set { SetValue(HorizontalOffsetProperty, value); }
+            get => GetValue(HorizontalOffsetProperty);
+            set => SetValue(HorizontalOffsetProperty, value);
         }
 
         /// <inheritdoc cref="Popup.VerticalOffset"/>
         public double VerticalOffset
         {
-            get { return GetValue(VerticalOffsetProperty); }
-            set { SetValue(VerticalOffsetProperty, value); }
+            get => GetValue(VerticalOffsetProperty);
+            set => SetValue(VerticalOffsetProperty, value);
         }
 
-        
         /// <summary>
         /// Gets or sets the desired ShowMode
         /// </summary>
         public FlyoutShowMode ShowMode
         {
-            get => _showMode;
-            set => SetAndRaise(ShowModeProperty, ref _showMode, value);
+            get => GetValue(ShowModeProperty);
+            set => SetValue(ShowModeProperty, value);
         }
 
         /// <summary>

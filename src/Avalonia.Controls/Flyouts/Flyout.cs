@@ -1,5 +1,7 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using System.ComponentModel;
+using Avalonia.Controls.Primitives;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -19,6 +21,21 @@ namespace Avalonia.Controls
         private Classes? _classes;
 
         /// <summary>
+        /// Defines the <see cref="FlyoutPresenterTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> FlyoutPresenterThemeProperty =
+            AvaloniaProperty.Register<Flyout, ControlTheme?>(nameof(FlyoutPresenterTheme));
+        
+        /// <summary>
+        /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for the flyout presenter.
+        /// </summary>
+        public ControlTheme? FlyoutPresenterTheme
+        {
+            get => GetValue(FlyoutPresenterThemeProperty); 
+            set => SetValue(FlyoutPresenterThemeProperty, value);
+        }
+        
+        /// <summary>
         /// Gets or sets the content to display in this flyout
         /// </summary>
         [Content]
@@ -36,13 +53,22 @@ namespace Avalonia.Controls
             };
         }
 
-        protected override void OnOpened()
+        protected override void OnOpening(CancelEventArgs args)
         {
-            if (_classes != null)
+            if (Popup.Child is { } presenter)
             {
-                SetPresenterClasses(Popup.Child, FlyoutPresenterClasses);
+                if (_classes != null)
+                {
+                    SetPresenterClasses(presenter, FlyoutPresenterClasses);
+                }
+
+                if (FlyoutPresenterTheme is { } theme)
+                {
+                    presenter.SetValue(Control.ThemeProperty, theme);
+                }
             }
-            base.OnOpened();
+
+            base.OnOpening(args);
         }
     }
 }
