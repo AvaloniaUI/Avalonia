@@ -847,6 +847,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal("test", target.Text);
             }
         }
+        
+        [Fact]
+        public void ResolvesRelativeSourceBindingEvenLongerForm()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        Title='test'>
+    <TextBlock Text='{CompiledBinding Title, RelativeSource={RelativeSource AncestorType={x:Type Window}}}' x:Name='text'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var target = window.FindControl<TextBlock>("text");
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+                target.ApplyTemplate();
+
+                Assert.Equal("test", target.Text);
+            }
+        }
 
         [Fact]
         public void ResolvesRelativeSourceBindingFromTemplate()
@@ -1735,13 +1759,40 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <local:AssignBindingControl xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        X='{Binding StringProperty, DataType=local:TestDataContext}' />";
+        X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml),
                     new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
                 var compiledPath = ((CompiledBindingExtension)control.X).Path;
 
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
+            }
+        }
+        
+        [Fact]
+        public void Should_Bind_To_Nested_Generic_Property()
+        {
+            // See https://github.com/AvaloniaUI/Avalonia/issues/10485
+            // This code works fine with SRE, and test is passing, but it fails on Cecil.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='True'>
+    <ComboBox x:Name='comboBox' Items='{Binding GenericProperty}' SelectedItem='{Binding GenericProperty.CurrentItem}' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var comboBox = window.FindControl<ComboBox>("comboBox");
+
+                var dataContext = new TestDataContext();
+                dataContext.GenericProperty.Add(123);
+                dataContext.GenericProperty.CurrentItem = 123;
+                window.DataContext = dataContext;
+
+                Assert.Equal(123, comboBox.SelectedItem);
             }
         }
         
@@ -1837,8 +1888,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public string ExplicitProperty => "Bye";
 
-        public static string StaticProperty => "World"; 
+        public static string StaticProperty => "World";
 
+        public ListItemCollectionView<int> GenericProperty { get; } = new();
+        
         public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
             private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
@@ -1858,6 +1911,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
     }
 
+    public class ListItemCollectionView<T> : List<T>
+    {
+        public T CurrentItem { get; set; }
+    }
+    
     public class MethodDataContext
     {
         public void Action() { }
