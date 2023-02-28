@@ -3,6 +3,7 @@
     "path": "Avalonia.sln",
     "projects": [
       "packages\\Avalonia\\Avalonia.csproj",
+      "samples\\AppWithoutLifetime\\AppWithoutLifetime.csproj",
       "samples\\ControlCatalog.NetCore\\ControlCatalog.NetCore.csproj",
       "samples\\ControlCatalog\\ControlCatalog.csproj",
       "samples\\GpuInterop\\GpuInterop.csproj",

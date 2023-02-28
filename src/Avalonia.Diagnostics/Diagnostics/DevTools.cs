@@ -9,7 +9,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics
 {
-    public static class DevTools
+    internal static class DevTools
     {
         private static readonly Dictionary<AvaloniaObject, MainWindow> s_open =
             new Dictionary<AvaloniaObject, MainWindow>();
@@ -28,7 +28,7 @@ namespace Avalonia.Diagnostics
         {
             if (s_attachedToApplication == true)
             {
-                throw new ArgumentException("DevTools already attached to application", nameof(root));
+                throw new ArgumentException("DevTools already attached to application.", nameof(root));
             }
 
             void PreviewKeyDown(object? sender, KeyEventArgs e)
@@ -45,49 +45,30 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root) => 
-            Open(Application.Current,new DevToolsOptions(),root as Window);
+        private static IDisposable Open(TopLevel root, DevToolsOptions options) =>
+             Open(default, options, root);
 
-        public static IDisposable Open(TopLevel root, DevToolsOptions options) => 
-            Open(Application.Current, options, root as Window);
-
-        private static void DevToolsClosed(object? sender, EventArgs e)
+        internal static IDisposable Attach(Application application, DevToolsOptions options)
         {
-            var window = (MainWindow)sender!;
-            window.Closed -= DevToolsClosed;
-            if (window.Root is Controls.Application host)
-            {
-                s_open.Remove(host.Instance);
-            }
-            else
-            {
-                s_open.Remove(window.Root!);
-            }
-        }
-
-        internal static IDisposable Attach(Application? application, DevToolsOptions options, Window? owner = null)
-        {
-            if (application is null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
             var openedDisposable = new SerialDisposableValue();
             var result = new CompositeDisposable(2);
             result.Add(openedDisposable);
-            
+
             // Skip if call on Design Mode
-            if (!Avalonia.Controls.Design.IsDesignMode
+            if (!Design.IsDesignMode
                 && !s_attachedToApplication)
             {
 
                 var lifeTime = application.ApplicationLifetime
-                    as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime;
+                    as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
 
                 if (lifeTime is null)
                 {
-                    throw new ArgumentNullException(nameof(Application.ApplicationLifetime));
+                    throw new ArgumentNullException(nameof(application), "DevTools can only attach to applications that support IClassicDesktopStyleApplicationLifetime.");
                 }
+
+                var owner = TopLevel.GetTopLevel(lifeTime.MainWindow)
+                    ?? throw new ArgumentException(nameof(application), "It can't retrieve TopLevel.");
 
                 if (application.InputManager is { })
                 {
@@ -102,20 +83,23 @@ namespace Avalonia.Diagnostics
                             openedDisposable.Disposable = Open(application, options, owner);
                         }
                     }));
-
                 }
             }
             return result;
         }
 
-        private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
+        private static IDisposable Open(Application? application, DevToolsOptions options, TopLevel owner)
         {
             var focussedControl = KeyboardDevice.Instance?.FocusedElement as Control;
-            if (application is null)
+            AvaloniaObject root = owner;
+            AvaloniaObject key = owner;
+            if (application is not null)
             {
-                throw new ArgumentNullException(nameof(application));
+                root = new Controls.Application(application);
+                key = application;
             }
-            if (s_open.TryGetValue(application, out var window))
+
+            if (s_open.TryGetValue(key, out var window))
             {
                 window.Activate();
                 window.SelectedControl(focussedControl);
@@ -124,17 +108,17 @@ namespace Avalonia.Diagnostics
             {
                 window = new MainWindow
                 {
-                    Root = new Controls.Application(application),
+                    Root = root,
                     Width = options.Size.Width,
                     Height = options.Size.Height,
                 };
                 window.SetOptions(options);
                 window.SelectedControl(focussedControl);
                 window.Closed += DevToolsClosed;
-                s_open.Add(application, window);
-                if (options.ShowAsChildWindow && owner is { })
+                s_open.Add(key, window);
+                if (options.ShowAsChildWindow && owner is Window ow)
                 {
-                    window.Show(owner);
+                    window.Show(ow);
                 }
                 else
                 {
@@ -142,6 +126,20 @@ namespace Avalonia.Diagnostics
                 }
             }
             return Disposable.Create(() => window?.Close());
+        }
+
+        private static void DevToolsClosed(object? sender, EventArgs e)
+        {
+            var window = (MainWindow)sender!;
+            window.Closed -= DevToolsClosed;
+            if (window.Root is Controls.Application host)
+            {
+                s_open.Remove(host.Instance);
+            }
+            else
+            {
+                s_open.Remove(window.Root!);
+            }
         }
     }
 }
