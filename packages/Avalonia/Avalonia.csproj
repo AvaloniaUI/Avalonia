@@ -12,6 +12,8 @@
         <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
       </ProjectReference>
       <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj"
+                        ReferenceOutputAssembly="false"
+                        PrivateAssets="all"
                         OutputItemType="Analyzer" />
   </ItemGroup>
 
