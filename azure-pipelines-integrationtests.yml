@@ -15,6 +15,7 @@ jobs:
       version: 7.0.101
       
   - script: system_profiler SPDisplaysDataType |grep Resolution
+    displayName: 'Get Resolution'
   
   - script: |
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
@@ -27,8 +28,10 @@ jobs:
       ./samples/IntegrationTestApp/bundle.sh
       open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-arm64/publish/IntegrationTestApp.app
       pkill IntegrationTestApp
+    displayName: 'Build IntegrationTestApp'
 
   - task: DotNetCoreCLI@2
+    displayName: 'Run Integration Tests'
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
@@ -36,6 +39,7 @@ jobs:
   - script: |
       pkill IntegrationTestApp
       pkill node
+    displayName: 'Stop Appium'
 
 
 - job: Windows
@@ -60,11 +64,13 @@ jobs:
     displayName: 'Start WinAppDriver'
   
   - task: DotNetCoreCLI@2
+    displayName: 'Build IntegrationTestApp'
     inputs:
       command: 'build'
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
   - task: DotNetCoreCLI@2
+    displayName: 'Run Integration Tests'
     retryCountOnTaskFailure: 3
     inputs:
       command: 'test'
