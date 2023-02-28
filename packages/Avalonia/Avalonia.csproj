@@ -6,11 +6,13 @@
 
   <ItemGroup>
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
-      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" >
+      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj">
         <PrivateAssets>all</PrivateAssets>
         <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
         <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
       </ProjectReference>
+      <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj"
+                        OutputItemType="Analyzer" />
   </ItemGroup>
 
   <PropertyGroup>
