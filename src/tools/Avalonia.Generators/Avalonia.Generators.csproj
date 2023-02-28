@@ -5,6 +5,7 @@
     <PackageId>Avalonia.Generators</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
     <IsPackable>true</IsPackable>
+    <IsRoslynComponent>true</IsRoslynComponent>
   </PropertyGroup>
 
   <ItemGroup>

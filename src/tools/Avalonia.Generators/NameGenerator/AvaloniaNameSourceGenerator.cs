@@ -17,6 +17,11 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
         try
         {
             var generator = CreateNameGenerator(context);
+            if (generator is null)
+            {
+                return;
+            }
+
             var partials = generator.GenerateNameReferences(context.AdditionalFiles);
             foreach (var (fileName, content) in partials) context.AddSource(fileName, content);
         }
@@ -29,6 +34,11 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
     private static INameGenerator CreateNameGenerator(GeneratorExecutionContext context)
     {
         var options = new GeneratorOptions(context);
+        if (!options.AvaloniaNameGeneratorIsEnabled)
+        {
+            return null;
+        }
+
         var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
         ICodeGenerator generator = options.AvaloniaNameGeneratorBehavior switch {
             Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),

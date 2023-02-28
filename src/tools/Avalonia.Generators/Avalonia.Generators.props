@@ -1,5 +1,6 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <AvaloniaNameGeneratorIsEnabled Condition="'$(AvaloniaNameGeneratorIsEnabled)' == ''">true</AvaloniaNameGeneratorIsEnabled>
     <AvaloniaNameGeneratorBehavior Condition="'$(AvaloniaNameGeneratorBehavior)' == ''">InitializeComponent</AvaloniaNameGeneratorBehavior>
     <AvaloniaNameGeneratorDefaultFieldModifier Condition="'$(AvaloniaNameGeneratorDefaultFieldModifier)' == ''">internal</AvaloniaNameGeneratorDefaultFieldModifier>
     <AvaloniaNameGeneratorFilterByPath Condition="'$(AvaloniaNameGeneratorFilterByPath)' == ''">*</AvaloniaNameGeneratorFilterByPath>
@@ -7,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup"/>
+    <CompilerVisibleProperty Include="AvaloniaNameGeneratorIsEnabled" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorBehavior" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorDefaultFieldModifier" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorFilterByPath" />

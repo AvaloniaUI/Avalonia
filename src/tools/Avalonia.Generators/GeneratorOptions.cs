@@ -5,13 +5,17 @@ using Microsoft.CodeAnalysis;
 
 namespace Avalonia.Generators;
 
+// When update these enum values, don't forget to update Avalonia.Generators.props.
 internal enum BuildProperties
 {
-    AvaloniaNameGeneratorBehavior = 0,
-    AvaloniaNameGeneratorDefaultFieldModifier = 1,
-    AvaloniaNameGeneratorFilterByPath = 2,
-    AvaloniaNameGeneratorFilterByNamespace = 3,
-    AvaloniaNameGeneratorViewFileNamingStrategy = 4,
+    AvaloniaNameGeneratorIsEnabled = 0,
+    AvaloniaNameGeneratorBehavior = 1,
+    AvaloniaNameGeneratorDefaultFieldModifier = 2,
+    AvaloniaNameGeneratorFilterByPath = 3,
+    AvaloniaNameGeneratorFilterByNamespace = 4,
+    AvaloniaNameGeneratorViewFileNamingStrategy = 5,
+    
+    // TODO add other generators properties here.
 }
 
 internal class GeneratorOptions
@@ -20,6 +24,10 @@ internal class GeneratorOptions
 
     public GeneratorOptions(GeneratorExecutionContext context) => _context = context;
 
+    public bool AvaloniaNameGeneratorIsEnabled => GetBoolProperty(
+        BuildProperties.AvaloniaNameGeneratorIsEnabled,
+        true);
+    
     public Behavior AvaloniaNameGeneratorBehavior => GetEnumProperty(
         BuildProperties.AvaloniaNameGeneratorBehavior,
         Behavior.InitializeComponent);
@@ -52,5 +60,12 @@ internal class GeneratorOptions
         var key = name.ToString();
         var value = _context.GetMsBuildProperty(key, defaultValue.ToString());
         return Enum.TryParse(value, true, out TEnum behavior) ? behavior : defaultValue;
+    }
+    
+    private bool GetBoolProperty(BuildProperties name, bool defaultValue)
+    {
+        var key = name.ToString();
+        var value = _context.GetMsBuildProperty(key, defaultValue.ToString());
+        return bool.TryParse(value, out var result) ? result : defaultValue;
     }
 }
