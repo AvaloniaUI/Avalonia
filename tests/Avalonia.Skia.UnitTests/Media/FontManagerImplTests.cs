@@ -14,92 +14,67 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Create_Typeface_From_Fallback()
         {
-            var fontManager = new FontManagerImpl();
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var fontManager = FontManager.Current;
 
-            var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                new Typeface(new FontFamily("A, B, " + fontManager.GetDefaultFontFamilyName())));
+                var glyphTypeface = new Typeface(new FontFamily("A, B, " + fontManager.DefaultFontFamilyName)).GlyphTypeface;
 
-            var skTypeface = glyphTypeface.Typeface;
-
-            Assert.Equal(SKTypeface.Default.FamilyName, skTypeface.FamilyName);
-
-            Assert.Equal(SKTypeface.Default.FontWeight, skTypeface.FontWeight);
-
-            Assert.Equal(SKTypeface.Default.FontSlant, skTypeface.FontSlant);
+                Assert.Equal(SKTypeface.Default.FamilyName, glyphTypeface.FamilyName);
+            }
         }
 
         [Fact]
         public void Should_Create_Typeface_From_Fallback_Bold()
         {
-            var fontManager = new FontManagerImpl();
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var glyphTypeface = new Typeface(new FontFamily($"A, B, Arial"), weight: FontWeight.Bold).GlyphTypeface;
 
-            var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                new Typeface(new FontFamily($"A, B, Arial"), weight: FontWeight.Bold));
-
-            var skTypeface = glyphTypeface.Typeface;
-            
-            Assert.True(skTypeface.FontWeight >= 600);
+                Assert.True((int)glyphTypeface.Weight >= 600);
+            }
         }
 
         [Fact]
-        public void Should_Create_Typeface_For_Unknown_Font()
+        public void Should_Throw_InvalidOperationException_For_Invalid_FamilyName()
         {
-            var fontManager = new FontManagerImpl();
-
-            var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                new Typeface(new FontFamily("Unknown")));
-
-            var skTypeface = glyphTypeface.Typeface;
-
-            Assert.Equal(SKTypeface.Default.FamilyName, skTypeface.FamilyName);
-
-            Assert.Equal(SKTypeface.Default.FontWeight, skTypeface.FontWeight);
-
-            Assert.Equal(SKTypeface.Default.FontSlant, skTypeface.FontSlant);
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
+                });
+            }
         }
 
         [Fact]
         public void Should_Load_Typeface_From_Resource()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                var fontManager = new FontManagerImpl();
+                var glyphTypeface = new Typeface(s_fontUri).GlyphTypeface;
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(s_fontUri));
-
-                var skTypeface = glyphTypeface.Typeface;
-
-                Assert.Equal("Noto Mono", skTypeface.FamilyName);
+                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
             }
         }
 
         [Fact]
         public void Should_Load_Nearest_Matching_Font()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                var fontManager = new FontManagerImpl();
+                var glyphTypeface = new Typeface(s_fontUri, FontStyle.Italic, FontWeight.Black).GlyphTypeface;
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(s_fontUri, FontStyle.Italic, FontWeight.Black));
-
-                var skTypeface = glyphTypeface.Typeface;
-
-                Assert.Equal("Noto Mono", skTypeface.FamilyName);
+                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
             }
         }
 
         [Fact]
         public void Should_Throw_For_Invalid_Custom_Font()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                var fontManager = new FontManagerImpl();
-
-                Assert.Throws<InvalidOperationException>(() =>
-                    fontManager.CreateGlyphTypeface(
-                        new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown")));
+                Assert.Throws<InvalidOperationException>(() => new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown").GlyphTypeface);
             }
         }
     }

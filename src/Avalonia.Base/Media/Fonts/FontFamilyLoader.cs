@@ -11,22 +11,22 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
         /// </summary>
-        /// <param name="fontFamilyKey"></param>
+        /// <param name="source"></param>
         /// <returns></returns>
-        public static IEnumerable<Uri> LoadFontAssets(FontFamilyKey fontFamilyKey) =>
-            IsFontTtfOrOtf(fontFamilyKey.Source) ?
-                GetFontAssetsByExpression(fontFamilyKey) :
-                GetFontAssetsBySource(fontFamilyKey);
+        public static IEnumerable<Uri> LoadFontAssets(Uri source) =>
+            IsFontTtfOrOtf(source) ?
+                GetFontAssetsByExpression(source) :
+                GetFontAssetsBySource(source);
 
         /// <summary>
         /// Searches for font assets at a given location and returns a quantity of found assets
         /// </summary>
-        /// <param name="fontFamilyKey"></param>
+        /// <param name="source"></param>
         /// <returns></returns>
-        private static IEnumerable<Uri> GetFontAssetsBySource(FontFamilyKey fontFamilyKey)
+        private static IEnumerable<Uri> GetFontAssetsBySource(Uri source)
         {
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-            var availableAssets = assetLoader.GetAssets(fontFamilyKey.Source, fontFamilyKey.BaseUri);
+            var availableAssets = assetLoader.GetAssets(source, null);
             return availableAssets.Where(x => IsFontTtfOrOtf(x));
         }
 
@@ -34,60 +34,50 @@ namespace Avalonia.Media.Fonts
         /// Searches for font assets at a given location and only accepts assets that fit to a given filename expression.
         /// <para>File names can target multiple files with * wildcard. For example "FontFile*.ttf"</para>
         /// </summary>
-        /// <param name="fontFamilyKey"></param>
+        /// <param name="source"></param>
         /// <returns></returns>
-        private static IEnumerable<Uri> GetFontAssetsByExpression(FontFamilyKey fontFamilyKey)
+        private static IEnumerable<Uri> GetFontAssetsByExpression(Uri source)
         {
-            var (fileNameWithoutExtension, extension) = GetFileName(fontFamilyKey, out var location);
-            var filePattern = CreateFilePattern(fontFamilyKey, location, fileNameWithoutExtension);
+            var (fileNameWithoutExtension, extension) = GetFileName(source, out var location);
+            var filePattern = CreateFilePattern(source, location, fileNameWithoutExtension);
 
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-            var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
+            var availableResources = assetLoader.GetAssets(location, null);
 
             return availableResources.Where(x => IsContainsFile(x, filePattern, extension));
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileName(
-            FontFamilyKey fontFamilyKey, out Uri location)
+            Uri source, out Uri location)
         {
-            if (fontFamilyKey.Source.IsAbsoluteResm())
+            if (source.IsAbsoluteResm())
             {
-                var fileName = GetFileNameAndExtension(fontFamilyKey.Source.GetUnescapeAbsolutePath(), '.');
+                var fileName = GetFileNameAndExtension(source.GetUnescapeAbsolutePath(), '.');
 
-                var uriLocation = fontFamilyKey.Source.GetUnescapeAbsoluteUri()
+                var uriLocation = source.GetUnescapeAbsoluteUri()
                     .Replace("." + fileName.fileNameWithoutExtension + fileName.extension, string.Empty);
                 location = new Uri(uriLocation, UriKind.RelativeOrAbsolute);
 
                 return fileName;
             }
 
-            var filename = GetFileNameAndExtension(fontFamilyKey.Source.OriginalString);
+            var filename = GetFileNameAndExtension(source.OriginalString);
             var fullFilename = filename.fileNameWithoutExtension + filename.extension;
 
-            if (fontFamilyKey.BaseUri != null)
-            {
-                var relativePath = fontFamilyKey.Source.OriginalString
-                    .Replace(fullFilename, string.Empty);
-
-                location = new Uri(fontFamilyKey.BaseUri, relativePath);
-            }
-            else
-            {
-                var uriString = fontFamilyKey.Source
-                    .GetUnescapeAbsoluteUri()
-                    .Replace(fullFilename, string.Empty);
-                location = new Uri(uriString);
-            }
+            var uriString = source
+                .GetUnescapeAbsoluteUri()
+                .Replace(fullFilename, string.Empty);
+            location = new Uri(uriString);
 
             return filename;
         }
 
         private static string CreateFilePattern(
-            FontFamilyKey fontFamilyKey, Uri location, string fileNameWithoutExtension)
+            Uri source, Uri location, string fileNameWithoutExtension)
         {
             var path = location.GetUnescapeAbsolutePath();
             var file = GetSubString(fileNameWithoutExtension, '*');
-            return fontFamilyKey.Source.IsAbsoluteResm()
+            return source.IsAbsoluteResm()
                 ? path + "." + file
                 : path + file;
         }
