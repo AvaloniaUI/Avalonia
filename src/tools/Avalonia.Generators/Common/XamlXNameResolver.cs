@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Avalonia.Generators.Domain;
+using Avalonia.Generators.Common.Domain;
 using XamlX;
 using XamlX.Ast;
 
-namespace Avalonia.Generators.Generator;
+namespace Avalonia.Generators.Common;
 
 internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
 {
     private readonly List<ResolvedName> _items = new();
     private readonly string _defaultFieldModifier;
 
-    public XamlXNameResolver(DefaultFieldModifier defaultFieldModifier = DefaultFieldModifier.Internal)
+    public XamlXNameResolver(NamedFieldModifier namedFieldModifier = NamedFieldModifier.Internal)
     {
-        _defaultFieldModifier = defaultFieldModifier.ToString().ToLowerInvariant();
+        _defaultFieldModifier = namedFieldModifier.ToString().ToLowerInvariant();
     }
 
     public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)

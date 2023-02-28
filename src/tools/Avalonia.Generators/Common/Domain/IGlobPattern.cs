@@ -1,4 +1,4 @@
-namespace Avalonia.Generators.Domain;
+namespace Avalonia.Generators.Common.Domain;
 
 internal interface IGlobPattern
 {

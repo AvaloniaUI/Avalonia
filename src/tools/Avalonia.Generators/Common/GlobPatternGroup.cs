@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Generators.Domain;
+using Avalonia.Generators.Common.Domain;
 
-namespace Avalonia.Generators.Generator;
+namespace Avalonia.Generators.Common;
 
 internal class GlobPatternGroup : IGlobPattern
 {

@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Generators.Common.Domain;
+using Avalonia.Generators.NameGenerator;
 using Microsoft.CodeAnalysis;
 
 namespace Avalonia.Generators;
@@ -12,26 +14,6 @@ internal enum BuildProperties
     AvaloniaNameGeneratorViewFileNamingStrategy = 4,
 }
 
-internal enum DefaultFieldModifier
-{
-    Public = 0,
-    Private = 1,
-    Internal = 2,
-    Protected = 3,
-}
-
-internal enum Behavior
-{
-    OnlyProperties = 0,
-    InitializeComponent = 1,
-}
-
-internal enum ViewFileNamingStrategy
-{
-    ClassName = 0,
-    NamespaceAndClassName = 1,
-}
-
 internal class GeneratorOptions
 {
     private readonly GeneratorExecutionContext _context;
@@ -42,9 +24,9 @@ internal class GeneratorOptions
         BuildProperties.AvaloniaNameGeneratorBehavior,
         Behavior.InitializeComponent);
 
-    public DefaultFieldModifier AvaloniaNameGeneratorDefaultFieldModifier => GetEnumProperty(
+    public NamedFieldModifier AvaloniaNameGeneratorClassFieldModifier => GetEnumProperty(
         BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier,
-        DefaultFieldModifier.Internal);
+        NamedFieldModifier.Internal);
 
     public ViewFileNamingStrategy AvaloniaNameGeneratorViewFileNamingStrategy => GetEnumProperty(
         BuildProperties.AvaloniaNameGeneratorViewFileNamingStrategy,

@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
-using Avalonia.Generators.Domain;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Parsers;
-using XamlX.TypeSystem;
 
-namespace Avalonia.Generators.Generator;
+namespace Avalonia.Generators.Common;
 
 internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
 {

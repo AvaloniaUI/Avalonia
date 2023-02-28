@@ -17,13 +17,13 @@ internal static class GeneratorContextExtensions
         return value ?? defaultValue;
     }
 
-    public static void ReportUnhandledError(this GeneratorExecutionContext context, Exception error) =>
+    public static void ReportNameGeneratorUnhandledError(this GeneratorExecutionContext context, Exception error) =>
         context.Report(UnhandledErrorDescriptorId,
             "Unhandled exception occured while generating typed Name references. " +
             "Please file an issue: https://github.com/avaloniaui/Avalonia.Generators",
             error.ToString());
 
-    public static void ReportInvalidType(this GeneratorExecutionContext context, string typeName) =>
+    public static void ReportNameGeneratorInvalidType(this GeneratorExecutionContext context, string typeName) =>
         context.Report(InvalidTypeDescriptorId,
             $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
             $"The type '{typeName}' does not exist in the assembly.");

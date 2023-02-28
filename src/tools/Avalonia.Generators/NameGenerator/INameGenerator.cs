@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Avalonia.Generators.Domain;
+namespace Avalonia.Generators.NameGenerator;
 
 internal interface INameGenerator
 {

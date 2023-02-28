@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Generators.Common;
+using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
-using Avalonia.Generators.Domain;
-using Avalonia.Generators.Generator;
 using Avalonia.ReactiveUI;
 using Avalonia.Generators.Tests.Views;
 using Xunit;

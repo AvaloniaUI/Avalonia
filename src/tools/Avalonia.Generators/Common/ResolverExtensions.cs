@@ -1,7 +1,7 @@
 using System.Linq;
 using XamlX.TypeSystem;
 
-namespace Avalonia.Generators.Generator;
+namespace Avalonia.Generators.Common;
 
 internal static class ResolverExtensions
 {

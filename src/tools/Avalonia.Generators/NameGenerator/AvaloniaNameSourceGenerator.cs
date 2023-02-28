@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
+using Avalonia.Generators.Common;
+using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
-using Avalonia.Generators.Domain;
-using Avalonia.Generators.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Avalonia.Generators;
+namespace Avalonia.Generators.NameGenerator;
 
 [Generator]
 public class AvaloniaNameSourceGenerator : ISourceGenerator
@@ -23,7 +22,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
         }
         catch (Exception exception)
         {
-            context.ReportUnhandledError(exception);
+            context.ReportNameGeneratorUnhandledError(exception);
         }
     }
 
@@ -43,9 +42,9 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByNamespace),
             new XamlXViewResolver(types, compiler, true,
-                type => context.ReportInvalidType(type),
-                error => context.ReportUnhandledError(error)),
-            new XamlXNameResolver(options.AvaloniaNameGeneratorDefaultFieldModifier),
+                type => context.ReportNameGeneratorInvalidType(type),
+                error => context.ReportNameGeneratorUnhandledError(error)),
+            new XamlXNameResolver(options.AvaloniaNameGeneratorClassFieldModifier),
             generator);
     }
 }

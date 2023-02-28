@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
+using Avalonia.Generators.Common;
 using Avalonia.Generators.Compiler;
-using Avalonia.Generators.Generator;
+using Avalonia.Generators.NameGenerator;
 using Avalonia.Generators.Tests.InitializeComponent.GeneratedInitializeComponent;
 using Avalonia.Generators.Tests.OnlyProperties.GeneratedCode;
 using Avalonia.Generators.Tests.Views;

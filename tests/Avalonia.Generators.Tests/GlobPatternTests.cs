@@ -1,4 +1,4 @@
-using Avalonia.Generators.Generator;
+using Avalonia.Generators.Common;
 using Xunit;
 
 namespace Avalonia.Generators.Tests;

@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Xml.Linq;
-
-using Avalonia.Generators.Domain;
+using Avalonia.Generators.Common.Domain;
 using XamlX.TypeSystem;
 
-namespace Avalonia.Generators.Generator;
+namespace Avalonia.Generators.NameGenerator;
 
 internal class InitializeComponentCodeGenerator: ICodeGenerator
 {

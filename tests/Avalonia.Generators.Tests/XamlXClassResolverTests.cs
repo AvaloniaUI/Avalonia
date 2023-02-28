@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
+using Avalonia.Generators.Common;
 using Avalonia.Generators.Compiler;
-using Avalonia.Generators.Generator;
 using Avalonia.Generators.Tests.Views;
 using Xunit;
 

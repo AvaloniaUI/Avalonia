@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using XamlX.TypeSystem;
 
-namespace Avalonia.Generators.Domain;
+namespace Avalonia.Generators.Common.Domain;
 
 internal interface ICodeGenerator
 {

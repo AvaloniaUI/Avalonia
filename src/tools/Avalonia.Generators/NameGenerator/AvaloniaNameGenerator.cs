@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Generators.Domain;
+using Avalonia.Generators.Common.Domain;
 using Microsoft.CodeAnalysis;
 
-namespace Avalonia.Generators.Generator;
+namespace Avalonia.Generators.NameGenerator;
 
 internal class AvaloniaNameGenerator : INameGenerator
 {
