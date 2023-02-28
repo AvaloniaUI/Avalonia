@@ -98,13 +98,12 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
             context.ClearRenderTargetView(renderView,
                 new RawColor4(1 - colorOff, colorOff, (float)0.5 + colorOff / 2, 1));
 
-            
-            var ypr = Matrix4x4.CreateFromYawPitchRoll(Yaw, Pitch, Roll);
+
+            var ypr = Matrix.RotationYawPitchRoll(Yaw, Pitch, Roll);
+
             // Update WorldViewProj Matrix
-            var worldViewProj = Matrix.RotationX((float)Yaw) * Matrix.RotationY((float)Pitch)
-                                                                          * Matrix.RotationZ((float)Roll)
-                                                                          * Matrix.Scaling(new Vector3(scaleX, scaleY, 1))
-                                                                          * viewProj;
+            var worldViewProj = Matrix.Scaling(new Vector3(scaleX, scaleY, 1)) * ypr * viewProj;
+
             worldViewProj.Transpose();
             context.UpdateSubresource(ref worldViewProj, _constantBuffer);
 

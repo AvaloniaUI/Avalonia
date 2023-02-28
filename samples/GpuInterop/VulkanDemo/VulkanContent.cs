@@ -141,10 +141,6 @@ unsafe class VulkanContent : IDisposable
 
         
         var model = Matrix4x4.CreateFromYawPitchRoll((float)yaw, (float)pitch, (float)roll);
-        var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
-        var projection =
-            Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)((float)image.Size.Width / image.Size.Height),
-                0.01f, 1000);
         
         var vertexConstant = new VertextPushConstant()
         {
@@ -391,7 +387,7 @@ unsafe class VulkanContent : IDisposable
     {
         DestroyTemporalObjects();
         
-        var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
+        var view = Matrix4x4.CreateLookAt(new Vector3(0, 0, 50), new Vector3(), new Vector3(0, 1, 0));
         var projection =
             Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)((float)size.Width / size.Height),
                 0.01f, 1000);
