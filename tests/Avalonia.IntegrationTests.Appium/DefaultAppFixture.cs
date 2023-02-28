@@ -9,25 +9,21 @@ using OpenQA.Selenium.Appium.Windows;
 
 namespace Avalonia.IntegrationTests.Appium
 {
-    public class TestAppFixture : IDisposable
+    public class DefaultAppFixture : IDisposable
     {
         private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net7.0\IntegrationTestApp.exe";
         private const string TestAppBundleId = "net.avaloniaui.avalonia.integrationtestapp";
 
-        public TestAppFixture()
+        public DefaultAppFixture()
         {
-            var opts = new AppiumOptions();
-            var path = Path.GetFullPath(TestAppPath);
+            var options = new AppiumOptions();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                opts.AddAdditionalCapability(MobileCapabilityType.App, path);
-                opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
-                opts.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
-
+                ConfigureWin32Options(options);
                 Session = new WindowsDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723"),
-                    opts);
+                    options);
 
                 // https://github.com/microsoft/WinAppDriver/issues/1025
                 SetForegroundWindow(new IntPtr(int.Parse(
@@ -36,19 +32,31 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                opts.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
-                opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
-                opts.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
-                opts.AddAdditionalCapability("appium:showServerLogs", true);
-
+                ConfigureMacOptions(options);
                 Session = new MacDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723/wd/hub"),
-                    opts);
+                    options);
             }
             else
             {
                 throw new NotSupportedException("Unsupported platform.");
             }
+        }
+
+        protected virtual void ConfigureWin32Options(AppiumOptions options)
+        {
+            var path = Path.GetFullPath(TestAppPath);
+            options.AddAdditionalCapability(MobileCapabilityType.App, path);
+            options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
+            options.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
+        }
+
+        protected virtual void ConfigureMacOptions(AppiumOptions options)
+        {
+            options.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
+            options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
+            options.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
+            options.AddAdditionalCapability("appium:showServerLogs", true);
         }
 
         public AppiumDriver<AppiumWebElement> Session { get; }

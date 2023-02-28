@@ -71,9 +71,9 @@ namespace Avalonia.Styling
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
 
-            foreach (var selector in _selectors)
+            for (var i = 0; i < _selectors.Count; i++)
             {
-                var match = selector.Match(control, parent, subscribe);
+                var match = _selectors[i].Match(control, parent, subscribe);
 
                 switch (match.Result)
                 {
@@ -108,16 +108,19 @@ namespace Avalonia.Styling
 
         internal override void ValidateNestingSelector(bool inControlTheme)
         {
-            foreach (var selector in _selectors)
-                selector.ValidateNestingSelector(inControlTheme);
+            for (var i = 0; i < _selectors.Count; i++)
+            {
+                _selectors[i].ValidateNestingSelector(inControlTheme);
+            }
         }
 
         private Type? EvaluateTargetType()
         {
             Type? result = null;
 
-            foreach (var selector in _selectors)
+            for (var i = 0; i < _selectors.Count; i++)
             {
+                var selector = _selectors[i];
                 if (selector.TargetType == null)
                 {
                     return null;

@@ -21,19 +21,10 @@ namespace Avalonia.Rendering.Composition.Server;
 internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
 {
     private IDrawingContextImpl _impl;
-    private readonly VisualBrushRenderer _visualBrushRenderer;
 
-    public CompositorDrawingContextProxy(IDrawingContextImpl impl, VisualBrushRenderer visualBrushRenderer)
+    public CompositorDrawingContextProxy(IDrawingContextImpl impl)
     {
         _impl = impl;
-        _visualBrushRenderer = visualBrushRenderer;
-    }
-
-    // This is a hack to make it work with the current way of handling visual brushes
-    public CompositionDrawList? VisualBrushDrawList
-    {
-        get => _visualBrushRenderer.VisualBrushDrawList;
-        set => _visualBrushRenderer.VisualBrushDrawList = value;
     }
     
     public Matrix PostTransform { get; set; } = Matrix.Identity;
@@ -157,24 +148,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
     }
 
     public object? GetFeature(Type t) => _impl.GetFeature(t);
-
-    public class VisualBrushRenderer : IVisualBrushRenderer
-    {
-        public CompositionDrawList? VisualBrushDrawList { get; set; }
-        public Size GetRenderTargetSize(IVisualBrush brush)
-        {
-            return VisualBrushDrawList?.Size ?? default;
-        }
-
-        public void RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
-        {
-            if (VisualBrushDrawList != null)
-            {
-                foreach (var cmd in VisualBrushDrawList)
-                    cmd.Item.Render(context);
-            }
-        }
-    }
+    
 
     public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
     {

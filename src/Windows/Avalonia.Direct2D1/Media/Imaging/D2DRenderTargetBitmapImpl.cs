@@ -30,9 +30,9 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new D2DRenderTargetBitmapImpl(bitmapRenderTarget);
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
-            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
+            return new DrawingContextImpl( this, _renderTarget, null, () => Version++);
         }
 
         public bool IsCorrupted => false;

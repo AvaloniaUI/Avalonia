@@ -27,8 +27,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Pen"/> property.
         /// </summary>
-        public static readonly StyledProperty<Pen?> PenProperty =
-            AvaloniaProperty.Register<GeometryDrawing, Pen?>(nameof(Pen));
+        public static readonly StyledProperty<IPen?> PenProperty =
+            AvaloniaProperty.Register<GeometryDrawing, IPen?>(nameof(Pen));
 
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.Geometry"/> that describes the shape of this <see cref="GeometryDrawing"/>.

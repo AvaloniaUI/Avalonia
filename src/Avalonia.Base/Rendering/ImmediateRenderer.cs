@@ -14,47 +14,14 @@ namespace Avalonia.Rendering
     /// a simple tree traversal.
     /// It's currently used mostly for RenderTargetBitmap.Render and VisualBrush
     /// </summary>
-    internal class ImmediateRenderer : IVisualBrushRenderer//, IRenderer
+    internal class ImmediateRenderer
     {
-        /// <summary>
-        /// Renders a visual to a render target.
-        /// </summary>
-        /// <param name="visual">The visual.</param>
-        /// <param name="target">The render target.</param>
-        public static void Render(Visual visual, IRenderTarget target)
-        {
-            using var context = new DrawingContext(target.CreateDrawingContext(new ImmediateRenderer()));
-            Render(context, visual, visual.Bounds);
-        }
-
         /// <summary>
         /// Renders a visual to a drawing context.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <param name="context">The drawing context.</param>
         public static void Render(Visual visual, DrawingContext context)
-        {
-            Render(context, visual, visual.Bounds);
-        }
-        
-
-        /// <inheritdoc/>
-        Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
-        {
-            (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();
-            return brush.Visual?.Bounds.Size ?? default;
-        }
-
-        /// <inheritdoc/>
-        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
-        {
-            if (brush.Visual is { } visual)
-            {
-                Render(new DrawingContext(context), visual, visual.Bounds);
-            }
-        }
-
-        internal static void Render(Visual visual, DrawingContext context, bool updateTransformedBounds)
         {
             Render(context, visual, visual.Bounds);
         }
@@ -75,7 +42,7 @@ namespace Avalonia.Rendering
         }
 
 
-        private static void Render(DrawingContext context, Visual visual, Rect clipRect)
+        public static void Render(DrawingContext context, Visual visual, Rect clipRect)
         {
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;

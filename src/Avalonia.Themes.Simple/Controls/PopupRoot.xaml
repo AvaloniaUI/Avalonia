@@ -6,9 +6,7 @@
     <Setter Property="TransparencyLevelHint" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
-    <Setter Property="FontFamily" Value="{x:Static FontFamily.Default}" />
-    <Setter Property="FontWeight" Value="400" />
-    <Setter Property="FontStyle" Value="Normal" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl LayoutTransform="{TemplateBinding Transform}">

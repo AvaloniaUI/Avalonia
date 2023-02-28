@@ -82,7 +82,7 @@ namespace Avalonia.Controls
 
         public sealed override void Render(DrawingContext context)
         {
-            if (context.PlatformImpl is IDrawingContextWithAcrylicLikeSupport idc)
+            if (context is IDrawingContextWithAcrylicLikeSupport idc)
             {
                 var cornerRadius = CornerRadius;
 

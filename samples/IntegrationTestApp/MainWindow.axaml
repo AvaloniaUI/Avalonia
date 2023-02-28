@@ -25,6 +25,7 @@
     <StackPanel DockPanel.Dock="Bottom" Margin="4" Orientation="Horizontal">
       <TextBlock Margin="0,0,4,0">WindowState:</TextBlock>
       <TextBlock Name="MainWindowState" Text="{Binding WindowState}"/>
+      <TextBlock Name="AppOverlayPopups" Margin="8 0"/>
     </StackPanel>
     
     <TabControl TabStripPlacement="Left" Name="MainTabs">
@@ -56,6 +57,16 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="RadioButton">
+        <StackPanel Orientation="Vertical">
+          <RadioButton Name="BasicRadioButton">Sample RadioButton</RadioButton>
+          <StackPanel Orientation="Vertical">
+            <RadioButton Name="ThreeStatesRadioButton1" IsChecked="True" IsThreeState="True">Three States: Option 1</RadioButton>
+            <RadioButton Name="ThreeStatesRadioButton2" IsChecked="False" IsThreeState="True">Three States: Option 2</RadioButton>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+      
       <TabItem Header="CheckBox">
         <StackPanel>
           <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>

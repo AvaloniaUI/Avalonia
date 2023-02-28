@@ -15,7 +15,7 @@ namespace Avalonia.Styling
             AvaloniaProperty property,
             BindingMode mode,
             IObservable<object?> source)
-            : base(instance, property, source)
+            : base(target, instance, property, source)
         {
             _target = target;
             _mode = mode;

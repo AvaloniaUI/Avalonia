@@ -99,7 +99,20 @@ namespace Avalonia.Skia
         {
             SKTypeface? skTypeface = null;
 
-            if (typeface.FontFamily.Key is null)
+            if(typeface.FontFamily.Key is not null)
+            {
+                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+
+                skTypeface = fontCollection.Get(typeface);
+
+                if (skTypeface is null && !typeface.FontFamily.FamilyNames.HasFallbacks)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+                }
+            }
+
+            if (skTypeface is null)
             {
                 var defaultName = SKTypeface.Default.FamilyName;
 
@@ -128,13 +141,7 @@ namespace Avalonia.Skia
                 skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
                     ?? SKTypeface.Default;
             }
-            else
-            {
-                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-
-                skTypeface = fontCollection.Get(typeface);
-            }
-
+           
             if (skTypeface == null)
             {
                 throw new InvalidOperationException(

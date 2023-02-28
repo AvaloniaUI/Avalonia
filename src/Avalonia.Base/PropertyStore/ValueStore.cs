@@ -104,7 +104,7 @@ namespace Avalonia.PropertyStore
         {
             if (priority == BindingPriority.LocalValue)
             {
-                var observer = new LocalValueUntypedBindingObserver<T>(this, property);
+                var observer = new LocalValueBindingObserver<T>(this, property);
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = observer;
@@ -193,18 +193,7 @@ namespace Avalonia.PropertyStore
             }
             else
             {
-                if (TryGetEffectiveValue(property, out var existing))
-                {
-                    var effective = (EffectiveValue<T>)existing;
-                    effective.SetLocalValueAndRaise(this, property, value);
-                }
-                else
-                {
-                    var effectiveValue = CreateEffectiveValue(property);
-                    AddEffectiveValue(property, effectiveValue);
-                    effectiveValue.SetLocalValueAndRaise(this, property, value);
-                }
-
+                SetLocalValue(property, value);
                 return null;
             }
         }
@@ -220,6 +209,21 @@ namespace Avalonia.PropertyStore
                 var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
                 effectiveValue.SetCurrentValueAndRaise(this, property, value);
+            }
+        }
+
+        public void SetLocalValue<T>(StyledProperty<T> property, T value)
+        {
+            if (TryGetEffectiveValue(property, out var existing))
+            {
+                var effective = (EffectiveValue<T>)existing;
+                effective.SetLocalValueAndRaise(this, property, value);
+            }
+            else
+            {
+                var effectiveValue = CreateEffectiveValue(property);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetLocalValueAndRaise(this, property, value);
             }
         }
 
@@ -834,8 +838,6 @@ namespace Avalonia.PropertyStore
                         break;
                 }
 
-                current?.EndReevaluation();
-
                 if (current?.Priority == BindingPriority.Unset)
                 {
                     if (current.BasePriority == BindingPriority.Unset)
@@ -848,6 +850,8 @@ namespace Avalonia.PropertyStore
                         current.RemoveAnimationAndRaise(this, property);
                     }
                 }
+
+                current?.EndReevaluation();
             }
             finally
             {
@@ -919,7 +923,6 @@ namespace Avalonia.PropertyStore
                 for (var i = _effectiveValues.Count - 1; i >= 0; --i)
                 {
                     _effectiveValues.GetKeyValue(i, out var key, out var e);
-                    e.EndReevaluation();
 
                     if (e.Priority == BindingPriority.Unset)
                     {
@@ -929,6 +932,8 @@ namespace Avalonia.PropertyStore
                         if (i > _effectiveValues.Count)
                             break;
                     }
+
+                    e.EndReevaluation();
                 }
             }
             finally
