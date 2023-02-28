@@ -35,6 +35,7 @@ jobs:
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+      arguments: '-l "console;verbosity=detailed"'
 
   - script: |
       pkill IntegrationTestApp
