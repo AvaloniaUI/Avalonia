@@ -1,6 +1,8 @@
+using System;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
@@ -10,6 +12,9 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class HeaderedItemsControl : ItemsControl, IContentPresenterHost
     {
+        private IDisposable? _itemsBinding;
+        private bool _prepareItemContainerOnAttach;
+
         /// <summary>
         /// Defines the <see cref="Header"/> property.
         /// </summary>
@@ -60,6 +65,17 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+
+            if (_prepareItemContainerOnAttach)
+            {
+                PrepareItemContainer();
+                _prepareItemContainerOnAttach = false;
+            }
+        }
+
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
@@ -79,6 +95,37 @@ namespace Avalonia.Controls.Primitives
             }
 
             return false;
+        }
+
+        internal void PrepareItemContainer()
+        {
+            _itemsBinding?.Dispose();
+            _itemsBinding = null;
+
+            var item = Header;
+
+            if (item is null)
+            {
+                _prepareItemContainerOnAttach = false;
+                return;
+            }
+
+            var headerTemplate = HeaderTemplate;
+
+            if (headerTemplate is null)
+            {
+                if (((ILogical)this).IsAttachedToLogicalTree)
+                    headerTemplate = this.FindDataTemplate(item);
+                else
+                    _prepareItemContainerOnAttach = true;
+            }
+
+            if (headerTemplate is ITreeDataTemplate treeTemplate &&
+                treeTemplate.Match(item) &&
+                treeTemplate.ItemsSelector(item) is { } itemsBinding)
+            {
+                _itemsBinding = BindingOperations.Apply(this, ItemsProperty, itemsBinding, null);
+            }
         }
 
         private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
