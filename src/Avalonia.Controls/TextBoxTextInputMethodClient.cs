@@ -4,8 +4,6 @@ using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls
 {
@@ -161,10 +159,12 @@ namespace Avalonia.Controls
 
         public void SetPreeditText(string? text)
         {
-            if (_presenter == null)
+            if (_presenter == null || _parent == null)
             {
                 return;
             }
+
+            _presenter.CaretIndex = _parent.CaretIndex;
 
             _presenter.PreeditText = text;
         }

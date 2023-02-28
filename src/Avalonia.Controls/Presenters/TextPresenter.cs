@@ -564,7 +564,7 @@ namespace Avalonia.Controls.Presenters
 
             var foreground = Foreground;
 
-            if(_compositionRegion != null)
+            if (_compositionRegion != null)
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(_compositionRegion?.Start ?? 0, _compositionRegion?.Length ?? 0,
                         new GenericTextRunProperties(typeface, FontSize,
@@ -851,7 +851,7 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        private void UpdateCaret(CharacterHit characterHit, bool updateCaretIndex = true)
+        private void UpdateCaret(CharacterHit characterHit, bool notify = true)
         {
             _lastCharacterHit = characterHit;
 
@@ -879,9 +879,13 @@ namespace Avalonia.Controls.Presenters
                 CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            if (updateCaretIndex)
+            if (notify)
             {
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+            }
+            else
+            {
+                _caretIndex = caretIndex;
             }
         }
 
@@ -897,24 +901,6 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Stop();
 
             _caretTimer.Tick -= CaretTimerTick;
-        }
-
-        protected void OnPreeditTextChanged(string? oldValue, string? newValue)
-        {
-            InvalidateTextLayout();
-
-            if (string.IsNullOrEmpty(newValue))
-            {
-                UpdateCaret(_lastCharacterHit);
-            }
-            else
-            {
-                var textPosition = _caretIndex + newValue?.Length ?? 0;
-
-                var characterHit = GetCharacterHitFromTextPosition(textPosition);
-
-                UpdateCaret(characterHit, false);
-            }
         }
 
         private CharacterHit GetCharacterHitFromTextPosition(int textPosition)
@@ -935,11 +921,6 @@ namespace Avalonia.Controls.Presenters
             switch (change.Property.Name)
             {
                 case nameof(PreeditText):
-                    {
-                        OnPreeditTextChanged(change.OldValue as string, change.NewValue as string);
-                        break;
-                    }
-
                 case nameof(CompositionRegion):
                 case nameof(Foreground):
                 case nameof(FontSize):
