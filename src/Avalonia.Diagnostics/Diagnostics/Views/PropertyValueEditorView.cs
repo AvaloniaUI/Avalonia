@@ -10,7 +10,6 @@ using Avalonia.Data.Converters;
 using Avalonia.Diagnostics.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
@@ -48,7 +47,7 @@ namespace Avalonia.Diagnostics.Views
         private static bool ImplementsInterface<TInterface>(Type type)
         {
             var interfaceType = typeof(TInterface);
-            return type == interfaceType || type.GetInterface(interfaceType.FullName!) != null;
+            return type == interfaceType || interfaceType.IsAssignableFrom(type);
         }
 
         private Control? UpdateControl()
@@ -60,7 +59,8 @@ namespace Avalonia.Diagnostics.Views
 
             TControl CreateControl<TControl>(AvaloniaProperty valueProperty,
                 IValueConverter? converter = null,
-                Action<TControl>? init = null)
+                Action<TControl>? init = null,
+                AvaloniaProperty? readonlyProperty = null)
                 where TControl : Control, new()
             {
                 var control = new TControl();
@@ -75,7 +75,14 @@ namespace Avalonia.Diagnostics.Views
                         ConverterParameter = propertyType
                     }).DisposeWith(_cleanup);
 
-                control.IsEnabled = !Property.IsReadonly;
+                if (readonlyProperty != null)
+                {
+                    control[readonlyProperty] = Property.IsReadonly;
+                }
+                else
+                {
+                    control.IsEnabled = !Property.IsReadonly;
+                }
 
                 return control;
             }
@@ -93,7 +100,8 @@ namespace Avalonia.Diagnostics.Views
                         n.Increment = 1;
                         n.NumberFormat = new NumberFormatInfo { NumberDecimalDigits = 0 };
                         n.ParsingNumberStyle = NumberStyles.Integer;
-                    });
+                    },
+                    readonlyProperty: NumericUpDown.IsReadOnlyProperty);
 
             if (propertyType == typeof(Color))
             {
@@ -117,7 +125,8 @@ namespace Avalonia.Diagnostics.Views
                     Spacing = 2,
                     Children = { el, tbl },
                     Background = Brushes.Transparent,
-                    Cursor = new Cursor(StandardCursorType.Hand)
+                    Cursor = new Cursor(StandardCursorType.Hand),
+                    IsEnabled = !Property.IsReadonly
                 };
 
                 var cv = new ColorView();
@@ -221,12 +230,13 @@ namespace Avalonia.Diagnostics.Views
                 t =>
                 {
                     t.Watermark = "(null)";
-                });
+                },
+                readonlyProperty: TextBox.IsReadOnlyProperty);
 
-            tb.IsEnabled &= propertyType != typeof(object) &&
-                            StringConversionHelper.CanConvertFromString(propertyType);
+            tb.IsReadOnly |= propertyType == typeof(object) ||
+                             !StringConversionHelper.CanConvertFromString(propertyType);
 
-            if (tb.IsEnabled)
+            if (!tb.IsReadOnly)
             {
                 tb.GetObservable(TextBox.TextProperty).Subscribe(t =>
                 {
@@ -311,7 +321,7 @@ namespace Avalonia.Diagnostics.Views
                     converter.GetType() == typeof(CollectionConverter))
                     return o.ToString();
 
-                return converter.ConvertToString(o);
+                return converter.ConvertToInvariantString(o);
             }
 
             public static object? FromString(string str, Type type)
