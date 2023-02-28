@@ -622,5 +622,5 @@ void WindowImpl::UpdateStyle() {
     [miniaturizeButton setHidden:!hasTrafficLights];
     [miniaturizeButton setEnabled:_isEnabled];
     [zoomButton setHidden:!hasTrafficLights];
-    [zoomButton setEnabled:_isEnabled && _canResize];
+    [zoomButton setEnabled:CanZoom()];
 }
