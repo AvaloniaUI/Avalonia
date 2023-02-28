@@ -160,15 +160,18 @@ unsafe class VulkanContent : IDisposable
 
         var commandBufferHandle = new CommandBuffer(commandBuffer.Handle);
 
+        // Set Viewport and also vertically flip the image so that on the rendered 2D image y axis will point up.
+        // To flip the image we set Height to negative height value and add Y offset to height.
+        // See more: https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
         api.CmdSetViewport(commandBufferHandle, 0, 1,
             new Viewport()
             {
                 Width = (float)image.Size.Width,
-                Height = (float)image.Size.Height,
+                Height = -(float)image.Size.Height,
                 MaxDepth = 1,
                 MinDepth = 0,
                 X = 0,
-                Y = 0
+                Y = (float)image.Size.Height
             });
 
         var scissor = new Rect2D
