@@ -65,7 +65,7 @@ namespace Avalonia.Skia
 
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
         {
-            return new CombinedGeometryImpl(combineMode, g1, g2);
+            return CombinedGeometryImpl.ForceCreate(combineMode, g1, g2);
         }
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
@@ -104,7 +104,7 @@ namespace Avalonia.Skia
 
             SKFontCache.Shared.Return(skFont);
 
-            return new StreamGeometryImpl(path);
+            return new StreamGeometryImpl(path, path);
         }
 
         /// <inheritdoc />

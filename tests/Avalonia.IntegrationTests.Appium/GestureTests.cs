@@ -11,7 +11,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public GestureTests(TestAppFixture fixture)
+        public GestureTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 

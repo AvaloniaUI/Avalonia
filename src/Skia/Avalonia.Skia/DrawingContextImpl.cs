@@ -10,7 +10,9 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
+using Avalonia.Skia.Helpers;
 using SkiaSharp;
+using ISceneBrush = Avalonia.Media.ISceneBrush;
 
 namespace Avalonia.Skia
 {
@@ -25,7 +27,6 @@ namespace Avalonia.Skia
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<BitmapBlendingMode> _blendingModeStack = new();
         private readonly Matrix? _postTransform;
-        private readonly IVisualBrushRenderer? _visualBrushRenderer;
         private double _currentOpacity = 1.0f;
         private BitmapBlendingMode _currentBlendingMode = BitmapBlendingMode.SourceOver;
         private readonly bool _canTextUseLcdRendering;
@@ -40,6 +41,7 @@ namespace Avalonia.Skia
         private static SKShader? s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
+        private bool _useOpacitySaveLayer;
 
         /// <summary>
         /// Context create info.
@@ -60,12 +62,7 @@ namespace Avalonia.Skia
             /// Dpi of drawings.
             /// </summary>
             public Vector Dpi;
-
-            /// <summary>
-            /// Visual brush renderer.
-            /// </summary>
-            public IVisualBrushRenderer? VisualBrushRenderer;
-
+            
             /// <summary>
             /// Render text without Lcd rendering.
             /// </summary>
@@ -140,7 +137,6 @@ namespace Avalonia.Skia
                 ?? throw new ArgumentException("Invalid create info - no Canvas provided", nameof(createInfo));
 
             _dpi = createInfo.Dpi;
-            _visualBrushRenderer = createInfo.VisualBrushRenderer;
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
@@ -158,6 +154,13 @@ namespace Avalonia.Skia
             }
 
             Transform = Matrix.Identity;
+
+            var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
+
+            if(options != null)
+            {
+                _useOpacitySaveLayer = options.UseOpacitySaveLayer;
+            }
         }
         
         /// <summary>
@@ -188,7 +191,7 @@ namespace Avalonia.Skia
             var d = destRect.ToSKRect();
 
             var paint = SKPaintCache.Shared.Get();
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * (_useOpacitySaveLayer ? 1 : _currentOpacity)));
             paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
@@ -227,20 +230,21 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            if (brush is not null)
+            if (brush is not null && impl.FillPath != null)
             {
                 using (var fill = CreatePaint(_fillPaint, brush, size))
                 {
-                    Canvas.DrawPath(impl.EffectivePath, fill.Paint);
+                    Canvas.DrawPath(impl.FillPath, fill.Paint);
                 }
             }
 
             if (pen is not null
+                && impl.StrokePath != null
                 && TryCreatePaint(_strokePaint, pen, size.Inflate(new Thickness(pen.Thickness / 2))) is { } stroke)
             {
                 using (stroke)
                 {
-                    Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
+                    Canvas.DrawPath(impl.StrokePath, stroke.Paint);
                 }
             }
         }
@@ -373,7 +377,7 @@ namespace Avalonia.Skia
             {
                 if (!boxShadow.IsDefault && !boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
@@ -430,7 +434,7 @@ namespace Avalonia.Skia
             {
                 if (!boxShadow.IsDefault && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
@@ -568,18 +572,35 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
             CheckLease();
-            _opacityStack.Push(_currentOpacity);
-            _currentOpacity *= opacity;
+
+            if(_useOpacitySaveLayer)
+            {
+                var rect = bounds.ToSKRect();
+                Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity)});
+            }
+            else
+            {
+                _opacityStack.Push(_currentOpacity);
+                _currentOpacity *= opacity;
+            }
         }
 
         /// <inheritdoc />
         public void PopOpacity()
         {
             CheckLease();
-            _currentOpacity = _opacityStack.Pop();
+
+            if(_useOpacitySaveLayer)
+            {
+                Canvas.Restore();
+            }
+            else
+            {
+                _currentOpacity = _opacityStack.Pop();
+            }    
         }
 
         /// <inheritdoc />
@@ -619,7 +640,7 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Save();
-            Canvas.ClipPath(((GeometryImpl)clip).EffectivePath, SKClipOperation.Intersect, true);
+            Canvas.ClipPath(((GeometryImpl)clip).FillPath, SKClipOperation.Intersect, true);
         }
 
         /// <inheritdoc />
@@ -657,7 +678,7 @@ namespace Avalonia.Skia
 
             var paint = SKPaintCache.Shared.Get();
 
-            Canvas.SaveLayer(paint);
+            Canvas.SaveLayer(bounds.ToSKRect(), paint);
             _maskStack.Push(CreatePaint(paint, mask, bounds.Size));
         }
 
@@ -883,7 +904,7 @@ namespace Avalonia.Skia
 
             paintWrapper.AddDisposable(intermediate);
 
-            using (var context = intermediate.CreateDrawingContext(null))
+            using (var context = intermediate.CreateDrawingContext())
             {
                 var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
                 var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_dpi));
@@ -945,36 +966,98 @@ namespace Avalonia.Skia
             }
         }
 
-        /// <summary>
-        /// Configure paint wrapper to use visual brush.
-        /// </summary>
-        /// <param name="paintWrapper">Paint wrapper.</param>
-        /// <param name="visualBrush">Visual brush.</param>
-        /// <param name="visualBrushRenderer">Visual brush renderer.</param>
-        /// <param name="tileBrushImage">Tile brush image.</param>
-        private void ConfigureVisualBrush(ref PaintWrapper paintWrapper, IVisualBrush visualBrush,
-            IVisualBrushRenderer? visualBrushRenderer, ref IDrawableBitmapImpl? tileBrushImage)
+        private void ConfigureSceneBrushContent(ref PaintWrapper paintWrapper, ISceneBrushContent content,
+            Size targetSize)
         {
-            if (visualBrushRenderer == null)
-            {
-                throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
-            }
-
-            var intermediateSize = visualBrushRenderer.GetRenderTargetSize(visualBrush);
+            if(content.UseScalableRasterization)
+                ConfigureSceneBrushContentWithPicture(ref paintWrapper, content, targetSize);
+            else
+                ConfigureSceneBrushContentWithSurface(ref paintWrapper, content, targetSize);
+        }
+        
+        private void ConfigureSceneBrushContentWithSurface(ref PaintWrapper paintWrapper, ISceneBrushContent content,
+            Size targetSize)
+        {
+            var rect = content.Rect;
+            var intermediateSize = rect.Size;
 
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
-                var intermediate = CreateRenderTarget(intermediateSize, false);
+                using var intermediate = CreateRenderTarget(intermediateSize, false);
 
-                using (var ctx = intermediate.CreateDrawingContext(visualBrushRenderer))
+                using (var ctx = intermediate.CreateDrawingContext())
                 {
                     ctx.Clear(Colors.Transparent);
-
-                    visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                    content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
                 }
 
-                tileBrushImage = intermediate;
-                paintWrapper.AddDisposable(tileBrushImage);
+                ConfigureTileBrush(ref paintWrapper, targetSize, content.Brush, intermediate);
+            }
+        }
+        
+        private void ConfigureSceneBrushContentWithPicture(ref PaintWrapper paintWrapper, ISceneBrushContent content,
+            Size targetSize)
+        {
+            var rect = content.Rect;
+            var contentSize = rect.Size;
+            if (contentSize.Width <= 0 || contentSize.Height <= 0)
+            {
+                paintWrapper.Paint.Color = SKColor.Empty;
+                return;
+            }
+            
+            var tileBrush = content.Brush;
+            var transform = rect.TopLeft == default ? Matrix.Identity : Matrix.CreateTranslation(-rect.X, -rect.Y);
+
+            var calc = new TileBrushCalculator(tileBrush, contentSize, targetSize);
+            transform *= calc.IntermediateTransform;
+            
+            using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _dpi);
+            using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
+            {
+                ctx.PushClip(calc.IntermediateClip);
+                content.Render(ctx, transform);
+                ctx.PopClip();
+            }
+
+            using var picture = pictureTarget.GetPicture();
+
+            var paintTransform =
+                tileBrush.TileMode != TileMode.None
+                    ? SKMatrix.CreateTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
+                    : SKMatrix.CreateIdentity();
+
+            SKShaderTileMode tileX =
+                tileBrush.TileMode == TileMode.None
+                    ? SKShaderTileMode.Clamp
+                    : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
+                        ? SKShaderTileMode.Mirror
+                        : SKShaderTileMode.Repeat;
+
+            SKShaderTileMode tileY =
+                tileBrush.TileMode == TileMode.None
+                    ? SKShaderTileMode.Clamp
+                    : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
+                        ? SKShaderTileMode.Mirror
+                        : SKShaderTileMode.Repeat;
+
+            paintTransform = SKMatrix.Concat(paintTransform,
+                SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+            
+            if (tileBrush.Transform is { })
+            {
+                var origin = tileBrush.TransformOrigin.ToPixels(targetSize);
+                var offset = Matrix.CreateTranslation(origin);
+                var brushTransform = (-offset) * tileBrush.Transform.Value * (offset);
+
+                paintTransform = paintTransform.PreConcat(brushTransform.ToSKMatrix());
+            }
+
+            using (var shader = picture.ToShader(tileX, tileY, paintTransform,
+                       new SKRect(0, 0, picture.CullRect.Width, picture.CullRect.Height)))
+            {
+                paintWrapper.Paint.FilterQuality = SKFilterQuality.None;
+                paintWrapper.Paint.Shader = shader;
             }
         }
 
@@ -1020,8 +1103,6 @@ namespace Avalonia.Skia
             var paintWrapper = new PaintWrapper(paint);
 
             paint.IsAntialias = true;
-
-            double opacity = _currentOpacity;
 
             var tintOpacity =
                 material.BackgroundSource == AcrylicBackgroundSource.Digger ?
@@ -1071,7 +1152,7 @@ namespace Avalonia.Skia
 
             paint.IsAntialias = true;
 
-            double opacity = brush.Opacity * _currentOpacity;
+            double opacity = brush.Opacity * (_useOpacitySaveLayer ? 1 :_currentOpacity);
 
             if (brush is ISolidColorBrush solid)
             {
@@ -1090,12 +1171,25 @@ namespace Avalonia.Skia
             }
 
             var tileBrush = brush as ITileBrush;
-            var visualBrush = brush as IVisualBrush;
             var tileBrushImage = default(IDrawableBitmapImpl);
 
-            if (visualBrush != null)
+            if (brush is ISceneBrush sceneBrush)
             {
-                ConfigureVisualBrush(ref paintWrapper, visualBrush, _visualBrushRenderer, ref tileBrushImage);
+                using (var content = sceneBrush.CreateContent())
+                {
+                    if (content != null)
+                    {
+                        ConfigureSceneBrushContent(ref paintWrapper, content, targetSize);
+                        return paintWrapper;
+                    }
+                    else
+                        paint.Color = default;
+                }
+            }
+            else if (brush is ISceneBrushContent sceneBrushContent)
+            {
+                ConfigureSceneBrushContent(ref paintWrapper, sceneBrushContent, targetSize);
+                return paintWrapper;
             }
             else
             {

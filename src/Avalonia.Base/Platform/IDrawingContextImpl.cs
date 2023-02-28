@@ -128,7 +128,7 @@ namespace Avalonia.Platform
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
-        void PushOpacity(double opacity);
+        void PushOpacity(double opacity, Rect bounds);
 
         /// <summary>
         /// Pops the latest pushed opacity value.

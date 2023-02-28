@@ -29,7 +29,10 @@ namespace Avalonia.Win32
         private static readonly List<ClipboardFormat> s_formatList = new()
         {
             new ClipboardFormat(DataFormats.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT),
+            new ClipboardFormat(DataFormats.Files, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP),
+#pragma warning disable CS0618 // Type or member is obsolete
             new ClipboardFormat(DataFormats.FileNames, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP),
+#pragma warning restore CS0618 // Type or member is obsolete
         };
 
 

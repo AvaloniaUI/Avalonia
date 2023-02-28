@@ -2,7 +2,6 @@ using System;
 using System.Collections.Specialized;
 using Avalonia.Media;
 using Avalonia.Reactive;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -34,6 +33,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<Control?> AdornerProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Control?>("Adorner");
 
+        /// <summary>
+        /// Defines the <see cref="DefaultFocusAdorner"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITemplate<Control>?> DefaultFocusAdornerProperty =
+            AvaloniaProperty.Register<AdornerLayer, ITemplate<Control>?>(nameof(DefaultFocusAdorner));
+        
         private static readonly AttachedProperty<AdornedElementInfo?> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo?>("AdornedElementInfo");
 
@@ -86,6 +91,15 @@ namespace Avalonia.Controls.Primitives
             visual.SetValue(AdornerProperty, adorner);
         }
 
+        /// <summary>
+        /// Gets or sets the default control's focus adorner.
+        /// </summary>
+        public ITemplate<Control>? DefaultFocusAdorner
+        {
+            get => GetValue(DefaultFocusAdornerProperty);
+            set => SetValue(DefaultFocusAdornerProperty, value);
+        }
+        
         private static void AdornerChanged(AvaloniaPropertyChangedEventArgs<Control?> e)
         {
             if (e.Sender is Visual visual)

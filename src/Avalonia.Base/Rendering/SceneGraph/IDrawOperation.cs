@@ -6,7 +6,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a node in the low-level scene graph that represents geometry.
     /// </summary>
-    public interface IDrawOperation : IDisposable
+    internal interface IDrawOperation : IDisposable
     {
         /// <summary>
         /// Gets the bounds of the visible content in the node in global coordinates.
@@ -29,5 +29,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="context">The drawing context.</param>
         void Render(IDrawingContextImpl context);
+    }
+
+    internal interface IDrawOperationWithTransform : IDrawOperation
+    {
+        /// <summary>
+        /// Gets the transform with which the node will be drawn.
+        /// </summary>
+        Matrix Transform { get; }
     }
 }

@@ -25,7 +25,6 @@
                 BorderThickness="2">
           <TextBlock Name="DragStateCustom" TextWrapping="Wrap">Drag Me (custom)</TextBlock>
         </Border>
-        <TextBlock Name="DropState" TextWrapping="Wrap" />
       </StackPanel>
 
       <StackPanel Margin="8"
@@ -47,5 +46,7 @@
         </Border>
       </StackPanel>
     </WrapPanel>
+
+    <TextBlock x:Name="DropState" TextWrapping="Wrap" />
   </StackPanel>
 </UserControl>

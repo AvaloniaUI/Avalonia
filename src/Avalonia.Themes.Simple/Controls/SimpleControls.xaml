@@ -3,6 +3,7 @@
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/AdornerLayer.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Button.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RadioButton.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Expander.xaml" />
@@ -72,6 +73,5 @@
     </ResourceDictionary>
   </Styles.Resources>
 
-  <StyleInclude Source="avares://Avalonia.Themes.Simple/Controls/FocusAdorner.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Simple/Controls/UserControl.xaml" />
 </Styles>

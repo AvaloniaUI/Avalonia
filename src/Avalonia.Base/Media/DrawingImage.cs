@@ -62,7 +62,7 @@ namespace Avalonia.Media
                 -sourceRect.Y + destRect.Y - bounds.Y);
 
             using (context.PushClip(destRect))
-            using (context.PushPreTransform(translate * scale))
+            using (context.PushTransform(translate * scale))
             {
                 Drawing?.Draw(context);
             }
