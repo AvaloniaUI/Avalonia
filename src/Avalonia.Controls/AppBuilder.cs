@@ -6,7 +6,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Media.Fonts;
 using Avalonia.Media;
-using System.Xml.Linq;
 
 namespace Avalonia
 {
@@ -19,7 +18,7 @@ namespace Avalonia
         private Action? _optionsInitializers;
         private Func<Application>? _appFactory;
         private IApplicationLifetime? _lifetime;
-
+        
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
         /// </summary>
@@ -34,12 +33,12 @@ namespace Avalonia
         /// Gets the <see cref="Application"/> instance being initialized.
         /// </summary>
         public Application? Instance { get; private set; }
-
+        
         /// <summary>
         /// Gets the type of the Instance (even if it's not created yet)
         /// </summary>
         public Type? ApplicationType { get; private set; }
-
+        
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
@@ -67,7 +66,7 @@ namespace Avalonia
 
 
         public Action<AppBuilder> AfterPlatformServicesSetupCallback { get; private set; } = builder => { };
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBuilder"/> class.
         /// </summary>
@@ -76,7 +75,7 @@ namespace Avalonia
                 builder => StandardRuntimePlatformServices.Register(builder.ApplicationType?.Assembly))
         {
         }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBuilder"/> class.
         /// </summary>
@@ -126,8 +125,8 @@ namespace Avalonia
             AfterSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;
         }
-
-
+        
+        
         public AppBuilder AfterPlatformServicesSetup(Action<AppBuilder> callback)
         {
             AfterPlatformServicesSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
@@ -135,7 +134,7 @@ namespace Avalonia
         }
 
         public delegate void AppMainDelegate(Application app, string[] args);
-
+        
         public void Start(AppMainDelegate main, string[] args)
         {
             Setup();
@@ -163,7 +162,7 @@ namespace Avalonia
             Setup();
             return Self;
         }
-
+        
         /// <summary>
         /// Specifies a windowing subsystem to use.
         /// </summary>
@@ -198,7 +197,7 @@ namespace Avalonia
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToConstant(options); };
             return Self;
         }
-
+        
         /// <summary>
         /// Configures platform-specific options
         /// </summary>
@@ -207,7 +206,7 @@ namespace Avalonia
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
             return Self;
         }
-
+        
         /// <summary>
         /// Registers a custom font collection with the font manager.
         /// </summary>
