@@ -23,11 +23,6 @@ namespace Avalonia.Media.Fonts
         {
             _key = key;
 
-            if(!source.IsAvares() && !source.IsAbsoluteResm())
-            {
-                throw new ArgumentOutOfRangeException(nameof(source), "Specified source uri does not follow the resm: or avares: scheme.");
-            }
-
             _source = source;
         }
 

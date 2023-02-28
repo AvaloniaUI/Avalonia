@@ -13,10 +13,18 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static IEnumerable<Uri> LoadFontAssets(Uri source) =>
-            IsFontTtfOrOtf(source) ?
-                GetFontAssetsByExpression(source) :
-                GetFontAssetsBySource(source);
+        public static IEnumerable<Uri> LoadFontAssets(Uri source)
+        {
+            if (source.IsAvares() || source.IsAbsoluteResm())
+            {
+                return IsFontTtfOrOtf(source) ?
+                    GetFontAssetsByExpression(source) :
+                    GetFontAssetsBySource(source);
+            }
+
+            return Enumerable.Empty<Uri>();
+        }
+
 
         /// <summary>
         /// Searches for font assets at a given location and returns a quantity of found assets
