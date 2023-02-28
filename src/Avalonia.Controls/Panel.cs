@@ -26,16 +26,6 @@ namespace Avalonia.Controls
             Border.BackgroundProperty.AddOwner<Panel>();
 
         /// <summary>
-        /// Defines the <see cref="IsItemsHost"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Panel, bool> IsItemsHostProperty =
-            AvaloniaProperty.RegisterDirect<Panel, bool>(
-                nameof(IsItemsHost),
-                o => o.IsItemsHost,
-                (o, v) => o.IsItemsHost = v,
-                unsetValue: false);
-
-        /// <summary>
         /// Initializes static members of the <see cref="Panel"/> class.
         /// </summary>
         static Panel()
@@ -43,7 +33,6 @@ namespace Avalonia.Controls
             AffectsRender<Panel>(BackgroundProperty);
         }
 
-        private bool _isItemsHost;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
@@ -72,11 +61,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets whether the <see cref="Panel"/> hosts the items created by an <see cref="ItemsPresenter"/>.
         /// </summary>
-        public bool IsItemsHost
-        {
-            get => _isItemsHost;
-            set => SetAndRaise(IsItemsHostProperty, ref _isItemsHost, value);
-        }
+        public bool IsItemsHost { get; internal set; }
 
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
