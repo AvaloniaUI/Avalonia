@@ -8,7 +8,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver _session;
 
-        public NativeMenuTests(TestAppFixture fixture)
+        public NativeMenuTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 

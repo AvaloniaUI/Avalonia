@@ -11,8 +11,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBitmap> SourceProperty =
-            AvaloniaProperty.Register<ImageBrush, IBitmap>(nameof(Source));
+        public static readonly StyledProperty<IBitmap?> SourceProperty =
+            AvaloniaProperty.Register<ImageBrush, IBitmap?>(nameof(Source));
 
         static ImageBrush()
         {
@@ -30,7 +30,7 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="ImageBrush"/> class.
         /// </summary>
         /// <param name="source">The image to draw.</param>
-        public ImageBrush(IBitmap source)
+        public ImageBrush(IBitmap? source)
         {
             Source = source;
         }
@@ -38,7 +38,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the image to draw.
         /// </summary>
-        public IBitmap Source
+        public IBitmap? Source
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }

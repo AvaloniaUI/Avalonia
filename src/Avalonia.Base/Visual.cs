@@ -573,7 +573,7 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(Visual? oldParent, Visual? newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(VisualParentProperty, oldParent, newParent);
         }
 
         internal override ParametrizedLogger? GetBindingWarningLogger(
@@ -729,6 +729,23 @@ namespace Avalonia
                 var visual = (Visual) children[i]!;
                 
                 visual.SetVisualParent(parent);
+            }
+        }
+
+        internal override void OnTemplatedParentControlThemeChanged()
+        {
+            base.OnTemplatedParentControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            var templatedParent = TemplatedParent;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == templatedParent)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
+                }
             }
         }
 

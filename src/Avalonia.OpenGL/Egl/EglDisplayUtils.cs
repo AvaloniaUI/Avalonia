@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using static Avalonia.OpenGL.Egl.EglConsts;
 namespace Avalonia.OpenGL.Egl;
 
-static class EglDisplayUtils
+internal static class EglDisplayUtils
 {
     public static IntPtr CreateDisplay(EglDisplayCreationOptions options)
     {
-        var egl = options.Egl;
+        var egl = options.Egl ?? new EglInterface();
         var display = IntPtr.Zero;
         if (options.PlatformType == null)
         {
@@ -30,9 +29,9 @@ static class EglDisplayUtils
         return display;
     }
 
-    public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display, IEnumerable<GlVersion> versions)
+    public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display, IEnumerable<GlVersion>? versions)
     {
-        if (!egl.Initialize(display, out var major, out var minor))
+        if (!egl.Initialize(display, out _, out _))
             throw OpenGlException.GetFormattedException("eglInitialize", egl);
 
         // TODO: AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
@@ -112,7 +111,7 @@ static class EglDisplayUtils
     
 }
 
-class EglConfigInfo
+internal class EglConfigInfo
 {
     public IntPtr Config { get; }
     public GlVersion Version { get; }

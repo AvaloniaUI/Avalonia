@@ -12,10 +12,11 @@ namespace Avalonia.PropertyStore
         private readonly Func<TTarget, bool>? _validate;
 
         public SourceUntypedBindingEntry(
+            AvaloniaObject target,
             ValueFrame frame, 
             StyledProperty<TTarget> property,
             IObservable<object?> source)
-                : base(frame, property, source)
+                : base(target, frame, property, source)
         {
             _validate = property.ValidateValue;
         }
@@ -31,5 +32,7 @@ namespace Avalonia.PropertyStore
         {
             throw new NotSupportedException();
         }
+
+        protected override TTarget GetDefaultValue(Type ownerType) => Property.GetDefaultValue(ownerType);
     }
 }

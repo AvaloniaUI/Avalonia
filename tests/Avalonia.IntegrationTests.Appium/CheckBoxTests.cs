@@ -8,7 +8,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver _session;
 
-        public CheckBoxTests(TestAppFixture fixture)
+        public CheckBoxTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 

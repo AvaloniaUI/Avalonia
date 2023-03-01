@@ -7,7 +7,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    unsafe class XI2Manager
+    internal unsafe class XI2Manager
     {
         private static readonly XiEventType[] DefaultEventTypes = new XiEventType[]
         {
@@ -30,7 +30,7 @@ namespace Avalonia.X11
         private bool _multitouch;
         private Dictionary<IntPtr, IXI2Client> _clients = new Dictionary<IntPtr, IXI2Client>();
 
-        class DeviceInfo
+        private class DeviceInfo
         {
             public int Id { get; }
             public XIValuatorClassInfo[] Valuators { get; private set; }
@@ -67,7 +67,7 @@ namespace Avalonia.X11
             }
         }
 
-        class PointerDeviceInfo : DeviceInfo
+        private class PointerDeviceInfo : DeviceInfo
         {
             public PointerDeviceInfo(XIDeviceInfo info) : base(info)
             {
@@ -197,7 +197,7 @@ namespace Avalonia.X11
             }
         }
 
-        void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
+        private void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
         {
             if (ev.evtype == XiEventType.XI_Leave)
             {
@@ -215,7 +215,7 @@ namespace Avalonia.X11
             }
         }
 
-        void OnDeviceEvent(IXI2Client client, ParsedDeviceEvent ev)
+        private void OnDeviceEvent(IXI2Client client, ParsedDeviceEvent ev)
         {
             if (ev.Type == XiEventType.XI_TouchBegin 
                 || ev.Type == XiEventType.XI_TouchUpdate 
@@ -304,7 +304,7 @@ namespace Avalonia.X11
         }
     }
 
-    unsafe class ParsedDeviceEvent
+    internal unsafe class ParsedDeviceEvent
     {
         public XiEventType Type { get; }
         public RawInputModifiers Modifiers { get; }
@@ -367,8 +367,8 @@ namespace Avalonia.X11
             Emulated = ev->flags.HasAllFlags(XiDeviceEventFlags.XIPointerEmulated);
         }
     }
-    
-    interface IXI2Client
+
+    internal interface IXI2Client
     {
         IInputRoot InputRoot { get; }
         void ScheduleXI2Input(RawInputEventArgs args);

@@ -19,37 +19,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public GlyphRunNode(
             Matrix transform,
-            IBrush foreground,
-            IRef<IGlyphRunImpl> glyphRun,
-            IDisposable? aux = null)
-            : base(new Rect(glyphRun.Item.Size), transform, aux)
+            IImmutableBrush foreground,
+            IRef<IGlyphRunImpl> glyphRun)
+            : base(new Rect(glyphRun.Item.Size), transform, foreground)
         {
-            Transform = transform;
-            Foreground = foreground.ToImmutable();
             GlyphRun = glyphRun.Clone();
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
-
-        /// <summary>
-        /// Gets the foreground brush.
-        /// </summary>
-        public IBrush Foreground { get; }
-
+        
+        
         /// <summary>
         /// Gets the glyph run to draw.
         /// </summary>
         public IRef<IGlyphRunImpl> GlyphRun { get; }
 
         /// <inheritdoc/>
-        public override void Render(IDrawingContextImpl context)
-        {
-            context.Transform = Transform;
-            context.DrawGlyphRun(Foreground, GlyphRun);
-        }
+        public override void Render(IDrawingContextImpl context) => context.DrawGlyphRun(Brush, GlyphRun);
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -65,16 +49,17 @@ namespace Avalonia.Rendering.SceneGraph
         internal bool Equals(Matrix transform, IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             return transform == Transform &&
-                   Equals(foreground, Foreground) &&
+                   Equals(foreground, Brush) &&
                    Equals(glyphRun.Item, GlyphRun.Item);
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
+        public override bool HitTest(Point p) => new Rect(GlyphRun.Item.Size).ContainsExclusive(p);
 
         public override void Dispose()
         {
             GlyphRun?.Dispose();
+            base.Dispose();
         }
     }
 }

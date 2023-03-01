@@ -4,7 +4,7 @@ using Avalonia.Media;
 namespace Avalonia.Win32.WinRT
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public record struct WinRTColor
+    internal record struct WinRTColor
     {
         public byte A;
         public byte R;

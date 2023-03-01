@@ -8,22 +8,19 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Base class for draw operations that can use a brush.
     /// </summary>
-    internal abstract class BrushDrawOperation : DrawOperation
+    internal abstract class BrushDrawOperation : DrawOperationWithTransform
     {
-        public BrushDrawOperation(Rect bounds, Matrix transform, IDisposable? aux)
+        public IImmutableBrush? Brush { get; }
+
+        public BrushDrawOperation(Rect bounds, Matrix transform, IImmutableBrush? brush)
             : base(bounds, transform)
         {
-            Aux = aux;
+            Brush = brush;
         }
-
-        /// <summary>
-        /// Auxiliary data required to draw the brush
-        /// </summary>
-        public IDisposable? Aux { get; }
 
         public override void Dispose()
         {
-            Aux?.Dispose();
+            (Brush as ISceneBrushContent)?.Dispose();
             base.Dispose();
         }
     }

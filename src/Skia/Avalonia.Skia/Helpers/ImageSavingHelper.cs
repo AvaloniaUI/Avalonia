@@ -60,5 +60,15 @@ namespace Avalonia.Skia.Helpers
                 }
             }
         }
+
+        // This method is here mostly for debugging purposes
+        internal static void SavePicture(SKPicture picture, float scale, string path)
+        {
+            var snapshotSize = new SKSizeI((int)Math.Ceiling(picture.CullRect.Width * scale),
+                (int)Math.Ceiling(picture.CullRect.Height * scale));
+            using var snap =
+                SKImage.FromPicture(picture, snapshotSize, SKMatrix.CreateScale(scale, scale));
+            SaveImage(snap, path);
+        }
     }
 }

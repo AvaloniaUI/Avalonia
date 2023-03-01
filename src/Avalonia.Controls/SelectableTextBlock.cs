@@ -336,7 +336,7 @@ namespace Avalonia.Controls
 
                 point = new Point(
                     MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.Bounds.Width, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Bounds.Width, 0)));
+                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Bounds.Height, 0)));
 
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;

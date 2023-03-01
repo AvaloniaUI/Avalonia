@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Avalonia.Win32.Interop;
 using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -10,14 +8,14 @@ namespace Avalonia.Win32;
 
 internal class Win32PlatformSettings : DefaultPlatformSettings
 {
-    private PlatformColorValues _lastColorValues;
+    private PlatformColorValues? _lastColorValues;
 
     public override Size GetTapSize(PointerType type)
     {
         return type switch
         {
             PointerType.Touch => new(10, 10),
-            _ => new(GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDRAG), GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDRAG)),
+            _ => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
         };
     }
 
@@ -26,7 +24,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         return type switch
         {
             PointerType.Touch => new(16, 16),
-            _ => new(GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK)),
+            _ => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
         };
     }
 

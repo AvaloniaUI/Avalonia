@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
@@ -13,13 +12,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     public class CompiledBindingPath
     {
-        private readonly List<ICompiledBindingPathElement> _elements = new List<ICompiledBindingPathElement>();
+        private readonly ICompiledBindingPathElement[] _elements;
 
-        public CompiledBindingPath() { }
+        public CompiledBindingPath()
+            => _elements = Array.Empty<ICompiledBindingPathElement>();
 
-        internal CompiledBindingPath(IEnumerable<ICompiledBindingPathElement> bindingPath, object rawSource)
+        internal CompiledBindingPath(ICompiledBindingPathElement[] elements, object rawSource)
         {
-            _elements = new List<ICompiledBindingPathElement>(bindingPath);
+            _elements = elements;
             RawSource = rawSource;
         }
 
@@ -78,13 +78,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
 
-        internal SourceMode SourceMode => _elements.OfType<IControlSourceBindingPathElement>().Any()
+        internal SourceMode SourceMode => Array.Exists(_elements, e => e is IControlSourceBindingPathElement)
             ? SourceMode.Control : SourceMode.Data;
 
         internal object RawSource { get; }
 
         public override string ToString()
-            => string.Concat(_elements);
+            => string.Concat((IEnumerable<ICompiledBindingPathElement>) _elements);
     }
 
     public class CompiledBindingPathBuilder
@@ -169,7 +169,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPath Build() => new CompiledBindingPath(_elements, _rawSource);
+        public CompiledBindingPath Build() => new CompiledBindingPath(_elements.ToArray(), _rawSource);
     }
 
     public interface ICompiledBindingPathElement
