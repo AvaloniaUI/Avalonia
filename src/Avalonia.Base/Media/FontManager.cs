@@ -40,6 +40,9 @@ namespace Avalonia.Media
             AddFontCollection(new SystemFontCollection(this));
         }
 
+        /// <summary>
+        /// Get the current font manager instance.
+        /// </summary>
         public static FontManager Current
         {
             get
@@ -139,13 +142,19 @@ namespace Avalonia.Media
             return SystemFonts.TryGetGlyphTypeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
         }
 
+        /// <summary>
+        /// Add a font collection to the manager.
+        /// </summary>
+        /// <param name="fontCollection">The font collection.</param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <remarks>If a font collection's key is already present the collection is replaced.</remarks>
         public void AddFontCollection(IFontCollection fontCollection)
         {
             var key = fontCollection.Key;
 
             if (!fontCollection.Key.IsFontCollection())
             {
-                throw new ArgumentException(nameof(fontCollection), "Font collection Key should follow the fonts: scheme.");
+                throw new ArgumentException("Font collection Key should follow the fonts: scheme.", nameof(fontCollection));
             }
 
             _fontCollections.AddOrUpdate(key, fontCollection, (_, oldCollection) =>
@@ -158,6 +167,10 @@ namespace Avalonia.Media
             fontCollection.Initialize(PlatformImpl);
         }
 
+        /// <summary>
+        /// Removes the font collection that corresponds to specified key.
+        /// </summary>
+        /// <param name="key">The font collection's key.</param>
         public void RemoveFontCollection(Uri key)
         {
             if (_fontCollections.TryRemove(key, out var fontCollection))
