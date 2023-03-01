@@ -696,7 +696,9 @@ public partial class AvaloniaPropertyAnalyzer
                 {
                     if (method is null)
                     {
-                        if (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Public)
+                        if (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Public ||
+                            (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Protected
+                                && avaloniaPropertyStorage.ContainingSymbol.DeclaredAccessibility == Accessibility.Public))
                         {
                             context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
                         }
