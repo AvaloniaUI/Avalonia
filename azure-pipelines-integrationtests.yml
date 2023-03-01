@@ -20,7 +20,7 @@ jobs:
   - script: |
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
-      appium &
+      appium > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
@@ -42,6 +42,9 @@ jobs:
       pkill node
     displayName: 'Stop Appium'
 
+  - publish: appium.out
+    displayName: 'Publish appium logs on failure'
+    condition: failed()
 
 - job: Windows
   pool:
