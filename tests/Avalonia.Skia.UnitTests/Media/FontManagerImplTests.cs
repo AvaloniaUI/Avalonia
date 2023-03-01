@@ -36,14 +36,13 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
-        public void Should_Throw_InvalidOperationException_For_Invalid_FamilyName()
+        public void Should_Yield_Default_GlyphTypeface_For_Invalid_FamilyName()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
-            {
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
-                });
+            {           
+               var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
+
+                Assert.Equal(FontManager.Current.DefaultFontFamilyName, glyphTypeface.FamilyName);             
             }
         }
 

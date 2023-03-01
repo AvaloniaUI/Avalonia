@@ -42,18 +42,17 @@ namespace Avalonia.Direct2D1.UnitTests.Media
         }
 
         [Fact]
-        public void Should_Throw_InvalidOperationException_For_Unknown_Font()
+        public void Should_Create_Typeface_For_Unknown_Font()
         {
             using (AvaloniaLocator.EnterScope())
             {
                 Direct2D1Platform.Initialize();
 
-                var fontManager = FontManager.Current;
+                var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
 
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    var glyphTypeface =new Typeface(new FontFamily("Unknown")).GlyphTypeface;
-                });
+                var defaultName = FontManager.Current.DefaultFontFamilyName;
+
+                Assert.Equal(defaultName, glyphTypeface.FamilyName);
             }
         }
 

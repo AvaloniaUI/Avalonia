@@ -15,9 +15,10 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class FontManager
     {
+        internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts");
+
         public const string FontCollectionScheme = "fonts";
 
-        private readonly SystemFontCollection _systemFonts;
         private readonly ConcurrentDictionary<Uri, IFontCollection> _fontCollections = new ConcurrentDictionary<Uri, IFontCollection>();
         private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
 
@@ -36,7 +37,7 @@ namespace Avalonia.Media
                 throw new InvalidOperationException("Default font family name can't be null or empty.");
             }
 
-            _systemFonts = new SystemFontCollection(this);
+            AddFontCollection(new SystemFontCollection(this));
         }
 
         public static FontManager Current
@@ -71,7 +72,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Get all system fonts.
         /// </summary>
-        public IFontCollection SystemFonts => _systemFonts;
+        public IFontCollection SystemFonts => _fontCollections[SystemFontsKey];
 
         internal IFontManagerImpl PlatformImpl { get; }
 
@@ -120,6 +121,11 @@ namespace Avalonia.Media
                 {
                     return true;
                 }
+
+                if (!fontFamily.FamilyNames.HasFallbacks)
+                {
+                    return false;
+                }
             }
 
             foreach (var familyName in fontFamily.FamilyNames)
@@ -130,7 +136,7 @@ namespace Avalonia.Media
                 }
             }
 
-            return false;
+            return SystemFonts.TryGetGlyphTypeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
         }
 
         public void AddFontCollection(IFontCollection fontCollection)
@@ -139,13 +145,15 @@ namespace Avalonia.Media
 
             if (!fontCollection.Key.IsFontCollection())
             {
-                throw new ArgumentException(nameof(fontCollection), "Font collection Key should follow the fontCollection: scheme.");
+                throw new ArgumentException(nameof(fontCollection), "Font collection Key should follow the fonts: scheme.");
             }
 
-            if (!_fontCollections.TryAdd(key, fontCollection))
+            _fontCollections.AddOrUpdate(key, fontCollection, (_, oldCollection) =>
             {
-                throw new ArgumentException(nameof(fontCollection), "Font collection is already registered.");
-            }
+                oldCollection.Dispose();
+
+                return fontCollection;
+            });
 
             fontCollection.Initialize(PlatformImpl);
         }
