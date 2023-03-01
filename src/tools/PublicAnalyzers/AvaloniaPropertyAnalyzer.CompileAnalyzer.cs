@@ -694,11 +694,14 @@ public partial class AvaloniaPropertyAnalyzer
 
                 void VerifyAccessor(IMethodSymbol? method, string verb, string methodName)
                 {
-                    if (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Public && method is null)
+                    if (method is null)
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
+                        if (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Public)
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
+                        }
                     }
-                    else if (method is not null && method.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility && method.DeclaredAccessibility != property.DeclaredAccessibility)
+                    else if (method.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility && method.DeclaredAccessibility != property.DeclaredAccessibility)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(InconsistentAccessibility, method.Locations[0], "property accessor", avaloniaPropertyStorage));
                     }
