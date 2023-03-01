@@ -146,13 +146,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Tree")
                         ?.Values[0] is XamlAstTextNode treeTypeValue ? treeTypeValue.Text : "Visual";
 
-                    var ancestorTypeName = relativeSourceObject.Children
+                    var ancestorType = relativeSourceObject.Children
                         .OfType<XamlAstXamlPropertyValueNode>()
                         .FirstOrDefault(x => x.Property.GetClrProperty().Name == "AncestorType")
-                        ?.Values[0] as XamlAstTextNode;
+                        ?.Values[0] switch
+                        {
+                            XamlAstTextNode textNode => TypeReferenceResolver.ResolveType(
+                                context,
+                                textNode.Text,
+                                false,
+                                textNode,
+                                true).GetClrType(),
+                            XamlTypeExtensionNode typeExtensionNode => typeExtensionNode.Value.GetClrType(),
+                            null => null,
+                            _ => throw new XamlParseException($"Unsupported node for AncestorType property", relativeSourceObject)
+                        };
 
-                    IXamlType ancestorType = null;
-                    if (ancestorTypeName is null)
+                    if (ancestorType is null)
                     {
                         if (treeType == "Visual")
                         {
@@ -173,15 +183,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 throw new XamlX.XamlParseException("Unable to resolve implicit ancestor type based on XAML tree.", relativeSourceObject);
                             }
                         }
-                    }
-                    else
-                    {
-                        ancestorType = TypeReferenceResolver.ResolveType(
-                                            context,
-                                            ancestorTypeName.Text,
-                                            false,
-                                            ancestorTypeName,
-                                            true).GetClrType();
                     }
 
                     if (treeType == "Visual")
