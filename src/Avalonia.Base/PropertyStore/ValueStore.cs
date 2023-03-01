@@ -924,7 +924,7 @@ namespace Avalonia.PropertyStore
                 {
                     _effectiveValues.GetKeyValue(i, out var key, out var e);
 
-                    if (e.Priority == BindingPriority.Unset)
+                    if (e.Priority == BindingPriority.Unset && !e.IsOverridenCurrentValue)
                     {
                         RemoveEffectiveValue(key, i);
                         e.DisposeAndRaiseUnset(this, key);
