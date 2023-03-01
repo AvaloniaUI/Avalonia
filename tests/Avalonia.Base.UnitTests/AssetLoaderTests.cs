@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests;
 
 public class AssetLoaderTests : IDisposable
 {
-    public class MockAssembly : Assembly {}
+    public class MockAssembly : Assembly { }
 
     private const string AssemblyNameWithWhitespace = "Awesome Library";
 
@@ -48,6 +48,17 @@ public class AssetLoaderTests : IDisposable
         var assemblyActual = loader.GetAssembly(uri, null);
 
         Assert.Equal(AssemblyNameWithNonAscii, assemblyActual?.FullName);
+    }
+
+    [Fact]
+    public void Invalid_AssemblyName_Should_Yield_Empty_Enumerable()
+    {
+        var uri = new Uri($"avares://InvalidAssembly");
+        var loader = new AssetLoader();
+
+        var assemblyActual = loader.GetAssets(uri, null);
+
+        Assert.Empty(assemblyActual);
     }
 
     private static IAssemblyDescriptor CreateAssemblyDescriptor(string assemblyName)

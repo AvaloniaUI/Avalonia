@@ -21,7 +21,7 @@ namespace Avalonia.Rendering.SceneGraph
             Matrix transform,
             IImmutableBrush foreground,
             IRef<IGlyphRunImpl> glyphRun)
-            : base(new Rect(glyphRun.Item.Size), transform, foreground)
+            : base(new Rect(glyphRun.Item.BaselineOrigin, glyphRun.Item.Size), transform, foreground)
         {
             GlyphRun = glyphRun.Clone();
         }
