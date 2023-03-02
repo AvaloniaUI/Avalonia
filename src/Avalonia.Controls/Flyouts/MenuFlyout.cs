@@ -18,7 +18,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Items"/> property
         /// </summary>
         public static readonly DirectProperty<MenuFlyout, IList?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<MenuFlyout>(x => x.Items,
+            AvaloniaProperty.RegisterDirect<MenuFlyout, IList?>(
+                nameof(Items),
+                x => x.Items,
                 (x, v) => x.Items = v);
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace Avalonia.Controls
         {
             return new MenuFlyoutPresenter
             {
-                [!ItemsControl.ItemsProperty] = this[!ItemsProperty],
+                [!ItemsControl.ItemsSourceProperty] = this[!ItemsProperty],
                 [!ItemsControl.ItemTemplateProperty] = this[!ItemTemplateProperty],
                 [!ItemsControl.ItemContainerThemeProperty] = this[!ItemContainerThemeProperty],
             };

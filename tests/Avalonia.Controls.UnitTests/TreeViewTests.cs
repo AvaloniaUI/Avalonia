@@ -1080,7 +1080,7 @@ namespace Avalonia.Controls.UnitTests
                     DataContext = dataContext
                 };
 
-                target.Bind(TreeView.ItemsProperty, new Binding("Items"));
+                target.Bind(TreeView.ItemsSourceProperty, new Binding("Items"));
                 target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
 
                 var visualRoot = new TestRoot();

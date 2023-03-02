@@ -16,7 +16,7 @@ namespace ControlCatalog.Pages
             var selector = this.FindControl<ComboBox>("Selector")!;
             var themeVariantScope = this.FindControl<ThemeVariantScope>("ThemeVariantScope")!;
 
-            selector.Items = new[]
+            selector.ItemsSource = new[]
             {
                 ThemeVariant.Default,
                 ThemeVariant.Dark,

@@ -32,12 +32,6 @@ namespace Avalonia.Controls
             new FuncTemplate<Panel>(() => new StackPanel());
 
         /// <summary>
-        /// Defines the <see cref="Items"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ItemsControl, IList?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IList?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
-
-        /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.
         /// </summary>
         public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
@@ -102,7 +96,7 @@ namespace Avalonia.Controls
             set => SetValue(DisplayMemberBindingProperty, value);
         }
 
-        private IList? _items = new ItemCollection();
+        private ItemCollection? _items;
         private ItemsSourceView _itemsView;
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
@@ -117,7 +111,6 @@ namespace Avalonia.Controls
         public ItemsControl()
         {
             _itemsView = ItemsSourceView.GetOrCreate(_items);
-            _itemsView.PostCollectionChanged += ItemsCollectionChanged;
             UpdatePseudoClasses(0);
         }
 
@@ -134,34 +127,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the items to display.
         /// </summary>
-        /// <remarks>
-        /// Since Avalonia 11, <see cref="ItemsControl"/> has both an <see cref="Items"/> property
-        /// and an <see cref="ItemsSource"/> property. The properties have the following differences:
-        /// 
-        /// <list type="bullet">
-        /// <item><see cref="Items"/> is initialized with an empty collection and is a direct property,
-        /// meaning that it cannot be styled </item>
-        /// <item><see cref="ItemsSource"/> is by default null, and is a styled property. This property
-        /// is marked as the content property and will be used for items added via inline XAML.</item>
-        /// </list>
-        /// 
-        /// In Avalonia 11 the two properties can be used almost interchangeably but this will change
-        /// in a later version. In order to be ready for this change, follow the following guidance:
-        /// 
-        /// <list type="bullet">
-        /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
-        /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
-        /// directly to a <see cref="ListBox"/>.</item>
-        /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
-        /// binding a collection of models which will be transformed by a data template.</item>
-        /// </list>
-        /// </remarks>
         [Content]
-        public IList? Items
-        {
-            get => _items;
-            private set => SetAndRaise(ItemsProperty, ref _items, value);
-        }
+        public IList Items => _items ??= new() { IsReadOnly = ItemsSource is not null };
 
         /// <summary>
         /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
@@ -259,11 +226,7 @@ namespace Avalonia.Controls
                     return;
 
                 var oldValue = _itemsView;
-                RemoveControlItemsFromLogicalChildren(_itemsView);
-                _itemsView.PostCollectionChanged -= ItemsCollectionChanged;
                 _itemsView = value;
-                _itemsView.PostCollectionChanged += ItemsCollectionChanged;
-                AddControlItemsToLogicalChildren(_itemsView);
                 RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
             }
         }
@@ -544,14 +507,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ItemsProperty)
-            {
-                if (ItemsSource is not null)
-                    throw new InvalidOperationException("Cannot set both Items and ItemsSource.");
-                ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IList?>());
-                ItemCount = ItemsView.Count;
-            }
-            else if (change.Property == ItemCountProperty)
+            if (change.Property == ItemCountProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<int>());
                 _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
@@ -597,28 +553,6 @@ namespace Avalonia.Controls
         /// Causes all containers to be unrealized and re-realized.
         /// </remarks>
         protected void RefreshContainers() => Presenter?.Refresh();
-
-        /// <summary>
-        /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="ItemsView"/>.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private protected virtual void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            ItemCount = _itemsView.Count;
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    AddControlItemsToLogicalChildren(e.NewItems);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveControlItemsFromLogicalChildren(e.OldItems);
-                    break;
-            }
-        }
 
         /// <summary>
         /// Creates the <see cref="ItemContainerGenerator"/>
@@ -690,54 +624,6 @@ namespace Avalonia.Controls
         {
             _scrollViewer?.UnregisterAnchorCandidate(container);
             ClearContainerForItemOverride(container);
-        }
-
-        /// <summary>
-        /// Given a collection of items, adds those that are controls to the logical children.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        private void AddControlItemsToLogicalChildren(IEnumerable? items)
-        {
-            if (items is null)
-                return;
-
-            List<ILogical>? toAdd = null;
-
-            foreach (var i in items)
-            {
-                if (i is Control control && !LogicalChildren.Contains(control))
-                {
-                    toAdd ??= new();
-                    toAdd.Add(control);
-                }
-            }
-
-            if (toAdd is not null)
-                LogicalChildren.AddRange(toAdd);
-        }
-
-        /// <summary>
-        /// Given a collection of items, removes those that are controls to from logical children.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
-        {
-            if (items is null)
-                return;
-
-            List<ILogical>? toRemove = null;
-
-            foreach (var i in items)
-            {
-                if (i is Control control)
-                {
-                    toRemove ??= new();
-                    toRemove.Add(control);
-                }
-            }
-
-            if (toRemove is not null)
-                LogicalChildren.RemoveAll(toRemove);
         }
 
         private IDataTemplate? GetEffectiveItemTemplate()
