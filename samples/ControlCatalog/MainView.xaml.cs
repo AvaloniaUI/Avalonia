@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -12,6 +13,7 @@ using Avalonia.VisualTree;
 using Avalonia.Styling;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
@@ -99,13 +101,47 @@ namespace ControlCatalog
             };
         }
 
+        internal MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;
+        
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+
             var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
-            
+
+            var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
+            if (insets != null)
+            {
+                // In real life application these events should be unsubscribed to avoid memory leaks.
+                ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
+                insets.SafeAreaChanged += (sender, args) =>
+                {
+                    ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
+                };
+
+                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? false;
+
+                ViewModel.PropertyChanged += async (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(ViewModel.DisplayEdgeToEdge))
+                    {
+                        insets.DisplayEdgeToEdge = ViewModel.DisplayEdgeToEdge;
+                    }
+                    else if (args.PropertyName == nameof(ViewModel.IsSystemBarVisible))
+                    {
+                        insets.IsSystemBarVisible = ViewModel.IsSystemBarVisible;
+                    }
+
+                    // Give the OS some time to apply new values and refresh the view model.
+                    await Task.Delay(100);
+                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                    ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? false;
+                };
+            }
+
             _platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
             PlatformSettingsOnColorValuesChanged(_platformSettings, _platformSettings.GetColorValues());
         }
