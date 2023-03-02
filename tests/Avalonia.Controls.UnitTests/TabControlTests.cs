@@ -400,7 +400,7 @@ namespace Avalonia.Controls.UnitTests
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <TabControl Name='tabs' Items='{Binding Tabs}'/>
+    <TabControl Name='tabs' ItemsSource='{Binding Tabs}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var tabControl = window.FindControl<TabControl>("tabs");
@@ -408,7 +408,7 @@ namespace Avalonia.Controls.UnitTests
                 tabControl.DataContext = new { Tabs = new List<string>() };
                 window.ApplyTemplate();
 
-                Assert.Equal(0, tabControl.Items.Count());
+                Assert.Equal(0, tabControl.ItemsSource.Count());
             }
         }
 

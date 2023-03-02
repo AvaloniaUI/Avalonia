@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.Items!;
+            var items = (IList)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.Items!;
+            var items = (IList)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -161,7 +161,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (ObservableCollection<string>)itemsControl.Items!;
+            var items = (ObservableCollection<string>)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (ObservableCollection<string>)itemsControl.Items!;
+            var items = (ObservableCollection<string>)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 

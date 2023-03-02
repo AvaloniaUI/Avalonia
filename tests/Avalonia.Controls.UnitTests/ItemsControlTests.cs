@@ -278,25 +278,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Items_To_Null_Should_Remove_LogicalChildren()
-        {
-            var target = new ItemsControl();
-            var child = new Control();
-
-            target.Template = GetTemplate();
-            target.ItemsSource = new[] { "Foo" };
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            Assert.NotEmpty(target.GetLogicalChildren());
-
-            target.ItemsSource = null;
-
-            Assert.Equal(new ILogical[0], target.GetLogicalChildren());
-        }
-
-
-        [Fact]
         public void Adding_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
@@ -334,7 +315,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Changing_ItemsSource_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Changing_ItemsSource_Should_Not_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -342,17 +323,16 @@ namespace Avalonia.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.ItemsSource = new[] { child };
-            target.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.ItemsSource = new[] { "Foo" };
 
-            Assert.True(called);
+            Assert.False(called);
         }
 
         [Fact]
-        public void Adding_ItemsSource_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Adding_ItemsSource_Items_Should_Not_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var items = new AvaloniaList<string> { "Foo" };
@@ -360,19 +340,16 @@ namespace Avalonia.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.ItemsSource = items;
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             items.Add("Bar");
 
-            Assert.True(called);
+            Assert.False(called);
         }
 
         [Fact]
-        public void Removing_ItemsSource_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Removing_ItemsSource_Items_Should_Not_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var items = new AvaloniaList<string> { "Foo", "Bar" };
@@ -380,15 +357,12 @@ namespace Avalonia.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.ItemsSource = items;
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             items.Remove("Bar");
 
-            Assert.True(called);
+            Assert.False(called);
         }
 
         [Fact]

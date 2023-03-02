@@ -1798,7 +1798,7 @@ namespace Avalonia.Controls.UnitTests
 
             foreach (var index in indexes)
             {
-                var item = ((IList)c.Items)[index];
+                var item = c.ItemsView[index];
                 c = (ItemsControl)target.TreeContainerFromItem(item);
             }
 

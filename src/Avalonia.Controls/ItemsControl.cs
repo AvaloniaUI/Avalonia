@@ -127,7 +127,19 @@ namespace Avalonia.Controls
         /// Gets or sets the items to display.
         /// </summary>
         [Content]
-        public IList Items => _items ??= new() { IsReadOnly = ItemsSource is not null };
+        public IList Items
+        {
+            get
+            {
+                if (_items is null)
+                {
+                    _items = new(this);
+                    ItemsView = ItemsSourceView.GetOrCreate(_items);
+                }
+
+                return _items;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
@@ -221,11 +233,19 @@ namespace Avalonia.Controls
             get => _itemsView ??= ItemsSourceView.GetOrCreate(Items);
             private set
             {
+                void ItemsViewChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                {
+                    ItemCount = _itemsView!.Count;
+                    UpdatePseudoClasses(ItemCount);
+                }
+
                 if (ReferenceEquals(_itemsView, value))
                     return;
 
                 if (_itemsView is not null)
                 {
+                    _itemsView.CollectionChanged -= ItemsViewChanged;
+
                     var oldValue = _itemsView;
                     _itemsView = value;
                     RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
@@ -234,6 +254,8 @@ namespace Avalonia.Controls
                 {
                     _itemsView = value;
                 }
+
+                _itemsView.CollectionChanged += ItemsViewChanged;
             }
         }
 
@@ -731,10 +753,102 @@ namespace Avalonia.Controls
 
         private class ItemCollection : AvaloniaList<object>
         {
-            public ItemCollection()
+            private readonly ItemsControl _owner;
+
+            public ItemCollection(ItemsControl owner)
             {
+                _owner = owner;
                 Validate = OnValidate;
                 ResetBehavior = ResetBehavior.Remove;
+                IsReadOnly = owner.ItemsSource is not null;
+            }
+
+            public override void Add(object item)
+            {
+                if (item is ILogical logical)
+                    _owner.LogicalChildren.Add(logical);
+                base.Add(item);
+            }
+
+            public override void AddRange(IEnumerable<object> items)
+            {
+                foreach (var item in items)
+                {
+                    if (item is ILogical logical)
+                        _owner.LogicalChildren.Add(logical);
+                }
+
+                base.AddRange(items);
+            }
+
+            public override void Clear()
+            {
+                foreach (var item in this)
+                {
+                    if (item is ILogical logical)
+                        _owner.LogicalChildren.Remove(logical);
+                }
+
+                base.Clear();
+            }
+
+            public override void Insert(int index, object item)
+            {
+                if (item is ILogical logical)
+                    _owner.LogicalChildren.Add(logical);
+                base.Insert(index, item);
+            }
+
+            public override void InsertRange(int index, IEnumerable<object> items)
+            {
+                foreach (var item in items)
+                {
+                    if (item is ILogical logical)
+                        _owner.LogicalChildren.Add(logical);
+                }
+
+                base.InsertRange(index, items);
+            }
+
+            public override bool Remove(object item)
+            {
+                if (base.Remove(item))
+                {
+                    if (item is ILogical logical)
+                        _owner.LogicalChildren.Remove(logical);
+                    return true;
+                }
+
+                return false;
+            }
+
+            public override void RemoveAll(IEnumerable<object> items)
+            {
+                foreach (var item in items)
+                {
+                    if (item is ILogical logical)
+                        _owner.LogicalChildren.Remove(logical);
+                }
+
+                base.RemoveAll(items);
+            }
+
+            public override void RemoveAt(int index)
+            {
+                if (this[index] is ILogical logical)
+                    _owner.LogicalChildren.Remove(logical);
+                base.RemoveAt(index);
+            }
+
+            public override void RemoveRange(int index, int count)
+            {
+                for (var i = index; i < index + count; ++i)
+                {
+                    if (this[i] is ILogical logical)
+                        _owner.LogicalChildren.Remove(logical);
+                }
+
+                base.RemoveRange(index, count);
             }
 
             private void OnValidate(object obj)
