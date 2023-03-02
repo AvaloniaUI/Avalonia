@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -70,6 +72,11 @@ namespace Avalonia.Controls
                 LabelActivated(e);
             }
             base.OnPointerPressed(e);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new LabelAutomationPeer(this);
         }
     }
 }
