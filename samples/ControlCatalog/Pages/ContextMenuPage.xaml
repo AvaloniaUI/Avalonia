@@ -57,7 +57,7 @@
           </Style>
         </Border.Styles>
         <Border.ContextMenu>
-          <ContextMenu Items="{Binding MenuItems}" />
+          <ContextMenu ItemsSource="{Binding MenuItems}" />
         </Border.ContextMenu>
         <TextBlock Text="Dynamically Generated"/>
       </Border>

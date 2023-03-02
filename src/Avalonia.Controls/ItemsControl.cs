@@ -56,7 +56,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ItemsControl, ITemplate<Panel>>(nameof(ItemsPanel), DefaultPanel);
 
         /// <summary>
-        /// Defines the <see cref="ItemContainerTheme"/> property.
+        /// Defines the <see cref="ItemsSource"/> property.
         /// </summary>
         public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
             AvaloniaProperty.Register<ItemsControl, IEnumerable?>(nameof(ItemsSource));
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
             AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
-        
+
         /// <summary>
         /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
         /// </summary>
@@ -95,13 +95,13 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IBinding? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
             set => SetValue(DisplayMemberBindingProperty, value);
         }
-        
+
         private IList? _items = new ItemCollection();
         private ItemsSourceView _itemsView;
         private int _itemCount;
@@ -160,7 +160,7 @@ namespace Avalonia.Controls
         public IList? Items
         {
             get => _items;
-            set => SetAndRaise(ItemsProperty, ref _items, value);
+            private set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         /// <summary>
@@ -168,12 +168,12 @@ namespace Avalonia.Controls
         /// </summary>
         public ControlTheme? ItemContainerTheme
         {
-            get => GetValue(ItemContainerThemeProperty); 
+            get => GetValue(ItemContainerThemeProperty);
             set => SetValue(ItemContainerThemeProperty, value);
         }
 
         /// <summary>
-        /// Gets the number of items in <see cref="Items"/>.
+        /// Gets the number of items being displayed by the <see cref="ItemsControl"/>.
         /// </summary>
         public int ItemCount
         {
@@ -224,10 +224,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IDataTemplate? ItemTemplate
         {
-            get => GetValue(ItemTemplateProperty); 
+            get => GetValue(ItemTemplateProperty);
             set => SetValue(ItemTemplateProperty, value);
         }
 
@@ -250,7 +250,7 @@ namespace Avalonia.Controls
         /// view of the current items regardless of the type of the concrete collection, and
         /// without having to deal with null values.
         /// </remarks>
-        public ItemsSourceView ItemsView 
+        public ItemsSourceView ItemsView
         {
             get => _itemsView;
             private set
@@ -321,7 +321,7 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get => GetValue(AreHorizontalSnapPointsRegularProperty); 
+            get => GetValue(AreHorizontalSnapPointsRegularProperty);
             set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
@@ -330,7 +330,7 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get => GetValue(AreVerticalSnapPointsRegularProperty); 
+            get => GetValue(AreVerticalSnapPointsRegularProperty);
             set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
@@ -448,7 +448,7 @@ namespace Avalonia.Controls
                 if (itemTemplate is ITreeDataTemplate treeTemplate)
                 {
                     if (item is not null && treeTemplate.ItemsSelector(item) is { } itemsBinding)
-                        BindingOperations.Apply(hic, ItemsProperty, itemsBinding, null);
+                        BindingOperations.Apply(hic, ItemsSourceProperty, itemsBinding, null);
                 }
             }
         }
@@ -617,10 +617,6 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Remove:
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    LogicalChildren.Clear();
-                    break;
             }
         }
 
@@ -665,7 +661,7 @@ namespace Avalonia.Controls
         {
             var itemContainerTheme = ItemContainerTheme;
 
-            if (itemContainerTheme is not null && 
+            if (itemContainerTheme is not null &&
                 !container.IsSet(ThemeProperty) &&
                 ((IStyleable)container).StyleKey == itemContainerTheme.TargetType)
             {

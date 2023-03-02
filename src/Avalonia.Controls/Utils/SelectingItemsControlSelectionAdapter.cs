@@ -144,7 +144,7 @@ namespace Avalonia.Controls.Utils
         {
             get
             {
-                return SelectorControl?.Items;
+                return SelectorControl?.ItemsSource;
             }
             set
             {

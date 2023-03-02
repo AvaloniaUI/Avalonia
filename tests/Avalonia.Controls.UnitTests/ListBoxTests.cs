@@ -363,7 +363,7 @@ namespace Avalonia.Controls.UnitTests
 
                 lm.ExecuteInitialLayoutPass();
 
-                target.Items = items;
+                target.ItemsSource = items;
 
                 lm.ExecuteLayoutPass();
 

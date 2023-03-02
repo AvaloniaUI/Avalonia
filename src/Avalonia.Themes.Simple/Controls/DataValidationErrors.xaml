@@ -35,7 +35,7 @@
           </Canvas.Styles>
           <ToolTip.Tip>
             <ItemsControl x:DataType="DataValidationErrors"
-                          Items="{Binding}" />
+                          ItemsSource="{Binding}" />
           </ToolTip.Tip>
           <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2"
                 Stroke="{DynamicResource ErrorBrush}"

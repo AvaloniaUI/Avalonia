@@ -13,12 +13,12 @@
 
         <StackPanel Orientation="Vertical" Spacing="4">
           <TextBlock Text="Horizontal Scroll" />
-          <ComboBox Items="{Binding AvailableVisibility}" SelectedItem="{Binding HorizontalScrollVisibility}" />
+          <ComboBox ItemsSource="{Binding AvailableVisibility}" SelectedItem="{Binding HorizontalScrollVisibility}" />
         </StackPanel>
 
         <StackPanel Orientation="Vertical" Spacing="4">
           <TextBlock Text="Vertical Scroll" />
-          <ComboBox Items="{Binding AvailableVisibility}" SelectedItem="{Binding VerticalScrollVisibility}" />
+          <ComboBox ItemsSource="{Binding AvailableVisibility}" SelectedItem="{Binding VerticalScrollVisibility}" />
         </StackPanel>
       </StackPanel>
 
