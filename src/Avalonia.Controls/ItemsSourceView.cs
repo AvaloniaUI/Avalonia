@@ -241,6 +241,22 @@ namespace Avalonia.Controls
             _postCollectionChanged?.Invoke(this, e);
         }
 
+        internal void AddListener(ICollectionChangedListener listener)
+        {
+            if (Inner is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.AddListener(incc, listener);
+            }
+        }
+
+        internal void RemoveListener(ICollectionChangedListener listener)
+        {
+            if (Inner is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
+            }
+        }
+
         /// <summary>
         /// Retrieves the index of the item that has the specified unique identifier (key).
         /// </summary>
