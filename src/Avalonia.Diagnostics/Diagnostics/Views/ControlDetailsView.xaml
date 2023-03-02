@@ -51,7 +51,7 @@
       
       <DataGrid 
                 x:Name="DataGrid"
-                ItemsSource="{Binding PropertiesView}"
+                Items="{Binding PropertiesView}"
                 Grid.Row="2"
                 BorderThickness="0"
                 RowBackground="Transparent"

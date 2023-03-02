@@ -1908,9 +1908,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 [!ListBox.ItemsSourceProperty] = new Binding("Items"),
                 [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
-                DataContext = vm,
+                
             };
 
+            target.DataContext = vm;
             Prepare(target);
 
             Assert.Equal(1, target.SelectedIndex);
