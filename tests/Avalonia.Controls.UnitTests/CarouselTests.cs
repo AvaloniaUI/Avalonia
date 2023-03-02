@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "Foo",
                     "Bar"
@@ -43,7 +43,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "Foo",
                     "Bar"
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests
             newItems.RemoveAt(0);
             Layout(target);
 
-            target.Items = newItems;
+            target.ItemsSource = newItems;
             Layout(target);
 
             child = GetContainerTextBlock(target.GetRealizedContainers().Single());
@@ -104,7 +104,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -133,7 +133,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -144,7 +144,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("Foo", child.Text);
 
-            target.Items = null;
+            target.ItemsSource = null;
             Layout(target);
 
             var numChildren = target.GetRealizedContainers().Count();
@@ -166,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
                 SelectedIndex = 2
             };
 
@@ -193,7 +193,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -225,7 +225,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);

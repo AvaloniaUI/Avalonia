@@ -25,7 +25,7 @@ namespace Avalonia.Controls.UnitTests
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.UnitTests
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl();
 
             target.Template = GetTemplate();
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -79,7 +79,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl();
 
             target.Template = GetTemplate();
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
@@ -92,7 +92,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl();
 
             target.Template = GetTemplate();
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             target.Template = GetTemplate();
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -134,7 +134,7 @@ namespace Avalonia.Controls.UnitTests
                 target.SetValue(StyledElement.TemplatedParentProperty, templatedParent);
                 target.Template = GetTemplate();
 
-                target.Items = new[] { "Foo" };
+                target.ItemsSource = new[] { "Foo" };
 
                 root.ApplyTemplate();
                 target.ApplyTemplate();
@@ -153,7 +153,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
 
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
@@ -171,7 +171,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
             root.LayoutManager.ExecuteInitialLayoutPass();
 
             Assert.Equal(target, child.Parent);
@@ -188,7 +188,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             var root = new TestRoot(true, target);
@@ -206,11 +206,10 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ItemsControl();
             var child = new Control();
-            var items = new AvaloniaList<Control>(child);
 
             target.Template = GetTemplate();
-            target.Items = items;
-            items.RemoveAt(0);
+            target.Items.Add(child);
+            target.Items.RemoveAt(0);
 
             Assert.Null(child.Parent);
             Assert.Null(child.GetLogicalParent());
@@ -224,8 +223,8 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
-            target.Items = null;
+            target.Items.Add(child);
+            target.Items.Clear();
 
             Assert.Null(child.Parent);
             Assert.Null(((ILogical)child).LogicalParent);
@@ -238,9 +237,9 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
             target.ApplyTemplate();
-            target.Items = null;
+            target.Items.Clear();
 
             Assert.Null(child.Parent);
             Assert.Null(((ILogical)child).LogicalParent);
@@ -253,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
 
             // Should appear both before and after applying template.
             Assert.Equal(new ILogical[] { child }, target.GetLogicalChildren());
@@ -267,10 +266,9 @@ namespace Avalonia.Controls.UnitTests
         public void Adding_String_Item_Should_Make_ContentPresenter_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
-            var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -286,20 +284,20 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
             Assert.NotEmpty(target.GetLogicalChildren());
 
-            target.Items = null;
+            target.ItemsSource = null;
 
             Assert.Equal(new ILogical[0], target.GetLogicalChildren());
         }
 
 
         [Fact]
-        public void Setting_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Adding_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -311,57 +309,57 @@ namespace Avalonia.Controls.UnitTests
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
-            target.Items = new[] { child };
+            target.Items.Add(child);
 
             Assert.True(called);
         }
 
         [Fact]
-        public void Setting_Items_To_Null_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Clearing_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var child = new Control();
             var called = false;
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
             target.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Remove;
 
-            target.Items = null;
+            target.Items.Clear();
 
             Assert.True(called);
         }
 
         [Fact]
-        public void Changing_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Changing_ItemsSource_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var child = new Control();
             var called = false;
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.ItemsSource = new[] { child };
             target.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
 
             Assert.True(called);
         }
 
         [Fact]
-        public void Adding_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Adding_ItemsSource_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var items = new AvaloniaList<string> { "Foo" };
             var called = false;
 
             target.Template = GetTemplate();
-            target.Items = items;
+            target.ItemsSource = items;
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -374,14 +372,14 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Removing_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Removing_ItemsSource_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var items = new AvaloniaList<string> { "Foo", "Bar" };
             var called = false;
 
             target.Template = GetTemplate();
-            target.Items = items;
+            target.ItemsSource = items;
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -418,7 +416,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ItemsControl
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = GetTemplate(),
             };
 
@@ -451,7 +449,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = new[] { 1, 2, 3 },
+                ItemsSource = new[] { 1, 2, 3 },
             };
 
             Assert.DoesNotContain(":empty", target.Classes);
@@ -474,10 +472,10 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = new[] { 1, 2, 3 },
+                ItemsSource = new[] { 1, 2, 3 },
             };
 
-            target.Items = new int[0];
+            target.ItemsSource = new int[0];
 
             Assert.Contains(":empty", target.Classes);
         }
@@ -488,7 +486,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = new[] { 1, 2, 3 },
+                ItemsSource = new[] { 1, 2, 3 },
             };
 
             Assert.Equal(3, target.ItemCount);
@@ -502,7 +500,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             items.Add(4);
@@ -522,7 +520,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             items.Clear();
@@ -538,7 +536,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             items.Add(1);
@@ -547,14 +545,14 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Single_Item_Class_Should_Be_Set_When_Items_Collection_Count_Increases_To_One()
+        public void Single_Item_Class_Should_Be_Set_When_ItemsSource_Collection_Count_Increases_To_One()
         {
             var items = new ObservableCollection<int>() { };
 
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             items.Add(1);
@@ -570,7 +568,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             items.Clear();
@@ -586,7 +584,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl()
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             items.Add(2);
@@ -613,7 +611,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
-                Items = items,
+                ItemsSource = items,
             };
 
             target.ApplyTemplate();
@@ -641,7 +639,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl
             {
                 Template = GetTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             target.ApplyTemplate();
@@ -665,7 +663,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ItemsControl
                 {
                     Template = GetTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                 };
 
                 var root = new TestRoot { Child = target };
@@ -701,7 +699,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ItemsControl
                 {
                     Template = GetTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                 };
 
                 var root = new TestRoot { Child = target };
@@ -729,7 +727,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl
             {
                 Template = GetTemplate(),
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
@@ -755,7 +753,7 @@ namespace Avalonia.Controls.UnitTests
                 DisplayMemberBinding = new Binding("Length")
             };
 
-            target.Items = new[] { "Foo" };
+            target.ItemsSource = new[] { "Foo" };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -774,7 +772,7 @@ namespace Avalonia.Controls.UnitTests
                 DisplayMemberBinding = new Binding("Value")
             };
 
-            target.Items = new[] { new Item("Foo", "Bar") };
+            target.ItemsSource = new[] { new Item("Foo", "Bar") };
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 

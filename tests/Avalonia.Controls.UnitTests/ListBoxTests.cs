@@ -29,7 +29,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = ListBoxTemplate(),
-                Items = new[] { "Foo" },
+                ItemsSource = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                 };
 
                 Prepare(target);
@@ -107,7 +107,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                     ItemContainerTheme = theme,
                 };
 
@@ -124,12 +124,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var items = new[] { "Foo", "Bar", "Baz " };
                 var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = new[] { new ListBoxItem() },
+                    Items = { new ListBoxItem() },
                     ItemContainerTheme = theme,
                 };
 
@@ -149,7 +148,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
 
                 Prepare(target);
@@ -184,7 +183,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new FuncDataTemplate<Item>((x, _) => new Button { Content = x })
                     },
-                    Items = items,
+                    ItemsSource = items,
                 };
 
                 Prepare(target);
@@ -208,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
+                    ItemsSource = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                     SelectedIndex = 0,
                 };
@@ -236,7 +235,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
+                    ItemsSource = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectedIndex = 0,
                 };
@@ -258,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectedIndex = 0,
                 };
@@ -272,7 +271,7 @@ namespace Avalonia.Controls.UnitTests
                 items.Remove("Item 2");
                 Layout(target);
 
-                var actual = target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content).ToList();
+                var actual = target.GetRealizedContainers().Cast<ListBoxItem>().Select(x => (string)x.Content).ToList();
                 Assert.Equal(items.OrderBy(x => x), actual.OrderBy(x => x));
             }
         }
@@ -286,7 +285,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                     SelectionMode = SelectionMode.Toggle,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
                 };
@@ -318,7 +317,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
                 };
 
@@ -364,7 +363,7 @@ namespace Avalonia.Controls.UnitTests
 
                 lm.ExecuteInitialLayoutPass();
 
-                target.Items = items;
+                target.ItemsSource = items;
 
                 lm.ExecuteLayoutPass();
 
@@ -415,7 +414,7 @@ namespace Avalonia.Controls.UnitTests
                     Height = 100,
                     Width = 50,
                     ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
-                    Items = items,
+                    ItemsSource = items,
                 };
                 wnd.Content = target;
 
@@ -450,7 +449,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                     SelectionMode = SelectionMode.AlwaysSelected,
                 };
@@ -497,7 +496,7 @@ namespace Avalonia.Controls.UnitTests
                     AutoScrollToSelectedItem = true,
                     Width = 50,
                     ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
-                    Items = items,
+                    ItemsSource = items,
                 };
                 wnd.Content = target;
 
@@ -533,7 +532,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.ItemsSourceProperty] = new Binding("Items"),
                 [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
             };
 
@@ -650,7 +649,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = ListBoxTemplate(),
-                Items = new[] { "Foo" },
+                ItemsSource = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
                 SelectionMode = SelectionMode.AlwaysSelected,
             };
@@ -672,7 +671,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = ListBoxTemplate(),
-                Items = items,
+                ItemsSource = items,
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas { Height = 10 }),
             };
 
@@ -703,7 +702,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = ListBoxTemplate(),
-                Items = items,
+                ItemsSource = items,
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas { Height = 10 }),
                 AutoScrollToSelectedItem = true,
                 SelectedIndex = 1,
@@ -749,7 +748,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
-                    Items = items,
+                    ItemsSource = items,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                     WrapSelection = true
                 };

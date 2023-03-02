@@ -34,8 +34,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsControl, IEnumerable?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+        public static readonly DirectProperty<ItemsControl, IList?> ItemsProperty =
+            AvaloniaProperty.RegisterDirect<ItemsControl, IList?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.
@@ -54,6 +54,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
             AvaloniaProperty.Register<ItemsControl, ITemplate<Panel>>(nameof(ItemsPanel), DefaultPanel);
+
+        /// <summary>
+        /// Defines the <see cref="ItemContainerTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
+            AvaloniaProperty.Register<ItemsControl, IEnumerable?>(nameof(ItemsSource));
 
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property.
@@ -89,14 +95,14 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IBinding? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
             set => SetValue(DisplayMemberBindingProperty, value);
         }
         
-        private IEnumerable? _items = new AvaloniaList<object>();
+        private IList? _items = new ItemCollection();
         private ItemsSourceView _itemsView;
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
@@ -128,11 +134,33 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the items to display.
         /// </summary>
+        /// <remarks>
+        /// Since Avalonia 11, <see cref="ItemsControl"/> has both an <see cref="Items"/> property
+        /// and an <see cref="ItemsSource"/> property. The properties have the following differences:
+        /// 
+        /// <list type="bullet">
+        /// <item><see cref="Items"/> is initialized with an empty collection and is a direct property,
+        /// meaning that it cannot be styled </item>
+        /// <item><see cref="ItemsSource"/> is by default null, and is a styled property. This property
+        /// is marked as the content property and will be used for items added via inline XAML.</item>
+        /// </list>
+        /// 
+        /// In Avalonia 11 the two properties can be used almost interchangeably but this will change
+        /// in a later version. In order to be ready for this change, follow the following guidance:
+        /// 
+        /// <list type="bullet">
+        /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
+        /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
+        /// directly to a <see cref="ListBox"/>.</item>
+        /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
+        /// binding a collection of models which will be transformed by a data template.</item>
+        /// </list>
+        /// </remarks>
         [Content]
-        public IEnumerable? Items
+        public IList? Items
         {
             get => _items;
-            set => SetAndRaise(ItemsProperty, ref _items, value);
+            private set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         /// <summary>
@@ -163,9 +191,40 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a collection used to generate the content of the <see cref="ItemsControl"/>.
+        /// </summary>
+        /// <remarks>
+        /// Since Avalonia 11, <see cref="ItemsControl"/> has both an <see cref="Items"/> property
+        /// and an <see cref="ItemsSource"/> property. The properties have the following differences:
+        /// 
+        /// <list type="bullet">
+        /// <item><see cref="Items"/> is initialized with an empty collection and is a direct property,
+        /// meaning that it cannot be styled </item>
+        /// <item><see cref="ItemsSource"/> is by default null, and is a styled property. This property
+        /// is marked as the content property and will be used for items added via inline XAML.</item>
+        /// </list>
+        /// 
+        /// In Avalonia 11 the two properties can be used almost interchangeably but this will change
+        /// in a later version. In order to be ready for this change, follow the following guidance:
+        /// 
+        /// <list type="bullet">
+        /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
+        /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
+        /// directly to a <see cref="ListBox"/>.</item>
+        /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
+        /// binding a collection of models which will be transformed by a data template.</item>
+        /// </list>
+        /// </remarks>
+        public IEnumerable? ItemsSource
+        {
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty); 
@@ -487,7 +546,9 @@ namespace Avalonia.Controls
 
             if (change.Property == ItemsProperty)
             {
-                ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IEnumerable?>());
+                if (ItemsSource is not null)
+                    throw new InvalidOperationException("Cannot set both Items and ItemsSource.");
+                ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IList?>());
                 ItemCount = ItemsView.Count;
             }
             else if (change.Property == ItemCountProperty)
@@ -498,6 +559,21 @@ namespace Avalonia.Controls
             else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
             {
                 RefreshContainers();
+            }
+            else if (change.Property == ItemsSourceProperty)
+            {
+                if (Items is ItemCollection itemCollection)
+                {
+                    if (itemCollection.Count > 0)
+                        throw new InvalidOperationException("Cannot set both Items and ItemsSource.");
+                    else
+                        itemCollection.IsReadOnly = change.GetNewValue<IEnumerable>() is not null;
+                }
+                else if (Items is not null)
+                    throw new InvalidOperationException("Cannot set both Items and ItemsSource.");
+
+                ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IEnumerable?>());
+                ItemCount = ItemsView.Count;
             }
             else if (change.Property == ItemTemplateProperty)
             {
@@ -524,11 +600,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="Items"/>.
+        /// raised on <see cref="ItemsView"/>.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private protected virtual void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             ItemCount = _itemsView.Count;
 
@@ -540,6 +616,10 @@ namespace Avalonia.Controls
 
                 case NotifyCollectionChangedAction.Remove:
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    LogicalChildren.Clear();
                     break;
             }
         }
@@ -759,6 +839,22 @@ namespace Avalonia.Controls
             offset = 0;
 
             return _itemsPresenter?.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset) ?? 0;
+        }
+
+        private class ItemCollection : AvaloniaList<object>
+        {
+            public ItemCollection()
+            {
+                Validate = OnValidate;
+            }
+
+            private void OnValidate(object obj)
+            {
+                if (IsReadOnly)
+                    throw new InvalidOperationException("The ItemsControl is in ItemsSource mode.");
+            }
+
+            public bool IsReadOnly { get; set; }
         }
     }
 }

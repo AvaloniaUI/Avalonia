@@ -395,7 +395,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var item = new Border();
                 var root = PreparedWindow(target = new PopupItemsControl
                 {
-                    Items = new[] { item },
+                    Items = { item },
                     Template = new FuncControlTemplate<PopupItemsControl>(PopupItemsControlTemplate),
                 }); ;
                 root.Show();
@@ -490,7 +490,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var item = new Border();
                 var root = PreparedWindow(target = new PopupItemsControl
                 {
-                    Items = new[] { item },
+                    Items = { item },
                     Template = new FuncControlTemplate<PopupItemsControl>(PopupItemsControlTemplate),
                 });
                 root.Show();

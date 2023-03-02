@@ -16,7 +16,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -32,7 +32,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new AvaloniaList<string>();
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new ResetOnAdd();
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -87,7 +87,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new AvaloniaList<string>(new[] { "foo", "bar" });
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 

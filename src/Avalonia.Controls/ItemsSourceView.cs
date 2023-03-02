@@ -181,7 +181,8 @@ namespace Avalonia.Controls
         {
             return items switch
             {
-                ItemsSourceView<T> isv => isv,
+                ItemsSourceView<T> isvt => isvt,
+                ItemsSourceView isv => new ItemsSourceView<T>(isv.Inner),
                 null => ItemsSourceView<T>.Empty,
                 _ => new ItemsSourceView<T>(items)
             };

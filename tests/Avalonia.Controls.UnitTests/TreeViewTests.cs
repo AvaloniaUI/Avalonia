@@ -31,7 +31,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = CreateTestTreeData(),
+                ItemsSource = CreateTestTreeData(),
             };
 
             var root = new TestRoot(target);
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
                 Child = target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = CreateTestTreeData(),
+                    ItemsSource = CreateTestTreeData(),
                     ItemTemplate = new FuncTreeDataTemplate<Node>(
                         (_, __) => new Canvas(),
                         x => x.Children),
@@ -82,7 +82,7 @@ namespace Avalonia.Controls.UnitTests
                 Child = target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = CreateTestTreeData(),
+                    ItemsSource = CreateTestTreeData(),
                     ItemContainerTheme = theme,
                     ItemTemplate = new FuncTreeDataTemplate<Node>(
                         (_, __) => new Canvas(),
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = CreateTestTreeData(),
+                ItemsSource = CreateTestTreeData(),
             };
 
             var root = new TestRoot(target);
@@ -126,7 +126,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             // For TreeViewItem to find its parent TreeView, OnAttachedToLogicalTree needs
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -187,7 +187,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree
+                    ItemsSource = tree
                 };
 
                 var visualRoot = new TestRoot();
@@ -222,7 +222,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree
+                    ItemsSource = tree
                 };
 
                 var visualRoot = new TestRoot();
@@ -262,7 +262,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -305,7 +305,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -342,7 +342,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -379,7 +379,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -430,7 +430,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -463,7 +463,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -496,7 +496,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -529,7 +529,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -566,7 +566,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -624,7 +624,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -661,7 +661,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -719,7 +719,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -756,7 +756,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -814,7 +814,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -851,7 +851,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -909,7 +909,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -960,7 +960,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -1011,7 +1011,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -1041,7 +1041,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                 };
 
                 var visualRoot = new TestRoot();
@@ -1112,7 +1112,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
             };
 
             ApplyTemplates(target);
@@ -1146,7 +1146,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new FuncDataTemplate<Node>((x, _) => new Button { Content = x })
                 },
-                Items = items,
+                ItemsSource = items,
             };
 
             ApplyTemplates(target);
@@ -1164,15 +1164,13 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Item_Should_Not_Be_NameScope()
         {
-            var items = new object[]
-            {
-                new TreeViewItem(),
-            };
-
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = items,
+                Items =
+                {
+                    new TreeViewItem(),
+                }
             };
 
             target.ApplyTemplate();
@@ -1190,7 +1188,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = data,
+                ItemsSource = data,
             };
 
             var root = new TestRoot(target);
@@ -1231,7 +1229,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = data,
+                    ItemsSource = data,
                 };
 
                 var button = new Button();
@@ -1277,7 +1275,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = data,
+                    ItemsSource = data,
                     SelectedItem = selectedNode
                 };
 
@@ -1316,7 +1314,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -1354,7 +1352,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -1401,7 +1399,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple
                 };
 
@@ -1448,7 +1446,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple,
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
@@ -1478,7 +1476,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple,
                 };
 
@@ -1517,7 +1515,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple,
                 };
 
@@ -1550,7 +1548,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TreeView
                 {
                     Template = CreateTreeViewTemplate(),
-                    Items = tree,
+                    ItemsSource = tree,
                     SelectionMode = SelectionMode.Multiple,
                 };
 
@@ -1581,7 +1579,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             var visualRoot = new TestRoot();
@@ -1605,7 +1603,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new DerivedTreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             var visualRoot = new TestRoot();
@@ -1630,7 +1628,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             var visualRoot = new TestRoot();
@@ -1663,11 +1661,11 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTreeViewTemplate(),
                     SelectionMode = SelectionMode.Multiple,
-                    Items = new List<Node>
-                {
-                    new Node { Value = "Root1", },
-                    new Node { Value = "Root2", },
-                },
+                    ItemsSource = new List<Node>
+                    {
+                        new Node { Value = "Root1", },
+                        new Node { Value = "Root2", },
+                    },
                 };
 
                 var visualRoot = new TestRoot
@@ -1701,7 +1699,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             var root = new TestRoot();
@@ -1735,7 +1733,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             var root = new TestRoot();
@@ -1763,7 +1761,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new DerivedTreeViewWithDerivedTreeViewItems
             {
                 Template = CreateTreeViewTemplate(),
-                Items = tree,
+                ItemsSource = tree,
             };
 
             ApplyTemplates(target);

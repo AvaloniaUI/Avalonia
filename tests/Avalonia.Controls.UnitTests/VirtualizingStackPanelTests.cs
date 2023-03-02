@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Empty(itemsControl.GetRealizedContainers());
 
-            itemsControl.Items = new[] { "foo", "bar" };
+            itemsControl.ItemsSource = new[] { "foo", "bar" };
             Layout(target);
 
             AssertRealizedItems(target, itemsControl, 0, 2);
@@ -473,7 +473,7 @@ namespace Avalonia.Controls.UnitTests
 
             var itemsControl = new ItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
                 ItemsPanel = new FuncTemplate<Panel>(() => target),
             };

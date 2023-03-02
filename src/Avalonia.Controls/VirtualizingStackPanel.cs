@@ -404,6 +404,11 @@ namespace Avalonia.Controls
             {
                 estimatedElementSize = EstimateElementSizeU();
                 firstIndex = Math.Min((int)(viewportStart / estimatedElementSize), maxIndex);
+
+                if (firstIndex < 0)
+                {
+                }
+
                 firstIndexU = firstIndex * estimatedElementSize;
             }
 

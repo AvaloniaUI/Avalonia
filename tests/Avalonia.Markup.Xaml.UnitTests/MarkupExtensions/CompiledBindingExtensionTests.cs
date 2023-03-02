@@ -563,7 +563,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:TestDataContext'>
-    <local:DataGridLikeControl Items='{CompiledBinding ListProperty}' Name='target'>
+    <local:DataGridLikeControl ItemsSource='{CompiledBinding ListProperty}' Name='target'>
         <local:DataGridLikeControl.Columns>
             <local:DataGridLikeColumn Binding='{CompiledBinding Length}'>
                 <local:DataGridLikeColumn.Template>
@@ -627,7 +627,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var dataContext = new TestDataContext();
                 dataContext.ListProperty.Add("Test");
-                target.Items = dataContext.ListProperty;
+                target.ItemsSource = dataContext.ListProperty;
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
@@ -1990,14 +1990,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class DataGridLikeControl : Control
     {
-        public static readonly DirectProperty<DataGridLikeControl, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<DataGridLikeControl>(o => o.Items, (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
+            ItemsControl.ItemsSourceProperty.AddOwner<DataGridLikeControl>();
 
-        private IEnumerable _items;
-        public IEnumerable Items
+        public IEnumerable ItemsSource
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         public AvaloniaList<DataGridLikeColumn> Columns { get; } = new();
@@ -2006,10 +2005,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class DataGridLikeColumn
     {
         [AssignBinding]
-        [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
+        [InheritDataTypeFromItems(nameof(DataGridLikeControl.ItemsSource), AncestorType = typeof(DataGridLikeControl))]
         public IBinding Binding { get; set; }
         
-        [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
+        [InheritDataTypeFromItems(nameof(DataGridLikeControl.ItemsSource), AncestorType = typeof(DataGridLikeControl))]
         public IDataTemplate Template { get; set; }
     }
 }

@@ -150,7 +150,7 @@ namespace Avalonia.Controls.Utils
             {
                 if (SelectorControl != null)
                 {
-                    SelectorControl.Items = value;
+                    SelectorControl.ItemsSource = value;
                 }
             }
         }

@@ -371,7 +371,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ListBox>("list");
-                list.Items = collection;
+                list.ItemsSource = collection;
 
                 window.Show();
 
