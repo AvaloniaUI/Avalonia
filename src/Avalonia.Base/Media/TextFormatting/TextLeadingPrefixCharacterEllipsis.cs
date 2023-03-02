@@ -60,7 +60,7 @@ namespace Avalonia.Media.TextFormatting
             var currentWidth = 0.0;
             var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, FlowDirection.LeftToRight);
 
-            if (Width < shapedSymbol.GlyphRun.Size.Width)
+            if (Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
                 return Array.Empty<TextRun>();
             }
