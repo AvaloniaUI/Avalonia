@@ -151,9 +151,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets or sets the conservative bounding box of the <see cref="GlyphRun"/>.
+        ///     Gets the conservative bounding box of the <see cref="GlyphRun"/>.
         /// </summary>
-        public Size Size => PlatformImpl.Item.Size;
+        public Rect Bounds => PlatformImpl.Item.Bounds;
 
         /// <summary>
         /// 
@@ -252,7 +252,7 @@ namespace Avalonia.Media
 
                 if (characterIndex > Metrics.LastCluster)
                 {
-                    return Size.Width;
+                    return Bounds.Width;
                 }
 
                 var glyphIndex = FindGlyphIndex(characterIndex);
@@ -287,7 +287,7 @@ namespace Avalonia.Media
 
                 if (characterIndex <= Metrics.FirstCluster)
                 {
-                    return Size.Width;
+                    return Bounds.Width;
                 }
 
                 for (var i = glyphIndex + 1; i < _glyphInfos.Count; i++)
@@ -295,7 +295,7 @@ namespace Avalonia.Media
                     distance += _glyphInfos[i].GlyphAdvance;
                 }
 
-                return Size.Width - distance;
+                return Bounds.Width - distance;
             }
         }
 
@@ -321,7 +321,7 @@ namespace Avalonia.Media
             }
 
             //After
-            if (distance >= Size.Width)
+            if (distance >= Bounds.Width)
             {
                 isInside = false;
 
@@ -354,7 +354,7 @@ namespace Avalonia.Media
             }
             else
             {
-                currentX = Size.Width;
+                currentX = Bounds.Width;
 
                 for (var index = _glyphInfos.Count - 1; index >= 0; index--)
                 {

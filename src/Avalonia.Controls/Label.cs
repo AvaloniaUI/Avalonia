@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,13 +20,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Target"/> Direct property
         /// </summary>
-        public static readonly DirectProperty<Label, IInputElement?> TargetProperty =
-            AvaloniaProperty.RegisterDirect<Label, IInputElement?>(nameof(Target), lbl => lbl.Target, (lbl, inp) => lbl.Target = inp);
-
-        /// <summary>
-        /// Label focus target storage field
-        /// </summary>
-        private IInputElement? _target;
+        public static readonly StyledProperty<IInputElement?> TargetProperty =
+            AvaloniaProperty.Register<Label, IInputElement?>(nameof(Target));
 
         /// <summary>
         /// Label focus Target
@@ -34,8 +29,8 @@ namespace Avalonia.Controls
         [ResolveByName]
         public IInputElement? Target
         {
-            get => _target;
-            set => SetAndRaise(TargetProperty, ref _target, value);
+            get => GetValue(TargetProperty);
+            set => SetValue(TargetProperty, value);
         }
 
         static Label()

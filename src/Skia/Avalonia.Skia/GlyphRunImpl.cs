@@ -11,7 +11,7 @@ namespace Avalonia.Skia
         {
             TextBlob = textBlob ?? throw new ArgumentNullException(nameof(textBlob));
 
-            Size = size;
+            Bounds = new Rect(new Point(baselineOrigin.X, 0), size);
 
             BaselineOrigin = baselineOrigin;
         }
@@ -21,7 +21,7 @@ namespace Avalonia.Skia
         /// </summary>
         public SKTextBlob TextBlob { get; }
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public Point BaselineOrigin { get; }
 
