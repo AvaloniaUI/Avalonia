@@ -16,10 +16,10 @@ namespace Avalonia.UnitTests
                 width += glyphInfos[i].GlyphAdvance;
             }
 
-            Size = new Size(width, 10);
+            Bounds = new Rect(new Size(width, 10));
         }
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public Point BaselineOrigin => new Point(0, 8);
 

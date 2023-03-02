@@ -423,7 +423,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         if (currentGlyphRun != null)
                         {
-                            currentDistance -= currentGlyphRun.Size.Width;
+                            currentDistance -= currentGlyphRun.Bounds.Width;
                         }
 
                         return currentDistance + distance;
@@ -477,7 +477,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (currentGlyphRun.IsLeftToRight || flowDirection == FlowDirection.RightToLeft)
                             {
-                                distance = currentGlyphRun.Size.Width;
+                                distance = currentGlyphRun.Bounds.Width;
                             }
 
                             return true;
@@ -1483,7 +1483,7 @@ namespace Avalonia.Media.TextFormatting
 
                     trailingWhitespaceLength += glyphRunMetrics.TrailingWhitespaceLength;
 
-                    var whitespaceWidth = glyphRun.Size.Width - glyphRunMetrics.Width;
+                    var whitespaceWidth = glyphRun.Bounds.Width - glyphRunMetrics.Width;
 
                     width -= whitespaceWidth;
                 }
