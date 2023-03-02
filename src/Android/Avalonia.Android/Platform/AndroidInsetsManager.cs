@@ -59,30 +59,39 @@ namespace Avalonia.Android.Platform
             DisplayEdgeToEdge = false;
         }
 
-        public Thickness GetSafeAreaPadding()
+        public Thickness SafeAreaPadding
         {
-            var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
-
-            if (insets != null)
+            get
             {
-                var renderScaling = _topLevel.RenderScaling;
+                var insets = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
 
-                var inset = insets.GetInsets((DisplayEdgeToEdge ? WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() | WindowInsetsCompat.Type.DisplayCutout() : 0 ) | WindowInsetsCompat.Type.Ime());
-                var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
-                var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                if (insets != null)
+                {
+                    var renderScaling = _topLevel.RenderScaling;
 
-                return new Thickness(inset.Left / renderScaling,
-                    inset.Top / renderScaling,
-                    inset.Right / renderScaling,
-                    (imeInset.Bottom > 0 && ((_usesLegacyLayouts && !DisplayEdgeToEdge) || !_usesLegacyLayouts) ? imeInset.Bottom - navBarInset.Bottom : inset.Bottom) / renderScaling);
+                    var inset = insets.GetInsets(
+                        (DisplayEdgeToEdge ?
+                            WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() |
+                            WindowInsetsCompat.Type.DisplayCutout() :
+                            0) | WindowInsetsCompat.Type.Ime());
+                    var navBarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars());
+                    var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+
+                    return new Thickness(inset.Left / renderScaling,
+                        inset.Top / renderScaling,
+                        inset.Right / renderScaling,
+                        (imeInset.Bottom > 0 && ((_usesLegacyLayouts && !DisplayEdgeToEdge) || !_usesLegacyLayouts) ?
+                            imeInset.Bottom - navBarInset.Bottom :
+                            inset.Bottom) / renderScaling);
+                }
+
+                return default;
             }
-
-            return default;
         }
 
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
-            NotifySafeAreaChanged(GetSafeAreaPadding());
+            NotifySafeAreaChanged(SafeAreaPadding);
             return insets;
         }
 
@@ -93,7 +102,7 @@ namespace Avalonia.Android.Platform
 
         public void OnGlobalLayout()
         {
-            NotifySafeAreaChanged(GetSafeAreaPadding());
+            NotifySafeAreaChanged(SafeAreaPadding);
         }
 
         public SystemBarTheme? SystemBarTheme

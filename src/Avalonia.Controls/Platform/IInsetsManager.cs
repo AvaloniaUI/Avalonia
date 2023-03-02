@@ -1,27 +1,17 @@
 ﻿using System;
-using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
+#nullable enable
 namespace Avalonia.Controls.Platform
 {
-    [Avalonia.Metadata.Unstable]
+    [Unstable]
+    [NotClientImplementable]
     public interface IInsetsManager
     {
-        /// <summary>
-        /// Gets or sets the theme for the system bars, if supported.
-        /// </summary>
-        SystemBarTheme? SystemBarTheme { get; set; }
-
         /// <summary>
         /// Gets or sets whether the system bars are visible.
         /// </summary>
         bool? IsSystemBarVisible { get; set; }
-
-        /// <summary>
-        /// Occurs when safe area for the current window changes.
-        /// </summary>
-
-        event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
-
 
         /// <summary>
         /// Gets or sets whether the window draws edge to edge. behind any visibile system bars.
@@ -31,18 +21,23 @@ namespace Avalonia.Controls.Platform
         /// <summary>
         /// Gets the current safe area padding.
         /// </summary>
-        /// <returns></returns>
-        Thickness GetSafeAreaPadding();
-
-        public class SafeAreaChangedArgs : RoutedEventArgs
+        Thickness SafeAreaPadding { get; }
+        
+        /// <summary>
+        /// Occurs when safe area for the current window changes.
+        /// </summary>
+        event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
+    }
+    
+    public class SafeAreaChangedArgs : EventArgs
+    {
+        public SafeAreaChangedArgs(Thickness safeArePadding)
         {
-            public SafeAreaChangedArgs(Thickness safeArePadding)
-            {
-                SafeAreaPadding = safeArePadding;
-            }
-
-            public Thickness SafeAreaPadding { get; }
+            SafeAreaPadding = safeArePadding;
         }
+
+        /// <inheritdoc cref="IInsetsManager.GetSafeAreaPadding"/>
+        public Thickness SafeAreaPadding { get; }
     }
 
     public enum SystemBarTheme

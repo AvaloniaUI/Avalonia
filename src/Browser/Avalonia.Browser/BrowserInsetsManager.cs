@@ -11,7 +11,6 @@ namespace Avalonia.Browser
 {
     internal class BrowserInsetsManager : IInsetsManager
     {
-        public SystemBarTheme? SystemBarTheme { get; set; }
         public bool? IsSystemBarVisible
         {
             get
@@ -20,7 +19,7 @@ namespace Avalonia.Browser
             }
             set
             {
-                DomHelper.SetFullscreen(value != null ? !value.Value : false);
+                DomHelper.SetFullscreen(!value ?? false);
             }
         }
 
@@ -28,16 +27,19 @@ namespace Avalonia.Browser
 
         public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
 
-        public Thickness GetSafeAreaPadding()
+        public Thickness SafeAreaPadding
         {
-            var padding = DomHelper.GetSafeAreaPadding();
+            get
+            {
+                var padding = DomHelper.GetSafeAreaPadding();
 
-            return new Thickness(padding[0], padding[1], padding[2], padding[3]);
+                return new Thickness(padding[0], padding[1], padding[2], padding[3]);
+            }
         }
 
         public void NotifySafeAreaPaddingChanged()
         {
-            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(GetSafeAreaPadding()));
+            SafeAreaChanged?.Invoke(this, new SafeAreaChangedArgs(SafeAreaPadding));
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
-        private readonly IInsetsManager _insetsManager;
+        private readonly AndroidInsetsManager _insetsManager;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
