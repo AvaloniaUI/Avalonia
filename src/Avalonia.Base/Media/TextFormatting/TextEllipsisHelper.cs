@@ -19,7 +19,7 @@ namespace Avalonia.Media.TextFormatting
             var collapsedLength = 0;
             var shapedSymbol = TextFormatterImpl.CreateSymbol(properties.Symbol, FlowDirection.LeftToRight);
 
-            if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
+            if (properties.Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
                 //Not enough space to fit in the symbol
                 return Array.Empty<TextRun>();

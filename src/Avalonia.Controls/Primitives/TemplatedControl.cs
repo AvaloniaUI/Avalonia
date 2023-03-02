@@ -405,22 +405,5 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-
-        internal override void OnTemplatedParentControlThemeChanged()
-        {
-            base.OnTemplatedParentControlThemeChanged();
-
-            var count = VisualChildren.Count;
-            var templatedParent = TemplatedParent;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (VisualChildren[i] is TemplatedControl child &&
-                    child.TemplatedParent == templatedParent)
-                {
-                    child.OnTemplatedParentControlThemeChanged();
-                }
-            }
-        }
     }
 }

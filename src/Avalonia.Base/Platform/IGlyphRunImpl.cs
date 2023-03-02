@@ -10,11 +10,10 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IGlyphRunImpl : IDisposable 
     {
-
         /// <summary>
         ///     Gets the conservative bounding box of the glyph run./>.
         /// </summary>
-        Size Size { get; }
+        Rect Bounds { get; }
 
         /// <summary>
         ///     Gets the baseline origin of the glyph run./>.

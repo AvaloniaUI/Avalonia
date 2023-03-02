@@ -52,8 +52,6 @@ namespace Avalonia.Direct2D1.Media
 
                 var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
-                var targetInfos = shapedBuffer.GlyphInfos;
-
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
@@ -79,7 +77,7 @@ namespace Avalonia.Direct2D1.Media
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
-                    targetInfos[i] = new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+                    shapedBuffer[i] = new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;

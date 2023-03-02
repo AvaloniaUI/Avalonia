@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ControlTheme x:Key="{x:Type Window}"
                 TargetType="Window">
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource HighlightForegroundColor}" />
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />

@@ -277,7 +277,6 @@ namespace Avalonia.Media
         private readonly record struct RestoreState : IDisposable
         {
             private readonly DrawingContext _context;
-            private readonly Matrix _matrix;
             private readonly PushedStateType _type;
 
             public enum PushedStateType

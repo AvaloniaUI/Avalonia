@@ -396,7 +396,7 @@ public partial class AvaloniaPropertyAnalyzer
                             hostTypeRef = new(_avaloniaObjectType, Location.None); // assume that an attached property applies everywhere until we find its registration
                         }
 
-                        var result =  new AvaloniaPropertyDescription(inferredName, propertyType, valueType) { HostType = hostTypeRef };
+                        var result = new AvaloniaPropertyDescription(inferredName, propertyType, valueType) { HostType = hostTypeRef };
 
                         // assume that the property is owned by its containing type at the point of assignment, until we find its registration
                         result.SetAssignment(s, new(s.ContainingType, Location.None));
@@ -570,7 +570,7 @@ public partial class AvaloniaPropertyAnalyzer
 
             if (_allGetSetMethods.Contains(originalMethod))
             {
-                if (invocation.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } && 
+                if (invocation.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } &&
                     GetReferencedProperty(invocation.Arguments[0]) is { } refProp &&
                     refProp.description.AssignedTo.TryGetValue(refProp.storageSymbol, out var ownerType) &&
                     !DerivesFrom(context.ContainingSymbol.ContainingType, ownerType.Type) &&
@@ -694,9 +694,14 @@ public partial class AvaloniaPropertyAnalyzer
 
                 void VerifyAccessor(IMethodSymbol? method, string verb, string methodName)
                 {
-                    if (method == null)
+                    if (method is null)
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
+                        if (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Public ||
+                            (avaloniaPropertyStorage.DeclaredAccessibility == Accessibility.Protected
+                                && avaloniaPropertyStorage.ContainingSymbol.DeclaredAccessibility == Accessibility.Public))
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
+                        }
                     }
                     else if (method.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility && method.DeclaredAccessibility != property.DeclaredAccessibility)
                     {

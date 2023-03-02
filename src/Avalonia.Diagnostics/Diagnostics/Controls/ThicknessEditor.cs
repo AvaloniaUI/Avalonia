@@ -15,7 +15,7 @@ namespace Avalonia.Diagnostics.Controls
                 (o, v) => o.Header = v);
 
         public static readonly DirectProperty<ThicknessEditor, bool> IsPresentProperty =
-            AvaloniaProperty.RegisterDirect<ThicknessEditor, bool>(nameof(Header), o => o.IsPresent,
+            AvaloniaProperty.RegisterDirect<ThicknessEditor, bool>(nameof(IsPresent), o => o.IsPresent,
                 (o, v) => o.IsPresent = v);
 
         public static readonly DirectProperty<ThicknessEditor, double> LeftProperty =
