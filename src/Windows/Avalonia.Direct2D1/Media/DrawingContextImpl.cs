@@ -387,7 +387,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="glyphRun">The glyph run.</param>
         public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Item.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Item.Bounds.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 

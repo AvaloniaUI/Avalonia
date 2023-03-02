@@ -223,7 +223,7 @@ namespace Avalonia.Media
                 if (intersections.Count > 0)
                 {
                     var last = baselineOrigin.X;
-                    var finalPos = last + glyphRun.Size.Width;
+                    var finalPos = last + glyphRun.Bounds.Width;
                     var end = last;
 
                     var points = new List<double>();
