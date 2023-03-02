@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -9,8 +10,7 @@ namespace Avalonia.Media.Fonts
 {
     public class EmbeddedFontCollection : IFontCollection
     {
-        private readonly Dictionary<string, Dictionary<FontCollectionKey, IGlyphTypeface>> _glyphTypefaceCache =
-            new Dictionary<string, Dictionary<FontCollectionKey, IGlyphTypeface>>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface>> _glyphTypefaceCache = new();
 
         private readonly List<FontFamily> _fontFamilies = new List<FontFamily>(1);
 
@@ -45,11 +45,12 @@ namespace Avalonia.Media.Fonts
                 {
                     if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
                     {
-                        glyphTypefaces = new Dictionary<FontCollectionKey, IGlyphTypeface>();
+                        glyphTypefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface>();
 
-                        _glyphTypefaceCache.Add(glyphTypeface.FamilyName, glyphTypefaces);
-
-                        _fontFamilies.Add(new FontFamily(_key, glyphTypeface.FamilyName));
+                        if (_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, glyphTypefaces))
+                        {
+                            _fontFamilies.Add(new FontFamily(_key, glyphTypeface.FamilyName));
+                        }
                     }
 
                     var key = new FontCollectionKey(
@@ -57,10 +58,7 @@ namespace Avalonia.Media.Fonts
                            glyphTypeface.Weight,
                            glyphTypeface.Stretch);
 
-                    if (!glyphTypefaces.ContainsKey(key))
-                    {
-                        glyphTypefaces.Add(key, glyphTypeface);
-                    }
+                    glyphTypefaces.TryAdd(key, glyphTypeface);
                 }
             }
         }
@@ -119,7 +117,7 @@ namespace Avalonia.Media.Fonts
         }
 
         private static bool TryGetNearestMatch(
-            Dictionary<FontCollectionKey, IGlyphTypeface> glyphTypefaces,
+            ConcurrentDictionary<FontCollectionKey, IGlyphTypeface> glyphTypefaces,
             FontCollectionKey key,
             [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
@@ -173,7 +171,7 @@ namespace Avalonia.Media.Fonts
         }
 
         private static bool TryFindStretchFallback(
-            Dictionary<FontCollectionKey, IGlyphTypeface> glyphTypefaces,
+            ConcurrentDictionary<FontCollectionKey, IGlyphTypeface> glyphTypefaces,
             FontCollectionKey key,
             [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
@@ -206,7 +204,7 @@ namespace Avalonia.Media.Fonts
         }
 
         private static bool TryFindWeightFallback(
-            Dictionary<FontCollectionKey, IGlyphTypeface> glyphTypefaces,
+            ConcurrentDictionary<FontCollectionKey, IGlyphTypeface> glyphTypefaces,
             FontCollectionKey key,
             [NotNullWhen(true)] out IGlyphTypeface? typeface)
         {
