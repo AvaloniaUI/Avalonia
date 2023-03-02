@@ -1,4 +1,6 @@
-﻿using Avalonia.Input;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -58,6 +60,11 @@ namespace Avalonia.Controls
                 LabelActivated(e);
             }
             base.OnPointerPressed(e);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new LabelAutomationPeer(this);
         }
     }
 }
