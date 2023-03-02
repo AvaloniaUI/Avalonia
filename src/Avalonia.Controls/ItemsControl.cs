@@ -95,7 +95,7 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
-        [InheritDataTypeFromItems(nameof(ItemsSource))]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
@@ -160,7 +160,7 @@ namespace Avalonia.Controls
         public IList? Items
         {
             get => _items;
-            private set => SetAndRaise(ItemsProperty, ref _items, value);
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        [InheritDataTypeFromItems(nameof(ItemsSource))]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty); 
