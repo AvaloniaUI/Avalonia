@@ -19,9 +19,16 @@ namespace Avalonia.Controls.Automation.Peers
             return AutomationControlType.Text;
         }
 
-        override protected string GetNameCore()
+        override protected string? GetNameCore()
         {
-            return AccessText.RemoveAccessKeyMarker(((Label)Owner).Content as string) ?? string.Empty;
+            var content = ((Label)Owner).Content as string;
+
+            if (string.IsNullOrEmpty(content))
+            {
+                return base.GetNameCore();
+            }
+
+            return AccessText.RemoveAccessKeyMarker(content) ?? string.Empty;
         }
     }
 }
