@@ -1162,9 +1162,9 @@ namespace Avalonia.Controls.Primitives
 
         private void InitializeSelectionModel(ISelectionModel model)
         {
-            if (_updateState is null && model.Source is null)
+            if (_updateState is null)
             {
-                model.Source = ItemsView;
+                model.Source = IsSet(ItemsSourceProperty) ? ItemsSource : Items;
             }
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;
