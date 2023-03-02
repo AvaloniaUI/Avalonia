@@ -38,14 +38,14 @@ namespace Avalonia.Media.TextFormatting
 
         public override double Baseline => -TextMetrics.Ascent;
 
-        public override Size Size => GlyphRun.Size;
+        public override Size Size => GlyphRun.Bounds.Size;
 
         public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
+            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin)))
             {
                 if (GlyphRun.GlyphInfos.Count == 0)
                 {

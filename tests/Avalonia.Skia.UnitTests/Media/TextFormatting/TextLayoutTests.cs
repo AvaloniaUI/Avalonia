@@ -457,7 +457,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var glyphRun = shapedRun.GlyphRun;
 
-                var width = glyphRun.Size.Width;
+                var width = glyphRun.Bounds.Width;
 
                 var characterHit = glyphRun.GetCharacterHitFromDistance(width, out _);
 
