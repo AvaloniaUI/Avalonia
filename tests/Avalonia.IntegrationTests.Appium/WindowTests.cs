@@ -270,8 +270,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                         // Child/Modal windows cannot be fullscreen on macOS.
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) &&
-                            state == Controls.WindowState.FullScreen &&
-                            mode != ShowWindowMode.NonOwned)
+                            state == Controls.WindowState.FullScreen)
                             continue;
 
                         data.Add(size, mode, state, true);
