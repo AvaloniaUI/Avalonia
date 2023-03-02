@@ -27,11 +27,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<MenuItem, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>(
-                menuItem => menuItem.Command,
-                (menuItem, command) => menuItem.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<MenuItem>(new(enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -113,7 +110,6 @@ namespace Avalonia.Controls
         private static readonly ITemplate<Panel> DefaultPanel =
             new FuncTemplate<Panel>(() => new StackPanel());
 
-        private ICommand? _command;
         private bool _commandCanExecute = true;
         private bool _commandBindingError;
         private Popup? _popup;
@@ -217,8 +213,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand? Command
         {
-            get { return _command; }
-            set { SetAndRaise(CommandProperty, ref _command, value); }
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -337,7 +333,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This has the same effect as setting <see cref="IsSubMenuOpen"/> to true.
         /// </remarks>
-        public void Open() => IsSubMenuOpen = true;
+        public void Open() => SetCurrentValue(IsSubMenuOpenProperty, true);
 
         /// <summary>
         /// Closes the submenu.
@@ -345,7 +341,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This has the same effect as setting <see cref="IsSubMenuOpen"/> to false.
         /// </remarks>
-        public void Close() => IsSubMenuOpen = false;
+        public void Close() => SetCurrentValue(IsSubMenuOpenProperty, false);
 
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
@@ -369,7 +365,7 @@ namespace Avalonia.Controls
         {
             if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
             {
-                HotKey = _hotkey;
+                SetCurrentValue(HotKeyProperty, _hotkey);
             }
             
             base.OnAttachedToLogicalTree(e);
@@ -397,7 +393,7 @@ namespace Avalonia.Controls
             if (HotKey != null)
             {
                 _hotkey = HotKey;
-                HotKey = null;
+                SetCurrentValue(HotKeyProperty, null);
             }
 
             base.OnDetachedFromLogicalTree(e);
@@ -663,7 +659,7 @@ namespace Avalonia.Controls
                 }
 
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
-                IsSelected = true;
+                SetCurrentValue(IsSelectedProperty, true);
                 PseudoClasses.Add(":open");
             }
             else
