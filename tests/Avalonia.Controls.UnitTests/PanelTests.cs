@@ -141,5 +141,20 @@ namespace Avalonia.Controls.UnitTests
             var panel = new Panel();
             Assert.Throws<ArgumentNullException>(() => panel.Children.Add(null!));
         }
+
+        [Fact]
+        public void Adding_Control_To_Items_Host_Panel_Should_Not_Affect_Logical_Children()
+        {
+            var child = new Control();
+            var realParent = new ContentControl { Content = child };
+            var panel = new Panel { IsItemsHost = true };
+
+            panel.Children.Add(child);
+
+            Assert.Empty(panel.LogicalChildren);
+            Assert.Same(child.Parent, realParent);
+            Assert.Same(child.GetLogicalParent(), realParent);
+            Assert.Same(child.GetVisualParent(), panel);
+        }
     }
 }
