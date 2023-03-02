@@ -97,7 +97,7 @@ namespace Avalonia.Controls
         }
 
         private ItemCollection? _items;
-        private ItemsSourceView _itemsView;
+        private ItemsSourceView? _itemsView;
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
@@ -110,7 +110,6 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            _itemsView = ItemsSourceView.GetOrCreate(_items);
             UpdatePseudoClasses(0);
         }
 
@@ -219,15 +218,22 @@ namespace Avalonia.Controls
         /// </remarks>
         public ItemsSourceView ItemsView
         {
-            get => _itemsView;
+            get => _itemsView ??= ItemsSourceView.GetOrCreate(Items);
             private set
             {
                 if (ReferenceEquals(_itemsView, value))
                     return;
 
-                var oldValue = _itemsView;
-                _itemsView = value;
-                RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
+                if (_itemsView is not null)
+                {
+                    var oldValue = _itemsView;
+                    _itemsView = value;
+                    RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
+                }
+                else
+                {
+                    _itemsView = value;
+                }
             }
         }
 
@@ -728,6 +734,7 @@ namespace Avalonia.Controls
             public ItemCollection()
             {
                 Validate = OnValidate;
+                ResetBehavior = ResetBehavior.Remove;
             }
 
             private void OnValidate(object obj)

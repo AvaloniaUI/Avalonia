@@ -13,7 +13,7 @@
               <Setter Property="Header" Value="{Binding Header}"/>
               <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
               <Setter Property="InputGesture" Value="{Binding Gesture}"/>
-              <Setter Property="Items" Value="{Binding Menu.Items}"/>
+              <Setter Property="ItemsSource" Value="{Binding Menu.Items}"/>
               <Setter Property="Command" Value="{Binding Command}"/>
               <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
               <Setter Property="(NativeMenuBar.EnableMenuItemClickForwarding)" Value="True"/>

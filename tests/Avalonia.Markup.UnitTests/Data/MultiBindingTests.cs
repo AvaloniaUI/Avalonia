@@ -173,7 +173,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            target.Bind(ItemsControl.ItemsProperty, binding);
+            target.Bind(ItemsControl.ItemsSourceProperty, binding);
             Assert.Equal(target.ItemCount, 3);
             Assert.Equal(target.Items.ElementAt(0), source.A);
             Assert.Equal(target.Items.ElementAt(1), source.B);
