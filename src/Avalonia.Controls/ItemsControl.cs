@@ -233,18 +233,12 @@ namespace Avalonia.Controls
             get => _itemsView ??= ItemsSourceView.GetOrCreate(Items);
             private set
             {
-                void ItemsViewChanged(object? sender, NotifyCollectionChangedEventArgs e)
-                {
-                    ItemCount = _itemsView!.Count;
-                    UpdatePseudoClasses(ItemCount);
-                }
-
                 if (ReferenceEquals(_itemsView, value))
                     return;
 
                 if (_itemsView is not null)
                 {
-                    _itemsView.CollectionChanged -= ItemsViewChanged;
+                    _itemsView.CollectionChanged -= ItemsCollectionChanged;
 
                     var oldValue = _itemsView;
                     _itemsView = value;
@@ -255,7 +249,7 @@ namespace Avalonia.Controls
                     _itemsView = value;
                 }
 
-                _itemsView.CollectionChanged += ItemsViewChanged;
+                _itemsView.CollectionChanged += ItemsCollectionChanged;
             }
         }
 
@@ -581,6 +575,17 @@ namespace Avalonia.Controls
         /// Causes all containers to be unrealized and re-realized.
         /// </remarks>
         protected void RefreshContainers() => Presenter?.Refresh();
+
+        /// <summary>
+        /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
+        /// raised on <see cref="Items"/>.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private protected virtual void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            ItemCount = _itemsView?.Count ?? 0;
+        }
 
         /// <summary>
         /// Creates the <see cref="ItemContainerGenerator"/>
