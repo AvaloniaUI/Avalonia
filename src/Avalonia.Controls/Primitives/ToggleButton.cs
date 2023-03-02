@@ -15,12 +15,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsChecked"/> property.
         /// </summary>
-        public static readonly DirectProperty<ToggleButton, bool?> IsCheckedProperty =
-            AvaloniaProperty.RegisterDirect<ToggleButton, bool?>(
-                nameof(IsChecked),
-                o => o.IsChecked,
-                (o, v) => o.IsChecked = v,
-                unsetValue: false,
+        public static readonly StyledProperty<bool?> IsCheckedProperty =
+            AvaloniaProperty.Register<ToggleButton, bool?>(nameof(IsChecked), false,
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -63,8 +59,6 @@ namespace Avalonia.Controls.Primitives
             RoutedEvent.Register<ToggleButton, RoutedEventArgs>(
                 nameof(IsCheckedChanged),
                 RoutingStrategies.Bubble);
-
-        private bool? _isChecked = false;
 
         static ToggleButton()
         {
@@ -119,12 +113,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool? IsChecked
         {
-            get => _isChecked;
-            set 
-            { 
-                SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-                UpdatePseudoClasses(IsChecked);
-            }
+            get => GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
         }
 
         /// <summary>
@@ -147,28 +137,31 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected virtual void Toggle()
         {
+            bool? newValue;
             if (IsChecked.HasValue)
             {
                 if (IsChecked.Value)
                 {
                     if (IsThreeState)
                     {
-                        IsChecked = null;
+                        newValue = null;
                     }
                     else
                     {
-                        IsChecked = false;
+                        newValue = false;
                     }
                 }
                 else
                 {
-                    IsChecked = true;
+                    newValue = true;
                 }
             }
             else
             {
-                IsChecked = false;
+                newValue = false;
             }
+
+            SetCurrentValue(IsCheckedProperty, newValue);
         }
 
         /// <summary>
@@ -223,6 +216,8 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == IsCheckedProperty)
             {
                 var newValue = change.GetNewValue<bool?>();
+
+                UpdatePseudoClasses(newValue);
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (newValue)

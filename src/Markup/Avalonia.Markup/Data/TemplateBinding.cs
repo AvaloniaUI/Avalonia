@@ -104,9 +104,7 @@ namespace Avalonia.Data
                         CultureInfo.CurrentCulture);
                 }
 
-                // Use LocalValue priority here, as TemplatedParent doesn't make sense on controls
-                // that aren't template children.
-                templatedParent.SetValue(Property, value, BindingPriority.LocalValue);
+                templatedParent.SetCurrentValue(Property, value);
             }
         }
 
