@@ -1,6 +1,9 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 using Observable = Avalonia.Reactive.Observable;
 
@@ -275,6 +278,79 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("style", target.Foo);
         }
 
+        [Fact]
+        public void SetCurrent_Value_Persists_When_Toggling_Style_1()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters = { new Setter(Class1.BarProperty, "bar") },
+                    }
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SetCurrentValue(Class1.FooProperty, "current");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+
+            target.Classes.Add("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bar", target.Bar);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+        }
+
+        [Fact]
+        public void SetCurrent_Value_Persists_When_Toggling_Style_2()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters = 
+                        { 
+                            new Setter(Class1.BarProperty, "bar"),
+                            new Setter(Class1.InheritedProperty, "inherited"),
+                        },
+                    }
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SetCurrentValue(Class1.FooProperty, "current");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+            Assert.Equal("inheriteddefault", target.Inherited);
+
+            target.Classes.Add("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bar", target.Bar);
+            Assert.Equal("inherited", target.Inherited);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+            Assert.Equal("inheriteddefault", target.Inherited);
+        }
+
         private BindingPriority GetPriority(AvaloniaObject target, AvaloniaProperty property)
         {
             return target.GetDiagnostic(property).Priority;
@@ -285,16 +361,19 @@ namespace Avalonia.Base.UnitTests
             return target.GetDiagnostic(property).IsOverriddenCurrentValue;
         }
 
-        private class Class1 : AvaloniaObject
+        private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>(nameof(Foo), "foodefault");
+            public static readonly StyledProperty<string> BarProperty =
+                AvaloniaProperty.Register<Class1, string>(nameof(Bar), "bardefault");
             public static readonly StyledProperty<string> InheritedProperty =
                 AvaloniaProperty.Register<Class1, string>(nameof(Inherited), "inheriteddefault", inherits: true);
             public static readonly StyledProperty<double> CoercedProperty =
                 AvaloniaProperty.Register<Class1, double>(nameof(Coerced), coerce: Coerce);
 
             public string Foo => GetValue(FooProperty);
+            public string Bar => GetValue(BarProperty);
             public string Inherited => GetValue(InheritedProperty);
             public double Coerced => GetValue(CoercedProperty);
             public double CoerceMax { get; set; } = 100;
