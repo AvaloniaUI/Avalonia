@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
+using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -141,6 +142,24 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(original.Position, current.Position);
                 Assert.Equal(original.FrameSize, current.FrameSize);
 
+            }
+        }
+        
+        [Fact]
+        public void Showing_Window_With_Size_Larger_Than_Screen_Measures_Content_With_Working_Area()
+        {
+            using (OpenWindow(new Size(4000, 2200), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            {
+                var measuredWithTextBlock = _session.FindElementById("MeasuredWithText");
+                var screenRectTextBox = _session.FindElementById("ScreenRect");
+                
+                var measuredWithString = measuredWithTextBlock.Text;
+                var workingAreaString = screenRectTextBox.Text;
+
+                var workingArea = Rect.Parse(workingAreaString);
+                var measuredWith = Size.Parse(measuredWithString);
+
+                Assert.Equal(workingArea.Size, measuredWith);
             }
         }
 
