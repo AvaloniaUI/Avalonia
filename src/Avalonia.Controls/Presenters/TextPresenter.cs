@@ -10,6 +10,7 @@ using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
 using Avalonia.Input.TextInput;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -52,7 +53,7 @@ namespace Avalonia.Controls.Presenters
             AvaloniaProperty.RegisterDirect<TextPresenter, string?>(
                 nameof(Text),
                 o => o.Text,
-                (o, v) => o.Text = v);
+                (o, v) => o.Text = v, defaultBindingMode: BindingMode.OneWay);
 
         /// <summary>
         /// Defines the <see cref="PreeditText"/> property.
@@ -107,7 +108,7 @@ namespace Avalonia.Controls.Presenters
         private int _selectionStart;
         private int _selectionEnd;
         private bool _caretBlink;
-        private string? _text;
+        internal string? _text;
         private TextLayout? _textLayout;
         private Size _constraint;
 
@@ -526,22 +527,22 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private string? GetText()
-        {
-            if (!string.IsNullOrEmpty(_preeditText))
-            {
-                if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
-                {
-                    return _preeditText;
-                }
+        //private string? GetText()
+        //{
+        //    if (!string.IsNullOrEmpty(_preeditText))
+        //    {
+        //        if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
+        //        {
+        //            return _preeditText;
+        //        }
 
-                var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
+        //        var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
 
-                return text;
-            }
+        //        return text;
+        //    }
 
-            return _text;
-        }
+        //    return _text;
+        //}
 
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
@@ -551,7 +552,7 @@ namespace Avalonia.Controls.Presenters
         {
             TextLayout result;
 
-            var text = GetText();
+            var text = _text;
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
@@ -851,7 +852,7 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        private void UpdateCaret(CharacterHit characterHit, bool notify = true)
+        internal void UpdateCaret(CharacterHit characterHit, bool notify = true)
         {
             _lastCharacterHit = characterHit;
 
@@ -883,10 +884,6 @@ namespace Avalonia.Controls.Presenters
             {
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
             }
-            else
-            {
-                _caretIndex = caretIndex;
-            }
         }
 
         internal Rect GetCursorRectangle()
@@ -901,17 +898,6 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Stop();
 
             _caretTimer.Tick -= CaretTimerTick;
-        }
-
-        private CharacterHit GetCharacterHitFromTextPosition(int textPosition)
-        {
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
-
-            var textLine = TextLayout.TextLines[lineIndex];
-
-            var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
-
-            return characterHit;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

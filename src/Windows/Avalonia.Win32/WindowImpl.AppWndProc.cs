@@ -713,13 +713,14 @@ namespace Avalonia.Win32
 
                         break;
                     }
+                case WindowsMessage.WM_IME_SELECT:
+                    break;
                 case WindowsMessage.WM_IME_CHAR:
                 case WindowsMessage.WM_IME_COMPOSITIONFULL:
                 case WindowsMessage.WM_IME_CONTROL:
                 case WindowsMessage.WM_IME_KEYDOWN:
                 case WindowsMessage.WM_IME_KEYUP:
                 case WindowsMessage.WM_IME_NOTIFY:
-                case WindowsMessage.WM_IME_SELECT:
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = true;
