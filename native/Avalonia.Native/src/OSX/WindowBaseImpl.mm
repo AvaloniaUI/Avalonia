@@ -273,6 +273,7 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
     auto resizeBlock = ResizeScope(View, reason);
 
     @autoreleasepool {
+        auto screenSize = [Window screen].visibleFrame.size;
         auto maxSize = lastMaxSize;
         auto minSize = lastMinSize;
 
@@ -290,6 +291,15 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
 
         if (y > maxSize.height) {
             y = maxSize.height;
+        }
+
+        if(x > screenSize.width){
+            x = screenSize.width;
+        }
+
+        if(y > screenSize.height)
+        {
+            y = screenSize.height;
         }
 
         @try {
