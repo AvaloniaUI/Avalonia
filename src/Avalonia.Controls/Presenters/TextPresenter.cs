@@ -527,23 +527,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        //private string? GetText()
-        //{
-        //    if (!string.IsNullOrEmpty(_preeditText))
-        //    {
-        //        if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
-        //        {
-        //            return _preeditText;
-        //        }
-
-        //        var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
-
-        //        return text;
-        //    }
-
-        //    return _text;
-        //}
-
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
