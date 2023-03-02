@@ -31,6 +31,8 @@ namespace Avalonia.Win32.Input
 
         public bool ShowCompositionWindow => false;
 
+        public string? Composition { get; internal set; }
+
         public void CreateCaret()
         {
             _caretManager.TryCreate(Hwnd);
@@ -282,6 +284,8 @@ namespace Avalonia.Win32.Input
             }
 
             var composition = GetCompositionString();
+
+            Composition = composition;
 
             Client.SetPreeditText(composition);
         }
