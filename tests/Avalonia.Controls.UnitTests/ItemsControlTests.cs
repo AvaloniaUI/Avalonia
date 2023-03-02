@@ -131,7 +131,7 @@ namespace Avalonia.Controls.UnitTests
                 root.Content = target;
 
                 var templatedParent = new Button();
-                target.SetValue(StyledElement.TemplatedParentProperty, templatedParent);
+                target.TemplatedParent = templatedParent;
                 target.Template = GetTemplate();
 
                 target.Items = new[] { "Foo" };
