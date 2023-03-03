@@ -102,7 +102,6 @@ namespace Avalonia.Controls
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
-        private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
 
@@ -217,7 +216,6 @@ namespace Avalonia.Controls
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
         }
-
 
         /// <inheritdoc />
         public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
@@ -495,6 +493,7 @@ namespace Avalonia.Controls
             else if (change.Property == ItemCountProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<int>());
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
             }
             else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
             {
@@ -579,7 +578,7 @@ namespace Avalonia.Controls
         internal void RegisterItemsPresenter(ItemsPresenter presenter)
         {
             Presenter = presenter;
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
         }
 
         internal void PrepareItemContainer(Control container, object? item, int index)
@@ -601,17 +600,14 @@ namespace Avalonia.Controls
 
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
-            _containerBeingPrepared = new(index, container);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
-            _containerBeingPrepared = null;
-
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
             _scrollViewer?.RegisterAnchorCandidate(container);
         }
 
         internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
         {
             ContainerIndexChangedOverride(container, oldIndex, newIndex);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, newIndex));
         }
 
         internal void ClearItemContainer(Control container)
@@ -742,9 +738,6 @@ namespace Avalonia.Controls
 
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            if (_containerBeingPrepared?.Item2 == child)
-                return _containerBeingPrepared.Item1;
-
             return child is Control container ? IndexFromContainer(container) : -1;
         }
 

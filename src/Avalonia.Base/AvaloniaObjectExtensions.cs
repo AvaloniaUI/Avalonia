@@ -199,13 +199,11 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             binding = binding ?? throw new ArgumentNullException(nameof(binding));
 
-            var metadata = property.GetMetadata(target.GetType()) as IDirectPropertyMetadata;
-
             var result = binding.Initiate(
                 target,
                 property,
                 anchor,
-                metadata?.EnableDataValidation ?? false);
+                property.GetMetadata(target.GetType()).EnableDataValidation ?? false);
 
             if (result != null)
             {

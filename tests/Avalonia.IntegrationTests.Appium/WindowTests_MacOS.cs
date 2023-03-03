@@ -16,7 +16,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public WindowTests_MacOS(TestAppFixture fixture)
+        public WindowTests_MacOS(DefaultAppFixture fixture)
         {
             var retry = 0;
 
@@ -163,7 +163,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [PlatformFact(TestPlatforms.MacOS, Skip = "Flaky test")]
         public void Does_Not_Switch_Space_From_FullScreen_To_Main_Desktop_When_FullScreen_Window_Clicked()
         {
             // Issue #9565

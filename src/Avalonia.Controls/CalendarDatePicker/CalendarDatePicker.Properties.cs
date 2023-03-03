@@ -11,29 +11,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayDate"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime> DisplayDateProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime>(
-                nameof(DisplayDate),
-                o => o.DisplayDate,
-                (o, v) => o.DisplayDate = v);
+        public static readonly StyledProperty<DateTime> DisplayDateProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, DateTime>(nameof(DisplayDate));
 
         /// <summary>
         /// Defines the <see cref="DisplayDateStart"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> DisplayDateStartProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
-                nameof(DisplayDateStart),
-                o => o.DisplayDateStart,
-                (o, v) => o.DisplayDateStart = v);
+        public static readonly StyledProperty<DateTime?> DisplayDateStartProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, DateTime?>(
+                nameof(DisplayDateStart));
 
         /// <summary>
         /// Defines the <see cref="DisplayDateEnd"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> DisplayDateEndProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
-                nameof(DisplayDateEnd),
-                o => o.DisplayDateEnd,
-                (o, v) => o.DisplayDateEnd = v);
+        public static readonly StyledProperty<DateTime?> DisplayDateEndProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, DateTime?>(
+                nameof(DisplayDateEnd));
 
         /// <summary>
         /// Defines the <see cref="FirstDayOfWeek"/> property.
@@ -44,11 +37,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, bool> IsDropDownOpenProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, bool>(
-                nameof(IsDropDownOpen),
-                o => o.IsDropDownOpen,
-                (o, v) => o.IsDropDownOpen = v);
+        public static readonly StyledProperty<bool> IsDropDownOpenProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, bool>(
+                nameof(IsDropDownOpen));
 
         /// <summary>
         /// Defines the <see cref="IsTodayHighlighted"/> property.
@@ -59,11 +50,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedDate"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
+        public static readonly StyledProperty<DateTime?> SelectedDateProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
-                o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v,
                 enableDataValidation: true, 
                 defaultBindingMode:BindingMode.TwoWay);
 
@@ -88,11 +77,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, string?> TextProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, string?>(
-                nameof(Text),
-                o => o.Text,
-                (o, v) => o.Text = v);
+        public static readonly StyledProperty<string?> TextProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, string?>(nameof(Text));
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
@@ -141,8 +127,8 @@ namespace Avalonia.Controls
         /// </exception>
         public DateTime DisplayDate
         {
-            get => _displayDate;
-            set => SetAndRaise(DisplayDateProperty, ref _displayDate, value);
+            get => GetValue(DisplayDateProperty);
+            set => SetValue(DisplayDateProperty, value);
         }
         
         /// <summary>
@@ -151,8 +137,8 @@ namespace Avalonia.Controls
         /// <value>The first date to display.</value>
         public DateTime? DisplayDateStart
         {
-            get => _displayDateStart;
-            set => SetAndRaise(DisplayDateStartProperty, ref _displayDateStart, value);
+            get => GetValue(DisplayDateStartProperty);
+            set => SetValue(DisplayDateStartProperty, value);
         }
 
         /// <summary>
@@ -161,8 +147,8 @@ namespace Avalonia.Controls
         /// <value>The last date to display.</value>
         public DateTime? DisplayDateEnd
         {
-            get => _displayDateEnd;
-            set => SetAndRaise(DisplayDateEndProperty, ref _displayDateEnd, value);
+            get => GetValue(DisplayDateEndProperty);
+            set => SetValue(DisplayDateEndProperty, value);
         }
 
         /// <summary>
@@ -188,8 +174,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsDropDownOpen
         {
-            get => _isDropDownOpen;
-            set => SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value);
+            get => GetValue(IsDropDownOpenProperty);
+            set => SetValue(IsDropDownOpenProperty, value);
         }
 
         /// <summary>
@@ -223,8 +209,8 @@ namespace Avalonia.Controls
         /// </exception>
         public DateTime? SelectedDate
         {
-            get => _selectedDate;
-            set => SetAndRaise(SelectedDateProperty, ref _selectedDate, value);
+            get => GetValue(SelectedDateProperty);
+            set => SetValue(SelectedDateProperty, value);
         }
 
         /// <summary>
@@ -264,8 +250,8 @@ namespace Avalonia.Controls
         /// </exception>
         public string? Text
         {
-            get => _text;
-            set => SetAndRaise(TextProperty, ref _text, value);
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         /// <inheritdoc cref="TextBox.Watermark"/>

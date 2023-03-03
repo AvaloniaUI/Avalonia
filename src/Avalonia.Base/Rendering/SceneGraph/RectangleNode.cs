@@ -23,29 +23,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public RectangleNode(
             Matrix transform,
-            IBrush? brush,
+            IImmutableBrush? brush,
             IPen? pen,
             RoundedRect rect,
-            BoxShadows boxShadows,
-            IDisposable? aux = null)
-            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform, aux)
+            BoxShadows boxShadows)
+            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform, brush)
         {
-            Transform = transform;
-            Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
             BoxShadows = boxShadows;
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
-
-        /// <summary>
-        /// Gets the fill brush.
-        /// </summary>
-        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
@@ -85,35 +72,22 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override void Render(IDrawingContextImpl context)
-        {
-            context.Transform = Transform;
-
-            context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
-        }
+        public override void Render(IDrawingContextImpl context) => context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
 
         /// <inheritdoc/>
         public override bool HitTest(Point p)
         {
-            // TODO: This doesn't respect CornerRadius yet.
-            if (Transform.HasInverse)
+            if (Brush != null)
             {
-                p *= Transform.Invert();
-
-                if (Brush != null)
-                {
-                    var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    return rect.ContainsExclusive(p);
-                }
-                else
-                {
-                    var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
-                    return borderRect.ContainsExclusive(p) && !emptyRect.ContainsExclusive(p);
-                }
+                var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                return rect.ContainsExclusive(p);
             }
-
-            return false;
+            else
+            {
+                var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
+                return borderRect.ContainsExclusive(p) && !emptyRect.ContainsExclusive(p);
+            }
         }
     }
 }

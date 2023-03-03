@@ -19,7 +19,6 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     internal class DrawingContextImpl : IDrawingContextImpl
     {
-        private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly ILayerFactory _layerFactory;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly DeviceContext _deviceContext;
@@ -39,13 +38,11 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
-            IVisualBrushRenderer visualBrushRenderer,
             ILayerFactory layerFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DXGI.SwapChain1 swapChain = null,
             Action finishedCallback = null)
         {
-            _visualBrushRenderer = visualBrushRenderer;
             _layerFactory = layerFactory;
             _renderTarget = renderTarget;
             _swapChain = swapChain;
@@ -390,7 +387,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="glyphRun">The glyph run.</param>
         public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Item.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Item.Bounds.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 
@@ -491,7 +488,8 @@ namespace Avalonia.Direct2D1.Media
             var radialGradientBrush = brush as IRadialGradientBrush;
             var conicGradientBrush = brush as IConicGradientBrush;
             var imageBrush = brush as IImageBrush;
-            var visualBrush = brush as IVisualBrush;
+            var sceneBrush = brush as ISceneBrush;
+            var sceneBrushContent = brush as ISceneBrushContent;
 
             if (solidColorBrush != null)
             {
@@ -518,11 +516,13 @@ namespace Avalonia.Direct2D1.Media
                     (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
                     destinationSize);
             }
-            else if (visualBrush != null)
+            else if (sceneBrush != null || sceneBrushContent != null)
             {
-                if (_visualBrushRenderer != null)
+                sceneBrushContent ??= sceneBrush.CreateContent();
+                if (sceneBrushContent != null)
                 {
-                    var intermediateSize = _visualBrushRenderer.GetRenderTargetSize(visualBrush);
+                    var rect = sceneBrushContent.Rect;
+                    var intermediateSize = rect.Size;
 
                     if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
                     {
@@ -533,27 +533,25 @@ namespace Avalonia.Direct2D1.Media
                         var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
                         using (var intermediate = new BitmapRenderTarget(
-                            _deviceContext,
-                            CompatibleRenderTargetOptions.None,
-                            pixelSize.ToSizeWithDpi(dpi).ToSharpDX()))
+                                   _deviceContext,
+                                   CompatibleRenderTargetOptions.None,
+                                   pixelSize.ToSizeWithDpi(dpi).ToSharpDX()))
                         {
-                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
+                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
                             {
                                 intermediate.Clear(null);
-                                _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                                sceneBrushContent.Render(ctx,
+                                    rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
                             }
 
                             return new ImageBrushImpl(
-                                visualBrush,
+                                sceneBrushContent.Brush,
                                 _deviceContext,
                                 new D2DBitmapImpl(intermediate.Bitmap),
                                 destinationSize);
                         }
+
                     }
-                }
-                else
-                {
-                    throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
                 }
             }
 

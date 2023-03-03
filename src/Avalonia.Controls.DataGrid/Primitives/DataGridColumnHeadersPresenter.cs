@@ -423,7 +423,7 @@ namespace Avalonia.Controls.Primitives
 
         internal void InvalidateChildIndex()
         {
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
         }
     }
 }

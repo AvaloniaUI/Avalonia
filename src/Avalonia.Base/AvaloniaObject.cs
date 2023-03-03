@@ -784,6 +784,11 @@ namespace Avalonia
             }
         }
 
+        internal void OnUpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            UpdateDataValidation(property, state, error);
+        }
+
         /// <summary>
         /// Gets a description of an observable that van be used in logs.
         /// </summary>

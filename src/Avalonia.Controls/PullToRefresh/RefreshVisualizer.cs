@@ -64,7 +64,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="RefreshInfoProvider"/> property.
         /// </summary>
-        internal DirectProperty<RefreshVisualizer, RefreshInfoProvider?> RefreshInfoProviderProperty =
+        internal static readonly DirectProperty<RefreshVisualizer, RefreshInfoProvider?> RefreshInfoProviderProperty =
             AvaloniaProperty.RegisterDirect<RefreshVisualizer, RefreshInfoProvider?>(nameof(RefreshInfoProvider),
                 s => s.RefreshInfoProvider, (s, o) => s.RefreshInfoProvider = o);
 

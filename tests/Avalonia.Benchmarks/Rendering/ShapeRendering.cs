@@ -21,7 +21,7 @@ namespace Avalonia.Benchmarks.Rendering
             _lineFill = new Line { Fill = new SolidColorBrush() };
             _lineFillAndStroke = new Line { Stroke = new SolidColorBrush(), Fill = new SolidColorBrush() };
 
-            _drawingContext = new DrawingContext(new NullDrawingContextImpl(), true);
+            _drawingContext = new PlatformDrawingContext(new NullDrawingContextImpl(), true);
 
             AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new NullRenderingPlatform());
         }

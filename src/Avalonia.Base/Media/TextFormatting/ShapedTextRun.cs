@@ -38,14 +38,14 @@ namespace Avalonia.Media.TextFormatting
 
         public override double Baseline => -TextMetrics.Ascent;
 
-        public override Size Size => GlyphRun.Size;
+        public override Size Size => GlyphRun.Bounds.Size;
 
         public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
+            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin)))
             {
                 if (GlyphRun.GlyphInfos.Count == 0)
                 {
@@ -85,7 +85,7 @@ namespace Avalonia.Media.TextFormatting
         {
             _glyphRun = null;
 
-            ShapedBuffer.GlyphInfos.Span.Reverse();
+            ShapedBuffer.Reverse();
 
             IsReversed = !IsReversed;
         }
@@ -106,7 +106,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
-                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
+                var advance = ShapedBuffer[i].GlyphAdvance;
 
                 if (currentWidth + advance > availableWidth)
                 {
@@ -130,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
             {
-                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
+                var advance = ShapedBuffer[i].GlyphAdvance;
 
                 if (width + advance > availableWidth)
                 {

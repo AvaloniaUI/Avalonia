@@ -888,7 +888,8 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object?>();
             var called = false;
-            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: expected {ExpectedType}, got {Value} ({ValueType})";
+            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
+            var message = "Unable to convert object 'foo' of type 'System.String' to type 'System.Double'.";
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
@@ -898,9 +899,7 @@ namespace Avalonia.Base.UnitTests
                     src == target &&
                     pv[0].GetType() == typeof(Class1) &&
                     (AvaloniaProperty)pv[1] == Class1.QuxProperty &&
-                    (Type)pv[2] == typeof(double) &&
-                    (string)pv[3] == "foo" &&
-                    (Type)pv[4] == typeof(string))
+                    (string)pv[2] == message)
                 {
                     called = true;
                 }
