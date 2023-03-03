@@ -98,31 +98,22 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly DirectProperty<RadioButton, string?> GroupNameProperty =
-            AvaloniaProperty.RegisterDirect<RadioButton, string?>(
-                nameof(GroupName),
-                o => o.GroupName,
-                (o, v) => o.GroupName = v);
+        public static readonly StyledProperty<string?> GroupNameProperty =
+            AvaloniaProperty.Register<RadioButton, string?>(nameof(GroupName));
 
-        private string? _groupName;
         private RadioButtonGroupManager? _groupManager;
-
-        public RadioButton()
-        {
-            this.GetObservable(IsCheckedProperty).Subscribe(IsCheckedChanged);
-        }
 
         public string? GroupName
         {
-            get { return _groupName; }
-            set { SetGroupName(value); }
+            get => GetValue(GroupNameProperty);
+            set => SetValue(GroupNameProperty, value);
         }
 
         protected override void Toggle()
         {
             if (!IsChecked.GetValueOrDefault())
             {
-                IsChecked = true;
+                SetCurrentValue(IsCheckedProperty, true);
             }
         }
 
@@ -154,28 +145,38 @@ namespace Avalonia.Controls
             return new RadioButtonAutomationPeer(this);
         }
 
-        private void SetGroupName(string? newGroupName)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            var oldGroupName = GroupName;
-            if (newGroupName != oldGroupName)
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsCheckedProperty)
             {
-                if (!string.IsNullOrEmpty(oldGroupName))
-                {
-                    _groupManager?.Remove(this, oldGroupName);
-                }
-                _groupName = newGroupName;
-                if (!string.IsNullOrEmpty(newGroupName))
-                {
-                    if (_groupManager == null)
-                    {
-                        _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(this.GetVisualRoot());
-                    }
-                    _groupManager.Add(this);
-                }
+                IsCheckedChanged(change.GetNewValue<bool?>());
+            }
+            else if (change.Property == GroupNameProperty)
+            {
+                var (oldValue, newValue) = change.GetOldAndNewValue<string?>();
+                OnGroupNameChanged(oldValue, newValue);
             }
         }
 
-        private void IsCheckedChanged(bool? value)
+        private void OnGroupNameChanged(string? oldGroupName, string? newGroupName)
+        {
+            if (!string.IsNullOrEmpty(oldGroupName))
+            {
+                _groupManager?.Remove(this, oldGroupName);
+            }
+            if (!string.IsNullOrEmpty(newGroupName))
+            {
+                if (_groupManager == null)
+                {
+                    _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(this.GetVisualRoot());
+                }
+                _groupManager.Add(this);
+            }
+        }
+
+        private new void IsCheckedChanged(bool? value)
         {
             var groupName = GroupName;
             if (string.IsNullOrEmpty(groupName))
