@@ -7,6 +7,25 @@ using Avalonia.Threading;
 
 namespace IntegrationTestApp
 {
+    public class MeasureBorder : Border
+    {
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            MeasuredWith = availableSize;
+            
+            return base.MeasureOverride(availableSize);
+        }
+
+        public static readonly StyledProperty<Size> MeasuredWithProperty = AvaloniaProperty.Register<MeasureBorder, Size>(
+            nameof(MeasuredWith));
+
+        public Size MeasuredWith
+        {
+            get => GetValue(MeasuredWithProperty);
+            set => SetValue(MeasuredWithProperty, value);
+        }
+    }
+    
     public class ShowWindowTest : Window
     {
         private readonly DispatcherTimer? _timer;
