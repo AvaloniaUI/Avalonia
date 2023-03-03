@@ -4,6 +4,7 @@
 //
 
 #import <AppKit/AppKit.h>
+#import <Cocoa/Cocoa.h>
 #include "common.h"
 #include "AvnView.h"
 #include "menu.h"
@@ -293,29 +294,24 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
-            if(x != lastSize.width || y != lastSize.height) {
-                lastSize = NSSize{x, y};
-
+            if(x != lastSize.width || y != lastSize.height)
+            {
                 if (!_shown) {
-                    // Before the window is shown, Cocoa wont give Resized events
-                    // constraining the window to the maximum size available on the monitor.
-                    // we have to emulated this behavior that Avalonia relies on.
                     auto screenSize = [Window screen].visibleFrame.size;
 
-                    if(x > screenSize.width){
+                    if (x > screenSize.width) {
                         x = screenSize.width;
                     }
 
-                    if(y > screenSize.height)
-                    {
+                    if (y > screenSize.height) {
                         y = screenSize.height;
                     }
-
-                    BaseEvents->Resized(AvnSize{x, y}, reason);
-                } else if (Window != nullptr) {
-                    [Window setContentSize:lastSize];
-                    [Window invalidateShadow];
                 }
+
+                lastSize = NSSize{x, y};
+
+                [Window setContentSize:lastSize];
+                [Window invalidateShadow];
             }
         }
         @finally {
