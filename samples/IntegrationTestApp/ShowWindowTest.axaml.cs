@@ -16,11 +16,11 @@ namespace IntegrationTestApp
         {
             InitializeComponent();
             DataContext = this;
-            PositionChanged += (s, e) => this.GetControl<TextBox>("Position").Text = $"{Position}";
+            PositionChanged += (s, e) => this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                _orderTextBox = this.GetControl<TextBox>("Order");
+                _orderTextBox = this.GetControl<TextBox>("CurrentOrder");
                 _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
                 _timer.Tick += TimerOnTick;
                 _timer.Start();
@@ -36,13 +36,13 @@ namespace IntegrationTestApp
         {
             base.OnOpened(e);
             var scaling = PlatformImpl!.DesktopScaling;
-            this.GetControl<TextBox>("Position").Text = $"{Position}";
-            this.GetControl<TextBox>("ScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
-            this.GetControl<TextBox>("Scaling").Text = $"{scaling}";
+            this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
+            this.GetControl<TextBox>("CurrentScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
+            this.GetControl<TextBox>("CurrentScaling").Text = $"{scaling}";
 
             if (Owner is not null)
             {
-                var ownerRect = this.GetControl<TextBox>("OwnerRect");
+                var ownerRect = this.GetControl<TextBox>("CurrentOwnerRect");
                 var owner = (Window)Owner;
                 ownerRect.Text = $"{owner.Position}, {PixelSize.FromSize(owner.FrameSize!.Value, scaling)}";
             }
