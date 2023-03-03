@@ -393,7 +393,7 @@ namespace Avalonia.IntegrationTests.Appium
         private int GetWindowOrder(string identifier)
         {
             var window = GetWindow(identifier);
-            var order = window.FindElementByXPath("//*[@identifier='Order']");
+            var order = window.FindElementByXPath("//*[@identifier='CurrentOrder']");
             return int.Parse(order.Text);
         }
 
