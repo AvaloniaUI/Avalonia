@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -124,6 +125,7 @@ namespace ControlCatalog.NetCore
                     EnableIme = true
                 })
                 .UseSkia()
+                .WithInterFont()
                 .AfterSetup(builder =>
                 {
                     builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
