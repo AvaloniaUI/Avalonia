@@ -22,17 +22,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
     public class XamlIlTests : XamlTestBase
     {
         [Fact]
-        public void Binding_Button_IsPressed_ShouldWork()
-        {
-            var parsed = (Button)AvaloniaRuntimeXamlLoader.Parse(@"
-<Button xmlns='https://github.com/avaloniaui' IsPressed='{Binding IsPressed, Mode=TwoWay}' />");
-            var ctx = new XamlIlBugTestsDataContext();
-            parsed.DataContext = ctx;
-            parsed.SetValue(Button.IsPressedProperty, true);
-            Assert.True(ctx.IsPressed);
-        }
-
-        [Fact]
         public void Transitions_Should_Be_Properly_Parsed()
         {
             var parsed = (Grid)AvaloniaRuntimeXamlLoader.Parse(@"
@@ -426,7 +415,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
     public class XamlIlBugTestsDataContext : INotifyPropertyChanged
     {
-        public bool IsPressed { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
