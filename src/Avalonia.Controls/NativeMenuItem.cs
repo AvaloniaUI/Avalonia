@@ -4,35 +4,12 @@ using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
     public class NativeMenuItem : NativeMenuItemBase, INativeMenuItemExporterEventsImplBridge
     {
-        private string? _header;
-        private KeyGesture? _gesture;
-        private bool _isEnabled = true;
-        private ICommand? _command;
-        private bool _isChecked = false;
-        private NativeMenuItemToggleType _toggleType;
-        private IBitmap? _icon;
         private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
-
-        private NativeMenu? _menu;
-
-        static NativeMenuItem()
-        {
-            MenuProperty.Changed.Subscribe(args =>
-            {
-                var item = (NativeMenuItem)args.Sender;
-                var value = args.NewValue.GetValueOrDefault()!;
-                if (value.Parent != null && value.Parent != item)
-                    throw new InvalidOperationException("NativeMenu already has a parent");
-                value.Parent = item;
-            });
-        }
-
 
         class CanExecuteChangedSubscriber : IWeakEventSubscriber<EventArgs>
         {
@@ -60,78 +37,70 @@ namespace Avalonia.Controls
             Header = header;
         }
 
-        public static readonly DirectProperty<NativeMenuItem, NativeMenu?> MenuProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu?>(nameof(Menu), o => o.Menu, (o, v) => o.Menu = v);
+        public static readonly StyledProperty<NativeMenu?> MenuProperty =
+            AvaloniaProperty.Register<NativeMenuItem, NativeMenu?>(nameof(Menu), coerce: CoerceMenu);
 
         [Content]
         public NativeMenu? Menu
         {
-            get => _menu;
-            set
-            {
-                if (value != null && value.Parent != null && value.Parent != this)
-                    throw new InvalidOperationException("NativeMenu already has a parent");
-                SetAndRaise(MenuProperty, ref _menu, value);
-            }
+            get => GetValue(MenuProperty);
+            set => SetValue(MenuProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, IBitmap?> IconProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, IBitmap?>(nameof(Icon), o => o.Icon, (o, v) => o.Icon = v);
+        private static NativeMenu? CoerceMenu(AvaloniaObject sender, NativeMenu? value)
+        {
+            if (value != null && value.Parent != null && value.Parent != sender)
+                throw new InvalidOperationException("NativeMenu already has a parent");
+            return value;
+        }
 
+        public static readonly StyledProperty<IBitmap?> IconProperty =
+            AvaloniaProperty.Register<NativeMenuItem, IBitmap?>(nameof(Icon));
 
         public IBitmap? Icon
         {
-            get => _icon;
-            set => SetAndRaise(IconProperty, ref _icon, value);
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }  
 
-        public static readonly DirectProperty<NativeMenuItem, string?> HeaderProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, string?>(nameof(Header), o => o.Header, (o, v) => o.Header = v);
+        public static readonly StyledProperty<string?> HeaderProperty =
+            AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(Header));
 
         public string? Header
         {
-            get => _header;
-            set => SetAndRaise(HeaderProperty, ref _header, value);
+            get => GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, KeyGesture?> GestureProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, KeyGesture?>(nameof(Gesture), o => o.Gesture, (o, v) => o.Gesture = v);
+        public static readonly StyledProperty<KeyGesture?> GestureProperty =
+            AvaloniaProperty.Register<NativeMenuItem, KeyGesture?>(nameof(Gesture));
 
         public KeyGesture? Gesture
         {
-            get => _gesture;
-            set => SetAndRaise(GestureProperty, ref _gesture, value);
+            get => GetValue(GestureProperty);
+            set => SetValue(GestureProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, bool> IsCheckedProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(
-                nameof(IsChecked),
-                o => o.IsChecked,
-                (o, v) => o.IsChecked = v);
+        public static readonly StyledProperty<bool> IsCheckedProperty =
+            AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsChecked));
 
         public bool IsChecked
         {
-            get => _isChecked;
-            set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
+            get => GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
         }
         
-        public static readonly DirectProperty<NativeMenuItem, NativeMenuItemToggleType> ToggleTypeProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenuItemToggleType>(
-                nameof(ToggleType),
-                o => o.ToggleType,
-                (o, v) => o.ToggleType = v);
+        public static readonly StyledProperty<NativeMenuItemToggleType> ToggleTypeProperty =
+            AvaloniaProperty.Register<NativeMenuItem, NativeMenuItemToggleType>(nameof(ToggleType));
 
         public NativeMenuItemToggleType ToggleType
         {
-            get => _toggleType;
-            set => SetAndRaise(ToggleTypeProperty, ref _toggleType, value);
+            get => GetValue(ToggleTypeProperty);
+            set => SetValue(ToggleTypeProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<NativeMenuItem>(
-                menuItem => menuItem.Command,
-                (menuItem, command) => menuItem.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<NativeMenuItem>(new(enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
@@ -139,37 +108,26 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object?> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<NativeMenuItem>();
 
-        public static readonly DirectProperty<NativeMenuItem, bool> IsEnabledProperty =
-           AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(nameof(IsEnabled), o => o.IsEnabled, (o, v) => o.IsEnabled = v, true);
+        public static readonly StyledProperty<bool> IsEnabledProperty =
+           AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsEnabled), true);
 
         public bool IsEnabled
         {
-            get => _isEnabled;
-            set => SetAndRaise(IsEnabledProperty, ref _isEnabled, value);
+            get => GetValue(IsEnabledProperty);
+            set => SetValue(IsEnabledProperty, value);
         }
 
         void CanExecuteChanged()
         {
-            IsEnabled = _command?.CanExecute(CommandParameter) ?? true;
+            SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
         }
 
         public bool HasClickHandlers => Click != null;
 
         public ICommand? Command
         {
-            get => _command;
-            set
-            {
-                if (_command != null)
-                    WeakEvents.CommandCanExecuteChanged.Unsubscribe(_command, _canExecuteChangedSubscriber);
-
-                SetAndRaise(CommandProperty, ref _command, value);
-
-                if (_command != null)
-                    WeakEvents.CommandCanExecuteChanged.Subscribe(_command, _canExecuteChangedSubscriber);
-
-                CanExecuteChanged();
-            }
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -196,8 +154,28 @@ namespace Avalonia.Controls
                 Command.Execute(CommandParameter);
             }
         }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == MenuProperty && change.NewValue is NativeMenu newMenu)
+            {
+                if (newMenu.Parent != null && newMenu.Parent != this)
+                    throw new InvalidOperationException("NativeMenu already has a parent");
+                newMenu.Parent = this;
+            }
+            else if (change.Property == CommandProperty)
+            {
+                if (change.OldValue is ICommand oldCommand)
+                    WeakEvents.CommandCanExecuteChanged.Unsubscribe(oldCommand, _canExecuteChangedSubscriber);
+                if (change.NewValue is ICommand newCommand)
+                    WeakEvents.CommandCanExecuteChanged.Subscribe(newCommand, _canExecuteChangedSubscriber);
+                CanExecuteChanged();
+            }
+        }
     }
-    
+
     public enum NativeMenuItemToggleType
     {
         None,

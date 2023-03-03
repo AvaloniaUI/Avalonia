@@ -104,12 +104,12 @@ namespace Avalonia.Controls
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
-                ItemTemplate = _treeView.ItemTemplate;
+                SetCurrentValue(ItemTemplateProperty, _treeView.ItemTemplate);
             }
 
             if (ItemContainerTheme == null && _treeView?.ItemContainerTheme != null)
             {
-                ItemContainerTheme = _treeView.ItemContainerTheme;
+                SetCurrentValue(ItemContainerThemeProperty, _treeView.ItemContainerTheme);
             }
         }
 
