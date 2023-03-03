@@ -33,6 +33,9 @@ namespace Avalonia.Android
                 lifetime.View = View;
             }
 
+            Window?.ClearFlags(WindowManagerFlags.TranslucentStatus);
+            Window?.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+
             base.OnCreate(savedInstanceState);
 
             SetContentView(View);

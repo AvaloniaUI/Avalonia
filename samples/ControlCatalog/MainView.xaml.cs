@@ -122,7 +122,7 @@ namespace ControlCatalog
                 };
 
                 ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
-                ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? false;
+                ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
 
                 ViewModel.PropertyChanged += async (sender, args) =>
                 {
@@ -138,7 +138,7 @@ namespace ControlCatalog
                     // Give the OS some time to apply new values and refresh the view model.
                     await Task.Delay(100);
                     ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
-                    ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? false;
+                    ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Android.OS;
 using Android.Views;
+using AndroidX.AppCompat.App;
 using AndroidX.Core.View;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls.Platform;
@@ -124,6 +125,8 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
+                var isDefault = _statusBarTheme == null;
+
                 if (!_topLevel.View.IsShown)
                 {
                     return;
@@ -143,6 +146,8 @@ namespace Avalonia.Android.Platform
 
                 compat.AppearanceLightStatusBars = value == Controls.Platform.SystemBarTheme.Light;
                 compat.AppearanceLightNavigationBars = value == Controls.Platform.SystemBarTheme.Light;
+
+                AppCompatDelegate.DefaultNightMode = isDefault ? AppCompatDelegate.ModeNightFollowSystem : compat.AppearanceLightStatusBars ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
             }
         }
 
@@ -150,7 +155,11 @@ namespace Avalonia.Android.Platform
         {
             get
             {
-                var compat = ViewCompat.GetRootWindowInsets(_topLevel.View);
+                if(_activity.Window == null)
+                {
+                    return true;
+                }
+                var compat = ViewCompat.GetRootWindowInsets(_activity.Window.DecorView);
 
                 return compat?.IsVisible(WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars());
             }
