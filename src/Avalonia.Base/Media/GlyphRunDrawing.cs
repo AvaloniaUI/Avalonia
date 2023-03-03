@@ -32,7 +32,7 @@
 
         public override Rect GetBounds()
         {
-            return GlyphRun != null ? new Rect(GlyphRun.Size) : default;
+            return GlyphRun != null ? GlyphRun.Bounds : default;
         }
     }
 }

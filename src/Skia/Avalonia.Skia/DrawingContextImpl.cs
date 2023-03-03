@@ -516,7 +516,7 @@ namespace Avalonia.Skia
                 return;
             }
 
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Bounds.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 

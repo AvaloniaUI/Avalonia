@@ -44,11 +44,11 @@ namespace ControlCatalog
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
-                desktopLifetime.MainWindow = new MainWindow();
+                desktopLifetime.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
             {
-                singleViewLifetime.MainView = new MainView();
+                singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
             }
 
             base.OnFrameworkInitializationCompleted();

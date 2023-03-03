@@ -41,7 +41,6 @@ namespace Avalonia.Controls.Primitives
         private Button? _headerButton;
         private Button? _nextButton;
         private Button? _previousButton;
-        private ITemplate<Control>? _dayTitleTemplate;
         
         private DateTime _currentMonth;
         private bool _isMouseLeftButtonDown;
@@ -61,17 +60,15 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(HeaderBackgroundProperty, value); }
         }
 
-        public static readonly DirectProperty<CalendarItem, ITemplate<Control>?> DayTitleTemplateProperty =
-                AvaloniaProperty.RegisterDirect<CalendarItem, ITemplate<Control>?>(
+        public static readonly StyledProperty<ITemplate<Control>?> DayTitleTemplateProperty =
+                AvaloniaProperty.Register<CalendarItem, ITemplate<Control>?>(
                     nameof(DayTitleTemplate),
-                    o => o.DayTitleTemplate,
-                    (o,v) => o.DayTitleTemplate = v,
                     defaultBindingMode: BindingMode.OneTime);
 
         public ITemplate<Control>? DayTitleTemplate
         {
-            get { return _dayTitleTemplate; }
-            set { SetAndRaise(DayTitleTemplateProperty, ref _dayTitleTemplate, value); }
+            get => GetValue(DayTitleTemplateProperty);
+            set => SetValue(DayTitleTemplateProperty, value);
         }
 
         /// <summary>
@@ -176,9 +173,8 @@ namespace Avalonia.Controls.Primitives
 
                 for (int i = 0; i < Calendar.RowsPerMonth; i++)
                 {
-                    if (_dayTitleTemplate != null)
+                    if (DayTitleTemplate?.Build() is Control cell)
                     {
-                        var cell = _dayTitleTemplate.Build();
                         cell.DataContext = string.Empty;
                         cell.SetValue(Grid.RowProperty, 0);
                         cell.SetValue(Grid.ColumnProperty, i);
