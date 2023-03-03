@@ -383,14 +383,7 @@ namespace Avalonia.Controls
             {
                 hic.Header = item;
                 hic.HeaderTemplate = itemTemplate;
-
-                itemTemplate ??= hic.FindDataTemplate(item) ?? this.FindDataTemplate(item);
-
-                if (itemTemplate is ITreeDataTemplate treeTemplate)
-                {
-                    if (item is not null && treeTemplate.ItemsSelector(item) is { } itemsBinding)
-                        BindingOperations.Apply(hic, ItemsProperty, itemsBinding, null);
-                }
+                hic.PrepareItemContainer();
             }
         }
 
