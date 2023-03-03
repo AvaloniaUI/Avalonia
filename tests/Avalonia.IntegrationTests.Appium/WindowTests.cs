@@ -156,10 +156,10 @@ namespace Avalonia.IntegrationTests.Appium
                 var measuredWithString = measuredWithTextBlock.Text;
                 var workingAreaString = screenRectTextBox.Text;
 
-                var workingArea = Rect.Parse(workingAreaString);
+                var workingArea = Size.Parse(workingAreaString);
                 var measuredWith = Size.Parse(measuredWithString);
 
-                Assert.Equal(workingArea.Size, measuredWith);
+                Assert.Equal(workingArea, measuredWith);
             }
         }
 
