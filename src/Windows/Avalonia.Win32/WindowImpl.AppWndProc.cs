@@ -721,12 +721,40 @@ namespace Avalonia.Win32
 
                         Imm32InputMethod.Current.CompositionChanged();
 
-                        //For Korean IME we need preserve commited text.
-                        if (ToInt32(lParam) == (uint)GCS.GCS_RESULTSTR && ToInt32(wParam) >= 32)
-                        {
-                            Imm32InputMethod.Current.Composition = previousComposition;
+                        var gcs = (GCS)ToInt32(lParam);
 
-                            _ignoreWmChar = true;
+                        switch (gcs)
+                        {
+                            case GCS.GCS_RESULTSTR:                          
+                                {
+                                    if(ToInt32(wParam) >= 32)
+                                    {
+                                        Imm32InputMethod.Current.Composition = previousComposition;
+
+                                        _ignoreWmChar = true;
+                                    }
+                                    break;
+                                }
+                            case GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
+                                {
+                                    if (string.IsNullOrEmpty(Imm32InputMethod.Current.Composition))
+                                    {
+                                        var c = (char)ToInt32(wParam);
+
+                                        Imm32InputMethod.Current.Composition = new string(c, 1);
+
+                                        _ignoreWmChar = true;
+                                    }
+                                    break;
+                                }
+                            case GCS.GCS_RESULTREADSTR | GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
+                                {
+                                    Imm32InputMethod.Current.Composition = previousComposition;
+
+                                    _ignoreWmChar = true;
+
+                                    break;
+                                }
                         }
 
                         break;
@@ -741,6 +769,13 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_NOTIFY:
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
+                    Imm32InputMethod.Current.Composition = null;
+
+                    if (Imm32InputMethod.Current.IsActive)
+                    {
+                        Imm32InputMethod.Current.Client.SetPreeditText(null);
+                    }
+
                     Imm32InputMethod.Current.IsComposing = true;
                     return IntPtr.Zero;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
@@ -751,12 +786,11 @@ namespace Avalonia.Win32
                             var text = Imm32InputMethod.Current.Composition;
 
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, text);
-
-                            Imm32InputMethod.Current.Composition = null;
                         }
 
                         //Cleanup composition state.
                         Imm32InputMethod.Current.IsComposing = false;
+                        Imm32InputMethod.Current.Composition = null;
 
                         if (Imm32InputMethod.Current.IsActive)
                         {
