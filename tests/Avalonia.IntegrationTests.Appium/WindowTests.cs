@@ -92,7 +92,7 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     try
                     {
-                        _session.FindElementByAccessibilityId("WindowState").SendClick();
+                        _session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
                         _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                         // Wait for animations to run.
@@ -112,7 +112,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var windowState = _session.FindElementByAccessibilityId("WindowState");
+                var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
 
                 Assert.Equal("Normal", windowState.GetComboBoxValue());
                 
@@ -151,7 +151,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void ShowMode(ShowWindowMode mode)
         {
             using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
-            var windowState = _session.FindElementByAccessibilityId("WindowState");
+            var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
             var original = GetWindowInfo();
 
             Assert.Equal("Normal", windowState.GetComboBoxValue());
@@ -354,7 +354,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             PixelRect? ReadOwnerRect()
             {
-                var text = _session.FindElementByAccessibilityId("OwnerRect").Text;
+                var text = _session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
                 return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
             }
 
@@ -365,13 +365,13 @@ namespace Avalonia.IntegrationTests.Appium
                 try
                 {
                     return new(
-                        Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text),
-                        Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text),
-                        PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
+                        Size.Parse(_session.FindElementByAccessibilityId("CurrentClientSize").Text),
+                        Size.Parse(_session.FindElementByAccessibilityId("CurrentFrameSize").Text),
+                        PixelPoint.Parse(_session.FindElementByAccessibilityId("CurrentPosition").Text),
                         ReadOwnerRect(),
-                        PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
-                        double.Parse(_session.FindElementByAccessibilityId("Scaling").Text),
-                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("WindowState").Text));
+                        PixelRect.Parse(_session.FindElementByAccessibilityId("CurrentScreenRect").Text),
+                        double.Parse(_session.FindElementByAccessibilityId("CurrentScaling").Text),
+                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("CurrentWindowState").Text));
                 }
                 catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {
