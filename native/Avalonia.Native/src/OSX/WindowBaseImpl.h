@@ -108,9 +108,8 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT GetInputMethod(IAvnTextInputMethod **retOut) override;
 
 protected:
-    virtual NSWindowStyleMask GetStyle();
-
-    void UpdateStyle();
+    virtual NSWindowStyleMask CalculateStyleMask() = 0;
+    virtual void UpdateStyle();
 
 private:
     void CreateNSWindow (bool isDialog);

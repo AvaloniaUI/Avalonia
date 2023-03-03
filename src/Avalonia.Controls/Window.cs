@@ -573,7 +573,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                Renderer?.Stop();
+                Renderer.Stop();
 
                 if (Owner is Window owner)
                 {
@@ -721,7 +721,7 @@ namespace Avalonia.Controls
                 SetWindowStartupLocation(owner?.PlatformImpl);
 
                 PlatformImpl?.Show(ShowActivated, false);
-                Renderer?.Start();
+                Renderer.Start();
                 OnOpened(EventArgs.Empty);
             }
         }
@@ -798,7 +798,7 @@ namespace Avalonia.Controls
 
                 PlatformImpl?.Show(ShowActivated, true);
 
-                Renderer?.Start();
+                Renderer.Start();
 
                 Observable.FromEventPattern(
                         x => Closed += x,

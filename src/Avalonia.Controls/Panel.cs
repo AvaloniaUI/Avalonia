@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -58,17 +58,33 @@ namespace Avalonia.Controls
             set { SetValue(BackgroundProperty, value); }
         }
 
+        /// <summary>
+        /// Gets whether the <see cref="Panel"/> hosts the items created by an <see cref="ItemsPresenter"/>.
+        /// </summary>
+        public bool IsItemsHost { get; internal set; }
+
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
-            add => _childIndexChanged += value;
-            remove => _childIndexChanged -= value;
+            add
+            {
+                if (_childIndexChanged is null)
+                    Children.PropertyChanged += ChildrenPropertyChanged;
+                _childIndexChanged += value;
+            }
+
+            remove
+            {
+                _childIndexChanged -= value;
+                if (_childIndexChanged is null)
+                    Children.PropertyChanged -= ChildrenPropertyChanged;
+            }
         }
 
         /// <summary>
         /// Renders the visual to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var background = Background;
             if (background != null)
@@ -117,24 +133,29 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            List<Control> controls;
-
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    controls = e.NewItems!.OfType<Control>().ToList();
-                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Control>().ToList());
+                    }
                     VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:
-                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
-                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
+                    }
+                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    controls = e.OldItems!.OfType<Control>().ToList();
-                    LogicalChildren.RemoveAll(controls);
+                    if (!IsItemsHost)
+                    {
+                        LogicalChildren.RemoveAll(e.OldItems!.OfType<Control>().ToList());
+                    }
                     VisualChildren.RemoveAll(e.OldItems!.OfType<Visual>());
                     break;
 
@@ -143,7 +164,10 @@ namespace Avalonia.Controls
                     {
                         var index = i + e.OldStartingIndex;
                         var child = (Control)e.NewItems![i]!;
-                        LogicalChildren[index] = child;
+                        if (!IsItemsHost)
+                        {
+                            LogicalChildren[index] = child;
+                        }
                         VisualChildren[index] = child;
                     }
                     break;
@@ -152,13 +176,19 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
             InvalidateMeasureOnChildrenChanged();
         }
 
         private protected virtual void InvalidateMeasureOnChildrenChanged()
         {
             InvalidateMeasure();
+        }
+
+        private void ChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
         }
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
@@ -182,6 +212,7 @@ namespace Avalonia.Controls
             return child is Control control ? Children.IndexOf(control) : -1;
         }
 
+        /// <inheritdoc />
         public bool TryGetTotalCount(out int count)
         {
             count = Children.Count;

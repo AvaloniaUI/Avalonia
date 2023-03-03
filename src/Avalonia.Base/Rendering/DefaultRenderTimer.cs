@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering
@@ -59,7 +57,8 @@ namespace Avalonia.Rendering
             }
         }
 
-        public bool RunsInBackground => true;
+        /// <inheritdoc />
+        public virtual bool RunsInBackground => true;
 
         /// <summary>
         /// Starts the timer.

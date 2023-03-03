@@ -16,19 +16,17 @@ namespace Avalonia.Controls
         private IPlatformHandle? _nativeControlHandle;
         private bool _queuedForDestruction;
         private bool _queuedForMoveResize;
-        private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
+        private readonly List<Visual> _propertyChangedSubscriptions = new();
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = e.Root as TopLevel;
             var visual = (Visual)this;
             while (visual != null)
             {
-                if (visual is Visual v)
-                {
-                    v.PropertyChanged += PropertyChangedHandler;
-                    _propertyChangedSubscriptions.Add(v);
-                }
+                visual.PropertyChanged += PropertyChangedHandler;
+                _propertyChangedSubscriptions.Add(visual);
 
                 visual = visual.GetVisualParent();
             }
@@ -42,15 +40,13 @@ namespace Avalonia.Controls
                 EnqueueForMoveResize();
         }
 
+        /// <inheritdoc />
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = null;
-            if (_propertyChangedSubscriptions != null)
-            {
-                foreach (var v in _propertyChangedSubscriptions)
-                    v.PropertyChanged -= PropertyChangedHandler;
-                _propertyChangedSubscriptions.Clear();
-            }
+            foreach (var v in _propertyChangedSubscriptions)
+                v.PropertyChanged -= PropertyChangedHandler;
+            _propertyChangedSubscriptions.Clear();
             UpdateHost();
         }
 
@@ -128,7 +124,7 @@ namespace Avalonia.Controls
             return new Rect(position.Value, bounds.Size);
         }
 
-        void EnqueueForMoveResize()
+        private void EnqueueForMoveResize()
         {
             if(_queuedForMoveResize)
                 return;

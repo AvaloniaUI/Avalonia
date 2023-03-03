@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -278,6 +281,134 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(focused, target.GetRealizedElements().First());
         }
 
+        [Fact]
+        public void Removing_Range_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.RemoveRange(0, 80);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 10, 10);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
+        }
+
+        [Fact]
+        public void Removing_Range_To_Have_Less_Than_A_Page_Of_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.RemoveRange(0, 95);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 5);
+            Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
+        public void Resetting_Collection_To_Have_Less_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new ResettingCollection(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.Reset(Enumerable.Range(0, 20).Select(x => $"Item {x}"));
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 10, 10);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
+        }
+
+        [Fact]
+        public void Resetting_Collection_To_Have_Less_Than_A_Page_Of_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new ResettingCollection(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.Reset(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 5);
+            Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
+        public void NthChild_Selector_Works()
+        {
+            using var app = App();
+            
+            var style = new Style(x => x.OfType<ContentPresenter>().NthChild(5, 0))
+            {
+                Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+            
+            Assert.Equal(10, realized.Count);
+            
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 4 || i == 9) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, container.Background);
+            }
+        }
+
+        [Fact]
+        public void NthLastChild_Selector_Works()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthLastChild(5, 0))
+            {
+                Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 0 || i == 5) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, container.Background);
+            }
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -322,7 +453,8 @@ namespace Avalonia.Controls.UnitTests
 
         private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(
             IEnumerable<object>? items = null,
-            bool useItemTemplate = true)
+            bool useItemTemplate = true,
+            IEnumerable<Style>? styles = null)
         {
             var target = new VirtualizingStackPanel();
 
@@ -351,6 +483,10 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot(true, itemsControl);
             root.ClientSize = new(100, 100);
+
+            if (styles is not null)
+                root.Styles.AddRange(styles);
+
             root.LayoutManager.ExecuteInitialLayoutPass();
 
             return (target, scroll, itemsControl);
@@ -378,5 +514,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(IEnumerable<string> items)
+            {
+                AddRange(items);
+            }
+
+            public void Reset(IEnumerable<string> items)
+            {
+                Clear();
+                AddRange(items);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        }
     }
 }

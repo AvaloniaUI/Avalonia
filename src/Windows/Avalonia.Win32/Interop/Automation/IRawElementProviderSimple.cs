@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-#nullable enable
-
 namespace Avalonia.Win32.Interop.Automation
 {
     [Flags]

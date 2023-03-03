@@ -19,11 +19,13 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="prefixLength">Length of leading prefix.</param>
         /// <param name="width">width in which collapsing is constrained to</param>
         /// <param name="textRunProperties">text run properties of ellipsis symbol</param>
+        /// <param name="flowDirection">the flow direction of the collapes line.</param>
         public TextLeadingPrefixCharacterEllipsis(
             string ellipsis,
             int prefixLength,
             double width,
-            TextRunProperties textRunProperties)
+            TextRunProperties textRunProperties,
+            FlowDirection flowDirection)
         {
             if (_prefixLength < 0)
             {
@@ -33,6 +35,7 @@ namespace Avalonia.Media.TextFormatting
             _prefixLength = prefixLength;
             Width = width;
             Symbol = new TextCharacters(ellipsis, textRunProperties);
+            FlowDirection = flowDirection;
         }
 
         /// <inheritdoc/>
@@ -40,6 +43,8 @@ namespace Avalonia.Media.TextFormatting
 
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
+
+        public override FlowDirection FlowDirection { get; }
 
         /// <inheritdoc />
         public override TextRun[]? Collapse(TextLine textLine)
@@ -55,7 +60,7 @@ namespace Avalonia.Media.TextFormatting
             var currentWidth = 0.0;
             var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, FlowDirection.LeftToRight);
 
-            if (Width < shapedSymbol.GlyphRun.Size.Width)
+            if (Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
                 return Array.Empty<TextRun>();
             }

@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.iOS
 {
-    class CursorFactoryStub : ICursorFactory
+    internal class CursorFactoryStub : ICursorFactory
     {
         public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorImplStub();
         ICursorImpl ICursorFactory.GetCursor(StandardCursorType cursorType) => new CursorImplStub();
@@ -16,7 +16,7 @@ namespace Avalonia.iOS
         }
     }
 
-    class WindowingPlatformStub : IWindowingPlatform
+    internal class WindowingPlatformStub : IWindowingPlatform
     {
         public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
@@ -25,7 +25,7 @@ namespace Avalonia.iOS
         public ITrayIconImpl CreateTrayIcon() => null;
     }
     
-    class PlatformIconLoaderStub : IPlatformIconLoader
+    internal class PlatformIconLoaderStub : IPlatformIconLoader
     {
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
@@ -50,7 +50,7 @@ namespace Avalonia.iOS
         }
     }
 
-    public class IconStub : IWindowIconImpl
+    internal class IconStub : IWindowIconImpl
     {
         private readonly MemoryStream _ms;
 

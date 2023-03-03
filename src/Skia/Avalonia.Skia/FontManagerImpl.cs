@@ -26,11 +26,11 @@ namespace Avalonia.Skia
             return _skFontManager.FontFamilies;
         }
 
-        [ThreadStatic] private static string[] t_languageTagBuffer;
+        [ThreadStatic] private static string[]? t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight, FontStretch fontStretch,
-            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
@@ -53,20 +53,13 @@ namespace Avalonia.Skia
                     break;
             }
 
-            if (culture == null)
-            {
-                culture = CultureInfo.CurrentUICulture;
-            }
+            culture ??= CultureInfo.CurrentUICulture;
 
-            if (t_languageTagBuffer == null)
-            {
-                t_languageTagBuffer = new string[2];
-            }
-
+            t_languageTagBuffer ??= new string[2];
             t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
             t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
 
-            if (fontFamily != null && fontFamily.FamilyNames.HasFallbacks)
+            if (fontFamily is not null && fontFamily.FamilyNames.HasFallbacks)
             {
                 var familyNames = fontFamily.FamilyNames;
 
@@ -104,9 +97,22 @@ namespace Avalonia.Skia
 
         public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
-            SKTypeface skTypeface = null;
+            SKTypeface? skTypeface = null;
 
-            if (typeface.FontFamily.Key == null)
+            if(typeface.FontFamily.Key is not null)
+            {
+                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+
+                skTypeface = fontCollection.Get(typeface);
+
+                if (skTypeface is null && !typeface.FontFamily.FamilyNames.HasFallbacks)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+                }
+            }
+
+            if (skTypeface is null)
             {
                 var defaultName = SKTypeface.Default.FamilyName;
 
@@ -135,13 +141,7 @@ namespace Avalonia.Skia
                 skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
                     ?? SKTypeface.Default;
             }
-            else
-            {
-                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-
-                skTypeface = fontCollection.Get(typeface);
-            }
-
+           
             if (skTypeface == null)
             {
                 throw new InvalidOperationException(

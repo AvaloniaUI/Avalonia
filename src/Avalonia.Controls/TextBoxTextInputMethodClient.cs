@@ -1,10 +1,11 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -12,6 +13,7 @@ namespace Avalonia.Controls
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
+        private ITextEditable? _textEditable;
 
         public Visual TextViewVisual => _presenter!;
 
@@ -45,7 +47,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if(_presenter is null || _parent is null)
+                if (_presenter is null || _parent is null)
                 {
                     return default;
                 }
@@ -71,13 +73,70 @@ namespace Avalonia.Controls
             }
         }
 
+        public ITextEditable? TextEditable
+        {
+            get => _textEditable; set
+            {
+                if (_textEditable != null)
+                {
+                    _textEditable.TextChanged -= TextEditable_TextChanged;
+                    _textEditable.SelectionChanged -= TextEditable_SelectionChanged;
+                    _textEditable.CompositionChanged -= TextEditable_CompositionChanged;
+                }
+
+                _textEditable = value;
+
+                if (_textEditable != null)
+                {
+                    _textEditable.TextChanged += TextEditable_TextChanged;
+                    _textEditable.SelectionChanged += TextEditable_SelectionChanged;
+                    _textEditable.CompositionChanged += TextEditable_CompositionChanged;
+
+                    if (_presenter != null)
+                    {
+                        _textEditable.Text = _presenter.Text;
+                        _textEditable.SelectionStart = _presenter.SelectionStart;
+                        _textEditable.SelectionEnd = _presenter.SelectionEnd;
+                    }
+                }
+            }
+        }
+
+        private void TextEditable_CompositionChanged(object? sender, EventArgs e)
+        {
+            if (_presenter != null && _textEditable != null)
+            {
+                _presenter.CompositionRegion = new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd);
+            }
+        }
+
+        private void TextEditable_SelectionChanged(object? sender, EventArgs e)
+        {
+            if (_parent != null && _textEditable != null)
+            {
+                _parent.SelectionStart = _textEditable.SelectionStart;
+                _parent.SelectionEnd = _textEditable.SelectionEnd;
+            }
+        }
+
+        private void TextEditable_TextChanged(object? sender, EventArgs e)
+        {
+            if (_parent != null)
+            {
+                if (_parent.Text != _textEditable?.Text)
+                {
+                    _parent.Text = _textEditable?.Text;
+                }
+            }
+        }
+
         private static string GetTextLineText(TextLine textLine)
         {
             var builder = StringBuilderCache.Acquire(textLine.Length);
 
             foreach (var run in textLine.TextRuns)
             {
-                if(run.Length > 0)
+                if (run.Length > 0)
                 {
 #if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
@@ -100,19 +159,66 @@ namespace Avalonia.Controls
 
         public event EventHandler? SurroundingTextChanged;
 
-        public void SetPreeditText(string? text)
+        private string? _presenterText;
+        private int _compositionStart;
+
+        public void SetPreeditText(string? preeditText)
+        {
+            if (_presenter == null || _parent == null)
+            {
+                return;
+            }
+
+            if (_presenterText is null)
+            {
+                _presenterText = _parent.Text ?? "";
+                _compositionStart = _parent.CaretIndex;
+            }
+
+            var text = GetText(preeditText);
+
+            _presenter._text = text;
+
+            _presenter.PreeditText = preeditText;
+
+            _presenter.UpdateCaret(new CharacterHit(_compositionStart + (preeditText != null ? preeditText.Length : 0)), false);
+
+            if (string.IsNullOrEmpty(preeditText))
+            {
+                _presenterText = null;
+            }
+        }
+
+        private string? GetText(string? preeditText)
+        {
+            if (string.IsNullOrEmpty(preeditText))
+            {
+                return _presenterText;
+            }
+
+            if (string.IsNullOrEmpty(_presenterText))
+            {
+                return preeditText;
+            }
+
+            var text = _presenterText.Substring(0, _compositionStart) + preeditText + _presenterText.Substring(_compositionStart);
+
+            return text;
+        }
+
+        public void SetComposingRegion(TextRange? region)
         {
             if (_presenter == null)
             {
                 return;
             }
 
-            _presenter.PreeditText = text;
+            _presenter.CompositionRegion = region;
         }
 
         public void SelectInSurroundingText(int start, int end)
         {
-            if(_parent is null ||_presenter is null)
+            if (_parent is null || _presenter is null)
             {
                 return;
             }
@@ -125,21 +231,21 @@ namespace Avalonia.Controls
 
             var selectionStart = lineStart + start;
             var selectionEnd = lineStart + end;
-             
+
             _parent.SelectionStart = selectionStart;
             _parent.SelectionEnd = selectionEnd;
-        }    
-        
+        }
+
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
-            if(_parent != null)
+            if (_parent != null)
             {
                 _parent.PropertyChanged -= OnParentPropertyChanged;
             }
 
             _parent = parent;
 
-            if(_parent != null)
+            if (_parent != null)
             {
                 _parent.PropertyChanged += OnParentPropertyChanged;
             }
@@ -148,16 +254,18 @@ namespace Avalonia.Controls
             {
                 _presenter.PreeditText = null;
 
-                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;             
+                _presenter.CompositionRegion = null;
+
+                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
             }
-           
+
             _presenter = presenter;
-            
+
             if (_presenter != null)
             {
                 _presenter.CaretBoundsChanged += OnCaretBoundsChanged;
             }
-           
+
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
 
             OnCaretBoundsChanged(this, EventArgs.Empty);
@@ -165,11 +273,32 @@ namespace Avalonia.Controls
 
         private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if(e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
+            if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
             {
                 if (SupportsSurroundingText)
                 {
                     SurroundingTextChanged?.Invoke(this, e);
+                }
+                if (_textEditable != null)
+                {
+                    var value = (int)(e.NewValue ?? 0);
+                    if (e.Property == TextBox.SelectionStartProperty)
+                    {
+                        _textEditable.SelectionStart = value;
+                    }
+
+                    if (e.Property == TextBox.SelectionEndProperty)
+                    {
+                        _textEditable.SelectionEnd = value;
+                    }
+                }
+            }
+
+            if (e.Property == TextBox.TextProperty)
+            {
+                if (_textEditable != null)
+                {
+                    _textEditable.Text = (string?)e.NewValue;
                 }
             }
         }

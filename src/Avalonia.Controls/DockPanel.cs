@@ -101,9 +101,6 @@ namespace Avalonia.Controls
                 Size childConstraint;             // Contains the suggested input constraint for this child.
                 Size childDesiredSize;            // Contains the return size from child measure.
 
-                if (child == null)
-                { continue; }
-
                 // Child constraint is the remaining size; this is total size minus size consumed by previous children.
                 childConstraint = new Size(Math.Max(0.0, constraint.Width - accumulatedWidth),
                                            Math.Max(0.0, constraint.Height - accumulatedHeight));
@@ -122,7 +119,7 @@ namespace Avalonia.Controls
                 // will deal with computing our minimum size (parentSize) due to that accumulation.
                 // Therefore, we only need to compute our minimum size (parentSize) in dimensions that this child does
                 //   not accumulate: Width for Top/Bottom, Height for Left/Right.
-                switch (DockPanel.GetDock((Control)child))
+                switch (GetDock(child))
                 {
                     case Dock.Left:
                     case Dock.Right:
@@ -164,8 +161,6 @@ namespace Avalonia.Controls
             for (int i = 0; i < totalChildrenCount; ++i)
             {
                 var child = children[i];
-                if (child == null)
-                { continue; }
 
                 Size childDesiredSize = child.DesiredSize;
                 Rect rcChild = new Rect(
@@ -176,7 +171,7 @@ namespace Avalonia.Controls
 
                 if (i < nonFillChildrenCount)
                 {
-                    switch (DockPanel.GetDock((Control)child))
+                    switch (GetDock(child))
                     {
                         case Dock.Left:
                             accumulatedLeft += childDesiredSize.Width;

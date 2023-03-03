@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -132,6 +133,28 @@ namespace Avalonia.Controls.UnitTests
             ((SolidColorBrush)target.Background).Color = Colors.Green;
 
             renderer.Verify(x => x.AddDirty(target), Times.Once);
+        }
+
+        [Fact]
+        public void Adding_Null_Child_Should_Throw()
+        {
+            var panel = new Panel();
+            Assert.Throws<ArgumentNullException>(() => panel.Children.Add(null!));
+        }
+
+        [Fact]
+        public void Adding_Control_To_Items_Host_Panel_Should_Not_Affect_Logical_Children()
+        {
+            var child = new Control();
+            var realParent = new ContentControl { Content = child };
+            var panel = new Panel { IsItemsHost = true };
+
+            panel.Children.Add(child);
+
+            Assert.Empty(panel.LogicalChildren);
+            Assert.Same(child.Parent, realParent);
+            Assert.Same(child.GetLogicalParent(), realParent);
+            Assert.Same(child.GetVisualParent(), panel);
         }
     }
 }

@@ -6,11 +6,26 @@ using Avalonia.Platform;
 namespace Avalonia.Styling;
 
 /// <summary>
-/// Specifies a UI theme variant that should be used for the 
+/// Specifies a UI theme variant that should be used for the Control and Application types.
 /// </summary>
 [TypeConverter(typeof(ThemeVariantTypeConverter))]
 public sealed record ThemeVariant
 {
+    /// <summary>
+    /// Defines the ActualThemeVariant property.
+    /// </summary>
+    internal static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
+        AvaloniaProperty.Register<StyledElement, ThemeVariant>(
+            "ActualThemeVariant",
+            inherits: true);
+
+    /// <summary>
+    /// Defines the RequestedThemeVariant property.
+    /// </summary>
+    internal static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+        AvaloniaProperty.Register<StyledElement, ThemeVariant?>(
+            "RequestedThemeVariant", defaultValue: Default);
+    
     /// <summary>
     /// Creates a new instance of the <see cref="ThemeVariant"/>
     /// </summary>

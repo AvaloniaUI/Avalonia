@@ -9,11 +9,13 @@ namespace Avalonia.PropertyStore
         IDisposable
     {
         private readonly ValueStore _owner;
+        private readonly bool _hasDataValidation;
         private IDisposable? _subscription;
 
         public DirectBindingObserver(ValueStore owner, DirectPropertyBase<T> property)
         {
             _owner = owner;
+            _hasDataValidation = property.GetMetadata(owner.Owner.GetType())?.EnableDataValidation ?? false;
             Property = property;
         }
 
@@ -33,10 +35,17 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
-            _owner.OnLocalValueBindingCompleted(Property, this);
+            OnCompleted();
         }
 
-        public void OnCompleted() => _owner.OnLocalValueBindingCompleted(Property, this);
+        public void OnCompleted()
+        {
+            _owner.OnLocalValueBindingCompleted(Property, this);
+
+            if (_hasDataValidation)
+                _owner.Owner.OnUpdateDataValidation(Property, BindingValueType.UnsetValue, null);
+        }
+
         public void OnError(Exception error) => OnCompleted();
 
         public void OnNext(T value)

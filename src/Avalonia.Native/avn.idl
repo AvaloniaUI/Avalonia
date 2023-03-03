@@ -503,6 +503,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateTrayIcon(IAvnTrayIcon** ppv);
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
+     HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -940,4 +941,10 @@ interface IAvnPlatformSettings : IUnknown
     AvnPlatformThemeVariant GetPlatformTheme();
     uint GetAccentColor();
     void RegisterColorsChange(IAvnActionCallback* callback);
+}
+
+[uuid(12edf00d-5803-4d3f-9947-b4840e5e9372)]
+interface IAvnPlatformBehaviorInhibition : IUnknown
+{
+    void SetInhibitAppSleep(bool inhibitAppSleep, char* reason);
 }

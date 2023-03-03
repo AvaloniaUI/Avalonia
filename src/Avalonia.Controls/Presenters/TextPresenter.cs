@@ -10,6 +10,7 @@ using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
 using Avalonia.Input.TextInput;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -52,7 +53,7 @@ namespace Avalonia.Controls.Presenters
             AvaloniaProperty.RegisterDirect<TextPresenter, string?>(
                 nameof(Text),
                 o => o.Text,
-                (o, v) => o.Text = v);
+                (o, v) => o.Text = v, defaultBindingMode: BindingMode.OneWay);
 
         /// <summary>
         /// Defines the <see cref="PreeditText"/> property.
@@ -62,6 +63,15 @@ namespace Avalonia.Controls.Presenters
                 nameof(PreeditText),
                 o => o.PreeditText,
                  (o, v) => o.PreeditText = v);
+
+        /// <summary>
+        /// Defines the <see cref="CompositionRegion"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextPresenter, TextRange?> CompositionRegionProperty =
+            AvaloniaProperty.RegisterDirect<TextPresenter, TextRange?>(
+                nameof(CompositionRegion),
+                o => o.CompositionRegion,
+                 (o, v) => o.CompositionRegion = v);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -98,7 +108,7 @@ namespace Avalonia.Controls.Presenters
         private int _selectionStart;
         private int _selectionEnd;
         private bool _caretBlink;
-        private string? _text;
+        internal string? _text;
         private TextLayout? _textLayout;
         private Size _constraint;
 
@@ -106,6 +116,7 @@ namespace Avalonia.Controls.Presenters
         private Rect _caretBounds;
         private Point _navigationPosition;
         private string? _preeditText;
+        private TextRange? _compositionRegion;
 
         static TextPresenter()
         {
@@ -144,6 +155,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => _preeditText;
             set => SetAndRaise(PreeditTextProperty, ref _preeditText, value);
+        }
+
+        public TextRange? CompositionRegion
+        {
+            get => _compositionRegion;
+            set => SetAndRaise(CompositionRegionProperty, ref _compositionRegion, value);
         }
 
         /// <summary>
@@ -388,7 +405,7 @@ namespace Avalonia.Controls.Presenters
             TextLayout.Draw(context, new Point(left, top));
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
@@ -510,23 +527,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private string? GetText()
-        {
-            if (!string.IsNullOrEmpty(_preeditText))
-            {
-                if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
-                {
-                    return _preeditText;
-                }
-
-                var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
-
-                return text;
-            }
-
-            return _text;
-        }
-
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -535,7 +535,7 @@ namespace Avalonia.Controls.Presenters
         {
             TextLayout result;
 
-            var text = GetText();
+            var text = _text;
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
@@ -548,7 +548,20 @@ namespace Avalonia.Controls.Presenters
 
             var foreground = Foreground;
 
-            if (!string.IsNullOrEmpty(_preeditText))
+            if (_compositionRegion != null)
+            {
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_compositionRegion?.Start ?? 0, _compositionRegion?.Length ?? 0,
+                        new GenericTextRunProperties(typeface, FontSize,
+                        foregroundBrush: foreground,
+                        textDecorations: TextDecorations.Underline));
+
+                textStyleOverrides = new[]
+                {
+                    preeditHighlight
+                };
+
+            }
+            else if (!string.IsNullOrEmpty(_preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
@@ -822,7 +835,7 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        private void UpdateCaret(CharacterHit characterHit, bool updateCaretIndex = true)
+        internal void UpdateCaret(CharacterHit characterHit, bool notify = true)
         {
             _lastCharacterHit = characterHit;
 
@@ -850,7 +863,7 @@ namespace Avalonia.Controls.Presenters
                 CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            if (updateCaretIndex)
+            if (notify)
             {
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
             }
@@ -870,35 +883,6 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick -= CaretTimerTick;
         }
 
-        protected void OnPreeditTextChanged(string? oldValue, string? newValue)
-        {
-            InvalidateTextLayout();
-
-            if (string.IsNullOrEmpty(newValue))
-            {
-                UpdateCaret(_lastCharacterHit);
-            }
-            else
-            {
-                var textPosition = _caretIndex + newValue?.Length ?? 0;
-
-                var characterHit = GetCharacterHitFromTextPosition(textPosition);
-
-                UpdateCaret(characterHit, false);
-            }
-        }
-
-        private CharacterHit GetCharacterHitFromTextPosition(int textPosition)
-        {
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
-
-            var textLine = TextLayout.TextLines[lineIndex];
-
-            var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
-
-            return characterHit;
-        }
-
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -906,11 +890,7 @@ namespace Avalonia.Controls.Presenters
             switch (change.Property.Name)
             {
                 case nameof(PreeditText):
-                    {
-                        OnPreeditTextChanged(change.OldValue as string, change.NewValue as string);
-                        break;
-                    }
-
+                case nameof(CompositionRegion):
                 case nameof(Foreground):
                 case nameof(FontSize):
                 case nameof(FontStyle):
@@ -931,7 +911,6 @@ namespace Avalonia.Controls.Presenters
 
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
-
                 case nameof(FlowDirection):
                     {
                         InvalidateTextLayout();

@@ -125,7 +125,8 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                    var window = _inputRoot as Window;
+                    var visual = window?.Renderer.HitTestFirst(e.Position, window, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {

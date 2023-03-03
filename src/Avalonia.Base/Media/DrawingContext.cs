@@ -8,82 +8,44 @@ using Avalonia.Media.Imaging;
 
 namespace Avalonia.Media
 {
-    public sealed class DrawingContext : IDisposable
+    public abstract class DrawingContext : IDisposable
     {
-        private readonly bool _ownsImpl;
-        private int _currentLevel;
+        private static ThreadSafeObjectPool<Stack<RestoreState>> StateStackPool { get; } =
+            ThreadSafeObjectPool<Stack<RestoreState>>.Default;
 
+        private Stack<RestoreState>? _states;
 
-        private static ThreadSafeObjectPool<Stack<PushedState>> StateStackPool { get; } =
-            ThreadSafeObjectPool<Stack<PushedState>>.Default;
-
-        private static ThreadSafeObjectPool<Stack<TransformContainer>> TransformStackPool { get; } =
-            ThreadSafeObjectPool<Stack<TransformContainer>>.Default;
-
-        private Stack<PushedState>? _states = StateStackPool.Get();
-
-        private Stack<TransformContainer>? _transformContainers = TransformStackPool.Get();
-
-        readonly struct TransformContainer
+        internal DrawingContext()
         {
-            public readonly Matrix LocalTransform;
-            public readonly Matrix ContainerTransform;
-
-            public TransformContainer(Matrix localTransform, Matrix containerTransform)
-            {
-                LocalTransform = localTransform;
-                ContainerTransform = containerTransform;
-            }
+            
         }
 
-        public DrawingContext(IDrawingContextImpl impl)
+        public void Dispose()
         {
-            PlatformImpl = impl;
-            _ownsImpl = true;
+            if (_states != null)
+            {
+                while (_states.Count > 0)
+                    _states.Pop().Dispose();
+
+                StateStackPool.ReturnAndSetNull(ref _states);
+            }
+
+            DisposeCore();
         }
         
-        public DrawingContext(IDrawingContextImpl impl, bool ownsImpl)
-        {
-            _ownsImpl = ownsImpl;
-            PlatformImpl = impl;
-        }
-
-        public IDrawingContextImpl PlatformImpl { get; }
-
-        private Matrix _currentTransform = Matrix.Identity;
-
-        private Matrix _currentContainerTransform = Matrix.Identity;
-
-        /// <summary>
-        /// Gets the current transform of the drawing context.
-        /// </summary>
-        public Matrix CurrentTransform
-        {
-            get { return _currentTransform; }
-            private set
-            {
-                _currentTransform = value;
-                var transform = _currentTransform * _currentContainerTransform;
-                PlatformImpl.Transform = transform;
-            }
-        }
-
-        //HACK: This is a temporary hack that is used in the render loop 
-        //to update TransformedBounds property
-        [Obsolete("HACK for render loop, don't use")]
-        public Matrix CurrentContainerTransform => _currentContainerTransform;
-
+        protected abstract void DisposeCore();
+        
         /// <summary>
         /// Draws an image.
         /// </summary>
         /// <param name="source">The image.</param>
         /// <param name="rect">The rect in the output to draw to.</param>
-        public void DrawImage(IImage source, Rect rect)
+        public virtual void DrawImage(IImage source, Rect rect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-
             DrawImage(source, new Rect(source.Size), rect);
         }
+
 
         /// <summary>
         /// Draws an image.
@@ -92,12 +54,22 @@ namespace Avalonia.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IImage source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        public virtual void DrawImage(IImage source, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode = default)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-
             source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
         }
+        
+        /// <summary>
+        /// Draws a platform-specific bitmap impl.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacity">The opacity to draw with.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        internal abstract void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
 
         /// <summary>
         /// Draws a line.
@@ -108,10 +80,10 @@ namespace Avalonia.Media
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
             if (PenIsVisible(pen))
-            {
-                PlatformImpl.DrawLine(pen, p1, p2);
-            }
+                DrawLineCore(pen, p1, p2);
         }
+
+        protected abstract void DrawLineCore(IPen pen, Point p1, Point p2);
 
         /// <summary>
         /// Draws a geometry.
@@ -121,10 +93,10 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
         {
-            if (geometry.PlatformImpl is not null)
-                DrawGeometry(brush, pen, geometry.PlatformImpl);
+            if ((brush != null || PenIsVisible(pen)) && geometry.PlatformImpl != null)
+                DrawGeometryCore(brush, pen, geometry.PlatformImpl);
         }
-
+        
         /// <summary>
         /// Draws a geometry.
         /// </summary>
@@ -133,13 +105,11 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
-            _ = geometry ?? throw new ArgumentNullException(nameof(geometry));
-
-            if (brush != null || PenIsVisible(pen))
-            {
-                PlatformImpl.DrawGeometry(brush, pen, geometry);
-            }
+            if ((brush != null || PenIsVisible(pen)))
+                DrawGeometryCore(brush, pen, geometry);
         }
+
+        protected abstract void DrawGeometryCore(IBrush? brush, IPen? pen, IGeometryImpl geometry);
 
         /// <summary>
         /// Draws a rectangle with the specified Brush and Pen.
@@ -158,14 +128,12 @@ namespace Avalonia.Media
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
-        public void DrawRectangle(IBrush? brush, IPen? pen, Rect rect, double radiusX = 0, double radiusY = 0,
+        public void DrawRectangle(IBrush? brush, IPen? pen, Rect rect,
+            double radiusX = 0, double radiusY = 0,
             BoxShadows boxShadows = default)
         {
             if (brush == null && !PenIsVisible(pen))
-            {
                 return;
-            }
-
             if (!MathUtilities.IsZero(radiusX))
             {
                 radiusX = Math.Min(radiusX, rect.Width / 2);
@@ -175,20 +143,48 @@ namespace Avalonia.Media
             {
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
-
-            PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadows);
+            
+            DrawRectangleCore(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadows);
+        }
+        
+        /// <summary>
+        /// Draws a rectangle with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
+        /// <param name="rrect">The rectangle bounds.</param>
+        /// <param name="boxShadows">Box shadow effect parameters</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rrect, BoxShadows boxShadows = default)
+        {
+            if (brush == null && !PenIsVisible(pen))
+                return;
+            DrawRectangleCore(brush, pen, rrect, boxShadows);
         }
 
+        protected abstract void DrawRectangleCore(IBrush? brush, IPen? pen, RoundedRect rrect,
+            BoxShadows boxShadows = default);
+        
         /// <summary>
         /// Draws the outline of a rectangle.
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f)
-        {
+        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f) =>
             DrawRectangle(null, pen, rect, cornerRadius, cornerRadius);
-        }
+
+        /// <summary>
+        /// Draws a filled rectangle.
+        /// </summary>
+        /// <param name="brush">The brush.</param>
+        /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="cornerRadius">The corner radius.</param>
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f) => 
+            DrawRectangle(brush, null, rect, cornerRadius, cornerRadius);
 
         /// <summary>
         /// Draws an ellipse with the specified Brush and Pen.
@@ -204,35 +200,50 @@ namespace Avalonia.Media
         /// </remarks>
         public void DrawEllipse(IBrush? brush, IPen? pen, Point center, double radiusX, double radiusY)
         {
-            if (brush == null && !PenIsVisible(pen))
+            if (brush != null || PenIsVisible(pen))
             {
-                return;
+                var originX = center.X - radiusX;
+                var originY = center.Y - radiusY;
+                var width = radiusX * 2;
+                var height = radiusY * 2;
+                DrawEllipseCore(brush, pen, new Rect(originX, originY, width, height));
             }
-
-            var originX = center.X - radiusX;
-            var originY = center.Y - radiusY;
-            var width = radiusX * 2;
-            var height = radiusY * 2;
-
-            PlatformImpl.DrawEllipse(brush, pen, new Rect(originX, originY, width, height));
+        }        
+        
+        /// <summary>
+        /// Draws an ellipse with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the ellipse, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the ellipse, or <c>null</c> for no stroke.</param>
+        /// <param name="rect">The bounding rect.</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
+        {
+            if (brush != null || PenIsVisible(pen))
+                DrawEllipseCore(brush, pen, rect);
         }
+
+        protected abstract void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect);
 
         /// <summary>
         /// Draws a custom drawing operation
         /// </summary>
         /// <param name="custom">custom operation</param>
-        public void Custom(ICustomDrawOperation custom) => PlatformImpl.Custom(custom);
+        public abstract void Custom(ICustomDrawOperation custom);
 
         /// <summary>
         /// Draws text.
         /// </summary>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(FormattedText text, Point origin)
+        public virtual void DrawText(FormattedText text, Point origin)
         {
             _ = text ?? throw new ArgumentNullException(nameof(text));
          
-           text.Draw(this, origin);            
+            text.Draw(this, origin);            
         }
 
         /// <summary>
@@ -240,92 +251,86 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
-        {
-            _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
+        public abstract void DrawGlyphRun(IBrush? foreground, GlyphRun glyphRun);
 
-            if (foreground != null)
+        public record struct PushedState : IDisposable
+        {
+            private readonly DrawingContext _context;
+            private readonly int _level;
+
+            public PushedState(DrawingContext context)
             {
-                PlatformImpl.DrawGlyphRun(foreground, glyphRun.PlatformImpl);
+                _context = context;
+                _level = _context._states!.Count;
+            }
+
+            public void Dispose()
+            {
+                if(_context?._states == null)
+                    return;
+                if(_context._states.Count != _level)
+                    throw new InvalidOperationException("Wrong Push/Pop state order");
+                _context._states.Pop().Dispose();
             }
         }
-
-        /// <summary>
-        /// Draws a filled rectangle.
-        /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
+        
+        private readonly record struct RestoreState : IDisposable
         {
-            DrawRectangle(brush, null, rect, cornerRadius, cornerRadius);
-        }
-
-        public readonly record struct PushedState : IDisposable
-        {
-            private readonly int _level;
             private readonly DrawingContext _context;
-            private readonly Matrix _matrix;
             private readonly PushedStateType _type;
 
             public enum PushedStateType
             {
                 None,
-                Matrix,
+                Transform,
                 Opacity,
                 Clip,
-                MatrixContainer,
                 GeometryClip,
                 OpacityMask,
+                BitmapBlendMode
             }
 
-            public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default)
+            public RestoreState(DrawingContext context, PushedStateType type)
             {
-                if (context._states is null)
-                    throw new ObjectDisposedException(nameof(DrawingContext));
-
                 _context = context;
                 _type = type;
-                _matrix = matrix;
-                _level = context._currentLevel += 1;
-                context._states.Push(this);
             }
 
             public void Dispose()
             {
                 if (_type == PushedStateType.None)
                     return;
-                if (_context._states is null || _context._transformContainers is null)
+                if (_context._states is null)
                     throw new ObjectDisposedException(nameof(DrawingContext));
-                if (_context._currentLevel != _level)
-                    throw new InvalidOperationException("Wrong Push/Pop state order");
-                _context._currentLevel--;
-                _context._states.Pop();
-                if (_type == PushedStateType.Matrix)
-                    _context.CurrentTransform = _matrix;
+                if (_type == PushedStateType.Transform)
+                    _context.PopTransformCore();
                 else if (_type == PushedStateType.Clip)
-                    _context.PlatformImpl.PopClip();
+                    _context.PopClipCore();
                 else if (_type == PushedStateType.Opacity)
-                    _context.PlatformImpl.PopOpacity();
+                    _context.PopOpacityCore();
                 else if (_type == PushedStateType.GeometryClip)
-                    _context.PlatformImpl.PopGeometryClip();
+                    _context.PopGeometryClipCore();
                 else if (_type == PushedStateType.OpacityMask)
-                    _context.PlatformImpl.PopOpacityMask();
-                else if (_type == PushedStateType.MatrixContainer)
-                {
-                    var cont = _context._transformContainers.Pop();
-                    _context._currentContainerTransform = cont.ContainerTransform;
-                    _context.CurrentTransform = cont.LocalTransform;
-                }
+                    _context.PopOpacityMaskCore();
+                else if (_type == PushedStateType.BitmapBlendMode)
+                    _context.PopBitmapBlendModeCore();
             }
         }
 
-
+        /// <summary>
+        /// Pushes a clip rectangle.
+        /// </summary>
+        /// <param name="clip">The clip rectangle.</param>
+        /// <returns>A disposable used to undo the clip rectangle.</returns>
         public PushedState PushClip(RoundedRect clip)
         {
-            PlatformImpl.PushClip(clip);
-            return new PushedState(this, PushedState.PushedStateType.Clip);
+            PushClipCore(clip);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Clip));
+            return new PushedState(this);
         }
+
+        protected abstract void PushClipCore(RoundedRect rect);
 
         /// <summary>
         /// Pushes a clip rectangle.
@@ -334,9 +339,13 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public PushedState PushClip(Rect clip)
         {
-            PlatformImpl.PushClip(clip);
-            return new PushedState(this, PushedState.PushedStateType.Clip);
+            PushClipCore(clip);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Clip));
+            return new PushedState(this);
         }
+        
+        protected abstract void PushClipCore(Rect rect);
 
         /// <summary>
         /// Pushes a clip geometry.
@@ -345,29 +354,28 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip geometry.</returns>
         public PushedState PushGeometryClip(Geometry clip)
         {
-            _ = clip ?? throw new ArgumentNullException(nameof(clip));
-
-            // HACK: This check was added when nullable annotations pointed out that we're potentially
-            // pushing a null value for the clip here. Ideally we'd return an empty PushedState here but
-            // I don't want to make that change as part of adding nullable annotations.
-            if (clip.PlatformImpl is null)
-                throw new InvalidOperationException("Cannot push empty geometry clip.");
-
-            PlatformImpl.PushGeometryClip(clip.PlatformImpl);
-            return new PushedState(this, PushedState.PushedStateType.GeometryClip);
+            PushGeometryClipCore(clip);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.GeometryClip));
+            return new PushedState(this);
         }
+        
+        protected abstract void PushGeometryClipCore(Geometry clip);
 
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public PushedState PushOpacity(double opacity)
-        //TODO: Eliminate platform-specific push opacity call
+        public PushedState PushOpacity(double opacity, Rect bounds)
         {
-            PlatformImpl.PushOpacity(opacity);
-            return new PushedState(this, PushedState.PushedStateType.Opacity);
+            PushOpacityCore(opacity, bounds);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Opacity));
+            return new PushedState(this);
         }
+        protected abstract void PushOpacityCore(double opacity, Rect bounds);
 
         /// <summary>
         /// Pushes an opacity mask.
@@ -379,70 +387,53 @@ namespace Avalonia.Media
         /// <returns>A disposable to undo the opacity mask.</returns>
         public PushedState PushOpacityMask(IBrush mask, Rect bounds)
         {
-            PlatformImpl.PushOpacityMask(mask, bounds);
-            return new PushedState(this, PushedState.PushedStateType.OpacityMask);
+            PushOpacityMaskCore(mask, bounds);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.OpacityMask));
+            return new PushedState(this);
+        }
+        protected abstract void PushOpacityMaskCore(IBrush mask, Rect bounds);
+
+        public PushedState PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            PushBitmapBlendMode(blendingMode);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.BitmapBlendMode));
+            return new PushedState(this);
         }
 
+        protected abstract void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode);
+
         /// <summary>
-        /// Pushes a matrix post-transformation.
+        /// Pushes a matrix transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform * matrix);
-
-        /// <summary>
-        /// Pushes a matrix pre-transformation.
-        /// </summary>
-        /// <param name="matrix">The matrix</param>
-        /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix * CurrentTransform);
-
-        /// <summary>
-        /// Sets the current matrix transformation.
-        /// </summary>
-        /// <param name="matrix">The matrix</param>
-        /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushSetTransform(Matrix matrix)
+        public PushedState PushTransform(Matrix matrix)
         {
-            var oldMatrix = CurrentTransform;
-            CurrentTransform = matrix;
-
-            return new PushedState(this, PushedState.PushedStateType.Matrix, oldMatrix);
+            PushTransformCore(matrix);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Transform));
+            return new PushedState(this);
         }
 
-        /// <summary>
-        /// Pushes a new transform context.
-        /// </summary>
-        /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushTransformContainer()
-        {
-            if (_transformContainers is null)
-                throw new ObjectDisposedException(nameof(DrawingContext));
-            _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
-            _currentContainerTransform = CurrentTransform * _currentContainerTransform;
-            _currentTransform = Matrix.Identity;
-            return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
-        }
+        [Obsolete("Use PushTransform")]
+        public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
+        [Obsolete("Use PushTransform")]
+        public PushedState PushPostTransform(Matrix matrix) => PushTransform(matrix);
+        [Obsolete("Use PushTransform")]
+        public PushedState PushTransformContainer() => PushTransform(Matrix.Identity);
+        
+        
+        protected abstract void PushTransformCore(Matrix matrix);
 
-        /// <summary>
-        /// Disposes of any resources held by the <see cref="DrawingContext"/>.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_states is null || _transformContainers is null)
-                throw new ObjectDisposedException(nameof(DrawingContext));
-            while (_states.Count != 0)
-                _states.Peek().Dispose();
-            StateStackPool.Return(_states);
-            _states = null;
-            if (_transformContainers.Count != 0)
-                throw new InvalidOperationException("Transform container stack is non-empty");
-            TransformStackPool.Return(_transformContainers);
-            _transformContainers = null;
-            if (_ownsImpl)
-                PlatformImpl.Dispose();
-        }
-
+        protected abstract void PopClipCore();
+        protected abstract void PopGeometryClipCore();
+        protected abstract void PopOpacityCore();
+        protected abstract void PopOpacityMaskCore();
+        protected abstract void PopBitmapBlendModeCore();
+        protected abstract void PopTransformCore();
+        
         private static bool PenIsVisible(IPen? pen)
         {
             return pen?.Brush != null && pen.Thickness > 0;

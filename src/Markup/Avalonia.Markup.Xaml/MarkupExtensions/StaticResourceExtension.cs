@@ -34,7 +34,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             var stack = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>();
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
-            var themeVariant = (provideTarget.TargetObject as StyledElement)?.ActualThemeVariant;
+            var themeVariant = (provideTarget.TargetObject as IThemeVariantHost)?.ActualThemeVariant;
 
             var targetType = provideTarget.TargetProperty switch
             {

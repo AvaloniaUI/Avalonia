@@ -227,7 +227,7 @@ namespace Avalonia.Media.Imaging
             Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode)
         {
-            context.PlatformImpl.DrawBitmap(
+            context.DrawBitmap(
                 PlatformImpl,
                 1,
                 sourceRect,

@@ -34,15 +34,15 @@ namespace Avalonia.UnitTests
                 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 var m = new Mock<IDrawingContextImpl>();
                 m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
                     .Returns(() =>
                         {
                             var r = new Mock<IDrawingContextLayerImpl>();
-                            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
-                                .Returns(CreateDrawingContext(null));
+                            r.Setup(r => r.CreateDrawingContext())
+                                .Returns(CreateDrawingContext());
                             return r.Object;
                         }
                     );

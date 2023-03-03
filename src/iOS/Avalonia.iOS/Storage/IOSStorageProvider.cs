@@ -43,6 +43,10 @@ internal class IOSStorageProvider : IStorageProvider
                     {
                         return f.AppleUniformTypeIdentifiers.Select(id => UTType.CreateFromIdentifier(id));
                     }
+                    if (f.TryGetExtensions() is { } extensions && extensions.Any())
+                    {
+                        return extensions.Select(id => UTType.CreateFromExtension(id.TrimStart('.')));
+                    }
                     if (f.MimeTypes?.Any() == true)
                     {
                         return f.MimeTypes.Select(id => UTType.CreateFromMimeType(id));
@@ -100,19 +104,19 @@ internal class IOSStorageProvider : IStorageProvider
             ? new IOSStorageFolder(url) : null);
     }
 
-    public Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
         // TODO: research if it's possible, maybe with additional permissions.
         return Task.FromResult<IStorageFile?>(null);
     }
 
-    public Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
         // TODO: research if it's possible, maybe with additional permissions.
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
         var directoryType = wellKnownFolder switch
         {

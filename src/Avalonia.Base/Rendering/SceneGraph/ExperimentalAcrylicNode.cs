@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A node in the scene graph which represents a rectangle draw.
     /// </summary>
-    internal class ExperimentalAcrylicNode : DrawOperation
+    internal class ExperimentalAcrylicNode : DrawOperationWithTransform
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RectangleNode"/> class.
@@ -22,15 +22,9 @@ namespace Avalonia.Rendering.SceneGraph
             RoundedRect rect)
             : base(rect.Rect, transform)
         {
-            Transform = transform;
             Material = material.ToImmutable();
             Rect = rect;
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
 
         public IExperimentalAcrylicMaterial Material { get; }        
 
@@ -60,8 +54,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            context.Transform = Transform;
-
             if(context is IDrawingContextWithAcrylicLikeSupport idc)
             {
                 idc.DrawRectangle(Material, Rect);
@@ -73,21 +65,6 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p)
-        {
-            // TODO: This doesn't respect CornerRadius yet.
-            if (Transform.HasInverse)
-            {
-                p *= Transform.Invert();
-
-                if (Material != null)
-                {
-                    var rect = Rect.Rect;
-                    return rect.ContainsExclusive(p);
-                }
-            }
-
-            return false;
-        }
+        public override bool HitTest(Point p) => Rect.Rect.ContainsExclusive(p);
     }
 }

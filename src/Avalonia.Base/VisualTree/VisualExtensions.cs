@@ -46,7 +46,7 @@ namespace Avalonia.VisualTree
             Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
             var result = 0;
 
-            v = v?.VisualParent;
+            v = v.VisualParent;
 
             while (v != null)
             {
@@ -64,16 +64,12 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The first visual.</param>
         /// <param name="target">The second visual.</param>
         /// <returns>The common ancestor, or null if not found.</returns>
-        public static Visual? FindCommonVisualAncestor(this Visual visual, Visual target)
+        public static Visual? FindCommonVisualAncestor(this Visual? visual, Visual? target)
         {
-            Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
-
-            if (target is null)
+            if (visual is null || target is null)
             {
                 return null;
             }
-
-            Visual? t = target;
 
             void GoUpwards(ref Visual? node, int count)
             {
@@ -82,6 +78,9 @@ namespace Avalonia.VisualTree
                     node = node?.VisualParent;
                 }
             }
+
+            Visual? v = visual;
+            Visual? t = target;
 
             // We want to find lowest node first, then make sure that both nodes are at the same height.
             // By doing that we can sometimes find out that other node is our lowest common ancestor.
@@ -144,7 +143,7 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The visual.</param>
         /// <param name="includeSelf">If given visual should be included in search.</param>
         /// <returns>First ancestor of given type.</returns>
-        public static T? FindAncestorOfType<T>(this Visual visual, bool includeSelf = false) where T : class
+        public static T? FindAncestorOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
             if (visual is null)
             {
@@ -173,7 +172,7 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The visual.</param>
         /// <param name="includeSelf">If given visual should be included in search.</param>
         /// <returns>First descendant of given type.</returns>
-        public static T? FindDescendantOfType<T>(this Visual visual, bool includeSelf = false) where T : class
+        public static T? FindDescendantOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
             if (visual is null)
             {
@@ -392,7 +391,7 @@ namespace Avalonia.VisualTree
         /// True if <paramref name="visual"/> is an ancestor of <paramref name="target"/>;
         /// otherwise false.
         /// </returns>
-        public static bool IsVisualAncestorOf(this Visual visual, Visual target)
+        public static bool IsVisualAncestorOf(this Visual? visual, Visual? target)
         {
             Visual? current = target?.VisualParent;
 

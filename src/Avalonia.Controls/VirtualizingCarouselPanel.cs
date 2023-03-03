@@ -80,16 +80,8 @@ namespace Avalonia.Controls
             remove => _scrollInvalidated -= value;
         }
 
-        bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect)
-        {
-            throw new NotImplementedException();
-        }
-
-        Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from)
-        {
-            throw new NotImplementedException();
-        }
-
+        bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) => false;
+        Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) => null;
         void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
 
         protected override Size MeasureOverride(Size availableSize)

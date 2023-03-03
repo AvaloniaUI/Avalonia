@@ -14,11 +14,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        /// <param name="visualBrushRenderer">
-        /// A render to be used to render visual brushes. May be null if no visual brushes are
-        /// to be drawn.
-        /// </param>
-        IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? visualBrushRenderer);
+        IDrawingContextImpl CreateDrawingContext();
         
         /// <summary>
         /// Indicates if the render target is no longer usable and needs to be recreated

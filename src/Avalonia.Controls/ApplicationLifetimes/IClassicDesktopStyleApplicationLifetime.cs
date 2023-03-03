@@ -40,7 +40,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// The main window.
         /// </value>
         Window? MainWindow { get; set; }
-        
+
+        /// <summary>
+        /// Gets the list of all open windows in the application.
+        /// </summary>
         IReadOnlyList<Window> Windows { get; }
 
         /// <summary>
