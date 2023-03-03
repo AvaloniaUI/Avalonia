@@ -257,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ComboBox
                 {
                     Template = GetTemplate(),                    
-                    Items = items.Select(x => new ComboBoxItem { Content = x })
+                    ItemsSource = items.Select(x => new ComboBoxItem { Content = x })
                 };
 
                 target.ApplyTemplate();

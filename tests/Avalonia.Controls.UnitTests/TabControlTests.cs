@@ -71,27 +71,25 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Logical_Children_Should_Be_TabItems()
         {
-            var items = new[]
-            {
-                new TabItem
-                {
-                    Content = "foo"
-                },
-                new TabItem
-                {
-                    Content = "bar"
-                },
-            };
-
             var target = new TabControl
             {
                 Template = TabControlTemplate(),
-                Items = items,
+                Items = 
+                {
+                    new TabItem
+                    {
+                        Content = "foo"
+                    },
+                    new TabItem
+                    {
+                        Content = "bar"
+                    },
+                }
             };
 
-            Assert.Equal(items, target.GetLogicalChildren());
+            Assert.Equal(target.Items.Cast<ILogical>(), target.GetLogicalChildren());
             target.ApplyTemplate();
-            Assert.Equal(items, target.GetLogicalChildren());
+            Assert.Equal(target.Items.Cast<ILogical>(), target.GetLogicalChildren());
         }
 
         [Fact]
@@ -207,26 +205,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TabItem_Templates_Should_Be_Set_Before_TabItem_ApplyTemplate()
         {
-            var collection = new[]
-            {
-                new TabItem
-                {
-                    Name = "first",
-                    Content = "foo",
-                },
-                new TabItem
-                {
-                    Name = "second",
-                    Content = "bar",
-                },
-                new TabItem
-                {
-                    Name = "3rd",
-                    Content = "barf",
-                },
-            };
-
             var template = new FuncControlTemplate<TabItem>((x, __) => new Decorator());
+            TabControl target;
             var root = new TestRoot
             {
                 Styles =
@@ -239,13 +219,31 @@ namespace Avalonia.Controls.UnitTests
                         }
                     }
                 },
-                Child = new TabControl
+                Child = (target = new TabControl
                 {
                     Template = TabControlTemplate(),
-                    Items = collection,
-                }
+                    Items = 
+                    {
+                        new TabItem
+                        {
+                            Name = "first",
+                            Content = "foo",
+                        },
+                        new TabItem
+                        {
+                            Name = "second",
+                            Content = "bar",
+                        },
+                        new TabItem
+                        {
+                            Name = "3rd",
+                            Content = "barf",
+                        },
+                    },
+                })
             };
 
+            var collection = target.Items.Cast<TabItem>().ToList();
             Assert.Same(collection[0].Template, template);
             Assert.Same(collection[1].Template, template);
             Assert.Same(collection[2].Template, template);

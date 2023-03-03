@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Presenters
 
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == ItemsControl.ItemsProperty)
+            if (e.Property == ItemsControl.ItemsViewProperty)
             {
                 if (e.OldValue is INotifyCollectionChanged inccOld)
                     inccOld.CollectionChanged -= OnItemsChanged;

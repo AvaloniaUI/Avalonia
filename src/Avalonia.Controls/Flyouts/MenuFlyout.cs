@@ -17,8 +17,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property
         /// </summary>
-        public static readonly DirectProperty<MenuFlyout, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<MenuFlyout>(x => x.Items,
+        public static readonly DirectProperty<MenuFlyout, IList?> ItemsProperty =
+            AvaloniaProperty.RegisterDirect<MenuFlyout, IList?>(
+                nameof(Items),
+                x => x.Items,
                 (x, v) => x.Items = v);
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace Avalonia.Controls
         /// Gets or sets the items of the MenuFlyout
         /// </summary>
         [Content]
-        public IEnumerable? Items
+        public IList? Items
         {
             get => _items;
             set => SetAndRaise(ItemsProperty, ref _items, value);
@@ -65,14 +67,14 @@ namespace Avalonia.Controls
         }
 
         private Classes? _classes;
-        private IEnumerable? _items;
+        private IList? _items;
         private IDataTemplate? _itemTemplate;
 
         protected override Control CreatePresenter()
         {
             return new MenuFlyoutPresenter
             {
-                [!ItemsControl.ItemsProperty] = this[!ItemsProperty],
+                [!ItemsControl.ItemsSourceProperty] = this[!ItemsProperty],
                 [!ItemsControl.ItemTemplateProperty] = this[!ItemTemplateProperty],
                 [!ItemsControl.ItemContainerThemeProperty] = this[!ItemContainerThemeProperty],
             };

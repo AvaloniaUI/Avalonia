@@ -21,6 +21,8 @@ namespace Avalonia.Controls.Selection
             SourceReset += OnSourceReset;
         }
 
+        public bool DataContextIsUpdating { get; set; }
+
         [AllowNull]
         public IList WritableSelectedItems
         {

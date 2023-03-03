@@ -229,7 +229,7 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="SelectedValue"/> property
         /// </summary>
         [AssignBinding]
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IBinding? SelectedValueBinding
         {
             get => GetValue(SelectedValueBindingProperty);
@@ -322,7 +322,8 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (_selection != value)
                 {
-                    if (value.Source != null && value.Source != Items)
+                    if (value.Source != null && 
+                        !(value.Source == ItemsView || value.Source == ItemsView.Inner))
                     {
                         throw new ArgumentException(
                             "The supplied ISelectionModel already has an assigned Source but this " +
@@ -435,7 +436,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected override void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private protected override void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsCollectionChanged(sender!, e);
 
@@ -547,7 +548,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_selection is object)
             {
-                _selection.Source = Items;
+                _selection.Source = ItemsView;
             }
         }
 
@@ -635,15 +636,9 @@ namespace Avalonia.Controls.Primitives
             {
                 AutoScrollToSelectedItemIfNecessary();
             }
-            if (change.Property == ItemsProperty && _updateState is null && _selection is object)
+            if (change.Property == ItemsViewProperty && _updateState is null && _selection is object)
             {
-                var newValue = change.GetNewValue<IEnumerable?>();
-                _selection.Source = newValue;
-
-                if (newValue is null)
-                {
-                    _selection.Clear();
-                }
+                _selection.Source = change.GetNewValue<ItemsSourceView>();
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -968,7 +963,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelLostSelection(object? sender, EventArgs e)
         {
-            if (AlwaysSelected && Items is object)
+            if (AlwaysSelected && ItemsView.Count > 0)
             {
                 SelectedIndex = 0;
             }
@@ -998,14 +993,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private object FindItemWithValue(object? value)
+        private object? FindItemWithValue(object? value)
         {
             if (ItemCount == 0 || value is null)
             {
                 return AvaloniaProperty.UnsetValue;
             }
 
-            var items = Items;
+            var items = ItemsView;
             var binding = SelectedValueBinding;
 
             if (binding is null)
@@ -1169,7 +1164,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_updateState is null)
             {
-                model.Source = Items;
+                model.Source = IsSet(ItemsSourceProperty) ? ItemsSource : Items;
             }
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;
@@ -1236,9 +1231,9 @@ namespace Avalonia.Controls.Primitives
                     SelectedItems = state.SelectedItems.Value;
                 }
 
-                Selection.Source = Items;
+                Selection.Source = ItemsView;
 
-                if (Items is null)
+                if (ItemsView.Count == 0)
                 {
                     Selection.Clear();
                 }
