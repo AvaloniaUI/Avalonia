@@ -104,6 +104,7 @@ AppPackages/
 # NCrunch
 .NCrunch_*/
 _NCrunch_*/
+.NCrunch_*/
 *.ncrunchsolution.user
 nCrunchTemp_*
 
