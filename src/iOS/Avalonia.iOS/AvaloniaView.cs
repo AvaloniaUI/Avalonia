@@ -16,6 +16,7 @@ using Foundation;
 using ObjCRuntime;
 using OpenGLES;
 using UIKit;
+using IInsetsManager = Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.iOS
 {
@@ -26,6 +27,7 @@ namespace Avalonia.iOS
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
         private ITextInputMethodClient _client;
+        private IAvaloniaViewController _controller;
 
         public AvaloniaView()
         {
@@ -48,10 +50,13 @@ namespace Avalonia.iOS
             MultipleTouchEnabled = true;
         }
 
+        /// <inheritdoc />
         public override bool CanBecomeFirstResponder => true;
 
+        /// <inheritdoc />
         public override bool CanResignFirstResponder => true;
 
+        /// <inheritdoc />
         public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
@@ -60,6 +65,7 @@ namespace Avalonia.iOS
             settings?.TraitCollectionDidChange();
         }
 
+        /// <inheritdoc />
         public override void TintColorDidChange()
         {
             base.TintColorDidChange();
@@ -68,18 +74,31 @@ namespace Avalonia.iOS
             settings?.TraitCollectionDidChange();
         }
 
+        public void InitWithController<TController>(TController controller)
+            where TController : UIViewController, IAvaloniaViewController
+        {
+            _controller = controller;
+            _topLevelImpl._insetsManager.InitWithController(controller);
+        }
+        
         internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
             private readonly INativeControlHostImpl _nativeControlHost;
             private readonly IStorageProvider _storageProvider;
+            internal readonly InsetsManager _insetsManager;
             public AvaloniaView View => _view;
 
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
-                _nativeControlHost = new NativeControlHostImpl(_view);
+                _nativeControlHost = new NativeControlHostImpl(view);
                 _storageProvider = new IOSStorageProvider(view);
+                _insetsManager = new InsetsManager(view);
+                _insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
+                {
+                    view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
+                };
             }
 
             public void Dispose()
@@ -141,17 +160,14 @@ namespace Avalonia.iOS
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
             {
                 // TODO adjust status bar depending on full screen mode.
-                if (OperatingSystem.IsIOSVersionAtLeast(13))
+                if (OperatingSystem.IsIOSVersionAtLeast(13) && _view._controller is not null)
                 {
-                    var uiStatusBarStyle = themeVariant switch
+                    _view._controller.PreferredStatusBarStyle = themeVariant switch
                     {
                         PlatformThemeVariant.Light => UIStatusBarStyle.DarkContent,
                         PlatformThemeVariant.Dark => UIStatusBarStyle.LightContent,
-                        _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+                        _ => UIStatusBarStyle.Default
                     };
-                    
-                    // Consider using UIViewController.PreferredStatusBarStyle in the future.
-                    UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, true);
                 }
             }
             
@@ -173,6 +189,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(INativeControlHostImpl))
                 {
                     return _nativeControlHost;
+                }
+
+                if (featureType == typeof(IInsetsManager))
+                {
+                    return _insetsManager;
                 }
 
                 return null;
