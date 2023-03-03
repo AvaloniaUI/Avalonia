@@ -27,6 +27,7 @@ namespace Avalonia.Controls
 
         private readonly IList _inner;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
+        private NotifyCollectionChangedEventHandler? _preCollectionChanged;
         private NotifyCollectionChangedEventHandler? _postCollectionChanged;
         private bool _listening;
 
@@ -70,7 +71,7 @@ namespace Avalonia.Controls
         /// Gets a value that indicates whether the items source can provide a unique key for each item.
         /// </summary>
         /// <remarks>
-        /// TODO: Not yet implemented in Avalonia.
+        /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
         /// </remarks>
         internal bool HasKeyIndexMapping => false;
 
@@ -88,6 +89,25 @@ namespace Avalonia.Controls
             remove
             {
                 _collectionChanged -= value;
+                RemoveListenerIfNecessary();
+            }
+        }
+
+        /// <summary>
+        /// Occurs when a collection has finished changing and all <see cref="CollectionChanged"/>
+        /// event handlers have been notified.
+        /// </summary>
+        internal event NotifyCollectionChangedEventHandler? PreCollectionChanged
+        {
+            add
+            {
+                AddListenerIfNecessary();
+                _preCollectionChanged += value;
+            }
+
+            remove
+            {
+                _preCollectionChanged -= value;
                 RemoveListenerIfNecessary();
             }
         }
@@ -229,6 +249,7 @@ namespace Avalonia.Controls
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
+            _preCollectionChanged?.Invoke(this, e);
         }
 
         void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -239,22 +260,6 @@ namespace Avalonia.Controls
         void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
             _postCollectionChanged?.Invoke(this, e);
-        }
-
-        internal void AddListener(ICollectionChangedListener listener)
-        {
-            if (Inner is INotifyCollectionChanged incc)
-            {
-                CollectionChangedEventManager.Instance.AddListener(incc, listener);
-            }
-        }
-
-        internal void RemoveListener(ICollectionChangedListener listener)
-        {
-            if (Inner is INotifyCollectionChanged incc)
-            {
-                CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
-            }
         }
 
         /// <summary>

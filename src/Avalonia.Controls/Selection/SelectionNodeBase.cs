@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Selection
 {
@@ -10,7 +9,7 @@ namespace Avalonia.Controls.Selection
     /// Base class for selection models.
     /// </summary>
     /// <typeparam name="T">The type of the element being selected.</typeparam>
-    public abstract class SelectionNodeBase<T> : ICollectionChangedListener
+    public abstract class SelectionNodeBase<T>
     {
         private IEnumerable? _source;
         private bool _rangesEnabled;
@@ -24,12 +23,28 @@ namespace Avalonia.Controls.Selection
             get => _source;
             set
             {
+                void OnPreChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnSourceCollectionChangeStarted();
+                void OnChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnSourceCollectionChanged(e);
+                void OnPostChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnSourceCollectionChangeFinished();
+
                 if (_source != value)
                 {
-                    ItemsView?.RemoveListener(this);
+                    if (ItemsView is not null)
+                    {
+                        ItemsView.PreCollectionChanged -= OnPreChanged;
+                        ItemsView.CollectionChanged -= OnChanged;
+                        ItemsView.PostCollectionChanged -= OnPostChanged;
+                    }
+
                     _source = value;
                     ItemsView = value is not null ? ItemsSourceView.GetOrCreate<T>(value) : null;
-                    ItemsView?.AddListener(this);
+
+                    if (ItemsView is not null)
+                    {
+                        ItemsView.PreCollectionChanged += OnPreChanged;
+                        ItemsView.CollectionChanged += OnChanged;
+                        ItemsView.PostCollectionChanged += OnPostChanged;
+                    }
                 }
             }
         }
@@ -71,21 +86,6 @@ namespace Avalonia.Controls.Selection
 
                 return _ranges ??= new List<IndexRange>();
             }
-        }
-
-        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnSourceCollectionChangeStarted();
-        }
-
-        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnSourceCollectionChanged(e);
-        }
-
-        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnSourceCollectionChangeFinished();
         }
 
         /// <summary>
