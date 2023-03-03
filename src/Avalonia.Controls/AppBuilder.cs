@@ -208,23 +208,15 @@ namespace Avalonia
         }
         
         /// <summary>
-        /// Registers a custom font collection with the font manager.
+        /// Registers an action that is executed with the current font manager.
         /// </summary>
-        /// <param name="fontCollection">The font collection.</param>
+        /// <param name="action">The action.</param>
         /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public AppBuilder WithFonts(IFontCollection fontCollection)
+        public AppBuilder ConfigureFonts(Action<FontManager> action)
         {
-            if(fontCollection == null)
-            {
-                throw new ArgumentNullException(nameof(fontCollection), "Font collection can't be null.");
-            }
-
             return AfterSetup(appBuilder =>
             {
-                var fontManager = FontManager.Current;
-
-                fontManager.AddFontCollection(fontCollection);
+                action?.Invoke(FontManager.Current);
             });
         }
 

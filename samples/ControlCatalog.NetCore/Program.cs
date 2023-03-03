@@ -125,7 +125,7 @@ namespace ControlCatalog.NetCore
                     EnableIme = true
                 })
                 .UseSkia()
-                .WithFonts(new InterFontCollection())
+                .WithInterFont()
                 .AfterSetup(builder =>
                 {
                     builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
