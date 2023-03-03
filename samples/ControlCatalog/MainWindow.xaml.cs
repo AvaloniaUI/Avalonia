@@ -17,7 +17,6 @@ namespace ControlCatalog
         {
             this.InitializeComponent();
 
-            DataContext = new MainWindowViewModel();
             _recentMenu = ((NativeMenu.GetMenu(this)?.Items[0] as NativeMenuItem)?.Menu?.Items[2] as NativeMenuItem)?.Menu;
         }
 
