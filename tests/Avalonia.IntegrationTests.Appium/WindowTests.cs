@@ -150,8 +150,8 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new Size(4000, 2200), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var measuredWithTextBlock = _session.FindElementById("MeasuredWithText");
-                var screenRectTextBox = _session.FindElementById("CurrentClientSize");
+                var screenRectTextBox = _session.FindElementByAccessibilityId("CurrentClientSize");
+                var measuredWithTextBlock = _session.FindElementByAccessibilityId("CurrentMeasuredWithText");
                 
                 var measuredWithString = measuredWithTextBlock.Text;
                 var workingAreaString = screenRectTextBox.Text;

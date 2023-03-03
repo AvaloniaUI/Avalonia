@@ -37,13 +37,11 @@
 
       <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>
       <TextBox Name="CurrentOrder" Grid.Column="1" Grid.Row="8" IsReadOnly="True" />
-
-      <Button Name="HideButton" Grid.Row="9" Command="{Binding $parent[Window].Hide}">Hide</Button>
       
-      <StackPanel Grid.Row="10" Orientation="Horizontal">
-        <TextBlock Text="MeasuredWith:" />
-        <TextBlock Name="MeasuredWithText" Text="{Binding #MyBorder.MeasuredWith}" />
-      </StackPanel>
+      <Label Grid.Row="9" Content="MeasuredWith:" />
+      <TextBlock Grid.Column="1" Grid.Row="9" Name="CurrentMeasuredWithText" Text="{Binding #MyBorder.MeasuredWith}" />
+
+      <Button Name="HideButton" Grid.Row="10" Command="{Binding $parent[Window].Hide}">Hide</Button>
       
     </Grid>
   </integrationTestApp:MeasureBorder>
