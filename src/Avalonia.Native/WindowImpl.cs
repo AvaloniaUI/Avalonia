@@ -71,7 +71,7 @@ namespace Avalonia.Native
             }
         }
 
-        public IAvnWindow Native => _native;
+        public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
         {
@@ -92,8 +92,6 @@ namespace Avalonia.Native
         {
             _native.SetTitle(title ?? "");
         }
-
-        public ITextInputMethodImpl TextInputMethod => _inputMethod;
 
         public WindowState WindowState
         {
@@ -235,6 +233,11 @@ namespace Avalonia.Native
 
         public override object TryGetFeature(Type featureType)
         {
+            if(featureType == typeof(ITextInputMethodImpl))
+            {
+                return _inputMethod;
+            } 
+            
             if (featureType == typeof(ITopLevelNativeMenuExporter))
             {
                 return _nativeMenuExporter;

@@ -21,8 +21,8 @@
     NSObject<IRenderTarget>* _renderTarget;
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
-    AvnRect _cursorRect;
-    NSString* _text;
+    NSRect _cursorRect;
+    NSMutableString* _text;
     NSRange _selection;
 }
 
@@ -525,7 +525,7 @@
 - (void)keyDown:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyDown];
-    [[self inputContext] handleEvent:event];
+    _lastKeyHandled = [[self inputContext] handleEvent:event];
     [super keyDown:event];
 }
 
@@ -576,7 +576,7 @@
 
 - (NSRange)selectedRange
 {
-    return NSMakeRange(NSNotFound, 0);
+    return _selection;
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
@@ -606,6 +606,8 @@
     }
     
     _parent->InputMethod->Client->SetPreeditText(nullptr);
+    
+    [[self inputContext] discardMarkedText];
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -615,18 +617,24 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    return [NSAttributedString new];
+    return nullptr;
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    if(!_lastKeyHandled)
-    {
+    //[_text replaceCharactersInRange:replacementRange withString:string];
+    
+    [self unmarkText];
+    
+    //if(!_lastKeyHandled)
+    //{
         if(_parent != nullptr)
         {
             _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
         }
-    }
+    //}
+    
+    [[self inputContext] invalidateCharacterCoordinates];
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -640,7 +648,7 @@
         return NSZeroRect;
     }
     
-    return ToNSRect(_cursorRect);
+    return _cursorRect;
 }
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
@@ -746,15 +754,27 @@
 }
 
 - (void) setText:(NSString *)text{
-    _text = text;
+    [_text setString:text];
+    
+    [[self inputContext] discardMarkedText];
 }
 
 - (void) setSelection:(int)start :(int)end{
     _selection = NSMakeRange(start, end - start);
+    
+    [[self inputContext] invalidateCharacterCoordinates];
 }
 
 - (void) setCursorRect:(AvnRect)rect{
-    _cursorRect = rect;
+    NSRect cursorRect = ToNSRect(rect);
+    NSRect windowRectOnScreen = [[self window] convertRectToScreen:self.frame];
+    
+    windowRectOnScreen.size = cursorRect.size;
+    windowRectOnScreen.origin = NSMakePoint(windowRectOnScreen.origin.x + cursorRect.origin.x, windowRectOnScreen.origin.y + self.frame.size.height - cursorRect.origin.y - cursorRect.size.height);
+    
+    _cursorRect = windowRectOnScreen;
+    
+    [[self inputContext] invalidateCharacterCoordinates];
 }
 
 @end
