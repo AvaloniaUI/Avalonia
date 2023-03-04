@@ -1178,7 +1178,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = target.Presenter.Panel.LogicalChildren[0];
+            var item = target.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TreeViewItem)item));
         }
 

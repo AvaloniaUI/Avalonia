@@ -120,7 +120,7 @@ namespace Avalonia.Headless
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+            return new HeadlessGeometryStub(glyphRun.Bounds);
         }
 
         public IGlyphRunImpl CreateGlyphRun(
@@ -134,7 +134,7 @@ namespace Avalonia.Headless
 
         private class HeadlessGlyphRunStub : IGlyphRunImpl
         {
-            public Size Size => new Size(8, 12);
+            public Rect Bounds => new Rect(new Size(8, 12));
 
             public Point BaselineOrigin => new Point(0, 8);
 
