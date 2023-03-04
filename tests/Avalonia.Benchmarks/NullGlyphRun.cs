@@ -5,7 +5,7 @@ namespace Avalonia.Benchmarks
 {
     internal class NullGlyphRun : IGlyphRunImpl
     {
-        public Size Size => default;
+        public Rect Bounds => default;
 
         public Point BaselineOrigin => default;
 

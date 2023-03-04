@@ -166,7 +166,8 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 Panel = ItemsPanel.Build();
-                Panel.SetValue(TemplatedParentProperty, TemplatedParent);
+                Panel.TemplatedParent = TemplatedParent;
+                Panel.IsItemsHost = true;
                 _scrollSnapPointsInfo = Panel as IScrollSnapPointsInfo;
                 LogicalChildren.Add(Panel);
                 VisualChildren.Add(Panel);

@@ -165,10 +165,10 @@ partial class Build : NukeBuild
         foreach (var fw in targetFrameworks)
         {
             if (fw.StartsWith("net4")
-                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {projectName} ({fw}) tests on Linux - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({fw}) tests on *nix - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 

@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
@@ -18,7 +17,7 @@ namespace Avalonia.Diagnostics.Views
         public MainView()
         {
             InitializeComponent();
-            AddHandler(KeyDownEvent, PreviewKeyDown, RoutingStrategies.Tunnel);
+            AddHandler(KeyUpEvent, PreviewKeyUp);
             _console = this.GetControl<ConsoleView>("console");
             _consoleSplitter = this.GetControl<GridSplitter>("consoleSplitter");
             _rootGrid = this.GetControl<Grid>("rootGrid");
@@ -58,7 +57,7 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void PreviewKeyDown(object? sender, KeyEventArgs e)
+        private void PreviewKeyUp(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {

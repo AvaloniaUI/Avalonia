@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             for (var c = FirstChar; c <= LastChar; c++)
             {
-                var height = _runs[c - FirstChar].Size.Height;
+                var height = _runs[c - FirstChar].Bounds.Height;
                 if (height > maxHeight)
                 {
                     maxHeight = height;
@@ -51,8 +51,8 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 var effectiveChar = c is >= FirstChar and <= LastChar ? c : ' ';
                 var run = _runs[effectiveChar - FirstChar];
-                width += run.Size.Width;
-                height = Math.Max(height, run.Size.Height);
+                width += run.Bounds.Width;
+                height = Math.Max(height, run.Bounds.Height);
             }
 
             return new Size(width, height);
@@ -69,7 +69,7 @@ namespace Avalonia.Rendering.Composition.Server
                 var run = _runs[effectiveChar - FirstChar];
                 context.Transform = originalTransform * Matrix.CreateTranslation(offset, 0.0);
                 context.DrawGlyphRun(foreground, run.PlatformImpl);
-                offset += run.Size.Width;
+                offset += run.Bounds.Width;
             }
 
             context.Transform = originalTransform;

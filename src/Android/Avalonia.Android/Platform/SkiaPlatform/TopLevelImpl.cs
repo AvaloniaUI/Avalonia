@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
-using Android.OS;
 using Android.Runtime;
-using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.Specific;
@@ -24,11 +22,13 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
+using Java.Util;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
 using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
-using Java.Util;
+using Android.OS;
+using Android.Text;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -43,6 +43,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly AndroidInsetsManager _insetsManager;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -59,6 +60,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
+            if (avaloniaView.Context is AvaloniaMainActivity mainActivity)
+            {
+                _insetsManager = new AndroidInsetsManager(mainActivity, this);
+            }
+
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
 
@@ -70,21 +76,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                AndroidRect rect = new AndroidRect();
-                AndroidRect intersection = new AndroidRect();
-
-                _view.GetWindowVisibleDisplayFrame(intersection);
-                _view.GetGlobalVisibleRect(rect);
-
-                intersection.Intersect(rect);
-
-                return new PixelSize(intersection.Right - intersection.Left, intersection.Bottom - intersection.Top).ToSize(RenderScaling);
-            }
-        }
+        public virtual Size ClientSize => _view.Size.ToSize(RenderScaling);
 
         public Size? FrameSize => null;
 
@@ -285,7 +277,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
-            // TODO adjust status bar depending on full screen mode.
+            if(_insetsManager != null)
+            {
+                _insetsManager.SystemBarTheme = themeVariant switch
+                {
+                    PlatformThemeVariant.Light => SystemBarTheme.Light,
+                    PlatformThemeVariant.Dark => SystemBarTheme.Dark,
+                    _ => null,
+                };
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
@@ -401,6 +401,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
             }
 
             return null;

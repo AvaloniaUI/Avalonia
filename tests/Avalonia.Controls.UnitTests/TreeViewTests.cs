@@ -101,6 +101,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Finds_Correct_DataTemplate_When_Application_DataTemplate_Is_Present()
+        {
+            // #10398
+            using var app = UnitTestApplication.Start();
+            
+            Avalonia.Application.Current.DataTemplates.Add(new FuncDataTemplate<object>((x, _) => new Canvas()));
+            AvaloniaLocator.CurrentMutable.Bind<IGlobalDataTemplates>().ToConstant(Avalonia.Application.Current);
+
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = CreateTestTreeData(),
+            };
+
+            var root = new TestRoot(target);
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+
+            Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
+            Assert.Equal(new[] { "Child1", "Child2", "Child3" }, ExtractItemHeader(target, 1));
+            Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
+        }
+
+        [Fact]
         public void Root_ItemContainerGenerator_Containers_Should_Be_Root_Containers()
         {
             var target = new TreeView
@@ -1178,7 +1203,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = target.Presenter.Panel.LogicalChildren[0];
+            var item = target.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TreeViewItem)item));
         }
 
