@@ -139,31 +139,12 @@ namespace Avalonia.Controls
             get
             {
                 if (_items is null && !_itemsOverridden)
-                    ItemsView = ItemsSourceView.GetOrCreate(_items = new ItemCollection(this));
+                    ItemsView = ItemsSourceView.GetOrCreate(SetItems(new ItemCollection()));
                 return _items;
             }
 
             [Obsolete("Use ItemsSource to set or bind items.")]
-            set
-            {
-                if (_items != value || (value is null && !_itemsOverridden))
-                {
-                    if (_items is ItemCollection)
-                    {
-                        foreach (var item in _items)
-                        {
-                            if (item is ILogical logical)
-                                LogicalChildren.Remove(logical);
-                        }
-                    }
-
-                    var oldValue = _items;
-                    _items = value;
-                    _itemsOverridden = true;
-                    ItemsView = ItemsSourceView.GetOrCreate(_items);
-                    RaisePropertyChanged(ItemsProperty, oldValue, _items);
-                }
-            }
+            set => SetItems(value);
         }
 
         /// <summary>
@@ -276,7 +257,7 @@ namespace Avalonia.Controls
 
                 if (_itemsView is not null)
                 {
-                    _itemsView.CollectionChanged -= ItemsCollectionChanged;
+                    _itemsView.CollectionChanged -= ItemsViewCollectionChanged;
 
                     var oldValue = _itemsView;
                     _itemsView = value;
@@ -288,7 +269,7 @@ namespace Avalonia.Controls
                 }
 
                 ItemCount = _itemsView.Count;
-                _itemsView.CollectionChanged += ItemsCollectionChanged;
+                _itemsView.CollectionChanged += ItemsViewCollectionChanged;
             }
         }
 
@@ -615,7 +596,27 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private protected virtual void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddControlItemsToLogicalChildren(e.NewItems);
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    RemoveControlItemsFromLogicalChildren(e.OldItems);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
+        /// raised on <see cref="ItemsView"/>.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private protected virtual void ItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             ItemCount = _itemsView?.Count ?? 0;
         }
@@ -692,6 +693,46 @@ namespace Avalonia.Controls
             ClearContainerForItemOverride(container);
         }
 
+        private void AddControlItemsToLogicalChildren(IEnumerable? items)
+        {
+            if (items is null)
+                return;
+
+            List<ILogical>? toAdd = null;
+
+            foreach (var i in items)
+            {
+                if (i is Control control && !LogicalChildren.Contains(control))
+                {
+                    toAdd ??= new();
+                    toAdd.Add(control);
+                }
+            }
+
+            if (toAdd is not null)
+                LogicalChildren.AddRange(toAdd);
+        }
+
+        private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
+        {
+            if (items is null)
+                return;
+
+            List<ILogical>? toRemove = null;
+
+            foreach (var i in items)
+            {
+                if (i is Control control)
+                {
+                    toRemove ??= new();
+                    toRemove.Add(control);
+                }
+            }
+
+            if (toRemove is not null)
+                LogicalChildren.RemoveAll(toRemove);
+        }
+
         private IDataTemplate? GetEffectiveItemTemplate()
         {
             if (ItemTemplate is { } itemTemplate)
@@ -709,9 +750,27 @@ namespace Avalonia.Controls
             return _displayMemberItemTemplate;
         }
 
-        private void ItemsViewChanged()
+        private IList? SetItems(IList? value)
         {
+            if (_items != value || (value is null && !_itemsOverridden))
+            {
+                if (_items is INotifyCollectionChanged inccOld)
+                    inccOld.CollectionChanged -= ItemsCollectionChanged;
+                RemoveControlItemsFromLogicalChildren(_items);
 
+                var oldValue = _items;
+                _items = value;
+                _itemsOverridden = true;
+                ItemsView = ItemsSourceView.GetOrCreate(_items);
+
+                AddControlItemsToLogicalChildren(_items);
+                if (_items is INotifyCollectionChanged inccNew)
+                    inccNew.CollectionChanged += ItemsCollectionChanged;
+
+                RaisePropertyChanged(ItemsProperty, oldValue, _items);
+            }
+
+            return _items;
         }
 
         private void UpdatePseudoClasses(int itemCount)
@@ -796,102 +855,10 @@ namespace Avalonia.Controls
 
         private class ItemCollection : AvaloniaList<object>
         {
-            private readonly ItemsControl _owner;
-
-            public ItemCollection(ItemsControl owner)
+            public ItemCollection()
             {
-                _owner = owner;
                 Validate = OnValidate;
                 ResetBehavior = ResetBehavior.Remove;
-                IsReadOnly = owner.ItemsSource is not null;
-            }
-
-            public override void Add(object item)
-            {
-                if (item is ILogical logical)
-                    _owner.LogicalChildren.Add(logical);
-                base.Add(item);
-            }
-
-            public override void AddRange(IEnumerable<object> items)
-            {
-                foreach (var item in items)
-                {
-                    if (item is ILogical logical)
-                        _owner.LogicalChildren.Add(logical);
-                }
-
-                base.AddRange(items);
-            }
-
-            public override void Clear()
-            {
-                foreach (var item in this)
-                {
-                    if (item is ILogical logical)
-                        _owner.LogicalChildren.Remove(logical);
-                }
-
-                base.Clear();
-            }
-
-            public override void Insert(int index, object item)
-            {
-                if (item is ILogical logical)
-                    _owner.LogicalChildren.Add(logical);
-                base.Insert(index, item);
-            }
-
-            public override void InsertRange(int index, IEnumerable<object> items)
-            {
-                foreach (var item in items)
-                {
-                    if (item is ILogical logical)
-                        _owner.LogicalChildren.Add(logical);
-                }
-
-                base.InsertRange(index, items);
-            }
-
-            public override bool Remove(object item)
-            {
-                if (base.Remove(item))
-                {
-                    if (item is ILogical logical)
-                        _owner.LogicalChildren.Remove(logical);
-                    return true;
-                }
-
-                return false;
-            }
-
-            public override void RemoveAll(IEnumerable<object> items)
-            {
-                foreach (var item in items)
-                {
-                    if (item is ILogical logical)
-                        _owner.LogicalChildren.Remove(logical);
-                }
-
-                base.RemoveAll(items);
-            }
-
-            public override void RemoveAt(int index)
-            {
-                if (this[index] is ILogical logical)
-                    _owner.LogicalChildren.Remove(logical);
-                base.RemoveAt(index);
-            }
-
-            public override void RemoveRange(int index, int count)
-            {
-                for (var i = index; i < index + count; ++i)
-                {
-                    if (this[i] is ILogical logical)
-                        _owner.LogicalChildren.Remove(logical);
-                }
-
-                base.RemoveRange(index, count);
             }
 
             private void OnValidate(object obj)

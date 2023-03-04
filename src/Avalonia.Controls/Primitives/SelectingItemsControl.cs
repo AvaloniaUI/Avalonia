@@ -436,9 +436,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        private protected override void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private protected override void ItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsCollectionChanged(sender!, e);
+            base.ItemsViewCollectionChanged(sender!, e);
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
