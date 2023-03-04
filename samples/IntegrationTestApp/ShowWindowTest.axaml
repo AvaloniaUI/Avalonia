@@ -1,41 +1,48 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:integrationTestApp="clr-namespace:IntegrationTestApp"
         x:Class="IntegrationTestApp.ShowWindowTest"
         Name="SecondaryWindow"
         x:DataType="Window"
         Title="Show Window Test">
-  <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-    <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
-    <TextBox Name="ClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"
-             Text="{Binding ClientSize, Mode=OneWay}"/>
-    
-    <Label Grid.Column="0" Grid.Row="2">Frame Size</Label>
-    <TextBox Name="FrameSize" Grid.Column="1" Grid.Row="2" IsReadOnly="True"
-             Text="{Binding FrameSize, Mode=OneWay}"/>
+  <integrationTestApp:MeasureBorder Name="MyBorder">
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
+      <TextBox Name="CurrentClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"
+               Text="{Binding ClientSize, Mode=OneWay}" />
 
-    <Label Grid.Column="0" Grid.Row="3">Position</Label>
-    <TextBox Name="Position" Grid.Column="1" Grid.Row="3" IsReadOnly="True"/>
+      <Label Grid.Column="0" Grid.Row="2">Frame Size</Label>
+      <TextBox Name="CurrentFrameSize" Grid.Column="1" Grid.Row="2" IsReadOnly="True"
+               Text="{Binding FrameSize, Mode=OneWay}" />
 
-    <Label Grid.Column="0" Grid.Row="4">Owner Rect</Label>
-    <TextBox Name="OwnerRect" Grid.Column="1" Grid.Row="4" IsReadOnly="True"/>
-    
-    <Label Grid.Column="0" Grid.Row="5">Screen Rect</Label>
-    <TextBox Name="ScreenRect" Grid.Column="1" Grid.Row="5" IsReadOnly="True"/>
+      <Label Grid.Column="0" Grid.Row="3">Position</Label>
+      <TextBox Name="CurrentPosition" Grid.Column="1" Grid.Row="3" IsReadOnly="True" />
 
-    <Label Grid.Column="0" Grid.Row="6">Scaling</Label>
-    <TextBox Name="Scaling" Grid.Column="1" Grid.Row="6" IsReadOnly="True"/>
-    
-    <Label Grid.Column="0" Grid.Row="7">WindowState</Label>
-    <ComboBox Name="WindowState" Grid.Column="1" Grid.Row="7" SelectedIndex="{Binding WindowState}">
-      <ComboBoxItem Name="WindowStateNormal">Normal</ComboBoxItem>
-      <ComboBoxItem Name="WindowStateMinimized">Minimized</ComboBoxItem>
-      <ComboBoxItem Name="WindowStateMaximized">Maximized</ComboBoxItem>
-      <ComboBoxItem Name="WindowStateFullScreen">FullScreen</ComboBoxItem>
-    </ComboBox>
+      <Label Grid.Column="0" Grid.Row="4">Owner Rect</Label>
+      <TextBox Name="CurrentOwnerRect" Grid.Column="1" Grid.Row="4" IsReadOnly="True" />
 
-    <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>
-    <TextBox Name="Order" Grid.Column="1" Grid.Row="8" IsReadOnly="True"/>
+      <Label Grid.Column="0" Grid.Row="5">Screen Rect</Label>
+      <TextBox Name="CurrentScreenRect" Grid.Column="1" Grid.Row="5" IsReadOnly="True" />
 
-    <Button Name="HideButton" Grid.Row="9" Command="{Binding $parent[Window].Hide}">Hide</Button>
-  </Grid>
+      <Label Grid.Column="0" Grid.Row="6">Scaling</Label>
+      <TextBox Name="CurrentScaling" Grid.Column="1" Grid.Row="6" IsReadOnly="True" />
+
+      <Label Grid.Column="0" Grid.Row="7">WindowState</Label>
+      <ComboBox Name="CurrentWindowState" Grid.Column="1" Grid.Row="7" SelectedIndex="{Binding WindowState}">
+        <ComboBoxItem Name="WindowStateNormal">Normal</ComboBoxItem>
+        <ComboBoxItem Name="WindowStateMinimized">Minimized</ComboBoxItem>
+        <ComboBoxItem Name="WindowStateMaximized">Maximized</ComboBoxItem>
+        <ComboBoxItem Name="WindowStateFullScreen">FullScreen</ComboBoxItem>
+      </ComboBox>
+
+      <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>
+      <TextBox Name="CurrentOrder" Grid.Column="1" Grid.Row="8" IsReadOnly="True" />
+      
+      <Label Grid.Row="9" Content="MeasuredWith:" />
+      <TextBlock Grid.Column="1" Grid.Row="9" Name="CurrentMeasuredWithText" Text="{Binding #MyBorder.MeasuredWith}" />
+
+      <Button Name="HideButton" Grid.Row="10" Command="{Binding $parent[Window].Hide}">Hide</Button>
+      
+    </Grid>
+  </integrationTestApp:MeasureBorder>
 </Window>

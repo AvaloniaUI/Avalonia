@@ -43,17 +43,14 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
         /// </summary>
-        public static readonly DirectProperty<PopupFlyoutBase, IInputElement?> OverlayInputPassThroughElementProperty =
-            Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>(
-                o => o._overlayInputPassThroughElement,
-                (o, v) => o._overlayInputPassThroughElement = v);
+        public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>();
         
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
         private Action<IPopupHost?>? _popupHostChangedHandler;
-        private IInputElement? _overlayInputPassThroughElement;
 
         static PopupFlyoutBase()
         {
@@ -119,8 +116,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IInputElement? OverlayInputPassThroughElement
         {
-            get => _overlayInputPassThroughElement;
-            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
+            get => GetValue(OverlayInputPassThroughElementProperty);
+            set => SetValue(OverlayInputPassThroughElementProperty, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
