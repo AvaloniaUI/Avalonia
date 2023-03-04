@@ -1,0 +1,13 @@
+﻿<local:BaseView
+	    xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sample.App.ViewWithGenericBaseView"
+        Design.Width="300"
+		xmlns:sys="clr-namespace:System"
+		x:TypeArguments="sys:String"
+	    x:Name="Root"
+		xmlns:local="clr-namespace:Sample.App">
+	<Grid>
+		<local:BaseView x:Name="NotAsRootNode" x:TypeArguments="sys:Int32" />
+	</Grid>
+</local:BaseView>

@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sample.App.FieldModifier">
+    <StackPanel>
+        <TextBox Name="FirstNameTextBox"
+                 x:FieldModifier="Public"
+                 Watermark="Username input"
+                 UseFloatingWatermark="True" />
+        <TextBox Name="LastNameTextBox"
+                 x:FieldModifier="public"
+                 Watermark="Username input"
+                 UseFloatingWatermark="True" />
+        <TextBox Name="PasswordTextBox"
+                 x:FieldModifier="protected"
+                 Watermark="Password input"
+                 UseFloatingWatermark="True" />
+        <TextBox Name="ConfirmPasswordTextBox"
+                 x:FieldModifier="private"
+                 Watermark="Password input"
+                 UseFloatingWatermark="True" />
+        <Button Name="SignUpButton"
+                x:FieldModifier="NotPublic"
+                Content="Sign up" />
+        <Button Name="RegisterButton"
+                x:FieldModifier="Nonsense"
+                Content="Register" />
+    </StackPanel>
+</Window>

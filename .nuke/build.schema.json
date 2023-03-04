@@ -84,11 +84,11 @@
               "GenerateCppHeaders",
               "Package",
               "RunCoreLibsTests",
-              "RunDesignerTests",
               "RunHtmlPreviewerTests",
               "RunLeakTests",
               "RunRenderTests",
               "RunTests",
+              "RunToolsTests",
               "ZipFiles"
             ]
           }
@@ -123,11 +123,11 @@
               "GenerateCppHeaders",
               "Package",
               "RunCoreLibsTests",
-              "RunDesignerTests",
               "RunHtmlPreviewerTests",
               "RunLeakTests",
               "RunRenderTests",
               "RunTests",
+              "RunToolsTests",
               "ZipFiles"
             ]
           }
