@@ -4,6 +4,7 @@
 //
 
 #import <AppKit/AppKit.h>
+#import <Cocoa/Cocoa.h>
 #include "common.h"
 #include "AvnView.h"
 #include "menu.h"
@@ -295,15 +296,24 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
-            if(x != lastSize.width || y != lastSize.height) {
+            if(x != lastSize.width || y != lastSize.height)
+            {
+                if (!_shown) {
+                    auto screenSize = [Window screen].visibleFrame.size;
+
+                    if (x > screenSize.width) {
+                        x = screenSize.width;
+                    }
+
+                    if (y > screenSize.height) {
+                        y = screenSize.height;
+                    }
+                }
+
                 lastSize = NSSize{x, y};
 
-                if (!_shown) {
-                    BaseEvents->Resized(AvnSize{x, y}, reason);
-                } else if (Window != nullptr) {
-                    [Window setContentSize:lastSize];
-                    [Window invalidateShadow];
-                }
+                [Window setContentSize:lastSize];
+                [Window invalidateShadow];
             }
         }
         @finally {

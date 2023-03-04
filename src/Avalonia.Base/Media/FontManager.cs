@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -13,9 +15,11 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class FontManager
     {
-        private readonly ConcurrentDictionary<Typeface, IGlyphTypeface> _glyphTypefaceCache =
-            new ConcurrentDictionary<Typeface, IGlyphTypeface>();
-        private readonly FontFamily _defaultFontFamily;
+        internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts");
+
+        public const string FontCollectionScheme = "fonts";
+
+        private readonly ConcurrentDictionary<Uri, IFontCollection> _fontCollections = new ConcurrentDictionary<Uri, IFontCollection>();
         private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
 
         public FontManager(IFontManagerImpl platformImpl)
@@ -33,9 +37,12 @@ namespace Avalonia.Media
                 throw new InvalidOperationException("Default font family name can't be null or empty.");
             }
 
-            _defaultFontFamily = new FontFamily(DefaultFontFamilyName);
+            AddFontCollection(new SystemFontCollection(this));
         }
 
+        /// <summary>
+        /// Get the current font manager instance.
+        /// </summary>
         public static FontManager Current
         {
             get
@@ -58,11 +65,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public IFontManagerImpl PlatformImpl { get; }
-
-        /// <summary>
         ///     Gets the system's default font family's name.
         /// </summary>
         public string DefaultFontFamilyName
@@ -71,41 +73,109 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Get all installed font family names.
+        ///     Get all system fonts.
         /// </summary>
-        /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
-            PlatformImpl.GetInstalledFontFamilyNames(checkForUpdates);
+        public IFontCollection SystemFonts => _fontCollections[SystemFontsKey];
+
+        internal IFontManagerImpl PlatformImpl { get; }
 
         /// <summary>
-        ///     Returns a new <see cref="IGlyphTypeface"/>, or an existing one if a matching <see cref="IGlyphTypeface"/> exists.
+        ///     Tries to get a glyph typeface for specified typeface.
         /// </summary>
         /// <param name="typeface">The typeface.</param>
+        /// <param name="glyphTypeface">The created glyphTypeface</param>
         /// <returns>
-        ///     The <see cref="IGlyphTypeface"/>.
+        ///     <c>True</c>, if the <see cref="FontManager"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
-        public IGlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
+        public bool TryGetGlyphTypeface(Typeface typeface, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            while (true)
+            glyphTypeface = null;
+
+            var fontFamily = typeface.FontFamily;
+
+            if (fontFamily.Key is FontFamilyKey key)
             {
-                if (_glyphTypefaceCache.TryGetValue(typeface, out var glyphTypeface))
+                var source = key.Source;
+
+                if (!source.IsAbsoluteUri)
                 {
-                    return glyphTypeface;
+                    if (key.BaseUri == null)
+                    {
+                        throw new NotSupportedException($"{nameof(key.BaseUri)} can't be null.");
+                    }
+
+                    source = new Uri(key.BaseUri, source);
                 }
 
-                glyphTypeface = PlatformImpl.CreateGlyphTypeface(typeface);
-
-                if (_glyphTypefaceCache.TryAdd(typeface, glyphTypeface))
+                if (!_fontCollections.TryGetValue(source, out var fontCollection))
                 {
-                    return glyphTypeface;
+                    var embeddedFonts = new EmbeddedFontCollection(source, source);
+
+                    embeddedFonts.Initialize(PlatformImpl);
+
+                    if (embeddedFonts.Count > 0 && _fontCollections.TryAdd(source, embeddedFonts))
+                    {
+                        fontCollection = embeddedFonts;
+                    }
                 }
 
-                if (typeface.FontFamily == _defaultFontFamily)
+                if (fontCollection != null && fontCollection.TryGetGlyphTypeface(fontFamily.FamilyNames.PrimaryFamilyName,
+                    typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {
-                   throw new InvalidOperationException($"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+                    return true;
                 }
 
-                typeface = new Typeface(_defaultFontFamily, typeface.Style, typeface.Weight);
+                if (!fontFamily.FamilyNames.HasFallbacks)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var familyName in fontFamily.FamilyNames)
+            {
+                if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+                {
+                    return true;
+                }
+            }
+
+            return SystemFonts.TryGetGlyphTypeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
+        }
+
+        /// <summary>
+        /// Add a font collection to the manager.
+        /// </summary>
+        /// <param name="fontCollection">The font collection.</param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <remarks>If a font collection's key is already present the collection is replaced.</remarks>
+        public void AddFontCollection(IFontCollection fontCollection)
+        {
+            var key = fontCollection.Key;
+
+            if (!fontCollection.Key.IsFontCollection())
+            {
+                throw new ArgumentException("Font collection Key should follow the fonts: scheme.", nameof(fontCollection));
+            }
+
+            _fontCollections.AddOrUpdate(key, fontCollection, (_, oldCollection) =>
+            {
+                oldCollection.Dispose();
+
+                return fontCollection;
+            });
+
+            fontCollection.Initialize(PlatformImpl);
+        }
+
+        /// <summary>
+        /// Removes the font collection that corresponds to specified key.
+        /// </summary>
+        /// <param name="key">The font collection's key.</param>
+        public void RemoveFontCollection(Uri key)
+        {
+            if (_fontCollections.TryRemove(key, out var fontCollection))
+            {
+                fontCollection.Dispose();
             }
         }
 
@@ -123,18 +193,16 @@ namespace Avalonia.Media
         ///     <c>True</c>, if the <see cref="FontManager"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
+            FontStretch fontStretch, FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
         {
-            if(_fontFallbacks != null)
+            if (_fontFallbacks != null)
             {
                 foreach (var fallback in _fontFallbacks)
                 {
                     typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                    var glyphTypeface = GetOrAddGlyphTypeface(typeface);
-
-                    if(glyphTypeface.TryGetGlyph((uint)codepoint, out _)){
+                    if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                    {
                         return true;
                     }
                 }

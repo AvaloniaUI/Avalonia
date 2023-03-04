@@ -16,9 +16,11 @@ namespace Avalonia.Base.UnitTests.Media
 
                 var typeface = new Typeface(fontFamily);
 
-                var glyphTypeface = FontManager.Current.GetOrAddGlyphTypeface(typeface);
+                Assert.True(FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface));
 
-                Assert.Same(glyphTypeface, FontManager.Current.GetOrAddGlyphTypeface(typeface));
+                FontManager.Current.TryGetGlyphTypeface(typeface, out var other);
+
+                Assert.Same(glyphTypeface, other);
             }
         }
 
