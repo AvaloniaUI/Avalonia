@@ -146,7 +146,7 @@ namespace Avalonia.Controls
             [Obsolete("Use ItemsSource to set or bind items.")]
             set
             {
-                if (_items != value)
+                if (_items != value || (value is null && !_itemsOverridden))
                 {
                     if (_items is ItemCollection)
                     {
