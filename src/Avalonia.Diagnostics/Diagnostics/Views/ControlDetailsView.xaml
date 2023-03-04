@@ -120,7 +120,7 @@
         </Grid>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
-          <ItemsControl Items="{Binding AppliedStyles}" >
+          <ItemsControl ItemsSource="{Binding AppliedStyles}" >
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C" Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}">
@@ -249,7 +249,7 @@
         </ScrollViewer>
 
         <Expander Header="Pseudo Classes" Grid.Row="2">
-          <ItemsControl Items="{Binding PseudoClasses}">
+          <ItemsControl ItemsSource="{Binding PseudoClasses}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel />
