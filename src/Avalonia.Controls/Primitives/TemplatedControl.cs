@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     foreach (var child in this.GetTemplateChildren())
                     {
-                        child.SetValue(TemplatedParentProperty, null);
+                        child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
                     }
 
@@ -377,7 +377,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="templatedParent">The templated parent to apply.</param>
         internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
-            control.SetValue(TemplatedParentProperty, templatedParent);
+            control.TemplatedParent = templatedParent;
 
             var children = control.LogicalChildren;
             var count = children.Count;

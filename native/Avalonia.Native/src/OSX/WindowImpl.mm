@@ -54,6 +54,11 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
 
         WindowBaseImpl::Show(activate, isDialog);
         GetWindowState(&_actualWindowState);
+
+        if(IsZoomed()) {
+            _lastWindowState = _actualWindowState;
+        }
+
         return SetWindowState(_lastWindowState);
     }
 }

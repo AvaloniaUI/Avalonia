@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Documents
 
             this.ForEachItem(
                 x =>
-                {                   
+                {
                     x.InlineHost = InlineHost;
                     LogicalChildren?.Add(x);
                     Invalidate();
@@ -92,10 +92,10 @@ namespace Avalonia.Controls.Documents
         public override void Add(Inline inline)
         {
             if (InlineHost is TextBlock textBlock && !string.IsNullOrEmpty(textBlock._text))
-            {          
+            {
                 base.Add(new Run(textBlock._text));
 
-                textBlock._text = null;                
+                textBlock._text = null;
             }
 
             base.Add(inline);
@@ -159,7 +159,7 @@ namespace Avalonia.Controls.Documents
                         oldParent.Remove(child);
                     }
 
-                    if(newParent != null)
+                    if (newParent != null)
                     {
                         newParent.Add(child);
                     }
