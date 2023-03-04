@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -17,6 +18,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(Services))
             {
+                Assert.False(Dispatcher.UIThread.HasJobsWithPriority(0));
                 bool handled = false;
                 TimePicker timePicker = new TimePicker();
                 timePicker.SelectedTimeChanged += (s, e) =>
