@@ -18,7 +18,11 @@ namespace Avalonia.UnitTests
 
         public void Dispose()
         {
-            Dispatcher.UIThread.RunJobs();
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.RunJobs();
+            }
+            
             _scope.Dispose();
         }
     }

@@ -285,7 +285,10 @@ namespace Avalonia.Direct2D1.RenderTests
 
         public void Dispose()
         {
-            Dispatcher.UIThread.RunJobs();
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.RunJobs();
+            }
         }
     }
 }

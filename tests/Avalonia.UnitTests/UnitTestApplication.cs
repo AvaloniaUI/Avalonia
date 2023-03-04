@@ -46,7 +46,11 @@ namespace Avalonia.UnitTests
             Dispatcher.UIThread.UpdateServices();
             return Disposable.Create(() =>
             {
-                Dispatcher.UIThread.RunJobs();
+                if (Dispatcher.UIThread.CheckAccess())
+                {
+                    Dispatcher.UIThread.RunJobs();
+                }
+
                 scope.Dispose();
                 Dispatcher.UIThread.UpdateServices();
             });
