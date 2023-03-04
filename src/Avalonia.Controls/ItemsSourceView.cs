@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Utils;
 
@@ -17,11 +18,12 @@ namespace Avalonia.Controls
     /// and an items control.
     /// </summary>
     public class ItemsSourceView : IReadOnlyList<object?>,
+        IList,
         INotifyCollectionChanged,
         ICollectionChangedListener
     {
         /// <summary>
-        ///  Gets an empty <see cref="ItemsSourceView"/>
+        /// Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
         public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object>());
 
@@ -67,12 +69,20 @@ namespace Avalonia.Controls
         /// <returns>The item.</returns>
         public object? this[int index] => GetAt(index);
 
+        bool IList.IsFixedSize => false;
+        bool IList.IsReadOnly => true;
+        bool ICollection.IsSynchronized => false;
+        object ICollection.SyncRoot => this;
+
+        object? IList.this[int index]
+        {
+            get => GetAt(index);
+            set => ThrowReadOnly();
+        }
+
         /// <summary>
-        /// Gets a value that indicates whether the items source can provide a unique key for each item.
-        /// </summary>
-        /// <remarks>
         /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
-        /// </remarks>
+        /// </summary>
         internal bool HasKeyIndexMapping => false;
 
         /// <summary>
@@ -158,11 +168,7 @@ namespace Avalonia.Controls
         /// <returns>The item.</returns>
         public object? GetAt(int index) => Inner[index];
 
-        /// <summary>
-        /// Determines the index of a specific item in the collection.
-        /// </summary>
-        /// <param name="item">The object to locate in the collection.</param>
-        /// <returns>The index of value if found in the list; otherwise, -1.</returns>
+        public bool Contains(object? item) => Inner.Contains(item);
         public int IndexOf(object? item) => Inner.IndexOf(item);
 
         /// <summary>
@@ -264,14 +270,19 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Retrieves the index of the item that has the specified unique identifier (key).
+        /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
         /// </summary>
-        /// <param name="index">The index.</param>
-        /// <returns>The key</returns>
-        /// <remarks>
-        /// TODO: Not yet implemented in Avalonia.
-        /// </remarks>
         internal string KeyFromIndex(int index) => throw new NotImplementedException();
+
+        int IList.Add(object? value) => ThrowReadOnly();
+        void IList.Clear() => ThrowReadOnly();
+        void IList.Insert(int index, object? value) => ThrowReadOnly();
+        void IList.Remove(object? value) => ThrowReadOnly();
+        void IList.RemoveAt(int index) => ThrowReadOnly();
+        void ICollection.CopyTo(Array array, int index) => Inner.CopyTo(array, index);
+
+        [DoesNotReturn]
+        private static int ThrowReadOnly() => throw new NotSupportedException("Collection is read-only.");
     }
 
     public sealed class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>

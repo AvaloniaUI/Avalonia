@@ -555,17 +555,12 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemsSourceProperty)
             {
-                if (Items is ItemCollection itemCollection)
-                {
-                    if (itemCollection.Count > 0)
-                        throw new InvalidOperationException("Cannot set both Items and ItemsSource.");
-                    else
-                        itemCollection.IsReadOnly = change.GetNewValue<IEnumerable>() is not null;
-                }
-                else if (Items is not null)
-                    throw new InvalidOperationException("Cannot set both Items and ItemsSource.");
-
+                if (Items is not ItemCollection itemCollection)
+                    throw new InvalidOperationException(
+                        "Items collection was reassigned via obsolete Items property setter. " +
+                        "Use ItemsSource exculsively instead.");
                 ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IEnumerable?>());
+                itemCollection.SetItemsSource(ItemsView);
             }
             else if (change.Property == ItemTemplateProperty)
             {
@@ -851,23 +846,6 @@ namespace Avalonia.Controls
             offset = 0;
 
             return _itemsPresenter?.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset) ?? 0;
-        }
-
-        private class ItemCollection : AvaloniaList<object>
-        {
-            public ItemCollection()
-            {
-                Validate = OnValidate;
-                ResetBehavior = ResetBehavior.Remove;
-            }
-
-            private void OnValidate(object obj)
-            {
-                if (IsReadOnly)
-                    throw new InvalidOperationException("The ItemsControl is in ItemsSource mode.");
-            }
-
-            public bool IsReadOnly { get; set; }
         }
     }
 }

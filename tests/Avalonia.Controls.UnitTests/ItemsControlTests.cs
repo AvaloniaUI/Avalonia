@@ -17,6 +17,19 @@ namespace Avalonia.Controls.UnitTests
     public class ItemsControlTests
     {
         [Fact]
+        public void Setting_ItemsSource_Should_Populate_Items()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+                ItemsSource = new[] { "foo", "bar" },
+            };
+
+            Assert.Equal(target.ItemsSource, target.Items);
+        }
+
+        [Fact]
         public void Should_Use_ItemTemplate_To_Create_Control()
         {
             var target = new ItemsControl
