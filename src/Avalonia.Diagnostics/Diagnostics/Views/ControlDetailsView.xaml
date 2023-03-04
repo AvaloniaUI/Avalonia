@@ -60,7 +60,11 @@
                 DoubleTapped="PropertiesGrid_OnDoubleTapped">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" x:DataType="vm:PropertyViewModel" />
+          <DataGridTemplateColumn Header="Value" Width="100">
+              <DataTemplate>
+                <local:PropertyValueEditorView />
+              </DataTemplate>
+          </DataGridTemplateColumn>
           <DataGridTextColumn Header="Type" Binding="{Binding Type}"
                               IsReadOnly="True"
                               IsVisible="{Binding !$parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"

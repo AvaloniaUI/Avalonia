@@ -31,7 +31,7 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
-    public class TestBase
+    public class TestBase : IDisposable
     {
 #if AVALONIA_SKIA
         private static string s_fontUri = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Noto Mono";
@@ -280,6 +280,14 @@ namespace Avalonia.Direct2D1.RenderTests
                 {
                     lock (s_timers) s_timers.Remove(act);
                 });
+            }
+        }
+
+        public void Dispose()
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.RunJobs();
             }
         }
     }
