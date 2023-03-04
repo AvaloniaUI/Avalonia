@@ -56,9 +56,14 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
         /// <returns>The property.</returns>        
-        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : AvaloniaObject
+        public StyledProperty<TValue> AddOwner<TOwner>(StyledPropertyMetadata<TValue>? metadata = null) where TOwner : AvaloniaObject
         {
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);
+            if (metadata != null)
+            {
+                OverrideMetadata<TOwner>(metadata);
+            }
+
             return this;
         }
 

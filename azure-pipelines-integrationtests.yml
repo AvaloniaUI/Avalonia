@@ -15,28 +15,40 @@ jobs:
       version: 7.0.101
       
   - script: system_profiler SPDisplaysDataType |grep Resolution
+    displayName: 'Get Resolution'
   
   - script: |
+      arch="x64"
+      if [[ $(uname -m) == 'arm64' ]]; then
+      arch="arm64"
+      fi
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
-      appium &
+      appium > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
-      open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-arm64/publish/IntegrationTestApp.app
+      open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-$arch/publish/IntegrationTestApp.app
       pkill IntegrationTestApp
+    displayName: 'Build IntegrationTestApp'
 
   - task: DotNetCoreCLI@2
+    displayName: 'Run Integration Tests'
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+      arguments: '-l "console;verbosity=detailed"'
 
   - script: |
       pkill IntegrationTestApp
       pkill node
+    displayName: 'Stop Appium'
 
+  - publish: appium.out
+    displayName: 'Publish appium logs on failure'
+    condition: failed()
 
 - job: Windows
   pool:
@@ -60,11 +72,13 @@ jobs:
     displayName: 'Start WinAppDriver'
   
   - task: DotNetCoreCLI@2
+    displayName: 'Build IntegrationTestApp'
     inputs:
       command: 'build'
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
   - task: DotNetCoreCLI@2
+    displayName: 'Run Integration Tests'
     retryCountOnTaskFailure: 3
     inputs:
       command: 'test'

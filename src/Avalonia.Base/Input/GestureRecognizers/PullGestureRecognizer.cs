@@ -13,22 +13,18 @@ namespace Avalonia.Input
         private Point _initialPosition;
         private int _gestureId;
         private IPointer? _tracking;
-        private PullDirection _pullDirection;
         private bool _pullInProgress;
 
         /// <summary>
         /// Defines the <see cref="PullDirection"/> property.
         /// </summary>
-        public static readonly DirectProperty<PullGestureRecognizer, PullDirection> PullDirectionProperty =
-            AvaloniaProperty.RegisterDirect<PullGestureRecognizer, PullDirection>(
-                nameof(PullDirection),
-                o => o.PullDirection,
-                (o, v) => o.PullDirection = v);
+        public static readonly StyledProperty<PullDirection> PullDirectionProperty =
+            AvaloniaProperty.Register<PullGestureRecognizer, PullDirection>(nameof(PullDirection));
 
         public PullDirection PullDirection
         {
-            get => _pullDirection;
-            set => SetAndRaise(PullDirectionProperty, ref _pullDirection, value);
+            get => GetValue(PullDirectionProperty);
+            set => SetValue(PullDirectionProperty, value);
         }
 
         public PullGestureRecognizer(PullDirection pullDirection)

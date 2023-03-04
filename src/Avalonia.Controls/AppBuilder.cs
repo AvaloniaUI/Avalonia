@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
+using Avalonia.Media.Fonts;
+using Avalonia.Media;
 
 namespace Avalonia
 {
@@ -240,6 +242,19 @@ namespace Avalonia
         {
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
             return Self;
+        }
+
+        /// <summary>
+        /// Registers an action that is executed with the current font manager.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder ConfigureFonts(Action<FontManager> action)
+        {
+            return AfterSetup(appBuilder =>
+            {
+                action?.Invoke(FontManager.Current);
+            });
         }
 
         /// <summary>

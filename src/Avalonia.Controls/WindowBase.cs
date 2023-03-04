@@ -27,10 +27,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
         public static readonly DirectProperty<WindowBase, WindowBase?> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(
-                nameof(Owner),
-                o => o.Owner,
-                (o, v) => o.Owner = v);
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(nameof(Owner), o => o.Owner);
 
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));

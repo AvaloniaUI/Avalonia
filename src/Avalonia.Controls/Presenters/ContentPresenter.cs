@@ -156,16 +156,13 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="RecognizesAccessKey"/> property
         /// </summary>
-        public static readonly DirectProperty<ContentPresenter, bool> RecognizesAccessKeyProperty =
-            AvaloniaProperty.RegisterDirect<ContentPresenter, bool>(
-                nameof(RecognizesAccessKey),
-                cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
+        public static readonly StyledProperty<bool> RecognizesAccessKeyProperty =
+            AvaloniaProperty.Register<ContentPresenter, bool>(nameof(RecognizesAccessKey));
 
         private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
-        private bool _recognizesAccessKey;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -386,8 +383,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public bool RecognizesAccessKey
         {
-            get => _recognizesAccessKey;
-            set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
+            get => GetValue(RecognizesAccessKeyProperty);
+            set => SetValue(RecognizesAccessKeyProperty, value);
         }
 
         /// <summary>

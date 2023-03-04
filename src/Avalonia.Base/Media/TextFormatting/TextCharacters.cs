@@ -122,13 +122,14 @@ namespace Avalonia.Media.TextFormatting
             if (matchFound)
             {
                 // Fallback found
-                var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
-                                
-                if (TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count))
-                {                    
-                    return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
-                        biDiLevel);
-                }                
+                if(fontManager.TryGetGlyphTypeface(fallbackTypeface, out var fallbackGlyphTypeface))
+                {
+                    if (TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count))
+                    {
+                        return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
+                            biDiLevel);
+                    }
+                }          
             }
 
             // no fallback found

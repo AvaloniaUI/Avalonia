@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
+using Avalonia.Reactive;
 
 namespace Avalonia.Input.GestureRecognizers
 {
@@ -11,13 +11,13 @@ namespace Avalonia.Input.GestureRecognizers
         private readonly IInputElement _inputElement;
         private List<IGestureRecognizer>? _recognizers;
         private Dictionary<IPointer, IGestureRecognizer>? _pointerGrabs;
-        
-        
+
+
         public GestureRecognizerCollection(IInputElement inputElement)
         {
             _inputElement = inputElement;
         }
-        
+
         public void Add(IGestureRecognizer recognizer)
         {
             if (_recognizers == null)
@@ -31,14 +31,13 @@ namespace Avalonia.Input.GestureRecognizers
             recognizer.Initialize(_inputElement, this);
 
             // Hacks to make bindings work
-            
+
             if (_inputElement is ILogical logicalParent && recognizer is ISetLogicalParent logical)
             {
                 logical.SetParent(logicalParent);
                 if (recognizer is StyledElement styleableRecognizer
                     && _inputElement is StyledElement styleableParent)
-                    styleableRecognizer.Bind(StyledElement.TemplatedParentProperty,
-                        styleableParent.GetObservable(StyledElement.TemplatedParentProperty));
+                    styleableParent.GetObservable(StyledElement.TemplatedParentProperty).Subscribe(parent => styleableRecognizer.TemplatedParent = parent);
             }
         }
 
@@ -58,7 +57,7 @@ namespace Avalonia.Input.GestureRecognizers
                 return false;
             foreach (var r in _recognizers)
             {
-                if(e.Handled)
+                if (e.Handled)
                     break;
                 r.PointerPressed(e);
             }
