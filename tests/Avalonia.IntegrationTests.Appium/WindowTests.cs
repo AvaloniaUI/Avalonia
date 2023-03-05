@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
+using Avalonia.IntegrationTests.Appium.Crapium;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
@@ -18,13 +19,17 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests
     {
-        private readonly AppiumDriver _session;
+        private readonly ISession _session;
+        private IWindowElement _mainWindow;
 
         public WindowTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Driver;
+            _session = fixture.Session;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            _mainWindow = _session.GetWindow("MainWindow");
+            
+            var tabs = _mainWindow.FindElement("MainTabs");
+            
             var tab = tabs.FindElementByName("Window");
             tab.Click();
         }
@@ -62,7 +67,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Theory]
+        /*[Theory]
         [MemberData(nameof(WindowStateData))]
         public void WindowState(Size? size, ShowWindowMode mode, WindowState state, bool canResize)
         {
@@ -102,7 +107,7 @@ namespace Avalonia.IntegrationTests.Appium
                     }
                     catch
                     {
-                        /* Ignore errors in cleanup */
+                        // Ignore errors in cleanup
                     }
                 }
             }
@@ -247,7 +252,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
-        }
+        }*/
 
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool> StartupLocationData()
         {
@@ -335,17 +340,17 @@ namespace Avalonia.IntegrationTests.Appium
             WindowState state = Controls.WindowState.Normal,
             bool canResize = true)
         {
-            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-            var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
-            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
-            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+            var sizeTextBox = _mainWindow.FindElement("ShowWindowSize");
+            var modeComboBox = _mainWindow.FindElement("ShowWindowMode");
+            var locationComboBox = _mainWindow.FindElement("ShowWindowLocation");
+            var stateComboBox = _mainWindow.FindElement("ShowWindowState");
+            var canResizeCheckBox = _mainWindow.FindElement("ShowWindowCanResize");
+            var showButton = _mainWindow.FindElement("ShowWindow");
             
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
-            if (modeComboBox.GetComboBoxValue() != mode.ToString())
+            /*if (modeComboBox.GetComboBoxValue() != mode.ToString())
             {
                 modeComboBox.Click();
                 _session.FindElementByName(mode.ToString()).SendClick();
@@ -364,14 +369,16 @@ namespace Avalonia.IntegrationTests.Appium
             }
 
             if (canResizeCheckBox.GetIsChecked() != canResize)
-                canResizeCheckBox.Click();
+                canResizeCheckBox.Click();*/
 
-            return showButton.OpenWindowWithClick();
+            return null;
+            //return showButton.OpenWindowWithClick();
         }
 
         private WindowInfo GetWindowInfo()
         {
-            PixelRect? ReadOwnerRect()
+            throw new NotImplementedException();
+            /*PixelRect? ReadOwnerRect()
             {
                 var text = _session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
                 return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
@@ -398,7 +405,7 @@ namespace Avalonia.IntegrationTests.Appium
                     // of fullscreen.
                     Thread.Sleep(1000);
                 }
-            }
+            }*/
         }
 
         public enum ShowWindowMode

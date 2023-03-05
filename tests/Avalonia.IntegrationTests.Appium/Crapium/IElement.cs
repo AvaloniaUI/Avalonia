@@ -3,7 +3,14 @@ namespace Avalonia.IntegrationTests.Appium.Crapium;
 public interface IElement
 {
     string Name { get; }
+    
+    string Value { get; }
+    
     void Click();
-    T FindElement<T>(string id) where T : IElement;
-    T FindElementByName<T>(string name) where T : IElement;
+
+    void SendKeys(string text);
+    
+    IElement FindElement(string id);
+    
+    IElement FindElementByName(string name);
 }

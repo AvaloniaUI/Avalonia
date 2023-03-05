@@ -15,8 +15,8 @@ namespace Avalonia.IntegrationTests.Appium
             _session = fixture.Session;
             _window = _session.GetWindow("MainWindow");
 
-            var tabs = _window.FindElement<ITabControlElement>("MainTabs");
-            var tab = tabs.FindItemByName<IElement>("Automation");
+            var tabs = _window.FindElement("MainTabs");
+            var tab = tabs.FindElementByName("Automation");
             tab.Click();
         }
 
@@ -25,17 +25,17 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // AutomationID can be specified by the Name or AutomationProperties.AutomationId
             // properties, with the latter taking precedence.
-            var byName = _window.FindElementByName<IElement>("TextBlockWithName");
-            var byAutomationId = _window.FindElement<IElement>("TextBlockWithNameAndAutomationId");
+            var byName = _window.FindElementByName("TextBlockWithName");
+            var byAutomationId = _window.FindElement("TextBlockWithNameAndAutomationId");
         }
 
         [Fact]
         public void LabeledBy()
         {
-            var label = _window.FindElement<ITextElement>("TextBlockAsLabel");
-            var labeledTextBox = _window.FindElement<ITextElement>("LabeledByTextBox");
+            var label = _window.FindElement("TextBlockAsLabel");
+            var labeledTextBox = _window.FindElement("LabeledByTextBox");
 
-            Assert.Equal("Label for TextBox", label.Text);
+            Assert.Equal("Label for TextBox", label.Value);
             Assert.Equal("Label for TextBox", labeledTextBox.Name);
         }
     }

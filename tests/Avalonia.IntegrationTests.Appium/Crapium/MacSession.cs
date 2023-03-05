@@ -12,7 +12,7 @@ public class MacSession : ISession
 {
     private static readonly Dictionary<Type, Func<IWebElement, object>> s_factory = new()
     {
-        { typeof(IElement), x => new AppiumElement(x) }
+        { typeof(IElement), x => new UIElement(x) }
     };
 
     private readonly MacDriver _driver;
@@ -42,30 +42,21 @@ public class MacSession : ISession
             // Double XCUIElementTypeWindow is a hack for Avalonia a11y returning 2 nested windows.
             return _driver.FindElementsByXPath(
                 "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeWindow")
-                .Select(x => new AppiumWindowElement(x))
+                .Select(x => new UiWindowElement(x))
                 .ToList();
         }
-    }
-
-    public T FindElement<T>(string windowId, string elementId) where T : IElement
-    {
-        var f = GetElementFactory<T>();
-        var e = _driver.FindElementByXPath(
-            $"/XCUIElementTypeApplication/XCUIElementTypeWindow/" +
-            $"XCUIElementTypeWindow[@identifier='{windowId}']//*[identifier='{elementId}']");
-        return (T)f(e);
     }
     
     public IWindowElement GetWindow(string id)
     {
-        return new AppiumWindowElement(
+        return new UiWindowElement(
             _driver.FindElementByXPath(
                 $"/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeWindow[@identifier='{id}']"));
     }
 
-    internal static Func<IWebElement, object> GetElementFactory<T>()
+    internal static Func<IWebElement, object> GetElementFactory()
     {
-        if (s_factory.TryGetValue(typeof(T), out var f))
+        if (s_factory.TryGetValue(typeof(IElement), out var f))
             return f;
         throw new NotSupportedException("Unexpected IElement type.");
     }
