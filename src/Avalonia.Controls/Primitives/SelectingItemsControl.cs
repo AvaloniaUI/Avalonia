@@ -546,7 +546,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_selection is object)
             {
-                _selection.Source = ItemsView.Source;
+                _selection.Source = ItemsView;
             }
         }
 
@@ -1158,7 +1158,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_updateState is null)
             {
-                model.Source = IsSet(ItemsSourceProperty) ? ItemsSource : Items;
+                model.Source = ItemsView;
             }
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;

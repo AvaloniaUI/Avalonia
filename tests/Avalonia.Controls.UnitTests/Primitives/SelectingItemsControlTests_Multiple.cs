@@ -1449,7 +1449,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var selection = new SelectionModel<string>();
             target.Selection = selection;
 
-            Assert.Same(target.Items, selection.Source);
+            Assert.Same(target.ItemsView, selection.Source);
         }
 
         [Fact]
