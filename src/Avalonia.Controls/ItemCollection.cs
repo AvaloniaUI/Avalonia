@@ -9,35 +9,60 @@ using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
-    public class ItemCollection : IList<object?>, IList, IReadOnlyList<object?>
+    public class ItemCollection : IList<object?>,
+        IReadOnlyList<object?>,
+        IList,
+        INotifyCollectionChanged
     {
-        private readonly ItemsControl _owner;
         private IList? _inner;
         private Mode _mode;
 
-        internal ItemCollection(ItemsControl owner)
+        internal ItemCollection()
         {
-            _owner = owner;
         }
 
         public object? this[int index]
         {
             get
             {
-                if (_inner is null)
+                if (Inner is null)
                     ThrowIndexOutOfRange();
-                return _inner[index];
+                return Inner[index];
             }
 
             set => InnerWritable[index] = value;
         }
 
         public bool IsReadOnly => _mode == Mode.ItemsSource;
-        public int Count => _inner?.Count ?? 0;
+        public int Count => Inner?.Count ?? 0;
+        internal IList? Source => _mode == Mode.Items ? this : _inner;
 
-        bool ICollection.IsSynchronized => false;
-        object ICollection.SyncRoot => this;
-        bool IList.IsFixedSize => false;
+        private IList? Inner
+        {
+            get => _inner;
+            set
+            {
+                if (_inner != value)
+                {
+                    if (_inner is not null)
+                    {
+                        OnItemsCollectionChanged(this, new(NotifyCollectionChangedAction.Remove, _inner, 0));
+                        if (_inner is INotifyCollectionChanged inccOld)
+                            inccOld.CollectionChanged -= OnItemsCollectionChanged;
+                    }
+                    
+                    _inner = value;
+
+                    if (_inner is not null)
+                    {
+                        if (_inner is INotifyCollectionChanged inccNew)
+                            inccNew.CollectionChanged += OnItemsCollectionChanged;
+                        OnItemsCollectionChanged(this, new(NotifyCollectionChangedAction.Add, _inner, 0));
+                    }
+                }
+            }
+        }
+       
 
         private IList InnerWritable
         {
@@ -49,11 +74,17 @@ namespace Avalonia.Controls
             }
         }
 
+        bool ICollection.IsSynchronized => false;
+        object ICollection.SyncRoot => this;
+        bool IList.IsFixedSize => false;
+
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
         public void Add(object? value) => InnerWritable.Add(value);
         public void Clear() => InnerWritable.Clear();
-        public bool Contains(object? value) => _inner?.Contains(value) ?? false;
-        public void CopyTo(Array array, int index) => _inner?.CopyTo(array, index);
-        public int IndexOf(object? value) => _inner?.IndexOf(value) ?? -1;
+        public bool Contains(object? value) => Inner?.Contains(value) ?? false;
+        public void CopyTo(Array array, int index) => Inner?.CopyTo(array, index);
+        public int IndexOf(object? value) => Inner?.IndexOf(value) ?? -1;
         public void Insert(int index, object? value) => InnerWritable.Insert(index, value);
         public void RemoveAt(int index) => InnerWritable.RemoveAt(index);
 
@@ -66,23 +97,23 @@ namespace Avalonia.Controls
 
         public IEnumerator<object?> GetEnumerator()
         {
-            IEnumerator<object?> EnumerateItems()
+            static IEnumerator<object?> EnumerateItems(IList inner)
             {
-                foreach (var i in _inner)
+                foreach (var i in inner)
                     yield return i;
             }
 
-            if (_inner is null)
-                return Enumerable.Empty<object?>().GetEnumerator();
-            else if (_inner is IEnumerable<object?> e)
-                return e.GetEnumerator();
-            else
-                return EnumerateItems();
+            return Inner switch
+            {
+                null => Enumerable.Empty<object?>().GetEnumerator(),
+                IEnumerable<object?> e => e.GetEnumerator(),
+                _ => EnumerateItems(Inner)
+            };
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _inner?.GetEnumerator() ?? Enumerable.Empty<object?>().GetEnumerator();
+            return Inner?.GetEnumerator() ?? Enumerable.Empty<object?>().GetEnumerator();
         }
 
         int IList.Add(object? value) => InnerWritable.Add(value);
@@ -90,7 +121,7 @@ namespace Avalonia.Controls
 
         void ICollection<object?>.CopyTo(object?[] array, int arrayIndex)
         {
-            if (_inner is ICollection<object?> inner)
+            if (Inner is ICollection<object?> inner)
                 inner.CopyTo(array, arrayIndex);
             else
                 throw new NotImplementedException();
@@ -98,32 +129,18 @@ namespace Avalonia.Controls
 
         internal IList? GetItemsPropertyValue()
         {
-            return _mode == Mode.ObsoleteItemsSetter ? _inner : this;
+            return _mode == Mode.ObsoleteItemsSetter ? Inner : this;
         }
 
         internal void SetItems(IList? items)
         {
-            if (_inner is not null)
-            {
-                _owner.RemoveControlItemsFromLogicalChildren(_inner);
-                if (_inner is INotifyCollectionChanged inccOld)
-                    inccOld.CollectionChanged -= _owner.OnItemsCollectionChanged;
-            }
-
-            _inner = items;
+            Inner = items;
             _mode = Mode.ObsoleteItemsSetter;
-
-            if (_inner is not null)
-            {
-                _owner.AddControlItemsToLogicalChildren(_inner);
-                if (_inner is INotifyCollectionChanged inccNew)
-                    inccNew.CollectionChanged += _owner.OnItemsCollectionChanged; 
-            }
         }
 
         internal void SetItemsSource(IEnumerable? value)
         {
-            _inner = value switch
+            Inner = value switch
             {
                 IList list => list,
                 IEnumerable<object> iObj => new List<object>(iObj),
@@ -138,8 +155,13 @@ namespace Avalonia.Controls
         {
             var result = new AvaloniaList<object?>();
             result.ResetBehavior = ResetBehavior.Remove;
-            result.CollectionChanged += _owner.OnItemsCollectionChanged;
+            result.CollectionChanged += OnItemsCollectionChanged;
             return result;
+        }
+
+        private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChanged?.Invoke(this, e);
         }
 
         [DoesNotReturn]

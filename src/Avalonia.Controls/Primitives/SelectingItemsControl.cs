@@ -322,8 +322,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (_selection != value)
                 {
-                    if (value.Source != null && 
-                        !(value.Source == ItemsView || value.Source == ItemsView.Inner))
+                    if (value.Source != null && value.Source != ItemsView.Source)
                     {
                         throw new ArgumentException(
                             "The supplied ISelectionModel already has an assigned Source but this " +
@@ -435,10 +434,9 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
-        /// <inheritdoc />
-        private protected override void ItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsViewCollectionChanged(sender!, e);
+            base.OnItemsViewCollectionChanged(sender!, e);
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
@@ -548,7 +546,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_selection is object)
             {
-                _selection.Source = ItemsView;
+                _selection.Source = ItemsView.Source;
             }
         }
 
@@ -635,10 +633,6 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
                 AutoScrollToSelectedItemIfNecessary();
-            }
-            if (change.Property == ItemsViewProperty && _updateState is null && _selection is object)
-            {
-                _selection.Source = change.GetNewValue<ItemsSourceView>();
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {

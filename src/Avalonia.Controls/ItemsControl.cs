@@ -73,12 +73,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ItemsControl, IDataTemplate?>(nameof(ItemTemplate));
 
         /// <summary>
-        /// Defines the <see cref="ItemsView"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ItemsControl, ItemsSourceView> ItemsViewProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, ItemsSourceView>(nameof(ItemsView), o => o.ItemsView);
-
-        /// <summary>
         /// Defines the <see cref="DisplayMemberBinding" /> property
         /// </summary>
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
@@ -107,8 +101,7 @@ namespace Avalonia.Controls
             set => SetValue(DisplayMemberBindingProperty, value);
         }
 
-        private ItemCollection _items;
-        private ItemsSourceView? _itemsView;
+        private ItemCollection _items = new();
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
@@ -121,8 +114,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            UpdatePseudoClasses(0);
-            _items = new(this);
+            UpdatePseudoClasses();
+            _items.CollectionChanged += OnItemsViewCollectionChanged;
         }
 
         /// <summary>
@@ -175,7 +168,7 @@ namespace Avalonia.Controls
             {
                 if (SetAndRaise(ItemCountProperty, ref _itemCount, value))
                 {
-                    UpdatePseudoClasses(value);
+                    UpdatePseudoClasses();
                     _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
                 }
             }
@@ -241,46 +234,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Panel? ItemsPanelRoot => Presenter?.Panel;
 
-        /// <summary>
-        /// Gets a standardized view over <see cref="Items"/>.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="Items"/> property may be an enumerable which does not implement
-        /// <see cref="IList"/> or may be null. This view can be used to provide a standardized
-        /// view of the current items regardless of the type of the concrete collection, and
-        /// without having to deal with null values.
-        /// </remarks>
-        public ItemsSourceView ItemsView
-        {
-            get
-            {
-                if (_itemsView is null)
-                    ItemsView = ItemsSourceView.GetOrCreate(Items);
-                return _itemsView!;
-            }
-
-            private set
-            {
-                if (ReferenceEquals(_itemsView, value))
-                    return;
-
-                if (_itemsView is not null)
-                {
-                    _itemsView.CollectionChanged -= ItemsViewCollectionChanged;
-
-                    var oldValue = _itemsView;
-                    _itemsView = value;
-                    RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
-                }
-                else
-                {
-                    _itemsView = value;
-                }
-
-                ItemCount = _itemsView.Count;
-                _itemsView.CollectionChanged += ItemsViewCollectionChanged;
-            }
-        }
+        public ItemCollection ItemsView => _items;
 
         private protected bool WrapFocus { get; set; }
 
@@ -368,7 +322,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Control? ContainerFromItem(object item)
         {
-            var index = ItemsView.IndexOf(item);
+            var index = _items.IndexOf(item);
             return index >= 0 ? ContainerFromIndex(index) : null;
         }
 
@@ -392,7 +346,7 @@ namespace Avalonia.Controls
         public object? ItemFromContainer(Control container)
         {
             var index = IndexFromContainer(container);
-            return index >= 0 && index < ItemsView.Count ? ItemsView[index] : null;
+            return index >= 0 && index < _items.Count ? _items[index] : null;
         }
 
         /// <summary>
@@ -564,12 +518,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemsSourceProperty)
             {
-                if (Items is not ItemCollection itemCollection)
-                    throw new InvalidOperationException(
-                        "Items collection was reassigned via obsolete Items property setter. " +
-                        "Use ItemsSource exculsively instead.");
-                ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IEnumerable?>());
-                itemCollection.SetItemsSource(ItemsView);
+                _items.SetItemsSource(change.GetNewValue<IEnumerable?>());
             }
             else if (change.Property == ItemTemplateProperty)
             {
@@ -596,11 +545,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="Items"/>.
+        /// raised on <see cref="ItemsView"/>.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        internal void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private protected virtual void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -612,17 +561,8 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
-        }
 
-        /// <summary>
-        /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="ItemsView"/>.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private protected virtual void ItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            ItemCount = _itemsView?.Count ?? 0;
+            ItemCount = ItemsView.Count;
         }
 
         /// <summary>
@@ -697,7 +637,7 @@ namespace Avalonia.Controls
             ClearContainerForItemOverride(container);
         }
 
-        internal void AddControlItemsToLogicalChildren(IEnumerable? items)
+        private void AddControlItemsToLogicalChildren(IEnumerable? items)
         {
             if (items is null)
                 return;
@@ -717,7 +657,7 @@ namespace Avalonia.Controls
                 LogicalChildren.AddRange(toAdd);
         }
 
-        internal void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
+        private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
             if (items is null)
                 return;
@@ -754,10 +694,10 @@ namespace Avalonia.Controls
             return _displayMemberItemTemplate;
         }
 
-        private void UpdatePseudoClasses(int itemCount)
+        private void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":empty", itemCount == 0);
-            PseudoClasses.Set(":singleitem", itemCount == 1);
+            PseudoClasses.Set(":empty", ItemCount == 0);
+            PseudoClasses.Set(":singleitem", ItemCount == 1);
         }
 
         protected static IInputElement? GetNextControl(
