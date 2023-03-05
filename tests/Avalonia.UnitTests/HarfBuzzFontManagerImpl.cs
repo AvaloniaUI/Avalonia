@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 
 namespace Avalonia.UnitTests
@@ -31,9 +30,9 @@ namespace Avalonia.UnitTests
             return _defaultFamilyName;
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
         {
-            return _customTypefaces.Select(x => x.FontFamily!.Name);
+            return _customTypefaces.Select(x => x.FontFamily!.Name).ToArray();
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
@@ -58,29 +57,19 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
+        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
         {
-            var fontFamily = typeface.FontFamily;
+            glyphTypeface = new HarfBuzzGlyphTypefaceImpl(stream);
 
-            if (fontFamily.IsDefault)
-            {
-                fontFamily = _defaultTypeface.FontFamily;
-            }
-            
-            if (fontFamily!.Key == null)
-            {
-                return null;
-            }
-            
-            var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key);
+            return true;
+        }
 
-            var asset = fontAssets.First();
-            
-            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        {
+            glyphTypeface = null;
 
-            var stream = assetLoader.Open(asset);
-            
-            return new HarfBuzzGlyphTypefaceImpl(stream);
+            return false;
         }
     }
 }

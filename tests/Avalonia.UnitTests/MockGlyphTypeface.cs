@@ -17,6 +17,14 @@ namespace Avalonia.UnitTests
 
         public FontSimulations FontSimulations => throw new NotImplementedException();
 
+        public string FamilyName => "$Default";
+
+        public FontWeight Weight { get; }
+
+        public FontStyle Style { get; }
+
+        public FontStretch Stretch { get; }
+
         public ushort GetGlyph(uint codepoint)
         {
             return (ushort)codepoint;

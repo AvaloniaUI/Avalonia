@@ -244,7 +244,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepeater.UnitTests", "tests\Avalonia.Controls.ItemsRepeater.UnitTests\Avalonia.Controls.ItemsRepeater.UnitTests.csproj", "{F4E36AA8-814E-4704-BC07-291F70F45193}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Generators", "src\tools\Avalonia.Generators\Avalonia.Generators.csproj", "{DDA28789-C21A-4654-86CE-D01E81F095C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Generators.Tests", "tests\Avalonia.Generators.Tests\Avalonia.Generators.Tests.csproj", "{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Fonts.Inter", "src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj", "{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generators.Sandbox", "samples\Generators.Sandbox\Generators.Sandbox.csproj", "{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -573,10 +579,22 @@ Global
 		{F4E36AA8-814E-4704-BC07-291F70F45193}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4E36AA8-814E-4704-BC07-291F70F45193}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4E36AA8-814E-4704-BC07-291F70F45193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDA28789-C21A-4654-86CE-D01E81F095C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDA28789-C21A-4654-86CE-D01E81F095C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDA28789-C21A-4654-86CE-D01E81F095C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDA28789-C21A-4654-86CE-D01E81F095C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -643,7 +661,10 @@ Global
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C810060E-3809-4B74-A125-F11533AF9C1B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C692FE73-43DB-49CE-87FC-F03ED61F25C9} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{DDA28789-C21A-4654-86CE-D01E81F095C5} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{F4E36AA8-814E-4704-BC07-291F70F45193} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

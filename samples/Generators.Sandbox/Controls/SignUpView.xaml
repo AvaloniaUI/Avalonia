@@ -1,0 +1,45 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Generators.Sandbox.Controls"
+        x:Class="Generators.Sandbox.Controls.SignUpView">
+    <StackPanel>
+        <controls:CustomTextBox Margin="0 10 0 0"
+                 x:Name="UserNameTextBox"
+                 Watermark="Please, enter user name..."
+                 UseFloatingWatermark="True" />
+        <TextBlock x:Name="UserNameValidation" 
+                   Foreground="Red"
+                   FontSize="12" />
+        <TextBox Margin="0 10 0 0"
+                 x:Name="PasswordTextBox"
+                 Watermark="Please, enter your password..."
+                 UseFloatingWatermark="True"
+                 PasswordChar="*" />
+        <TextBlock x:Name="PasswordValidation" 
+                   Foreground="Red"
+                   FontSize="12" />
+        <TextBox Margin="0 10 0 0"
+                 x:Name="ConfirmPasswordTextBox"
+                 Watermark="Please, confirm the password..."
+                 UseFloatingWatermark="True"
+                 PasswordChar="*" />
+        <TextBlock x:Name="ConfirmPasswordValidation"
+                   TextWrapping="Wrap"
+                   Foreground="Red"
+                   FontSize="12" />
+        <TextBlock>
+            <TextBlock.Inlines>
+                <InlineCollection>
+                    <Run x:Name="SignUpButtonDescription" />
+                </InlineCollection>
+            </TextBlock.Inlines>
+        </TextBlock>
+        <Button Margin="0 10 0 5"
+                Content="Sign up"
+                x:Name="SignUpButton" />
+        <TextBlock x:Name="CompoundValidation"
+                   TextWrapping="Wrap"
+                   Foreground="Red"
+                   FontSize="12" />
+    </StackPanel>
+</UserControl>
