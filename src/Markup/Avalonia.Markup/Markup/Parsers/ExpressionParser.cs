@@ -2,8 +2,6 @@ using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers.Nodes;
 using Avalonia.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls;
 using System.Diagnostics.CodeAnalysis;
 
@@ -18,7 +16,7 @@ namespace Avalonia.Markup.Parsers
         private readonly Func<string, string, Type>? _typeResolver;
         private readonly INameScope? _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type>? typeResolver, INameScope? nameScope)
+        public ExpressionParser(bool enableValidation, Func<string?, string, Type>? typeResolver, INameScope? nameScope)
         {
             _typeResolver = typeResolver;
             _nameScope = nameScope;
@@ -37,13 +35,13 @@ namespace Avalonia.Markup.Parsers
                 ExpressionNode? nextNode = null;
                 switch (astNode)
                 {
-                    case BindingExpressionGrammar.EmptyExpressionNode _:
+                    case BindingExpressionGrammar.EmptyExpressionNode:
                         nextNode = new EmptyExpressionNode();
                         break;
-                    case BindingExpressionGrammar.NotNode _:
+                    case BindingExpressionGrammar.NotNode:
                         nextNode = new LogicalNotNode();
                         break;
-                    case BindingExpressionGrammar.StreamNode _:
+                    case BindingExpressionGrammar.StreamNode:
                         nextNode = new StreamNode();
                         break;
                     case BindingExpressionGrammar.PropertyNameNode propName:
@@ -55,7 +53,7 @@ namespace Avalonia.Markup.Parsers
                     case BindingExpressionGrammar.AttachedPropertyNameNode attachedProp:
                         nextNode = ParseAttachedProperty(attachedProp);
                         break;
-                    case BindingExpressionGrammar.SelfNode _:
+                    case BindingExpressionGrammar.SelfNode:
                         nextNode = new SelfNode();
                         break;
                     case BindingExpressionGrammar.AncestorNode ancestor:
