@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.IntegrationTests.Appium.Crapium;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interfaces;
@@ -58,10 +59,24 @@ namespace Avalonia.IntegrationTests.Appium
                 element.GetAttribute("value");
         }
         
+        public static string GetComboBoxValue(this IElement element)
+        {
+            return element.Value;
+        }
+        
         public static string GetName(this IWebElement element) => GetAttribute(element, "Name", "title");
 
         public static bool? GetIsChecked(this IWebElement element) =>
             GetAttribute(element, "Toggle.ToggleState", "value") switch
+            {
+                "0" => false,
+                "1" => true,
+                "2" => null,
+                _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
+            };
+        
+        public static bool? GetIsChecked(this IElement element) =>
+            element.Value switch
             {
                 "0" => false,
                 "1" => true,

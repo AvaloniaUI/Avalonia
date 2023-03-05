@@ -350,29 +350,28 @@ namespace Avalonia.IntegrationTests.Appium
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
-            /*if (modeComboBox.GetComboBoxValue() != mode.ToString())
+            if (modeComboBox.GetComboBoxValue() != mode.ToString())
             {
                 modeComboBox.Click();
-                _session.FindElementByName(mode.ToString()).SendClick();
+                _mainWindow.FindElementByName(mode.ToString()).Click();
             }
 
             if (locationComboBox.GetComboBoxValue() != location.ToString())
             {
                 locationComboBox.Click();
-                _session.FindElementByName(location.ToString()).SendClick();
+                _mainWindow.FindElementByName(location.ToString()).Click();
             }
 
             if (stateComboBox.GetComboBoxValue() != state.ToString())
             {
                 stateComboBox.Click();
-                _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+                _mainWindow.FindElement($"ShowWindowState{state}").Click();
             }
 
             if (canResizeCheckBox.GetIsChecked() != canResize)
-                canResizeCheckBox.Click();*/
+                canResizeCheckBox.Click();
 
-            return null;
-            //return showButton.OpenWindowWithClick();
+            return null; //return showButton.OpenWindowWithClick();
         }
 
         private WindowInfo GetWindowInfo()
