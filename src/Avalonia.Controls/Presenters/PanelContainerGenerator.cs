@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Presenters
             Debug.Assert(presenter.Panel is not null or VirtualizingPanel);
             
             _presenter = presenter;
-            _presenter.ItemsControl.ItemsView.CollectionChanged += OnItemsChanged;
+            _presenter.ItemsControl.ItemsView.PostCollectionChanged += OnItemsChanged;
 
             OnItemsChanged(null, CollectionUtils.ResetEventArgs);
         }
@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Presenters
         {
             if (_presenter.ItemsControl is { } itemsControl)
             {
-                itemsControl.ItemsView.CollectionChanged -= OnItemsChanged;
+                itemsControl.ItemsView.PostCollectionChanged -= OnItemsChanged;
                 ClearItemsControlLogicalChildren();
             }
 

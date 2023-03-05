@@ -12,7 +12,8 @@ namespace Avalonia.Controls
     public class ItemCollection : IList<object?>,
         IReadOnlyList<object?>,
         IList,
-        INotifyCollectionChanged
+        INotifyCollectionChanged,
+        ICollectionChangedListener
     {
         private IList? _inner;
         private Mode _mode;
@@ -46,9 +47,9 @@ namespace Avalonia.Controls
                 {
                     if (_inner is not null)
                     {
-                        OnItemsCollectionChanged(this, new(NotifyCollectionChangedAction.Remove, _inner, 0));
+                        RaiseCollectionChanged(new(NotifyCollectionChangedAction.Remove, _inner, 0));
                         if (_inner is INotifyCollectionChanged inccOld)
-                            inccOld.CollectionChanged -= OnItemsCollectionChanged;
+                            CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
                     }
                     
                     _inner = value;
@@ -56,8 +57,8 @@ namespace Avalonia.Controls
                     if (_inner is not null)
                     {
                         if (_inner is INotifyCollectionChanged inccNew)
-                            inccNew.CollectionChanged += OnItemsCollectionChanged;
-                        OnItemsCollectionChanged(this, new(NotifyCollectionChangedAction.Add, _inner, 0));
+                            CollectionChangedEventManager.Instance.AddListener(inccNew, this);
+                        RaiseCollectionChanged(new(NotifyCollectionChangedAction.Add, _inner, 0));
                     }
                 }
             }
@@ -79,6 +80,7 @@ namespace Avalonia.Controls
         bool IList.IsFixedSize => false;
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        internal event NotifyCollectionChangedEventHandler? PostCollectionChanged;
 
         public void Add(object? value) => InnerWritable.Add(value);
         public void Clear() => InnerWritable.Clear();
@@ -127,6 +129,20 @@ namespace Avalonia.Controls
                 throw new NotImplementedException();
         }
 
+        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChanged?.Invoke(this, e);
+        }
+
+        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            PostCollectionChanged?.Invoke(this, e);
+        }
+
         internal IList? GetItemsPropertyValue()
         {
             return _mode == Mode.ObsoleteItemsSetter ? Inner : this;
@@ -134,12 +150,13 @@ namespace Avalonia.Controls
 
         internal void SetItems(IList? items)
         {
-            Inner = items;
             _mode = Mode.ObsoleteItemsSetter;
+            Inner = items;
         }
 
         internal void SetItemsSource(IEnumerable? value)
         {
+            _mode = value is not null ? Mode.ItemsSource : Mode.Items;
             Inner = value switch
             {
                 IList list => list,
@@ -147,21 +164,20 @@ namespace Avalonia.Controls
                 null => new List<object>(),
                 _ => new List<object>(value.Cast<object>())
             };
-
-            _mode = value is not null ? Mode.ItemsSource : Mode.Items;
         }
 
         private AvaloniaList<object?> CreateDefaultCollection()
         {
             var result = new AvaloniaList<object?>();
             result.ResetBehavior = ResetBehavior.Remove;
-            result.CollectionChanged += OnItemsCollectionChanged;
+            CollectionChangedEventManager.Instance.AddListener(result, this);
             return result;
         }
 
-        private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             CollectionChanged?.Invoke(this, e);
+            PostCollectionChanged?.Invoke(this, e);
         }
 
         [DoesNotReturn]
