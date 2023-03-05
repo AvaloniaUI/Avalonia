@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using Avalonia.IntegrationTests.Appium.Crapium;
+using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -6,14 +7,16 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class AutomationTests
     {
-        private readonly AppiumDriver _session;
+        private readonly ISession _session;
+        private readonly IWindowElement _window;
 
         public AutomationTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
+            _window = _session.GetWindow("MainWindow");
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Automation");
+            var tabs = _window.FindElement<ITabControlElement>("MainTabs");
+            var tab = tabs.FindItemByName<IElement>("Automation");
             tab.Click();
         }
 
@@ -22,18 +25,18 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // AutomationID can be specified by the Name or AutomationProperties.AutomationId
             // properties, with the latter taking precedence.
-            var byName = _session.FindElementByAccessibilityId("TextBlockWithName");
-            var byAutomationId = _session.FindElementByAccessibilityId("TextBlockWithNameAndAutomationId");
+            var byName = _window.FindElementByName<IElement>("TextBlockWithName");
+            var byAutomationId = _window.FindElement<IElement>("TextBlockWithNameAndAutomationId");
         }
 
         [Fact]
         public void LabeledBy()
         {
-            var label = _session.FindElementByAccessibilityId("TextBlockAsLabel");
-            var labeledTextBox = _session.FindElementByAccessibilityId("LabeledByTextBox");
+            var label = _window.FindElement<ITextElement>("TextBlockAsLabel");
+            var labeledTextBox = _window.FindElement<ITextElement>("LabeledByTextBox");
 
             Assert.Equal("Label for TextBox", label.Text);
-            Assert.Equal("Label for TextBox", labeledTextBox.GetName());
+            Assert.Equal("Label for TextBox", labeledTextBox.Name);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Avalonia.IntegrationTests.Appium
 
         public WindowTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Session;
+            _session = fixture.Driver;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("Window");

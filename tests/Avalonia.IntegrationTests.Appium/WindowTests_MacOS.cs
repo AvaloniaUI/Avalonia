@@ -20,7 +20,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var retry = 0;
 
-            _session = fixture.Session;
+            _session = fixture.Driver;
 
             for (;;)
             {
