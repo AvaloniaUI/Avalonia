@@ -174,27 +174,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         }
 
         return files;
-    }
-
-        // Java file represents files AND directories. Don't be confused.
-        var files = await javaFile.ListFilesAsync().ConfigureAwait(false);
-        if (files is null)
-        {
-            return Array.Empty<IStorageItem>();
-        }
-
-        return files
-            .Select(f => (file: f, uri: AndroidUri.FromFile(f)))
-            .Where(t => t.uri is not null)
-            .Select(t => t.file switch
-            {
-                { IsFile: true } => (IStorageItem)new AndroidStorageFile(Activity, t.uri!),
-                { IsDirectory: true } => new AndroidStorageFolder(Activity, t.uri!, false),
-                _ => null
-            })
-            .Where(i => i is not null)
-            .ToArray()!;
-    }
+    }       
 }
 
 internal sealed class WellKnownAndroidStorageFolder : AndroidStorageFolder
