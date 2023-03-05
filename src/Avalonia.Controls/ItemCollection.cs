@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Collections;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
     public class ItemCollection : IList<object?>, IList, IReadOnlyList<object?>
     {
+        private readonly ItemsControl _owner;
         private IList? _inner;
-        private bool _isItemsSource;
+        private Mode _mode;
 
-        internal ItemCollection()
+        internal ItemCollection(ItemsControl owner)
         {
+            _owner = owner;
         }
 
         public object? this[int index]
@@ -27,7 +32,7 @@ namespace Avalonia.Controls
             set => InnerWritable[index] = value;
         }
 
-        public bool IsReadOnly => _isItemsSource;
+        public bool IsReadOnly => _mode == Mode.ItemsSource;
         public int Count => _inner?.Count ?? 0;
 
         bool ICollection.IsSynchronized => false;
@@ -38,9 +43,9 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_isItemsSource)
+                if (IsReadOnly)
                     ThrowIsItemsSource();
-                return _inner ??= new List<object>();
+                return _inner ??= CreateDefaultCollection();
             }
         }
 
@@ -83,10 +88,58 @@ namespace Avalonia.Controls
         int IList.Add(object? value) => InnerWritable.Add(value);
         void IList.Remove(object? value) => InnerWritable.Remove(value);
 
-        internal void SetItemsSource(ItemsSourceView? value)
+        void ICollection<object?>.CopyTo(object?[] array, int arrayIndex)
         {
-            _inner = value;
-            _isItemsSource = value is not null;
+            if (_inner is ICollection<object?> inner)
+                inner.CopyTo(array, arrayIndex);
+            else
+                throw new NotImplementedException();
+        }
+
+        internal IList? GetItemsPropertyValue()
+        {
+            return _mode == Mode.ObsoleteItemsSetter ? _inner : this;
+        }
+
+        internal void SetItems(IList? items)
+        {
+            if (_inner is not null)
+            {
+                _owner.RemoveControlItemsFromLogicalChildren(_inner);
+                if (_inner is INotifyCollectionChanged inccOld)
+                    inccOld.CollectionChanged -= _owner.OnItemsCollectionChanged;
+            }
+
+            _inner = items;
+            _mode = Mode.ObsoleteItemsSetter;
+
+            if (_inner is not null)
+            {
+                _owner.AddControlItemsToLogicalChildren(_inner);
+                if (_inner is INotifyCollectionChanged inccNew)
+                    inccNew.CollectionChanged += _owner.OnItemsCollectionChanged; 
+            }
+        }
+
+        internal void SetItemsSource(IEnumerable? value)
+        {
+            _inner = value switch
+            {
+                IList list => list,
+                IEnumerable<object> iObj => new List<object>(iObj),
+                null => new List<object>(),
+                _ => new List<object>(value.Cast<object>())
+            };
+
+            _mode = value is not null ? Mode.ItemsSource : Mode.Items;
+        }
+
+        private AvaloniaList<object?> CreateDefaultCollection()
+        {
+            var result = new AvaloniaList<object?>();
+            result.ResetBehavior = ResetBehavior.Remove;
+            result.CollectionChanged += _owner.OnItemsCollectionChanged;
+            return result;
         }
 
         [DoesNotReturn]
@@ -100,12 +153,11 @@ namespace Avalonia.Controls
                 "Access and modify elements with ItemsControl.ItemsSource instead.");
         }
 
-        void ICollection<object?>.CopyTo(object?[] array, int arrayIndex)
+        private enum Mode
         {
-            if (_inner is ICollection<object?> inner)
-                inner.CopyTo(array, arrayIndex);
-            else
-                throw new NotImplementedException();
+            Items,
+            ItemsSource,
+            ObsoleteItemsSetter,
         }
     }
 }

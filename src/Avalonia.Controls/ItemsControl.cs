@@ -35,7 +35,12 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly DirectProperty<ItemsControl, IList?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IList?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+            AvaloniaProperty.RegisterDirect<ItemsControl, IList?>(
+                nameof(Items),
+                o => o.Items,
+#pragma warning disable CS0618 // Type or member is obsolete
+                (o, v) => o.Items = v);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.
@@ -102,8 +107,7 @@ namespace Avalonia.Controls
             set => SetValue(DisplayMemberBindingProperty, value);
         }
 
-        private IList? _items;
-        private bool _itemsOverridden;
+        private ItemCollection _items;
         private ItemsSourceView? _itemsView;
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
@@ -118,6 +122,7 @@ namespace Avalonia.Controls
         public ItemsControl()
         {
             UpdatePseudoClasses(0);
+            _items = new(this);
         }
 
         /// <summary>
@@ -136,15 +141,19 @@ namespace Avalonia.Controls
         [Content]
         public IList? Items
         {
-            get
-            {
-                if (_items is null && !_itemsOverridden)
-                    ItemsView = ItemsSourceView.GetOrCreate(SetItems(new ItemCollection()));
-                return _items;
-            }
+            get => _items.GetItemsPropertyValue();
 
             [Obsolete("Use ItemsSource to set or bind items.")]
-            set => SetItems(value);
+            set
+            {
+                var oldItems = _items.GetItemsPropertyValue();
+
+                if (value != oldItems)
+                {
+                    _items.SetItems(value);
+                    RaisePropertyChanged(ItemsProperty, oldItems, value);
+                }
+            }
         }
 
         /// <summary>
@@ -591,7 +600,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        internal void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -688,7 +697,7 @@ namespace Avalonia.Controls
             ClearContainerForItemOverride(container);
         }
 
-        private void AddControlItemsToLogicalChildren(IEnumerable? items)
+        internal void AddControlItemsToLogicalChildren(IEnumerable? items)
         {
             if (items is null)
                 return;
@@ -708,7 +717,7 @@ namespace Avalonia.Controls
                 LogicalChildren.AddRange(toAdd);
         }
 
-        private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
+        internal void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
             if (items is null)
                 return;
@@ -743,29 +752,6 @@ namespace Avalonia.Controls
             }
 
             return _displayMemberItemTemplate;
-        }
-
-        private IList? SetItems(IList? value)
-        {
-            if (_items != value || (value is null && !_itemsOverridden))
-            {
-                if (_items is INotifyCollectionChanged inccOld)
-                    inccOld.CollectionChanged -= ItemsCollectionChanged;
-                RemoveControlItemsFromLogicalChildren(_items);
-
-                var oldValue = _items;
-                _items = value;
-                _itemsOverridden = true;
-                ItemsView = ItemsSourceView.GetOrCreate(_items);
-
-                AddControlItemsToLogicalChildren(_items);
-                if (_items is INotifyCollectionChanged inccNew)
-                    inccNew.CollectionChanged += ItemsCollectionChanged;
-
-                RaisePropertyChanged(ItemsProperty, oldValue, _items);
-            }
-
-            return _items;
         }
 
         private void UpdatePseudoClasses(int itemCount)
