@@ -35,17 +35,14 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="ShowMode"/> property
         /// </summary>
-        public static readonly DirectProperty<FlyoutBase, FlyoutShowMode> ShowModeProperty =
-            AvaloniaProperty.RegisterDirect<FlyoutBase, FlyoutShowMode>(nameof(ShowMode),
-                x => x.ShowMode, (x, v) => x.ShowMode = v);
+        public static readonly StyledProperty<FlyoutShowMode> ShowModeProperty =
+            AvaloniaProperty.Register<FlyoutBase, FlyoutShowMode>(nameof(ShowMode));
 
         /// <summary>
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
         /// </summary>
-        public static readonly DirectProperty<FlyoutBase, IInputElement?> OverlayInputPassThroughElementProperty =
-            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>(
-                o => o._overlayInputPassThroughElement,
-                (o, v) => o._overlayInputPassThroughElement = v);
+        public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>();
 
         /// <summary>
         /// Defines the AttachedFlyout property
@@ -56,12 +53,10 @@ namespace Avalonia.Controls.Primitives
         private readonly Lazy<Popup> _popupLazy;
         private bool _isOpen;
         private Control? _target;
-        private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
         private Rect? _enlargedPopupRect;
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
         private Action<IPopupHost?>? _popupHostChangedHandler;
-        private IInputElement? _overlayInputPassThroughElement;
 
         static FlyoutBase()
         {
@@ -98,8 +93,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public FlyoutShowMode ShowMode
         {
-            get => _showMode;
-            set => SetAndRaise(ShowModeProperty, ref _showMode, value);
+            get => GetValue(ShowModeProperty);
+            set => SetValue(ShowModeProperty, value);
         }
 
         /// <summary>
@@ -117,8 +112,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IInputElement? OverlayInputPassThroughElement
         {
-            get => _overlayInputPassThroughElement;
-            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
+            get => GetValue(OverlayInputPassThroughElementProperty);
+            set => SetValue(OverlayInputPassThroughElementProperty, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
@@ -244,7 +239,7 @@ namespace Avalonia.Controls.Primitives
             {
                 Popup.PlacementTarget = Target = placementTarget;
                 ((ISetLogicalParent)Popup).SetParent(placementTarget);
-                Popup.SetValue(StyledElement.TemplatedParentProperty, placementTarget.TemplatedParent);
+                Popup.TemplatedParent = placementTarget.TemplatedParent;
             }
 
             if (Popup.Child == null)

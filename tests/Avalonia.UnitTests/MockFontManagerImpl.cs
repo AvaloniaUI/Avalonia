@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 
@@ -19,12 +20,12 @@ namespace Avalonia.UnitTests
             return _defaultFamilyName;
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
         {
             return new[] { _defaultFamilyName };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, 
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
             FontStretch fontStretch, FontFamily fontFamily,
             CultureInfo culture, out Typeface fontKey)
         {
@@ -33,9 +34,18 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
         {
-            return new MockGlyphTypeface();
+            glyphTypeface = new MockGlyphTypeface();
+
+            return true;
+        }
+
+        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        {
+            glyphTypeface = new MockGlyphTypeface();
+
+            return true;
         }
     }
 }

@@ -67,8 +67,7 @@ namespace Avalonia
         public static readonly DirectProperty<StyledElement, AvaloniaObject?> TemplatedParentProperty =
             AvaloniaProperty.RegisterDirect<StyledElement, AvaloniaObject?>(
                 nameof(TemplatedParent),
-                o => o.TemplatedParent,
-                (o ,v) => o.TemplatedParent = v);
+                o => o.TemplatedParent);
         
         /// <summary>
         /// Defines the <see cref="Theme"/> property.

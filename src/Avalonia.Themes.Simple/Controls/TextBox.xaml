@@ -92,6 +92,7 @@
     <Setter Property="CaretBrush" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}" />

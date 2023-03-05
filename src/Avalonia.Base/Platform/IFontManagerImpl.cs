@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -17,7 +18,7 @@ namespace Avalonia.Platform
         ///     Get all installed fonts in the system.
         /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
         /// </summary>
-        IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
+        string[] GetInstalledFontFamilyNames(bool checkForUpdates = false);
 
         /// <summary>
         ///     Tries to match a specified character to a typeface that supports specified font properties.
@@ -37,12 +38,27 @@ namespace Avalonia.Platform
             FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface);
 
         /// <summary>
-        ///     Creates a glyph typeface.
+        ///     Tries to get a glyph typeface for specified parameters.
         /// </summary>
-        /// <param name="typeface">The typeface.</param>
-        /// <returns>0
-        ///     The created glyph typeface. Can be <c>Null</c> if it was not possible to create a glyph typeface.
+        /// <param name="familyName">The family name.</param>
+        /// <param name="style">The font style.</param>
+        /// <param name="weight">The font weiht.</param>
+        /// <param name="stretch">The font stretch.</param>
+        /// <param name="glyphTypeface">The created glyphTypeface</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
-        IGlyphTypeface CreateGlyphTypeface(Typeface typeface);
+        bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+            FontStretch stretch, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
+
+        /// <summary>
+        ///     Tries to create a glyph typeface from specified stream.
+        /// </summary>
+        /// <param name="stream">A stream that holds the font's data.</param>
+        /// <param name="glyphTypeface">The created glyphTypeface</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
+        /// </returns>
+        bool TryCreateGlyphTypeface(Stream stream, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
     }
 }

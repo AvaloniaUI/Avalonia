@@ -170,6 +170,7 @@ namespace Avalonia.IntegrationTests.Appium
                         .First(x => x.Text == newWindowTitle);
                     var (close, _, _) = ((IWebElement)newWindow).GetChromeButtons();
                     close!.Click();
+                    Thread.Sleep(1000);
                 });
             }
         }

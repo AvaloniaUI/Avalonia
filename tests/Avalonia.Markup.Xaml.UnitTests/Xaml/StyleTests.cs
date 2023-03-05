@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
     public class StyleTests : XamlTestBase
     {
+        static StyleTests()
+        {
+            GC.KeepAlive(typeof(ItemsRepeater));
+        }
+
         [Fact]
         public void Color_Can_Be_Added_To_Style_Resources()
         {

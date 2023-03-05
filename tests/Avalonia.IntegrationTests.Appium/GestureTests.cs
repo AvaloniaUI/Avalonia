@@ -74,7 +74,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("DoubleTapped", lastGesture.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public void DoubleTapped_Is_Raised_2()
         {
             var border = _session.FindElementByAccessibilityId("GestureBorder");
