@@ -739,14 +739,7 @@ namespace Avalonia.Win32
                                 }
                             case GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
                                 {
-                                    if (string.IsNullOrEmpty(Imm32InputMethod.Current.Composition))
-                                    {
-                                        var c = (char)ToInt32(wParam);
-
-                                        Imm32InputMethod.Current.Composition = new string(c, 1);
-
-                                        _ignoreWmChar = true;
-                                    }
+                                    // Chinese IME sends WM_CHAR after composition has finished.
                                     break;
                                 }
                             case GCS.GCS_RESULTREADSTR | GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
