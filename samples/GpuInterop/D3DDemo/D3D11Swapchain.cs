@@ -94,6 +94,7 @@ public class D3D11SwapchainImage : ISwapchainImage
     public async ValueTask DisposeAsync()
     {
         if (LastPresent != null)
+        {
             try
             {
                 await LastPresent;
@@ -102,6 +103,19 @@ public class D3D11SwapchainImage : ISwapchainImage
             {
                 // Ignore
             }
+        }
+
+        if (_imported != null)
+        {
+            try
+            {
+                await _imported.DisposeAsync();
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
 
         RenderTargetView.Dispose();
         _mutex.Dispose();
