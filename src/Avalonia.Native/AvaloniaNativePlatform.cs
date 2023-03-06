@@ -14,7 +14,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IWindowingPlatform
+    class AvaloniaNativePlatform : IWindowingPlatform, IOverlayPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
@@ -106,6 +106,7 @@ namespace Avalonia.Native
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
+                .Bind<IOverlayPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
@@ -157,6 +158,11 @@ namespace Avalonia.Native
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
+        }
+
+        public IWindowImpl CreateOverlay(IntPtr parentWindow, string parentView)
+        {
+            return new WindowImpl(parentWindow, parentView, _factory, _options, _platformGl);
         }
     }
 

@@ -226,6 +226,19 @@ public:
         }
     };
     
+    virtual HRESULT CreateOverlay(void* overlayWindow, char* parentView, IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv)  override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            if(cb == nullptr || ppv == nullptr)
+                return E_POINTER;
+            *ppv = CreateAvnOverlay(overlayWindow, parentView, cb, gl);
+            return S_OK;
+        }
+    };
+
     virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) override
     {
         START_COM_CALL;

@@ -204,6 +204,11 @@
         return TRUE;
     }
 
+    if (_parent->IsOverlay())
+    {
+        return FALSE;
+    }
+
     auto parentWindow = _parent->GetWindowProtocol();
 
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])

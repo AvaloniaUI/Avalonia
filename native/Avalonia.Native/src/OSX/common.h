@@ -10,6 +10,7 @@
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
 extern void FreeAvnGCHandle(void* handle);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl);
+extern IAvnWindow* CreateAvnOverlay(void* overlayWindow, char* parentView, IAvnWindowEvents*events, IAvnGlContext* gl);
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnGlContext* gl);
 extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();

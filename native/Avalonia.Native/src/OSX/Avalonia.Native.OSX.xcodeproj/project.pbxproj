@@ -41,6 +41,8 @@
 		520624B322973F4100C4DCEF /* menu.mm in Sources */ = {isa = PBXBuildFile; fileRef = 520624B222973F4100C4DCEF /* menu.mm */; };
 		522D5959258159C1006F7F7A /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 522D5958258159C1006F7F7A /* Carbon.framework */; };
 		523484CA26EA688F00EA0C2C /* trayicon.mm in Sources */ = {isa = PBXBuildFile; fileRef = 523484C926EA688F00EA0C2C /* trayicon.mm */; };
+		5819C99B29B5EA0C00157401 /* WindowOverlayImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5819C99929B5EA0C00157401 /* WindowOverlayImpl.h */; };
+		5819C99C29B5EA0C00157401 /* WindowOverlayImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5819C99A29B5EA0C00157401 /* WindowOverlayImpl.mm */; };
 		5B21A982216530F500CEE36E /* cursor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B21A981216530F500CEE36E /* cursor.mm */; };
 		5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */; };
 		AB00E4F72147CA920032A60A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB00E4F62147CA920032A60A /* main.mm */; };
@@ -92,6 +94,8 @@
 		522D5958258159C1006F7F7A /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		523484C926EA688F00EA0C2C /* trayicon.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = trayicon.mm; sourceTree = "<group>"; };
 		523484CB26EA68AA00EA0C2C /* trayicon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = trayicon.h; sourceTree = "<group>"; };
+		5819C99929B5EA0C00157401 /* WindowOverlayImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowOverlayImpl.h; sourceTree = "<group>"; };
+		5819C99A29B5EA0C00157401 /* WindowOverlayImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowOverlayImpl.mm; sourceTree = "<group>"; };
 		5B21A981216530F500CEE36E /* cursor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cursor.mm; sourceTree = "<group>"; };
 		5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = clipboard.mm; sourceTree = "<group>"; };
 		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
@@ -140,52 +144,54 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				1A002B9D232135EE00021753 /* app.mm */,
+				18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */,
+				1839166350F32661F3ABD70F /* AutoFitContentView.mm */,
 				BC11A5BC2608D58F0017BAD0 /* automation.h */,
 				BC11A5BD2608D58F0017BAD0 /* automation.mm */,
-				1A1852DB23E05814008F0DED /* deadlock.mm */,
-				1A002B9D232135EE00021753 /* app.mm */,
+				18391884C7476DA4E53A492D /* AvnPanelWindow.mm */,
 				37DDA9B121933371002E132B /* AvnString.h */,
 				37DDA9AF219330F8002E132B /* AvnString.mm */,
-				37A4E71A2178846A00EACBCD /* headers */,
+				18391D1669284AD2EC9E866A /* AvnView.h */,
+				1839132D0E2454D911F1D1F9 /* AvnView.mm */,
+				1839155B28B20FFB672D29C6 /* AvnWindow.mm */,
 				1A3E5EAD23E9FB1300EDE661 /* cgl.mm */,
+				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
+				AB661C212148288600291242 /* common.h */,
 				1AFD334023E03C4F0042899B /* controlhost.mm */,
 				5BF943652167AD1D009CAE35 /* cursor.h */,
 				5B21A981216530F500CEE36E /* cursor.mm */,
-				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
+				1A1852DB23E05814008F0DED /* deadlock.mm */,
 				1A465D0F246AB61600C5858B /* dnd.mm */,
-				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
-				AB661C212148288600291242 /* common.h */,
+				AB661C1C2148230E00291242 /* Frameworks */,
+				37A4E71A2178846A00EACBCD /* headers */,
+				18391BBB7782C296D424071F /* INSWindowHolder.h */,
+				183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */,
 				379860FE214DA0C000CD0246 /* KeyTransform.h */,
 				37E2330E21583241000CB7E2 /* KeyTransform.mm */,
 				AB00E4F62147CA920032A60A /* main.mm */,
 				37155CE3233C00EB0034DCE9 /* menu.h */,
 				520624B222973F4100C4DCEF /* menu.mm */,
-				523484C926EA688F00EA0C2C /* trayicon.mm */,
-				523484CB26EA68AA00EA0C2C /* trayicon.h */,
+				EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */,
+				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
+				183910513F396141938832B5 /* PopupImpl.h */,
+				18391BB698579F40F1783F31 /* PopupImpl.mm */,
+				AB7A61F02147C815003C5833 /* Products */,
 				1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */,
+				1839171D898F9BFC1373631A /* ResizeScope.h */,
+				18391E45702740FE9DD69695 /* ResizeScope.mm */,
 				37A517B22159597E00FBA241 /* Screens.mm */,
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
-				EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */,
-				AB7A61F02147C815003C5833 /* Products */,
-				AB661C1C2148230E00291242 /* Frameworks */,
-				18391676ECF0E983F4964357 /* WindowBaseImpl.mm */,
+				523484CB26EA68AA00EA0C2C /* trayicon.h */,
+				523484C926EA688F00EA0C2C /* trayicon.mm */,
 				183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */,
-				18391BBB7782C296D424071F /* INSWindowHolder.h */,
-				183919BF108EB72A029F7671 /* WindowImpl.mm */,
+				18391676ECF0E983F4964357 /* WindowBaseImpl.mm */,
 				18391CD090AA776E7E841AC9 /* WindowImpl.h */,
-				183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */,
-				18391E45702740FE9DD69695 /* ResizeScope.mm */,
-				1839171D898F9BFC1373631A /* ResizeScope.h */,
-				1839132D0E2454D911F1D1F9 /* AvnView.mm */,
-				18391D1669284AD2EC9E866A /* AvnView.h */,
-				1839166350F32661F3ABD70F /* AutoFitContentView.mm */,
-				18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */,
-				18391884C7476DA4E53A492D /* AvnPanelWindow.mm */,
-				1839122E037567BDD1D09DEB /* WindowProtocol.h */,
-				1839155B28B20FFB672D29C6 /* AvnWindow.mm */,
+				183919BF108EB72A029F7671 /* WindowImpl.mm */,
 				18391DB45C7D892E61BF388C /* WindowInterfaces.h */,
-				18391BB698579F40F1783F31 /* PopupImpl.mm */,
-				183910513F396141938832B5 /* PopupImpl.h */,
+				5819C99929B5EA0C00157401 /* WindowOverlayImpl.h */,
+				5819C99A29B5EA0C00157401 /* WindowOverlayImpl.mm */,
+				1839122E037567BDD1D09DEB /* WindowProtocol.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -204,6 +210,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5819C99B29B5EA0C00157401 /* WindowOverlayImpl.h in Headers */,
 				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
 				BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */,
 				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
@@ -299,6 +306,7 @@
 				18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */,
 				18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */,
 				18391AA7E0BBA74D184C5734 /* AutoFitContentView.mm in Sources */,
+				5819C99C29B5EA0C00157401 /* WindowOverlayImpl.mm in Sources */,
 				1839151F32D1BB1AB51A7BB6 /* AvnPanelWindow.mm in Sources */,
 				18391AC16726CBC45856233B /* AvnWindow.mm in Sources */,
 				18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */,
