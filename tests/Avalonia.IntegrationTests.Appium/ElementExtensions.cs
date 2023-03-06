@@ -51,6 +51,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             throw new NotSupportedException("GetChromeButtons not supported on this platform.");
         }
+        
 
         public static string GetComboBoxValue(this IWebElement element)
         {
@@ -189,6 +190,56 @@ namespace Avalonia.IntegrationTests.Appium
                 });
             }
         }
+        
+         /*public static IDisposable OpenWindowWithClick(this IElement button)
+        {
+            var element = button;
+            var session = element.WrappedDriver;
+
+            
+            {
+                // Store the old window.
+                
+                var oldWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                var oldWindowTitles = oldWindows.ToDictionary(x => x.Text);
+
+                // open window with click
+                element.Click();
+                
+                // Wait for animations to run.
+                Thread.Sleep(1000);
+
+                // find the new window
+                var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                
+                // Try to find the new window by looking for a window with a title that didn't exist before the button
+                // was clicked. Sometimes it seems that when a window becomes fullscreen, all other windows in the
+                // application lose their titles, so filter out windows with no title (this may have started happening
+                // with macOS 13.1?)
+                var newWindowTitles = newWindows
+                    .Select(x => (x.Text, x))
+                    .Where(x => !string.IsNullOrEmpty(x.Text))
+                    .ToDictionary(x => x.Text, x => x.x);
+
+                var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
+
+                
+                return Disposable.Create(() =>
+                {
+                    // Close window
+                    
+                    // TODO: We should be able to use Cmd+W here but Avalonia apps don't seem to have this shortcut
+                    // set up by default.
+                    var windows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                    var text = windows.Select(x => x.Text).ToList();
+                    var newWindow = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
+                        .First(x => x.Text == newWindowTitle);
+                    var (close, _, _) = ((IWebElement)newWindow).GetChromeButtons();
+                    close!.Click();
+                    Thread.Sleep(1000);
+                });
+            }
+        }*/
 
         public static void SendClick(this IWebElement element)
         {

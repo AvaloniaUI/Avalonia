@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Interactions;
 
 namespace Avalonia.IntegrationTests.Appium.Crapium;
 
@@ -22,7 +23,8 @@ public class UIElement : IElement
 
     public virtual void Click()
     {
-        _inner.Click();
+        var e = (AppiumElement)_inner;
+        new Actions(e.WrappedDriver).MoveToElement(_inner).Click().Perform();
     }
 
     public void SendKeys(string text)
@@ -40,5 +42,11 @@ public class UIElement : IElement
     {
         var f = MacSession.GetElementFactory();
         return (IElement)f(_inner.FindElement(MobileBy.Name(id)));
+    }
+    
+    public IElement FindByXPath(string xpath)
+    {
+        var f = MacSession.GetElementFactory();
+        return (IElement)f(Inner.FindElement(By.XPath(xpath)));
     }
 }

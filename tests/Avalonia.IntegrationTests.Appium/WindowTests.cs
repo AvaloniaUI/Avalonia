@@ -38,8 +38,8 @@ namespace Avalonia.IntegrationTests.Appium
         [MemberData(nameof(StartupLocationData))]
         public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location, bool canResize)
         {
-            using var window = OpenWindow(size, mode, location, canResize: canResize);
-            var info = GetWindowInfo();
+            var window = OpenWindow(size, mode, location, canResize: canResize);
+            var info = GetWindowInfo(window);
 
             if (size.HasValue)
                 Assert.Equal(size.Value, info.ClientSize);
@@ -65,6 +65,8 @@ namespace Avalonia.IntegrationTests.Appium
                     break;
                 }
             }
+            
+            window.Close();
         }
 
         /*[Theory]
@@ -333,7 +335,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(
+        private IWindowElement OpenWindow(
             Size? size,
             ShowWindowMode mode,
             WindowStartupLocation location = WindowStartupLocation.Manual,
@@ -353,13 +355,14 @@ namespace Avalonia.IntegrationTests.Appium
             if (modeComboBox.GetComboBoxValue() != mode.ToString())
             {
                 modeComboBox.Click();
-                _mainWindow.FindElementByName(mode.ToString()).Click();
+                _mainWindow.FindElement(mode.ToString()).Click();
             }
 
             if (locationComboBox.GetComboBoxValue() != location.ToString())
             {
                 locationComboBox.Click();
-                _mainWindow.FindElementByName(location.ToString()).Click();
+                var item = _mainWindow.FindElement(location.ToString());
+                    item.Click();
             }
 
             if (stateComboBox.GetComboBoxValue() != state.ToString())
@@ -371,15 +374,20 @@ namespace Avalonia.IntegrationTests.Appium
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
 
-            return null; //return showButton.OpenWindowWithClick();
+            var newWindow = _session.GetNewWindow(() =>
+            {
+                showButton.Click();
+                Thread.Sleep(1000); // wait for animations to complete.
+            });
+
+            return newWindow;
         }
 
-        private WindowInfo GetWindowInfo()
+        private WindowInfo GetWindowInfo(IWindowElement windowElement)
         {
-            throw new NotImplementedException();
-            /*PixelRect? ReadOwnerRect()
+            PixelRect? ReadOwnerRect()
             {
-                var text = _session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
+                var text = windowElement.FindElement("CurrentOwnerRect").Value;
                 return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
             }
 
@@ -390,13 +398,13 @@ namespace Avalonia.IntegrationTests.Appium
                 try
                 {
                     return new(
-                        Size.Parse(_session.FindElementByAccessibilityId("CurrentClientSize").Text),
-                        Size.Parse(_session.FindElementByAccessibilityId("CurrentFrameSize").Text),
-                        PixelPoint.Parse(_session.FindElementByAccessibilityId("CurrentPosition").Text),
+                        Size.Parse(windowElement.FindElement("CurrentClientSize").Value),
+                        Size.Parse(windowElement.FindElement("CurrentFrameSize").Value),
+                        PixelPoint.Parse(windowElement.FindElement("CurrentPosition").Value),
                         ReadOwnerRect(),
-                        PixelRect.Parse(_session.FindElementByAccessibilityId("CurrentScreenRect").Text),
-                        double.Parse(_session.FindElementByAccessibilityId("CurrentScaling").Text),
-                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("CurrentWindowState").Text));
+                        PixelRect.Parse(windowElement.FindElement("CurrentScreenRect").Value),
+                        double.Parse(windowElement.FindElement("CurrentScaling").Value),
+                        Enum.Parse<WindowState>(windowElement.FindElement("CurrentWindowState").Value));
                 }
                 catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {
@@ -404,7 +412,7 @@ namespace Avalonia.IntegrationTests.Appium
                     // of fullscreen.
                     Thread.Sleep(1000);
                 }
-            }*/
+            }
         }
 
         public enum ShowWindowMode
