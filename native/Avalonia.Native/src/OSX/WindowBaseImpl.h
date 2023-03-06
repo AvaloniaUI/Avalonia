@@ -8,6 +8,7 @@
 
 #include "rendertarget.h"
 #include "INSWindowHolder.h"
+#include "AvnTextInputMethod.h"
 
 @class AutoFitContentView;
 @class AvnMenu;
@@ -103,6 +104,8 @@ BEGIN_INTERFACE_MAP()
     id<AvnWindowProtocol> GetWindowProtocol ();
                            
     virtual void BringToFront ();
+                           
+    virtual HRESULT GetInputMethod(IAvnTextInputMethod **retOut) override;
 
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
@@ -130,6 +133,7 @@ public:
     NSObject <IRenderTarget> *renderTarget;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    ComPtr<AvnTextInputMethod> InputMethod;
     AvnView *View;
 };
 
