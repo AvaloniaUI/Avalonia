@@ -145,6 +145,11 @@ namespace Avalonia.Controls.Primitives
         private BindingHelper? _bindingHelper;
         private bool _isSelectionChangeActive;
 
+        public SelectingItemsControl()
+        {
+            ItemsView.SourceChanged += OnItemsViewSourceChanged;
+        }
+
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
         /// </summary>
@@ -546,7 +551,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_selection is object)
             {
-                _selection.Source = ItemsView;
+                _selection.Source = ItemsView.Source;
             }
         }
 
@@ -869,6 +874,12 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
 
+        private void OnItemsViewSourceChanged(object? sender, EventArgs e)
+        {
+            if (_selection is not null)
+                _selection.Source = ItemsView.Source;
+        }
+
         /// <summary>
         /// Called when <see cref="INotifyPropertyChanged.PropertyChanged"/> is raised on
         /// <see cref="Selection"/>.
@@ -1158,7 +1169,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_updateState is null)
             {
-                model.Source = ItemsView;
+                model.Source = ItemsView.Source;
             }
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;
@@ -1225,7 +1236,7 @@ namespace Avalonia.Controls.Primitives
                     SelectedItems = state.SelectedItems.Value;
                 }
 
-                Selection.Source = ItemsView;
+                Selection.Source = ItemsView.Source;
 
                 if (ItemsView.Count == 0)
                 {

@@ -28,6 +28,8 @@ namespace Avalonia.Controls
 
         public bool IsReadOnly => _mode == Mode.ItemsSource;
 
+        internal event EventHandler? SourceChanged;
+
         public int Add(object? value) => WritableSource.Add(value);
         public void Clear() => WritableSource.Clear();
         public void Insert(int index, object? value) => WritableSource.Insert(index, value);
@@ -86,6 +88,7 @@ namespace Avalonia.Controls
                 RaiseCollectionChanged(new(NotifyCollectionChangedAction.Remove, oldSource, 0));
             if (Source.Count > 0)
                 RaiseCollectionChanged(new(NotifyCollectionChangedAction.Add, Source, 0));
+            SourceChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static AvaloniaList<object?> CreateDefaultCollection()
