@@ -5,8 +5,6 @@
 #pragma once
 #import <Foundation/Foundation.h>
 
-
-#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #include "common.h"
 #include "WindowImpl.h"
@@ -14,7 +12,7 @@
 
 @class AvnAccessibilityElement;
 
-@interface AvnView : NSView<NSTextInputClient, NSDraggingDestination>
+@interface AvnView : NSView<NSTextInputClient, NSDraggingDestination, AvnTextInputMethodDelegate>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
