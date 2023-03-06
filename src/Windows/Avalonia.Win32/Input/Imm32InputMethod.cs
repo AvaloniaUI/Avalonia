@@ -271,30 +271,28 @@ namespace Avalonia.Win32.Input
             // we're skipping this. not usable on windows
         }
 
-        public void CompositionChanged()
+        public void CompositionChanged(string? composition)
         {
-            if (!IsComposing)
-            {
-                return;
-            }
-
-            if(!IsActive || !Client.SupportsPreedit)
-            {
-                return;
-            }
-
-            var composition = GetCompositionString();
-
             Composition = composition;
+
+            if (!IsActive || !Client.SupportsPreedit)
+            {
+                return;
+            }
 
             Client.SetPreeditText(composition);
         }
         
-        private string? GetCompositionString()
+        public string? GetCompositionString(GCS flag)
         {
+            if (!IsComposing)
+            {
+                return null;
+            }
+
             var himc = ImmGetContext(Hwnd);
 
-            return ImmGetCompositionString(himc, GCS.GCS_COMPSTR);
+            return ImmGetCompositionString(himc, flag);
         }
 
         ~Imm32InputMethod()

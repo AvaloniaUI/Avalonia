@@ -719,11 +719,13 @@ namespace Avalonia.Win32
                     {
                         var previousComposition = Imm32InputMethod.Current.Composition;
 
-                        Imm32InputMethod.Current.CompositionChanged();
+                        var flags = (GCS)ToInt32(lParam);
 
-                        var gcs = (GCS)ToInt32(lParam);
+                        var currentComposition = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_COMPSTR);
 
-                        switch (gcs)
+                        Imm32InputMethod.Current.CompositionChanged(currentComposition);
+
+                        switch (flags)
                         {
                             case GCS.GCS_RESULTSTR:                          
                                 {
@@ -749,10 +751,7 @@ namespace Avalonia.Win32
                                 }
                             case GCS.GCS_RESULTREADSTR | GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
                                 {
-                                    Imm32InputMethod.Current.Composition = previousComposition;
-
-                                    _ignoreWmChar = true;
-
+                                    // Japanese IME sends WM_CHAR after composition has finished.
                                     break;
                                 }
                         }
@@ -780,12 +779,12 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
+                        var currentComposition = Imm32InputMethod.Current.Composition;
+ 
                         //In case composition has not been comitted yet we need to do that here.
-                        if (!string.IsNullOrEmpty(Imm32InputMethod.Current.Composition))
+                        if (!string.IsNullOrEmpty(currentComposition))
                         {
-                            var text = Imm32InputMethod.Current.Composition;
-
-                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, text);
+                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, currentComposition);
                         }
 
                         //Cleanup composition state.
