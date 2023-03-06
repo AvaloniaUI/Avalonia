@@ -30,20 +30,21 @@ namespace IntegrationTestApp
     {
         private readonly DispatcherTimer? _timer;
         private readonly TextBox? _orderTextBox;
+        private bool _opened;
         
         public ShowWindowTest()
         {
             InitializeComponent();
             DataContext = this;
-            PositionChanged += (s, e) => this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            PositionChanged += (s, e) =>
             {
-                _orderTextBox = this.GetControl<TextBox>("CurrentOrder");
-                _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-                _timer.Tick += TimerOnTick;
-                _timer.Start();
-            }
+                this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
+                UpdateSummary();
+            };
+
+            _orderTextBox = this.GetControl<TextBox>("CurrentOrder");
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            _timer.Tick += TimerOnTick;
         }
         
         private void InitializeComponent()
@@ -54,6 +55,9 @@ namespace IntegrationTestApp
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
+            
+            _timer.Start();
+            
             var scaling = PlatformImpl!.DesktopScaling;
             this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
             this.GetControl<TextBox>("CurrentScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
@@ -65,6 +69,10 @@ namespace IntegrationTestApp
                 var owner = (Window)Owner;
                 ownerRect.Text = $"{owner.Position}, {PixelSize.FromSize(owner.FrameSize!.Value, scaling)}";
             }
+
+            _opened = true;
+            
+            UpdateSummary();
         }
 
         protected override void OnClosed(EventArgs e)
@@ -73,9 +81,45 @@ namespace IntegrationTestApp
             _timer?.Stop();
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            
+            UpdateSummary();
+        }
+
+
+        private void UpdateSummary()
+        {
+            if(!_opened)
+                return;
+            
+            string s = "";
+            
+            var scaling = PlatformImpl!.DesktopScaling;
+
+            s += $"clientSize:{this.GetControl<TextBox>("CurrentClientSize").Text}::";
+            s += $"frameSize:{this.GetControl<TextBox>("CurrentFrameSize").Text}::";
+            s += $"position:{this.GetControl<TextBox>("CurrentPosition").Text}::";
+            s += $"screen:{this.GetControl<TextBox>("CurrentScreenRect").Text}::";
+            s += $"scaling:{this.GetControl<TextBox>("CurrentScaling").Text}::";
+            s += $"windowstate:{(this.GetControl<ComboBox>("CurrentWindowState").SelectedItem as ComboBoxItem).Content}::";
+            s += $"order:{this.GetControl<TextBox>("CurrentOrder").Text}::";
+            s += $"measured:{this.GetControl<TextBlock>("CurrentMeasuredWithText").Text}::";
+
+            if (Owner is not null)
+            {
+                s += $"ownerrect:{this.GetControl<TextBox>("CurrentOwnerRect").Text}::";
+            }
+            
+            this.GetControl<TextBlock>("CurrentSummary").Text = s;
+        }
+
         private void TimerOnTick(object? sender, EventArgs e)
         {
             _orderTextBox!.Text = MacOSIntegration.GetOrderedIndex(this).ToString();
+            
+            UpdateSummary();
         }
     }
 }
