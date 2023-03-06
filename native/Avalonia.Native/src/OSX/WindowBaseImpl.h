@@ -26,7 +26,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual ~WindowBaseImpl();
 
-    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel = false);
+    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel = false, bool overlayWindow = false);
 
     virtual HRESULT ObtainNSWindowHandle(void **ret) override;
 
@@ -90,7 +90,6 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost **retOut) override;
 
-    virtual HRESULT GruntSetupWindow(void* powerpointWindow) override;
 
     virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
 
@@ -101,6 +100,7 @@ BEGIN_INTERFACE_MAP()
             void *sourceHandle) override;
 
     virtual bool IsModal();
+    virtual bool IsOverlay();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
                            

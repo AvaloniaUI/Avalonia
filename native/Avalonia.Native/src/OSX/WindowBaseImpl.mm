@@ -21,7 +21,7 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel, bool overlayWindow) {
     _shown = false;
     _inResize = false;
     BaseEvents = events;
@@ -38,16 +38,18 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
 
     lastMenu = nullptr;
     
-    CreateNSWindow(usePanel);
-    
-    [Window setContentView:StandardContainer];
-    [Window setStyleMask:NSWindowStyleMaskBorderless];
-    [Window setBackingType:NSBackingStoreBuffered];
-
-    [Window setContentMinSize:lastMinSize];
-    [Window setContentMaxSize:lastMaxSize];
-
-    [Window setOpaque:false];
+    if (!overlayWindow) {
+        CreateNSWindow(usePanel);
+        
+        [Window setContentView:StandardContainer];
+        [Window setStyleMask:NSWindowStyleMaskBorderless];
+        [Window setBackingType:NSBackingStoreBuffered];
+        
+        [Window setContentMinSize:lastMinSize];
+        [Window setContentMaxSize:lastMaxSize];
+        
+        [Window setOpaque:false];
+    }
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -516,19 +518,6 @@ HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::GruntSetupWindow(void* powerpointWindow) {
-    START_COM_CALL;
-    NSWindow* ppWindow = (__bridge NSWindow*) powerpointWindow;
-
-
-    NSView* ppView = FindNSView(ppWindow, @"SwiftPPT.TriPaneView");
-
-    [ppView addSubview:View];
-    [View setFrame:ppView.frame];
-
-    return S_OK;
-}
-
 HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard *clipboard, IAvnDndResultCallback *cb, void *sourceHandle) {
     START_COM_CALL;
 
@@ -574,6 +563,11 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
 }
 
 bool WindowBaseImpl::IsModal() {
+    return false;
+}
+
+bool WindowBaseImpl::IsOverlay()
+{
     return false;
 }
 
@@ -630,6 +624,15 @@ extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)
     @autoreleasepool
     {
         IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events, gl);
+        return ptr;
+    }
+}
+
+extern IAvnWindow* CreateAvnOverlay(void* overlayWindow, char* parentView, IAvnWindowEvents*events, IAvnGlContext* gl)
+{
+    @autoreleasepool
+    {
+        IAvnWindow* ptr = (IAvnWindow*)new WindowOverlayImpl(overlayWindow, parentView, events, gl);
         return ptr;
     }
 }

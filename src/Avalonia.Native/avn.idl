@@ -488,6 +488,7 @@ interface IAvaloniaNativeFactory : IUnknown
      IAvnMacOptions* GetMacOptions();
      HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv);
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv);
+     HRESULT CreateOverlay([intptr]void* overlayWindow, char* parentView, IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
      HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv);
      HRESULT CreateScreens(IAvnScreens** ppv);
@@ -543,7 +544,6 @@ interface IAvnWindowBase : IUnknown
      HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut);
      HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
-     HRESULT GruntSetupWindow([intptr]void* powerpointWindow);
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
 }

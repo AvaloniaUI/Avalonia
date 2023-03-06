@@ -10,6 +10,5 @@ namespace Avalonia.Platform
         IntPtr GetNSViewRetained();
         IntPtr NSWindow { get; }
         IntPtr GetNSWindowRetained();
-        public void GruntSetupWindow(IntPtr powerpointWindow);
     }
 }

@@ -10,6 +10,7 @@
 #import <AppKit/AppKit.h>
 #include "common.h"
 #include "WindowImpl.h"
+#include "WindowOverlayImpl.h"
 #include "KeyTransform.h"
 
 @class AvnAccessibilityElement;
