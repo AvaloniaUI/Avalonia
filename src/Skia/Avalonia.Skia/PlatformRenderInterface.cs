@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia platform render interface.
     /// </summary>
-    internal class PlatformRenderInterface : IPlatformRenderInterface
+    public class PlatformRenderInterface : IPlatformRenderInterface
     {
         private readonly long? _maxResourceBytes;
 
