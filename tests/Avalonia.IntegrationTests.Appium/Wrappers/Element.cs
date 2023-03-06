@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -16,34 +17,9 @@ public class Element : IElement
 
     protected IWebElement Inner => _inner;
 
-    private string? _name;
-    public string Name
-    {
-        get
-        {
-            if (_name is null)
-            {
-                _name = _inner.GetAttribute("title");
-            }
+    public virtual string Name => _inner.GetAttribute("title");
 
-            return _name;
-        }
-    }
-
-    private string? _text;
-
-    public string Text
-    {
-        get
-        {
-            if (_text is null)
-            {
-                _text = _inner.Text;
-            }
-
-            return _text;
-        }
-    }
+    public virtual string Text => _inner.Text;
 
     public bool Enabled => _inner.Enabled;
 

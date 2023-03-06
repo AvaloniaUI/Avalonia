@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Mac;
@@ -23,7 +24,6 @@ public class MacSession : ISession
     {
         get
         {
-            // Double XCUIElementTypeWindow is a hack for Avalonia a11y returning 2 nested windows.
             return _driver.FindElementsByXPath(
                     "/XCUIElementTypeApplication/XCUIElementTypeWindow")
                 .Select(x => new WindowElement(x))
@@ -48,14 +48,18 @@ public class MacSession : ISession
         var timer = new SplitTimer();
         
         // Store the old window.
-        var oldWindows = Windows.ToList();
-        
+        var oldWindowTitles = Windows.ToList()
+            .Select(x => (Value: x.Text, x))
+            .Where(x => !string.IsNullOrEmpty(x.Value))
+            .ToDictionary(x => x.Value, x => x.x);
+
         timer.SplitLog("list windows");
-        
 
         // open window with click
         openWindow();
         timer.SplitLog("openWindow");
+        
+        Thread.Sleep(1000);
 
         // find the new window
         var newWindows = Windows.ToList();
@@ -70,11 +74,11 @@ public class MacSession : ISession
             .Where(x => !string.IsNullOrEmpty(x.Value))
             .ToDictionary(x => x.Value, x => x.x);
 
-        var result = Assert.Single(newWindowTitles.Where(x => !oldWindows.Contains(x.Value))).Value;
+        var result = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
         
         timer.SplitLog("Asset");
 
-        return result;
+        return newWindowTitles[result];
     }
 
     internal static Func<IWebElement, object> GetElementFactory()

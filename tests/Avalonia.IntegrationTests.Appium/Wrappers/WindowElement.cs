@@ -7,9 +7,44 @@ namespace Avalonia.IntegrationTests.Appium.Wrappers;
 public class WindowElement : Element, IWindowElement, IEquatable<IWindowElement>
 {
     private bool _isDisposed;
+    private string? _text;
+    private string? _name;
     
     public WindowElement(IWebElement inner) : base(inner)
     {
+    }
+
+    public override string Name
+    {
+        get
+        {
+            if (_name is null)
+            {
+                _name = base.Name;
+            }
+
+            return _name;
+        }
+    }
+    
+    public override string Text
+    {
+        get
+        {
+            if (_text is null)
+            {
+                try
+                {
+                    _text = base.Text;
+                }
+                catch (Exception)
+                {
+                    _text = "DeadBeef";
+                }
+            }
+
+            return _text;
+        }
     }
 
     public string Id => (Inner as AppiumWebElement).Id;
