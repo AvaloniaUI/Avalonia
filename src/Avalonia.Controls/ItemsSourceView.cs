@@ -25,9 +25,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
-        public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object>());
+        public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object?>());
 
-        private readonly IList _inner;
+        private IList _source;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
         private NotifyCollectionChangedEventHandler? _preCollectionChanged;
         private NotifyCollectionChangedEventHandler? _postCollectionChanged;
@@ -37,30 +37,17 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        private protected ItemsSourceView(IEnumerable source)
-        {
-            _inner = source switch
-            {
-                ItemsSourceView => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
-                IList list => list,
-                INotifyCollectionChanged => throw new ArgumentException(
-                    "Collection implements INotifyCollectionChanged but not IList.",
-                    nameof(source)),
-                IEnumerable<object> iObj => new List<object>(iObj),
-                null => throw new ArgumentNullException(nameof(source)),
-                _ => new List<object>(source.Cast<object>())
-            };
-        }
+        private protected ItemsSourceView(IEnumerable source) => SetSource(source);
 
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count => Inner.Count;
+        public int Count => Source.Count;
 
         /// <summary>
-        /// Gets the inner collection.
+        /// Gets the source collection.
         /// </summary>
-        public IList Inner => _inner;
+        public IList Source => _source;
 
         /// <summary>
         /// Retrieves the item at the specified index.
@@ -141,35 +128,14 @@ namespace Avalonia.Controls
             }
         }
 
-        private void AddListenerIfNecessary()
-        {
-            if (!_listening)
-            {
-                if (_inner is INotifyCollectionChanged incc)
-                    CollectionChangedEventManager.Instance.AddListener(incc, this);
-                _listening = true;
-            }
-        }
-
-        private void RemoveListenerIfNecessary()
-        {
-            if (_listening && _collectionChanged is null && _postCollectionChanged is null)
-            {
-                if (_inner is INotifyCollectionChanged incc)
-                    CollectionChangedEventManager.Instance.RemoveListener(incc, this);
-                _listening = false;
-            }
-        }
-
         /// <summary>
         /// Retrieves the item at the specified index.
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public object? GetAt(int index) => Inner[index];
-
-        public bool Contains(object? item) => Inner.Contains(item);
-        public int IndexOf(object? item) => Inner.IndexOf(item);
+        public object? GetAt(int index) => Source[index];
+        public bool Contains(object? item) => Source.Contains(item);
+        public int IndexOf(object? item) => Source.IndexOf(item);
 
         /// <summary>
         /// Gets or creates an <see cref="ItemsSourceView"/> for the specified enumerable.
@@ -208,7 +174,7 @@ namespace Avalonia.Controls
             return items switch
             {
                 ItemsSourceView<T> isvt => isvt,
-                ItemsSourceView isv => new ItemsSourceView<T>(isv.Inner),
+                ItemsSourceView isv => new ItemsSourceView<T>(isv.Source),
                 null => ItemsSourceView<T>.Empty,
                 _ => new ItemsSourceView<T>(items)
             };
@@ -243,7 +209,7 @@ namespace Avalonia.Controls
                     yield return o;
             }
 
-            var inner = Inner;
+            var inner = Source;
 
             return inner switch
             {
@@ -252,7 +218,7 @@ namespace Avalonia.Controls
             };
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Source.GetEnumerator();
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
@@ -269,17 +235,66 @@ namespace Avalonia.Controls
             _postCollectionChanged?.Invoke(this, e);
         }
 
-        /// <summary>
-        /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
-        /// </summary>
-        internal string KeyFromIndex(int index) => throw new NotImplementedException();
-
         int IList.Add(object? value) => ThrowReadOnly();
         void IList.Clear() => ThrowReadOnly();
         void IList.Insert(int index, object? value) => ThrowReadOnly();
         void IList.Remove(object? value) => ThrowReadOnly();
         void IList.RemoveAt(int index) => ThrowReadOnly();
-        void ICollection.CopyTo(Array array, int index) => Inner.CopyTo(array, index);
+        void ICollection.CopyTo(Array array, int index) => Source.CopyTo(array, index);
+
+        /// <summary>
+        /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
+        /// </summary>
+        internal string KeyFromIndex(int index) => throw new NotImplementedException();
+
+        private protected void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            _preCollectionChanged?.Invoke(this, e);
+            _collectionChanged?.Invoke(this, e);
+            _postCollectionChanged?.Invoke(this, e);
+        }
+
+        [MemberNotNull(nameof(_source))]
+        private protected void SetSource(IEnumerable source)
+        {
+            if (_listening && _source is INotifyCollectionChanged inccOld)
+                CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
+
+            _source = source switch
+            {
+                ItemsSourceView => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
+                IList list => list,
+                INotifyCollectionChanged => throw new ArgumentException(
+                    "Collection implements INotifyCollectionChanged but not IList.",
+                    nameof(source)),
+                IEnumerable<object> iObj => new List<object>(iObj),
+                null => throw new ArgumentNullException(nameof(source)),
+                _ => new List<object>(source.Cast<object>())
+            };
+
+            if (_listening && _source is INotifyCollectionChanged inccNew)
+                CollectionChangedEventManager.Instance.AddListener(inccNew, this);
+        }
+
+        private void AddListenerIfNecessary()
+        {
+            if (!_listening)
+            {
+                if (_source is INotifyCollectionChanged incc)
+                    CollectionChangedEventManager.Instance.AddListener(incc, this);
+                _listening = true;
+            }
+        }
+
+        private void RemoveListenerIfNecessary()
+        {
+            if (_listening && _collectionChanged is null && _postCollectionChanged is null)
+            {
+                if (_source is INotifyCollectionChanged incc)
+                    CollectionChangedEventManager.Instance.RemoveListener(incc, this);
+                _listening = false;
+            }
+        }
 
         [DoesNotReturn]
         private static int ThrowReadOnly() => throw new NotSupportedException("Collection is read-only.");
@@ -318,7 +333,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public new T GetAt(int index) => (T)Inner[index]!;
+        public new T GetAt(int index) => (T)Source[index]!;
 
         public new IEnumerator<T> GetEnumerator()
         {
@@ -328,7 +343,7 @@ namespace Avalonia.Controls
                     yield return (T)o;
             }
 
-            var inner = Inner;
+            var inner = Source;
 
             return inner switch
             {
@@ -337,6 +352,6 @@ namespace Avalonia.Controls
             };
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Source.GetEnumerator();
     }
 }
