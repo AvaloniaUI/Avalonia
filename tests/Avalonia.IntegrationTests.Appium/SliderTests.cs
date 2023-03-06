@@ -8,13 +8,13 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class SliderTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
 
         public SliderTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Session;
+            _driver = fixture.Driver;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tabs = _driver.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("SliderTab");
             tab.Click();
         }
@@ -22,12 +22,12 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Changes_Value_When_Clicking_Increase_Button()
         {
-            var slider = _session.FindElementByAccessibilityId("Slider");
+            var slider = _driver.FindElementByAccessibilityId("Slider");
 
             // slider.Text gets the Slider value
             Assert.True(double.Parse(slider.Text) == 30);
 
-            new Actions(_session).Click(slider).Perform();
+            new Actions(_driver).Click(slider).Perform();
 
             Assert.Equal(50, Math.Round(double.Parse(slider.Text)));
         }

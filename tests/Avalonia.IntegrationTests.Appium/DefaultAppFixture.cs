@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using Avalonia.IntegrationTests.Appium.Wrappers;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Mac;
@@ -21,21 +22,24 @@ namespace Avalonia.IntegrationTests.Appium
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 ConfigureWin32Options(options);
-                Session = new WindowsDriver<AppiumWebElement>(
+                Driver = new WindowsDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723"),
                     options);
 
+                Session = new MacSession(Driver);
+
                 // https://github.com/microsoft/WinAppDriver/issues/1025
                 SetForegroundWindow(new IntPtr(int.Parse(
-                    Session.WindowHandles[0].Substring(2),
+                    Driver.WindowHandles[0].Substring(2),
                     NumberStyles.AllowHexSpecifier)));
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 ConfigureMacOptions(options);
-                Session = new MacDriver<AppiumWebElement>(
+                Driver = new MacDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723/wd/hub"),
                     options);
+                Session = new MacSession(Driver);
             }
             else
             {
@@ -56,16 +60,18 @@ namespace Avalonia.IntegrationTests.Appium
             options.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
             options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
             options.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
-            options.AddAdditionalCapability("appium:showServerLogs", true);
+            options.AddAdditionalCapability("appium:showServerLogs", false);
         }
 
-        public AppiumDriver<AppiumWebElement> Session { get; }
+        public AppiumDriver<AppiumWebElement> Driver { get; }
+        
+        public ISession Session { get; }
 
         public void Dispose()
         {
             try
             {
-                Session.Close();
+                Driver.Close();
             }
             catch
             {

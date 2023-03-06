@@ -6,13 +6,13 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class CheckBoxTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
 
         public CheckBoxTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Session;
+            _driver = fixture.Driver;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tabs = _driver.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("CheckBox");
             tab.Click();
         }
@@ -20,7 +20,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void UncheckedCheckBox()
         {
-            var checkBox = _session.FindElementByAccessibilityId("UncheckedCheckBox");
+            var checkBox = _driver.FindElementByAccessibilityId("UncheckedCheckBox");
 
             Assert.Equal("Unchecked", checkBox.GetName());
             Assert.Equal(false, checkBox.GetIsChecked());
@@ -32,7 +32,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void CheckedCheckBox()
         {
-            var checkBox = _session.FindElementByAccessibilityId("CheckedCheckBox");
+            var checkBox = _driver.FindElementByAccessibilityId("CheckedCheckBox");
 
             Assert.Equal("Checked", checkBox.GetName());
             Assert.Equal(true, checkBox.GetIsChecked());
@@ -44,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void ThreeStateCheckBox()
         {
-            var checkBox = _session.FindElementByAccessibilityId("ThreeStateCheckBox");
+            var checkBox = _driver.FindElementByAccessibilityId("ThreeStateCheckBox");
 
             Assert.Equal("ThreeState", checkBox.GetName());
             Assert.Null(checkBox.GetIsChecked());

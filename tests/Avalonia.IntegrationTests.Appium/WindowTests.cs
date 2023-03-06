@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
+using Avalonia.IntegrationTests.Appium.Wrappers;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
@@ -18,13 +21,18 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly ISession _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
+        private readonly IWindowElement _mainWindow;
 
         public WindowTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
+            _driver = fixture.Driver;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            _mainWindow = _session.GetWindow("MainWindow");
+
+            var tabs = _mainWindow.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("Window");
             tab.Click();
         }
@@ -34,7 +42,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location, bool canResize)
         {
             using var window = OpenWindow(size, mode, location, canResize: canResize);
-            var info = GetWindowInfo();
+            var info = GetWindowInfo(window);
 
             if (size.HasValue)
                 Assert.Equal(size.Value, info.ClientSize);
@@ -70,7 +78,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                var info = GetWindowInfo();
+                var info = GetWindowInfo(window);
 
                 Assert.Equal(state, info.WindowState);
 
@@ -93,8 +101,8 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     try
                     {
-                        _session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
-                        _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+                        window.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                        window.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                         // Wait for animations to run.
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -102,7 +110,7 @@ namespace Avalonia.IntegrationTests.Appium
                     }
                     catch
                     {
-                        /* Ignore errors in cleanup */
+                        // Ignore errors in cleanup 
                     }
                 }
             }
@@ -111,33 +119,31 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void OnWindows_Docked_Windows_Retain_Size_Position_When_Restored()
         {
-            using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            using (var window = OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
+                var windowState = window.FindElementByAccessibilityId("CurrentWindowState");
 
                 Assert.Equal("Normal", windowState.GetComboBoxValue());
                 
                 
-                var window = _session.FindElements(By.XPath("//Window")).First();
-                
-                new Actions(_session)
+                new Actions(_driver)
                     .KeyDown(Keys.Meta)
                     .SendKeys(Keys.Left)
                     .KeyUp(Keys.Meta)
                     .Perform();
                 
-                var original = GetWindowInfo();
+                var original = GetWindowInfo(window);
                 
                 windowState.Click();
-                _session.FindElementByName("Minimized").SendClick();
+                window.FindElementByName("Minimized").SendClick();
                 
-                new Actions(_session)
+                new Actions(_driver)
                     .KeyDown(Keys.Alt)
                     .SendKeys(Keys.Tab)
                     .KeyUp(Keys.Alt)
                     .Perform();
                 
-                var current = GetWindowInfo();
+                var current = GetWindowInfo(window);
                 
                 Assert.Equal(original.Position, current.Position);
                 Assert.Equal(original.FrameSize, current.FrameSize);
@@ -150,8 +156,8 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new Size(4000, 2200), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var screenRectTextBox = _session.FindElementByAccessibilityId("CurrentClientSize");
-                var measuredWithTextBlock = _session.FindElementByAccessibilityId("CurrentMeasuredWithText");
+                var screenRectTextBox = _driver.FindElementByAccessibilityId("CurrentClientSize");
+                var measuredWithTextBlock = _driver.FindElementByAccessibilityId("CurrentMeasuredWithText");
                 
                 var measuredWithString = measuredWithTextBlock.Text;
                 var workingAreaString = screenRectTextBox.Text;
@@ -170,19 +176,19 @@ namespace Avalonia.IntegrationTests.Appium
         public void ShowMode(ShowWindowMode mode)
         {
             using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
-            var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
-            var original = GetWindowInfo();
+            var windowState = _mainWindow.FindElementByAccessibilityId("CurrentWindowState");
+            var original = GetWindowInfo(window);
 
             Assert.Equal("Normal", windowState.GetComboBoxValue());
 
             windowState.Click();
-            _session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
+            window.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
             Assert.Equal("Maximized", windowState.GetComboBoxValue());
 
             windowState.Click();
-            _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+            window.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
-            var current = GetWindowInfo();
+            var current = GetWindowInfo(window);
             Assert.Equal(original.Position, current.Position);
             Assert.Equal(original.FrameSize, current.FrameSize);
 
@@ -190,19 +196,19 @@ namespace Avalonia.IntegrationTests.Appium
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || mode == ShowWindowMode.NonOwned)
             {
                 windowState.Click();
-                _session.FindElementByAccessibilityId("WindowStateFullScreen").SendClick();
+                window.FindElementByAccessibilityId("WindowStateFullScreen").SendClick();
                 Assert.Equal("FullScreen", windowState.GetComboBoxValue());
 
-                current = GetWindowInfo();
+                current = GetWindowInfo(window);
                 var clientSize = PixelSize.FromSize(current.ClientSize, current.Scaling);
                 Assert.True(clientSize.Width >= current.ScreenRect.Width);
                 Assert.True(clientSize.Height >= current.ScreenRect.Height);
 
                 windowState.SendClick();
                 
-                _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+                window.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
-                current = GetWindowInfo();
+                current = GetWindowInfo(window);
                 Assert.Equal(original.Position, current.Position);
                 Assert.Equal(original.FrameSize, current.FrameSize);
             }
@@ -211,16 +217,16 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void TransparentWindow()
         {
-            var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentWindow");
+            var showTransparentWindow = _mainWindow.FindElementByAccessibilityId("ShowTransparentWindow");
             showTransparentWindow.Click();
             Thread.Sleep(1000);
 
-            var window = _session.FindElementByAccessibilityId("TransparentWindow");
+            var window = _mainWindow.FindElementByAccessibilityId("TransparentWindow");
             var screenshot = window.GetScreenshot();
 
             window.Click();
 
-            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
+            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot);
             var topLeftColor = img[10, 10];
             var centerColor = img[img.Width / 2, img.Height / 2];
 
@@ -231,17 +237,17 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void TransparentPopup()
         {
-            var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentPopup");
+            var showTransparentWindow = _mainWindow.FindElementByAccessibilityId("ShowTransparentPopup");
             showTransparentWindow.Click();
             Thread.Sleep(1000);
 
-            var window = _session.FindElementByAccessibilityId("TransparentPopupBackground");
+            var window = _mainWindow.FindElementByAccessibilityId("TransparentPopupBackground");
             var container = window.FindElementByAccessibilityId("PopupContainer");
             var screenshot = container.GetScreenshot();
 
             window.Click();
 
-            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
+            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot);
             var topLeftColor = img[10, 10];
             var centerColor = img[img.Width / 2, img.Height / 2];
 
@@ -328,53 +334,79 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(
+        private IWindowElement OpenWindow(
             Size? size,
             ShowWindowMode mode,
             WindowStartupLocation location = WindowStartupLocation.Manual,
             WindowState state = Controls.WindowState.Normal,
             bool canResize = true)
         {
-            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-            var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
-            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
-            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+            var timer = new SplitTimer();
             
-            if (size.HasValue)
-                sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
+            var elements = _mainWindow.GetChildren();
+            
+            timer.SplitLog("getChildren");
 
+            if (size.HasValue)
+            {
+                var sizeTextBox = _mainWindow.FindElementByAccessibilityId("ShowWindowSize");
+                timer.SplitLog(nameof(sizeTextBox));
+                sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
+            }
+
+            var modeComboBox = _mainWindow.FindElementByAccessibilityId("ShowWindowMode");
+            timer.SplitLog(nameof(modeComboBox));
+            
             if (modeComboBox.GetComboBoxValue() != mode.ToString())
             {
                 modeComboBox.Click();
-                _session.FindElementByName(mode.ToString()).SendClick();
+                _mainWindow.FindElementByName(mode.ToString()).SendClick();
             }
 
+            var locationComboBox = _mainWindow.FindElementByAccessibilityId("ShowWindowLocation");
+            timer.SplitLog(nameof(locationComboBox));
             if (locationComboBox.GetComboBoxValue() != location.ToString())
             {
                 locationComboBox.Click();
-                _session.FindElementByName(location.ToString()).SendClick();
+                _mainWindow.FindElementByName(location.ToString()).SendClick();
             }
 
+            var stateComboBox = _mainWindow.FindElementByAccessibilityId("ShowWindowState");
+            timer.SplitLog(nameof(stateComboBox));
             if (stateComboBox.GetComboBoxValue() != state.ToString())
             {
                 stateComboBox.Click();
-                _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+                _mainWindow.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
             }
 
+            var canResizeCheckBox = _mainWindow.FindElementByAccessibilityId("ShowWindowCanResize");
+            timer.SplitLog(nameof(canResizeCheckBox));
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
 
-            return showButton.OpenWindowWithClick();
+            timer.Reset();
+            
+            var showButton = _mainWindow.FindElementByAccessibilityId("ShowWindow");
+            timer.SplitLog(nameof(showButton));
+            
+            var result = _session.GetNewWindow(()=> showButton.Click());
+            timer.SplitLog("GetNewWindow");
+
+            return result;
         }
 
-        private WindowInfo GetWindowInfo()
+        private static WindowInfo GetWindowInfo(IWindowElement window)
         {
+            var dictionary = new Dictionary<string, string>();
+            
             PixelRect? ReadOwnerRect()
             {
-                var text = _session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
-                return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
+                if (dictionary.ContainsKey("ownerrect"))
+                {
+                    return PixelRect.Parse(dictionary["ownerrect"]);
+                }
+
+                return null;
             }
 
             var retry = 0;
@@ -383,14 +415,36 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 try
                 {
-                    return new(
-                        Size.Parse(_session.FindElementByAccessibilityId("CurrentClientSize").Text),
-                        Size.Parse(_session.FindElementByAccessibilityId("CurrentFrameSize").Text),
-                        PixelPoint.Parse(_session.FindElementByAccessibilityId("CurrentPosition").Text),
+                    var timer = new SplitTimer();
+                    var summary = window.FindElementByAccessibilityId("CurrentSummary").Text;
+
+                    var items = summary.Split("::");
+
+                    foreach (var item in items)
+                    {
+                        var kv = item.Split(":");
+
+                        if (kv.Length == 2)
+                        {
+                            var key = kv[0];
+                            var value = kv[1];
+
+                            dictionary[key] = value;
+                        }
+                    }
+                    
+                    timer.SplitLog("summary");
+                    
+                    var result = new WindowInfo(
+                        Size.Parse(dictionary["clientSize"]),
+                        Size.Parse(dictionary["frameSize"]),
+                        PixelPoint.Parse(dictionary["position"]),
                         ReadOwnerRect(),
-                        PixelRect.Parse(_session.FindElementByAccessibilityId("CurrentScreenRect").Text),
-                        double.Parse(_session.FindElementByAccessibilityId("CurrentScaling").Text),
-                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("CurrentWindowState").Text));
+                        PixelRect.Parse(dictionary["screen"]),
+                        double.Parse(dictionary["scaling"]),
+                        Enum.Parse<WindowState>(dictionary["windowstate"]));
+                    
+                    return result;
                 }
                 catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {

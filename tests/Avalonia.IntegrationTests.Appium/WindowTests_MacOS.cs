@@ -14,19 +14,19 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests_MacOS
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
 
         public WindowTests_MacOS(DefaultAppFixture fixture)
         {
             var retry = 0;
 
-            _session = fixture.Session;
+            _driver = fixture.Driver;
 
             for (;;)
             {
                 try
                 {
-                    var tabs = _session.FindElementByAccessibilityId("MainTabs");
+                    var tabs = _driver.FindElementByAccessibilityId("MainTabs");
                     var tab = tabs.FindElementByName("Window");
                     tab.Click();
                     return;
@@ -44,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
@@ -63,14 +63,14 @@ namespace Avalonia.IntegrationTests.Appium
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
-                new Actions(_session)
+                new Actions(_driver)
                     .MoveToElement(mainWindow, 100, 1)
                     .ClickAndHold()
                     .Perform();
 
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
-                new Actions(_session)
+                new Actions(_driver)
                     .MoveToElement(mainWindow, 100, 1)
                     .Release()
                     .Perform();
@@ -99,14 +99,14 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                _session.FindElementByAccessibilityId("ExitFullscreen").Click();
+                _driver.FindElementByAccessibilityId("ExitFullscreen").Click();
             }
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
             {
@@ -119,7 +119,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Owned_Dialog_Stays_InFront_Of_FullScreen_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
 
             // Enter fullscreen
             mainWindow.FindElementByAccessibilityId("EnterFullscreen").Click();
@@ -146,7 +146,7 @@ namespace Avalonia.IntegrationTests.Appium
             Thread.Sleep(1000);
 
             // Make sure we exited fullscreen.
-            mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
             windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("Normal", windowState.Text);
         }
@@ -167,7 +167,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void Does_Not_Switch_Space_From_FullScreen_To_Main_Desktop_When_FullScreen_Window_Clicked()
         {
             // Issue #9565
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
             AppiumWebElement windowState;
 
             // Open child window.
@@ -180,7 +180,7 @@ namespace Avalonia.IntegrationTests.Appium
                 Thread.Sleep(1000);
 
                 // Make sure we entered fullscreen.
-                mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+                mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
                 windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
                 Assert.Equal("FullScreen", windowState.Text);
                 
@@ -196,7 +196,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
 
             // Make sure we exited fullscreen.
-            mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
             windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("Normal", windowState.Text);
         }
@@ -204,7 +204,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_NonOwned_Window_Does_Not_Stay_InFront_Of_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
 
             using (OpenWindow(new PixelSize(800, 100), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
@@ -214,7 +214,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 Assert.Equal(2, secondaryWindowIndex);
 
-                var sendToBack = _session.FindElementByAccessibilityId("SendToBack");
+                var sendToBack = _driver.FindElementByAccessibilityId("SendToBack");
                 sendToBack.Click();
             }
         }
@@ -293,14 +293,14 @@ namespace Avalonia.IntegrationTests.Appium
                 miniaturizeButton.Click();
                 Thread.Sleep(1000);
 
-                var hittable = _session.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
+                var hittable = _driver.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
                     .Select(x => x.GetAttribute("hittable")).ToList();
                 Assert.Equal(new[] { "true", "false" }, hittable);
 
-                _session.FindElementByAccessibilityId("RestoreAll").Click();
+                _driver.FindElementByAccessibilityId("RestoreAll").Click();
                 Thread.Sleep(1000);
 
-                hittable = _session.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
+                hittable = _driver.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
                     .Select(x => x.GetAttribute("hittable")).ToList();
                 Assert.Equal(new[] { "true", "true" }, hittable);
             }
@@ -309,7 +309,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void Hidden_Child_Window_Is_Not_Reshown_When_Parent_Clicked()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _driver.FindElementByAccessibilityId("MainWindow");
 
             // We don't use dispose to close the window here, because it seems that hiding and re-showing a window
             // causes Appium to think it's a different window.
@@ -320,15 +320,15 @@ namespace Avalonia.IntegrationTests.Appium
 
             hideButton.Click();
                 
-            var windows = _session.FindElementsByXPath("XCUIElementTypeWindow");
+            var windows = _driver.FindElementsByXPath("XCUIElementTypeWindow");
             Assert.Single(windows);
                 
             mainWindow.Click();
                 
-            windows = _session.FindElementsByXPath("XCUIElementTypeWindow");
+            windows = _driver.FindElementsByXPath("XCUIElementTypeWindow");
             Assert.Single(windows);
                 
-            _session.FindElementByAccessibilityId("RestoreAll").Click();
+            _driver.FindElementByAccessibilityId("RestoreAll").Click();
 
             // Close the window manually.
             secondaryWindow = GetWindow("SecondaryWindow");
@@ -355,11 +355,11 @@ namespace Avalonia.IntegrationTests.Appium
             WindowStartupLocation location,
             bool canResize = true)
         {
-            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
-            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+            var sizeTextBox = _driver.FindElementByAccessibilityId("ShowWindowSize");
+            var modeComboBox = _driver.FindElementByAccessibilityId("ShowWindowMode");
+            var locationComboBox = _driver.FindElementByAccessibilityId("ShowWindowLocation");
+            var canResizeCheckBox = _driver.FindElementByAccessibilityId("ShowWindowCanResize");
+            var showButton = _driver.FindElementByAccessibilityId("ShowWindow");
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
@@ -367,13 +367,13 @@ namespace Avalonia.IntegrationTests.Appium
             if (modeComboBox.GetComboBoxValue() != mode.ToString())
             {
                 modeComboBox.Click();
-                _session.FindElementByName(mode.ToString()).SendClick();
+                _driver.FindElementByName(mode.ToString()).SendClick();
             }
 
             if (locationComboBox.GetComboBoxValue() != location.ToString())
             {
                 locationComboBox.Click();
-                _session.FindElementByName(location.ToString()).SendClick();
+                _driver.FindElementByName(location.ToString()).SendClick();
             }
             
             if (canResizeCheckBox.GetIsChecked() != canResize)
@@ -386,7 +386,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
             // but in the meantime use the `parent::' selector to return the parent "real" window. 
-            return _session.FindElementByXPath(
+            return _driver.FindElementByXPath(
                 $"XCUIElementTypeWindow//*[@identifier='{identifier}']/parent::XCUIElementTypeWindow");
         }
 

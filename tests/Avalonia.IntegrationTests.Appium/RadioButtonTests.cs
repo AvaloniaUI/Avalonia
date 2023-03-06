@@ -6,13 +6,13 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class RadioButtonTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
 
         public RadioButtonTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Session;
+            _driver = fixture.Driver;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tabs = _driver.FindElementByAccessibilityId("MainTabs");
             tabs.FindElementByName("RadioButton").Click();
         }
 
@@ -20,7 +20,7 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void RadioButton_IsChecked_True_When_Clicked()
         {
-            var button = _session.FindElementByAccessibilityId("BasicRadioButton");
+            var button = _driver.FindElementByAccessibilityId("BasicRadioButton");
             Assert.False(button.GetIsChecked());
             button.Click();
             Assert.True(button.GetIsChecked());
@@ -29,8 +29,8 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void ThreeState_RadioButton_IsChecked_False_When_Other_ThreeState_RadioButton_Checked()
         {
-            var button1 = _session.FindElementByAccessibilityId("ThreeStatesRadioButton1");
-            var button2 = _session.FindElementByAccessibilityId("ThreeStatesRadioButton2");
+            var button1 = _driver.FindElementByAccessibilityId("ThreeStatesRadioButton1");
+            var button2 = _driver.FindElementByAccessibilityId("ThreeStatesRadioButton2");
             Assert.True(button1.GetIsChecked());
             Assert.False(button2.GetIsChecked());
             button2.Click();

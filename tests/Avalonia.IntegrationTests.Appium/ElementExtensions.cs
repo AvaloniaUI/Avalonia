@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.IntegrationTests.Appium.Wrappers;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -36,9 +37,25 @@ namespace Avalonia.IntegrationTests.Appium
                 element.GetAttribute("value");
         }
         
+        public static string GetComboBoxValue(this IElement element)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+                element.Text :
+                element.GetAttribute("value");
+        }
+        
         public static string GetName(this AppiumWebElement element) => GetAttribute(element, "Name", "title");
 
         public static bool? GetIsChecked(this AppiumWebElement element) =>
+            GetAttribute(element, "Toggle.ToggleState", "value") switch
+            {
+                "0" => false,
+                "1" => true,
+                "2" => null,
+                _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
+            };
+        
+        public static bool? GetIsChecked(this IElement element) =>
             GetAttribute(element, "Toggle.ToggleState", "value") switch
             {
                 "0" => false,
@@ -159,6 +176,11 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         public static string GetAttribute(AppiumWebElement element, string windows, string macOS)
+        {
+            return element.GetAttribute(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? windows : macOS);
+        }
+        
+        public static string GetAttribute(IElement element, string windows, string macOS)
         {
             return element.GetAttribute(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? windows : macOS);
         }

@@ -6,13 +6,13 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class NativeMenuTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
 
         public NativeMenuTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Session;
+            _driver = fixture.Driver;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tabs = _driver.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("Automation");
             tab.Click();
         }
@@ -20,9 +20,9 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void View_Menu_Select_Button_Tab()
         {
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tabs = _driver.FindElementByAccessibilityId("MainTabs");
             var buttonTab = tabs.FindElementByName("Button");
-            var menuBar = _session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
+            var menuBar = _driver.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
             var viewMenu = menuBar.FindElementByName("View");
             
             Assert.False(buttonTab.Selected);

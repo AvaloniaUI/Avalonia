@@ -9,13 +9,13 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class ListBoxTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _driver;
 
         public ListBoxTests(DefaultAppFixture fixture)
         {
-            _session = fixture.Session;
+            _driver = fixture.Driver;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tabs = _driver.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("ListBox");
             tab.Click();
         }
@@ -49,7 +49,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.False(item2.Selected);
             Assert.False(item4.Selected);
             
-            new Actions(_session)
+            new Actions(_driver)
                 .Click(item2)
                 .KeyDown(Keys.Control)
                 .Click(item4)
@@ -73,7 +73,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.False(item3.Selected);
             Assert.False(item4.Selected);
 
-            new Actions(_session)
+            new Actions(_driver)
                 .Click(item2)
                 .KeyDown(Keys.Shift)
                 .Click(item4)
@@ -96,8 +96,8 @@ namespace Avalonia.IntegrationTests.Appium
 
         private AppiumWebElement GetTarget()
         {
-            _session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
-            return _session.FindElementByAccessibilityId("BasicListBox");
+            _driver.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
+            return _driver.FindElementByAccessibilityId("BasicListBox");
         }
     }
 }
