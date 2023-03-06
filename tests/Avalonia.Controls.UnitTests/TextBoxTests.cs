@@ -1058,6 +1058,25 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Should_Move_Caret_To_EndOfLine()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "AB\nAB"
+                };
+
+                tb.Measure(Size.Infinity);
+
+                RaiseKeyEvent(tb, Key.End, KeyModifiers.Shift);
+
+                Assert.Equal(2, tb.CaretIndex);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
