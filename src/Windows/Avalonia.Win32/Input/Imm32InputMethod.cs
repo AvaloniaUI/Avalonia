@@ -31,6 +31,8 @@ namespace Avalonia.Win32.Input
 
         public bool ShowCompositionWindow => false;
 
+        public string? Composition { get; internal set; }
+
         public void CreateCaret()
         {
             _caretManager.TryCreate(Hwnd);
@@ -269,28 +271,28 @@ namespace Avalonia.Win32.Input
             // we're skipping this. not usable on windows
         }
 
-        public void CompositionChanged()
+        public void CompositionChanged(string? composition)
         {
-            if (!IsComposing)
+            Composition = composition;
+
+            if (!IsActive || !Client.SupportsPreedit)
             {
                 return;
             }
-
-            if(!IsActive || !Client.SupportsPreedit)
-            {
-                return;
-            }
-
-            var composition = GetCompositionString();
 
             Client.SetPreeditText(composition);
         }
         
-        private string? GetCompositionString()
+        public string? GetCompositionString(GCS flag)
         {
+            if (!IsComposing)
+            {
+                return null;
+            }
+
             var himc = ImmGetContext(Hwnd);
 
-            return ImmGetCompositionString(himc, GCS.GCS_COMPSTR);
+            return ImmGetCompositionString(himc, flag);
         }
 
         ~Imm32InputMethod()
