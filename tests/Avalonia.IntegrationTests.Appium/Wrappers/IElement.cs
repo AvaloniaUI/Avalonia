@@ -8,6 +8,8 @@ public interface IElement
     string Name { get; }
     
     string Text { get; }
+    
+    bool Enabled { get; }
 
     string GetAttribute(string attribute);
     

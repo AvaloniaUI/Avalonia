@@ -45,6 +45,8 @@ public class Element : IElement
         }
     }
 
+    public bool Enabled => _inner.Enabled;
+
 
     public string GetAttribute(string attribute)
     {

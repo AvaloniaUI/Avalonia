@@ -20,11 +20,11 @@ public class WindowElement : Element, IWindowElement, IEquatable<IWindowElement>
         close.Click();
     }
     
-    private (IElement close, IElement minimize, IElement maximize) GetChromeButtons()
+    public (IElement close, IElement minimize, IElement maximize) GetChromeButtons()
     {
         var elements = FindManyByXPath("//XCUIElementTypeButton");
         
-        return (elements[0], elements[1], elements[2]);
+        return (elements[0], elements[2], elements[1]);
     }
 
     public bool Equals(IWindowElement? other)

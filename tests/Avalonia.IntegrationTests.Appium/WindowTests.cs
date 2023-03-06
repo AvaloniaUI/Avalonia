@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.IntegrationTests.Appium.Wrappers;
-using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -31,9 +26,7 @@ namespace Avalonia.IntegrationTests.Appium
             _driver = fixture.Driver;
 
             _mainWindow = _session.GetWindow("MainWindow");
-
-            var tabs = _mainWindow.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Window");
+            var tab = _mainWindow.FindElementByName("Window");
             tab.Click();
         }
 
