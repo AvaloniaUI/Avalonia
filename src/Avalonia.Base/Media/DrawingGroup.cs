@@ -73,7 +73,7 @@ namespace Avalonia.Media
         {
             var bounds = GetBounds();
 
-            using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
+            using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity, bounds))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
             using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
