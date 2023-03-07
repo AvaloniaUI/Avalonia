@@ -1736,7 +1736,7 @@ namespace Avalonia.Controls
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
                 var textLine = textLines[lineIndex];
 
-                var textPosition = textLine.FirstTextSourceIndex + textLine.Length;
+                var textPosition = textLine.FirstTextSourceIndex + textLine.Length - textLine.NewLineLength;
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }

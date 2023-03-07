@@ -15,6 +15,7 @@
 #import "WindowProtocol.h"
 #import "WindowInterfaces.h"
 #include "WindowBaseImpl.h"
+#include "AvnTextInputMethod.h"
 
 
 WindowBaseImpl::~WindowBaseImpl() {
@@ -29,6 +30,7 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     _glContext = gl;
     renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext:gl];
     View = [[AvnView alloc] initWithParent:this];
+    InputMethod = new AvnTextInputMethod(View);
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
     lastPositionSet = { 0, 0 };
@@ -603,6 +605,14 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
 void WindowBaseImpl::BringToFront()
 {
     // do nothing.
+}
+
+HRESULT WindowBaseImpl::GetInputMethod(IAvnTextInputMethod **retOut) {
+    START_COM_CALL;
+
+    *retOut = InputMethod;
+
+    return S_OK;
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

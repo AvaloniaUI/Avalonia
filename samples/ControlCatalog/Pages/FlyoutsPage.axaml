@@ -204,7 +204,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button Content="Placement=RightEdgeAlignedBottom">
+                        <Button Content="Placement=RightEdgeAlignedTop">
                             <Button.Flyout>
                                 <Flyout Placement="RightEdgeAlignedTop">
                                     <Panel Width="100" Height="100">
