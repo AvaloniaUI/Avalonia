@@ -1,16 +1,22 @@
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 
 namespace ControlCatalog.Pages
 {
     public partial class ClipboardPage : UserControl
     {
+        private INotificationManager? _notificationManager;
+        private INotificationManager NotificationManager => _notificationManager
+            ??= new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
         public ClipboardPage()
         {
             InitializeComponent();
@@ -31,7 +37,7 @@ namespace ControlCatalog.Pages
 
         private async void PasteText(object? sender, RoutedEventArgs args)
         {
-            if(Application.Current!.Clipboard is { } clipboard)
+            if (Application.Current!.Clipboard is { } clipboard)
             {
                 ClipboardContent.Text = await clipboard.GetTextAsync();
             }
@@ -59,15 +65,45 @@ namespace ControlCatalog.Pages
         {
             if (Application.Current!.Clipboard is { } clipboard)
             {
-                var files = (ClipboardContent.Text ?? String.Empty)
-                .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                if (files.Length == 0)
+                var storageProvider = TopLevel.GetTopLevel(this)!.StorageProvider;
+                var filesPath = (ClipboardContent.Text ?? string.Empty)
+                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                if (filesPath.Length == 0)
                 {
                     return;
                 }
-                var dataObject = new DataObject();
-                dataObject.Set(DataFormats.FileNames, files);
-                await clipboard.SetDataObjectAsync(dataObject);
+                List<string> invalidFile = new(filesPath.Length);
+                List<IStorageFile> files = new(filesPath.Length);
+
+                for (int i = 0; i < filesPath.Length; i++)
+                {
+                    var file = await storageProvider.TryGetFileFromPathAsync(filesPath[i]);
+                    if (file is null)
+                    {
+                        invalidFile.Add(filesPath[i]);
+                    }
+                    else
+                    {
+                        files.Add(file);
+                    }
+                }
+
+                if (invalidFile.Count > 0)
+                {
+                    NotificationManager.Show(new Notification("Warning", "There is one o more invalid path.", NotificationType.Warning));
+                }
+
+                if (files.Count > 0)
+                {
+                    var dataObject = new DataObject();
+                    dataObject.Set(DataFormats.Files, files);
+                    await clipboard.SetDataObjectAsync(dataObject);
+                    NotificationManager.Show(new Notification("Success", "Copy completated.", NotificationType.Success));
+                }
+                else
+                {
+                    NotificationManager.Show(new Notification("Warning", "Any files to copy in Clipboard.", NotificationType.Warning));
+                }
             }
         }
 
@@ -75,8 +111,9 @@ namespace ControlCatalog.Pages
         {
             if (Application.Current!.Clipboard is { } clipboard)
             {
-                var fiels = await clipboard.GetDataAsync(DataFormats.FileNames) as IEnumerable<string>;
-                ClipboardContent.Text = fiels != null ? string.Join(Environment.NewLine, fiels) : string.Empty;
+                var files = await clipboard.GetDataAsync(DataFormats.Files) as IEnumerable<Avalonia.Platform.Storage.IStorageItem>;
+
+                ClipboardContent.Text = files != null ? string.Join(Environment.NewLine, files.Select(f => f.Path)) : string.Empty;
             }
         }
 
@@ -95,7 +132,7 @@ namespace ControlCatalog.Pages
             {
                 await clipboard.ClearAsync();
             }
-                
+
         }
     }
 }
