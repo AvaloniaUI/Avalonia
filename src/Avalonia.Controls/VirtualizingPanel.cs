@@ -193,13 +193,13 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The VirtualizingPanel is already attached to an ItemsControl");
 
             ItemsControl = itemsControl;
-            ItemsControl.ItemsView.CollectionChanged += OnItemsControlItemsChanged;
+            ItemsControl.ItemsView.PostCollectionChanged += OnItemsControlItemsChanged;
         }
 
         internal void Detach()
         {
             var itemsControl = EnsureItemsControl();
-            itemsControl.ItemsView.CollectionChanged -= OnItemsControlItemsChanged;
+            itemsControl.ItemsView.PostCollectionChanged -= OnItemsControlItemsChanged;
             ItemsControl = null;
             Children.Clear();
         }

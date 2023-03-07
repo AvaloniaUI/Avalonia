@@ -876,7 +876,7 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsViewSourceChanged(object? sender, EventArgs e)
         {
-            if (_selection is not null)
+            if (_selection is not null && _updateState is null)
                 _selection.Source = ItemsView.Source;
         }
 
