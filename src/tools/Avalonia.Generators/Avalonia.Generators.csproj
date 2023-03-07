@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Compile Link="Compiler\XamlX\filename" Include="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/*.cs" />
+    <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/obj/**/*.cs" />
     <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/SreTypeSystem.cs" />
     <Compile Include="..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
