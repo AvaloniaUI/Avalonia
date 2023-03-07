@@ -76,5 +76,16 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Throws<InvalidOperationException>(() => new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown").GlyphTypeface);
             }
         }
+
+        [Fact]
+        public void Should_Return_False_For_Unregistered_FontCollection_Uri()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("fonts:invalid#Something"), out _);
+
+                Assert.False(result);
+            }
+        }
     }
 }
