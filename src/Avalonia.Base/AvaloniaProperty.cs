@@ -257,7 +257,18 @@ namespace Avalonia
             return result;
         }
 
-        /// <inheritdoc cref="Register{TOwner, TValue}" />
+        /// <summary>
+        /// Registers an attached <see cref="AvaloniaProperty"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
+        /// <typeparam name="TValue">The type of the property's value.</typeparam>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="defaultValue">The default value of the property.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
+        /// <param name="enableDataValidation">if is set to true enable data validation.</param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
