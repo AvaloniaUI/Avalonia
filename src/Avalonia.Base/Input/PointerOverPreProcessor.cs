@@ -152,6 +152,8 @@ namespace Avalonia.Input
             ulong timestamp, Point position, PointerPointProperties properties, KeyModifiers inputModifiers)
         {
             var pointerOverElement = root.PointerOverElement;
+            var screenPosition = ((Visual)root).PointToScreen(position);
+            _lastKnownPosition = screenPosition;
 
             if (element != pointerOverElement)
             {
@@ -165,8 +167,6 @@ namespace Avalonia.Input
                 }
             }
 
-            var screenPosition = ((Visual)root).PointToScreen(position);
-            _lastKnownPosition = screenPosition;
             _currentPointer = (pointer, screenPosition);
         }
 
