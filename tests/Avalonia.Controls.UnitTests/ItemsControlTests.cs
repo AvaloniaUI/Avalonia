@@ -17,6 +17,19 @@ namespace Avalonia.Controls.UnitTests
     public class ItemsControlTests
     {
         [Fact]
+        public void Setting_ItemsSource_Should_Populate_Items()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+                ItemsSource = new[] { "foo", "bar" },
+            };
+
+            Assert.Equal(target.ItemsSource, target.Items);
+        }
+
+        [Fact]
         public void Should_Use_ItemTemplate_To_Create_Control()
         {
             var target = new ItemsControl
@@ -153,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
 
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
@@ -206,11 +219,13 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ItemsControl();
             var child = new Control();
-            var items = new AvaloniaList<Control>(child);
 
             target.Template = GetTemplate();
-            target.Items = items;
-            items.RemoveAt(0);
+            target.Items.Add(child);
+
+            Assert.Single(target.GetLogicalChildren());
+
+            target.Items.RemoveAt(0);
 
             Assert.Null(child.Parent);
             Assert.Null(child.GetLogicalParent());
@@ -224,8 +239,11 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
-            target.Items = null;
+            target.Items.Add(child);
+
+            Assert.Single(target.GetLogicalChildren());
+
+            target.Items.Clear();
 
             Assert.Null(child.Parent);
             Assert.Null(((ILogical)child).LogicalParent);
@@ -253,7 +271,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
 
             // Should appear both before and after applying template.
             Assert.Equal(new ILogical[] { child }, target.GetLogicalChildren());
@@ -299,7 +317,7 @@ namespace Avalonia.Controls.UnitTests
 
 
         [Fact]
-        public void Setting_Items_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Adding_Items_Should_Fire_LogicalChildren_CollectionChanged()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -311,7 +329,7 @@ namespace Avalonia.Controls.UnitTests
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
                 called = e.Action == NotifyCollectionChangedAction.Add;
 
-            target.Items = new[] { child };
+            target.Items.Add(child);
 
             Assert.True(called);
         }
@@ -324,7 +342,7 @@ namespace Avalonia.Controls.UnitTests
             var called = false;
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
             target.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
@@ -343,32 +361,12 @@ namespace Avalonia.Controls.UnitTests
             var called = false;
 
             target.Template = GetTemplate();
-            target.Items = new[] { child };
+            target.Items.Add(child);
             target.ApplyTemplate();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Items = new[] { "Foo" };
-
-            Assert.True(called);
-        }
-
-        [Fact]
-        public void Adding_Items_Should_Fire_LogicalChildren_CollectionChanged()
-        {
-            var target = new ItemsControl();
-            var items = new AvaloniaList<string> { "Foo" };
-            var called = false;
-
-            target.Template = GetTemplate();
-            target.Items = items;
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
-
-            items.Add("Bar");
 
             Assert.True(called);
         }

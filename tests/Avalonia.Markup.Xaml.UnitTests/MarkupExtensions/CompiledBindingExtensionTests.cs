@@ -1991,7 +1991,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class DataGridLikeControl : Control
     {
         public static readonly DirectProperty<DataGridLikeControl, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<DataGridLikeControl>(o => o.Items, (o, v) => o.Items = v);
+            AvaloniaProperty.RegisterDirect<DataGridLikeControl, IEnumerable?>(
+                nameof(Items),
+                x => x.Items,
+                (x, v) => x.Items = v);
 
         private IEnumerable _items;
         public IEnumerable Items

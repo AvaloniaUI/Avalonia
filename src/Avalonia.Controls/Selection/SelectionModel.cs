@@ -30,9 +30,9 @@ namespace Avalonia.Controls.Selection
             Source = source;
         }
 
-        public new IEnumerable<T>? Source
+        public new IEnumerable? Source
         {
-            get => base.Source as IEnumerable<T>;
+            get => base.Source;
             set => SetSource(value);
         }
 
