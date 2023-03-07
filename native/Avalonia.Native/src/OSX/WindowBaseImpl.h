@@ -102,6 +102,8 @@ BEGIN_INTERFACE_MAP()
                            
     virtual void BringToFront ();
 
+    virtual bool CanZoom() { return false; }
+                           
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
     virtual void UpdateStyle();
