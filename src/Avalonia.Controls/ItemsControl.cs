@@ -95,6 +95,7 @@ namespace Avalonia.Controls
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
@@ -218,6 +219,7 @@ namespace Avalonia.Controls
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
         [InheritDataTypeFromItems(nameof(ItemsSource))]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty);
