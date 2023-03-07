@@ -42,14 +42,14 @@ namespace Avalonia.Input
                 }
 
                 if (args.Type is RawPointerEventType.LeaveWindow or RawPointerEventType.NonClientLeftButtonDown
-                    && _currentPointer is (var lastPointer, var lastPosition))
+                    && _currentPointer is var (lastPointer, lastPosition))
                 {
                     _currentPointer = null;
                     ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
                         args.InputModifiers.ToKeyModifiers());
                 }
-                else if (pointerDevice.TryGetPointer(args) is IPointer pointer
+                else if (pointerDevice.TryGetPointer(args) is { } pointer
                     && pointer.Type != PointerType.Touch)
                 {
                     var element = pointer.Captured ?? args.InputHitTestResult;
@@ -101,9 +101,11 @@ namespace Avalonia.Input
 
             // Do not pass rootVisual, when we have unknown position,
             // so GetPosition won't return invalid values.
+#pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
                 position.HasValue ? root as Visual : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
+#pragma warning restore CS0618
 
             if (element is Visual v && !v.IsAttachedToVisualTree)
             {
@@ -130,11 +132,11 @@ namespace Avalonia.Input
         {
             if (element is Visual v)
             {
-                foreach (IInputElement el in v.VisualChildren)
+                foreach (var el in v.VisualChildren)
                 {
-                    if (el.IsPointerOver)
+                    if (el is IInputElement { IsPointerOver: true } child)
                     {
-                        ClearChildrenPointerOver(e, el, true);
+                        ClearChildrenPointerOver(e, child, true);
                         break;
                     }
                 }
@@ -189,8 +191,10 @@ namespace Avalonia.Input
 
             el = root.PointerOverElement;
 
+#pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, (Visual)root, position,
                 timestamp, properties, inputModifiers);
+#pragma warning restore CS0618
             if (el is Visual v && branch != null && !v.IsAttachedToVisualTree)
             {
                 ClearChildrenPointerOver(e, branch, false);
