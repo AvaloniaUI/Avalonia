@@ -52,7 +52,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        protected TypeNameAndClassSelector(Selector? previous)
+        TypeNameAndClassSelector(Selector? previous)
         {
             _previous = previous;
         }
