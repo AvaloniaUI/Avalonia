@@ -132,6 +132,29 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the items to display.
         /// </summary>
+        /// <remarks>
+        /// Since Avalonia 11, <see cref="ItemsControl"/> has both an <see cref="Items"/> property
+        /// and an <see cref="ItemsSource"/> property. The properties have the following differences:
+        /// 
+        /// <list type="bullet">
+        /// <item><see cref="Items"/> is initialized with an empty collection and is a direct property,
+        /// meaning that it cannot be styled </item>
+        /// <item><see cref="ItemsSource"/> is by default null, and is a styled property. This property
+        /// is marked as the content property and will be used for items added via inline XAML.</item>
+        /// </list>
+        /// 
+        /// In Avalonia 11 the two properties can be used almost interchangeably but this will change
+        /// in a later version. In order to be ready for this change, follow the following guidance:
+        /// 
+        /// <list type="bullet">
+        /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
+        /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
+        /// directly to a <see cref="ListBox"/>. Add the containers to the pre-existing list, do not
+        /// reassign the <see cref="Items"/> property via the setter or with a binding.</item>
+        /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
+        /// binding a collection of models which will be transformed by a data template.</item>
+        /// </list>
+        /// </remarks>
         [Content]
         public IList? Items
         {
@@ -204,7 +227,8 @@ namespace Avalonia.Controls
         /// <list type="bullet">
         /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
         /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
-        /// directly to a <see cref="ListBox"/>.</item>
+        /// directly to a <see cref="ListBox"/>. Add the containers to the pre-existing list, do not
+        /// reassign the <see cref="Items"/> property via the setter or with a binding.</item>
         /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
         /// binding a collection of models which will be transformed by a data template.</item>
         /// </list>
