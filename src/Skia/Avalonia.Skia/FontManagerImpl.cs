@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -16,14 +17,14 @@ namespace Avalonia.Skia
             return SKTypeface.Default.FamilyName;
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
             if (checkForUpdates)
             {
                 _skFontManager = SKFontManager.CreateDefault();
             }
 
-            return _skFontManager.FontFamilies;
+            return _skFontManager.GetFontFamilies();
         }
 
         [ThreadStatic] private static string[]? t_languageTagBuffer;
@@ -95,72 +96,58 @@ namespace Avalonia.Skia
             return false;
         }
 
-        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            SKTypeface? skTypeface = null;
+            glyphTypeface = null;
 
-            if(typeface.FontFamily.Key is not null)
-            {
-                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+            var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch,
+                (SKFontStyleSlant)style);
 
-                skTypeface = fontCollection.Get(typeface);
-
-                if (skTypeface is null && !typeface.FontFamily.FamilyNames.HasFallbacks)
-                {
-                    throw new InvalidOperationException(
-                        $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
-                }
-            }
+            var skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
             if (skTypeface is null)
             {
-                var defaultName = SKTypeface.Default.FamilyName;
-
-                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, (SKFontStyleWidth)typeface.Stretch,
-                    (SKFontStyleSlant)typeface.Style);
-
-                foreach (var familyName in typeface.FontFamily.FamilyNames)
-                {
-                    if(familyName == FontFamily.DefaultFontFamilyName)
-                    {
-                        continue;
-                    }
-
-                    skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
-
-                    if (skTypeface is null || defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    break;
-                }
-
-                // MatchTypeface can return "null" if matched typeface wasn't found for the style
-                // Fallback to the default typeface and styles instead.
-                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
-                    ?? SKTypeface.Default;
+                return false;
             }
-           
-            if (skTypeface == null)
+
+            //MatchFamily can return a font other than we requested so we have to verify we got the expected.
+            if (!skTypeface.FamilyName.ToLower(CultureInfo.InvariantCulture).Equals(familyName.ToLower(CultureInfo.InvariantCulture), StringComparison.Ordinal))
             {
-                throw new InvalidOperationException(
-                    $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+                return false;
             }
 
             var fontSimulations = FontSimulations.None;
 
-            if((int)typeface.Weight >= 600 && !skTypeface.IsBold)
+            if ((int)weight >= 600 && !skTypeface.IsBold)
             {
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if(typeface.Style == FontStyle.Italic && !skTypeface.IsItalic)
+            if (style == FontStyle.Italic && !skTypeface.IsItalic)
             {
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            return new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+
+            return true;
+        }
+
+        public bool TryCreateGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            var skTypeface = SKTypeface.FromStream(stream);
+
+            if (skTypeface != null)
+            {
+                glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+
+                return true;
+            }
+
+            glyphTypeface = null;
+
+            return false;
         }
     }
 }

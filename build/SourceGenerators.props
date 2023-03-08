@@ -1,5 +1,10 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
+  <PropertyGroup>
+    <IncludeDevGenerators Condition="'$(IncludeDevGenerators)' == ''">true</IncludeDevGenerators>
+    <IncludeAvaloniaGenerators Condition="'$(IncludeAvaloniaGenerators)' == ''">false</IncludeAvaloniaGenerators>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IncludeDevGenerators)' == 'true'">
     <ProjectReference 
       Include="$(MSBuildThisFileDirectory)/../src/tools/DevGenerators/DevGenerators.csproj"
       OutputItemType="Analyzer" 
@@ -7,4 +12,14 @@
       PrivateAssets="all" />
     <Compile Include="$(MSBuildThisFileDirectory)/../src/Shared/SourceGeneratorAttributes.cs" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(IncludeAvaloniaGenerators)' == 'true'">
+    <ProjectReference
+      Include="../../src/tools/Avalonia.Generators/Avalonia.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
+  </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)/../src/tools/Avalonia.Generators/Avalonia.Generators.props"
+          Condition="'$(IncludeDevGenerators)' == 'true'" />
 </Project>

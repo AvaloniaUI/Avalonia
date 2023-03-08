@@ -18,15 +18,20 @@ jobs:
     displayName: 'Get Resolution'
   
   - script: |
+      arch="x64"
+      if [[ $(uname -m) == 'arm64' ]]; then
+      arch="arm64"
+      fi
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
+      pkill testmanagerd
       appium > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
-      open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-arm64/publish/IntegrationTestApp.app
+      open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-$arch/publish/IntegrationTestApp.app
       pkill IntegrationTestApp
     displayName: 'Build IntegrationTestApp'
 

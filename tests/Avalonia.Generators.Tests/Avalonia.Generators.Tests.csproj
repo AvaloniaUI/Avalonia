@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Avalonia.Generators.Tests</RootNamespace>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
+    <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\*.xml" />
+    <EmbeddedResource Include="OnlyProperties\GeneratedCode\*.txt" />
+    <EmbeddedResource Include="InitializeComponent\GeneratedInitializeComponent\*.txt" />
+    <EmbeddedResource Include="InitializeComponent\GeneratedDevTools\*.txt" />
+  </ItemGroup>
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+</Project>

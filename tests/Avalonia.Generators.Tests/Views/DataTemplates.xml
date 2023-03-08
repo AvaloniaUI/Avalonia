@@ -1,0 +1,18 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sample.App.DataTemplates">
+    <StackPanel>
+        <TextBox x:Name="UserNameTextBox"
+                 Watermark="Username input"
+                 UseFloatingWatermark="True" />
+        <ListBox Name="NamedListBox">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:Name="NamedDataTemplate">
+                    <TextBox x:Name="TemplatedTextBox"
+                             Watermark="Templated input"
+                             UseFloatingWatermark="True" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
+</Window>

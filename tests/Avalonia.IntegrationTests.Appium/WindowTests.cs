@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
+using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -92,7 +93,7 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     try
                     {
-                        _session.FindElementByAccessibilityId("WindowState").SendClick();
+                        _session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
                         _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                         // Wait for animations to run.
@@ -112,7 +113,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var windowState = _session.FindElementByAccessibilityId("WindowState");
+                var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
 
                 Assert.Equal("Normal", windowState.GetComboBoxValue());
                 
@@ -143,6 +144,24 @@ namespace Avalonia.IntegrationTests.Appium
 
             }
         }
+        
+        [Fact]
+        public void Showing_Window_With_Size_Larger_Than_Screen_Measures_Content_With_Working_Area()
+        {
+            using (OpenWindow(new Size(4000, 2200), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            {
+                var screenRectTextBox = _session.FindElementByAccessibilityId("CurrentClientSize");
+                var measuredWithTextBlock = _session.FindElementByAccessibilityId("CurrentMeasuredWithText");
+                
+                var measuredWithString = measuredWithTextBlock.Text;
+                var workingAreaString = screenRectTextBox.Text;
+
+                var workingArea = Size.Parse(workingAreaString);
+                var measuredWith = Size.Parse(measuredWithString);
+
+                Assert.Equal(workingArea, measuredWith);
+            }
+        }
 
         [Theory]
         [InlineData(ShowWindowMode.NonOwned)]
@@ -151,7 +170,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void ShowMode(ShowWindowMode mode)
         {
             using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
-            var windowState = _session.FindElementByAccessibilityId("WindowState");
+            var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
             var original = GetWindowInfo();
 
             Assert.Equal("Normal", windowState.GetComboBoxValue());
@@ -354,7 +373,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             PixelRect? ReadOwnerRect()
             {
-                var text = _session.FindElementByAccessibilityId("OwnerRect").Text;
+                var text = _session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
                 return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
             }
 
@@ -365,13 +384,13 @@ namespace Avalonia.IntegrationTests.Appium
                 try
                 {
                     return new(
-                        Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text),
-                        Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text),
-                        PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
+                        Size.Parse(_session.FindElementByAccessibilityId("CurrentClientSize").Text),
+                        Size.Parse(_session.FindElementByAccessibilityId("CurrentFrameSize").Text),
+                        PixelPoint.Parse(_session.FindElementByAccessibilityId("CurrentPosition").Text),
                         ReadOwnerRect(),
-                        PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
-                        double.Parse(_session.FindElementByAccessibilityId("Scaling").Text),
-                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("WindowState").Text));
+                        PixelRect.Parse(_session.FindElementByAccessibilityId("CurrentScreenRect").Text),
+                        double.Parse(_session.FindElementByAccessibilityId("CurrentScaling").Text),
+                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("CurrentWindowState").Text));
                 }
                 catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {

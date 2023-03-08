@@ -35,15 +35,14 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Priority => _priority;
         public override Type AssignedType => _assignedType;
 
-        public override string? Value
+        public override object? Value
         {
-            get => ConvertToString(_value);
+            get => _value;
             set
             {
                 try
                 {
-                    var convertedValue = ConvertFromString(value, Property.PropertyType);
-                    _target.SetValue(Property, convertedValue);
+                    _target.SetValue(Property, value);
                     Update();
                 }
                 catch { }
@@ -54,6 +53,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override Type? DeclaringType { get; }
         public override Type PropertyType => _propertyType;
+        public override bool IsReadonly => Property.IsReadOnly;
 
         // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
         public override void Update()

@@ -57,6 +57,15 @@ namespace Avalonia.UnitTests
 
         public FontSimulations FontSimulations { get; }
 
+        public string FamilyName => "$Default";
+
+        public FontWeight Weight { get; }
+
+        public FontStyle Style { get; }
+
+        public FontStretch Stretch { get; }
+
+
         /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)
         {
