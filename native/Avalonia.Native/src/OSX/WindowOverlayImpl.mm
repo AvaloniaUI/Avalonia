@@ -5,7 +5,14 @@ WindowOverlayImpl::WindowOverlayImpl(void* parentWindow, char* parentView, IAvnW
     this->parentView = FindNSView(this->parentWindow, [NSString stringWithUTF8String:parentView]);
 
     [this->parentView addSubview:View];
-    [View setFrame:this->parentView.frame];
+
+    // Here we substract the powerpoint bottom status bar
+    // This is needed in order to correctly sync our view with the origin, which on macos is at bottom left corner
+    NSRect frame = this->parentView.frame;
+    frame.size.height += 22;
+    frame.origin.y -= 22;
+
+    [View setFrame:frame];
 }
 
 bool WindowOverlayImpl::IsOverlay()
