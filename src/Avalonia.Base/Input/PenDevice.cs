@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+#pragma warning disable CS0618
 
 namespace Avalonia.Input
 {
@@ -129,7 +130,7 @@ namespace Avalonia.Input
                 var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
                     _lastMouseDownButton);
 
-                source?.RaiseEvent(e);
+                source.RaiseEvent(e);
                 pointer.Capture(null);
                 _lastMouseDownButton = default;
                 return e.Handled;

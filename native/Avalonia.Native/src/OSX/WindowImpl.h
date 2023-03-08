@@ -97,6 +97,8 @@ BEGIN_INTERFACE_MAP()
     
     bool CanBecomeKeyWindow ();
 
+    bool CanZoom() override { return _isEnabled && _canResize; }
+    
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() override;
     void UpdateStyle () override;

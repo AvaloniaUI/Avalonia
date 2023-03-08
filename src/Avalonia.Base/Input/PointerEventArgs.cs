@@ -42,7 +42,9 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers modifiers,
             Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints)
+#pragma warning disable CS0618
             : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
+#pragma warning restore CS0618
         {
             _previousPoints = previousPoints;
         }

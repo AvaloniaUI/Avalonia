@@ -107,7 +107,7 @@ namespace Avalonia.Media
                     source = new Uri(key.BaseUri, source);
                 }
 
-                if (!_fontCollections.TryGetValue(source, out var fontCollection))
+                if (!_fontCollections.TryGetValue(source, out var fontCollection) && (source.IsAbsoluteResm() || source.IsAvares()))
                 {
                     var embeddedFonts = new EmbeddedFontCollection(source, source);
 
