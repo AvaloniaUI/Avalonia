@@ -121,6 +121,10 @@ namespace Avalonia.Controls
 
         internal void SetItemsSource(IEnumerable? value)
         {
+            if (_mode != Mode.ItemsSource && Count > 0)
+                throw new InvalidOperationException(
+                    "Items collection must be empty before using ItemsSource.");
+
             _mode = value is not null ? Mode.ItemsSource : Mode.Items;
             SetSource(value ?? CreateDefaultCollection());
         }
