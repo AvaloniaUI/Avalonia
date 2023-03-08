@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
@@ -10,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -181,11 +183,17 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_CHAR:
                     {
+                        if (Imm32InputMethod.Current.IsComposing)
+                        {
+                            break;
+                        }
+
                         // Ignore control chars and chars that were handled in WM_KEYDOWN.
                         if (ToInt32(wParam) >= 32 && !_ignoreWmChar)
                         {
-                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner,
-                                new string((char)ToInt32(wParam), 1));
+                            var text = new string((char)ToInt32(wParam), 1);
+
+                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, text);
                         }
 
                         break;
@@ -709,25 +717,80 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_COMPOSITION:
                     {
-                        Imm32InputMethod.Current.CompositionChanged();
+                        var previousComposition = Imm32InputMethod.Current.Composition;
+
+                        var flags = (GCS)ToInt32(lParam);
+
+                        var currentComposition = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_COMPSTR);
+
+                        Imm32InputMethod.Current.CompositionChanged(currentComposition);
+
+                        switch (flags)
+                        {
+                            case GCS.GCS_RESULTSTR:                          
+                                {
+                                    if(ToInt32(wParam) >= 32)
+                                    {
+                                        Imm32InputMethod.Current.Composition = previousComposition;
+
+                                        _ignoreWmChar = true;
+                                    }
+                                    break;
+                                }
+                            case GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
+                                {
+                                    // Chinese IME sends WM_CHAR after composition has finished.
+                                    break;
+                                }
+                            case GCS.GCS_RESULTREADSTR | GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
+                                {
+                                    // Japanese IME sends WM_CHAR after composition has finished.
+                                    break;
+                                }
+                        }
 
                         break;
                     }
+                case WindowsMessage.WM_IME_SELECT:
+                    break;
                 case WindowsMessage.WM_IME_CHAR:
                 case WindowsMessage.WM_IME_COMPOSITIONFULL:
                 case WindowsMessage.WM_IME_CONTROL:
                 case WindowsMessage.WM_IME_KEYDOWN:
                 case WindowsMessage.WM_IME_KEYUP:
                 case WindowsMessage.WM_IME_NOTIFY:
-                case WindowsMessage.WM_IME_SELECT:
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
+                    Imm32InputMethod.Current.Composition = null;
+
+                    if (Imm32InputMethod.Current.IsActive)
+                    {
+                        Imm32InputMethod.Current.Client.SetPreeditText(null);
+                    }
+
                     Imm32InputMethod.Current.IsComposing = true;
                     return IntPtr.Zero;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
-                    Imm32InputMethod.Current.IsComposing = false;
-                    break;
+                    {
+                        var currentComposition = Imm32InputMethod.Current.Composition;
+ 
+                        //In case composition has not been comitted yet we need to do that here.
+                        if (!string.IsNullOrEmpty(currentComposition))
+                        {
+                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, currentComposition);
+                        }
 
+                        //Cleanup composition state.
+                        Imm32InputMethod.Current.IsComposing = false;
+                        Imm32InputMethod.Current.Composition = null;
+
+                        if (Imm32InputMethod.Current.IsActive)
+                        {
+                            Imm32InputMethod.Current.Client.SetPreeditText(null);
+                        }
+
+                        break;
+                    }
                 case WindowsMessage.WM_GETOBJECT:
                     if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
                     {

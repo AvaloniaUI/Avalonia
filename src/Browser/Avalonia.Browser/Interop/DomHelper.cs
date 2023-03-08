@@ -11,6 +11,15 @@ internal static partial class DomHelper
     [JSImport("AvaloniaDOM.createAvaloniaHost", AvaloniaModule.MainModuleName)]
     public static partial JSObject CreateAvaloniaHost(JSObject element);
 
+    [JSImport("AvaloniaDOM.isFullscreen", AvaloniaModule.MainModuleName)]
+    public static partial bool IsFullscreen();
+
+    [JSImport("AvaloniaDOM.setFullscreen", AvaloniaModule.MainModuleName)]
+    public static partial JSObject SetFullscreen(bool isFullscreen);
+
+    [JSImport("AvaloniaDOM.getSafeAreaPadding", AvaloniaModule.MainModuleName)]
+    public static partial byte[] GetSafeAreaPadding();
+
     [JSImport("AvaloniaDOM.addClass", AvaloniaModule.MainModuleName)]
     public static partial void AddCssClass(JSObject element, string className);
 

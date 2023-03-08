@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.ComponentModel;
 using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -7,7 +8,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
-    public class MenuFlyout : FlyoutBase
+    public class MenuFlyout : PopupFlyoutBase
     {
         public MenuFlyout()
         {
@@ -36,6 +37,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
             ItemsControl.ItemContainerThemeProperty.AddOwner<MenuFlyout>();
 
+        /// <summary>
+        /// Defines the <see cref="FlyoutPresenterTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> FlyoutPresenterThemeProperty =
+            Flyout.FlyoutPresenterThemeProperty.AddOwner<MenuFlyout>();
+        
         public Classes FlyoutPresenterClasses => _classes ??= new Classes();
 
         /// <summary>
@@ -62,10 +69,19 @@ namespace Avalonia.Controls
         /// </summary>
         public ControlTheme? ItemContainerTheme
         {
-            get { return GetValue(ItemContainerThemeProperty); }
-            set { SetValue(ItemContainerThemeProperty, value); }
+            get => GetValue(ItemContainerThemeProperty);
+            set => SetValue(ItemContainerThemeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for the flyout presenter.
+        /// </summary>
+        public ControlTheme? FlyoutPresenterTheme
+        {
+            get => GetValue(FlyoutPresenterThemeProperty); 
+            set => SetValue(FlyoutPresenterThemeProperty, value);
+        }
+        
         private Classes? _classes;
         private IEnumerable? _items;
         private IDataTemplate? _itemTemplate;
@@ -80,13 +96,22 @@ namespace Avalonia.Controls
             };
         }
 
-        protected override void OnOpened()
+        protected override void OnOpening(CancelEventArgs args)
         {
-            if (_classes != null)
+            if (Popup.Child is { } presenter)
             {
-                SetPresenterClasses(Popup.Child, FlyoutPresenterClasses);
+                if (_classes != null)
+                {
+                    SetPresenterClasses(presenter, FlyoutPresenterClasses);
+                }
+
+                if (FlyoutPresenterTheme is { } theme)
+                {
+                    presenter.SetValue(Control.ThemeProperty, theme);
+                }
             }
-            base.OnOpened();
+
+            base.OnOpening(args);
         }
     }
 }

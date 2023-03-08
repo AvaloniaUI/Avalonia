@@ -16,12 +16,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run to draw.</param>
-        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public GlyphRunNode(
             Matrix transform,
             IImmutableBrush foreground,
             IRef<IGlyphRunImpl> glyphRun)
-            : base(new Rect(glyphRun.Item.BaselineOrigin, glyphRun.Item.Size), transform, foreground)
+            : base(glyphRun.Item.Bounds, transform, foreground)
         {
             GlyphRun = glyphRun.Clone();
         }
@@ -54,7 +53,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => new Rect(GlyphRun.Item.Size).ContainsExclusive(p);
+        public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
 
         public override void Dispose()
         {

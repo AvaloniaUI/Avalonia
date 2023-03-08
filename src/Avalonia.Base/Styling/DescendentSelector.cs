@@ -13,7 +13,7 @@ namespace Avalonia.Styling
 
         public DescendantSelector(Selector? parent)
         {
-            _parent = parent ?? throw new InvalidOperationException("Descendant selector must be preceeded by a selector.");
+            _parent = parent ?? throw new InvalidOperationException("Descendant selector must be preceded by a selector.");
         }
 
         /// <inheritdoc/>

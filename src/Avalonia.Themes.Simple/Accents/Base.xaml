@@ -76,7 +76,7 @@
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
-  <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Fonts.Inter/Assets#Inter, $Default</FontFamily>
+  <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>
   <Color x:Key="ThemeAccentColor">#CC119EDA</Color>
   <Color x:Key="ThemeAccentColor2">#99119EDA</Color>
   <Color x:Key="ThemeAccentColor3">#66119EDA</Color>

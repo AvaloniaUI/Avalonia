@@ -48,8 +48,6 @@ namespace Avalonia.Media.Imaging
 
         public CroppedBitmap()
         {
-            Source = null;
-            SourceRect = default;
         }
 
         public CroppedBitmap(IImage source, PixelRect sourceRect)

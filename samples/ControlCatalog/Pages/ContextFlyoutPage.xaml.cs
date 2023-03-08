@@ -36,8 +36,9 @@ namespace ControlCatalog.Pages
             customContextRequestedBorder.AddHandler(ContextRequestedEvent, CustomContextRequested, RoutingStrategies.Tunnel);
 
             var cancellableContextBorder = this.Get<Border>("CancellableContextBorder");
-            cancellableContextBorder.ContextFlyout!.Closing += ContextFlyoutPage_Closing;
-            cancellableContextBorder.ContextFlyout!.Opening += ContextFlyoutPage_Opening;
+            var flyout = (Flyout)cancellableContextBorder.ContextFlyout!;
+            flyout.Closing += ContextFlyoutPage_Closing;
+            flyout.Opening += ContextFlyoutPage_Opening;
         }
 
         private ContextPageViewModel? _model;

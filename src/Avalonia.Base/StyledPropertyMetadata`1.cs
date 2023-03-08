@@ -58,5 +58,7 @@ namespace Avalonia
                 }
             }
         }
+
+        public override AvaloniaPropertyMetadata GenerateTypeSafeMetadata() => new StyledPropertyMetadata<TValue>(DefaultValue, DefaultBindingMode, enableDataValidation: EnableDataValidation ?? false);
     }
 }
