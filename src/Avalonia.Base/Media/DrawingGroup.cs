@@ -117,10 +117,10 @@ namespace Avalonia.Media
             // root DrawingGroup, and be the same value as the root _currentDrawingGroup.
             //
             // Either way, _rootDrawing always references the root drawing.
-            protected Drawing? _rootDrawing;
+            private Drawing? _rootDrawing;
 
             // Current DrawingGroup that new children are added to
-            protected DrawingGroup? _currentDrawingGroup;
+            private DrawingGroup? _currentDrawingGroup;
 
             // Previous values of _currentDrawingGroup
             private Stack<DrawingGroup?>? _previousDrawingGroupStack;

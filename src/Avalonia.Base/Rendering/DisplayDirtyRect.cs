@@ -3,7 +3,7 @@
 namespace Avalonia.Rendering
 {
     /// <summary>
-    /// Holds the state for a dirty rect rendered when <see cref="IRenderer.DrawDirtyRects"/> is set.
+    /// Holds the state for a dirty rect rendered when <see cref="IRenderer.SceneInvalidated"/> is set.
     /// </summary>
     internal class DisplayDirtyRect
     {

@@ -17,7 +17,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="mask">The opacity mask to push.</param>
         /// <param name="bounds">The bounds of the mask.</param>
-        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public OpacityMaskNode(IImmutableBrush mask, Rect bounds)
             : base(default, Matrix.Identity, mask)
         {
