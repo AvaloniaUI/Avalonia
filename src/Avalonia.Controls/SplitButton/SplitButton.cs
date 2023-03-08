@@ -42,10 +42,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<SplitButton, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<SplitButton>(
-                splitButton => splitButton.Command,
-                (splitButton, command) => splitButton.Command = command);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<SplitButton>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
@@ -58,8 +56,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             Button.FlyoutProperty.AddOwner<SplitButton>();
-
-        private ICommand? _Command;
 
         private Button? _primaryButton   = null;
         private Button? _secondaryButton = null;
@@ -83,8 +79,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand? Command
         {
-            get => _Command;
-            set => SetAndRaise(CommandProperty, ref _Command, value);
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -176,7 +172,7 @@ namespace Avalonia.Controls
                 flyout.Opened += Flyout_Opened;
                 flyout.Closed += Flyout_Closed;
 
-                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(FlyoutBase.PlacementProperty).Subscribe(Flyout_PlacementPropertyChanged);
+                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(Popup.PlacementModeProperty).Subscribe(Flyout_PlacementPropertyChanged);
             }
         }
 
@@ -436,7 +432,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="FlyoutBase.Placement"/> property changes.
+        /// Called when the <see cref="PopupFlyoutBase.Placement"/> property changes.
         /// </summary>
         private void Flyout_PlacementPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {

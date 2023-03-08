@@ -11,7 +11,7 @@ namespace Avalonia.Styling
     /// A selector that matches the common case of a type and/or name followed by a collection of
     /// style classes and pseudoclasses.
     /// </summary>
-    internal class TypeNameAndClassSelector : Selector
+    internal sealed class TypeNameAndClassSelector : Selector
     {
         private readonly Selector? _previous;
         private List<string>? _classes;
@@ -52,7 +52,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        protected TypeNameAndClassSelector(Selector? previous)
+        TypeNameAndClassSelector(Selector? previous)
         {
             _previous = previous;
         }
@@ -85,12 +85,7 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override string ToString(Style? owner)
         {
-            if (_selectorString == null)
-            {
-                _selectorString = BuildSelectorString(owner);
-            }
-
-            return _selectorString;
+            return _selectorString ??= BuildSelectorString(owner);
         }
 
         /// <inheritdoc/>

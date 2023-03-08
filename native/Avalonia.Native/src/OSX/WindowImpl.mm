@@ -54,6 +54,11 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
 
         WindowBaseImpl::Show(activate, isDialog);
         GetWindowState(&_actualWindowState);
+
+        if(IsZoomed()) {
+            _lastWindowState = _actualWindowState;
+        }
+
         return SetWindowState(_lastWindowState);
     }
 }
@@ -617,5 +622,5 @@ void WindowImpl::UpdateStyle() {
     [miniaturizeButton setHidden:!hasTrafficLights];
     [miniaturizeButton setEnabled:_isEnabled];
     [zoomButton setHidden:!hasTrafficLights];
-    [zoomButton setEnabled:_isEnabled && _canResize];
+    [zoomButton setEnabled:CanZoom()];
 }
