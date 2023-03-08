@@ -19,6 +19,7 @@ namespace Avalonia.Controls.Selection
         private SelectedItems<T>.Untyped? _selectedItemsUntyped;
         private EventHandler<SelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
         private IList? _initSelectedItems;
+        private bool _isSourceCollectionChanging;
 
         public SelectionModel()
         {
@@ -55,7 +56,7 @@ namespace Avalonia.Controls.Selection
 
                     if (RangesEnabled && _selectedIndex >= 0)
                     {
-                        CommitSelect(new IndexRange(_selectedIndex));
+                        CommitSelect(_selectedIndex, _selectedIndex);
                     }
 
                     RaisePropertyChanged(nameof(SingleSelect));
@@ -80,7 +81,7 @@ namespace Avalonia.Controls.Selection
         {
             get
             {
-                if (ItemsView is object)
+                if (ItemsView is not null)
                 {
                     return GetItemAt(_selectedIndex);
                 }
@@ -93,21 +94,19 @@ namespace Avalonia.Controls.Selection
             }
             set
             {
-                if (ItemsView is object)
+                if (ItemsView is not null)
                 {
                     SelectedIndex = ItemsView.IndexOf(value!);
                 }
                 else
                 {
                     Clear();
-#pragma warning disable CS8601
-                    SetInitSelectedItems(new T[] { value });
-#pragma warning restore CS8601
+                    SetInitSelectedItems(new T[] { value! });
                 }
             }
         }
 
-        public IReadOnlyList<T> SelectedItems
+        public IReadOnlyList<T?> SelectedItems
         {
             get
             {
@@ -206,7 +205,7 @@ namespace Avalonia.Controls.Selection
             {
                 // If the collection is currently changing, commit the update when the
                 // collection change finishes.
-                if (!IsSourceCollectionChanging)
+                if (!_isSourceCollectionChanging)
                 {
                     CommitOperation(_operation);
                 }
@@ -278,7 +277,7 @@ namespace Avalonia.Controls.Selection
         {
             if (base.Source != value)
             {
-                if (_operation is object)
+                if (_operation is not null)
                 {
                     throw new InvalidOperationException("Cannot change source while update is in progress.");
                 }
@@ -296,7 +295,7 @@ namespace Avalonia.Controls.Selection
                 {
                     update.Operation.IsSourceUpdate = true;
 
-                    if (_initSelectedItems is object && ItemsView is object)
+                    if (_initSelectedItems is object && ItemsView is not null)
                     {
                         foreach (T i in _initSelectedItems)
                         {
@@ -315,17 +314,23 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private protected override void OnIndexesChanged(int shiftIndex, int shiftDelta)
+        protected override void OnIndexesChanged(int shiftIndex, int shiftDelta)
         {
             IndexesChanged?.Invoke(this, new SelectionModelIndexesChangedEventArgs(shiftIndex, shiftDelta));
         }
 
-        private protected override void OnSourceReset()
+        protected override void OnSourceCollectionChangeStarted()
+        {
+            base.OnSourceCollectionChangeStarted();
+            _isSourceCollectionChanging = true;
+        }
+
+        protected override void OnSourceReset()
         {
             _selectedIndex = _anchorIndex = -1;
-            CommitDeselect(new IndexRange(0, int.MaxValue));
+            CommitDeselect(0, int.MaxValue);
 
-            if (SourceReset is object)
+            if (SourceReset is not null)
             {
                 SourceReset.Invoke(this, EventArgs.Empty);
             }
@@ -339,7 +344,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private protected override void OnSelectionChanged(IReadOnlyList<T> deselectedItems)
+        protected override void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
         {
             // Note: We're *not* putting this in a using scope. A collection update is still in progress
             // so the operation won't get committed by normal means: we have to commit it manually.
@@ -347,7 +352,7 @@ namespace Avalonia.Controls.Selection
 
             update.Operation.DeselectedItems = deselectedItems;
 
-            if (_selectedIndex == -1 && LostSelection is object)
+            if (_selectedIndex == -1 && LostSelection is not null)
             {
                 LostSelection(this, EventArgs.Empty);
             }
@@ -357,7 +362,7 @@ namespace Avalonia.Controls.Selection
             CommitOperation(update.Operation, raisePropertyChanged: false);
         }
 
-        private protected override CollectionChangeState OnItemsAdded(int index, IList items)
+        protected override CollectionChangeState OnItemsAdded(int index, IList items)
         {
             var count = items.Count;
             var shifted = SelectedIndex >= index;
@@ -420,7 +425,7 @@ namespace Avalonia.Controls.Selection
             };
         }
 
-        private protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (_operation?.UpdateCount > 0)
             {
@@ -451,6 +456,16 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        private protected void SetInitSelectedItems(IList items)
+        {
+            if (Source is object)
+            {
+                throw new InvalidOperationException("Cannot set init selected items when Source is set.");
+            }
+
+            _initSelectedItems = items;
+        }
+
         private protected override bool IsValidCollectionChange(NotifyCollectionChangedEventArgs e)
         {
             if (!base.IsValidCollectionChange(e))
@@ -474,19 +489,11 @@ namespace Avalonia.Controls.Selection
             return true;
         }
 
-        private protected void SetInitSelectedItems(IList items)
-        {
-            if (Source is object)
-            {
-                throw new InvalidOperationException("Cannot set init selected items when Source is set.");
-            }
-
-            _initSelectedItems = items;
-        }
-
         protected override void OnSourceCollectionChangeFinished()
         {
-            if (_operation is object)
+            _isSourceCollectionChanging = false;
+
+            if (_operation is not null)
             {
                 CommitOperation(_operation);
             }
@@ -575,7 +582,7 @@ namespace Avalonia.Controls.Selection
         {
             index = Math.Max(index, -1);
 
-            if (ItemsView is object && index >= ItemsView.Count)
+            if (ItemsView is not null && index >= ItemsView.Count)
             {
                 index = -1;
             }
@@ -585,7 +592,7 @@ namespace Avalonia.Controls.Selection
 
         private IndexRange CoerceRange(int start, int end)
         {
-            var max = ItemsView is object ? ItemsView.Count - 1 : int.MaxValue;
+            var max = ItemsView is not null ? ItemsView.Count - 1 : int.MaxValue;
 
             if (start > max || (start < 0 && end < 0))
             {
@@ -643,7 +650,7 @@ namespace Avalonia.Controls.Selection
                 var oldSelectedIndex = _selectedIndex;
                 var indexesChanged = false;
 
-                if (operation.SelectedIndex == -1 && LostSelection is object && !operation.SkipLostSelection)
+                if (operation.SelectedIndex == -1 && LostSelection is not null && !operation.SkipLostSelection)
                 {
                     operation.UpdateCount++;
                     LostSelection?.Invoke(this, EventArgs.Empty);
@@ -652,17 +659,23 @@ namespace Avalonia.Controls.Selection
                 _selectedIndex = operation.SelectedIndex;
                 _anchorIndex = operation.AnchorIndex;
 
-                if (operation.SelectedRanges is object)
+                if (operation.SelectedRanges is not null)
                 {
-                    indexesChanged |= CommitSelect(operation.SelectedRanges) > 0;
+                    foreach (var range in operation.SelectedRanges)
+                    {
+                        indexesChanged |= CommitSelect(range.Begin, range.End) > 0;
+                    }
                 }
 
-                if (operation.DeselectedRanges is object)
+                if (operation.DeselectedRanges is not null)
                 {
-                    indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
+                    foreach (var range in operation.DeselectedRanges)
+                    {
+                        indexesChanged |= CommitDeselect(range.Begin, range.End) > 0;
+                    }
                 }
 
-                if (SelectionChanged is object || _untypedSelectionChanged is object)
+                if (SelectionChanged is not null || _untypedSelectionChanged is not null)
                 {
                     IReadOnlyList<IndexRange>? deselected = operation.DeselectedRanges;
                     IReadOnlyList<IndexRange>? selected = operation.SelectedRanges;
@@ -690,14 +703,14 @@ namespace Avalonia.Controls.Selection
                         // CollectionChanged event. LostFocus may have caused another item to have been
                         // selected, but it can't have caused a deselection (as it was called due to
                         // selection being lost) so we're ok to discard `deselected` here.
-                        var deselectedItems = operation.DeselectedItems ??
+                        var deselectedItems = (IReadOnlyList<T?>?)operation.DeselectedItems ??
                             SelectedItems<T>.Create(deselected, deselectedSource);
 
                         var e = new SelectionModelSelectionChangedEventArgs<T>(
                             SelectedIndexes<T>.Create(deselected),
                             SelectedIndexes<T>.Create(selected),
                             deselectedItems,
-                            SelectedItems<T>.Create(selected, ItemsView));
+                            SelectedItems<T>.Create(selected, Source is not null ? ItemsView : null));
                         SelectionChanged?.Invoke(this, e);
                         _untypedSelectionChanged?.Invoke(this, e);
                     }
