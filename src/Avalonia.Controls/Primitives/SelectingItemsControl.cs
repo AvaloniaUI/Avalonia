@@ -1232,16 +1232,18 @@ namespace Avalonia.Controls.Primitives
                     Selection = state.Selection.Value;
                 }
 
-                if (state.SelectedItems.HasValue)
+                if (_selection is InternalSelectionModel s)
                 {
-                    SelectedItems = state.SelectedItems.Value;
+                    s.Update(ItemsView.Source, state.SelectedItems);
                 }
-
-                Selection.Source = ItemsView.Source;
-
-                if (ItemsView.Count == 0)
+                else
                 {
-                    Selection.Clear();
+                    if (state.SelectedItems.HasValue)
+                    {
+                        SelectedItems = state.SelectedItems.Value;
+                    }
+
+                    Selection.Source = ItemsView.Source;
                 }
 
                 if (state.SelectedValue.HasValue)
