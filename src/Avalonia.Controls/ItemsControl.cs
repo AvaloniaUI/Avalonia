@@ -573,15 +573,18 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private protected virtual void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
+            if (!_items.IsReadOnly)
             {
-                case NotifyCollectionChangedAction.Add:
-                    AddControlItemsToLogicalChildren(e.NewItems);
-                    break;
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        AddControlItemsToLogicalChildren(e.NewItems);
+                        break;
 
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveControlItemsFromLogicalChildren(e.OldItems);
-                    break;
+                    case NotifyCollectionChangedAction.Remove:
+                        RemoveControlItemsFromLogicalChildren(e.OldItems);
+                        break;
+                }
             }
 
             ItemCount = ItemsView.Count;

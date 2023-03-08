@@ -250,6 +250,37 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Assigning_ItemsSource_Should_Not_Fire_LogicalChildren_CollectionChanged_Before_ApplyTemplate()
+        {
+            var target = new ItemsControl();
+            var child = new Control();
+            var called = false;
+
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+
+            var list = new AvaloniaList<Control>(new[] { child });
+            target.ItemsSource = list;
+
+            Assert.False(called);
+        }
+
+        [Fact]
+        public void Changing_ItemsSource_Should_Not_Fire_LogicalChildren_CollectionChanged_Before_ApplyTemplate()
+        {
+            var target = new ItemsControl();
+            var child = new Control();
+            var called = false;
+
+            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+
+            var list = new AvaloniaList<Control>();
+            target.ItemsSource = list;
+            list.Add(child);
+
+            Assert.False(called);
+        }
+
+        [Fact]
         public void Clearing_Items_Should_Clear_Child_Controls_Parent()
         {
             var target = new ItemsControl();
