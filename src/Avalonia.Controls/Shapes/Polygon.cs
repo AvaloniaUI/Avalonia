@@ -1,19 +1,18 @@
-using System.Collections.Generic;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Shapes
 {
     public class Polygon : Shape
     {
-        public static readonly StyledProperty<IList<Point>> PointsProperty =
-            AvaloniaProperty.Register<Polygon, IList<Point>>("Points");
+        public static readonly StyledProperty<Points> PointsProperty =
+            AvaloniaProperty.Register<Polygon, Points>("Points");
 
         static Polygon()
         {
             AffectsGeometry<Polygon>(PointsProperty);
         }
 
-        public IList<Point> Points
+        public Points Points
         {
             get { return GetValue(PointsProperty); }
             set { SetValue(PointsProperty, value); }
