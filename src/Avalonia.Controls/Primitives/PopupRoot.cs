@@ -78,7 +78,7 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner.Update(_positionerParameters);
+            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
         }
 
         public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,

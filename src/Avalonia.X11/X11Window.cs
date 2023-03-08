@@ -23,6 +23,9 @@ using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
+
+#nullable enable
+
 namespace Avalonia.X11
 {
     unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
@@ -36,7 +39,7 @@ namespace Avalonia.X11
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
         private bool _triggeredExpose;
-        private IInputRoot _inputRoot;
+        private IInputRoot? _inputRoot;
         private readonly MouseDevice _mouse;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
@@ -52,8 +55,8 @@ namespace Avalonia.X11
         private bool _wasMappedAtLeastOnce = false;
         private double? _scalingOverride;
         private bool _disabled;
-        private TransparencyHelper _transparencyHelper;
-        private RawEventGrouper _rawEventGrouper;
+        private TransparencyHelper? _transparencyHelper;
+        private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
 
         enum XSyncState
@@ -63,7 +66,7 @@ namespace Avalonia.X11
             WaitPaint
         }
         
-        public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
+        public X11Window(AvaloniaX11Platform platform, IWindowImpl? popupParent)
         {
             _platform = platform;
             _popup = popupParent != null;
@@ -193,7 +196,7 @@ namespace Avalonia.X11
 
             XFlush(_x11.Display);
             if(_popup)
-                PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
+                PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent!, MoveResize));
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
             NativeControlHost = new X11NativeControlHost(_platform, this);
@@ -339,17 +342,17 @@ namespace Avalonia.X11
         public double DesktopScaling => RenderScaling;
 
         public IEnumerable<object> Surfaces { get; }
-        public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, PlatformResizeReason>? Resized { get; set; }
         //TODO
-        public Action<double> ScalingChanged { get; set; }
-        public Action Deactivated { get; set; }
-        public Action Activated { get; set; }
-        public Func<bool> Closing { get; set; }
-        public Action<WindowState> WindowStateChanged { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
+        public Func<bool>? Closing { get; set; }
+        public Action<WindowState>? WindowStateChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged
         {
             get => _transparencyHelper?.TransparencyLevelChanged;
             set
@@ -359,7 +362,7 @@ namespace Avalonia.X11
             }
         }
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; } = new Thickness();
 
@@ -367,9 +370,9 @@ namespace Avalonia.X11
 
         public bool IsClientAreaExtendedToDecorations { get; }
 
-        public Action Closed { get; set; }
-        public Action<PixelPoint> PositionChanged { get; set; }
-        public Action LostFocus { get; set; }
+        public Action? Closed { get; set; }
+        public Action<PixelPoint>? PositionChanged { get; set; }
+        public Action? LostFocus { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -389,6 +392,9 @@ namespace Avalonia.X11
 
         void OnEvent(ref XEvent ev)
         {
+            if (_inputRoot is null)
+                return;
+
             if (ev.type == XEventName.MapNotify)
             {
                 _mapped = true;
@@ -435,7 +441,8 @@ namespace Avalonia.X11
                             2 => RawPointerEventType.MiddleButtonDown,
                             3 => RawPointerEventType.RightButtonDown,
                             8 => RawPointerEventType.XButton1Down,
-                            9 => RawPointerEventType.XButton2Down
+                            9 => RawPointerEventType.XButton2Down,
+                            _ => throw new NotSupportedException("Unexepected RawPointerEventType.")
                         },
                         ref ev, ev.ButtonEvent.state);
                 else
@@ -463,7 +470,8 @@ namespace Avalonia.X11
                             2 => RawPointerEventType.MiddleButtonUp,
                             3 => RawPointerEventType.RightButtonUp,
                             8 => RawPointerEventType.XButton1Up,
-                            9 => RawPointerEventType.XButton2Up
+                            9 => RawPointerEventType.XButton2Up,
+                            _ => throw new NotSupportedException("Unexepected RawPointerEventType.")
                         },
                         ref ev, ev.ButtonEvent.state);
             }
@@ -619,7 +627,7 @@ namespace Avalonia.X11
             {
                 // Occurs once the window has been mapped, which is the earliest the extents
                 // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
-                Resized.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+                Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
             }
 
             if (atom == _x11.Atoms._NET_WM_STATE)
@@ -739,11 +747,13 @@ namespace Avalonia.X11
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / RenderScaling;
             
-            _rawEventGrouper.HandleEvent(args);
+            _rawEventGrouper?.HandleEvent(args);
         }
         
         void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
+            if (_inputRoot is null)
+                return;
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
                 type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
@@ -778,7 +788,7 @@ namespace Avalonia.X11
 
         }
 
-        public IInputRoot InputRoot => _inputRoot;
+        public IInputRoot? InputRoot => _inputRoot;
         
         public void SetInputRoot(IInputRoot inputRoot)
         {
@@ -923,7 +933,7 @@ namespace Avalonia.X11
             UpdateSizeHints(null);
         }
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
             if (cursor == null)
                 XDefineCursor(_x11.Display, _handle, _x11.DefaultCursor);
@@ -960,7 +970,7 @@ namespace Avalonia.X11
         public IMouseDevice MouseDevice => _mouse;
         public TouchDevice TouchDevice => _touch;
 
-        public IPopupImpl CreatePopup() 
+        public IPopupImpl? CreatePopup() 
             => _platform.Options.OverlayPopups ? null : new X11Window(_platform, this);
 
         public void Activate()
@@ -1046,7 +1056,7 @@ namespace Avalonia.X11
             BeginMoveResize(side, e);
         }
 
-        public void SetTitle(string title)
+        public void SetTitle(string? title)
         {
             if (string.IsNullOrEmpty(title))
             {
@@ -1125,9 +1135,9 @@ namespace Avalonia.X11
         {
         }
 
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
             if (icon != null)
             {
