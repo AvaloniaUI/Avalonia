@@ -147,7 +147,7 @@ namespace Avalonia.Controls.Primitives
 
         public SelectingItemsControl()
         {
-            ItemsView.SourceChanged += OnItemsViewSourceChanged;
+            ((ItemCollection)ItemsView).SourceChanged += OnItemsViewSourceChanged;
         }
 
         /// <summary>

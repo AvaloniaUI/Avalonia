@@ -236,7 +236,10 @@ namespace Avalonia.Controls
         /// </summary>
         public Panel? ItemsPanelRoot => Presenter?.Panel;
 
-        public ItemCollection ItemsView => _items;
+        /// <summary>
+        /// Gets a read-only view of the items in the <see cref="ItemsControl"/>.
+        /// </summary>
+        public ItemsSourceView ItemsView => _items;
 
         private protected bool WrapFocus { get; set; }
 
