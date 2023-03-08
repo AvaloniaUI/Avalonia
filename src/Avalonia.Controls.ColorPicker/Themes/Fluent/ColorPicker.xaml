@@ -42,7 +42,8 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout FlyoutPresenterClasses="nopadding">
+            <Flyout FlyoutPresenterClasses="nopadding"
+                    Placement="Top">
 
               <!-- The following is copy-pasted from the ColorView's control template.
                    It MUST always be kept in sync with the ColorView (which is master).

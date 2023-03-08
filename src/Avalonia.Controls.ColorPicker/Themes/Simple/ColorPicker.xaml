@@ -42,7 +42,7 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout>
+            <Flyout Placement="Top">
 
               <!-- The following is copy-pasted from the ColorView's control template.
                    It MUST always be kept in sync with the ColorView (which is master).
