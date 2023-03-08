@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Empty(itemsControl.GetRealizedContainers());
 
-            itemsControl.Items = new[] { "foo", "bar" };
+            itemsControl.ItemsSource = new[] { "foo", "bar" };
             Layout(target);
 
             AssertRealizedItems(target, itemsControl, 0, 2);

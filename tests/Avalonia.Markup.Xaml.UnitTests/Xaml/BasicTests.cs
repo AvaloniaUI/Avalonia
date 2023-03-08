@@ -505,7 +505,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ItemsControl Name='itemsControl' Items='{Binding}'>
+    <ItemsControl Name='itemsControl' ItemsSource='{Binding}'>
     </ItemsControl>
 </Window>
 ";
@@ -522,7 +522,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 target.DataContext = items;
 
-                Assert.Equal(items, itemsControl.Items);
+                Assert.Equal(items, itemsControl.ItemsSource);
             }
         }
 
@@ -760,7 +760,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
+    <ListBox ItemsSource='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
 </Window>";
 
                 var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
@@ -773,7 +773,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.DataContext = vm;
 
-                Assert.Equal(vm.Items, listBox.Items);
+                Assert.Equal(vm.Items, listBox.ItemsSource);
 
                 Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
             }
