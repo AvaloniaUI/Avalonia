@@ -26,7 +26,34 @@ namespace Avalonia.Controls.UnitTests
                 ItemsSource = new[] { "foo", "bar" },
             };
 
+            Assert.NotSame(target.ItemsSource, target.Items);
             Assert.Equal(target.ItemsSource, target.Items);
+        }
+
+        [Fact]
+        public void Cannot_Set_ItemsSource_With_Items_Present()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+                Items = { "foo", "bar" },
+            };
+
+            Assert.Throws<InvalidOperationException>(() => target.ItemsSource = new[] { "baz" });
+        }
+
+        [Fact]
+        public void Cannot_Modify_Items_When_ItemsSource_Set()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+                ItemsSource = Array.Empty<string>(),
+            };
+
+            Assert.Throws<InvalidOperationException>(() => target.Items.Add("foo"));
         }
 
         [Fact]
