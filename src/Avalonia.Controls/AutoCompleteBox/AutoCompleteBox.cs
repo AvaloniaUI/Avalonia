@@ -198,7 +198,6 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private bool _isFocused = false;
 
-        private string? _text = string.Empty;
         private string? _searchText = string.Empty;
 
         private AutoCompleteFilterPredicate<object?>? _itemFilter;
@@ -1275,7 +1274,7 @@ namespace Avalonia.Controls
             if ((userInitiated ?? true) && Text != value)
             {
                 _ignoreTextPropertyChange++;
-                Text = value;
+                SetCurrentValue(TextProperty, value);
                 callTextChanged = true;
             }
 

@@ -177,7 +177,7 @@ namespace Avalonia.Controls
 
             var text = GetText(preeditText);
 
-            _presenter._text = text;
+            _presenter.SetCurrentValue(TextPresenter.TextProperty, text);
 
             _presenter.PreeditText = preeditText;
 
