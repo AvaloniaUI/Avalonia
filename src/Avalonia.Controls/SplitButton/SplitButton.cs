@@ -432,7 +432,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="FlyoutBase.Placement"/> property changes.
+        /// Called when the <see cref="PopupFlyoutBase.Placement"/> property changes.
         /// </summary>
         private void Flyout_PlacementPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
