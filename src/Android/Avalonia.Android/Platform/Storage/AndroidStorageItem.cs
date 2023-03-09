@@ -131,19 +131,17 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         return Task.FromResult(new StorageItemProperties());
     }
 
-    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
         if (!await EnsureExternalFilesPermission(false))
         {
-            return Array.Empty<IStorageItem>();
+            yield break;
         }
-
-        List<IStorageItem> files = new List<IStorageItem>();
-
+        
         var contentResolver = Activity.ContentResolver;
         if (contentResolver == null)
         {
-            return files;
+            yield break;
         }
 
         var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(Uri!, DocumentsContract.GetTreeDocumentId(Uri));
@@ -168,12 +166,10 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                         continue;
                     }
 
-                    files.Add(mime == DocumentsContract.Document.MimeTypeDir ? new AndroidStorageFolder(Activity, uri, false) :
-                        new AndroidStorageFile(Activity, uri));
+                    yield return mime == DocumentsContract.Document.MimeTypeDir ? new AndroidStorageFolder(Activity, uri, false) :
+                        new AndroidStorageFile(Activity, uri);
                 }
         }
-
-        return files;
     }       
 }
 

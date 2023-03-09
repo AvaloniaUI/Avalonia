@@ -45,5 +45,7 @@ namespace Avalonia
                 UnsetValue ??= src.UnsetValue;
             }
         }
+
+        public override AvaloniaPropertyMetadata GenerateTypeSafeMetadata() => new DirectPropertyMetadata<TValue>(UnsetValue, DefaultBindingMode, EnableDataValidation);
     }
 }

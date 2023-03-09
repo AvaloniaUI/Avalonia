@@ -89,16 +89,12 @@ export class StorageItem {
         }
     }
 
-    public static async getItems(item: StorageItem): Promise<StorageItems> {
+    public static getItemsIterator(item: StorageItem): any | null {
         if (item.kind !== "directory" || !item.handle) {
-            return new StorageItems([]);
+            return null;
         }
 
-        const items: StorageItem[] = [];
-        for await (const [, value] of (item.handle as any).entries()) {
-            items.push(new StorageItem(value));
-        }
-        return new StorageItems(items);
+        return (item.handle as any).entries();
     }
 
     private async verityPermissions(mode: "read" | "readwrite"): Promise<void | never> {
