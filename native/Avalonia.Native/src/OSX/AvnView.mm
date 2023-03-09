@@ -12,6 +12,7 @@
 {
     ComPtr<WindowBaseImpl> _parent;
     NSTrackingArea* _area;
+    NSMutableAttributedString* _markedText;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
@@ -20,6 +21,9 @@
     NSObject<IRenderTarget>* _renderTarget;
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
+    NSRect _cursorRect;
+    NSMutableString* _text;
+    NSRange _selection;
 }
 
 - (void)onClosed
@@ -518,7 +522,7 @@
 - (void)keyDown:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyDown];
-    [[self inputContext] handleEvent:event];
+    _lastKeyHandled = [[self inputContext] handleEvent:event];
     [super keyDown:event];
 }
 
@@ -557,27 +561,50 @@
 
 - (BOOL)hasMarkedText
 {
-    return _lastKeyHandled;
+    return [_markedText length] > 0;
 }
 
 - (NSRange)markedRange
 {
+    if([_markedText length] > 0)
+        return NSMakeRange(0, [_markedText length] - 1);
     return NSMakeRange(NSNotFound, 0);
 }
 
 - (NSRange)selectedRange
 {
-    return NSMakeRange(NSNotFound, 0);
+    return _selection;
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-
+    if([string isKindOfClass:[NSAttributedString class]])
+    {
+        _markedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
+    }
+    else
+    {
+        _markedText = [[NSMutableAttributedString alloc] initWithString:string];
+    }
+    
+    if(!_parent->InputMethod->IsActive()){
+        return;
+    }
+    
+    _parent->InputMethod->Client->SetPreeditText((char*)[_markedText.string UTF8String]);
 }
 
 - (void)unmarkText
 {
-
+    [[_markedText mutableString] setString:@""];
+    
+    if(!_parent->InputMethod->IsActive()){
+        return;
+    }
+    
+    _parent->InputMethod->Client->SetPreeditText(nullptr);
+    
+    [[self inputContext] discardMarkedText];
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -587,30 +614,38 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    return [NSAttributedString new];
+    return nullptr;
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    if(!_lastKeyHandled)
-    {
+    //[_text replaceCharactersInRange:replacementRange withString:string];
+    
+    [self unmarkText];
+    
+    //if(!_lastKeyHandled)
+    //{
         if(_parent != nullptr)
         {
             _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
         }
-    }
+    //}
+    
+    [[self inputContext] invalidateCharacterCoordinates];
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
 {
-    return 0;
+    return NSNotFound;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    CGRect result = { 0 };
-
-    return result;
+    if(!_parent->InputMethod->IsActive()){
+        return NSZeroRect;
+    }
+    
+    return _cursorRect;
 }
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
@@ -713,6 +748,30 @@
 - (id)accessibilityFocusedUIElement
 {
     return [[self accessibilityChild] accessibilityFocusedUIElement];
+}
+
+- (void) setText:(NSString *)text{
+    [_text setString:text];
+    
+    [[self inputContext] discardMarkedText];
+}
+
+- (void) setSelection:(int)start :(int)end{
+    _selection = NSMakeRange(start, end - start);
+    
+    [[self inputContext] invalidateCharacterCoordinates];
+}
+
+- (void) setCursorRect:(AvnRect)rect{
+    NSRect cursorRect = ToNSRect(rect);
+    NSRect windowRectOnScreen = [[self window] convertRectToScreen:self.frame];
+    
+    windowRectOnScreen.size = cursorRect.size;
+    windowRectOnScreen.origin = NSMakePoint(windowRectOnScreen.origin.x + cursorRect.origin.x, windowRectOnScreen.origin.y + self.frame.size.height - cursorRect.origin.y - cursorRect.size.height);
+    
+    _cursorRect = windowRectOnScreen;
+    
+    [[self inputContext] invalidateCharacterCoordinates];
 }
 
 @end

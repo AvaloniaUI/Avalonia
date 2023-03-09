@@ -172,7 +172,7 @@ namespace Avalonia.Controls
                 flyout.Opened += Flyout_Opened;
                 flyout.Closed += Flyout_Closed;
 
-                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(FlyoutBase.PlacementProperty).Subscribe(Flyout_PlacementPropertyChanged);
+                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(Popup.PlacementModeProperty).Subscribe(Flyout_PlacementPropertyChanged);
             }
         }
 
@@ -432,7 +432,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="FlyoutBase.Placement"/> property changes.
+        /// Called when the <see cref="PopupFlyoutBase.Placement"/> property changes.
         /// </summary>
         private void Flyout_PlacementPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {

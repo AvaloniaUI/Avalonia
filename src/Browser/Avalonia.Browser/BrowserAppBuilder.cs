@@ -16,7 +16,7 @@ public class BrowserPlatformOptions
 public static class BrowserAppBuilder
 {
     /// <summary>
-    /// Configures browser backend, loads avalonia javascript modules and creates a single view lifetime from the passed <see cref="mainDivId"/> parameter.
+    /// Configures browser backend, loads avalonia javascript modules and creates a single view lifetime from the passed <see paramref="mainDivId"/> parameter.
     /// </summary>
     /// <param name="builder">Application builder.</param>
     /// <param name="mainDivId">ID of the html element where avalonia content should be rendered.</param>

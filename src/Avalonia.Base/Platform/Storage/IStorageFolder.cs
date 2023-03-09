@@ -16,5 +16,5 @@ public interface IStorageFolder : IStorageItem
     /// <returns>
     /// When this method completes successfully, it returns a list of the files and folders in the current folder. Each item in the list is represented by an <see cref="IStorageItem"/> implementation object.
     /// </returns>
-    Task<IReadOnlyList<IStorageItem>> GetItemsAsync();
+    IAsyncEnumerable<IStorageItem> GetItemsAsync();
 }

@@ -16,8 +16,13 @@
             <MenuItem Header="Item 3" />
         </MenuFlyout>
         <Flyout Placement="Bottom" x:Key="BasicFlyout">
+            <Flyout.FlyoutPresenterTheme>
+                <ControlTheme TargetType="FlyoutPresenter" BasedOn="{StaticResource {x:Type FlyoutPresenter}}">
+                    <Setter Property="CornerRadius" Value="20" />
+                </ControlTheme>
+            </Flyout.FlyoutPresenterTheme>
             <Panel Width="100" Height="100">
-                <TextBlock Text="Flyout Content!" />
+                <TextBlock Text="Flyout Content with a custom presenter theme!" TextWrapping="Wrap" />
             </Panel>
         </Flyout>
     </UserControl.Resources>
@@ -136,6 +141,15 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
+                        <Button Content="Placement=Center">
+                            <Button.Flyout>
+                                <Flyout Placement="Center">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
                         <Button Content="Placement=TopEdgeAlignedLeft">
                             <Button.Flyout>
                                 <Flyout Placement="TopEdgeAlignedLeft">
@@ -190,7 +204,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button Content="Placement=RightEdgeAlignedBottom">
+                        <Button Content="Placement=RightEdgeAlignedTop">
                             <Button.Flyout>
                                 <Flyout Placement="RightEdgeAlignedTop">
                                     <Panel Width="100" Height="100">

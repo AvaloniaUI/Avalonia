@@ -131,34 +131,46 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         return Task.FromResult(new StorageItemProperties());
     }
 
-    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
         if (!await EnsureExternalFilesPermission(false))
         {
-            return Array.Empty<IStorageItem>();
+            yield break;
         }
-
-        using var javaFile = new JavaFile(Uri.Path!);
-
-        // Java file represents files AND directories. Don't be confused.
-        var files = await javaFile.ListFilesAsync().ConfigureAwait(false);
-        if (files is null)
+        
+        var contentResolver = Activity.ContentResolver;
+        if (contentResolver == null)
         {
-            return Array.Empty<IStorageItem>();
+            yield break;
         }
 
-        return files
-            .Select(f => (file: f, uri: AndroidUri.FromFile(f)))
-            .Where(t => t.uri is not null)
-            .Select(t => t.file switch
-            {
-                { IsFile: true } => (IStorageItem)new AndroidStorageFile(Activity, t.uri!),
-                { IsDirectory: true } => new AndroidStorageFolder(Activity, t.uri!, false),
-                _ => null
-            })
-            .Where(i => i is not null)
-            .ToArray()!;
-    }
+        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(Uri!, DocumentsContract.GetTreeDocumentId(Uri));
+
+        var projection = new[]
+        {
+            DocumentsContract.Document.ColumnDocumentId,
+            DocumentsContract.Document.ColumnMimeType
+        };
+        if (childrenUri != null)
+        {
+            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
+
+            if (cursor != null)
+                while (cursor.MoveToNext())
+                {
+                    var mime = cursor.GetString(1);
+                    var id = cursor.GetString(0);
+                    var uri = DocumentsContract.BuildDocumentUriUsingTree(Uri!, id);
+                    if (uri == null)
+                    {
+                        continue;
+                    }
+
+                    yield return mime == DocumentsContract.Document.MimeTypeDir ? new AndroidStorageFolder(Activity, uri, false) :
+                        new AndroidStorageFile(Activity, uri);
+                }
+        }
+    }       
 }
 
 internal sealed class WellKnownAndroidStorageFolder : AndroidStorageFolder

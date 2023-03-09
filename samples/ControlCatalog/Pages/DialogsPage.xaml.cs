@@ -324,9 +324,9 @@ namespace ControlCatalog.Pages
                         mappedResults.Add("+> " + FullPathOrName(selectedItem));
                         if (selectedItem is IStorageFolder folder)
                         {
-                            foreach (var innerItems in await folder.GetItemsAsync())
+                            await foreach (var innerItem in folder.GetItemsAsync())
                             {
-                                mappedResults.Add("++> " + FullPathOrName(innerItems));
+                                mappedResults.Add("++> " + FullPathOrName(innerItem));
                             }
                         }
                     }
