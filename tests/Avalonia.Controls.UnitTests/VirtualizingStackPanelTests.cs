@@ -406,6 +406,36 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void ContainerPrepared_Is_Raised_When_Scrolling()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var raised = 0;
+
+            itemsControl.ContainerPrepared += (s, e) => ++raised;
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.Equal(10, raised);
+        }
+
+        [Fact]
+        public void ContainerClearing_Is_Raised_When_Scrolling()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var raised = 0;
+
+            itemsControl.ContainerClearing += (s, e) => ++raised;
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.Equal(10, raised);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
