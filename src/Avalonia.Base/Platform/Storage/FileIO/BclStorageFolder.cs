@@ -113,7 +113,7 @@ internal class BclStorageFolder : IStorageBookmarkFolder
         return null;
     }
 
-    public async Task<IStorageFile?> CreateFile(string name)
+    public async Task<IStorageFile?> CreateFileAsync(string name)
     {
         var fileName = System.IO.Path.Combine(DirectoryInfo.FullName, name);
         var newFile = new FileInfo(fileName);
@@ -123,7 +123,7 @@ internal class BclStorageFolder : IStorageBookmarkFolder
         return new BclStorageFile(newFile);
     }
 
-    public async Task<IStorageFolder?> CreateFolder(string name)
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         var newFolder = DirectoryInfo.CreateSubdirectory(name);
 

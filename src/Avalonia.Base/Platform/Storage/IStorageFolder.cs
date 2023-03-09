@@ -23,12 +23,12 @@ public interface IStorageFolder : IStorageItem
     /// </summary>
     /// <param name="name">The display name</param>
     /// <returns>A new <see cref="IStorageFile"/> pointing to the moved file. If not null, the current storage item becomes invalid</returns>
-    Task<IStorageFile?> CreateFile(string name);
+    Task<IStorageFile?> CreateFileAsync(string name);
 
     /// <summary>
     /// Creates a folder with specified name as a child of the current storage folder
     /// </summary>
     /// <param name="name">The display name</param>
     /// <returns>A new <see cref="IStorageFolder"/> pointing to the moved file. If not null, the current storage item becomes invalid</returns>
-    Task<IStorageFolder?> CreateFolder(string name);
+    Task<IStorageFolder?> CreateFolderAsync(string name);
 }
