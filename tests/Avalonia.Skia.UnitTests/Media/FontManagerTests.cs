@@ -105,13 +105,16 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = s_fontUri });
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = s_fontUri });
 
-                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName), out var glyphTypeface);
+                    var result = FontManager.Current.TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName), out var glyphTypeface);
 
-                Assert.True(result);
+                    Assert.True(result);
 
-                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
             }
         }
     }
