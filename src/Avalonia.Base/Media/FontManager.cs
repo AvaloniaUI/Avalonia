@@ -141,7 +141,7 @@ namespace Avalonia.Media
                 }
             }
 
-            return SystemFonts.TryGetGlyphTypeface(DefaultFontFamilyName.ToUpperInvariant(), typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
+            return TryGetGlyphTypeface(new Typeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
         }
 
         /// <summary>
