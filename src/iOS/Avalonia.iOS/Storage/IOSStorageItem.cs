@@ -114,8 +114,9 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
+        // TODO: find out if it can be lazily enumerated.
         var tcs = new TaskCompletionSource<IReadOnlyList<IStorageItem>>();
 
         new NSFileCoordinator().CoordinateRead(Url,
@@ -142,6 +143,10 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
             throw new NSErrorException(error);
         }
 
-        return await tcs.Task;
+        var items = await tcs.Task;
+        foreach (var item in items)
+        {
+            yield return item;
+        }
     }
 }
