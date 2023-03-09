@@ -35,7 +35,7 @@ namespace Avalonia.Native
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
-        internal WindowImpl(IntPtr overlayWindow, string parentView, IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+        internal WindowImpl(IntPtr parentWindow, string parentView, IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
         {
             // This constructor is for creating overlays on 3rd party windows (eg. Powerpoint)
@@ -45,7 +45,7 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateOverlay(overlayWindow, parentView, e, glFeature.SharedContext.Context), factory.CreateScreens());
+                Init(_native = factory.CreateOverlay(parentWindow, parentView, e, glFeature.SharedContext.Context), factory.CreateScreens());
             }
             
             // nativeMenuExporter isn't needed here (the main window has already created its menus)
