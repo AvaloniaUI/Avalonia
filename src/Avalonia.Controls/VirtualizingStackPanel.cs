@@ -1078,7 +1078,7 @@ namespace Avalonia.Controls
                     // elements after the insertion point.
                     var elementCount = _elements.Count;
                     var start = Math.Max(realizedIndex, 0);
-                    var newIndex = first + count;
+                    var newIndex = realizedIndex + count;
 
                     for (var i = start; i < elementCount; ++i)
                     {
