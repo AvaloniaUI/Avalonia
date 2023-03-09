@@ -6066,8 +6066,9 @@ namespace Avalonia.Controls
             var numberOfItem = clipboardRowContent.Count;
             for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
             {
-                var cellContent = clipboardRowContent[cellIndex];
-                text.Append(cellContent.Content);
+                var cellContent = clipboardRowContent[cellIndex].Content?.ToString();
+                cellContent = cellContent?.Replace("\"", "\"\"");
+                text.Append($"\"{cellContent}\"");
                 if (cellIndex < numberOfItem - 1)
                 {
                     text.Append('\t');
