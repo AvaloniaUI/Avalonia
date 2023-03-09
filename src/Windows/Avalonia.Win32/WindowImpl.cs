@@ -756,7 +756,7 @@ namespace Avalonia.Win32
                 new IntPtr((int)Icons.ICON_BIG), hIcon);
         }
 
-        public void ShowTaskbarIcon(bool value)
+        public virtual void ShowTaskbarIcon(bool value)
         {
             var newWindowProperties = _windowProperties;
 

@@ -10,13 +10,15 @@ namespace Avalonia.Threading
     /// <summary>
     /// A main loop in a <see cref="Dispatcher"/>.
     /// </summary>
-    internal class JobRunner
+    public class JobRunner
     {
         private IPlatformThreadingInterface? _platform;
 
         private readonly Queue<IJob>[] _queues = Enumerable.Range(0, (int)DispatcherPriority.MaxValue + 1)
             .Select(_ => new Queue<IJob>()).ToArray();
 
+
+        public static event EventHandler<Exception>? UnhandledException;
         public JobRunner(IPlatformThreadingInterface? platform)
         {
             _platform = platform;
@@ -35,7 +37,14 @@ namespace Avalonia.Threading
                 if (job == null)
                     return;
 
-                job.Run();
+                try
+                {
+                    job.Run();
+                }
+                catch (Exception e)
+                {
+                    UnhandledException?.Invoke(this, e);
+                }
             }
         }
 

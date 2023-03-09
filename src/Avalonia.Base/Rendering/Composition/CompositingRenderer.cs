@@ -297,6 +297,10 @@ public class CompositingRenderer : IRendererWithCompositor
     public void Paint(Rect rect)
     {
         QueueUpdate();
+
+        if(CompositionTarget is null)
+            return;
+
         CompositionTarget.RequestRedraw();
         if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
             Compositor.Commit().Wait();

@@ -140,7 +140,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Allows unit tests to change the platform threading interface.
         /// </summary>
-        internal void UpdateServices()
+        public void UpdateServices()
         {
             if (_platform != null)
             {

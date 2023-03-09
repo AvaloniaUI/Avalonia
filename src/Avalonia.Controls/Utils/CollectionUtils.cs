@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Controls.Utils
 {
-    internal static class CollectionUtils
+    public static class CollectionUtils
     {
         public static NotifyCollectionChangedEventArgs ResetEventArgs { get; } = new(NotifyCollectionChangedAction.Reset);
 
