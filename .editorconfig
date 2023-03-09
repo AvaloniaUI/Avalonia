@@ -55,16 +55,17 @@ dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
-# static fields should have s_ prefix
-dotnet_naming_rule.static_fields_should_have_prefix.severity = suggestion
-dotnet_naming_rule.static_fields_should_have_prefix.symbols  = static_fields
-dotnet_naming_rule.static_fields_should_have_prefix.style    = static_prefix_style
+# private static fields should have s_ prefix
+dotnet_naming_rule.private_static_fields_should_have_prefix.severity = suggestion
+dotnet_naming_rule.private_static_fields_should_have_prefix.symbols  = private_static_fields
+dotnet_naming_rule.private_static_fields_should_have_prefix.style    = private_static_prefix_style
 
-dotnet_naming_symbols.static_fields.applicable_kinds   = field
-dotnet_naming_symbols.static_fields.required_modifiers = static
+dotnet_naming_symbols.private_static_fields.applicable_kinds   = field
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
 
-dotnet_naming_style.static_prefix_style.required_prefix = s_
-dotnet_naming_style.static_prefix_style.capitalization = camel_case 
+dotnet_naming_style.private_static_prefix_style.required_prefix = s_
+dotnet_naming_style.private_static_prefix_style.capitalization = camel_case
 
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
@@ -117,7 +118,7 @@ csharp_space_after_dot = false
 csharp_space_after_keywords_in_control_flow_statements = true
 csharp_space_after_semicolon_in_for_statement = true
 csharp_space_around_binary_operators = before_and_after
-csharp_space_around_declaration_statements = do_not_ignore
+csharp_space_around_declaration_statements = false
 csharp_space_before_colon_in_inheritance_clause = true
 csharp_space_before_comma = false
 csharp_space_before_dot = false
@@ -134,8 +135,56 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 space_within_single_line_array_initializer_braces = true
 
+#Net Analyzer
+dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
+
+# CS0649: Field 'field' is never assigned to, and will always have its default value 'value'
+dotnet_diagnostic.CS0649.severity = error
+
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = suggestion
+
+# CS0162: Remove unreachable code
+dotnet_diagnostic.CS0162.severity = error
+# CA1018: Mark attributes with AttributeUsageAttribute
+dotnet_diagnostic.CA1018.severity = error
+# CA1304: Specify CultureInfo
+dotnet_diagnostic.CA1304.severity = warning
+# CA1802: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = warning
+# CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = error
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = warning
+# CA1820: Test for empty strings using string length
+dotnet_diagnostic.CA1820.severity = warning
+# CA1821: Remove empty finalizers
+dotnet_diagnostic.CA1821.severity = warning
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = suggestion
+# CA1823: Avoid unused private fields
+dotnet_diagnostic.CA1823.severity = warning
+dotnet_code_quality.CA1822.api_surface = private, internal
+# CA1825: Avoid zero-length array allocations
+dotnet_diagnostic.CA1825.severity = warning
+# CA1826: Use property instead of Linq Enumerable method
+dotnet_diagnostic.CA1826.severity = suggestion
+# CA1827: Do not use Count/LongCount when Any can be used
+dotnet_diagnostic.CA1827.severity = warning
+# CA1828: Do not use CountAsync/LongCountAsync when AnyAsync can be used
+dotnet_diagnostic.CA1828.severity = warning
+# CA1829: Use Length/Count property instead of Enumerable.Count method
+dotnet_diagnostic.CA1829.severity = warning
+#CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
+dotnet_diagnostic.CA1847.severity = warning
+#CACA2211:Non-constant fields should not be visible
+dotnet_diagnostic.CA2211.severity = error
+
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false
+
+# Avalonia DevAnalyzer preferences
+dotnet_diagnostic.AVADEV2001.severity = error
 
 # Xaml files
 [*.{xaml,axaml}]
@@ -163,5 +212,5 @@ indent_size = 2
 # Shell scripts
 [*.sh]
 end_of_line = lf
-[*.{cmd, bat}]
+[*.{cmd,bat}]
 end_of_line = crlf

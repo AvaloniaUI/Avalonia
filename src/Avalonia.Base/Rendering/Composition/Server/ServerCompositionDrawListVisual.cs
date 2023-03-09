@@ -7,6 +7,8 @@ using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>
@@ -35,7 +37,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         {
             if (_contentBounds == null)
             {
-                var rect = Rect.Empty;
+                var rect = default(Rect);
                 if(_renderCommands!=null)
                     foreach (var cmd in _renderCommands)
                         rect = rect.Union(cmd.Item.Bounds);
@@ -46,7 +48,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         }
     }
 
-    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         if (reader.Read<byte>() == 1)
         {
@@ -54,7 +56,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
             _renderCommands = reader.ReadObject<CompositionDrawList?>();
             _contentBounds = null;
         }
-        base.DeserializeChangesCore(reader, commitedAt);
+        base.DeserializeChangesCore(reader, committedAt);
     }
 
     protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)

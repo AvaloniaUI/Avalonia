@@ -12,6 +12,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Key = Avalonia.Input.Key;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MouseButton = System.Windows.Input.MouseButton;
@@ -42,13 +43,6 @@ namespace Avalonia.Win32.Interop.Wpf
             protected override void OnMeasureInvalidated()
             {
                 ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
-            }
-
-            protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
-            {
-                ClientSize = clientSize;
-                LayoutManager.ExecuteLayoutPass();
-                Renderer?.Resized(clientSize);
             }
 
             public Size AllocatedSize => ClientSize;
@@ -87,9 +81,10 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
         }
 
+        
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            return new CompositingRenderer(root, Win32Platform.Compositor, () => _surfaces);
         }
 
         public void Dispose()
@@ -132,7 +127,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
         }
 
-        void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
+
 
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
@@ -142,8 +137,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 
-
-        RawInputModifiers GetModifiers(MouseEventArgs e)
+        static RawInputModifiers GetModifiers(MouseEventArgs e)
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
@@ -222,7 +216,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 (Key)e.Key,
                 GetModifiers(null)));
 
-        protected override void OnTextInput(TextCompositionEventArgs e) 
+        protected override void OnTextInput(TextCompositionEventArgs e)
             => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, e.Text));
 
         void ITopLevelImpl.SetCursor(ICursorImpl cursor)
@@ -257,6 +251,10 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+        
+        public object TryGetFeature(Type featureType) => null;
     }
 }

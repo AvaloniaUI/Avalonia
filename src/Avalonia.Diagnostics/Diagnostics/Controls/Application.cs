@@ -1,20 +1,22 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
-using App = Avalonia.Application;
 
 namespace Avalonia.Diagnostics.Controls
 {
     class Application : AvaloniaObject
-       , Input.ICloseable
+       , Input.ICloseable, IDisposable
 
     {
-        private readonly App _application;
-        private static readonly Version s_version = typeof(IAvaloniaObject).Assembly?.GetName()?.Version
-            ?? Version.Parse("0.0.00");
+        private readonly Avalonia.Application _application;
+
         public event EventHandler? Closed;
 
-        public Application(App application)
+        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
+        
+        public Application(Avalonia.Application application)
         {
             _application = application;
 
@@ -31,12 +33,15 @@ namespace Avalonia.Diagnostics.Controls
             RendererRoot = application.ApplicationLifetime switch
             {
                 Lifetimes.IClassicDesktopStyleApplicationLifetime classic => classic.MainWindow?.Renderer,
-                Lifetimes.ISingleViewApplicationLifetime single => (single.MainView as VisualTree.IVisual)?.VisualRoot?.Renderer,
+                Lifetimes.ISingleViewApplicationLifetime single => single.MainView?.VisualRoot?.Renderer,
                 _ => null
             };
+
+            RequestedThemeVariant = application.RequestedThemeVariant;
+            _application.PropertyChanged += ApplicationOnPropertyChanged;
         }
 
-        internal App Instance => _application;
+        internal Avalonia.Application Instance => _application;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -115,5 +120,35 @@ namespace Avalonia.Diagnostics.Controls
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         internal Rendering.IRenderer? RendererRoot { get; }
+        
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariant" />
+        public ThemeVariant? RequestedThemeVariant
+        {
+            get => GetValue(RequestedThemeVariantProperty);
+            set => SetValue(RequestedThemeVariantProperty, value);
+        }
+
+        public void Dispose()
+        {
+            _application.PropertyChanged -= ApplicationOnPropertyChanged;
+        }
+
+        private void ApplicationOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Avalonia.Application.RequestedThemeVariantProperty)
+            {
+                RequestedThemeVariant = e.GetNewValue<ThemeVariant>();
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == RequestedThemeVariantProperty)
+            {
+                _application.RequestedThemeVariant = change.GetNewValue<ThemeVariant>();
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Styling.Activators;
 
 #nullable enable
@@ -9,7 +10,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// The OR style selector.
     /// </summary>
-    internal class OrSelector : Selector
+    internal sealed class OrSelector : Selector
     {
         private readonly IReadOnlyList<Selector> _selectors;
         private string? _selectorString;
@@ -41,38 +42,29 @@ namespace Avalonia.Styling
         public override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override Type? TargetType
-        {
-            get
-            {
-                if (_targetType == null)
-                {
-                    _targetType = EvaluateTargetType();
-                }
-
-                return _targetType;
-            }
-        }
+        public override Type? TargetType => _targetType ??= EvaluateTargetType();
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = string.Join(", ", _selectors);
+                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner)));
             }
 
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
 
-            foreach (var selector in _selectors)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
-                var match = selector.Match(control, parent, subscribe);
+                var match = _selectors[i].Match(control, parent, subscribe);
 
                 switch (match.Result)
                 {
@@ -107,16 +99,23 @@ namespace Avalonia.Styling
 
         internal override void ValidateNestingSelector(bool inControlTheme)
         {
-            foreach (var selector in _selectors)
-                selector.ValidateNestingSelector(inControlTheme);
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                _selectors[i].ValidateNestingSelector(inControlTheme);
+            }
         }
 
         private Type? EvaluateTargetType()
         {
             Type? result = null;
 
-            foreach (var selector in _selectors)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
+                var selector = _selectors[i];
                 if (selector.TargetType == null)
                 {
                     return null;

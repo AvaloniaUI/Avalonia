@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
@@ -17,7 +16,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using JetBrains.Annotations;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -64,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplates(target);
 
-            var items = target.ItemContainerGenerator.Index.Containers
+            var items = target.GetRealizedTreeContainers()
                 .OfType<TreeViewItem>()
                 .ToList();
 
@@ -76,7 +75,7 @@ namespace Avalonia.Controls.UnitTests
         public void Items_Should_Be_Created_Using_ItemConatinerTheme_If_Present()
         {
             TreeView target;
-            var theme = new ControlTheme();
+            var theme = new ControlTheme(typeof(TreeViewItem));
 
             var root = new TestRoot
             {
@@ -93,12 +92,37 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplates(target);
 
-            var items = target.ItemContainerGenerator.Index.Containers
+            var items = target.GetRealizedTreeContainers()
                 .OfType<TreeViewItem>()
                 .ToList();
 
             Assert.Equal(5, items.Count);
             Assert.All(items, x => Assert.Same(theme, x.ItemContainerTheme));
+        }
+
+        [Fact]
+        public void Finds_Correct_DataTemplate_When_Application_DataTemplate_Is_Present()
+        {
+            // #10398
+            using var app = UnitTestApplication.Start();
+            
+            Avalonia.Application.Current.DataTemplates.Add(new FuncDataTemplate<object>((x, _) => new Canvas()));
+            AvaloniaLocator.CurrentMutable.Bind<IGlobalDataTemplates>().ToConstant(Avalonia.Application.Current);
+
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = CreateTestTreeData(),
+            };
+
+            var root = new TestRoot(target);
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+
+            Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
+            Assert.Equal(new[] { "Child1", "Child2", "Child3" }, ExtractItemHeader(target, 1));
+            Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
         }
 
         [Fact]
@@ -115,8 +139,8 @@ namespace Avalonia.Controls.UnitTests
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
-            var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single().ContainerControl;
-            var header = (TextBlock)container.Header;
+            var container = (TreeViewItem)target.GetRealizedContainers().Single();
+            var header = (TextBlock)container.HeaderPresenter.Child;
             Assert.Equal("Root", header.Text);
         }
 
@@ -138,13 +162,12 @@ namespace Avalonia.Controls.UnitTests
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
-            var container = target.ItemContainerGenerator.Index.ContainerFromItem(
-                tree[0].Children[1].Children[0]);
+            var container = target.TreeContainerFromItem(tree[0].Children[1].Children[0]);
 
             Assert.NotNull(container);
 
-            var header = ((TreeViewItem)container).Header;
-            var headerContent = ((TextBlock)header).Text;
+            var header = ((TreeViewItem)container).HeaderPresenter;
+            var headerContent = ((TextBlock)header.Child).Text;
 
             Assert.Equal("Grandchild2a", headerContent);
         }
@@ -169,7 +192,7 @@ namespace Avalonia.Controls.UnitTests
                 ExpandAll(target);
 
                 var item = tree[0].Children[1].Children[0];
-                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
 
                 Assert.NotNull(container);
 
@@ -200,7 +223,7 @@ namespace Avalonia.Controls.UnitTests
                 ExpandAll(target);
 
                 var item = tree[0].Children[1].Children[0];
-                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
 
                 Assert.NotNull(container);
 
@@ -235,10 +258,10 @@ namespace Avalonia.Controls.UnitTests
                 ExpandAll(target);
 
                 var item1 = tree[0].Children[1].Children[0];
-                var container1 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
+                var container1 = (TreeViewItem)target.TreeContainerFromItem(item1);
 
                 var item2 = tree[0].Children[1];
-                var container2 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
+                var container2 = (TreeViewItem)target.TreeContainerFromItem(item2);
 
                 Assert.NotNull(container1);
                 Assert.NotNull(container2);
@@ -280,8 +303,8 @@ namespace Avalonia.Controls.UnitTests
                 var item1 = rootNode.Children[0];
                 var item2 = rootNode.Children.Last();
 
-                var item1Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
-                var item2Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
+                var item1Container = (TreeViewItem)target.TreeContainerFromItem(item1);
+                var item2Container = (TreeViewItem)target.TreeContainerFromItem(item2);
 
                 ClickContainer(item1Container, KeyModifiers.Control);
                 Assert.True(item1Container.IsSelected);
@@ -323,8 +346,8 @@ namespace Avalonia.Controls.UnitTests
                 var from = rootNode.Children[0];
                 var to = rootNode.Children.Last();
 
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 ClickContainer(fromContainer, KeyModifiers.None);
 
@@ -360,8 +383,8 @@ namespace Avalonia.Controls.UnitTests
                 var from = rootNode.Children.Last();
                 var to = rootNode.Children[0];
 
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 ClickContainer(fromContainer, KeyModifiers.None);
 
@@ -397,8 +420,8 @@ namespace Avalonia.Controls.UnitTests
                 var from = rootNode.Children.Last();
                 var to = rootNode.Children[0];
 
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 ClickContainer(fromContainer, KeyModifiers.None);
 
@@ -416,9 +439,590 @@ namespace Avalonia.Controls.UnitTests
                         continue;
                     }
 
-                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(child);
+                    var container = (TreeViewItem)target.TreeContainerFromItem(child);
 
                     Assert.False(container.IsSelected);
+                }
+            }
+        }
+
+        [Fact]
+        public void Double_Clicking_Item_Header_Should_Expand_It()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target);
+
+                var item = tree[0].Children[1];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                _mouse.DoubleClick(header);
+
+                Assert.True(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Double_Clicking_Item_Header_With_No_Children_Does_Not_Expand_It()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target);
+
+                var item = tree[0].Children[1].Children[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                _mouse.DoubleClick(header);
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Double_Clicking_Item_Header_Should_Collapse_It()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = tree[0].Children[1];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                _mouse.DoubleClick(header);
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Enter_Key_Should_Collapse_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Enter_plus_Ctrl_Key_Should_Collapse_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.False(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsCollapsed(item);
+
+                void AssertEachItemWithChildrenIsCollapsed(Node node)
+                {
+                    var container = (TreeViewItem)target.TreeContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.False(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsCollapsed(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.True(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Enter_Key_Should_Expand_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.True(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Enter_plus_Ctrl_Key_Should_Expand_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.True(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsExpanded(item);
+
+                void AssertEachItemWithChildrenIsExpanded(Node node)
+                {
+                    var container = (TreeViewItem)target.TreeContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.True(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsExpanded(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.False(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Space_Key_Should_Collapse_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Space_plus_Ctrl_Key_Should_Collapse_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.False(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsCollapsed(item);
+
+                void AssertEachItemWithChildrenIsCollapsed(Node node)
+                {
+                    var container = (TreeViewItem)target.TreeContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.False(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsCollapsed(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.True(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Space_Key_Should_Expand_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.True(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Space_plus_Ctrl_Key_Should_Expand_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.HeaderPresenter.Child;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.True(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsExpanded(item);
+
+                void AssertEachItemWithChildrenIsExpanded(Node node)
+                {
+                    var container = (TreeViewItem)target.TreeContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.True(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsExpanded(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.False(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Numpad_Star_Should_Expand_All_Children_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target);
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Multiply,
+                });
+
+                AssertEachItemWithChildrenIsExpanded(item);
+
+                void AssertEachItemWithChildrenIsExpanded(Node node)
+                {
+                    var container = (TreeViewItem)target.TreeContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.True(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsExpanded(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.False(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Numpad_Slash_Should_Collapse_All_Children_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
+
+                Assert.NotNull(container);
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Divide,
+                });
+
+                AssertEachItemWithChildrenIsCollapsed(item);
+
+                void AssertEachItemWithChildrenIsCollapsed(Node node)
+                {
+                    var container = (TreeViewItem)target.TreeContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.False(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsCollapsed(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.True(container.IsExpanded);
+                    }
                 }
             }
         }
@@ -443,7 +1047,7 @@ namespace Avalonia.Controls.UnitTests
                 ExpandAll(target);
 
                 var item = tree[0].Children[1].Children[0];
-                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var container = (TreeViewItem)target.TreeContainerFromItem(item);
 
                 Assert.NotNull(container);
 
@@ -540,35 +1144,12 @@ namespace Avalonia.Controls.UnitTests
 
             var result = target.GetLogicalChildren()
                 .OfType<TreeViewItem>()
-                .Select(x => x.Header)
+                .Select(x => x.HeaderPresenter.Child)
                 .OfType<TextBlock>()
                 .Select(x => x.Text)
                 .ToList();
 
             Assert.Equal(new[] { "Foo", "Bar", "Baz " }, result);
-        }
-
-        [Fact]
-        public void Removing_Item_Should_Remove_Itself_And_Children_From_Index()
-        {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
-            {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-            };
-
-            var root = new TestRoot();
-            root.Child = target;
-
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-
-            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
-
-            tree[0].Children.RemoveAt(1);
-
-            Assert.Equal(3, target.ItemContainerGenerator.Index.Containers.Count());
         }
 
         [Fact]
@@ -622,7 +1203,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = target.Presenter.Panel.LogicalChildren[0];
+            var item = target.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TreeViewItem)item));
         }
 
@@ -657,6 +1238,8 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
+            ApplyTemplates(target);
+
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
             Assert.Equal(new[] { "NewChild1" }, ExtractItemHeader(target, 1));
         }
@@ -667,7 +1250,7 @@ namespace Avalonia.Controls.UnitTests
             using (Application())
             {
                 var focus = FocusManager.Instance;
-                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var navigation = AvaloniaLocator.Current.GetRequiredService<IKeyboardNavigationHandler>();
                 var data = CreateTestTreeData();
 
                 var target = new TreeView
@@ -691,7 +1274,7 @@ namespace Avalonia.Controls.UnitTests
                 ExpandAll(target);
 
                 var item = data[0].Children[0];
-                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var node = target.TreeContainerFromItem(item);
                 Assert.NotNull(node);
 
                 target.SelectedItem = item;
@@ -712,7 +1295,6 @@ namespace Avalonia.Controls.UnitTests
             using (Application())
             {
                 var focus = FocusManager.Instance;
-                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
                 var data = CreateTestTreeData();
 
                 var selectedNode = new Node { Value = "Out of Tree Selected Item" };
@@ -739,7 +1321,7 @@ namespace Avalonia.Controls.UnitTests
                 ExpandAll(target);
 
                 var item = data[0].Children[0];
-                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var node = target.TreeContainerFromItem(item);
                 Assert.NotNull(node);
 
                 target.SelectedItem = selectedNode;
@@ -772,7 +1354,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var rootNode = tree[0];
 
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
 
                 var keyEvent = new KeyEventArgs
@@ -813,13 +1395,13 @@ namespace Avalonia.Controls.UnitTests
                 var from = rootNode.Children[0];
                 var to = rootNode.Children.Last();
 
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 ClickContainer(fromContainer, KeyModifiers.None);
                 ClickContainer(toContainer, KeyModifiers.Shift);
 
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
 
                 var keyEvent = new KeyEventArgs
@@ -860,13 +1442,13 @@ namespace Avalonia.Controls.UnitTests
                 var from = rootNode.Children.Last();
                 var to = rootNode.Children[0];
 
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 ClickContainer(fromContainer, KeyModifiers.None);
                 ClickContainer(toContainer, KeyModifiers.Shift);
 
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
 
                 var keyEvent = new KeyEventArgs
@@ -885,28 +1467,31 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Right_Click_On_SelectedItem_Should_Not_Clear_Existing_Selection()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (UnitTestApplication.Start())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
+                target.SelectAll();
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-            target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
-            target.SelectAll();
+                AssertChildrenSelected(target, tree[0]);
+                Assert.Equal(5, target.SelectedItems.Count);
 
-            AssertChildrenSelected(target, tree[0]);
-            Assert.Equal(5, target.SelectedItems.Count);
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
 
-            _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
-
-            Assert.Equal(5, target.SelectedItems.Count);
+                Assert.Equal(5, target.SelectedItems.Count);
+            }
         }
 
         [Fact]
@@ -933,9 +1518,9 @@ namespace Avalonia.Controls.UnitTests
                 var to = rootNode.Children[0];
                 var then = rootNode.Children[1];
 
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(rootNode);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
-                var thenContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(then);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(rootNode);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
+                var thenContainer = (TreeViewItem)target.TreeContainerFromItem(then);
 
                 ClickContainer(fromContainer, KeyModifiers.None);
                 ClickContainer(toContainer, KeyModifiers.Shift);
@@ -971,8 +1556,8 @@ namespace Avalonia.Controls.UnitTests
                 var rootNode = tree[0];
                 var from = rootNode.Children[0];
                 var to = rootNode.Children[1];
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 _mouse.Click(fromContainer);
                 _mouse.Click(toContainer, MouseButton.Right, modifiers: KeyModifiers.Shift);
@@ -1004,8 +1589,8 @@ namespace Avalonia.Controls.UnitTests
                 var rootNode = tree[0];
                 var from = rootNode.Children[0];
                 var to = rootNode.Children[1];
-                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.TreeContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.TreeContainerFromItem(to);
 
                 _mouse.Click(fromContainer);
                 _mouse.Click(toContainer, MouseButton.Right, modifiers: KeyModifiers.Control);
@@ -1086,7 +1671,7 @@ namespace Avalonia.Controls.UnitTests
             parent.Children.Remove(node);
             parent.Children.Add(node);
 
-            var item = target.ItemContainerGenerator.Index.ContainerFromItem(node);
+            var item = target.TreeContainerFromItem(node);
             ApplyTemplates(new[] { item });
 
             // #2985 causes ArgumentException here.
@@ -1151,19 +1736,19 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(target);
             ExpandAll(target);
 
-            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
+            Assert.Equal(5, target.GetRealizedTreeContainers().Count());
 
             root.Child = null;
 
-            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
+            Assert.Equal(5, target.GetRealizedTreeContainers().Count());
             Assert.Equal(1, target.Presenter.Panel.Children.Count);
 
             var rootNode = Assert.IsType<TreeViewItem>(target.Presenter.Panel.Children[0]);
-            Assert.Equal(3, rootNode.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(3, rootNode.GetRealizedContainers().Count());
             Assert.Equal(3, rootNode.Presenter.Panel.Children.Count);
 
             var child2Node = Assert.IsType<TreeViewItem>(rootNode.Presenter.Panel.Children[1]);
-            Assert.Equal(1, child2Node.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, child2Node.GetRealizedContainers().Count());
             Assert.Equal(1, child2Node.Presenter.Panel.Children.Count);
         }
 
@@ -1185,7 +1770,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(target);
 
             var rootNode = tree[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(rootNode);
+            var container = (TreeViewItem)target.TreeContainerFromItem(rootNode);
 
             Assert.NotNull(container);
 
@@ -1193,7 +1778,7 @@ namespace Avalonia.Controls.UnitTests
 
             tree.Clear();
 
-            Assert.Empty(target.ItemContainerGenerator.Index.Containers);
+            Assert.Empty(target.GetRealizedContainers());
         }
 
         [Fact]
@@ -1209,18 +1794,9 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(target);
 
             // Verify that all items are DerivedTreeViewItem
-            VerifyItemType(target.ItemContainerGenerator);
-
-            void VerifyItemType(ITreeItemContainerGenerator containerGenerator)
+            foreach (var container in target.GetRealizedTreeContainers())
             {
-                foreach (var container in containerGenerator.Index.Containers)
-                {
-                    var item = Assert.IsType<DerivedTreeViewItem>(container);
-                    if (item.ItemCount > 0)
-                    {
-                        VerifyItemType(item.ItemContainerGenerator);
-                    }
-                }
+                Assert.IsType<DerivedTreeViewItem>(container);
             }
         }
 
@@ -1231,14 +1807,14 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(tree.Presenter.Panel.Children);
         }
 
-        private void ApplyTemplates(IEnumerable<IControl> controls)
+        private void ApplyTemplates(IEnumerable<Control> controls)
         {
             foreach (TreeViewItem control in controls)
             {
                 control.Template = CreateTreeViewItemTemplate();
                 control.ApplyTemplate();
                 control.Presenter.ApplyTemplate();
-                control.HeaderPresenter.ApplyTemplate();
+                ((ContentPresenter)control.HeaderPresenter).UpdateChild();
                 ApplyTemplates(control.Presenter.Panel.Children);
             }
         }
@@ -1250,7 +1826,7 @@ namespace Avalonia.Controls.UnitTests
             foreach (var index in indexes)
             {
                 var item = ((IList)c.Items)[index];
-                c = (ItemsControl)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                c = (ItemsControl)target.TreeContainerFromItem(item);
             }
 
             return (TreeViewItem)c;
@@ -1289,7 +1865,7 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private void CreateNodeDataTemplate(IControl control)
+        private void CreateNodeDataTemplate(Control control)
         {
             control.DataTemplates.Add(new TestTreeDataTemplate());
         }
@@ -1299,7 +1875,6 @@ namespace Avalonia.Controls.UnitTests
             return new FuncControlTemplate<TreeView>((parent, scope) => new ItemsPresenter
             {
                 Name = "PART_ItemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
             }.RegisterInNameScope(scope));
         }
 
@@ -1309,15 +1884,19 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children =
                 {
-                    new ContentPresenter
+                    new Border
                     {
-                        Name = "PART_HeaderPresenter",
-                        [~ContentPresenter.ContentProperty] = parent[~TreeViewItem.HeaderProperty],
+                        Name = "PART_Header",
+                        Child = new ContentPresenter
+                        {
+                            Name = "PART_HeaderPresenter",
+                            [~ContentPresenter.ContentProperty] = parent[~TreeViewItem.HeaderProperty],
+                            [~ContentPresenter.ContentTemplateProperty] = parent[~TreeViewItem.HeaderTemplateProperty],
+                        }.RegisterInNameScope(scope)
                     }.RegisterInNameScope(scope),
                     new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }.RegisterInNameScope(scope)
                 }
             });
@@ -1325,22 +1904,30 @@ namespace Avalonia.Controls.UnitTests
 
         private void ExpandAll(TreeView tree)
         {
-            foreach (var i in tree.ItemContainerGenerator.Containers)
+            foreach (var i in tree.GetRealizedContainers())
             {
-                tree.ExpandSubTree((TreeViewItem)i.ContainerControl);
+                tree.ExpandSubTree((TreeViewItem)i);
+            }
+        }
+
+        private void CollapseAll(TreeView tree)
+        {
+            foreach (var i in tree.GetRealizedContainers())
+            {
+                tree.CollapseSubTree((TreeViewItem)i);
             }
         }
 
         private List<string> ExtractItemHeader(TreeView tree, int level)
         {
             return ExtractItemContent(tree.Presenter.Panel, 0, level)
-                .Select(x => x.Header)
+                .Select(x => x.HeaderPresenter.Child)
                 .OfType<TextBlock>()
                 .Select(x => x.Text)
                 .ToList();
         }
 
-        private IEnumerable<TreeViewItem> ExtractItemContent(IPanel panel, int currentLevel, int level)
+        private IEnumerable<TreeViewItem> ExtractItemContent(Panel panel, int currentLevel, int level)
         {
             foreach (TreeViewItem container in panel.Children)
             {
@@ -1364,7 +1951,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private void ClickContainer(IControl container, KeyModifiers modifiers)
+        private void ClickContainer(Control container, KeyModifiers modifiers)
         {
             _mouse.Click(container, modifiers: modifiers);
         }
@@ -1373,7 +1960,7 @@ namespace Avalonia.Controls.UnitTests
         {
             foreach (var child in rootNode.Children)
             {
-                var container = (TreeViewItem)treeView.ItemContainerGenerator.Index.ContainerFromItem(child);
+                var container = (TreeViewItem)treeView.TreeContainerFromItem(child);
 
                 Assert.True(container.IsSelected);
             }
@@ -1412,7 +1999,7 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestTreeDataTemplate : ITreeDataTemplate
         {
-            public IControl Build(object param)
+            public Control Build(object param)
             {
                 var node = (Node)param;
                 return new TextBlock { Text = node.Value };
@@ -1436,13 +2023,11 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeViewWithDerivedTreeViewItems : TreeView
         {
-            protected override ITreeItemContainerGenerator CreateTreeItemContainerGenerator() =>
-                CreateTreeItemContainerGenerator<DerivedTreeViewItem>();
+            protected internal override Control CreateContainerForItemOverride() => new DerivedTreeViewItem();
         }
 
         private class DerivedTreeViewItem : TreeViewItem
         {
-            protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<DerivedTreeViewItem>();
         }
 
         private class TestDataContext : INotifyPropertyChanged

@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Specialized;
-using System.Reactive;
-using System.Reactive.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -16,7 +15,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _classes;
         private bool _isExpanded;
 
-        protected TreeNode(IAvaloniaObject avaloniaObject, TreeNode? parent, string? customName = null)
+        protected TreeNode(AvaloniaObject avaloniaObject, TreeNode? parent, string? customName = null)
         {
             _classes = string.Empty;
             Parent = parent;
@@ -25,22 +24,12 @@ namespace Avalonia.Diagnostics.ViewModels
             Visual = visual!;
             FontWeight = IsRoot ? FontWeight.Bold : FontWeight.Normal;
 
-            if (visual is IControl control)
+            if (visual is Control control)
             {
                 ElementName = control.Name;
 
-                var removed = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
-                    x => control.DetachedFromLogicalTree += x,
-                    x => control.DetachedFromLogicalTree -= x);
-                var classesChanged = Observable.FromEventPattern<
-                        NotifyCollectionChangedEventHandler,
-                        NotifyCollectionChangedEventArgs>(
-                        x => control.Classes.CollectionChanged += x,
-                        x => control.Classes.CollectionChanged -= x)
-                    .TakeUntil(removed);
-
-                _classesSubscription = classesChanged.Select(_ => Unit.Default)
-                    .StartWith(Unit.Default)
+                _classesSubscription = ((IObservable<object?>)control.Classes.GetWeakCollectionChangedObservable())
+                    .StartWith(null)
                     .Subscribe(_ =>
                     {
                         if (control.Classes.Count > 0)
@@ -77,7 +66,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get;
         }
 
-        public IAvaloniaObject Visual
+        public AvaloniaObject Visual
         {
             get;
         }

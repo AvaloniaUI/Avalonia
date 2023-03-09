@@ -3,6 +3,10 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
+  <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>  
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     <ProjectReference Include="..\..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
@@ -10,15 +14,16 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\IncludeXamlIlSre.props" />
   <ItemGroup>
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerExtensions\**\*.cs" />
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\AvaloniaXamlIlRuntimeCompiler.cs" />
+    <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2023020321" />
   </ItemGroup>
   <Import Project="..\..\..\build\NetFX.props" />
 </Project>

@@ -1,16 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <!-- NativeMenuBar uses ReflectionBinding -->
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-    <AvaloniaResource Include="**/*.xaml" />
-    <AvaloniaResource Include="Assets\*" />  
+    <AvaloniaResource Include="**/*.xaml" />  
   </ItemGroup>
+  <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

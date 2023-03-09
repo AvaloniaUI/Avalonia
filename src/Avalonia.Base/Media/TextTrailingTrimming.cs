@@ -1,31 +1,26 @@
 ﻿using Avalonia.Media.TextFormatting;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
     public sealed class TextTrailingTrimming : TextTrimming
     {
-        private readonly ReadOnlySlice<char> _ellipsis;
+        private readonly string _ellipsis;
         private readonly bool _isWordBased;
-
-        public TextTrailingTrimming(char ellipsis, bool isWordBased) : this(new[] {ellipsis}, isWordBased)
-        {
-        }
         
-        public TextTrailingTrimming(char[] ellipsis, bool isWordBased)
+        public TextTrailingTrimming(string ellipsis, bool isWordBased)
         {
             _isWordBased = isWordBased;
-            _ellipsis = new ReadOnlySlice<char>(ellipsis);
+            _ellipsis = ellipsis;
         }
 
         public override TextCollapsingProperties CreateCollapsingProperties(TextCollapsingCreateInfo createInfo)
         {
             if (_isWordBased)
             {
-                return new TextTrailingWordEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties);
+                return new TextTrailingWordEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties, createInfo.FlowDirection);
             }
 
-            return new TextTrailingCharacterEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties);
+            return new TextTrailingCharacterEllipsis(_ellipsis, createInfo.Width, createInfo.TextRunProperties, createInfo.FlowDirection);
         }
 
         public override string ToString()

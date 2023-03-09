@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
@@ -19,8 +20,8 @@ namespace Avalonia.Win32
             using var src = new OleDragSource();
             var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
             
-            var objPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject);
-            var srcPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src);
+            var objPtr = MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject);
+            var srcPtr = MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src);
 
             UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out var finalEffect);
             

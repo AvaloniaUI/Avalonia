@@ -4,7 +4,6 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Utilities;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Utils
 {
@@ -61,7 +60,7 @@ namespace Avalonia.Controls.Utils
                     _backgroundGeometryCache = null;
                 }
 
-                if (boundRect.Width != 0 && innerRect.Height != 0)
+                if (boundRect.Width != 0 && boundRect.Height != 0)
                 {
                     var borderGeometryKeypoints =
                         new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
@@ -149,7 +148,7 @@ namespace Avalonia.Controls.Utils
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-                context.PlatformImpl.DrawRectangle(background, pen, rrect, boxShadows);
+                context.DrawRectangle(background, pen, rrect, boxShadows);
             }
         }
 

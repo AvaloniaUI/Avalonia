@@ -1,8 +1,11 @@
 using System;
 using Avalonia.Collections.Pooled;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
+
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
@@ -11,8 +14,6 @@ namespace Avalonia.Rendering.Composition.Drawing;
 /// </summary>
 internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
 {
-    public Size? Size { get; set; }
-    
     public CompositionDrawList()
     {
         
@@ -32,21 +33,47 @@ internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
 
     public CompositionDrawList Clone()
     {
-        var clone = new CompositionDrawList(Count) { Size = Size };
+        var clone = new CompositionDrawList(Count);
         foreach (var r in this)
             clone.Add(r.Clone());
         return clone;
     }
 
-    public void Render(CompositorDrawingContextProxy canvas)
+    public void Render(IDrawingContextImpl canvas)
     {
         foreach (var cmd in this)
         {
-            canvas.VisualBrushDrawList = (cmd.Item as BrushDrawOperation)?.Aux as CompositionDrawList;
+            if (cmd.Item is IDrawOperationWithTransform hasTransform)
+                canvas.Transform = hasTransform.Transform;
             cmd.Item.Render(canvas);
         }
+    }
+    
+    public void Render(IDrawingContextImpl canvas, Matrix transform)
+    {
+        foreach (var cmd in this)
+        {
+            if (cmd.Item is IDrawOperationWithTransform hasTransform)
+                canvas.Transform = hasTransform.Transform * transform;
+            cmd.Item.Render(canvas);
+        }
+    }
 
-        canvas.VisualBrushDrawList = null;
+
+    public Rect CalculateBounds()
+    {
+        var rect = default(Rect);
+        foreach (var cmd in this)
+            rect = rect.Union(cmd.Item.Bounds);
+        return rect;
+    }
+
+    public bool HitTest(Point pt)
+    {
+        foreach (var op in this)
+            if (op.Item.HitTest(pt))
+                return true;
+        return false;
     }
 }
 

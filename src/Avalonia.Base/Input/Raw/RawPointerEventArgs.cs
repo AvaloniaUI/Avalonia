@@ -53,9 +53,6 @@ namespace Avalonia.Input.Raw
             RawInputModifiers inputModifiers)
             : base(device, timestamp, root)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
-
             Point = new RawPointerPoint();
             Position = position;
             Type = type;
@@ -80,9 +77,6 @@ namespace Avalonia.Input.Raw
             RawInputModifiers inputModifiers)
             : base(device, timestamp, root)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
-
             Point = point;
             Type = type;
             InputModifiers = inputModifiers;
@@ -130,16 +124,20 @@ namespace Avalonia.Input.Raw
         internal IInputElement? InputHitTestResult { get; set; }
     }
 
-    public struct RawPointerPoint
+    public record struct RawPointerPoint
     {
         /// <summary>
         /// Pointer position, in client DIPs.
         /// </summary>
         public Point Position { get; set; }
 
+        /// <inheritdoc cref="PointerPointProperties.Twist" />
         public float Twist { get; set; }
+        /// <inheritdoc cref="PointerPointProperties.Pressure" />
         public float Pressure { get; set; }
+        /// <inheritdoc cref="PointerPointProperties.XTilt" />
         public float XTilt { get; set; }
+        /// <inheritdoc cref="PointerPointProperties.YTilt" />
         public float YTilt { get; set; }
 
 

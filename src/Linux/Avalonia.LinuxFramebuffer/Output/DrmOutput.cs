@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
@@ -15,27 +16,63 @@ namespace Avalonia.LinuxFramebuffer.Output
 {
     public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
+        private DrmOutputOptions _outputOptions = new();
         private DrmCard _card;
         public PixelSize PixelSize => _mode.Resolution;
-        public double Scaling { get; set; }
-        public IGlContext PrimaryContext => _deferredContext;
 
-        private EglPlatformOpenGlInterface _platformGl;
-        public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
-
-        public DrmOutput(string path = null)
+        public double Scaling
         {
+            get => _outputOptions.Scaling;
+            set => _outputOptions.Scaling = value;
+        }
+
+        class SharedContextGraphics : IPlatformGraphics
+        {
+            private readonly IPlatformGraphicsContext _context;
+
+            public SharedContextGraphics(IPlatformGraphicsContext context)
+            {
+                _context = context;
+            }
+            public bool UsesSharedContext => true;
+            public IPlatformGraphicsContext CreateContext() => throw new NotSupportedException();
+
+            public IPlatformGraphicsContext GetSharedContext() => _context;
+        }
+        
+        public IPlatformGraphics PlatformGraphics { get; private set; }
+
+        public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo,
+            DrmOutputOptions options = null)
+        {
+            if(options != null) 
+                _outputOptions = options;
+            Init(card, resources, connector, modeInfo);
+        }
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
+        {
+            if(options != null) 
+                _outputOptions = options;
+            
             var card = new DrmCard(path);
 
-            var resources = card.GetResources();
-
+            var resources = card.GetResources(connectorsForceProbe);
 
             var connector =
                 resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
             if(connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 
-            var mode = connector.Modes.OrderByDescending(x => x.IsPreferred)
+            DrmModeInfo mode = null;
+
+            if (options?.VideoMode != null)
+            {
+                mode = connector.Modes
+                    .FirstOrDefault(x => x.Resolution.Width == options.VideoMode.Value.Width &&
+                                         x.Resolution.Height == options.VideoMode.Value.Height);
+            }
+            
+            mode ??= connector.Modes.OrderByDescending(x => x.IsPreferred)
                 .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
                 //.OrderByDescending(x => x.Resolution.Width * x.Resolution.Height)
                 .FirstOrDefault();
@@ -50,7 +87,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         [DllImport("libEGL.so.1")]
-        static extern IntPtr eglGetProcAddress(Utf8Buffer proc);
+        static extern IntPtr eglGetProcAddress(string proc);
 
         private GbmBoUserDataDestroyCallbackDelegate FbDestroyDelegate;
         private drmModeModeInfo _mode;
@@ -83,7 +120,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             // prepare for the new ioctl call
             var handles = new uint[] {handle, 0, 0, 0};
             var pitches = new uint[] {stride, 0, 0, 0};
-            var offsets = new uint[] {};
+            var offsets = Array.Empty<uint>();
 
             var ret = drmModeAddFB2(_card.Fd, w, h, format, handles, pitches,
                                     offsets, out var fbHandle, 0);
@@ -136,15 +173,31 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(_gbmTargetSurface == IntPtr.Zero)
                 throw new InvalidOperationException("Unable to create GBM surface");
 
-            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null);
-            _platformGl = new EglPlatformOpenGlInterface(_eglDisplay);
-            _eglSurface =  _platformGl.CreateWindowSurface(_gbmTargetSurface);
+            _eglDisplay = new EglDisplay(
+                new EglDisplayCreationOptions
+                {
+                    Egl = new EglInterface(eglGetProcAddress),
+                    PlatformType = 0x31D7,
+                    PlatformDisplay = device,
+                    SupportsMultipleContexts = true,
+                    SupportsContextSharing = true
+                });
 
-            _deferredContext = _platformGl.PrimaryEglContext;
+            var surface = _eglDisplay.EglInterface.CreateWindowSurface(_eglDisplay.Handle, _eglDisplay.Config, _gbmTargetSurface, new[] { EglConsts.EGL_NONE, EglConsts.EGL_NONE });
 
+            _eglSurface = new EglSurface(_eglDisplay, surface);
+
+            _deferredContext = _eglDisplay.CreateContext(null);
+            PlatformGraphics = new SharedContextGraphics(_deferredContext);
+
+            var initialBufferSwappingColorR = _outputOptions.InitialBufferSwappingColor.R / 255.0f;
+            var initialBufferSwappingColorG = _outputOptions.InitialBufferSwappingColor.G / 255.0f;
+            var initialBufferSwappingColorB = _outputOptions.InitialBufferSwappingColor.B / 255.0f;
+            var initialBufferSwappingColorA = _outputOptions.InitialBufferSwappingColor.A / 255.0f;
             using (_deferredContext.MakeCurrent(_eglSurface))
             {
-                _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
+                _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG, 
+                    initialBufferSwappingColorB, initialBufferSwappingColorA);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                 _eglSurface.SwapBuffers();
             }
@@ -162,21 +215,31 @@ namespace Avalonia.LinuxFramebuffer.Output
             _mode = mode;
             _currentBo = bo;
             
-            // Go trough two cycles of buffer swapping (there are render artifacts otherwise)
-            for(var c=0;c<2;c++)
-                using (CreateGlRenderTarget().BeginDraw())
-                {
-                    _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
-                    _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-                }
+            if (_outputOptions.EnableInitialBufferSwapping)
+            {
+                //Go trough two cycles of buffer swapping (there are render artifacts otherwise)
+                for(var c=0;c<2;c++)
+                    using (CreateGlRenderTarget().BeginDraw())
+                    {
+                        _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG, 
+                            initialBufferSwappingColorB, initialBufferSwappingColorA);
+                        _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                    }
+            }
             
         }
 
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
-        {
-            return new RenderTarget(this);
-        }
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
+        
 
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
+        {
+            if (context != _deferredContext)
+                throw new InvalidOperationException(
+                    "This platform backend can only create render targets for its primary context");
+            return CreateGlRenderTarget();
+        }
+    
         class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
             private readonly DrmOutput _parent;

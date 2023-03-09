@@ -10,9 +10,11 @@
     <EmbeddedResource Include="**\*.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
-  
+
+  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
 </Project>

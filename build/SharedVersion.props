@@ -2,13 +2,13 @@
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Product>Avalonia</Product>
-    <Version>0.10.999</Version>
+    <Version>11.0.999</Version>
+    <Authors>Avalonia Team</Authors>
     <Copyright>Copyright 2022 &#169; The AvaloniaUI Project</Copyright>
     <PackageProjectUrl>https://avaloniaui.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>CS1591</NoWarn>
-    <LangVersion>latest</LangVersion>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>Icon.png</PackageIcon>
     <PackageDescription>Avalonia is a cross-platform UI framework for .NET providing a flexible styling system and supporting a wide range of Operating Systems such as Windows, Linux, macOS and with experimental support for Android, iOS and WebAssembly.</PackageDescription>

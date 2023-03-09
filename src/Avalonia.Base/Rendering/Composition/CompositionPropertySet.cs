@@ -5,6 +5,8 @@ using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -21,7 +23,7 @@ namespace Avalonia.Rendering.Composition
         private readonly Dictionary<string, ExpressionVariant> _variants = new Dictionary<string, ExpressionVariant>();
         private readonly Dictionary<string, CompositionObject> _objects = new Dictionary<string, CompositionObject>();
         
-        internal CompositionPropertySet(Compositor compositor) : base(compositor, null!)
+        internal CompositionPropertySet(Compositor compositor) : base(compositor, null)
         {
         }
 

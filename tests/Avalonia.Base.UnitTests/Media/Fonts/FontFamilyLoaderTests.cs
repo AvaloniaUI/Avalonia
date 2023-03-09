@@ -46,9 +46,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void Should_Load_Single_FontAsset()
         {
             var source = new Uri(AssetMyFontRegular, UriKind.RelativeOrAbsolute);
-            var key = new FontFamilyKey(source);
 
-            var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+            var fontAssets = FontFamilyLoader.LoadFontAssets(source);
 
             Assert.Single(fontAssets);
         }
@@ -57,9 +56,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void Should_Load_Single_FontAsset_Avares_Without_BaseUri()
         {
             var source = new Uri(AssetYourFontAvares);
-            var key = new FontFamilyKey(source);
 
-            var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+            var fontAssets = FontFamilyLoader.LoadFontAssets(source);
 
             Assert.Single(fontAssets);
         }
@@ -69,9 +67,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             var source = new Uri(AssetYourFileName, UriKind.RelativeOrAbsolute);
             var baseUri = new Uri(AssetLocationAvares);
-            var key = new FontFamilyKey(source, baseUri);
 
-            var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+            var fontAssets = FontFamilyLoader.LoadFontAssets(new Uri(baseUri, source));
 
             Assert.Single(fontAssets);
         }
@@ -80,9 +77,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         public void Should_Load_Matching_Assets()
         {
             var source = new Uri(AssetLocation + ".MyFont*.ttf" + Assembly + FontName, UriKind.RelativeOrAbsolute);
-            var key = new FontFamilyKey(source);
 
-            var fontAssets = FontFamilyLoader.LoadFontAssets(key).ToArray();
+            var fontAssets = FontFamilyLoader.LoadFontAssets(source).ToArray();
 
             foreach (var fontAsset in fontAssets)
             {
@@ -97,11 +93,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
-                var fontFamily = new FontFamily("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono");
+                var source = new Uri("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono", UriKind.RelativeOrAbsolute);
 
-                var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key).ToArray();
+                var fontAssets = FontFamilyLoader.LoadFontAssets(source).ToArray();
 
                 Assert.NotEmpty(fontAssets);
 
@@ -117,7 +113,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         private static IDisposable StartWithResources(params (string, string)[] assets)
         {
             var assetLoader = new MockAssetLoader(assets);
-            var services = new TestServices(assetLoader: assetLoader, platform: new AppBuilder().RuntimePlatform);
+            var services = new TestServices(assetLoader: assetLoader, platform: new StandardRuntimePlatform());
             return UnitTestApplication.Start(services);
         }
     }

@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -73,6 +74,7 @@ namespace Avalonia.Controls
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
         private Thickness? _layoutThickness;
         private double _scale;
+        private CompositionBorderVisual? _borderVisual;
 
         /// <summary>
         /// Initializes static members of the <see cref="Border"/> class.
@@ -100,6 +102,10 @@ namespace Avalonia.Controls
                 case nameof(UseLayoutRounding):
                 case nameof(BorderThickness):
                     _layoutThickness = null;
+                    break;
+                case nameof(CornerRadius):
+                    if (_borderVisual != null)
+                        _borderVisual.CornerRadius = CornerRadius;
                     break;
             }
         }
@@ -219,7 +225,7 @@ namespace Avalonia.Controls
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             _borderRenderHelper.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);
@@ -243,6 +249,14 @@ namespace Avalonia.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
+        }
+
+        private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
+        {
+            return _borderVisual = new CompositionBorderVisual(compositor, this)
+            {
+                CornerRadius = CornerRadius
+            };
         }
 
         public CornerRadius ClipToBoundsRadius => CornerRadius;

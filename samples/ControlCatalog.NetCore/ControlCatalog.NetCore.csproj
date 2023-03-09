@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RuntimeFrameworkVersion>6.0.8</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunNativeAotCompilation)' == 'true'">
@@ -30,7 +31,6 @@
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
     <!-- For native controls test -->
     <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
   </ItemGroup>

@@ -33,7 +33,7 @@ namespace Avalonia.Input
         DragLink,
         None,
         
-        // Not available in GTK directly, see http://www.pixelbeat.org/programming/x_cursors/ 
+        // Not available in GTK directly, see https://www.pixelbeat.org/programming/x_cursors/
         // We might enable them later, preferably, by loading pixmax directly from theme with fallback image
         // SizeNorthWestSouthEast,
         // SizeNorthEastSouthWest,
@@ -71,8 +71,7 @@ namespace Avalonia.Input
 
         private static ICursorFactory GetCursorFactory()
         {
-            return AvaloniaLocator.Current.GetService<ICursorFactory>() ??
-                throw new Exception("Could not create Cursor: ICursorFactory not registered.");
+            return AvaloniaLocator.Current.GetRequiredService<ICursorFactory>();
         }
     }
 }

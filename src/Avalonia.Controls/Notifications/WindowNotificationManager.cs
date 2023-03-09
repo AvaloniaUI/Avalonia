@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Rendering;
-using Avalonia.Data;
 using Avalonia.VisualTree;
-using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls.Notifications
 {
@@ -16,7 +15,7 @@ namespace Avalonia.Controls.Notifications
     /// </summary>
     [TemplatePart("PART_Items", typeof(Panel))]
     [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
-    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
+    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
 
@@ -55,19 +54,11 @@ namespace Avalonia.Controls.Notifications
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
         /// <param name="host">The window that will host the control.</param>
-        public WindowNotificationManager(Window host)
+        public WindowNotificationManager(TopLevel? host)
         {
-            if (VisualChildren.Count != 0)
+            if (host != null)
             {
                 Install(host);
-            }
-            else
-            {
-                Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied)).Take(1)
-                    .Subscribe(_ =>
-                    {
-                        Install(host);
-                    });
             }
 
             UpdatePseudoClasses(Position);
@@ -102,15 +93,12 @@ namespace Avalonia.Controls.Notifications
                 Content = content
             };
 
-            if (notification != null)
+            notificationControl.NotificationClosed += (sender, args) =>
             {
-                notificationControl.NotificationClosed += (sender, args) =>
-                {
-                    notification.OnClose?.Invoke();
+                notification?.OnClose?.Invoke();
 
-                    _items?.Remove(sender);
-                };
-            }
+                _items?.Remove(sender);
+            };
 
             notificationControl.PointerPressed += (sender, args) =>
             {
@@ -154,11 +142,15 @@ namespace Avalonia.Controls.Notifications
         /// of the host <see cref="Window"/>.
         /// </summary>
         /// <param name="host">The <see cref="Window"/> that will be the host.</param>
-        private void Install(Window host)
+        private void Install(TemplatedControl host)
         {
             var adornerLayer = host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
 
-            adornerLayer?.Children.Add(this);
+            if (adornerLayer is not null)
+            {
+                adornerLayer.Children.Add(this);
+                AdornerLayer.SetAdornedElement(this, adornerLayer);
+            }
         }
 
         private void UpdatePseudoClasses(NotificationPosition position)
@@ -168,7 +160,5 @@ namespace Avalonia.Controls.Notifications
             PseudoClasses.Set(":bottomleft", position == NotificationPosition.BottomLeft);
             PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
         }
-
-        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
     }
 }

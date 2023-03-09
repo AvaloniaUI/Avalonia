@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// The Calendar whose dates this object represents.
         /// </summary>
-        private Calendar _owner;
+        private readonly Calendar _owner;
         
         /// <summary>
         /// Initializes a new instance of the
@@ -79,13 +79,13 @@ namespace Avalonia.Controls.Primitives
 
             if (DateTime.Compare(end, start) > -1)
             {
-                rangeStart = DateTimeHelper.DiscardTime(start).Value;
-                rangeEnd = DateTimeHelper.DiscardTime(end).Value;
+                rangeStart = DateTimeHelper.DiscardTime(start);
+                rangeEnd = DateTimeHelper.DiscardTime(end);
             }
             else
             {
-                rangeStart = DateTimeHelper.DiscardTime(end).Value;
-                rangeEnd = DateTimeHelper.DiscardTime(start).Value;
+                rangeStart = DateTimeHelper.DiscardTime(end);
+                rangeEnd = DateTimeHelper.DiscardTime(start);
             }
 
             int count = Count;
@@ -144,7 +144,7 @@ namespace Avalonia.Controls.Primitives
 
             if (!IsValid(item))
             {
-                throw new ArgumentOutOfRangeException("Value is not valid.");
+                throw new ArgumentOutOfRangeException(nameof(item), "Value is not valid.");
             }
 
             base.InsertItem(index, item);
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Primitives
 
             if (!IsValid(item))
             {
-                throw new ArgumentOutOfRangeException("Value is not valid.");
+                throw new ArgumentOutOfRangeException(nameof(item), "Value is not valid.");
             }
 
             base.SetItem(index, item);
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
         
-        private void EnsureValidThread()
+        private static void EnsureValidThread()
         {
             Dispatcher.UIThread.VerifyAccess();
         }

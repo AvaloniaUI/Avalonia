@@ -6,19 +6,21 @@ using Avalonia.Input.TextInput;
 
 namespace Avalonia.FreeDesktop
 {
-    public interface IX11InputMethodFactory
+    internal interface IX11InputMethodFactory
     {
         (ITextInputMethodImpl method, IX11InputMethodControl control) CreateClient(IntPtr xid);
     }
 
-    public struct X11InputMethodForwardedKey
+#pragma warning disable CA1815 // Override equals and operator equals on value types
+    internal struct X11InputMethodForwardedKey
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public int KeyVal { get; set; }
         public KeyModifiers Modifiers { get; set; }
         public RawKeyEventType Type { get; set; }
     }
     
-    public interface IX11InputMethodControl : IDisposable
+    internal interface IX11InputMethodControl : IDisposable
     {
         void SetWindowActive(bool active);
         bool IsEnabled { get; }

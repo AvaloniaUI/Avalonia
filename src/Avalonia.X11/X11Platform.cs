@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
@@ -21,7 +20,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    class AvaloniaX11Platform : IWindowingPlatform
+    internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
@@ -36,7 +35,7 @@ namespace Avalonia.X11
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
         [DllImport("libc")]
-        static extern void setlocale(int type, string s);
+        private static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
@@ -80,12 +79,12 @@ namespace Avalonia.X11
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
-                .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
+                .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
+                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = Avalonia.X11.X11Screens.Init(this);
+            X11Screens = X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
             {
@@ -97,18 +96,14 @@ namespace Avalonia.X11
             if (options.UseGpu)
             {
                 if (options.UseEGL)
-                    EglPlatformOpenGlInterface.TryInitialize();
+                    EglPlatformGraphics.TryInitialize();
                 else
-                    GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
+                    GlxPlatformGraphics.TryInitialize(Info, Options.GlProfiles);
             }
 
-            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
-            if (gl != null)
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
+            var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
-            if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
-
+            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -143,7 +138,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        bool EnableIme(X11PlatformOptions options)
+        private static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -164,8 +159,8 @@ namespace Avalonia.X11
 
             return isCjkLocale;
         }
-        
-        bool ShouldUseXim()
+
+        private static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
@@ -226,18 +221,7 @@ namespace Avalonia
         /// The default value is true.
         /// </summary>
         public bool UseDBusFilePicker { get; set; } = true;
-
-        /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-
-        public bool UseCompositor { get; set; } = true;
-
+        
         /// <summary>
         /// Determines whether to use IME.
         /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.
@@ -277,7 +261,9 @@ namespace Avalonia
             // and sometimes attempts to use GLX might cause a segfault
             "llvmpipe"
         };
-        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
+
+        
+        public string WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -286,10 +272,22 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        public X11PlatformOptions()
+        {
+            try
+            {
+                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+            }
+            catch
+            {
+                //
+            }
+        }
     }
     public static class AvaloniaX11PlatformExtensions
     {
-        public static T UseX11<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseX11(this AppBuilder builder)
         {
             builder.UseWindowingSubsystem(() =>
                 new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??

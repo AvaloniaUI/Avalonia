@@ -1,17 +1,15 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.MicroCom;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
@@ -133,10 +131,10 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    if (folder?.TryGetUri(out var folderPath) == true)
+                    if (folder?.TryGetLocalPath() is { } folderPath)
                     {
                         var riid = UnmanagedMethods.ShellIds.IShellItem;
-                        if (UnmanagedMethods.SHCreateItemFromParsingName(folderPath.LocalPath, IntPtr.Zero, ref riid, out var directoryShellItem)
+                        if (UnmanagedMethods.SHCreateItemFromParsingName(folderPath, IntPtr.Zero, ref riid, out var directoryShellItem)
                             == (uint)UnmanagedMethods.HRESULT.S_OK)
                         {
                             var proxy = MicroComRuntime.CreateProxyFor<IShellItem>(directoryShellItem, true);
@@ -145,7 +143,7 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    var showResult = frm.Show(_windowImpl.Handle!.Handle);
+                    var showResult = frm.Show(_windowImpl.Handle.Handle);
 
                     if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
                     {
@@ -187,7 +185,7 @@ namespace Avalonia.Win32
                     var message = new Win32Exception(ex.HResult).Message;
                     throw new COMException(message, ex);
                 }
-            })!;
+            });
         }
 
 
@@ -219,7 +217,6 @@ namespace Avalonia.Win32
             }
 
             var size = Marshal.SizeOf<UnmanagedMethods.COMDLG_FILTERSPEC>();
-            var arr = new byte[size];
             var resultArr = new byte[size * filters.Count];
 
             for (int i = 0; i < filters.Count; i++)
@@ -235,7 +232,7 @@ namespace Avalonia.Win32
                 {
                     var filterStr = new UnmanagedMethods.COMDLG_FILTERSPEC
                     {
-                        pszName = filter.Name ?? string.Empty,
+                        pszName = filter.Name,
                         pszSpec = string.Join(";", filter.Patterns)
                     };
 

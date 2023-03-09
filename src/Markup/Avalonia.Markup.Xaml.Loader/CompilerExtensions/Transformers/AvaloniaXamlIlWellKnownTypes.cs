@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
@@ -9,8 +10,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlWellKnownTypes
     {
+        public IXamlType RuntimeHelpers { get; }
         public IXamlType AvaloniaObject { get; }
-        public IXamlType IAvaloniaObject { get; }
         public IXamlType BindingPriority { get; }
         public IXamlType AvaloniaObjectExtensions { get; }
         public IXamlType AvaloniaProperty { get; }
@@ -29,9 +30,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType AssignBindingAttribute { get; }
         public IXamlType DependsOnAttribute { get; }
         public IXamlType DataTypeAttribute { get; }
+        public IXamlType InheritDataTypeFromItemsAttribute { get; }
+        public IXamlType MarkupExtensionOptionAttribute { get; }
+        public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
+        public IXamlType OnExtensionType { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
-        public IXamlType IStyledElement { get; }
         public IXamlType NameScope { get; }
         public IXamlMethod NameScopeSetNameScope { get; }
         public IXamlType INameScope { get; }
@@ -51,8 +55,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public IXamlType DataTemplate { get; }
         public IXamlType IDataTemplate { get; }
-        public IXamlType IItemsPresenterHost { get; }
-        public IXamlType ItemsRepeater { get; }
+        public IXamlType ItemsControl { get; }
         public IXamlType ReflectionBindingExtension { get; }
 
         public IXamlType RelativeSource { get; }
@@ -64,6 +67,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
         public IXamlConstructor ThicknessFullConstructor { get; }
+        public IXamlType ThemeVariant { get; }
         public IXamlType Point { get; }
         public IXamlConstructor PointFullConstructor { get; }
         public IXamlType Vector { get; }
@@ -98,12 +102,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextDecorations { get; }
         public IXamlType TextTrimming { get; }
         public IXamlType ISetter { get; }
+        public IXamlType IStyle { get; }
+        public IXamlType StyleInclude { get; }
+        public IXamlType ResourceInclude { get; }
+        public IXamlType MergeResourceInclude { get; }
+        public IXamlType IResourceDictionary { get; }
+        public IXamlType ResourceDictionary { get; }
+        public IXamlMethod ResourceDictionaryDeferredAdd { get; }
+        public IXamlType UriKind { get; }
+        public IXamlConstructor UriConstructor { get; }
+        public IXamlType Style { get; }
+        public IXamlType ControlTheme { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
+            RuntimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
+
             XamlIlTypes = cfg.WellKnownTypes;
             AvaloniaObject = cfg.TypeSystem.GetType("Avalonia.AvaloniaObject");
-            IAvaloniaObject = cfg.TypeSystem.GetType("Avalonia.IAvaloniaObject");
             AvaloniaObjectExtensions = cfg.TypeSystem.GetType("Avalonia.AvaloniaObjectExtensions");
             AvaloniaProperty = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty");
             AvaloniaPropertyT = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty`1");
@@ -113,7 +129,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaObjectSetStyledPropertyValue = AvaloniaObject
                 .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
                                  && m.Parameters.Count == 3
-                                 && m.Parameters[0].Name == "StyledPropertyBase`1"
+                                 && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
@@ -122,12 +138,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
             DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
-            AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
+            InheritDataTypeFromItemsAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromItemsAttribute");
+            MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
+            MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
+            OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
+            AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, AvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
             UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
             StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
-            IStyledElement = cfg.TypeSystem.GetType("Avalonia.IStyledElement");
+            StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             INameScope = cfg.TypeSystem.GetType("Avalonia.Controls.INameScope");
             INameScopeRegister = INameScope.GetMethod(
                 new FindMethodMethodSignature("Register", XamlIlTypes.Void,
@@ -162,8 +182,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ResolveByNameExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ResolveByNameExtension");
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
             IDataTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IDataTemplate");
-            IItemsPresenterHost = cfg.TypeSystem.GetType("Avalonia.Controls.Presenters.IItemsPresenterHost");
-            ItemsRepeater = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsRepeater");
+            ItemsControl = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsControl");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
             UInt = cfg.TypeSystem.GetType("System.UInt32");
@@ -172,6 +191,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Uri = cfg.TypeSystem.GetType("System.Uri");
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
+            ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
 
             (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
             {
@@ -206,7 +226,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             StyledElementClassesProperty =
                 StyledElement.Properties.First(x => x.Name == "Classes" && x.PropertyType.Equals(Classes));
             ClassesBindMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
-                .FindMethod( "BindClass", IDisposable, false, IStyledElement,
+                .FindMethod( "BindClass", IDisposable, false, StyledElement,
                 cfg.WellKnownTypes.String,
                 IBinding, cfg.WellKnownTypes.Object);
 
@@ -218,6 +238,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
             ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
+            IStyle = cfg.TypeSystem.GetType("Avalonia.Styling.IStyle");
+            StyleInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.StyleInclude");
+            ResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.ResourceInclude");
+            MergeResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.MergeResourceInclude");
+            IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
+            ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
+            ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
+                cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
+                    cfg.TypeSystem.GetType("System.IServiceProvider"),
+                    XamlIlTypes.Object));
+            UriKind = cfg.TypeSystem.GetType("System.UriKind");
+            UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
+            Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
+            ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
         }
     }
 
@@ -230,8 +264,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
             return rv;
         }
-        
+
         public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> ctx)
+        {
+            if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
+                return rv;
+            ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
+            return rv;
+        }
+        
+        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this AstGroupTransformationContext ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
                 return rv;

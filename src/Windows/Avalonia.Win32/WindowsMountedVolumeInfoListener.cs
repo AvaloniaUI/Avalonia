@@ -2,33 +2,28 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
+using Avalonia.Threading;
 
 namespace Avalonia.Win32
 {
     internal class WindowsMountedVolumeInfoListener : IDisposable
     {
-        private readonly CompositeDisposable _disposables;
-        private bool _beenDisposed = false;
-        private ObservableCollection<MountedVolumeInfo> mountedDrives;
+        private readonly IDisposable _disposable;
+        private bool _beenDisposed;
+        private readonly ObservableCollection<MountedVolumeInfo> _mountedDrives;
 
         public WindowsMountedVolumeInfoListener(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
-            this.mountedDrives = mountedDrives;
-            _disposables = new CompositeDisposable();
+            _mountedDrives = mountedDrives;
 
-            var pollTimer = Observable.Interval(TimeSpan.FromSeconds(1))
-                                      .Subscribe(Poll);
+            _disposable = DispatcherTimer.Run(Poll, TimeSpan.FromSeconds(1));
 
-            _disposables.Add(pollTimer);
-
-            Poll(0);
+            Poll();
         }
 
-        private void Poll(long _)
+        private bool Poll()
         {
             var allDrives = DriveInfo.GetDrives();
 
@@ -55,14 +50,15 @@ namespace Avalonia.Win32
                                 })
                                 .ToArray();
 
-            if (mountedDrives.SequenceEqual(mountVolInfos))
-                return;
+            if (_mountedDrives.SequenceEqual(mountVolInfos))
+                return true;
             else
             {
-                mountedDrives.Clear();
+                _mountedDrives.Clear();
 
                 foreach (var i in mountVolInfos)
-                    mountedDrives.Add(i);
+                    _mountedDrives.Add(i);
+                return true;
             }
         }
 
@@ -72,7 +68,7 @@ namespace Avalonia.Win32
             {
                 if (disposing)
                 {
-
+                    _disposable.Dispose();
                 }
                 _beenDisposed = true;
             }

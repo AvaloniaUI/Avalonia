@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,6 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
 using Avalonia.Input;
 using Avalonia.MicroCom;
+using Avalonia.Platform.Storage;
 using Avalonia.Win32.Interop;
 
 using FORMATETC = Avalonia.Win32.Interop.FORMATETC;
@@ -21,9 +23,9 @@ namespace Avalonia.Win32
         // Compatibility with WinForms + WPF...
         internal static readonly byte[] SerializedObjectGUID = new Guid("FD9EA796-3B13-4370-A679-56106BB288FB").ToByteArray();
 
-        class FormatEnumerator : CallbackBase, Win32Com.IEnumFORMATETC
+        private class FormatEnumerator : CallbackBase, Win32Com.IEnumFORMATETC
         {
-            private FORMATETC[] _formats;
+            private readonly FORMATETC[] _formats;
             private uint _current;
 
             private FormatEnumerator(FORMATETC[] formats, uint current)
@@ -104,16 +106,12 @@ namespace Avalonia.Win32
 
         public DataObject(IDataObject wrapped)
         {
-            if (wrapped == null)
+            _wrapped = wrapped switch
             {
-                throw new ArgumentNullException(nameof(wrapped));
-            }
-            if (_wrapped is DataObject || _wrapped is OleDataObject)
-            {
-                throw new InvalidOperationException();
-            }
-
-            _wrapped = wrapped;
+                null => throw new ArgumentNullException(nameof(wrapped)),
+                DataObject or OleDataObject => throw new ArgumentException($"Cannot wrap a {wrapped.GetType()}"),
+                _ => wrapped
+            };
         }
 
         #region IDataObject
@@ -127,17 +125,7 @@ namespace Avalonia.Win32
             return _wrapped.GetDataFormats();
         }
 
-        IEnumerable<string> IDataObject.GetFileNames()
-        {
-            return _wrapped.GetFileNames();
-        }
-
-        string IDataObject.GetText()
-        {
-            return _wrapped.GetText();
-        }
-
-        object IDataObject.Get(string dataFormat)
+        object? IDataObject.Get(string dataFormat)
         {
             return _wrapped.Get(dataFormat);
         }
@@ -181,9 +169,6 @@ namespace Avalonia.Win32
             if (_wrapped is Win32Com.IDataObject ole)
                 return ole.GetCanonicalFormatEtc(formatIn);
 
-            var formatOut = new FORMATETC();
-            formatOut.ptd = IntPtr.Zero;
-
             throw new COMException(nameof(UnmanagedMethods.HRESULT.E_NOTIMPL), unchecked((int)UnmanagedMethods.HRESULT.E_NOTIMPL));
         }
 
@@ -204,7 +189,7 @@ namespace Avalonia.Win32
             if (string.IsNullOrEmpty(fmt) || !_wrapped.Contains(fmt))
                 return DV_E_FORMATETC;
 
-            * medium = default(Interop.STGMEDIUM);
+            * medium = default;
             medium->tymed = TYMED.TYMED_HGLOBAL;
             return WriteDataToHGlobal(fmt, ref medium->unionmember);
         }
@@ -263,11 +248,15 @@ namespace Avalonia.Win32
 
         private uint WriteDataToHGlobal(string dataFormat, ref IntPtr hGlobal)
         {
-            object data = _wrapped.Get(dataFormat);
+            object data = _wrapped.Get(dataFormat)!;
             if (dataFormat == DataFormats.Text || data is string)
-                return WriteStringToHGlobal(ref hGlobal, Convert.ToString(data));
+                return WriteStringToHGlobal(ref hGlobal, Convert.ToString(data) ?? string.Empty);
+#pragma warning disable CS0618 // Type or member is obsolete
             if (dataFormat == DataFormats.FileNames && data is IEnumerable<string> files)
                 return WriteFileListToHGlobal(ref hGlobal, files);
+#pragma warning restore CS0618 // Type or member is obsolete
+            if (dataFormat == DataFormats.Files && data is IEnumerable<IStorageItem> items)
+                return WriteFileListToHGlobal(ref hGlobal, items.Select(f => f.TryGetLocalPath()).Where(f => f is not null)!);
             if (data is Stream stream)
             {
                 var length = (int)(stream.Length - stream.Position);
@@ -285,24 +274,27 @@ namespace Avalonia.Win32
             }
             if (data is IEnumerable<byte> bytes)
             {
-                var byteArr = bytes is byte[] ? (byte[])bytes : bytes.ToArray();
+                var byteArr = bytes as byte[] ?? bytes.ToArray();
                 return WriteBytesToHGlobal(ref hGlobal, byteArr);
             }
             return WriteBytesToHGlobal(ref hGlobal, SerializeObject(data));
         }
 
-        private byte[] SerializeObject(object data)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms dragndrop compatability")]
+        private static byte[] SerializeObject(object data)
         {
             using (var ms = new MemoryStream())
             {
                 ms.Write(SerializedObjectGUID, 0, SerializedObjectGUID.Length);
                 BinaryFormatter binaryFormatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                 binaryFormatter.Serialize(ms, data);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 return ms.ToArray();
             }
         }
 
-        private unsafe uint WriteBytesToHGlobal(ref IntPtr hGlobal, ReadOnlySpan<byte> data)
+        private static unsafe uint WriteBytesToHGlobal(ref IntPtr hGlobal, ReadOnlySpan<byte> data)
         {
             int required = data.Length;
             if (hGlobal == IntPtr.Zero)
@@ -326,9 +318,9 @@ namespace Avalonia.Win32
             }
         }
 
-        private uint WriteFileListToHGlobal(ref IntPtr hGlobal, IEnumerable<string> files)
+        private static uint WriteFileListToHGlobal(ref IntPtr hGlobal, IEnumerable<string> files)
         {
-            if (!files?.Any() ?? false)
+            if (!files.Any())
                 return unchecked((int)UnmanagedMethods.HRESULT.S_OK);
 
             char[] filesStr = (string.Join("\0", files) + "\0\0").ToCharArray();
@@ -358,7 +350,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private uint WriteStringToHGlobal(ref IntPtr hGlobal, string data)
+        private static uint WriteStringToHGlobal(ref IntPtr hGlobal, string data)
         {
             int required = (data.Length + 1) * sizeof(char);
             if (hGlobal == IntPtr.Zero)
@@ -388,7 +380,7 @@ namespace Avalonia.Win32
 
         public void ReleaseWrapped()
         {
-            _wrapped = null;
+            _wrapped = null!;
         }
         #endregion
     }

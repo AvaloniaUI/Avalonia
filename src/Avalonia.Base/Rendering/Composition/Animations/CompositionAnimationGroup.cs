@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Transport;
 
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Animations
 {
     public class CompositionAnimationGroup : CompositionObject, ICompositionAnimationBase
@@ -17,7 +19,7 @@ namespace Avalonia.Rendering.Composition.Animations
         public void Remove(CompositionAnimation value) => Animations.Remove(value);
         public void RemoveAll() => Animations.Clear();
 
-        public CompositionAnimationGroup(Compositor compositor) : base(compositor, null!)
+        public CompositionAnimationGroup(Compositor compositor) : base(compositor, null)
         {
         }
     }

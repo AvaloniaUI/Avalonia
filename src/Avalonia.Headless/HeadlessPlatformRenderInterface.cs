@@ -9,10 +9,11 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessPlatformRenderInterface : IPlatformRenderInterface
+    internal class HeadlessPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public static void Initialize()
         {
@@ -22,11 +23,14 @@ namespace Avalonia.Headless
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
+
         public bool SupportsIndividualRoundRects => false;
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -47,6 +51,8 @@ namespace Avalonia.Headless
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
+        public bool IsLost => false;
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -110,14 +116,32 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return new HeadlessGeometryStub(glyphRun.Bounds);
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(
+            IGlyphTypeface glyphTypeface, 
+            double fontRenderingEmSize,
+            IReadOnlyList<GlyphInfo> glyphInfos, 
+            Point baselineOrigin)
         {
             return new HeadlessGlyphRunStub();
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        class HeadlessGlyphRunStub : IGlyphRunImpl
         {
-            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+            public Rect Bounds => new Rect(new Size(8, 12));
+
+            public Point BaselineOrigin => new Point(0, 8);
+
+            public void Dispose()
+            {
+            }
+
+            public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
+                => Array.Empty<float>();
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -203,16 +227,9 @@ namespace Avalonia.Headless
             public Matrix Transform { get; }
         }
 
-        class HeadlessGlyphRunStub : IGlyphRunImpl
-        {
-            public void Dispose()
-            {
-            }
-        }
-
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
         {
-            public HeadlessStreamingGeometryStub() : base(Rect.Empty)
+            public HeadlessStreamingGeometryStub() : base(default)
             {
             }
 
@@ -308,10 +325,12 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public bool IsCorrupted => false;
 
             public void Blit(IDrawingContextImpl context)
             {
@@ -323,15 +342,17 @@ namespace Avalonia.Headless
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
             public int Version { get; set; }
-            public void Save(string fileName)
+            public void Save(string fileName, int? quality = null)
             {
 
             }
 
-            public void Save(Stream stream)
+            public void Save(Stream stream, int? quality = null)
             {
 
             }
+
+            public PixelFormat? Format { get; }
 
             public ILockedFramebuffer Lock()
             {
@@ -371,7 +392,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect rect)
             {
 
             }
@@ -416,6 +437,11 @@ namespace Avalonia.Headless
 
             }
 
+            public object GetFeature(Type t)
+            {
+                return null;
+            }
+
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
             }
@@ -447,7 +473,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 
             }
@@ -465,10 +491,17 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public bool IsCorrupted => false;
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
+    public sealed class PopupRoot : WindowBase, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -72,12 +72,12 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        IInteractive? IInteractive.InteractiveParent => Parent;
+        protected internal override Interactive? InteractiveParent => (Interactive?)Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        IVisual? IHostedVisualTreeRoot.Host => Parent;
+        Visual? IHostedVisualTreeRoot.Host => VisualParent;
 
         /// <summary>
         /// Gets the styling parent of the popup root.
@@ -95,10 +95,10 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner.Update(_positionerParameters);
+            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
         }
 
-        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None,
             PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
@@ -111,9 +111,9 @@ namespace Avalonia.Controls.Primitives
                 UpdatePosition();
         }
 
-        public void SetChild(IControl? control) => Content = control;
+        public void SetChild(Control? control) => Content = control;
 
-        IVisual IPopupHost.HostedVisualTreeRoot => this;
+        Visual IPopupHost.HostedVisualTreeRoot => this;
         
         protected override Size MeasureOverride(Size availableSize)
         {

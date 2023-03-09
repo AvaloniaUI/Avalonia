@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
@@ -74,14 +72,13 @@ namespace ControlCatalog.ViewModels
             var window = View?.GetVisualRoot() as Window;
             if (window == null)
                 return;
-            var dialog = new OpenFileDialog();
-            var result = await dialog.ShowAsync(window);
+            var result = await window.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions() { AllowMultiple = true });
 
             if (result != null)
             {
-                foreach (var path in result)
+                foreach (var file in result)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Opened: {path}");
+                    System.Diagnostics.Debug.WriteLine($"Opened: {file.Name}");
                 }
             }
         }

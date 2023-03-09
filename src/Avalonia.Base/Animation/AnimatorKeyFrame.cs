@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation.Animators;
 using Avalonia.Data;
 using Avalonia.Reactive;
@@ -20,22 +21,25 @@ namespace Avalonia.Animation
 
         }
 
-        public AnimatorKeyFrame(Type? animatorType, Cue cue)
+        public AnimatorKeyFrame(Type? animatorType, Func<IAnimator>? animatorFactory, Cue cue)
         {
             AnimatorType = animatorType;
+            AnimatorFactory = animatorFactory;
             Cue = cue;
             KeySpline = null;
         }
 
-        public AnimatorKeyFrame(Type? animatorType, Cue cue, KeySpline? keySpline)
+        public AnimatorKeyFrame(Type? animatorType, Func<IAnimator>? animatorFactory, Cue cue, KeySpline? keySpline)
         {
             AnimatorType = animatorType;
+            AnimatorFactory = animatorFactory;
             Cue = cue;
             KeySpline = keySpline;
         }
 
         internal bool isNeutral;
         public Type? AnimatorType { get; }
+        public Func<IAnimator>? AnimatorFactory { get; }
         public Cue Cue { get; }
         public KeySpline? KeySpline { get; }
         public AvaloniaProperty? Property { get; private set; }
@@ -59,11 +63,12 @@ namespace Avalonia.Animation
             }
             else
             {
-                return this.Bind(ValueProperty, ObservableEx.SingleValue(value).ToBinding(), targetControl);
+                return this.Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
             }
         }
 
-        public T GetTypedValue<T>()
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+        public T GetTypedValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConv = TypeDescriptor.GetConverter(typeof(T));
 

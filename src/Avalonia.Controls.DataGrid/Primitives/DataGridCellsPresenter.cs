@@ -161,7 +161,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     // Clip
                     RectangleGeometry rg = new RectangleGeometry();
-                    rg.Rect = Rect.Empty;
+                    rg.Rect = default;
                     cell.Clip = rg;
                 }
             }
@@ -336,7 +336,7 @@ namespace Avalonia.Controls.Primitives
 
         internal void InvalidateChildIndex()
         {
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
         }
 
         private bool ShouldDisplayCell(DataGridColumn column, double frozenLeftEdge, double scrollingLeftEdge)

@@ -22,7 +22,7 @@ namespace Avalonia.Direct2D1
         {            
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var locked = _surface.Lock();
             if (locked.Format == PixelFormat.Rgb565)
@@ -32,8 +32,10 @@ namespace Avalonia.Direct2D1
             }
 
             return new FramebufferShim(locked)
-                .CreateDrawingContext(visualBrushRenderer);
+                .CreateDrawingContext();
         }
+
+        public bool IsCorrupted => false;
 
         class FramebufferShim : WicRenderTargetBitmapImpl
         {
@@ -45,9 +47,9 @@ namespace Avalonia.Direct2D1
                 _target = target;
             }
             
-            public override IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public override IDrawingContextImpl CreateDrawingContext()
             {
-                return base.CreateDrawingContext(visualBrushRenderer, () =>
+                return base.CreateDrawingContext(() =>
                 {
                     using (var l = WicImpl.Lock(BitmapLockFlags.Read))
                     {

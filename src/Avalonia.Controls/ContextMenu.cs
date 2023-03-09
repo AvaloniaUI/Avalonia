@@ -15,6 +15,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -77,8 +78,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
@@ -313,11 +314,6 @@ namespace Avalonia.Controls
         { 
             add => _popupHostChangedHandler += value; 
             remove => _popupHostChangedHandler -= value;
-        }
-
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
         }
 
         private void Open(Control control, Control placementTarget, bool requestedByPointer)

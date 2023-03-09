@@ -2,6 +2,7 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Shapes
 {
@@ -192,7 +193,7 @@ namespace Avalonia.Controls.Shapes
             set { SetValue(StrokeJoinProperty, value); }
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
 
@@ -292,7 +293,7 @@ namespace Avalonia.Controls.Shapes
                 return finalSize;
             }
 
-            return Size.Empty;
+            return default;
         }
 
         internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)

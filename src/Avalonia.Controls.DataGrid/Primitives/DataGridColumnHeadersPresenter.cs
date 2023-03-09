@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Primitives
     public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
     {
         private Control _dragIndicator;
-        private IControl _dropLocationIndicator;
+        private Control _dropLocationIndicator;
         private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// The drop location indicator control.  This value is null if no column is being dragged.
         /// </summary>
-        internal IControl DropLocationIndicator
+        internal Control DropLocationIndicator
         {
             get
             {
@@ -305,7 +305,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (!OwningGrid.AreColumnHeadersVisible)
             {
-                return Size.Empty;
+                return default;
             }
             double height = OwningGrid.ColumnHeaderHeight;
             bool autoSizeHeight;
@@ -423,7 +423,7 @@ namespace Avalonia.Controls.Primitives
 
         internal void InvalidateChildIndex()
         {
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
         }
     }
 }

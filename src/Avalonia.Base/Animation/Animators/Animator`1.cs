@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
 using Avalonia.Data;
@@ -39,7 +38,7 @@ namespace Avalonia.Animation.Animators
                 VerifyConvertKeyFrames();
 
             var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
-            return match.Subscribe(subject);
+            return new CompositeDisposable(match.Subscribe(subject), subject);
         }
 
         protected T InterpolationHandler(double animationTime, T neutralValue)
@@ -171,12 +170,12 @@ namespace Avalonia.Animation.Animators
         {
             if (!hasStartKey)
             {
-                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
             }
 
             if (!hasEndKey)
             {
-                _convertedKeyframes.Add(new AnimatorKeyFrame(null, new Cue(1.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Add(new AnimatorKeyFrame(null, null, new Cue(1.0d)) { Value = default(T), isNeutral = true });
             }
         }
     }

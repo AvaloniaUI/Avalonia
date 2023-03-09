@@ -1,6 +1,7 @@
 using System;
-using System.Reactive.Subjects;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -11,7 +12,7 @@ namespace Avalonia
     /// <typeparam name="TValue">The value type of the property.</typeparam>
     public abstract class AvaloniaProperty<TValue> : AvaloniaProperty
     {
-        private readonly Subject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
+        private readonly LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
@@ -24,25 +25,10 @@ namespace Avalonia
             string name,
             Type ownerType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
-            _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
-        /// </summary>
-        /// <param name="source">The property to copy.</param>
-        /// <param name="ownerType">The new owner type.</param>
-        /// <param name="metadata">Optional overridden metadata.</param>
-        [Obsolete("Use constructor with AvaloniaProperty<TValue> instead.", true)]
-        protected AvaloniaProperty(
-            AvaloniaProperty source,
-            Type ownerType,
-            AvaloniaPropertyMetadata? metadata)
-            : this(source as AvaloniaProperty<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
-        {
+            _changed = new LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>>();
         }
 
         /// <summary>
@@ -82,6 +68,7 @@ namespace Avalonia
 
         protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)

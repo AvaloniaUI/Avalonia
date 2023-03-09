@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
-
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLayoutTests
@@ -59,9 +60,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textRun = textLine.TextRuns[1];
 
-                Assert.Equal(2, textRun.Text.Length);
+                Assert.Equal(2, textRun.Length);
 
-                var actual = textRun.Text.Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("1 ", actual);
 
@@ -140,21 +141,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     black,
                     textWrapping: TextWrapping.Wrap);
 
-                var expectedGlyphs = expected.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>()
-                    .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
+                var expectedGlyphs = GetGlyphs(expected);
 
-                var outer = new GraphemeEnumerator(text.AsMemory());
-                var inner = new GraphemeEnumerator(text.AsMemory());
+                var outer = new GraphemeEnumerator(text);
+                var inner = new GraphemeEnumerator(text);
                 var i = 0;
                 var j = 0;
 
                 while (true)
                 {
-                    while (inner.MoveNext())
+                    Grapheme grapheme;
+                    while (inner.MoveNext(out grapheme))
                     {
-                        j += inner.Current.Text.Length;
+                        j += grapheme.Length;
 
-                        if(j + i > text.Length)
+                        if (j + i > text.Length)
                         {
                             break;
                         }
@@ -173,8 +174,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                             textWrapping: TextWrapping.Wrap,
                             textStyleOverrides: spans);
 
-                        var actualGlyphs = actual.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>()
-                            .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
+                        var actualGlyphs = GetGlyphs(actual);
 
                         Assert.Equal(expectedGlyphs.Count, actualGlyphs.Count);
 
@@ -184,16 +184,23 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         }
                     }
 
-                    if (!outer.MoveNext())
+                    if (!outer.MoveNext(out grapheme))
                     {
                         break;
                     }
 
-                    inner = new GraphemeEnumerator(text.AsMemory());
+                    inner = new GraphemeEnumerator(text);
 
-                    i += outer.Current.Text.Length;
+                    i += grapheme.Length;
                 }
             }
+
+            static List<string> GetGlyphs(TextLayout textLayout)
+                => textLayout.TextLines
+                    .Select(line => string.Join('|', line.TextRuns
+                        .Cast<ShapedTextRun>()
+                        .SelectMany(run => run.ShapedBuffer, (_, glyph) => glyph.GlyphIndex)))
+                    .ToList();
         }
 
         [Fact]
@@ -222,10 +229,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textRun = textLine.TextRuns[0];
 
-                Assert.Equal(2, textRun.Text.Length);
+                Assert.Equal(2, textRun.Length);
 
-                var actual = SingleLineText.Substring(textRun.Text.Start,
-                    textRun.Text.Length);
+                var actual = SingleLineText[..textRun.Length];
 
                 Assert.Equal("01", actual);
 
@@ -259,9 +265,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textRun = textLine.TextRuns[1];
 
-                Assert.Equal(2, textRun.Text.Length);
+                Assert.Equal(2, textRun.Length);
 
-                var actual = textRun.Text.Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("89", actual);
 
@@ -295,7 +301,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textRun = textLine.TextRuns[0];
 
-                Assert.Equal(1, textRun.Text.Length);
+                Assert.Equal(1, textRun.Length);
 
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
@@ -329,9 +335,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textRun = textLine.TextRuns[1];
 
-                Assert.Equal(2, textRun.Text.Length);
+                Assert.Equal(2, textRun.Length);
 
-                var actual = textRun.Text.Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("😄", actual);
 
@@ -368,7 +374,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(
                     MultiLineText.Length,
                     layout.TextLines.Select(textLine =>
-                            textLine.TextRuns.Sum(textRun => textRun.Text.Length))
+                            textLine.TextRuns.Sum(textRun => textRun.Length))
                         .Sum());
             }
         }
@@ -401,7 +407,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(
                     text.Length,
                     layout.TextLines.Select(textLine =>
-                            textLine.TextRuns.Sum(textRun => textRun.Text.Length))
+                            textLine.TextRuns.Sum(textRun => textRun.Length))
                         .Sum());
             }
         }
@@ -447,11 +453,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     12.0f,
                     Brushes.Black.ToImmutable());
 
-                var shapedRun = (ShapedTextCharacters)layout.TextLines[0].TextRuns[0];
+                var shapedRun = (ShapedTextRun)layout.TextLines[0].TextRuns[0];
 
                 var glyphRun = shapedRun.GlyphRun;
 
-                var width = glyphRun.Size.Width;
+                var width = glyphRun.Bounds.Width;
 
                 var characterHit = glyphRun.GetCharacterHitFromDistance(width, out _);
 
@@ -481,15 +487,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    var shapedRun = (ShapedTextCharacters)textRun;
+                    var shapedRun = (ShapedTextRun)textRun;
 
-                    var glyphClusters = shapedRun.ShapedBuffer.GlyphClusters;
+                    var glyphClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster).ToArray();
 
-                    var expected = clusters.Skip(index).Take(glyphClusters.Count).ToArray();
+                    var expected = clusters.Skip(index).Take(glyphClusters.Length).ToArray();
 
                     Assert.Equal(expected, glyphClusters);
 
-                    index += glyphClusters.Count;
+                    index += glyphClusters.Length;
                 }
             }
         }
@@ -514,13 +520,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
 
-                Assert.Equal(expectedLength, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Count);
+                Assert.Equal(expectedLength, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphInfos.Count);
 
-                Assert.Equal(5, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).ShapedBuffer.GlyphClusters[5]);
+                Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).ShapedBuffer[5].GlyphCluster);
 
                 if (expectedLength == 7)
                 {
-                    Assert.Equal(5, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).ShapedBuffer.GlyphClusters[6]);
+                    Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).ShapedBuffer[6].GlyphCluster);
                 }
             }
         }
@@ -555,15 +561,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine = layout.TextLines[0];
 
-                var textRun = (ShapedTextCharacters)textLine.TextRuns[0];
+                var textRun = (ShapedTextRun)textLine.TextRuns[0];
 
-                Assert.Equal(7, textRun.Text.Length);
+                Assert.Equal(7, textRun.Length);
 
                 var replacementGlyph = Typeface.Default.GlyphTypeface.GetGlyph(Codepoint.ReplacementCodepoint);
 
-                foreach (var glyph in textRun.GlyphRun.GlyphIndices)
+                foreach (var glyphInfo in textRun.GlyphRun.GlyphInfos)
                 {
-                    Assert.Equal(replacementGlyph, glyph);
+                    Assert.Equal(replacementGlyph, glyphInfo.GlyphIndex);
                 }
             }
         }
@@ -577,9 +583,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var glyphTypeface = Typeface.Default.GlyphTypeface;
 
-                var emHeight = glyphTypeface.DesignEmHeight;
+                var emHeight = glyphTypeface.Metrics.DesignEmHeight;
 
-                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+                var lineHeight = glyphTypeface.Metrics.LineSpacing * (12.0 / emHeight);
 
                 var layout = new TextLayout(
                     text,
@@ -667,10 +673,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(5, layout.TextLines.Count);
 
-                Assert.Equal("123\r\n", layout.TextLines[0].TextRuns[0].Text);
-                Assert.Equal("\r\n", layout.TextLines[1].TextRuns[0].Text);
-                Assert.Equal("456\r\n", layout.TextLines[2].TextRuns[0].Text);
-                Assert.Equal("\r\n", layout.TextLines[3].TextRuns[0].Text);
+                Assert.Equal("123\r\n", layout.TextLines[0].TextRuns[0].Text.ToString());
+                Assert.Equal("\r\n", layout.TextLines[1].TextRuns[0].Text.ToString());
+                Assert.Equal("456\r\n", layout.TextLines[2].TextRuns[0].Text.ToString());
+                Assert.Equal("\r\n", layout.TextLines[3].TextRuns[0].Text.ToString());
             }
         }
 
@@ -718,7 +724,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var selectedRect = rects[0];
 
-                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width);
+                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width, 2);
             }
         }
 
@@ -738,7 +744,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine = layout.TextLines[0];
 
                 var start = textLine.GetDistanceFromCharacterHit(new CharacterHit(5, 1));
-                
+
                 var end = textLine.GetDistanceFromCharacterHit(new CharacterHit(6, 1));
 
                 var rects = layout.HitTestTextRange(0, 7).ToArray();
@@ -746,7 +752,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(1, rects.Length);
 
                 var expected = rects[0];
-                
+
                 Assert.Equal(expected.Left, start);
                 Assert.Equal(expected.Right, end);
             }
@@ -775,8 +781,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Assert.Equal(textLine.WidthIncludingTrailingWhitespace, rect.Width);
                 }
 
-                var rects = layout.TextLines.SelectMany(x => x.TextRuns.Cast<ShapedTextCharacters>())
-                    .SelectMany(x => x.ShapedBuffer.GlyphAdvances).ToArray();
+                var rects = layout.TextLines
+                    .SelectMany(x => x.TextRuns.Cast<ShapedTextRun>())
+                    .SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphAdvance)
+                    .ToArray();
 
                 for (var i = 0; i < SingleLineText.Length; i++)
                 {
@@ -814,15 +822,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     {
                         Assert.True(textLine.Width <= maxWidth);
 
-                        var actual = new string(textLine.TextRuns.Cast<ShapedTextCharacters>().OrderBy(x => x.Text.Start).SelectMany(x => x.Text).ToArray());
+                        var actual = new string(textLine.TextRuns.Cast<ShapedTextRun>()
+                            .OrderBy(x => TextTestHelper.GetStartCharIndex(x.Text))
+                            .SelectMany(x => x.Text.ToString())
+                            .ToArray());
+
                         var expected = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
 
                         Assert.Equal(expected, actual);
-                    }                  
+                    }
                 }
             }
         }
-        
+
         [Fact]
         public void Should_Layout_Empty_String()
         {
@@ -833,10 +845,248 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Typeface.Default,
                     12,
                     Brushes.Black);
-                
+
                 Assert.True(layout.Bounds.Height > 0);
             }
         }
+
+        [Fact]
+        public void Should_HitTestPoint_RightToLeft()
+        {
+            using (Start())
+            {
+                var text = "אאא AAA";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    flowDirection: FlowDirection.RightToLeft);
+
+                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextRun;
+
+                var hit = layout.HitTestPoint(new Point());
+
+                Assert.Equal(4, hit.TextPosition);
+
+                var currentX = 0.0;
+
+                for (var i = 0; i < firstRun.GlyphRun.GlyphInfos.Count; i++)
+                {
+                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var advance = firstRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
+
+                    hit = layout.HitTestPoint(new Point(currentX, 0));
+
+                    Assert.Equal(cluster, hit.TextPosition);
+
+                    var hitRange = layout.HitTestTextRange(hit.TextPosition, 1);
+
+                    var distance = hitRange.First().Left;
+
+                    Assert.Equal(currentX, distance, 2);
+
+                    currentX += advance;
+                }
+
+                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextRun;
+
+                hit = layout.HitTestPoint(new Point(firstRun.Size.Width, 0));
+
+                Assert.Equal(7, hit.TextPosition);
+
+                hit = layout.HitTestPoint(new Point(layout.TextLines[0].WidthIncludingTrailingWhitespace, 0));
+
+                Assert.Equal(0, hit.TextPosition);
+
+                currentX = firstRun.Size.Width + 0.5;
+
+                for (var i = 0; i < secondRun.GlyphRun.GlyphInfos.Count; i++)
+                {
+                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var advance = secondRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
+
+                    hit = layout.HitTestPoint(new Point(currentX, 0));
+
+                    Assert.Equal(cluster, hit.CharacterHit.FirstCharacterIndex);
+
+                    var hitRange = layout.HitTestTextRange(hit.CharacterHit.FirstCharacterIndex, hit.CharacterHit.TrailingLength);
+
+                    var distance = hitRange.First().Left + 0.5;
+
+                    Assert.Equal(currentX, distance, 2);
+
+                    currentX += advance;
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_RTL()
+        {
+            using (Start())
+            {
+                var text = "أَبْجَدِيَّة عَرَبِيَّة";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black);
+
+                var textLine = layout.TextLines[0];
+
+                var firstRun = (ShapedTextRun)textLine.TextRuns[0];
+
+                var firstCluster = firstRun.ShapedBuffer[0].GlyphCluster;
+
+                var characterHit = textLine.GetCharacterHitFromDistance(0);
+
+                Assert.Equal(firstCluster, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(text.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                var distance = textLine.GetDistanceFromCharacterHit(characterHit);
+
+                Assert.Equal(0, distance);
+
+                distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
+
+                var firstAdvance = firstRun.ShapedBuffer[0].GlyphAdvance;
+
+                Assert.Equal(firstAdvance, distance, 5);
+
+                var rect = layout.HitTestTextPosition(22);
+
+                Assert.Equal(firstAdvance, rect.Left, 5);
+
+                rect = layout.HitTestTextPosition(23);
+
+                Assert.Equal(0, rect.Left, 5);
+
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_RTL_With_TextStyles()
+        {
+            using (Start())
+            {
+                var text = "أَبْجَدِيَّة عَرَبِيَّة";
+
+                var i = 0;
+
+                var graphemeEnumerator = new GraphemeEnumerator(text);
+
+                while (graphemeEnumerator.MoveNext(out var grapheme))
+                {
+                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
+
+                    i += grapheme.Length;
+
+                    var layout = new TextLayout(
+                        text,
+                        Typeface.Default,
+                        12,
+                        Brushes.Black,
+                        textStyleOverrides: textStyleOverrides);
+
+                    var textLine = layout.TextLines[0];
+
+                    var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
+
+                    var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster).ToList();
+
+                    var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphAdvance).ToList();
+
+                    var currentX = 0.0;
+
+                    var cluster = text.Length;
+
+                    for (int j = 0; j < clusters.Count - 1; j++)
+                    {                     
+                        var glyphAdvance = glyphAdvances[j];
+
+                        var characterHit = textLine.GetCharacterHitFromDistance(currentX);
+
+                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                        var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
+
+                        Assert.Equal(currentX, distance, 5);
+
+                        currentX += glyphAdvance;
+
+                        if(glyphAdvance > 0)
+                        {
+                            cluster = clusters[j];
+                        }
+                    }
+                }
+            }
+        }
+
+        [InlineData("mgfg🧐df f sdf", "g🧐d", 20, 40)]
+        [InlineData("وه. وقد تعرض لانتقادات", "دات", 5, 30)]
+        [InlineData("وه. وقد تعرض لانتقادات", "تعرض", 20, 50)]
+        [InlineData(" علمية 😱ومضللة ،", " علمية 😱ومضللة ،", 40, 100)]
+        [InlineData("في عام 2018 ، رفعت ل", "في عام 2018 ، رفعت ل", 100, 120)]
+        [Theory]
+        public void HitTestTextRange_Range_ValidLength(string text, string textToSelect, double minWidth, double maxWidth)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(text, Typeface.Default, 12, Brushes.Black);
+                var start = text.IndexOf(textToSelect);
+                var selectionRectangles = layout.HitTestTextRange(start, textToSelect.Length);
+                Assert.Equal(1, selectionRectangles.Count());
+                var rect = selectionRectangles.First();
+                Assert.InRange(rect.Width, minWidth, maxWidth);
+            }
+        }
+
+        [InlineData("012🧐210", 2, 4, FlowDirection.LeftToRight, "14.40234375,40.8046875")]
+        [InlineData("210🧐012", 2, 4, FlowDirection.RightToLeft, "0,7.201171875;21.603515625,33.603515625;48.005859375,55.20703125")]
+        [InlineData("שנב🧐שנב", 2, 4, FlowDirection.LeftToRight, "11.268,38.208")]
+        [InlineData("שנב🧐שנב", 2, 4, FlowDirection.RightToLeft, "11.268,38.208")]
+        [Theory]
+        public void Should_HitTextTextRangeBetweenRuns(string text, int start, int length, 
+            FlowDirection flowDirection, string expected)
+        {
+            using (Start())
+            {
+                var expectedRects = expected.Split(';').Select(x =>
+                {
+                    var startEnd = x.Split(',');
+
+                    var start = double.Parse(startEnd[0], CultureInfo.InvariantCulture);
+
+                    var end = double.Parse(startEnd[1], CultureInfo.InvariantCulture);
+
+                    return new Rect(start, 0, end - start, 0);
+                }).ToArray();
+
+                var textLayout = new TextLayout(text, Typeface.Default, 12, Brushes.Black, flowDirection: flowDirection);
+
+                var rects = textLayout.HitTestTextRange(start, length).ToArray();
+
+                Assert.Equal(expectedRects.Length, rects.Length);
+
+                var endX = textLayout.TextLines[0].GetDistanceFromCharacterHit(new CharacterHit(2));
+                var startX = textLayout.TextLines[0].GetDistanceFromCharacterHit(new CharacterHit(5, 1));
+
+                for (int i = 0; i < expectedRects.Length; i++)
+                {
+                    var expectedRect = expectedRects[i];
+
+                    Assert.Equal(expectedRect.Left, rects[i].Left, 2);
+
+                    Assert.Equal(expectedRect.Right, rects[i].Right, 2);
+                }            
+            }
+        }
+
 
         private static IDisposable Start()
         {

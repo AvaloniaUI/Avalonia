@@ -23,7 +23,7 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
-    bool _isDialog;
+    bool _isModal;
     WindowImpl* _parent;
     std::list<WindowImpl*> _children;
     AvnExtendClientAreaChromeHints _extendClientHints;
@@ -40,8 +40,6 @@ BEGIN_INTERFACE_MAP()
     ComPtr<IAvnWindowEvents> WindowEvents;
 
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl);
-
-    void HideOrShowTrafficLights ();
 
     virtual HRESULT Show (bool activate, bool isDialog) override;
 
@@ -91,16 +89,22 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetWindowState (AvnWindowState state) override;
 
-    virtual bool IsDialog() override;
+    virtual bool IsModal() override;
+    
+    bool IsOwned();
     
     virtual void BringToFront () override;
     
     bool CanBecomeKeyWindow ();
 
+    bool CanZoom() override { return _isEnabled && _canResize; }
+    
 protected:
-    virtual NSWindowStyleMask GetStyle() override;
+    virtual NSWindowStyleMask CalculateStyleMask() override;
+    void UpdateStyle () override;
 
 private:
+    void ZOrderChildWindows();
     void OnInitialiseNSWindow();
     NSString *_lastTitle;
 };

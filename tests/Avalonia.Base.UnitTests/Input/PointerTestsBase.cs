@@ -14,12 +14,12 @@ namespace Avalonia.Base.UnitTests.Input;
 
 public abstract class PointerTestsBase
 {
-    protected static void SetHit(Mock<IRenderer> renderer, IControl? hit)
+    protected static void SetHit(Mock<IRenderer> renderer, Control? hit)
     {
-        renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-            .Returns(hit is null ? Array.Empty<IControl>() : new[] { hit });
+        renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+            .Returns(hit is null ? Array.Empty<Control>() : new[] { hit });
 
-        renderer.Setup(x => x.HitTestFirst(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
+        renderer.Setup(x => x.HitTestFirst(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
             .Returns(hit);
     }
 
@@ -35,13 +35,14 @@ public abstract class PointerTestsBase
         impl.DefaultValue = DefaultValue.Mock;
         impl.SetupAllProperties();
         impl.SetupGet(r => r.RenderScaling).Returns(1);
+        impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
         impl.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer);
         impl.Setup(r => r.PointToScreen(It.IsAny<Point>())).Returns<Point>(p => new PixelPoint((int)p.X, (int)p.Y));
         impl.Setup(r => r.PointToClient(It.IsAny<PixelPoint>())).Returns<PixelPoint>(p => new Point(p.X, p.Y));
         return impl;
     }
 
-    protected static IInputRoot CreateInputRoot(IWindowImpl impl, IControl child)
+    protected static IInputRoot CreateInputRoot(IWindowImpl impl, Control child)
     {
         var root = new Window(impl)
         {
@@ -54,20 +55,29 @@ public abstract class PointerTestsBase
         return root;
     }
 
+    protected static RawPointerEventArgs CreateRawPointerArgs(
+        IPointerDevice pointerDevice,
+        IInputRoot root,
+        RawPointerEventType type,
+        Point? position = default)
+    {
+        return new RawPointerEventArgs(pointerDevice, 0, root, type, position ?? default, default);
+    }
+
     protected static RawPointerEventArgs CreateRawPointerMovedArgs(
         IPointerDevice pointerDevice,
         IInputRoot root,
-        Point? positition = null)
+        Point? position = null)
     {
         return new RawPointerEventArgs(pointerDevice, 0, root, RawPointerEventType.Move,
-            positition ?? default, default);
+            position ?? default, default);
     }
 
     protected static PointerEventArgs CreatePointerMovedArgs(
-        IInputRoot root, IInputElement? source, Point? positition = null)
+        IInputRoot root, IInputElement? source, Point? position = null)
     {
-        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, root,
-            positition ?? default, default, PointerPointProperties.None, KeyModifiers.None);
+        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, (Visual)root,
+            position ?? default, default, PointerPointProperties.None, KeyModifiers.None);
     }
 
     protected static Mock<IPointerDevice> CreatePointerDeviceMock(

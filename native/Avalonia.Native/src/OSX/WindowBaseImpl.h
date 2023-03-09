@@ -8,6 +8,7 @@
 
 #include "rendertarget.h"
 #include "INSWindowHolder.h"
+#include "AvnTextInputMethod.h"
 
 @class AutoFitContentView;
 @class AvnMenu;
@@ -90,22 +91,27 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost **retOut) override;
 
-    virtual HRESULT SetBlurEnabled(bool enable) override;
+    virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
+
+    virtual HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant variant) override;
 
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
             IAvnClipboard *clipboard, IAvnDndResultCallback *cb,
             void *sourceHandle) override;
 
-    virtual bool IsDialog();
+    virtual bool IsModal();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
                            
     virtual void BringToFront ();
+                           
+    virtual HRESULT GetInputMethod(IAvnTextInputMethod **retOut) override;
 
+    virtual bool CanZoom() { return false; }
+                           
 protected:
-    virtual NSWindowStyleMask GetStyle();
-
-    void UpdateStyle();
+    virtual NSWindowStyleMask CalculateStyleMask() = 0;
+    virtual void UpdateStyle();
 
 private:
     void CreateNSWindow (bool isDialog);
@@ -129,6 +135,7 @@ public:
     NSObject <IRenderTarget> *renderTarget;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    ComPtr<AvnTextInputMethod> InputMethod;
     AvnView *View;
 };
 

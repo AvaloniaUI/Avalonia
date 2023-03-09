@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace RenderDemo.Pages
 {
@@ -59,6 +60,10 @@ namespace RenderDemo.Pages
             var geometry = formattedText.BuildGeometry(new Point(10 + formattedText.Width + 10, 0));
 
             context.DrawGeometry(gradient, null, geometry);
+
+            var highlightGeometry = formattedText.BuildHighlightGeometry(new Point(10 + formattedText.Width + 10, 0));
+
+            context.DrawGeometry(null, new ImmutablePen(gradient.ToImmutable(), 2), highlightGeometry);
         }
     }
 }

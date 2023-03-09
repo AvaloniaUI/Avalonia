@@ -10,7 +10,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using System;
 using System.Diagnostics;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -23,10 +23,10 @@ namespace Avalonia.Controls
     [PseudoClasses(":pressed", ":current", ":expanded")]
     public class DataGridRowGroupHeader : TemplatedControl
     {
-        private const string DATAGRIDROWGROUPHEADER_expanderButton = "ExpanderButton";
-        private const string DATAGRIDROWGROUPHEADER_indentSpacer = "IndentSpacer";
-        private const string DATAGRIDROWGROUPHEADER_itemCountElement = "ItemCountElement";
-        private const string DATAGRIDROWGROUPHEADER_propertyNameElement = "PropertyNameElement";
+        private const string DATAGRIDROWGROUPHEADER_expanderButton = "PART_ExpanderButton";
+        private const string DATAGRIDROWGROUPHEADER_indentSpacer = "PART_IndentSpacer";
+        private const string DATAGRIDROWGROUPHEADER_itemCountElement = "PART_ItemCountElement";
+        private const string DATAGRIDROWGROUPHEADER_propertyNameElement = "PART_PropertyNameElement";
 
         private bool _areIsCheckedHandlersSuspended;
         private ToggleButton _expanderButton;
@@ -53,7 +53,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGridRowGroupHeader, string>(nameof(PropertyName));
 
         /// <summary>
-        /// Gets or sets the name of the property that this <see cref="T:Avalonia.Controls.DataGrid" /> row is bound to. 
+        /// Gets or sets the name of the property that this <see cref="T:Avalonia.Controls.DataGrid" /> row is bound to.
         /// </summary>
         public string PropertyName
         {
@@ -85,8 +85,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value that indicates the amount that the 
-        /// children of the <see cref="T:Avalonia.Controls.RowGroupHeader" /> are indented. 
+        /// Gets or sets a value that indicates the amount that the
+        /// children of the <see cref="T:Avalonia.Controls.RowGroupHeader" /> are indented.
         /// </summary>
         public double SublevelIndent
         {
@@ -113,7 +113,6 @@ namespace Avalonia.Controls
         /// </summary>
         public DataGridRowGroupHeader()
         {
-            //DefaultStyleKey = typeof(DataGridRowGroupHeader);
             AddHandler(InputElement.PointerPressedEvent, (s, e) => DataGridRowGroupHeader_PointerPressed(e), handledEventsToo: true);
         }
 
@@ -328,9 +327,9 @@ namespace Avalonia.Controls
             {
                 double xClip = Math.Round(frozenLeftEdge - childLeftEdge);
                 var rg = new RectangleGeometry();
-                rg.Rect = 
-                    new Rect(xClip, 0, 
-                        Math.Max(0, child.Bounds.Width - xClip), 
+                rg.Rect =
+                    new Rect(xClip, 0,
+                        Math.Max(0, child.Bounds.Width - xClip),
                         child.Bounds.Height);
                 child.Clip = rg;
             }
@@ -349,8 +348,6 @@ namespace Avalonia.Controls
             }
         }
 
-        //TODO Styles
-        //internal void EnsureHeaderStyleAndVisibility(Style previousStyle)
         internal void EnsureHeaderVisibility()
         {
             if (_headerElement != null && OwningGrid != null)

@@ -18,13 +18,13 @@ namespace Avalonia.Layout
         /// Notifies the layout manager that a control requires a measure.
         /// </summary>
         /// <param name="control">The control.</param>
-        void InvalidateMeasure(ILayoutable control);
+        void InvalidateMeasure(Layoutable control);
 
         /// <summary>
         /// Notifies the layout manager that a control requires an arrange.
         /// </summary>
         /// <param name="control">The control.</param>
-        void InvalidateArrange(ILayoutable control);
+        void InvalidateArrange(Layoutable control);
 
         /// <summary>
         /// Executes a layout pass.
@@ -45,26 +45,15 @@ namespace Avalonia.Layout
         void ExecuteInitialLayoutPass();
 
         /// <summary>
-        /// Executes the initial layout pass on a layout root.
-        /// </summary>
-        /// <param name="root">The control to lay out.</param>
-        /// <remarks>
-        /// You should not usually need to call this method explictly, the layout root will call
-        /// it to carry out the initial layout of the control.
-        /// </remarks>
-        [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
-        void ExecuteInitialLayoutPass(ILayoutRoot root);
-
-        /// <summary>
         /// Registers a control as wanting to receive effective viewport notifications.
         /// </summary>
         /// <param name="control">The control.</param>
-        void RegisterEffectiveViewportListener(ILayoutable control);
+        void RegisterEffectiveViewportListener(Layoutable control);
 
         /// <summary>
         /// Registers a control as no longer wanting to receive effective viewport notifications.
         /// </summary>
         /// <param name="control">The control.</param>
-        void UnregisterEffectiveViewportListener(ILayoutable control);
+        void UnregisterEffectiveViewportListener(Layoutable control);
     }
 }

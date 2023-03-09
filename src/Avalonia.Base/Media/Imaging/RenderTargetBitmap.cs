@@ -7,9 +7,9 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media.Imaging
 {
     /// <summary>
-    /// A bitmap that holds the rendering of a <see cref="IVisual"/>.
+    /// A bitmap that holds the rendering of a <see cref="Visual"/>.
     /// </summary>
-    public class RenderTargetBitmap : Bitmap, IDisposable, IRenderTarget
+    public class RenderTargetBitmap : Bitmap, IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
@@ -44,7 +44,11 @@ namespace Avalonia.Media.Imaging
         /// Renders a visual to the <see cref="RenderTargetBitmap"/>.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        public void Render(IVisual visual) => ImmediateRenderer.Render(visual, this);
+        public void Render(Visual visual)
+        {
+            using (var ctx = CreateDrawingContext())
+                ImmediateRenderer.Render(visual, ctx);
+        }
 
         /// <summary>
         /// Creates a platform-specific implementation for a <see cref="RenderTargetBitmap"/>.
@@ -58,7 +62,11 @@ namespace Avalonia.Media.Imaging
             return factory.CreateRenderTargetBitmap(size, dpi);
         }
 
-        /// <inheritdoc/>
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? vbr) => PlatformImpl.Item.CreateDrawingContext(vbr);
+        public DrawingContext CreateDrawingContext()
+        {
+            var platform = PlatformImpl.Item.CreateDrawingContext();
+            platform.Clear(Colors.Transparent);
+            return new PlatformDrawingContext(platform);
+        }
     }
 }

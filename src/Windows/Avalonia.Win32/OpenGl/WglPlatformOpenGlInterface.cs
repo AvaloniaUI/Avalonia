@@ -6,29 +6,31 @@ using Avalonia.Platform;
 
 namespace Avalonia.Win32.OpenGl
 {
-    class WglPlatformOpenGlInterface : IPlatformOpenGlInterface
+    internal class WglPlatformOpenGlInterface : IPlatformGraphics
     {
         public WglContext PrimaryContext { get; }
-        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
-        IGlContext IPlatformOpenGlInterface.PrimaryContext => PrimaryContext;
-        public IGlContext CreateSharedContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, PrimaryContext);
+        public bool UsesSharedContext => false;
+        IPlatformGraphicsContext IPlatformGraphics.CreateContext() => CreateContext();
+        public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
 
-        public bool CanShareContexts => true;
-        public bool CanCreateContexts => true;
-        public IGlContext CreateContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, null);
+        public IGlContext CreateContext()
+            => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, null)
+               ?? throw new OpenGlException("Unable to create additional WGL context");
 
-        private  WglPlatformOpenGlInterface(WglContext primary)
+        private WglPlatformOpenGlInterface(WglContext primary)
         {
             PrimaryContext = primary;
         }
 
-        public static WglPlatformOpenGlInterface TryCreate()
+        public static WglPlatformOpenGlInterface? TryCreate()
         {
             try
             {
                 var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
-                var primary = WglDisplay.CreateContext(opts.WglProfiles.ToArray(), null);
-                return new WglPlatformOpenGlInterface(primary);
+                if (WglDisplay.CreateContext(opts.WglProfiles.ToArray(), null) is { } primary)
+                {
+                    return new WglPlatformOpenGlInterface(primary);
+                }
             }
             catch (Exception e)
             {

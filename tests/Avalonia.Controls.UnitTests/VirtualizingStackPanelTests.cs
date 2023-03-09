@@ -1,225 +1,537 @@
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
+using Avalonia.Collections;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Moq;
+using Avalonia.Media;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Controls.UnitTests
 {
     public class VirtualizingStackPanelTests
     {
-        public class Vertical
+        [Fact]
+        public void Creates_Initial_Items()
         {
-            [Fact]
-            public void Measure_Invokes_Controller_UpdateControls()
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            Assert.Equal(1000, scroll.Extent.Height);
+
+            AssertRealizedItems(target, itemsControl, 0, 10);
+        }
+
+        [Fact]
+        public void Initializes_Initial_Control_Items()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10});
+            var (target, scroll, itemsControl) = CreateTarget(items: items, useItemTemplate: false);
+
+            Assert.Equal(1000, scroll.Extent.Height);
+
+            AssertRealizedControlItems<Button>(target, itemsControl, 0, 10);
+        }
+
+        [Fact]
+        public void Creates_Reassigned_Items()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget(items: Array.Empty<object>());
+
+            Assert.Empty(itemsControl.GetRealizedContainers());
+
+            itemsControl.Items = new[] { "foo", "bar" };
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 2);
+        }
+
+        [Fact]
+        public void Scrolls_Down_One_Item()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            scroll.Offset = new Vector(0, 10);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 1, 10);
+        }
+
+        [Fact]
+        public void Scrolls_Down_More_Than_A_Page()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 20, 10);
+        }
+
+        [Fact]
+        public void Scrolls_To_Index()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            target.ScrollIntoView(20);
+
+            AssertRealizedItems(target, itemsControl, 11, 10);
+        }
+
+        [Fact]
+        public void Creates_Elements_On_Item_Insert()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.Items!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            items.Insert(2, "new");
+
+            Assert.Equal(11, target.GetRealizedElements().Count);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Blank space inserted in realized elements and subsequent row indexes updated.
+            Assert.Equal(new[] { 0, 1, -1, 3, 4, 5, 6, 7, 8, 9, 10 }, indexes);
+
+            var elements = target.GetRealizedElements().ToList();
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout an element for the new row is created.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+
+            // But apart from the new row and the removed last row, all existing elements should be the same.
+            elements[2] = target.GetRealizedElements().ElementAt(2);
+            elements.RemoveAt(elements.Count - 1);
+            Assert.Equal(elements, target.GetRealizedElements());
+        }
+
+        [Fact]
+        public void Updates_Elements_On_Item_Remove()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.Items!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            var toRecycle = target.GetRealizedElements().ElementAt(2);
+            items.RemoveAt(2);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Item removed from realized elements and subsequent row indexes updated.
+            Assert.Equal(Enumerable.Range(0, 9), indexes);
+
+            var elements = target.GetRealizedElements().ToList();
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout an element for the newly visible last row is created and indexes updated.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+
+            // And the removed row should now have been recycled as the last row.
+            elements.Add(toRecycle);
+            Assert.Equal(elements, target.GetRealizedElements());
+        }
+
+        [Fact]
+        public void Updates_Elements_On_Item_Replace()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (ObservableCollection<string>)itemsControl.Items!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            var toReplace = target.GetRealizedElements().ElementAt(2);
+            items[2] = "new";
+
+            // Container being replaced should have been recycled.
+            Assert.DoesNotContain(toReplace, target.GetRealizedElements());
+            Assert.False(toReplace!.IsVisible);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Item removed from realized elements at old position and space inserted at new position.
+            Assert.Equal(new[] { 0, 1, -1, 3, 4, 5, 6, 7, 8, 9 }, indexes);
+
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout the missing container should have been created.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+        }
+
+        [Fact]
+        public void Updates_Elements_On_Item_Move()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (ObservableCollection<string>)itemsControl.Items!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            var toMove = target.GetRealizedElements().ElementAt(2);
+            items.Move(2, 6);
+
+            // Container being moved should have been recycled.
+            Assert.DoesNotContain(toMove, target.GetRealizedElements());
+            Assert.False(toMove!.IsVisible);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Item removed from realized elements at old position and space inserted at new position.
+            Assert.Equal(new[] { 0, 1, 2, 3, 4, 5, -1, 7, 8, 9 }, indexes);
+
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout the missing container should have been created.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+        }
+
+        [Fact]
+        public void Removes_Control_Items_From_Panel_On_Item_Remove()
+        {
+            using var app = App();
+            var items = new ObservableCollection<Button>(Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10 }));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, useItemTemplate: false);
+
+            Assert.Equal(1000, scroll.Extent.Height);
+
+            var removed = items[1];
+            items.RemoveAt(1);
+
+            Assert.Null(removed.Parent);
+            Assert.Null(removed.VisualParent);
+        }
+
+        [Fact]
+        public void Does_Not_Recycle_Focused_Element()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            target.GetRealizedElements().First()!.Focus();
+            Assert.True(target.GetRealizedElements().First()!.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
+        }
+
+        [Fact]
+        public void Removing_Item_Of_Focused_Element_Clears_Focus()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focus();
+            Assert.True(focused.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
+            Assert.All(target.GetRealizedElements(), x => Assert.NotSame(focused, x));
+        }
+
+        [Fact]
+        public void Scrolling_Back_To_Focused_Element_Uses_Correct_Element()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focus();
+            Assert.True(focused.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            Assert.Same(focused, target.GetRealizedElements().First());
+        }
+
+        [Fact]
+        public void Removing_Range_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.RemoveRange(0, 80);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 10, 10);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
+        }
+
+        [Fact]
+        public void Removing_Range_To_Have_Less_Than_A_Page_Of_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.RemoveRange(0, 95);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 5);
+            Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
+        public void Resetting_Collection_To_Have_Less_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new ResettingCollection(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.Reset(Enumerable.Range(0, 20).Select(x => $"Item {x}"));
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 10, 10);
+            Assert.Equal(new Vector(0, 100), scroll.Offset);
+        }
+
+        [Fact]
+        public void Resetting_Collection_To_Have_Less_Than_A_Page_Of_Items_When_Scrolled_To_End_Updates_Viewport()
+        {
+            using var app = App();
+            var items = new ResettingCollection(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+            var (target, scroll, itemsControl) = CreateTarget(items: items);
+
+            scroll.Offset = new Vector(0, 900);
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 90, 10);
+
+            items.Reset(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 5);
+            Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
+        public void NthChild_Selector_Works()
+        {
+            using var app = App();
+            
+            var style = new Style(x => x.OfType<ContentPresenter>().NthChild(5, 0))
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var controller = new Mock<IVirtualizingController>();
+                Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+            };
 
-                target.Controller = controller.Object;
-                target.Measure(new Size(100, 100));
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+            
+            Assert.Equal(10, realized.Count);
+            
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 4 || i == 9) ? Brushes.Red : null;
 
-                controller.Verify(x => x.UpdateControls(), Times.Once());
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, container.Background);
             }
+        }
 
-            [Fact]
-            public void Measure_Invokes_Controller_UpdateControls_If_AvailableSize_Changes()
+        [Fact]
+        public void NthLastChild_Selector_Works()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthLastChild(5, 0))
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var controller = new Mock<IVirtualizingController>();
+                Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+            };
 
-                target.Controller = controller.Object;
-                target.Measure(new Size(100, 100));
-                target.InvalidateMeasure();
-                target.Measure(new Size(100, 100));
-                target.InvalidateMeasure();
-                target.Measure(new Size(100, 101));
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
 
-                controller.Verify(x => x.UpdateControls(), Times.Exactly(2));
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 0 || i == 5) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, container.Background);
             }
+        }
 
-            [Fact]
-            public void Measure_Does_Not_Invoke_Controller_UpdateControls_If_AvailableSize_Is_The_Same()
+        private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
+        {
+            return target.GetRealizedElements()
+                .Select(x => x is null ? -1 : itemsControl.IndexFromContainer((Control)x))
+                .ToList();
+        }
+
+        private static void AssertRealizedItems(
+            VirtualizingStackPanel target,
+            ItemsControl itemsControl,
+            int firstIndex,
+            int count)
+        {
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(target, x.VisualParent));
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(itemsControl, x.Parent));
+
+            var childIndexes = target.GetRealizedContainers()?
+                .Select(x => itemsControl.IndexFromContainer(x))
+                .Where(x => x >= 0)
+                .OrderBy(x => x)
+                .ToList();
+            Assert.Equal(Enumerable.Range(firstIndex, count), childIndexes);
+        }
+
+        private static void AssertRealizedControlItems<TContainer>(
+            VirtualizingStackPanel target,
+            ItemsControl itemsControl,
+            int firstIndex,
+            int count)
+        {
+            Assert.All(target.GetRealizedContainers(), x => Assert.IsType<TContainer>(x));
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(target, x.VisualParent));
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(itemsControl, x.Parent));
+
+            var childIndexes = target.GetRealizedContainers()?
+                .Select(x => itemsControl.IndexFromContainer(x))
+                .Where(x => x >= 0)
+                .OrderBy(x => x)
+                .ToList();
+            Assert.Equal(Enumerable.Range(firstIndex, count), childIndexes);
+        }
+
+        private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(
+            IEnumerable<object>? items = null,
+            bool useItemTemplate = true,
+            IEnumerable<Style>? styles = null)
+        {
+            var target = new VirtualizingStackPanel();
+
+            items ??= new ObservableCollection<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+
+            var presenter = new ItemsPresenter
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var controller = new Mock<IVirtualizingController>();
+                [~ItemsPresenter.ItemsPanelProperty] = new TemplateBinding(ItemsPresenter.ItemsPanelProperty),
+            };
 
-                target.Controller = controller.Object;
-                target.Measure(new Size(100, 100));
-                target.InvalidateMeasure();
-                target.Measure(new Size(100, 100));
+            var scroll = new ScrollViewer 
+            { 
+                Content = presenter,
+                Template = ScrollViewerTemplate(),
+            };
 
-                controller.Verify(x => x.UpdateControls(), Times.Once());
-            }
-
-            [Fact]
-            public void Measure_Invokes_Controller_UpdateControls_If_AvailableSize_Is_The_Same_After_ForceInvalidateMeasure()
+            var itemsControl = new ItemsControl
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var controller = new Mock<IVirtualizingController>();
+                Items = items,
+                Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
+                ItemsPanel = new FuncTemplate<Panel>(() => target),
+            };
 
-                target.Controller = controller.Object;
-                target.Measure(new Size(100, 100));
-                target.ForceInvalidateMeasure();
-                target.Measure(new Size(100, 100));
+            if (useItemTemplate)
+                itemsControl.ItemTemplate = new FuncDataTemplate<object>((x, _) => new Canvas { Width = 100, Height = 10 });
 
-                controller.Verify(x => x.UpdateControls(), Times.Exactly(2));
-            }
+            var root = new TestRoot(true, itemsControl);
+            root.ClientSize = new(100, 100);
 
-            [Fact]
-            public void Arrange_Invokes_Controller_UpdateControls()
-            {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var controller = new Mock<IVirtualizingController>();
+            if (styles is not null)
+                root.Styles.AddRange(styles);
 
-                target.Controller = controller.Object;
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(0, 0, 110, 110));
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
-                controller.Verify(x => x.UpdateControls(), Times.Exactly(2));
-            }
+            return (target, scroll, itemsControl);
+        }
 
-            [Fact]
-            public void Reports_IsFull_False_Until_Measure_Height_Is_Reached()
-            {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+        private static void Layout(Control target)
+        {
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteLayoutPass();
+        }
 
-                target.Measure(new Size(100, 100));
-
-                Assert.Equal(new Size(0, 0), target.DesiredSize);
-                Assert.Equal(new Size(0, 0), target.Bounds.Size);
-
-                Assert.False(target.IsFull);
-                Assert.Equal(0, target.OverflowCount);
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                Assert.False(target.IsFull);
-                Assert.Equal(0, target.OverflowCount);
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                Assert.True(target.IsFull);
-                Assert.Equal(0, target.OverflowCount);
-            }
-
-            [Fact]
-            public void Reports_Overflow_After_Arrange()
-            {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(target.DesiredSize));
-
-                Assert.Equal(new Size(0, 0), target.Bounds.Size);
-
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                Assert.Equal(0, target.OverflowCount);
-
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(target.DesiredSize));
-
-                Assert.Equal(2, target.OverflowCount);
-            }
-
-            [Fact]
-            public void Reports_Correct_Overflow_During_Arrange()
-            {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var controller = new Mock<IVirtualizingController>();
-                var called = false;
-
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 52 });
-                target.Measure(new Size(100, 100));
-
-                controller.Setup(x => x.UpdateControls()).Callback(() =>
+        private static IControlTemplate ScrollViewerTemplate()
+        {
+            return new FuncControlTemplate<ScrollViewer>((x, ns) =>
+                new ScrollContentPresenter
                 {
-                    Assert.Equal(2, target.PixelOverflow);
-                    Assert.Equal(0, target.OverflowCount);
-                    called = true;
-                });
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
+                    [~~ScrollContentPresenter.ExtentProperty] = x[~~ScrollViewer.ExtentProperty],
+                    [~~ScrollContentPresenter.OffsetProperty] = x[~~ScrollViewer.OffsetProperty],
+                    [~~ScrollContentPresenter.ViewportProperty] = x[~~ScrollViewer.ViewportProperty],
+                    [~ScrollContentPresenter.CanHorizontallyScrollProperty] = x[~ScrollViewer.CanHorizontallyScrollProperty],
+                    [~ScrollContentPresenter.CanVerticallyScrollProperty] = x[~ScrollViewer.CanVerticallyScrollProperty],
+                }.RegisterInNameScope(ns));
+        }
 
-                target.Controller = controller.Object;
-                target.Arrange(new Rect(target.DesiredSize));
+        private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);
 
-                Assert.True(called);
-            }
-
-            [Fact]
-            public void Reports_PixelOverflow_After_Arrange()
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(IEnumerable<string> items)
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 52 });
-
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(target.DesiredSize));
-
-                Assert.Equal(2, target.PixelOverflow);
+                AddRange(items);
             }
 
-            [Fact]
-            public void Reports_PixelOverflow_After_Arrange_Smaller_Than_Measure()
+            public void Reset(IEnumerable<string> items)
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 52 });
-
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(0, 0, 50, 50));
-
-                Assert.Equal(52, target.PixelOverflow);
+                Clear();
+                AddRange(items);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
 
-            [Fact]
-            public void Reports_PixelOverflow_With_PixelOffset()
-            {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 52 });
-                target.PixelOffset = 2;
-
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(target.DesiredSize));
-
-                Assert.Equal(2, target.PixelOverflow);
-            }
-
-            [Fact]
-            public void PixelOffset_Can_Be_More_Than_Child_Without_Affecting_IsFull()
-            {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-
-                target.Children.Add(new Canvas { Width = 50, Height = 50 });
-                target.Children.Add(new Canvas { Width = 50, Height = 52 });
-                target.PixelOffset = 55;
-
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(target.DesiredSize));
-
-                Assert.Equal(55, target.PixelOffset);
-                Assert.Equal(2, target.PixelOverflow);
-                Assert.True(target.IsFull);
-            }
-
-            [Fact]
-            public void Passes_Navigation_Request_To_ILogicalScrollable_Parent()
-            {
-                var presenter = new Mock<ILogical>().As<IControl>();
-                var scrollable = presenter.As<ILogicalScrollable>();
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
-                var from = new Canvas();
-
-                scrollable.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
-
-                ((ISetLogicalParent)target).SetParent(presenter.Object);
-                ((INavigableContainer)target).GetControl(NavigationDirection.Next, from, false);
-
-                scrollable.Verify(x => x.GetControlInDirection(NavigationDirection.Next, from));
-            }
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
     }
 }

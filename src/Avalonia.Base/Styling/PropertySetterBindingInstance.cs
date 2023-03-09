@@ -1,200 +1,60 @@
 ﻿using System;
-using System.Reactive.Subjects;
 using Avalonia.Data;
-using Avalonia.Reactive;
-
-#nullable enable
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
-    /// <summary>
-    /// A <see cref="Setter"/> which has been instanced on a control and has an
-    /// <see cref="IBinding"/> as its value.
-    /// </summary>
-    /// <typeparam name="T">The target property type.</typeparam>
-    internal class PropertySetterBindingInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
-        ISubject<BindingValue<T>>,
-        ISetterInstance
+    internal class PropertySetterBindingInstance : UntypedBindingEntry, ISetterInstance
     {
-        private readonly IStyleable _target;
-        private readonly StyledPropertyBase<T>? _styledProperty;
-        private readonly DirectPropertyBase<T>? _directProperty;
-        private readonly InstancedBinding? _binding;
-        private readonly Inner _inner;
-        private BindingValue<T> _value;
-        private IDisposable? _subscription;
-        private IDisposable? _subscriptionTwoWay;
-        private IDisposable? _innerSubscription;
-        private bool _isActive;
+        private readonly AvaloniaObject _target;
+        private readonly BindingMode _mode;
 
         public PropertySetterBindingInstance(
-            IStyleable target,
-            StyledPropertyBase<T> property,
-            IBinding binding)
+            AvaloniaObject target,
+            StyleInstance instance,
+            AvaloniaProperty property,
+            BindingMode mode,
+            IObservable<object?> source)
+            : base(target, instance, property, source)
         {
             _target = target;
-            _styledProperty = property;
-            _binding = binding.Initiate(_target, property);
+            _mode = mode;
 
-            if (_binding?.Mode == BindingMode.OneTime)
+            if (mode == BindingMode.TwoWay &&
+                source is not IObserver<object?>)
             {
-                // For the moment, we don't support OneTime bindings in setters, because I'm not
-                // sure what the semantics should be in the case of activation/deactivation.
-                throw new NotSupportedException("OneTime bindings are not supported in setters.");
+                throw new NotSupportedException(
+                    "Attempting to bind two-way with a binding source which doesn't support it.");
             }
-
-            _inner = new Inner(this);
         }
 
-        public PropertySetterBindingInstance(
-            IStyleable target,
-            DirectPropertyBase<T> property,
-            IBinding binding)
+        public override void Unsubscribe()
         {
-            _target = target;
-            _directProperty = property;
-            _binding = binding.Initiate(_target, property);
-            _inner = new Inner(this);
+            _target.PropertyChanged -= PropertyChanged;
+            base.Unsubscribe();
         }
 
-        public void Start(bool hasActivator)
+        protected override void Start(bool produceValue)
         {
-            if (_binding is null)
-                return;
-
-            _isActive = !hasActivator;
-
-            if (_styledProperty is object)
+            if (!IsSubscribed)
             {
-                if (_binding.Mode != BindingMode.OneWayToSource)
+                if (_mode == BindingMode.TwoWay)
                 {
-                    var priority = hasActivator ? BindingPriority.StyleTrigger : BindingPriority.Style;
-                    _subscription = _target.Bind(_styledProperty, this, priority);
+                    var observer = (IObserver<object?>)Source;
+                    _target.PropertyChanged += PropertyChanged;
                 }
 
-                if (_binding.Mode == BindingMode.TwoWay)
-                {
-                    _subscriptionTwoWay = _target.GetBindingObservable(_styledProperty).Subscribe(this);
-                }
+                base.Start(produceValue);
             }
-            else
+        }
+
+        private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Property && e.Priority >= BindingPriority.LocalValue)
             {
-                if (_binding.Mode != BindingMode.OneWayToSource)
-                {
-                    _subscription = _target.Bind(_directProperty!, this);
-                }
-
-                if (_binding.Mode == BindingMode.TwoWay)
-                {
-                    _subscriptionTwoWay = _target.GetBindingObservable(_directProperty!).Subscribe(this);
-                }
+                if (Frame.Owner is not null && !Frame.Owner.IsEvaluating)
+                    ((IObserver<object?>)Source).OnNext(e.NewValue);
             }
-        }
-
-        public void Activate()
-        {
-            if (_binding is null)
-                return;
-
-            if (!_isActive)
-            {
-                _innerSubscription ??= _binding.Observable!.Subscribe(_inner);
-                _isActive = true;
-                PublishNext();
-            }
-        }
-
-        public void Deactivate()
-        {
-            if (_isActive)
-            {
-                _isActive = false;
-                _innerSubscription?.Dispose();
-                _innerSubscription = null;
-                PublishNext();
-            }
-        }
-
-        public override void Dispose()
-        {
-            if (_subscription is object)
-            {
-                var sub = _subscription;
-                _subscription = null;
-                sub.Dispose();
-            }
-
-            if (_subscriptionTwoWay is object)
-            {
-                var sub = _subscriptionTwoWay;
-                _subscriptionTwoWay = null;
-                sub.Dispose();
-            }
-
-            base.Dispose();
-        }
-
-        void IObserver<BindingValue<T>>.OnCompleted()
-        {
-            // This is the observable coming from the target control. It should not complete.
-        }
-
-        void IObserver<BindingValue<T>>.OnError(Exception error)
-        {
-            // This is the observable coming from the target control. It should not error.
-        }
-
-        void IObserver<BindingValue<T>>.OnNext(BindingValue<T> value)
-        {
-            if (value.HasValue && _isActive && _binding?.Subject is not null)
-            {
-                _binding.Subject.OnNext(value.Value);
-            }
-        }
-
-        protected override void Subscribed()
-        {
-            if (_isActive && _binding?.Observable is not null)
-            {
-                if (_innerSubscription is null)
-                {
-                    _innerSubscription ??= _binding.Observable!.Subscribe(_inner);
-                }
-                else
-                {
-                    PublishNext();
-                }
-            }
-        }
-
-        protected override void Unsubscribed()
-        {
-            _innerSubscription?.Dispose();
-            _innerSubscription = null;
-        }
-
-        private void PublishNext()
-        {
-            PublishNext(_isActive ? _value : default);
-        }
-
-        private void ConvertAndPublishNext(object? value)
-        {
-            _value = BindingValue<T>.FromUntyped(value);
-
-            if (_isActive)
-            {
-                PublishNext();
-            }
-        }
-
-        private class Inner : IObserver<object?>
-        {
-            private readonly PropertySetterBindingInstance<T> _owner;
-            public Inner(PropertySetterBindingInstance<T> owner) => _owner = owner;
-            public void OnCompleted() => _owner.PublishCompleted();
-            public void OnError(Exception error) => _owner.PublishError(error);
-            public void OnNext(object? value) => _owner.ConvertAndPublishNext(value);
         }
     }
 }

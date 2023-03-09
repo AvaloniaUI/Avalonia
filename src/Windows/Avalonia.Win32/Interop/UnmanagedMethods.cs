@@ -1,13 +1,12 @@
+#nullable enable
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-
-using Avalonia.MicroCom;
-using Avalonia.Win32.Win32Com;
+using MicroCom.Runtime;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169, 649
@@ -819,6 +818,14 @@ namespace Avalonia.Win32.Interop
             DWMWA_LAST
         };
 
+        public enum DwmWindowCornerPreference : uint
+        {
+            DWMWCP_DEFAULT = 0,
+            DWMWCP_DONOTROUND,
+            DWMWCP_ROUND,
+            DWMWCP_ROUNDSMALL
+        }
+
         public enum MapVirtualKeyMapTypes : uint
         {
             MAPVK_VK_TO_VSC = 0x00,
@@ -1082,6 +1089,20 @@ namespace Avalonia.Win32.Interop
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern int GetMouseMovePointsEx(
+            uint cbSize, MOUSEMOVEPOINT* pointsIn,
+            MOUSEMOVEPOINT* pointsBufferOut, int nBufPoints, uint resolution);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] // For GetMouseMovePointsEx
+        public struct MOUSEMOVEPOINT
+        {
+            public int x;                       //Specifies the x-coordinate of the mouse
+            public int y;                       //Specifies the x-coordinate of the mouse
+            public int time;                    //Specifies the time stamp of the mouse coordinate
+            public IntPtr dwExtraInfo;              //Specifies extra information associated with this coordinate.
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool IsMouseInPointerEnabled();
 
@@ -1144,7 +1165,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CreateWindowEx(
            int dwExStyle,
            uint lpClassName,
-           string lpWindowName,
+           string? lpWindowName,
            uint dwStyle,
            int x,
            int y,
@@ -1195,7 +1216,7 @@ namespace Avalonia.Win32.Interop
         public static extern int GetMessageTime();
 
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
@@ -1232,7 +1253,7 @@ namespace Avalonia.Win32.Interop
             }
             else
             {
-                return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr((uint)value)).ToInt32();
+                return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr(value)).ToInt32();
             }
         }
 
@@ -1394,11 +1415,11 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool TranslateMessage(ref MSG lpMsg);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
-        public static extern bool SetWindowText(IntPtr hwnd, string lpString);
+        public static extern bool SetWindowText(IntPtr hwnd, string? lpString);
 
         public enum ClassLongIndex : int
         {
@@ -1459,7 +1480,7 @@ namespace Avalonia.Win32.Interop
         internal static extern int CoCreateInstance(ref Guid clsid,
             IntPtr ignore1, int ignore2, ref Guid iid, [Out] out IntPtr pUnkOuter);
 
-        internal unsafe static T CreateInstance<T>(ref Guid clsid, ref Guid iid) where T : IUnknown
+        internal static T CreateInstance<T>(ref Guid clsid, ref Guid iid) where T : IUnknown
         {
             var hresult = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out IntPtr pUnk);
             if (hresult != 0)
@@ -1467,7 +1488,7 @@ namespace Avalonia.Win32.Interop
                 throw new COMException("CreateInstance", hresult);
             }
             using var unk = MicroComRuntime.CreateProxyFor<IUnknown>(pUnk, true);
-            return MicroComRuntime.QueryInterface<T>(unk);
+            return unk.QueryInterface<T>();
         }
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -1558,7 +1579,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [DllImport("user32")]
-        public static extern unsafe bool GetTouchInputInfo(
+        public static extern bool GetTouchInputInfo(
             IntPtr hTouchInput,
             uint cInputs,
             TOUCHINPUT* pInputs,
@@ -1612,7 +1633,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool wglDeleteContext(IntPtr context);
 
 
-        [DllImport("opengl32.dll")]
+        [DllImport("opengl32.dll", SetLastError = true)]
         public static extern bool wglMakeCurrent(IntPtr hdc, IntPtr context);
 
         [DllImport("opengl32.dll")]
@@ -1657,7 +1678,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr GlobalSize(IntPtr hGlobal);
 
         [DllImport("shell32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
-        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
+        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder? lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
         internal static extern void DoDragDrop(IntPtr dataObject, IntPtr dropSource, int allowedEffects, [Out] out int finalEffect);
@@ -1711,7 +1732,7 @@ namespace Avalonia.Win32.Interop
 
             public DWM_BLURBEHIND(bool enabled)
             {
-                fEnable = enabled ? true : false;
+                fEnable = enabled;
                 hRgnBlur = IntPtr.Zero;
                 fTransitionOnMaximized = false;
                 dwFlags = DWM_BB.Enable;
@@ -1766,6 +1787,46 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
+        [Flags]
+        public enum GCS : uint
+        {
+            /// <summary>Retrieve or update the attribute of the composition string.</summary>
+            GCS_COMPATTR = 0x0010,
+
+            /// <summary>Retrieve or update clause information of the composition string.</summary>
+            GCS_COMPCLAUSE = 0x0020,
+
+            /// <summary>Retrieve or update the attributes of the reading string of the current composition.</summary>
+            GCS_COMPREADATTR = 0x0002,
+
+            /// <summary>Retrieve or update the clause information of the reading string of the composition string.</summary>
+            GCS_COMPREADCLAUSE = 0x0004,
+
+            /// <summary>Retrieve or update the reading string of the current composition.</summary>
+            GCS_COMPREADSTR = 0x0001,
+
+            /// <summary>Retrieve or update the current composition string.</summary>
+            GCS_COMPSTR = 0x0008,
+
+            /// <summary>Retrieve or update the cursor position in composition string.</summary>
+            GCS_CURSORPOS = 0x0080,
+
+            /// <summary>Retrieve or update the starting position of any changes in composition string.</summary>
+            GCS_DELTASTART = 0x0100,
+
+            /// <summary>Retrieve or update clause information of the result string.</summary>
+            GCS_RESULTCLAUSE = 0x1000,
+
+            /// <summary>Retrieve or update clause information of the reading string.</summary>
+            GCS_RESULTREADCLAUSE = 0x0400,
+
+            /// <summary>Retrieve or update the reading string.</summary>
+            GCS_RESULTREADSTR = 0x0200,
+
+            /// <summary>Retrieve or update the string of the composition result.</summary>
+            GCS_RESULTSTR = 0x0800,
+        }
+
         [DllImport("imm32.dll", SetLastError = true)]
         public static extern IntPtr ImmGetContext(IntPtr hWnd);
         [DllImport("imm32.dll", SetLastError = true)]
@@ -1788,6 +1849,31 @@ namespace Avalonia.Win32.Interop
         public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
         [DllImport("imm32.dll")]
         public static extern bool ImmSetCompositionFont(IntPtr hIMC, ref LOGFONT lf);
+
+        [DllImport("imm32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int ImmGetCompositionString(IntPtr hIMC, GCS dwIndex, [Out, Optional] IntPtr lpBuf, uint dwBufLen);
+
+        public static string? ImmGetCompositionString(IntPtr hIMC, GCS dwIndex)
+        {
+            int bufferLength = ImmGetCompositionString(hIMC, dwIndex, IntPtr.Zero, 0);
+
+            if (bufferLength > 0)
+            {
+                var buffer = bufferLength <= 64 ? stackalloc byte[bufferLength] : new byte[bufferLength];
+
+                fixed (byte* bufferPtr = buffer)
+                {
+                    var result = ImmGetCompositionString(hIMC, dwIndex, (IntPtr)bufferPtr, (uint)bufferLength);
+                    if (result >= 0)
+                    {
+                        return Marshal.PtrToStringUni((IntPtr)bufferPtr);
+                    }
+                }
+            }
+
+            return null;
+        }
+
         [DllImport("imm32.dll")]
         public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
         [DllImport("user32.dll")]
@@ -1814,7 +1900,10 @@ namespace Avalonia.Win32.Interop
 
         public static uint LGID(IntPtr HKL)
         {
-            return (uint)(HKL.ToInt32() & 0xffff);
+            unchecked
+            {
+                return (uint)((ulong)HKL & 0xffff);
+            }
         }
 
         public const int SORT_DEFAULT = 0;
@@ -1827,7 +1916,13 @@ namespace Avalonia.Win32.Interop
         public const int CFS_EXCLUDE = 0x0080;
         public const int CFS_POINT = 0x0002;
         public const int CFS_RECT = 0x0001;
-        public const uint ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+
+        // lParam for WM_IME_SETCONTEXT
+        public const long ISC_SHOWUICANDIDATEWINDOW = 0x00000001;
+        public const long ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+        public const long ISC_SHOWUIGUIDELINE = 0x40000000;
+        public const long ISC_SHOWUIALLCANDIDATEWINDOW = 0x0000000F;
+        public const long ISC_SHOWUIALL = 0xC000000F;
 
         public const int NI_COMPOSITIONSTR = 21;
         public const int CPS_COMPLETE = 1;
@@ -2029,6 +2124,12 @@ namespace Avalonia.Win32.Interop
         {
             public int X;
             public int Y;
+        }
+
+        public struct SIZE_F
+        {
+            public float X;
+            public float Y;
         }
 
         public struct RECT
@@ -2279,7 +2380,7 @@ namespace Avalonia.Win32.Interop
         }
     }
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct _DROPFILES
     {
         public Int32 pFiles;
@@ -2289,7 +2390,7 @@ namespace Avalonia.Win32.Interop
         public bool fWide;
     }
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct STGMEDIUM
     {
         public TYMED tymed;
@@ -2297,7 +2398,7 @@ namespace Avalonia.Win32.Interop
         public IntPtr pUnkForRelease;
     }
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct FORMATETC
     {
         public ushort cfFormat;
@@ -2406,14 +2507,14 @@ namespace Avalonia.Win32.Interop
         public int uCallbackMessage;
         public IntPtr hIcon;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string szTip;
+        public string? szTip;
         public int dwState = 0;
         public int dwStateMask = 0;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-        public string szInfo;
+        public string? szInfo;
         public int uTimeoutOrVersion;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string szInfoTitle;
+        public string? szInfoTitle;
         public NIIF dwInfoFlags;
     }
 }

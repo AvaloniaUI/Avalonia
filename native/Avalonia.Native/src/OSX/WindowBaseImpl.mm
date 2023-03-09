@@ -4,6 +4,7 @@
 //
 
 #import <AppKit/AppKit.h>
+#import <Cocoa/Cocoa.h>
 #include "common.h"
 #include "AvnView.h"
 #include "menu.h"
@@ -14,6 +15,7 @@
 #import "WindowProtocol.h"
 #import "WindowInterfaces.h"
 #include "WindowBaseImpl.h"
+#include "AvnTextInputMethod.h"
 
 
 WindowBaseImpl::~WindowBaseImpl() {
@@ -28,6 +30,7 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     _glContext = gl;
     renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext:gl];
     View = [[AvnView alloc] initWithParent:this];
+    InputMethod = new AvnTextInputMethod(View);
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
     lastPositionSet = { 0, 0 };
@@ -35,18 +38,14 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     lastSize = NSSize { 100, 100 };
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
-
     lastMenu = nullptr;
     
     CreateNSWindow(usePanel);
     
     [Window setContentView:StandardContainer];
-    [Window setStyleMask:NSWindowStyleMaskBorderless];
     [Window setBackingType:NSBackingStoreBuffered];
-
     [Window setContentMinSize:lastMinSize];
     [Window setContentMaxSize:lastMaxSize];
-
     [Window setOpaque:false];
 }
 
@@ -297,15 +296,24 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
-            if(x != lastSize.width || y != lastSize.height) {
+            if(x != lastSize.width || y != lastSize.height)
+            {
+                if (!_shown) {
+                    auto screenSize = [Window screen].visibleFrame.size;
+
+                    if (x > screenSize.width) {
+                        x = screenSize.width;
+                    }
+
+                    if (y > screenSize.height) {
+                        y = screenSize.height;
+                    }
+                }
+
                 lastSize = NSSize{x, y};
 
-                if (!_shown) {
-                    BaseEvents->Resized(AvnSize{x, y}, reason);
-                } else if (Window != nullptr) {
-                    [Window setContentSize:lastSize];
-                    [Window invalidateShadow];
-                }
+                [Window setContentSize:lastSize];
+                [Window invalidateShadow];
             }
         }
         @finally {
@@ -489,10 +497,29 @@ HRESULT WindowBaseImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) 
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::SetBlurEnabled(bool enable) {
+HRESULT WindowBaseImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
     START_COM_CALL;
 
-    [StandardContainer ShowBlur:enable];
+    [Window setBackgroundColor: (mode != Transparent ? [NSColor windowBackgroundColor] : [NSColor clearColor])];
+    [StandardContainer ShowBlur: mode == Blur];
+
+    return S_OK;
+}
+
+HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
+    START_COM_CALL;
+
+    NSAppearanceName appearanceName;
+    if (@available(macOS 10.14, *))
+    {
+        appearanceName = variant == AvnPlatformThemeVariant::Dark ? NSAppearanceNameDarkAqua : NSAppearanceNameAqua;
+    }
+    else
+    {
+        appearanceName = variant == AvnPlatformThemeVariant::Dark ? NSAppearanceNameVibrantDark : NSAppearanceNameAqua;
+    }
+
+    [Window setAppearance: [NSAppearance appearanceNamed: appearanceName]];
 
     return S_OK;
 }
@@ -541,16 +568,12 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
     return S_OK;
 }
 
-bool WindowBaseImpl::IsDialog() {
+bool WindowBaseImpl::IsModal() {
     return false;
 }
 
-NSWindowStyleMask WindowBaseImpl::GetStyle() {
-    return NSWindowStyleMaskBorderless;
-}
-
 void WindowBaseImpl::UpdateStyle() {
-    [Window setStyleMask:GetStyle()];
+    [Window setStyleMask:CalculateStyleMask()];
 }
 
 void WindowBaseImpl::CleanNSWindow() {
@@ -561,21 +584,12 @@ void WindowBaseImpl::CleanNSWindow() {
     }
 }
 
-void WindowBaseImpl::CreateNSWindow(bool isDialog) {
-    if (isDialog) {
-        if (![Window isKindOfClass:[AvnPanel class]]) {
-            CleanNSWindow();
-
-            Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
-            
-            [Window setHidesOnDeactivate:false];
-        }
+void WindowBaseImpl::CreateNSWindow(bool usePanel) {
+    if (usePanel) {
+        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        [Window setHidesOnDeactivate:false];
     } else {
-        if (![Window isKindOfClass:[AvnWindow class]]) {
-            CleanNSWindow();
-
-            Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
-        }
+        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
     }
 }
 
@@ -591,6 +605,14 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
 void WindowBaseImpl::BringToFront()
 {
     // do nothing.
+}
+
+HRESULT WindowBaseImpl::GetInputMethod(IAvnTextInputMethod **retOut) {
+    START_COM_CALL;
+
+    *retOut = InputMethod;
+
+    return S_OK;
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

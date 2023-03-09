@@ -1,7 +1,6 @@
 ﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=netstandard">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24">
       <StackPanel Spacing="12" >
@@ -106,13 +105,13 @@
                 CornerRadius="10" />
 
             <Canvas
-                x:Name="SwitchKnob"
+                x:Name="PART_SwitchKnob"
                 Grid.Row="1"
                 Width="20"
                 Height="20"
                 HorizontalAlignment="Left">
 
-              <Grid x:Name="MovingKnobs" Width="20" Height="20">
+              <Grid x:Name="PART_MovingKnobs" Width="20" Height="20">
                 <Ellipse
                   x:Name="SwitchKnobOn"
                   Fill="{DynamicResource ToggleSwitchKnobFillOn}"
@@ -135,7 +134,7 @@
     </Style>
 
     <!--  NormalState  -->
-    <Style Selector="^:not(:dragging) /template/ Grid#MovingKnobs">
+    <Style Selector="^:not(:dragging) /template/ Grid#PART_MovingKnobs">
       <Setter Property="Transitions">
         <Transitions>
           <DoubleTransition

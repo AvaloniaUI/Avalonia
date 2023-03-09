@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Transport;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -12,7 +14,7 @@ namespace Avalonia.Rendering.Composition.Server
     {
         public List<T> List { get; } = new List<T>();
 
-        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
             if (reader.Read<byte>() == 1)
             {
@@ -21,7 +23,7 @@ namespace Avalonia.Rendering.Composition.Server
                 for (var c = 0; c < count; c++) 
                     List.Add(reader.ReadObject<T>());
             }
-            base.DeserializeChangesCore(reader, commitedAt);
+            base.DeserializeChangesCore(reader, committedAt);
         }
 
         public override long LastChangedBy

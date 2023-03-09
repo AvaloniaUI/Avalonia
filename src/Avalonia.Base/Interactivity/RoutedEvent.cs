@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Subjects;
+using Avalonia.Reactive;
 
 namespace Avalonia.Interactivity
 {
@@ -13,8 +13,8 @@ namespace Avalonia.Interactivity
 
     public class RoutedEvent
     {
-        private readonly Subject<(object, RoutedEventArgs)> _raised = new Subject<(object, RoutedEventArgs)>();
-        private readonly Subject<RoutedEventArgs> _routeFinished = new Subject<RoutedEventArgs>();
+        private readonly LightweightSubject<(object, RoutedEventArgs)> _raised = new();
+        private readonly LightweightSubject<RoutedEventArgs> _routeFinished = new();
 
         public RoutedEvent(
             string name,
@@ -113,28 +113,10 @@ namespace Avalonia.Interactivity
         {
         }
 
-        [Obsolete("Use overload taking Action<TTarget, TEventArgs>.")]
-        public IDisposable AddClassHandler<TTarget>(
-            Func<TTarget, Action<TEventArgs>> handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false)
-            where TTarget : class, IInteractive
-        {
-            void Adapter(object? sender, RoutedEventArgs e)
-            {
-                if (sender is TTarget target && e is TEventArgs args)
-                {
-                    handler(target)(args);
-                }
-            }
-
-            return AddClassHandler(typeof(TTarget), Adapter, routes, handledEventsToo);
-        }
-
         public IDisposable AddClassHandler<TTarget>(
             Action<TTarget, TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false) where TTarget : class, IInteractive
+            bool handledEventsToo = false) where TTarget : Interactive
         {
             void Adapter(object? sender, RoutedEventArgs e)
             {

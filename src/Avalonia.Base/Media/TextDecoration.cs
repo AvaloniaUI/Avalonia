@@ -1,5 +1,10 @@
-﻿using Avalonia.Collections;
+﻿using System;
+using System.Collections.Generic;
+using Avalonia.Collections;
+using Avalonia.Collections.Pooled;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -17,8 +22,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Stroke"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> StrokeProperty =
-            AvaloniaProperty.Register<TextDecoration, IBrush>(nameof(Stroke));
+        public static readonly StyledProperty<IBrush?> StrokeProperty =
+            AvaloniaProperty.Register<TextDecoration, IBrush?>(nameof(Stroke));
 
         /// <summary>
         /// Defines the <see cref="StrokeThicknessUnit"/> property.
@@ -29,8 +34,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="StrokeDashArray"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
-            AvaloniaProperty.Register<TextDecoration, AvaloniaList<double>>(nameof(StrokeDashArray));
+        public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty =
+            AvaloniaProperty.Register<TextDecoration, AvaloniaList<double>?>(nameof(StrokeDashArray));
 
         /// <summary>
         /// Defines the <see cref="StrokeDashOffset"/> property.
@@ -77,7 +82,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the <see cref="IBrush"/> that specifies how the <see cref="TextDecoration"/> is painted.
         /// </summary>
-        public IBrush Stroke
+        public IBrush? Stroke
         {
             get { return GetValue(StrokeProperty); }
             set { SetValue(StrokeProperty, value); }
@@ -96,7 +101,7 @@ namespace Avalonia.Media
         /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps
         /// that is used to draw the <see cref="TextDecoration"/>.
         /// </summary>
-        public AvaloniaList<double> StrokeDashArray
+        public AvaloniaList<double>? StrokeDashArray
         {
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
@@ -155,9 +160,9 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
         /// <param name="glyphRun">The decorated run.</param>
-        /// <param name="fontMetrics">The font metrics of the decorated run.</param>
+        /// <param name="textMetrics">The font metrics of the decorated run.</param>
         /// <param name="defaultBrush">The default brush that is used to draw the decoration.</param>
-        internal void Draw(DrawingContext drawingContext, GlyphRun glyphRun, FontMetrics fontMetrics, IBrush defaultBrush)
+        internal void Draw(DrawingContext drawingContext, GlyphRun glyphRun, TextMetrics textMetrics, IBrush defaultBrush)
         {
             var baselineOrigin = glyphRun.BaselineOrigin;
             var thickness = StrokeThickness;
@@ -168,16 +173,16 @@ namespace Avalonia.Media
                     switch (Location)
                     {
                         case TextDecorationLocation.Underline:
-                            thickness = fontMetrics.UnderlineThickness;
+                            thickness = textMetrics.UnderlineThickness;
                             break;
                         case TextDecorationLocation.Strikethrough:
-                            thickness = fontMetrics.StrikethroughThickness;
+                            thickness = textMetrics.StrikethroughThickness;
                             break;
                     }
 
                     break;
                 case TextDecorationUnit.FontRenderingEmSize:
-                    thickness = fontMetrics.FontRenderingEmSize * thickness;
+                    thickness = textMetrics.FontRenderingEmSize * thickness;
                     break;
             }
 
@@ -189,17 +194,17 @@ namespace Avalonia.Media
                     origin += glyphRun.BaselineOrigin;
                     break;
                 case TextDecorationLocation.Strikethrough:
-                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + fontMetrics.StrikethroughPosition);
+                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + textMetrics.StrikethroughPosition);
                     break;
                 case TextDecorationLocation.Underline:
-                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + fontMetrics.UnderlinePosition);
+                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + textMetrics.UnderlinePosition);
                     break;
             }
 
             switch (StrokeOffsetUnit)
             {
                 case TextDecorationUnit.FontRenderingEmSize:
-                    origin += new Point(0, StrokeOffset * fontMetrics.FontRenderingEmSize);
+                    origin += new Point(0, StrokeOffset * textMetrics.FontRenderingEmSize);
                     break;
                 case TextDecorationUnit.Pixel:
                     origin += new Point(0, StrokeOffset);
@@ -209,7 +214,52 @@ namespace Avalonia.Media
             var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
 
-            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Size.Width, 0));
+            if (Location != TextDecorationLocation.Strikethrough)
+            {
+                var offsetY = glyphRun.BaselineOrigin.Y - origin.Y;
+
+                var intersections = glyphRun.PlatformImpl.Item.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
+
+                if (intersections.Count > 0)
+                {
+                    var last = baselineOrigin.X;
+                    var finalPos = last + glyphRun.Bounds.Width;
+                    var end = last;
+
+                    var points = new List<double>();
+
+                    //math is taken from chrome's source code.
+                    for (var i = 0; i < intersections.Count; i += 2)
+                    {
+                        var start = intersections[i] - thickness;
+                        end = intersections[i + 1] + thickness;
+                        if (start > last && last + textMetrics.FontRenderingEmSize / 12 < start)
+                        {
+                            points.Add(last);
+                            points.Add(start);
+                        }
+                        last = end;
+                    }
+
+                    if (end < finalPos)
+                    {
+                        points.Add(end);
+                        points.Add(finalPos);
+                    }
+
+                    for (var i = 0; i < points.Count; i += 2)
+                    {
+                        var a = new Point(points[i], origin.Y);
+                        var b = new Point(points[i + 1], origin.Y);
+
+                        drawingContext.DrawLine(pen, a, b);
+                    }
+
+                    return;
+                }
+            }
+
+            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
         }
     }
 }

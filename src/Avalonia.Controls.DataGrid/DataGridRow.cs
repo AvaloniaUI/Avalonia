@@ -15,6 +15,7 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System;
 using System.Diagnostics;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -58,7 +59,7 @@ namespace Avalonia.Controls
 
         private bool _detailsLoaded;
         private bool _detailsVisibilityNotificationPending;
-        private IControl _detailsContent;
+        private Control _detailsContent;
         private IDisposable _detailsContentSizeSubscription;
         private DataGridDetailsPresenter _detailsElement;
 
@@ -89,7 +90,7 @@ namespace Avalonia.Controls
                 o => o.IsValid);
 
         /// <summary>
-        /// Gets a value that indicates whether the data in a row is valid. 
+        /// Gets a value that indicates whether the data in a row is valid.
         /// </summary>
         public bool IsValid
         {
@@ -130,7 +131,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridRow" /> class. 
+        /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridRow" /> class.
         /// </summary>
         public DataGridRow()
         {
@@ -240,7 +241,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        //TODO Styles
         internal DataGridCell FillerCell
         {
             get
@@ -252,7 +252,10 @@ namespace Avalonia.Controls
                         IsVisible = false,
                         OwningRow = this
                     };
-                    //_fillerCell.EnsureStyle(null);
+                    if (OwningGrid.CellTheme is {} cellTheme)
+                    {
+                        _fillerCell.SetValue(ThemeProperty, cellTheme, BindingPriority.Template);
+                    }
                     if (_cellsElement != null)
                     {
                         _cellsElement.Children.Add(_fillerCell);
@@ -439,7 +442,7 @@ namespace Avalonia.Controls
         public static DataGridRow GetRowContainingElement(Control element)
         {
             // Walk up the tree to find the DataGridRow that contains the element
-            IVisual parent = element;
+            Visual parent = element;
             DataGridRow row = parent as DataGridRow;
             while ((parent != null) && (row == null))
             {
@@ -506,7 +509,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Measures the children of a <see cref="T:Avalonia.Controls.DataGridRow" /> to 
+        /// Measures the children of a <see cref="T:Avalonia.Controls.DataGridRow" /> to
         /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
         /// </summary>
         /// <param name="availableSize">
@@ -709,8 +712,6 @@ namespace Avalonia.Controls
             }
         }
 
-        // Set the proper style for the Header by walking up the Style hierarchy
-        //TODO Styles
         internal void EnsureHeaderStyleAndVisibility(Styling.Style previousStyle)
         {
             if (_headerElement != null && OwningGrid != null)
@@ -785,7 +786,7 @@ namespace Avalonia.Controls
             OwningGrid?.OnRowDetailsChanged();
         }
 
-        // Returns the actual template that should be sued for Details: either explicity set on this row 
+        // Returns the actual template that should be sued for Details: either explicity set on this row
         // or inherited from the DataGrid
         private IDataTemplate ActualDetailsTemplate
         {
@@ -890,7 +891,7 @@ namespace Avalonia.Controls
         //TODO Cleanup
         double? _previousDetailsHeight = null;
 
-        //TODO Animation 
+        //TODO Animation
         private void DetailsContent_HeightChanged(double newValue)
         {
             if (_previousDetailsHeight.HasValue)
@@ -907,7 +908,7 @@ namespace Avalonia.Controls
 
                         _detailsElement.ContentHeight = newValue;
 
-                        // Calling this when details are not visible invalidates during layout when we have no work 
+                        // Calling this when details are not visible invalidates during layout when we have no work
                         // to do.  In certain scenarios, this could cause a layout cycle
                         OnRowDetailsChanged();
                     }
@@ -1021,11 +1022,11 @@ namespace Avalonia.Controls
                         {
                             layoutableContent.LayoutUpdated += DetailsContent_LayoutUpdated;
 
-                            _detailsContentSizeSubscription =
-                                System.Reactive.Disposables.StableCompositeDisposable.Create(
-                                    System.Reactive.Disposables.Disposable.Create(() => layoutableContent.LayoutUpdated -= DetailsContent_LayoutUpdated),
-                                    _detailsContent.GetObservable(MarginProperty)
-                                                   .Subscribe(DetailsContent_MarginChanged));
+                            _detailsContentSizeSubscription = new CompositeDisposable(2)
+                            {
+                                Disposable.Create(() => layoutableContent.LayoutUpdated -= DetailsContent_LayoutUpdated),
+                                _detailsContent.GetObservable(MarginProperty).Subscribe(DetailsContent_MarginChanged)
+                            };
 
 
                         }
@@ -1060,7 +1061,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
@@ -1084,7 +1085,4 @@ namespace Avalonia.Controls
         }
 
     }
-
-    //TODO Styles
-
 }

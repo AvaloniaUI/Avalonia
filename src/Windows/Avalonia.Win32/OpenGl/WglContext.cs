@@ -1,24 +1,28 @@
 using System;
-using System.Reactive.Disposables;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using static Avalonia.Win32.OpenGl.WglConsts;
 
 namespace Avalonia.Win32.OpenGl
 {
-    class WglContext : IGlContext
+    internal class WglContext : IGlContext
     {
-        private object _lock = new object();
-        private readonly WglContext _sharedWith;
+        private readonly object _lock = new();
+        private readonly WglContext? _sharedWith;
         private readonly IntPtr _context;
         private readonly IntPtr _hWnd;
         private readonly IntPtr _dc;
         private readonly int _pixelFormat;
         private readonly PixelFormatDescriptor _formatDescriptor;
+
         public IntPtr Handle => _context;
 
-        public WglContext(WglContext sharedWith, GlVersion version, IntPtr context, IntPtr hWnd, IntPtr dc, int pixelFormat,
+        public WglContext(WglContext? sharedWith, GlVersion version, IntPtr context, IntPtr hWnd, IntPtr dc, int pixelFormat,
             PixelFormatDescriptor formatDescriptor)
         {
             Version = version;
@@ -43,29 +47,39 @@ namespace Avalonia.Win32.OpenGl
         public void Dispose()
         {
             wglDeleteContext(_context);
-            ReleaseDC(_hWnd, _dc);
-            DestroyWindow(_hWnd);
+            WglGdiResourceManager.ReleaseDC(_hWnd, _dc);
+            WglGdiResourceManager.DestroyWindow(_hWnd);
+            IsLost = true;
         }
 
         public GlVersion Version { get; }
         public GlInterface GlInterface { get; }
-        public int SampleCount { get; }
+        public int SampleCount => 0;
         public int StencilSize { get; }
 
         private bool IsCurrent => wglGetCurrentContext() == _context && wglGetCurrentDC() == _dc;
         public IDisposable MakeCurrent()
         {
+            if (IsLost)
+                throw new PlatformGraphicsContextLostException();
             if(IsCurrent)
                 return Disposable.Empty;
             return new WglRestoreContext(_dc, _context, _lock);
         }
 
+        public bool IsLost { get; private set; }
         public IDisposable EnsureCurrent() => MakeCurrent();
+
+        internal IDisposable Lock()
+        {
+            Monitor.Enter(_lock);
+            return Disposable.Create(_lock, Monitor.Exit);
+        }
 
 
         public IntPtr CreateConfiguredDeviceContext(IntPtr hWnd)
         {
-            var dc = GetDC(hWnd);
+            var dc = WglGdiResourceManager.GetDC(hWnd);
             var fmt = _formatDescriptor;
             SetPixelFormat(dc, _pixelFormat, ref fmt);
             return dc;
@@ -81,5 +95,14 @@ namespace Avalonia.Win32.OpenGl
                    || _sharedWith == context
                    || _sharedWith != null && _sharedWith == c._sharedWith;
         }
+
+        public bool CanCreateSharedContext => true;
+        public IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null)
+        {
+            var versions = preferredVersions?.Append(Version).ToArray() ?? new[] { Version };
+            return WglDisplay.CreateContext(versions, _sharedWith ?? this);
+        }
+
+        public object? TryGetFeature(Type featureType) => null;
     }
 }

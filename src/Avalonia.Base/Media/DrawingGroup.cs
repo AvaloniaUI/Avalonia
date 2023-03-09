@@ -13,14 +13,14 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);
 
-        public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<DrawingGroup, Transform>(nameof(Transform));
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            AvaloniaProperty.Register<DrawingGroup, Transform?>(nameof(Transform));
 
-        public static readonly StyledProperty<Geometry> ClipGeometryProperty =
-            AvaloniaProperty.Register<DrawingGroup, Geometry>(nameof(ClipGeometry));
+        public static readonly StyledProperty<Geometry?> ClipGeometryProperty =
+            AvaloniaProperty.Register<DrawingGroup, Geometry?>(nameof(ClipGeometry));
 
-        public static readonly StyledProperty<IBrush> OpacityMaskProperty =
-            AvaloniaProperty.Register<DrawingGroup, IBrush>(nameof(OpacityMask));
+        public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
+            AvaloniaProperty.Register<DrawingGroup, IBrush?>(nameof(OpacityMask));
 
         public static readonly DirectProperty<DrawingGroup, DrawingCollection> ChildrenProperty =
             AvaloniaProperty.RegisterDirect<DrawingGroup, DrawingCollection>(
@@ -36,19 +36,19 @@ namespace Avalonia.Media
             set => SetValue(OpacityProperty, value);
         }
 
-        public Transform Transform
+        public Transform? Transform
         {
             get => GetValue(TransformProperty);
             set => SetValue(TransformProperty, value);
         }
 
-        public Geometry ClipGeometry
+        public Geometry? ClipGeometry
         {
             get => GetValue(ClipGeometryProperty);
             set => SetValue(ClipGeometryProperty, value);
         }
 
-        public IBrush OpacityMask
+        public IBrush? OpacityMask
         {
             get => GetValue(OpacityMaskProperty);
             set => SetValue(OpacityMaskProperty, value);
@@ -67,17 +67,16 @@ namespace Avalonia.Media
             }
         }
 
-        public DrawingContext Open()
-        {
-            return new DrawingContext(new DrawingGroupDrawingContext(this));
-        }
+        public DrawingContext Open() => new DrawingGroupDrawingContext(this);
 
         public override void Draw(DrawingContext context)
         {
+            var bounds = GetBounds();
+
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
-            using (context.PushOpacity(Opacity))
-            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default(DrawingContext.PushedState))
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default(DrawingContext.PushedState))
+            using (context.PushOpacity(Opacity, bounds))
+            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -103,12 +102,10 @@ namespace Avalonia.Media
             return rect;
         }
 
-        private class DrawingGroupDrawingContext : IDrawingContextImpl
+        private sealed class DrawingGroupDrawingContext : DrawingContext
         {
             private readonly DrawingGroup _drawingGroup;
             private readonly IPlatformRenderInterface _platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-
-            private Matrix _transform;
 
             private bool _disposed;
 
@@ -120,10 +117,10 @@ namespace Avalonia.Media
             // root DrawingGroup, and be the same value as the root _currentDrawingGroup.
             //
             // Either way, _rootDrawing always references the root drawing.
-            protected Drawing? _rootDrawing;
+            private Drawing? _rootDrawing;
 
             // Current DrawingGroup that new children are added to
-            protected DrawingGroup? _currentDrawingGroup;
+            private DrawingGroup? _currentDrawingGroup;
 
             // Previous values of _currentDrawingGroup
             private Stack<DrawingGroup?>? _previousDrawingGroupStack;
@@ -133,17 +130,7 @@ namespace Avalonia.Media
                 _drawingGroup = drawingGroup;
             }
 
-            public Matrix Transform
-            {
-                get => _transform;
-                set
-                {
-                    _transform = value;
-                    PushTransform(new MatrixTransform(value));
-                }
-            }
-
-            public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
+            protected override void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect)
             {
                 if ((brush == null) && (pen == null))
                 {
@@ -157,9 +144,9 @@ namespace Avalonia.Media
                 AddNewGeometryDrawing(brush, pen, new PlatformGeometry(geometry));
             }
 
-            public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
+            protected override void DrawGeometryCore(IBrush? brush, IPen? pen, IGeometryImpl geometry)
             {
-                if (((brush == null) && (pen == null)) || (geometry == null))
+                if ((brush == null) && (pen == null))
                 {
                     return;
                 }
@@ -167,31 +154,61 @@ namespace Avalonia.Media
                 AddNewGeometryDrawing(brush, pen, new PlatformGeometry(geometry));
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public override void DrawGlyphRun(IBrush? foreground, GlyphRun glyphRun)
             {
-                if (foreground == null || glyphRun == null)
+                if (foreground == null)
                 {
                     return;
                 }
 
-                // Add a GlyphRunDrawing to the Drawing graph
                 GlyphRunDrawing glyphRunDrawing = new GlyphRunDrawing
                 {
                     Foreground = foreground,
-                    GlyphRun = glyphRun,
+                    GlyphRun = glyphRun
                 };
 
                 // Add Drawing to the Drawing graph
                 AddDrawing(glyphRunDrawing);
             }
 
-            public void DrawLine(IPen pen, Point p1, Point p2)
+            protected override void PushClipCore(RoundedRect rect)
             {
-                if (pen == null)
-                {
-                    return;
-                }
+                throw new NotImplementedException();
+            }
 
+            protected override void PushClipCore(Rect rect)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void PushGeometryClipCore(Geometry clip)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void PushOpacityCore(double opacity, Rect bounds)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void PushOpacityMaskCore(IBrush mask, Rect bounds)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+                BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void DrawLineCore(IPen pen, Point p1, Point p2)
+            {
                 // Instantiate the geometry
                 var geometry = _platformRenderInterface.CreateLineGeometry(p1, p2);
 
@@ -199,101 +216,18 @@ namespace Avalonia.Media
                 AddNewGeometryDrawing(null, pen, new PlatformGeometry(geometry));
             }
 
-            public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect, BoxShadows boxShadows = default)
+            protected override void DrawRectangleCore(IBrush? brush, IPen? pen, RoundedRect rrect, BoxShadows boxShadows = default)
             {
-                if ((brush == null) && (pen == null))
-                {
-                    return;
-                }
-
                 // Instantiate the geometry
-                var geometry = _platformRenderInterface.CreateRectangleGeometry(rect.Rect);
+                var geometry = _platformRenderInterface.CreateRectangleGeometry(rrect.Rect);
 
                 // Add Drawing to the Drawing graph
                 AddNewGeometryDrawing(brush, pen, new PlatformGeometry(geometry));
             }
 
-            public void Clear(Color color)
-            {
-                throw new NotImplementedException();
-            }
+            public override void Custom(ICustomDrawOperation custom) => throw new NotSupportedException();
 
-            public IDrawingContextLayerImpl CreateLayer(Size size)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Custom(ICustomDrawOperation custom)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PopBitmapBlendMode()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PopClip()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PopGeometryClip()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PopOpacity()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PopOpacityMask()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PushClip(Rect clip)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PushClip(RoundedRect clip)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PushGeometryClip(IGeometryImpl clip)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PushOpacity(double opacity)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PushOpacityMask(IBrush mask, Rect bounds)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Dispose()
+            protected override void DisposeCore()
             {
                 // Dispose may be called multiple times without throwing
                 // an exception.
@@ -363,21 +297,33 @@ namespace Avalonia.Media
                 // Restore the previous value of the current drawing group
                 _currentDrawingGroup = _previousDrawingGroupStack.Pop();
             }
-
+            
             /// <summary>
             ///     PushTransform -
             ///     Push a Transform which will apply to all drawing operations until the corresponding
             ///     Pop.
             /// </summary>
-            /// <param name="transform"> The Transform to push. </param>
-            private void PushTransform(Transform transform)
+            /// <param name="matrix"> The transform to push. </param>
+            protected override void PushTransformCore(Matrix matrix)
             {
                 // Instantiate a new drawing group and set it as the _currentDrawingGroup
                 var drawingGroup = PushNewDrawingGroup();
 
                 // Set the transform on the new DrawingGroup
-                drawingGroup.Transform = transform;
+                drawingGroup.Transform = new MatrixTransform(matrix);
             }
+
+            protected override void PopClipCore() => Pop();
+
+            protected override void PopGeometryClipCore() => Pop();
+
+            protected override void PopOpacityCore() => Pop();
+
+            protected override void PopOpacityMaskCore() => Pop();
+
+            protected override void PopBitmapBlendModeCore() => Pop();
+
+            protected override void PopTransformCore() => Pop();
 
             /// <summary>
             /// Creates a new DrawingGroup for a Push* call by setting the
@@ -459,9 +405,10 @@ namespace Avalonia.Media
 
                 if (_rootDrawing == null)
                 {
-                    // When a DrawingGroup is set, it should be made the root if
-                    // a root drawing didnt exist.
-                    Contract.Requires<NotSupportedException>(_currentDrawingGroup == null);
+                    if (_currentDrawingGroup != null)
+                    {
+                        throw new NotSupportedException("When a DrawingGroup is set, it should be made the root if a root drawing didnt exist.");
+                    }
 
                     // If this is the first Drawing being added, avoid creating a DrawingGroup
                     // and set this drawing as the root drawing.  This optimizes the common

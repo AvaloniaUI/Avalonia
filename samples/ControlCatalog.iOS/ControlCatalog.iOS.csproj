@@ -3,11 +3,14 @@
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
     <TargetFramework>net6.0-ios</TargetFramework>
-    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <!-- temporal workaround for our GL interface backend -->
     <UseInterpreter>True</UseInterpreter>
     <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
     <!--    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>-->
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />

@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition.Drawing;
-using Avalonia.Rendering.Composition.Server;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
+
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
 namespace Avalonia.Rendering.Composition;
 
@@ -20,69 +20,105 @@ public class CompositingRenderer : IRendererWithCompositor
 {
     private readonly IRenderRoot _root;
     private readonly Compositor _compositor;
-    CompositionDrawingContext _recorder = new();
-    DrawingContext _recordingContext;
-    private HashSet<Visual> _dirty = new();
-    private HashSet<Visual> _recalculateChildren = new();
-    private bool _queuedUpdate;
-    private Action _update;
-    private Action _invalidateScene;
+    private readonly CompositionDrawingContext _recorder = new();
+    private readonly DrawingContext _recordingContext;
+    private readonly HashSet<Visual> _dirty = new();
+    private readonly HashSet<Visual> _recalculateChildren = new();
+    private readonly Action _update;
 
-    internal CompositionTarget CompositionTarget;
+    private bool _queuedUpdate;
+    private bool _updating;
+    private bool _isDisposed;
+
+    internal CompositionTarget CompositionTarget { get; }
     
     /// <summary>
     /// Asks the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered.
     /// </summary>
     public bool RenderOnlyOnRenderThread { get; set; } = true;
 
-    public CompositingRenderer(IRenderRoot root,
-        Compositor compositor)
+    /// <inheritdoc/>
+    public RendererDiagnostics Diagnostics { get; }
+
+    /// <inheritdoc />
+    public Compositor Compositor => _compositor;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="CompositingRenderer"/>
+    /// </summary>
+    /// <param name="root">The render root using this renderer.</param>
+    /// <param name="compositor">The associated compositors.</param>
+    /// <param name="surfaces">
+    /// A function returning the list of native platform's surfaces that can be consumed by rendering subsystems.
+    /// </param>
+    public CompositingRenderer(IRenderRoot root, Compositor compositor, Func<IEnumerable<object>> surfaces)
     {
         _root = root;
         _compositor = compositor;
-        _recordingContext = new DrawingContext(_recorder);
-        CompositionTarget = compositor.CreateCompositionTarget(root.CreateRenderTarget);
-        CompositionTarget.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
+        _recordingContext = _recorder;
+        CompositionTarget = compositor.CreateCompositionTarget(surfaces);
+        CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;
-        _invalidateScene = InvalidateScene;
+        Diagnostics = new RendererDiagnostics();
+        Diagnostics.PropertyChanged += OnDiagnosticsPropertyChanged;
     }
 
-    /// <inheritdoc/>
-    public bool DrawFps
+    private void OnDiagnosticsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        get => CompositionTarget.DrawFps;
-        set => CompositionTarget.DrawFps = value;
-    }
-    
-    /// <inheritdoc/>
-    public bool DrawDirtyRects
-    {
-        get => CompositionTarget.DrawDirtyRects;
-        set => CompositionTarget.DrawDirtyRects = value;
+        switch (e.PropertyName)
+        {
+            case nameof(RendererDiagnostics.DebugOverlays):
+                CompositionTarget.DebugOverlays = Diagnostics.DebugOverlays;
+                break;
+            case nameof(RendererDiagnostics.LastLayoutPassTiming):
+                CompositionTarget.LastLayoutPassTiming = Diagnostics.LastLayoutPassTiming;
+                break;
+        }
     }
 
     /// <inheritdoc/>
     public event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
 
-    void QueueUpdate()
+    private void QueueUpdate()
     {
         if(_queuedUpdate)
             return;
         _queuedUpdate = true;
-        Dispatcher.UIThread.Post(_update, DispatcherPriority.Composition);
+        _compositor.RequestCompositionUpdate(_update);
     }
     
     /// <inheritdoc/>
-    public void AddDirty(IVisual visual)
+    public void AddDirty(Visual visual)
     {
-        _dirty.Add((Visual)visual);
+        if (_isDisposed)
+            return;
+        if (_updating)
+            throw new InvalidOperationException("Visual was invalidated during the render pass");
+        _dirty.Add(visual);
         QueueUpdate();
     }
 
     /// <inheritdoc/>
-    public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
+    public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
     {
-        var res = CompositionTarget.TryHitTest(p, filter);
+        CompositionVisual? rootVisual = null;
+        if (root != null)
+        {
+            if (root.CompositionVisual == null)
+                yield break;
+            rootVisual = root.CompositionVisual;
+        }
+        
+        Func<CompositionVisual, bool>? f = null;
+        if (filter != null)
+            f = v =>
+            {
+                if (v is CompositionDrawListVisual dlv)
+                    return filter(dlv.Visual);
+                return true;
+            };
+
+        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -96,28 +132,32 @@ public class CompositingRenderer : IRendererWithCompositor
     }
 
     /// <inheritdoc/>
-    public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
+    public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
     {
         // TODO: Optimize
         return HitTest(p, root, filter).FirstOrDefault();
     }
 
     /// <inheritdoc/>
-    public void RecalculateChildren(IVisual visual)
+    public void RecalculateChildren(Visual visual)
     {
-        _recalculateChildren.Add((Visual)visual);
+        if (_isDisposed)
+            return;
+        if (_updating)
+            throw new InvalidOperationException("Visual was invalidated during the render pass");
+        _recalculateChildren.Add(visual);
         QueueUpdate();
     }
 
-    private void SyncChildren(Visual v)
+    private static void SyncChildren(Visual v)
     {
         //TODO: Optimize by moving that logic to Visual itself
         if(v.CompositionVisual == null)
             return;
         var compositionChildren = v.CompositionVisual.Children;
-        var visualChildren = (AvaloniaList<IVisual>)v.GetVisualChildren();
+        var visualChildren = (AvaloniaList<Visual>)v.GetVisualChildren();
         
-        PooledList<(IVisual visual, int index)>? sortedChildren = null;
+        PooledList<(Visual visual, int index)>? sortedChildren = null;
         if (v.HasNonUniformZIndexChildren && visualChildren.Count > 1)
         {
             sortedChildren = new (visualChildren.Count);
@@ -131,20 +171,24 @@ public class CompositingRenderer : IRendererWithCompositor
                 return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
             });
         }
-
-        if (compositionChildren.Count == visualChildren.Count)
+        
+        var childVisual = v.ChildCompositionVisual;
+        
+        // Check if the current visual somehow got migrated to another compositor
+        if (childVisual != null && childVisual.Compositor != v.CompositionVisual.Compositor)
+            childVisual = null;
+        
+        var expectedCount = visualChildren.Count;
+        if (childVisual != null)
+            expectedCount++;
+        
+        if (compositionChildren.Count == expectedCount)
         {
             bool mismatch = false;
-            if (v.HasNonUniformZIndexChildren)
-            {
-                
-                
-            }
-
             if (sortedChildren != null)
                 for (var c = 0; c < visualChildren.Count; c++)
                 {
-                    if (!ReferenceEquals(compositionChildren[c], ((Visual)sortedChildren[c].visual).CompositionVisual))
+                    if (!ReferenceEquals(compositionChildren[c], sortedChildren[c].visual.CompositionVisual))
                     {
                         mismatch = true;
                         break;
@@ -152,12 +196,15 @@ public class CompositingRenderer : IRendererWithCompositor
                 }
             else
                 for (var c = 0; c < visualChildren.Count; c++)
-                    if (!ReferenceEquals(compositionChildren[c], ((Visual)visualChildren[c]).CompositionVisual))
+                    if (!ReferenceEquals(compositionChildren[c], visualChildren[c].CompositionVisual))
                     {
                         mismatch = true;
                         break;
                     }
 
+            if (childVisual != null &&
+                !ReferenceEquals(compositionChildren[compositionChildren.Count - 1], childVisual))
+                mismatch = true;
 
             if (!mismatch)
             {
@@ -171,25 +218,25 @@ public class CompositingRenderer : IRendererWithCompositor
         {
             foreach (var ch in sortedChildren)
             {
-                var compositionChild = ((Visual)ch.visual).CompositionVisual;
+                var compositionChild = ch.visual.CompositionVisual;
                 if (compositionChild != null)
                     compositionChildren.Add(compositionChild);
             }
             sortedChildren.Dispose();
         }
         else
-            foreach (var ch in v.GetVisualChildren())
+            foreach (var ch in visualChildren)
             {
-                var compositionChild = ((Visual)ch).CompositionVisual;
+                var compositionChild = ch.CompositionVisual;
                 if (compositionChild != null)
                     compositionChildren.Add(compositionChild);
             }
+
+        if (childVisual != null)
+            compositionChildren.Add(childVisual);
     }
 
-    private void InvalidateScene() =>
-        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
-
-    private void Update()
+    private void UpdateCore()
     {
         _queuedUpdate = false;
         foreach (var visual in _dirty)
@@ -236,43 +283,83 @@ public class CompositingRenderer : IRendererWithCompositor
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
-        Compositor.InvokeOnNextCommit(_invalidateScene);
+        TriggerSceneInvalidatedOnBatchCompletion(_compositor.RequestCommitAsync());
+    }
+
+    private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
+    {
+        await batchCompletion;
+        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
     }
     
+    private void Update()
+    {
+        if(_updating)
+            return;
+        _updating = true;
+        try
+        {
+            UpdateCore();
+        }
+        finally
+        {
+            _updating = false;
+        }
+    }
+
+    /// <inheritdoc />
     public void Resized(Size size)
     {
     }
 
+    /// <inheritdoc />
     public void Paint(Rect rect)
     {
-        Update();
+        if (_isDisposed)
+            return;
+
+        QueueUpdate();
         CompositionTarget.RequestRedraw();
         if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
-            Compositor.RequestCommitAsync().Wait();
+            Compositor.Commit().Wait();
         else
             CompositionTarget.ImmediateUIThreadRender();
     }
 
-    public void Start() => CompositionTarget.IsEnabled = true;
-
-    public void Stop()
+    /// <inheritdoc />
+    public void Start()
     {
-        CompositionTarget.IsEnabled = false;
+        if (_isDisposed)
+            return;
+
+        CompositionTarget.IsEnabled = true;
     }
-    
+
+    /// <inheritdoc />
+    public void Stop()
+        => CompositionTarget.IsEnabled = false;
+
+    /// <inheritdoc />
+    public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        => Compositor.TryGetRenderInterfaceFeature(featureType);
+
+    /// <inheritdoc />
     public void Dispose()
     {
+        if (_isDisposed)
+            return;
+
+        _isDisposed = true;
+        _dirty.Clear();
+        _recalculateChildren.Clear();
+        SceneInvalidated = null;
+
         Stop();
         CompositionTarget.Dispose();
         
         // Wait for the composition batch to be applied and rendered to guarantee that
         // render target is not used anymore and can be safely disposed
         if (Compositor.Loop.RunsInBackground)
-            _compositor.RequestCommitAsync().Wait();
+            _compositor.Commit().Wait();
     }
-
-    /// <summary>
-    /// The associated <see cref="Avalonia.Rendering.Composition.Compositor"/> object
-    /// </summary>
-    public Compositor Compositor => _compositor;
 }

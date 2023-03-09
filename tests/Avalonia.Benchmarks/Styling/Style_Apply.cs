@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
 #nullable enable
@@ -52,12 +55,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             foreach (var style in _styles)
-                style.TryAttach(target, null);
+                StyleHelpers.TryAttach(style, target);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
         }
 
         private class TestClass : Control

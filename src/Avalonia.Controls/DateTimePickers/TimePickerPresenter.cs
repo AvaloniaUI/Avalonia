@@ -11,47 +11,48 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a time. Intended for use with
     /// <see cref="TimePicker"/> but can be used independently
     /// </summary>
-    [TemplatePart("AcceptButton",     typeof(Button))]
-    [TemplatePart("DismissButton",    typeof(Button))]
-    [TemplatePart("HourDownButton",   typeof(RepeatButton))]
-    [TemplatePart("HourSelector",     typeof(DateTimePickerPanel))]
-    [TemplatePart("HourUpButton",     typeof(RepeatButton))]
-    [TemplatePart("MinuteDownButton", typeof(RepeatButton))]
-    [TemplatePart("MinuteSelector",   typeof(DateTimePickerPanel))]
-    [TemplatePart("MinuteUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PeriodDownButton", typeof(RepeatButton))]
-    [TemplatePart("PeriodHost",       typeof(Panel))]
-    [TemplatePart("PeriodSelector",   typeof(DateTimePickerPanel))]
-    [TemplatePart("PeriodUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PickerContainer",  typeof(Grid))]
-    [TemplatePart("SecondSpacer",     typeof(Rectangle))]
+    [TemplatePart("PART_AcceptButton",     typeof(Button))]
+    [TemplatePart("PART_DismissButton",    typeof(Button))]
+    [TemplatePart("PART_HourDownButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_HourSelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_HourUpButton",     typeof(RepeatButton))]
+    [TemplatePart("PART_MinuteDownButton", typeof(RepeatButton))]
+    [TemplatePart("PART_MinuteSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_MinuteUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_PeriodDownButton", typeof(RepeatButton))]
+    [TemplatePart("PART_PeriodHost",       typeof(Panel))]
+    [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_PeriodUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_PickerContainer",  typeof(Grid))]
+    [TemplatePart("PART_SecondSpacer",     typeof(Rectangle))]
     public class TimePickerPresenter : PickerPresenterBase
     {
         /// <summary>
         /// Defines the <see cref="MinuteIncrement"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePickerPresenter, int> MinuteIncrementProperty =
-            TimePicker.MinuteIncrementProperty.AddOwner<TimePickerPresenter>(x => x.MinuteIncrement,
-                (x, v) => x.MinuteIncrement = v);
+        public static readonly StyledProperty<int> MinuteIncrementProperty =
+            TimePicker.MinuteIncrementProperty.AddOwner<TimePickerPresenter>();
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePickerPresenter, string> ClockIdentifierProperty =
-            TimePicker.ClockIdentifierProperty.AddOwner<TimePickerPresenter>(x => x.ClockIdentifier,
-                (x, v) => x.ClockIdentifier = v);
+        public static readonly StyledProperty<string> ClockIdentifierProperty =
+            TimePicker.ClockIdentifierProperty.AddOwner<TimePickerPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Time"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePickerPresenter, TimeSpan> TimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePickerPresenter, TimeSpan>(nameof(Time),
-                x => x.Time, (x, v) => x.Time = v);
+        public static readonly StyledProperty<TimeSpan> TimeProperty =
+            AvaloniaProperty.Register<TimePickerPresenter, TimeSpan>(nameof(Time));
 
         public TimePickerPresenter()
         {
-            Time = DateTime.Now.TimeOfDay;
-            KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
+            SetCurrentValue(TimeProperty, DateTime.Now.TimeOfDay);
+        }
+
+        static TimePickerPresenter()
+        {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TimePickerPresenter>(KeyboardNavigationMode.Cycle);
         }
 
         // TemplateItems
@@ -70,24 +71,13 @@ namespace Avalonia.Controls
         private Button? _minuteDownButton;
         private Button? _periodDownButton;
 
-        // Backing Fields
-        private TimeSpan _time;
-        private int _minuteIncrement = 1;
-        private string _clockIdentifier = "12HourClock";
-
         /// <summary>
         /// Gets or sets the minute increment in the selector
         /// </summary>
         public int MinuteIncrement
         {
-            get => _minuteIncrement;
-            set
-            {
-                if (value < 1 || value > 59)
-                    throw new ArgumentOutOfRangeException("1 >= MinuteIncrement <= 59");
-                SetAndRaise(MinuteIncrementProperty, ref _minuteIncrement, value);
-                InitPicker();
-            }
+            get => GetValue(MinuteIncrementProperty);
+            set => SetValue(MinuteIncrementProperty, value);
         }
 
         /// <summary>
@@ -95,14 +85,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string ClockIdentifier
         {
-            get => _clockIdentifier;
-            set
-            {
-                if (string.IsNullOrEmpty(value) || !(value == "12HourClock" || value == "24HourClock"))
-                    throw new ArgumentException("Invalid ClockIdentifier");
-                SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
-                InitPicker();
-            }
+            get => GetValue(ClockIdentifierProperty);
+            set => SetValue(ClockIdentifierProperty, value);
         }
 
         /// <summary>
@@ -110,56 +94,62 @@ namespace Avalonia.Controls
         /// </summary>
         public TimeSpan Time
         {
-            get => _time;
-            set
-            {
-                SetAndRaise(TimeProperty, ref _time, value);
-                InitPicker();
-            }
+            get => GetValue(TimeProperty);
+            set => SetValue(TimeProperty, value);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
 
-            _pickerContainer = e.NameScope.Get<Grid>("PickerContainer");
-            _periodHost = e.NameScope.Get<Panel>("PeriodHost");
+            _pickerContainer = e.NameScope.Get<Grid>("PART_PickerContainer");
+            _periodHost = e.NameScope.Get<Panel>("PART_PeriodHost");
 
-            _hourSelector = e.NameScope.Get<DateTimePickerPanel>("HourSelector");
-            _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("MinuteSelector");
-            _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PeriodSelector");
+            _hourSelector = e.NameScope.Get<DateTimePickerPanel>("PART_HourSelector");
+            _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MinuteSelector");
+            _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PART_PeriodSelector");
 
-            _spacer2 = e.NameScope.Get<Rectangle>("SecondSpacer");
+            _spacer2 = e.NameScope.Get<Rectangle>("PART_SecondSpacer");
 
-            _acceptButton = e.NameScope.Get<Button>("AcceptButton");
+            _acceptButton = e.NameScope.Get<Button>("PART_AcceptButton");
             _acceptButton.Click += OnAcceptButtonClicked;
 
-            _hourUpButton = e.NameScope.Find<RepeatButton>("HourUpButton");
+            _hourUpButton = e.NameScope.Find<RepeatButton>("PART_HourUpButton");
             if (_hourUpButton != null)
                 _hourUpButton.Click += OnSelectorButtonClick;
-            _hourDownButton = e.NameScope.Find<RepeatButton>("HourDownButton");
+            _hourDownButton = e.NameScope.Find<RepeatButton>("PART_HourDownButton");
             if (_hourDownButton != null)
                 _hourDownButton.Click += OnSelectorButtonClick;
 
-            _minuteUpButton = e.NameScope.Find<RepeatButton>("MinuteUpButton");
+            _minuteUpButton = e.NameScope.Find<RepeatButton>("PART_MinuteUpButton");
             if (_minuteUpButton != null)
                 _minuteUpButton.Click += OnSelectorButtonClick;
-            _minuteDownButton = e.NameScope.Find<RepeatButton>("MinuteDownButton");
+            _minuteDownButton = e.NameScope.Find<RepeatButton>("PART_MinuteDownButton");
             if (_minuteDownButton != null)
                 _minuteDownButton.Click += OnSelectorButtonClick;
 
-            _periodUpButton = e.NameScope.Find<RepeatButton>("PeriodUpButton");
+            _periodUpButton = e.NameScope.Find<RepeatButton>("PART_PeriodUpButton");
             if (_periodUpButton != null)
                 _periodUpButton.Click += OnSelectorButtonClick;
-            _periodDownButton = e.NameScope.Find<RepeatButton>("PeriodDownButton");
+            _periodDownButton = e.NameScope.Find<RepeatButton>("PART_PeriodDownButton");
             if (_periodDownButton != null)
                 _periodDownButton.Click += OnSelectorButtonClick;
 
-            _dismissButton = e.NameScope.Find<Button>("DismissButton");
+            _dismissButton = e.NameScope.Find<Button>("PART_DismissButton");
             if (_dismissButton != null)
                 _dismissButton.Click += OnDismissButtonClicked;
 
             InitPicker();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == MinuteIncrementProperty || change.Property == ClockIdentifierProperty || change.Property == TimeProperty)
+            {
+                InitPicker();
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -197,7 +187,7 @@ namespace Avalonia.Controls
                 hr = per == 1 ? (hr == 12) ? 12 : hr + 12 : per == 0 && hr == 12 ? 0 : hr;
             }
 
-            Time = new TimeSpan(hr, min, 0);
+            SetCurrentValue(TimeProperty, new TimeSpan(hr, min, 0));
 
             base.OnConfirmed();
         }

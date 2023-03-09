@@ -6,7 +6,7 @@ using Avalonia.Utilities;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Holds a collection of style classes for an <see cref="IStyledElement"/>.
+    /// Holds a collection of style classes for an <see cref="StyledElement"/>.
     /// </summary>
     /// <remarks>
     /// Similar to CSS, each control may have any number of styling classes applied.
@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// <param name="items">The initial items.</param>
         public Classes(params string[] items)
             : base(items)
-        {            
+        {
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Avalonia.Controls
                 listener.Changed();
         }
 
-        private void ThrowIfPseudoclass(string name, string operation)
+        private static void ThrowIfPseudoclass(string name, string operation)
         {
             if (name.StartsWith(":"))
             {

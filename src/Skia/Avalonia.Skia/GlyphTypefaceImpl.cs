@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.Metadata;
-using Avalonia.Platform;
+using Avalonia.Media;
 using HarfBuzzSharp;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    [Unstable]
-    public class GlyphTypefaceImpl : IGlyphTypefaceImpl
+    internal class GlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
 
-        public GlyphTypefaceImpl(SKTypeface typeface, bool isFakeBold = false, bool isFakeItalic = false)
+        public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
             Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
@@ -25,39 +23,40 @@ namespace Avalonia.Skia
 
             Font.SetFunctionsOpenType();
 
-            DesignEmHeight = (short)Typeface.UnitsPerEm;
-
             var metrics = Typeface.ToFont().Metrics;
 
             const double defaultFontRenderingEmSize = 12.0;
 
-            Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
-
-            Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
-
-            LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
-
-            UnderlinePosition = metrics.UnderlinePosition != null ?
+            Metrics = new FontMetrics
+            {
+                DesignEmHeight = (short)Typeface.UnitsPerEm,
+                Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
+                Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
+                LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
+                UnderlinePosition = metrics.UnderlinePosition != null ?
                 (int)(metrics.UnderlinePosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0;
-
-            UnderlineThickness = metrics.UnderlineThickness != null ?
+                0,
+                UnderlineThickness = metrics.UnderlineThickness != null ?
                 (int)(metrics.UnderlineThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0;
-
-            StrikethroughPosition = metrics.StrikeoutPosition != null ?
+                0,
+                StrikethroughPosition = metrics.StrikeoutPosition != null ?
                 (int)(metrics.StrikeoutPosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0;
-
-            StrikethroughThickness = metrics.StrikeoutThickness != null ?
+                0,
+                StrikethroughThickness = metrics.StrikeoutThickness != null ?
                 (int)(metrics.StrikeoutThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0;
+                0,
+                IsFixedPitch = Typeface.IsFixedPitch
+            };
 
-            IsFixedPitch = Typeface.IsFixedPitch;
+            GlyphCount = Typeface.GlyphCount;
 
-            IsFakeBold = isFakeBold;
+            FontSimulations = fontSimulations;
 
-            IsFakeItalic = isFakeItalic;
+            Weight = (FontWeight)Typeface.FontWeight;
+
+            Style = Typeface.FontSlant.ToAvalonia();
+
+            Stretch = (FontStretch)Typeface.FontStyle.Width;
         }
 
         public Face Face { get; }
@@ -66,40 +65,43 @@ namespace Avalonia.Skia
 
         public SKTypeface Typeface { get; }
 
+        public FontSimulations FontSimulations { get; }
+
         public int ReplacementCodepoint { get; }
-        
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public short DesignEmHeight { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int Ascent { get; }
+        public FontMetrics Metrics { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int Descent { get; }
+        public int GlyphCount { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int LineGap { get; }
+        public string FamilyName => Typeface.FamilyName;
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int UnderlinePosition { get; }
+        public FontWeight Weight { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int UnderlineThickness { get; }
+        public FontStyle Style { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int StrikethroughPosition { get; }
+        public FontStretch Stretch { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int StrikethroughThickness { get; }
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = default;
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public bool IsFixedPitch { get; }
-        
-        public bool IsFakeBold { get; }
-        
-        public bool IsFakeItalic { get; }
+            if (!Font.TryGetGlyphExtents(glyph, out var extents))
+            {
+                return false;
+            }
+            
+            metrics = new GlyphMetrics
+            {
+                XBearing = extents.XBearing,
+                YBearing = extents.YBearing,
+                Width = extents.Width,
+                Height = extents.Height
+            };
+                
+            return true;
+        }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)
         {
             if (Font.TryGetGlyph(codepoint, out var glyph))
@@ -110,7 +112,14 @@ namespace Avalonia.Skia
             return 0;
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        public bool TryGetGlyph(uint codepoint, out ushort glyph)
+        {
+            glyph = GetGlyph(codepoint);
+
+            return glyph != 0;
+        }
+
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
             var glyphs = new ushort[codepoints.Length];
@@ -126,13 +135,13 @@ namespace Avalonia.Skia
             return glyphs;
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public int GetGlyphAdvance(ushort glyph)
         {
             return Font.GetHorizontalGlyphAdvance(glyph);
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
             var glyphIndices = new uint[glyphs.Length];
@@ -145,7 +154,7 @@ namespace Avalonia.Skia
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
 
-        private Blob GetTable(Face face, Tag tag)
+        private Blob? GetTable(Face face, Tag tag)
         {
             var size = Typeface.GetTableSize(tag);
 
@@ -171,14 +180,19 @@ namespace Avalonia.Skia
                 return;
             }
 
-            Font?.Dispose();
-            Face?.Dispose();
+            Font.Dispose();
+            Face.Dispose();
         }
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool TryGetTable(uint tag, out byte[] table)
+        {
+            return Typeface.TryGetTableData(tag, out table);
         }
     }
 }

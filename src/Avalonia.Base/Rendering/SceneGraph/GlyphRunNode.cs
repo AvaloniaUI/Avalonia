@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -19,40 +16,23 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run to draw.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GlyphRunNode(
             Matrix transform,
-            IBrush foreground,
-            GlyphRun glyphRun,
-            IDisposable? aux = null)
-            : base(new Rect(glyphRun.Size), transform, aux)
+            IImmutableBrush foreground,
+            IRef<IGlyphRunImpl> glyphRun)
+            : base(glyphRun.Item.Bounds, transform, foreground)
         {
-            Transform = transform;
-            Foreground = foreground.ToImmutable();
-            GlyphRun = glyphRun;
+            GlyphRun = glyphRun.Clone();
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
-
-        /// <summary>
-        /// Gets the foreground brush.
-        /// </summary>
-        public IBrush Foreground { get; }
-
+        
+        
         /// <summary>
         /// Gets the glyph run to draw.
         /// </summary>
-        public GlyphRun GlyphRun { get; }
+        public IRef<IGlyphRunImpl> GlyphRun { get; }
 
         /// <inheritdoc/>
-        public override void Render(IDrawingContextImpl context)
-        {
-            context.Transform = Transform;
-            context.DrawGlyphRun(Foreground, GlyphRun);
-        }
+        public override void Render(IDrawingContextImpl context) => context.DrawGlyphRun(Brush, GlyphRun);
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -65,14 +45,20 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        internal bool Equals(Matrix transform, IBrush foreground, GlyphRun glyphRun)
+        internal bool Equals(Matrix transform, IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             return transform == Transform &&
-                   Equals(foreground, Foreground) &&
-                   Equals(glyphRun, GlyphRun);
+                   Equals(foreground, Brush) &&
+                   Equals(glyphRun.Item, GlyphRun.Item);
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
+
+        public override void Dispose()
+        {
+            GlyphRun?.Dispose();
+            base.Dispose();
+        }
     }
 }

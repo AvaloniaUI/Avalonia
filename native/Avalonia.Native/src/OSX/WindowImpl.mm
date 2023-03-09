@@ -30,19 +30,6 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     OnInitialiseNSWindow();
 }
 
-void WindowImpl::HideOrShowTrafficLights() {
-    if (Window == nil) {
-        return;
-    }
-
-    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
-    
-    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
-}
-
 void WindowImpl::OnInitialiseNSWindow(){
     [GetWindowProtocol() setCanBecomeKeyWindow:true];
     
@@ -63,11 +50,14 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        _isDialog = isDialog;
+        _isModal = isDialog;
 
         WindowBaseImpl::Show(activate, isDialog);
+        GetWindowState(&_actualWindowState);
 
-        HideOrShowTrafficLights();
+        if(IsZoomed()) {
+            _lastWindowState = _actualWindowState;
+        }
 
         return SetWindowState(_lastWindowState);
     }
@@ -91,13 +81,13 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         if(_parent != nullptr)
         {
             _parent->_children.remove(this);
-            
-            _parent->BringToFront();
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         _parent = cparent;
+
+        _isModal = _parent != nullptr;
         
         if(_parent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
@@ -121,9 +111,9 @@ void WindowImpl::BringToFront()
 {
     if(Window != nullptr)
     {
-        if (![Window isMiniaturized])
+        if ([Window isVisible] && ![Window isMiniaturized])
         {
-            if(IsDialog())
+            if(IsModal())
             {
                 Activate();
             }
@@ -134,9 +124,18 @@ void WindowImpl::BringToFront()
         }
         
         [Window invalidateShadow];
+        ZOrderChildWindows();
+    }
+}
+
+void WindowImpl::ZOrderChildWindows()
+{
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        auto window = (*iterator)->Window;
         
-        for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
-        {
+        // #9565: Only bring window to front if it's on the currently active space
+        if ([window isOnActiveSpace]) {
             (*iterator)->BringToFront();
         }
     }
@@ -146,7 +145,7 @@ bool WindowImpl::CanBecomeKeyWindow()
 {
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
-        if((*iterator)->IsDialog())
+        if((*iterator)->IsModal())
         {
             return false;
         }
@@ -157,10 +156,15 @@ bool WindowImpl::CanBecomeKeyWindow()
 
 void WindowImpl::StartStateTransition() {
     _transitioningWindowState = true;
+    UpdateStyle();
 }
 
 void WindowImpl::EndStateTransition() {
     _transitioningWindowState = false;
+    UpdateStyle();
+
+    // Ensure correct order of child windows after fullscreen transition.
+    ZOrderChildWindows();
 }
 
 SystemDecorations WindowImpl::Decorations() {
@@ -218,16 +222,12 @@ bool WindowImpl::IsZoomed() {
 }
 
 void WindowImpl::DoZoom() {
-    switch (_decorations) {
-        case SystemDecorationsNone:
-        case SystemDecorationsBorderOnly:
-            [Window setFrame:[Window screen].visibleFrame display:true];
-            break;
-
-
-        case SystemDecorationsFull:
-            [Window performZoom:Window];
-            break;
+    if (_decorations == SystemDecorationsNone ||
+        _decorations == SystemDecorationsBorderOnly ||
+        _canResize == false) {
+        [Window setFrame:[Window screen].visibleFrame display:true];
+    } else {
+        [Window performZoom:Window];
     }
 }
 
@@ -253,8 +253,6 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
         }
 
         UpdateStyle();
-
-        HideOrShowTrafficLights();
 
         switch (_decorations) {
             case SystemDecorationsNone:
@@ -412,9 +410,6 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
             }
 
             [GetWindowProtocol() setIsExtended:enable];
-
-            HideOrShowTrafficLights();
-
             UpdateStyle();
         }
 
@@ -562,18 +557,24 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
     }
 }
 
-bool WindowImpl::IsDialog() {
-    return _isDialog;
+bool WindowImpl::IsModal() {
+    return _isModal;
 }
 
-NSWindowStyleMask WindowImpl::GetStyle() {
-    unsigned long s = NSWindowStyleMaskBorderless;
-    
-    if(_actualWindowState == FullScreen)
-    {
-        s |= NSWindowStyleMaskFullScreen;
-    }
+bool WindowImpl::IsOwned() {
+    return _parent != nullptr;
+}
 
+NSWindowStyleMask WindowImpl::CalculateStyleMask() {
+    // Use the current style mask and only clear the flags we're going to be modifying.
+    unsigned long s = [Window styleMask] &
+        ~(NSWindowStyleMaskFullSizeContentView |
+          NSWindowStyleMaskTitled |
+          NSWindowStyleMaskClosable |
+          NSWindowStyleMaskResizable |
+          NSWindowStyleMaskMiniaturizable |
+          NSWindowStyleMaskTexturedBackground);
+    
     switch (_decorations) {
         case SystemDecorationsNone:
             s = s | NSWindowStyleMaskFullSizeContentView;
@@ -586,13 +587,13 @@ NSWindowStyleMask WindowImpl::GetStyle() {
         case SystemDecorationsFull:
             s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
-            if (_canResize && _isEnabled) {
+            if ((_canResize && _isEnabled) || _transitioningWindowState) {
                 s = s | NSWindowStyleMaskResizable;
             }
             break;
     }
 
-    if (!IsDialog()) {
+    if (!IsOwned()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
@@ -600,4 +601,26 @@ NSWindowStyleMask WindowImpl::GetStyle() {
         s |= NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskTexturedBackground;
     }
     return s;
+}
+
+void WindowImpl::UpdateStyle() {
+    WindowBaseImpl::UpdateStyle();
+    
+    if (Window == nil) {
+        return;
+    }
+
+    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
+    
+    NSButton* closeButton = [Window standardWindowButton:NSWindowCloseButton];
+    NSButton* miniaturizeButton = [Window standardWindowButton:NSWindowMiniaturizeButton];
+    NSButton* zoomButton = [Window standardWindowButton:NSWindowZoomButton];
+
+    [closeButton setHidden:!hasTrafficLights];
+    [closeButton setEnabled:_isEnabled];
+    [miniaturizeButton setHidden:!hasTrafficLights];
+    [miniaturizeButton setEnabled:_isEnabled];
+    [zoomButton setHidden:!hasTrafficLights];
+    [zoomButton setEnabled:CanZoom()];
 }

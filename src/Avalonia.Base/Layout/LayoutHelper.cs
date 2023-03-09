@@ -16,15 +16,15 @@ namespace Avalonia.Layout
         public static double LayoutEpsilon { get; } = 0.00000153;
 
         /// <summary>
-        /// Calculates a control's size based on its <see cref="ILayoutable.Width"/>,
-        /// <see cref="ILayoutable.Height"/>, <see cref="ILayoutable.MinWidth"/>,
-        /// <see cref="ILayoutable.MaxWidth"/>, <see cref="ILayoutable.MinHeight"/> and
-        /// <see cref="ILayoutable.MaxHeight"/>.
+        /// Calculates a control's size based on its <see cref="Layoutable.Width"/>,
+        /// <see cref="Layoutable.Height"/>, <see cref="Layoutable.MinWidth"/>,
+        /// <see cref="Layoutable.MaxWidth"/>, <see cref="Layoutable.MinHeight"/> and
+        /// <see cref="Layoutable.MaxHeight"/>.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="constraints">The space available for the control.</param>
         /// <returns>The control's size.</returns>
-        public static Size ApplyLayoutConstraints(ILayoutable control, Size constraints)
+        public static Size ApplyLayoutConstraints(Layoutable control, Size constraints)
         {
             var minmax = new MinMax(control);
 
@@ -33,7 +33,7 @@ namespace Avalonia.Layout
                 MathUtilities.Clamp(constraints.Height, minmax.MinHeight, minmax.MaxHeight));
         }
 
-        public static Size MeasureChild(ILayoutable? control, Size availableSize, Thickness padding,
+        public static Size MeasureChild(Layoutable? control, Size availableSize, Thickness padding,
             Thickness borderThickness)
         {
             if (IsParentLayoutRounded(control, out double scale))
@@ -51,7 +51,7 @@ namespace Avalonia.Layout
             return new Size().Inflate(padding + borderThickness);
         }
 
-        public static Size MeasureChild(ILayoutable? control, Size availableSize, Thickness padding)
+        public static Size MeasureChild(Layoutable? control, Size availableSize, Thickness padding)
         {
             if (IsParentLayoutRounded(control, out double scale))
             {
@@ -67,7 +67,7 @@ namespace Avalonia.Layout
             return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
         }
 
-        public static Size ArrangeChild(ILayoutable? child, Size availableSize, Thickness padding, Thickness borderThickness)
+        public static Size ArrangeChild(Layoutable? child, Size availableSize, Thickness padding, Thickness borderThickness)
         {
             if (IsParentLayoutRounded(child, out double scale))
             {
@@ -78,7 +78,7 @@ namespace Avalonia.Layout
             return ArrangeChildInternal(child, availableSize, padding + borderThickness);
         }
 
-        public static Size ArrangeChild(ILayoutable? child, Size availableSize, Thickness padding)
+        public static Size ArrangeChild(Layoutable? child, Size availableSize, Thickness padding)
         {
             if(IsParentLayoutRounded(child, out double scale))
                 padding = RoundLayoutThickness(padding, scale, scale);
@@ -86,18 +86,18 @@ namespace Avalonia.Layout
             return ArrangeChildInternal(child, availableSize, padding);
         }
 
-        private static Size ArrangeChildInternal(ILayoutable? child, Size availableSize, Thickness padding)
+        private static Size ArrangeChildInternal(Layoutable? child, Size availableSize, Thickness padding)
         {
             child?.Arrange(new Rect(availableSize).Deflate(padding));
 
             return availableSize;
         }
 
-        private static bool IsParentLayoutRounded(ILayoutable? child, out double scale)
+        private static bool IsParentLayoutRounded(Layoutable? child, out double scale)
         {
-            var layoutableParent = (ILayoutable?)child?.GetVisualParent();
+            var layoutableParent = (child as Visual)?.GetVisualParent() as Layoutable;
 
-            if (layoutableParent == null || !((Layoutable)layoutableParent).UseLayoutRounding)
+            if (layoutableParent == null || !layoutableParent.UseLayoutRounding)
             {
                 scale = 1.0;
                 return false;
@@ -110,11 +110,11 @@ namespace Avalonia.Layout
         /// <summary>
         /// Invalidates measure for given control and all visual children recursively.
         /// </summary>
-        public static void InvalidateSelfAndChildrenMeasure(ILayoutable control)
+        public static void InvalidateSelfAndChildrenMeasure(Layoutable control)
         {
-            void InnerInvalidateMeasure(IVisual target)
+            void InnerInvalidateMeasure(Visual target)
             {
-                if (target is ILayoutable targetLayoutable)
+                if (target is Layoutable targetLayoutable)
                 {
                     targetLayoutable.InvalidateMeasure();
                 }
@@ -124,13 +124,14 @@ namespace Avalonia.Layout
 
                 for (int i = 0; i < visualChildrenCount; i++)
                 {
-                    IVisual child = visualChildren[i];
+                    Visual child = visualChildren[i];
 
                     InnerInvalidateMeasure(child);
                 }
             }
 
-            InnerInvalidateMeasure(control);
+            if (control is Visual v)
+                InnerInvalidateMeasure(v);
         }
 
         /// <summary>
@@ -138,9 +139,9 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="control">The control.</param>
         /// <exception cref="Exception">Thrown when control has no root or returned layout scaling is invalid.</exception>
-        public static double GetLayoutScale(ILayoutable control)
+        public static double GetLayoutScale(Layoutable control)
         {
-            var visualRoot = control.VisualRoot;
+            var visualRoot = (control as Visual)?.VisualRoot;
             
             var result = (visualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
 
@@ -251,6 +252,17 @@ namespace Avalonia.Layout
         {
             double newValue;
 
+            // Round the value to avoid FP errors. This is needed because if `value` has a floating
+            // point precision error (e.g. 79.333333333333343) then when it's multiplied by
+            // `dpiScale` and rounded up, it will be rounded up to a value one greater than it
+            // should be.
+#if NET6_0_OR_GREATER
+            value = Math.Round(value, 8, MidpointRounding.ToZero);
+#else
+            // MidpointRounding.ToZero isn't available in netstandard2.0.
+            value = Math.Truncate(value * 1e8) / 1e8;
+#endif
+
             // If DPI == 1, don't use DPI-aware rounding.
             if (!MathUtilities.IsOne(dpiScale))
             {
@@ -278,7 +290,7 @@ namespace Avalonia.Layout
         /// </summary>
         private readonly struct MinMax
         {
-            public MinMax(ILayoutable e)
+            public MinMax(Layoutable e)
             {
                 MaxHeight = e.MaxHeight;
                 MinHeight = e.MinHeight;

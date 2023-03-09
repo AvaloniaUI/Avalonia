@@ -39,8 +39,8 @@ namespace Avalonia.Controls.Selection
         public SelectionModelSelectionChangedEventArgs(
             IReadOnlyList<int>? deselectedIndices = null,
             IReadOnlyList<int>? selectedIndices = null,
-            IReadOnlyList<T>? deselectedItems = null,
-            IReadOnlyList<T>? selectedItems = null)
+            IReadOnlyList<T?>? deselectedItems = null,
+            IReadOnlyList<T?>? selectedItems = null)
         {
             DeselectedIndexes = deselectedIndices ?? Array.Empty<int>();
             SelectedIndexes = selectedIndices ?? Array.Empty<int>();
@@ -61,12 +61,12 @@ namespace Avalonia.Controls.Selection
         /// <summary>
         /// Gets the items that were removed from the selection.
         /// </summary>
-        public new IReadOnlyList<T> DeselectedItems { get; }
+        public new IReadOnlyList<T?> DeselectedItems { get; }
 
         /// <summary>
         /// Gets the items that were added to the selection.
         /// </summary>
-        public new IReadOnlyList<T> SelectedItems { get; }
+        public new IReadOnlyList<T?> SelectedItems { get; }
 
         protected override IReadOnlyList<object?> GetUntypedDeselectedItems()
         {

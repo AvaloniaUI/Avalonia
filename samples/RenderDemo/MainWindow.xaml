@@ -1,9 +1,11 @@
 <Window x:Class="RenderDemo.MainWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-        xmlns:pages="clr-namespace:RenderDemo.Pages"
+        xmlns:controls="using:ControlSamples"
+        xmlns:pages="using:RenderDemo.Pages"
+        xmlns:viewModels="using:RenderDemo.ViewModels"
         Title="AvaloniaUI Rendering Test"
+        x:DataType="viewModels:MainWindowViewModel"
         Width="{Binding Width, Mode=TwoWay}"
         Height="{Binding Height, Mode=TwoWay}">
   <controls:HamburgerMenu ExpandedModeThresholdWidth="760">
@@ -24,6 +26,20 @@
                         IsHitTestVisible="False" />
             </MenuItem.Icon>
           </MenuItem>
+          <MenuItem Command="{Binding ToggleDrawLayoutTimeGraph}" Header="Draw layout time graph">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding DrawLayoutTimeGraph}"
+                        IsHitTestVisible="False" />
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Command="{Binding ToggleDrawRenderTimeGraph}" Header="Draw render time graph">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding DrawRenderTimeGraph}"
+                        IsHitTestVisible="False" />
+            </MenuItem.Icon>
+          </MenuItem>
         </MenuItem>
         <MenuItem Header="Tests">
           <MenuItem Command="{Binding ResizeWindow}" Header="Resize window" />
@@ -38,6 +54,9 @@
     </TabItem>
     <TabItem Header="Custom Animator">
       <pages:CustomAnimatorPage />
+    </TabItem>
+    <TabItem Header="Spring Animation">
+      <pages:SpringAnimationsPage />
     </TabItem>
     <TabItem Header="Clipping">
       <pages:ClippingPage />

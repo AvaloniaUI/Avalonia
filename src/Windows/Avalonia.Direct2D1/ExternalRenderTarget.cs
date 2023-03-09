@@ -21,11 +21,11 @@ namespace Avalonia.Direct2D1
             _externalRenderTargetProvider.DestroyRenderTarget();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl(visualBrushRenderer, null, target, null, () =>
+            return new DrawingContextImpl( null, target, null, () =>
             {
                 try
                 {
@@ -37,6 +37,8 @@ namespace Avalonia.Direct2D1
                 }
             });
         }
+
+        public bool IsCorrupted => false;
 
         public IDrawingContextLayerImpl CreateLayer(Size size)
         {

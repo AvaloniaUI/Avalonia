@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia
 {
@@ -9,7 +10,7 @@ namespace Avalonia
         private static readonly Dictionary<string, AvaloniaProperty> s_RegisteredProperties =
             new Dictionary<string, AvaloniaProperty>();
         
-        public static IDisposable Bind(IStyledElement target, string className, IBinding source, object anchor)
+        public static IDisposable Bind(StyledElement target, string className, IBinding source, object anchor)
         {
             if (!s_RegisteredProperties.TryGetValue(className, out var prop))
                 s_RegisteredProperties[className] = prop = RegisterClassProxyProperty(className);
@@ -21,7 +22,7 @@ namespace Avalonia
             var prop = AvaloniaProperty.Register<StyledElement, bool>("__AvaloniaReserved::Classes::" + className);
             prop.Changed.Subscribe(args =>
             {
-                var classes = ((IStyledElement)args.Sender).Classes;
+                var classes = ((StyledElement)args.Sender).Classes;
                 classes.Set(className, args.NewValue.GetValueOrDefault());
             });
             

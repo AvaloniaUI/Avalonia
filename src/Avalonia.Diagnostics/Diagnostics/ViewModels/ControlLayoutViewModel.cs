@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlLayoutViewModel : ViewModelBase
     {
-        private readonly IVisual _control;
+        private readonly Visual _control;
         private Thickness _borderThickness;
         private double _height;
         private string? _heightConstraint;
@@ -21,7 +21,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private double _width;
         private string? _widthConstraint;
 
-        public ControlLayoutViewModel(IVisual control)
+        public ControlLayoutViewModel(Visual control)
         {
             _control = control;
 
@@ -103,13 +103,13 @@ namespace Avalonia.Diagnostics.ViewModels
         public HorizontalAlignment HorizontalAlignment
         {
             get => _horizontalAlignment;
-            private set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
+            set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
         }
 
         public VerticalAlignment VerticalAlignment
         {
             get => _verticalAlignment;
-            private set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
+            set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
         }
 
         public bool HasPadding { get; }

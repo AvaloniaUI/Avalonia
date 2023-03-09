@@ -1,13 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Threading;
-using System.Linq;
+using Avalonia.Reactive;
+using Avalonia.Rendering;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -23,8 +23,6 @@ namespace Avalonia.Diagnostics.ViewModels
         private string? _focusedControl;
         private IInputElement? _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
-        private bool _shouldVisualizeDirtyRects;
-        private bool _showFpsOverlay;
         private bool _freezePopups;
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
@@ -52,15 +50,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             else
             {
-#nullable disable
-                _pointerOverSubscription = InputManager.Instance.PreProcess
-                    .OfType<Input.Raw.RawPointerEventArgs>()
+                _pointerOverSubscription = InputManager.Instance!.PreProcess
                     .Subscribe(e =>
                         {
-                            PointerOverRoot = e.Root;
-                            PointerOverElement = e.Root.InputHitTest(e.Position);
+                            if (e is Input.Raw.RawPointerEventArgs pointerEventArgs)
+                            {
+                                PointerOverRoot = pointerEventArgs.Root;
+                                PointerOverElement = pointerEventArgs.Root.InputHitTest(pointerEventArgs.Position);
+                            }
                         });
-#nullable restore
             }
             Console = new ConsoleViewModel(UpdateConsoleContext);
         }
@@ -77,66 +75,75 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
 
-        public bool ShouldVisualizeDirtyRects
-        {
-            get => _shouldVisualizeDirtyRects;
-            set
-            {
-                var changed = true;
-                if (_root is TopLevel topLevel && topLevel.Renderer is { })
-                {
-                    topLevel.Renderer.DrawDirtyRects = value;
-                }
-                else if (_root is Controls.Application app && app.RendererRoot is { })
-                {
-                    app.RendererRoot.DrawDirtyRects = value;
-                }
-                else
-                {
-                    changed = false;
-                }
-                if (changed)
-                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
-            }
-        }
-
-        public void ToggleVisualizeDirtyRects()
-        {
-            ShouldVisualizeDirtyRects = !ShouldVisualizeDirtyRects;
-        }
-
         public void ToggleVisualizeMarginPadding()
+            => ShouldVisualizeMarginPadding = !ShouldVisualizeMarginPadding;
+
+        private IRenderer? TryGetRenderer()
+            => _root switch
+            {
+                TopLevel topLevel => topLevel.Renderer,
+                Controls.Application app => app.RendererRoot,
+                _ => null
+            };
+
+        private bool GetDebugOverlay(RendererDebugOverlays overlay)
+            => ((TryGetRenderer()?.Diagnostics.DebugOverlays ?? RendererDebugOverlays.None) & overlay) != 0;
+
+        private void SetDebugOverlay(RendererDebugOverlays overlay, bool enable,
+            [CallerMemberName] string? propertyName = null)
         {
-            ShouldVisualizeMarginPadding = !ShouldVisualizeMarginPadding;
+            if (TryGetRenderer() is not { } renderer)
+            {
+                return;
+            }
+
+            var oldValue = renderer.Diagnostics.DebugOverlays;
+            var newValue = enable ? oldValue | overlay : oldValue & ~overlay;
+
+            if (oldValue == newValue)
+            {
+                return;
+            }
+
+            renderer.Diagnostics.DebugOverlays = newValue;
+            RaisePropertyChanged(propertyName);
         }
+
+        public bool ShowDirtyRectsOverlay
+        {
+            get => GetDebugOverlay(RendererDebugOverlays.DirtyRects);
+            set => SetDebugOverlay(RendererDebugOverlays.DirtyRects, value);
+        }
+
+        public void ToggleDirtyRectsOverlay()
+            => ShowDirtyRectsOverlay = !ShowDirtyRectsOverlay;
 
         public bool ShowFpsOverlay
         {
-            get => _showFpsOverlay;
-            set
-            {
-                var changed = true;
-                if (_root is TopLevel topLevel && topLevel.Renderer is { })
-                {
-                    topLevel.Renderer.DrawFps = value;
-                }
-                else if (_root is Controls.Application app && app.RendererRoot is { })
-                {
-                    app.RendererRoot.DrawFps = value;
-                }
-                else
-                {
-                    changed = false;
-                }
-                if(changed)
-                    RaiseAndSetIfChanged(ref _showFpsOverlay, value);
-            }
+            get => GetDebugOverlay(RendererDebugOverlays.Fps);
+            set => SetDebugOverlay(RendererDebugOverlays.Fps, value);
         }
 
         public void ToggleFpsOverlay()
+            => ShowFpsOverlay = !ShowFpsOverlay;
+
+        public bool ShowLayoutTimeGraphOverlay
         {
-            ShowFpsOverlay = !ShowFpsOverlay;
+            get => GetDebugOverlay(RendererDebugOverlays.LayoutTimeGraph);
+            set => SetDebugOverlay(RendererDebugOverlays.LayoutTimeGraph, value);
         }
+
+        public void ToggleLayoutTimeGraphOverlay()
+            => ShowLayoutTimeGraphOverlay = !ShowLayoutTimeGraphOverlay;
+
+        public bool ShowRenderTimeGraphOverlay
+        {
+            get => GetDebugOverlay(RendererDebugOverlays.RenderTimeGraph);
+            set => SetDebugOverlay(RendererDebugOverlays.RenderTimeGraph, value);
+        }
+
+        public void ToggleRenderTimeGraphOverlay()
+            => ShowRenderTimeGraphOverlay = !ShowRenderTimeGraphOverlay;
 
         public ConsoleViewModel Console { get; }
 
@@ -147,7 +154,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 if (_content is TreePageViewModel oldTree &&
                     value is TreePageViewModel newTree &&
-                    oldTree?.SelectedNode?.Visual is IControl control)
+                    oldTree?.SelectedNode?.Visual is Control control)
                 {
                     // HACK: We want to select the currently selected control in the new tree, but
                     // to select nested nodes in TreeView, currently the TreeView has to be able to
@@ -232,7 +239,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void SelectControl(IControl control)
+        public void SelectControl(Control control)
         {
             var tree = Content as TreePageViewModel;
 
@@ -254,10 +261,10 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
-            if (_root is TopLevel top)
+
+            if (TryGetRenderer() is { } renderer)
             {
-                top.Renderer.DrawDirtyRects = false;
-                top.Renderer.DrawFps = false;
+                renderer.Diagnostics.DebugOverlays = RendererDebugOverlays.None;
             }
         }
 
@@ -274,7 +281,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void RequestTreeNavigateTo(IControl control, bool isVisualTree)
+        public void RequestTreeNavigateTo(Control control, bool isVisualTree)
         {
             var tree = isVisualTree ? _visualTree : _logicalTree;
 
@@ -292,17 +299,17 @@ namespace Avalonia.Diagnostics.ViewModels
         
         [DependsOn(nameof(TreePageViewModel.SelectedNode))]
         [DependsOn(nameof(Content))]
-        bool CanShot(object? parameter)
+        public bool CanShot(object? parameter)
         {
             return Content is TreePageViewModel tree
                 && tree.SelectedNode != null
-                && tree.SelectedNode.Visual is VisualTree.IVisual visual
+                && tree.SelectedNode.Visual is Visual visual
                 && visual.VisualRoot != null;
         }
 
-        async void Shot(object? parameter)
+        public async void Shot(object? parameter)
         {
-            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control
+            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is Control control
                 && _screenshotHandler is { }
                 )
             {
@@ -331,7 +338,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
         }
 
-        public void ToggleShowImplementedInterfaces(object parametr)
+        public void ToggleShowImplementedInterfaces(object parameter)
         {
             ShowImplementedInterfaces = !ShowImplementedInterfaces;
             if (Content is TreePageViewModel viewModel)
@@ -340,15 +347,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public bool ShowDettailsPropertyType 
+        public bool ShowDetailsPropertyType
         { 
             get => _showPropertyType; 
             private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
         }
 
-        public void ToggleShowDettailsPropertyType(object paramter)
+        public void ToggleShowDetailsPropertyType(object parameter)
         {
-            ShowDettailsPropertyType = !ShowDettailsPropertyType;
+            ShowDetailsPropertyType = !ShowDetailsPropertyType;
         }
     }
 }

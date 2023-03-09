@@ -1,18 +1,20 @@
 using Avalonia.Media.Immutable;
-using Avalonia.VisualTree;
+using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Drawing;
 
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Paints an area with an <see cref="IVisual"/>.
+    /// Paints an area with an <see cref="Visual"/>.
     /// </summary>
-    public class VisualBrush : TileBrush, IVisualBrush
+    public class VisualBrush : TileBrush, ISceneBrush, IAffectsRender
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
-        public static readonly StyledProperty<IVisual> VisualProperty =
-            AvaloniaProperty.Register<VisualBrush, IVisual>(nameof(Visual));
+        public static readonly StyledProperty<Visual?> VisualProperty =
+            AvaloniaProperty.Register<VisualBrush, Visual?>(nameof(Visual));
 
         static VisualBrush()
         {
@@ -30,7 +32,7 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="VisualBrush"/> class.
         /// </summary>
         /// <param name="visual">The visual to draw.</param>
-        public VisualBrush(IVisual visual)
+        public VisualBrush(Visual visual)
         {
             Visual = visual;
         }
@@ -38,16 +40,29 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the visual to draw.
         /// </summary>
-        public IVisual Visual
+        public Visual? Visual
         {
             get { return GetValue(VisualProperty); }
             set { SetValue(VisualProperty, value); }
         }
 
-        /// <inheritdoc/>
-        public override IBrush ToImmutable()
+        ISceneBrushContent? ISceneBrush.CreateContent()
         {
-            return new ImmutableVisualBrush(this);
+            if (Visual == null)
+                return null;
+
+            if (Visual is IVisualBrushInitialize initialize)
+                initialize.EnsureInitialized();
+            
+            var recorder = new CompositionDrawingContext();
+            recorder.BeginUpdate(null);
+            ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
+            var drawList = recorder.EndUpdate();
+            if (drawList == null)
+                return null;
+
+            return new CompositionDrawListSceneBrushContent(new ImmutableSceneBrush(this), drawList,
+                new(Visual.Bounds.Size), false);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="dashes">The dashes collection.</param>
         /// <param name="offset">The dash sequence offset.</param>
-        public ImmutableDashStyle(IEnumerable<double> dashes, double offset)
+        public ImmutableDashStyle(IEnumerable<double>? dashes, double offset)
         {
             _dashes = dashes?.ToArray() ?? Array.Empty<double>();
             Offset = offset;
@@ -39,17 +39,8 @@ namespace Avalonia.Media.Immutable
             {
                 return true;
             }
-            else if (other is null)
-            {
-                return false;
-            }
 
-            if (Offset != other.Offset)
-            {
-                return false;
-            }
-
-            return SequenceEqual(Dashes, other.Dashes);
+            return other is not null && Offset == other.Offset && SequenceEqual(_dashes, other.Dashes);
         }
 
         /// <inheritdoc/>
@@ -58,30 +49,27 @@ namespace Avalonia.Media.Immutable
             var hashCode = 717868523;
             hashCode = hashCode * -1521134295 + Offset.GetHashCode();
 
-            if (_dashes != null)
+            foreach (var i in _dashes)
             {
-                foreach (var i in _dashes)
-                {
-                    hashCode = hashCode * -1521134295 + i.GetHashCode();
-                }
+                hashCode = hashCode * -1521134295 + i.GetHashCode();
             }
 
             return hashCode;
         }
 
-        private static bool SequenceEqual(IReadOnlyList<double> left, IReadOnlyList<double> right)
+        private static bool SequenceEqual(double[] left, IReadOnlyList<double>? right)
         {
             if (ReferenceEquals(left, right))
             {
                 return true;
             }
 
-            if (left == null || right == null || left.Count != right.Count)
+            if (right is null || left.Length != right.Count)
             {
                 return false;
             }
 
-            for (var c = 0; c < left.Count; c++)
+            for (var c = 0; c < left.Length; c++)
             {
                 if (left[c] != right[c])
                 {

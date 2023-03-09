@@ -5,6 +5,6 @@ namespace Avalonia.Input
 {
     public class VectorEventArgs : RoutedEventArgs
     {
-        public Vector Vector { get; set; }
+        public Vector Vector { get; init; }
     }
 }

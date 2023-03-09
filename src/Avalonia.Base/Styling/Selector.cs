@@ -41,7 +41,7 @@ namespace Avalonia.Styling
         /// or simply return an immediate result.
         /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        public SelectorMatch Match(IStyleable control, IStyle? parent = null, bool subscribe = true)
+        public SelectorMatch Match(StyledElement control, IStyle? parent = null, bool subscribe = true)
         {
             // First match the selector until a combinator is found. Selectors are stored from 
             // right-to-left, so MatchUntilCombinator reverses this order because the type selector
@@ -67,6 +67,15 @@ namespace Avalonia.Styling
             return match;
         }
 
+        public override string ToString() => ToString(null);
+
+        /// <summary>
+        /// Gets a string representing the selector, with the nesting separator (`^`) replaced with
+        /// the parent selector.
+        /// </summary>
+        /// <param name="owner">The owner style.</param>
+        public abstract string ToString(Style? owner);
+
         /// <summary>
         /// Evaluates the selector for a match.
         /// </summary>
@@ -79,7 +88,7 @@ namespace Avalonia.Styling
         /// or simply return an immediate result.
         /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        protected abstract SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe);
+        protected abstract SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe);
 
         /// <summary>
         /// Moves to the previous selector.
@@ -118,7 +127,7 @@ namespace Avalonia.Styling
         }
 
         private static SelectorMatch MatchUntilCombinator(
-            IStyleable control,
+            StyledElement control,
             Selector start,
             IStyle? parent,
             bool subscribe,
@@ -135,7 +144,7 @@ namespace Avalonia.Styling
         }
 
         private static SelectorMatchResult Match(
-            IStyleable control,
+            StyledElement control,
             Selector selector,
             IStyle? parent,
             bool subscribe,

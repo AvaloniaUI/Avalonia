@@ -6,26 +6,22 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.X11.Glx
 {
-    class GlxGlPlatformSurface: IGlPlatformSurface
+    internal class GlxGlPlatformSurface: IGlPlatformSurface
     {
 
-        private readonly GlxDisplay _display;
-        private readonly GlxContext _context;
         private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
         
-        public GlxGlPlatformSurface(GlxDisplay display, GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
+        public GlxGlPlatformSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
         {
-            _display = display;
-            _context = context;
             _info = info;
         }
         
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
-            return new RenderTarget(_context, _info);
+            return new RenderTarget((GlxContext)context, _info);
         }
 
-        class RenderTarget : IGlPlatformSurfaceRenderTarget
+        private class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
             private readonly GlxContext _context;
             private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
@@ -50,8 +46,8 @@ namespace Avalonia.X11.Glx
                     
                 return new Session(_context, _info, oldContext);
             }
-            
-            class Session : IGlPlatformSurfaceRenderingSession
+
+            private class Session : IGlPlatformSurfaceRenderingSession
             {
                 private readonly GlxContext _context;
                 private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;

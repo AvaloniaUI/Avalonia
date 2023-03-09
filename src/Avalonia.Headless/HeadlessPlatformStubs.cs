@@ -65,35 +65,32 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessPlatformSettingsStub : IPlatformSettings
+    class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
-        public Size DoubleClickSize { get; } = new Size(2, 2);
-        public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
+        public FontMetrics Metrics => new FontMetrics
+        {
+            DesignEmHeight = 1,
+            Ascent = 8,
+            Descent = 4,
+            LineGap = 0,
+            UnderlinePosition = 2,
+            UnderlineThickness = 1,
+            StrikethroughPosition = 2,
+            StrikethroughThickness = 1,
+            IsFixedPitch = true
+        };
 
-        public Size TouchDoubleClickSize => new Size(16,16);
+        public int GlyphCount => 1337;
 
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
-    }
+        public FontSimulations FontSimulations { get; }
 
-    class HeadlessGlyphTypefaceImpl : IGlyphTypefaceImpl
-    {
-        public short DesignEmHeight => 10;
+        public string FamilyName => "Arial";
 
-        public int Ascent => 5;
+        public FontWeight Weight => FontWeight.Normal;
 
-        public int Descent => 5;
+        public FontStyle Style => FontStyle.Normal;
 
-        public int LineGap => 2;
-
-        public int UnderlinePosition => 5;
-
-        public int UnderlineThickness => 5;
-
-        public int StrikethroughPosition => 5;
-
-        public int StrikethroughThickness => 2;
-
-        public bool IsFixedPitch => true;
+        public FontStretch Stretch => FontStretch.Normal;
 
         public void Dispose()
         {
@@ -104,9 +101,16 @@ namespace Avalonia.Headless
             return 1;
         }
 
+        public bool TryGetGlyph(uint codepoint, out ushort glyph)
+        {
+            glyph = 1;
+
+            return true;
+        }
+
         public int GetGlyphAdvance(ushort glyph)
         {
-            return 1;
+            return 12;
         }
 
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
@@ -118,11 +122,28 @@ namespace Avalonia.Headless
         {
             return codepoints.ToArray().Select(x => (ushort)x).ToArray();
         }
+
+        public bool TryGetTable(uint tag, out byte[] table)
+        {
+            table = null;
+            return false;
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = new GlyphMetrics
+            {
+                Height = 10,
+                Width = 8
+            };
+
+            return true;
+        }
     }
 
     class HeadlessTextShaperStub : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
@@ -134,19 +155,28 @@ namespace Avalonia.Headless
 
     class HeadlessFontManagerStub : IFontManagerImpl
     {
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
-        {
-            return new HeadlessGlyphTypefaceImpl();
-        }
-
         public string GetDefaultFontFamilyName()
         {
             return "Arial";
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
-            return new List<string> { "Arial" };
+            return new string[] { "Arial" };
+        }
+
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, out IGlyphTypeface glyphTypeface)
+        {
+            glyphTypeface= new HeadlessGlyphTypefaceImpl();
+
+            return true;
+        }
+
+        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        {
+             glyphTypeface = new HeadlessGlyphTypefaceImpl();
+
+            return true;
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,

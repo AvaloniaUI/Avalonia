@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Avalonia.Controls;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -12,10 +11,10 @@ namespace Avalonia.Styling
     /// A selector that matches the common case of a type and/or name followed by a collection of
     /// style classes and pseudoclasses.
     /// </summary>
-    internal class TypeNameAndClassSelector : Selector
+    internal sealed class TypeNameAndClassSelector : Selector
     {
         private readonly Selector? _previous;
-        private readonly Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
+        private List<string>? _classes;
         private Type? _targetType;
         private string? _selectorString;
 
@@ -53,7 +52,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        protected TypeNameAndClassSelector(Selector? previous)
+        TypeNameAndClassSelector(Selector? previous)
         {
             _previous = previous;
         }
@@ -81,25 +80,20 @@ namespace Avalonia.Styling
         /// <summary>
         /// The style classes which the selector matches.
         /// </summary>
-        public IList<string> Classes => _classes.Value;
+        public IList<string> Classes => _classes ??= new();
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
-            if (_selectorString == null)
-            {
-                _selectorString = BuildSelectorString();
-            }
-
-            return _selectorString;
+            return _selectorString ??= BuildSelectorString(owner);
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (TargetType != null)
             {
-                var controlType = control.StyleKey ?? control.GetType();
+                var controlType = ((IStyleable)control).StyleKey ?? control.GetType();
 
                 if (IsConcreteType)
                 {
@@ -122,16 +116,16 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisInstance;
             }
 
-            if (_classes.IsValueCreated && _classes.Value.Count > 0)
+            if (_classes is { Count: > 0 })
             {
                 if (subscribe)
                 {
-                    var observable = new StyleClassActivator((Classes)control.Classes, _classes.Value);
+                    var observable = new StyleClassActivator(control.Classes, _classes);
 
                     return new SelectorMatch(observable);
                 }
 
-                if (!StyleClassActivator.AreClassesMatching(control.Classes, Classes))
+                if (!StyleClassActivator.AreClassesMatching(control.Classes, _classes))
                 {
                     return SelectorMatch.NeverThisInstance;
                 }
@@ -143,13 +137,13 @@ namespace Avalonia.Styling
         protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
-        private string BuildSelectorString()
+        private string BuildSelectorString(Style? owner)
         {
-            var builder = new StringBuilder();
+            var builder = StringBuilderCache.Acquire();
 
             if (_previous != null)
             {
-                builder.Append(_previous.ToString());
+                builder.Append(_previous.ToString(owner));
             }
 
             if (TargetType != null)
@@ -172,9 +166,9 @@ namespace Avalonia.Styling
                 builder.Append(Name);
             }
 
-            if (_classes.IsValueCreated && _classes.Value.Count > 0)
+            if (_classes is { Count: > 0 })
             {
-                foreach (var c in Classes)
+                foreach (var c in _classes)
                 {
                     if (!c.StartsWith(":"))
                     {
@@ -185,7 +179,7 @@ namespace Avalonia.Styling
                 }
             }
 
-            return builder.ToString();
+            return StringBuilderCache.GetStringAndRelease(builder);
         }
     }
 }

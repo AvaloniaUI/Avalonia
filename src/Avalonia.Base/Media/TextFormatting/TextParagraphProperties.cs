@@ -57,19 +57,21 @@
         public abstract double Indent { get; }
 
         /// <summary>
-        /// Paragraph indentation
+        /// Get the paragraph indentation.
         /// </summary>
         public virtual double ParagraphIndent
         {
             get { return 0; }
         }
-        
+
         /// <summary>
-        /// Default Incremental Tab
+        /// Gets the default incremental tab width.
         /// </summary>
-        public virtual double DefaultIncrementalTab
-        {
-            get { return 4 * DefaultTextRunProperties.FontRenderingEmSize; }
-        }
+        public virtual double DefaultIncrementalTab => 0;
+
+        /// <summary>
+        /// Gets the letter spacing.
+        /// </summary>
+        public virtual double LetterSpacing { get; }
     }
 }

@@ -221,7 +221,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var canvas = (Canvas)target.Presenter.Child;
                 Assert.Same(viewModel, target.DataContext);
-                Assert.Same(viewModel.Child, target.Presenter.DataContext);
+                Assert.Same(viewModel.Child, ((Control)target.Presenter).DataContext);
                 Assert.Same(viewModel.Child.Child, canvas.DataContext);
             }
         }

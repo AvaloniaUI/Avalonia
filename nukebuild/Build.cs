@@ -23,6 +23,7 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
+using MicroCom.CodeGenerator;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -35,25 +36,6 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 partial class Build : NukeBuild
 {
     [Solution("Avalonia.sln")] readonly Solution Solution;
-
-    static Lazy<string> MsBuildExe = new Lazy<string>(() =>
-    {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            return null;
-
-        var msBuildDirectory = VSWhere("-latest -nologo -property installationPath -format value -prerelease").FirstOrDefault().Text;
-
-        if (!string.IsNullOrWhiteSpace(msBuildDirectory))
-        {
-            string msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\Current\Bin\MSBuild.exe");
-            if (!System.IO.File.Exists(msBuildExe))
-                msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\15.0\Bin\MSBuild.exe");
-
-            return msBuildExe;
-        }
-
-        return null;
-    }, false);
 
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
@@ -89,25 +71,27 @@ partial class Build : NukeBuild
         }
         ExecWait("dotnet version:", "dotnet", "--info");
         ExecWait("dotnet workloads:", "dotnet", "workload list");
+        Information("Processor count: " + Environment.ProcessorCount);
+        Information("Available RAM: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 0x100000 + "MB");
     }
 
-    IReadOnlyCollection<Output> MsBuildCommon(
-        string projectFile,
-        Configure<MSBuildSettings> configurator = null)
+    DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
     {
-        return MSBuild(c => c
-            .SetProjectFile(projectFile)
-            // This is required for VS2019 image on Azure Pipelines
-            .When(Parameters.IsRunningOnWindows &&
-                  Parameters.IsRunningOnAzure, _ => _
-                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64")))
-            .AddProperty("PackageVersion", Parameters.Version)
-            .AddProperty("iOSRoslynPathHackRequired", true)
-            .SetProcessToolPath(MsBuildExe.Value)
+        if (Parameters.IsRunningOnAzure)
+            c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
+        c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
-            .SetVerbosity(MSBuildVerbosity.Minimal)
-            .Apply(configurator));
+            .SetVerbosity(DotNetVerbosity.Minimal);
+        return c;
     }
+    DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
+        ApplySettingCore(c).Build.Apply(configurator);
+
+    DotNetPackSettings ApplySetting(DotNetPackSettings c, Configure<DotNetPackSettings> configurator = null) =>
+        ApplySettingCore(c).Pack.Apply(configurator);
+
+    DotNetTestSettings ApplySetting(DotNetTestSettings c, Configure<DotNetTestSettings> configurator = null) =>
+        ApplySettingCore(c).Test.Apply(configurator);
 
     Target Clean => _ => _.Executes(() =>
     {
@@ -149,47 +133,54 @@ partial class Build : NukeBuild
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
-        .Executes(async () =>
+        .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
-                MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
-                    .AddTargets("Build")
-                );
-
-            else
-                DotNetBuild(c => c
-                    .SetProjectFile(Parameters.MSBuildSolution)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .SetConfiguration(Parameters.Configuration)
-                );
+            DotNetBuild(c => ApplySetting(c)
+                .SetProjectFile(Parameters.MSBuildSolution)
+            );
         });
 
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
         var project = Solution.GetProject(projectName).NotNull("project != null");
+        // Nuke and MSBuild tools have build-in helpers to get target frameworks from the project.
+        // Unfortunately, it gets broken with every second SDK update, so we had to do it manually.
+        var fileXml = XDocument.Parse(File.ReadAllText(project.Path));
+        var targetFrameworks = fileXml.Descendants("TargetFrameworks")
+            .FirstOrDefault()?.Value.Split(';').Select(f => f.Trim());
+        if (targetFrameworks is null)
+        {
+            var targetFramework = fileXml.Descendants("TargetFramework").FirstOrDefault()?.Value;
+            if (targetFramework is not null)
+            {
+                targetFrameworks = new[] { targetFramework };
+            }
+        }
+        if (targetFrameworks is null)
+        {
+            throw new InvalidOperationException("No target frameworks were found in the test project");
+        }
 
-        foreach (var fw in project.GetTargetFrameworks())
+        foreach (var fw in targetFrameworks)
         {
             if (fw.StartsWith("net4")
-                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {projectName} ({fw}) tests on Linux - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({fw}) tests on *nix - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 
             Information($"Running for {projectName} ({fw}) ...");
 
-            DotNetTest(c => c
+            DotNetTest(c => ApplySetting(c)
                 .SetProjectFile(project)
-                .SetConfiguration(Parameters.Configuration)
                 .SetFramework(fw)
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
-                    .SetLogger("trx")
+                    .SetLoggers("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
@@ -229,19 +220,19 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             RunCoreTest("Avalonia.Skia.RenderTests");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Parameters.IsRunningOnWindows)
                 RunCoreTest("Avalonia.Direct2D1.RenderTests");
         });
 
-    Target RunDesignerTests => _ => _
-        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+    Target RunToolsTests => _ => _
+        .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("Avalonia.DesignerSupport.Tests");
+            RunCoreTest("Avalonia.Generators.Tests");
+            if (Parameters.IsRunningOnWindows)
+                RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
-
-    [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
 
     Target RunLeakTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
@@ -250,12 +241,9 @@ partial class Build : NukeBuild
         {
             void DoMemoryTest()
             {
-                var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-                DotMemoryUnit(
-                    $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                    timeout: 120_000);
+                RunCoreTest("Avalonia.LeakTests");
             }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });
 
     Target ZipFiles => _ => _
@@ -263,19 +251,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             var data = Parameters;
-            var pathToProjectSource = RootDirectory / "samples" / "ControlCatalog.NetCore";
-            var pathToPublish = pathToProjectSource / "bin" / data.Configuration / "publish";
-
-            DotNetPublish(c => c
-                .SetProject(pathToProjectSource / "ControlCatalog.NetCore.csproj")
-                .EnableNoBuild()
-                .SetConfiguration(data.Configuration)
-                .AddProperty("PackageVersion", data.Version)
-                .AddProperty("PublishDir", pathToPublish));
-
-            Zip(data.ZipCoreArtifacts, data.BinRoot);
             Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-            Zip(data.ZipTargetControlCatalogNetCoreDir, pathToPublish);
         });
 
     Target CreateIntermediateNugetPackages => _ => _
@@ -283,15 +259,7 @@ partial class Build : NukeBuild
         .After(RunTests)
         .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
-
-                MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .AddTargets("Pack"));
-            else
-                DotNetPack(c => c
-                    .SetProject(Parameters.MSBuildSolution)
-                    .SetConfiguration(Parameters.Configuration)
-                    .AddProperty("PackageVersion", Parameters.Version));
+            DotNetPack(c => ApplySetting(c).SetProject(Parameters.MSBuildSolution));
         });
 
     Target CreateNugetPackages => _ => _
@@ -310,7 +278,7 @@ partial class Build : NukeBuild
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
-        .DependsOn(RunDesignerTests)
+        .DependsOn(RunToolsTests)
         .DependsOn(RunHtmlPreviewerTests)
         .DependsOn(RunLeakTests);
 
@@ -328,6 +296,14 @@ partial class Build : NukeBuild
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
+
+    Target GenerateCppHeaders => _ => _.Executes(() =>
+    {
+        var file = MicroComCodeGenerator.Parse(
+            File.ReadAllText(RootDirectory / "src" / "Avalonia.Native" / "avn.idl"));
+        File.WriteAllText(RootDirectory / "native" / "Avalonia.Native" / "inc" / "avalonia-native.h",
+            file.GenerateCppHeader());
+    });
 
 
     public static int Main() =>

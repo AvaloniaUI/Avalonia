@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
@@ -5,12 +7,49 @@ using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
     public class ControlTemplateTests : XamlTestBase
     {
+        [Fact]
+        public void StyledProperties_Should_Be_Set_In_The_ControlTemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:controls=""using:Avalonia.Markup.Xaml.UnitTests.Xaml"">
+    <Button>
+        <Button.Template>
+            <ControlTemplate>
+                <controls:ListBoxHierarchyLine>
+                    <controls:ListBoxHierarchyLine.LineDashStyle>
+                        <DashStyle Dashes=""2,2"" Offset=""1"" />
+                    </controls:ListBoxHierarchyLine.LineDashStyle>
+                </controls:ListBoxHierarchyLine>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = (Button)window.Content;
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+                var listBoxHierarchyLine = button.GetVisualChildren().ElementAt(0) as ListBoxHierarchyLine;
+                Assert.Equal(1, listBoxHierarchyLine.LineDashStyle.Offset);
+                Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes.Count);
+                Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes[0]);
+                Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes[1]);
+            }
+            
+        }
+
         [Fact]
         public void Inline_ControlTemplate_Styled_Values_Are_Set_With_Style_Priority()
         {
@@ -38,7 +77,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -72,7 +111,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -103,7 +142,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
 
                 var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -137,7 +176,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -171,7 +210,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -202,7 +241,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("Foo", presenter.Content);
 
                 var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -268,6 +307,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", foo.Name);
             Assert.Equal("Bar", bar.Name);
+        }
+    }
+    public class ListBoxHierarchyLine : Panel
+    {
+        public static readonly StyledProperty<DashStyle> LineDashStyleProperty =
+        AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle>(nameof(LineDashStyle));
+
+        public DashStyle LineDashStyle
+        {
+            get => GetValue(LineDashStyleProperty);
+            set => SetValue(LineDashStyleProperty, value);
         }
     }
 }

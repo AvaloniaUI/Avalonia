@@ -1,26 +1,21 @@
 ﻿using Avalonia.Media.TextFormatting;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
     public sealed class TextLeadingPrefixTrimming : TextTrimming
     {
-        private readonly ReadOnlySlice<char> _ellipsis;
+        private readonly string _ellipsis;
         private readonly int _prefixLength;
 
-        public TextLeadingPrefixTrimming(char ellipsis, int prefixLength) : this(new[] { ellipsis }, prefixLength)
-        {
-        }
-
-        public TextLeadingPrefixTrimming(char[] ellipsis, int prefixLength)
+        public TextLeadingPrefixTrimming(string ellipsis, int prefixLength)
         {
             _prefixLength = prefixLength;
-            _ellipsis = new ReadOnlySlice<char>(ellipsis);
+            _ellipsis = ellipsis;
         }
 
         public override TextCollapsingProperties CreateCollapsingProperties(TextCollapsingCreateInfo createInfo)
         {
-            return new TextLeadingPrefixCharacterEllipsis(_ellipsis, _prefixLength, createInfo.Width, createInfo.TextRunProperties);
+            return new TextLeadingPrefixCharacterEllipsis(_ellipsis, _prefixLength, createInfo.Width, createInfo.TextRunProperties, createInfo.FlowDirection);
         }
 
         public override string ToString()

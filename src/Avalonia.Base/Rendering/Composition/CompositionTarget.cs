@@ -4,6 +4,8 @@ using System.Numerics;
 using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -26,16 +28,15 @@ namespace Avalonia.Rendering.Composition
         /// <summary>
         /// Attempts to perform a hit-tst
         /// </summary>
-        /// <param name="point"></param>
-        /// <param name="filter"></param>
         /// <returns></returns>
-        public PooledList<CompositionVisual>? TryHitTest(Point point, Func<IVisual, bool>? filter)
+        public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
             Server.Readback.NextRead();
-            if (Root == null)
+            root ??= Root;
+            if (root == null)
                 return null;
             var res = new PooledList<CompositionVisual>();
-            HitTestCore(Root, point, res, filter);
+            HitTestCore(root, point, res, filter);
             return res;
         }
 
@@ -60,7 +61,7 @@ namespace Avalonia.Rendering.Composition
             return point * m;
         }
 
-        bool TryGetInvertedTransform(CompositionVisual visual, out Matrix matrix)
+        static bool TryGetInvertedTransform(CompositionVisual visual, out Matrix matrix)
         {
             var m = visual.TryGetServerGlobalTransform();
             if (m == null)
@@ -73,7 +74,7 @@ namespace Avalonia.Rendering.Composition
             return m33.TryInvert(out matrix);
         }
 
-        bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
+        static bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
         {
             v = default;
             if (TryGetInvertedTransform(visual, out var m))
@@ -86,10 +87,14 @@ namespace Avalonia.Rendering.Composition
         }
         
         void HitTestCore(CompositionVisual visual, Point globalPoint, PooledList<CompositionVisual> result,
-            Func<IVisual, bool>? filter)
+            Func<CompositionVisual, bool>? filter)
         {
             if (visual.Visible == false)
                 return;
+            
+            if (filter != null && !filter(visual))
+                return;
+            
             if (!TryTransformTo(visual, globalPoint, out var point))
                 return;
 
@@ -109,7 +114,7 @@ namespace Avalonia.Rendering.Composition
                 }
             
             // Hit-test the current node
-            if (visual.HitTest(point, filter)) 
+            if (visual.HitTest(point)) 
                 result.Add(visual);
         }
 
@@ -123,7 +128,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         internal void ImmediateUIThreadRender()
         {
-            Compositor.RequestCommitAsync();
+            Compositor.Commit();
             Compositor.Server.Render();
         }
     }

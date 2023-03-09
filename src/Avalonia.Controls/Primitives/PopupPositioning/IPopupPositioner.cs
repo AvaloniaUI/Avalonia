@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
 
 The above is the version of the MIT "Expat" License used by X.org:
 
-    http://cgit.freedesktop.org/xorg/xserver/tree/COPYING
+    https://cgit.freedesktop.org/xorg/xserver/tree/COPYING
     
     
 Adjustments for Avalonia needs:
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// surface.
     /// </remarks>
     [Unstable]
-    public struct PopupPositionerParameters
+    public record struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
         private PopupAnchor _anchor;
@@ -448,7 +448,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     {
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
             TopLevel topLevel,
-            IVisual target, PlacementMode placement, Point offset,
+            Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor, PopupGravity gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
             FlowDirection flowDirection)
@@ -478,35 +478,29 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
                 var bounds = new Rect(default, target.Bounds.Size);
                 var anchorRect = rect ?? bounds;
-                positionerParameters.AnchorRectangle = anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
+                positionerParameters.AnchorRectangle =  anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
 
-                if (placement == PlacementMode.Right)
+                var parameters = placement switch
                 {
-                    positionerParameters.Anchor = PopupAnchor.TopRight;
-                    positionerParameters.Gravity = PopupGravity.BottomRight;
-                }
-                else if (placement == PlacementMode.Bottom)
-                {
-                    positionerParameters.Anchor = PopupAnchor.BottomLeft;
-                    positionerParameters.Gravity = PopupGravity.BottomRight;
-                }
-                else if (placement == PlacementMode.Left)
-                {
-                    positionerParameters.Anchor = PopupAnchor.TopLeft;
-                    positionerParameters.Gravity = PopupGravity.BottomLeft;
-                }
-                else if (placement == PlacementMode.Top)
-                {
-                    positionerParameters.Anchor = PopupAnchor.TopLeft;
-                    positionerParameters.Gravity = PopupGravity.TopRight;
-                }
-                else if (placement == PlacementMode.AnchorAndGravity)
-                {
-                    positionerParameters.Anchor = anchor;
-                    positionerParameters.Gravity = gravity;
-                }
-                else
-                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+                    PlacementMode.Bottom => (PopupAnchor.Bottom, PopupGravity.Bottom),
+                    PlacementMode.Right => (PopupAnchor.Right, PopupGravity.Right),
+                    PlacementMode.Left => (PopupAnchor.Left, PopupGravity.Left),
+                    PlacementMode.Top => (PopupAnchor.Top, PopupGravity.Top),
+                    PlacementMode.Center => (PopupAnchor.None, PopupGravity.None),
+                    PlacementMode.AnchorAndGravity => (anchor, gravity),
+                    PlacementMode.TopEdgeAlignedRight => (PopupAnchor.TopRight, PopupGravity.TopLeft),
+                    PlacementMode.TopEdgeAlignedLeft => (PopupAnchor.TopLeft, PopupGravity.TopRight),
+                    PlacementMode.BottomEdgeAlignedLeft => (PopupAnchor.BottomLeft, PopupGravity.BottomRight),
+                    PlacementMode.BottomEdgeAlignedRight => (PopupAnchor.BottomRight, PopupGravity.BottomLeft),
+                    PlacementMode.LeftEdgeAlignedTop => (PopupAnchor.TopLeft, PopupGravity.BottomLeft),
+                    PlacementMode.LeftEdgeAlignedBottom => (PopupAnchor.BottomLeft, PopupGravity.TopLeft),
+                    PlacementMode.RightEdgeAlignedTop => (PopupAnchor.TopRight, PopupGravity.BottomRight),
+                    PlacementMode.RightEdgeAlignedBottom => (PopupAnchor.BottomRight, PopupGravity.TopRight),
+                    _ => throw new ArgumentOutOfRangeException(nameof(placement), placement,
+                        "Invalid value for Popup.PlacementMode")
+                };
+                positionerParameters.Anchor = parameters.Item1;
+                positionerParameters.Gravity = parameters.Item2;
             }
 
             // Invert coordinate system if FlowDirection is RTL

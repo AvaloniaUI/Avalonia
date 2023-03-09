@@ -2,12 +2,11 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using JetBrains.Annotations;
 using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 namespace Avalonia.X11
 {
-    unsafe class X11Info
+    internal unsafe class X11Info
     {
         public IntPtr Display { get; }
         public IntPtr DeferredDisplay { get; }

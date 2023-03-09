@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Reflection;
 using Avalonia.Rendering.Composition.Server;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Expressions
 {
     /// <summary>
@@ -37,7 +39,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         }
     }
 
-    internal class PrettyPrintStringAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Field)]
+    internal sealed class PrettyPrintStringAttribute : Attribute
     {
         public string Name { get; }
 
@@ -162,8 +165,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         
         public override ExpressionVariant Evaluate(ref ExpressionEvaluationContext context)
         {
-            if (context.ForeignFunctionInterface == null)
-                return default;
             var args = new List<ExpressionVariant>();
             foreach (var expr in Parameters)
                 args.Add(expr.Evaluate(ref context));

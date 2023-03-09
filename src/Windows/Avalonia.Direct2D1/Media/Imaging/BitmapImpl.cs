@@ -1,13 +1,11 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public abstract class BitmapImpl : IBitmapImpl, IDisposable
+    internal abstract class BitmapImpl : IBitmapImpl, IDisposable
     {
         public abstract Vector Dpi { get; }
         public abstract PixelSize PixelSize { get; }
@@ -15,7 +13,7 @@ namespace Avalonia.Direct2D1.Media
 
         public abstract OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target);
 
-        public void Save(string fileName)
+        public void Save(string fileName, int? quality = null)
         {
             if (Path.GetExtension(fileName) != ".png")
             {
@@ -25,11 +23,11 @@ namespace Avalonia.Direct2D1.Media
 
             using (FileStream s = new FileStream(fileName, FileMode.Create))
             {
-                Save(s);
+                Save(s, quality);
             }
         }
 
-        public abstract void Save(Stream stream);
+        public abstract void Save(Stream stream, int? quality = null);
 
         public virtual void Dispose()
         {

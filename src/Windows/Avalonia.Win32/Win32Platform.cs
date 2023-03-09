@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -18,16 +17,13 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(
-            this T builder) 
-                where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseWin32(this AppBuilder builder)
         {
             return builder.UseWindowingSubsystem(
                 () => Win32.Win32Platform.Initialize(
@@ -42,37 +38,12 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-
-        public bool UseCompositor { get; set; } = true;
-
-        /// <summary>
         /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
         /// </summary>
         /// <remarks>
         /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
-        
-        public IList<string> EglRendererBlacklist { get; set; } = new List<string>
-        {
-            "Microsoft Basic Render"
-        };
-
-        /// <summary>
-        /// Enables multitouch support. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
-        /// </remarks>
-        [Obsolete("Multitouch is always enabled on supported Windows versions")]
-        public bool? EnableMultitouch { get; set; } = true;
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
@@ -92,6 +63,7 @@ namespace Avalonia
 
         /// <summary>
         /// Render Avalonia to a Texture inside the Windows.UI.Composition tree.
+        /// This setting is true by default.
         /// </summary>
         /// <remarks>
         /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
@@ -105,18 +77,46 @@ namespace Avalonia
         /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
         /// </summary>
         public float? CompositionBackdropCornerRadius { get; set; }
+
+        /// <summary>
+        /// When <see cref="UseLowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
+        /// Requires Feature Level 11_3 to be active, Windows 8.1+ Any Subversion. 
+        /// This is only recommended if low input latency is desirable, and there is no need for the transparency
+        /// and stylings / blurrings offered by <see cref="UseWindowsUIComposition"/><br/>
+        /// This is mutually exclusive with 
+        /// <see cref="UseWindowsUIComposition"/> which if active will override this setting.
+        /// This setting is false by default.
+        /// </summary>
+        public bool UseLowLatencyDxgiSwapChain { get; set; }
+
+        /// <summary>
+        /// Render directly on the UI thread instead of using a dedicated render thread.
+        /// Only applicable if both <see cref="UseWindowsUIComposition"/> and <see cref="UseLowLatencyDxgiSwapChain"/>
+        /// are false.
+        /// This setting is only recommended for interop with systems that must render on the UI thread, such as WPF.
+        /// This setting is false by default.
+        /// </summary>
+        public bool ShouldRenderOnUIThread { get; set; }
+        
+        /// <summary>
+        /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu
+        /// </summary>
+        public IPlatformGraphics? CustomPlatformGraphics { get; set; }
     }
 }
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    internal class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
-        private static readonly Win32Platform s_instance = new Win32Platform();
-        private static Thread _uiThread;
-        private UnmanagedMethods.WndProc _wndProcDelegate;
+        private static readonly Win32Platform s_instance = new();
+        private static Thread? s_uiThread;
+        private static Win32PlatformOptions? s_options;
+        private static Compositor? s_compositor;
+
+        private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
-        private readonly List<Delegate> _delegates = new List<Delegate>();
+        private readonly List<Delegate> _delegates = new();
 
         public Win32Platform()
         {
@@ -125,6 +125,7 @@ namespace Avalonia.Win32
         }
 
         internal static Win32Platform Instance => s_instance;
+        internal static IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
 
         internal IntPtr Handle => _hwnd;
 
@@ -133,23 +134,14 @@ namespace Avalonia.Win32
         /// </summary>
         public static Version WindowsVersion { get; } = RtlGetVersion();
 
-        public static bool UseDeferredRendering => Options.UseDeferredRendering;
         internal static bool UseOverlayPopups => Options.OverlayPopups;
-        public static Win32PlatformOptions Options { get; private set; }
-        
-        internal static Compositor Compositor { get; private set; }
 
-        public Size DoubleClickSize => new Size(
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
+        public static Win32PlatformOptions Options
+            => s_options ?? throw new InvalidOperationException($"{nameof(Win32Platform)} hasn't been initialized");
 
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
+        internal static Compositor Compositor
+            => s_compositor ?? throw new InvalidOperationException($"{nameof(Win32Platform)} hasn't been initialized");
 
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16,16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {
             Initialize(new Win32PlatformOptions());
@@ -157,15 +149,17 @@ namespace Avalonia.Win32
 
         public static void Initialize(Win32PlatformOptions options)
         {
-            Options = options;
+            s_options = options;
+            var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
-                .Bind<IPlatformSettings>().ToConstant(s_instance)
+                .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(renderTimer)
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
                 {
@@ -179,31 +173,29 @@ namespace Avalonia.Win32
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
+            
+            s_uiThread = Thread.CurrentThread;
 
-            var gl = Win32GlManager.Initialize();
-
-            _uiThread = Thread.CurrentThread;
-
+            var platformGraphics = options.CustomPlatformGraphics
+                                   ?? Win32GlManager.Initialize();
+            
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
-
-            if (Options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+            
+            s_compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
         }
 
         public bool HasMessages()
         {
-            UnmanagedMethods.MSG msg;
-            return UnmanagedMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
+            return PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
         }
 
         public void ProcessMessage()
         {
-
-            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
+            if (GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
             }
             else
             {
@@ -217,10 +209,10 @@ namespace Avalonia.Win32
         {
             var result = 0;
             while (!cancellationToken.IsCancellationRequested 
-                && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
+                && (result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
             }
             if (result < 0)
             {
@@ -231,10 +223,9 @@ namespace Avalonia.Win32
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
-            UnmanagedMethods.TimerProc timerDelegate =
-                (hWnd, uMsg, nIDEvent, dwTime) => callback();
+            TimerProc timerDelegate = (_, _, _, _) => callback();
 
-            IntPtr handle = UnmanagedMethods.SetTimer(
+            IntPtr handle = SetTimer(
                 IntPtr.Zero,
                 IntPtr.Zero,
                 (uint)interval.TotalMilliseconds,
@@ -246,32 +237,32 @@ namespace Avalonia.Win32
             return Disposable.Create(() =>
             {
                 _delegates.Remove(timerDelegate);
-                UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
+                KillTimer(IntPtr.Zero, handle);
             });
         }
 
-        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
-        private static readonly int SignalL = unchecked((int)0x12345678);
+        private const int SignalW = unchecked((int)0xdeadbeaf);
+        private const int SignalL = unchecked((int)0x12345678);
 
         public void Signal(DispatcherPriority prio)
         {
-            UnmanagedMethods.PostMessage(
+            PostMessage(
                 _hwnd,
-                (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                (int)WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 new IntPtr(SignalW),
                 new IntPtr(SignalL));
         }
 
-        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
+        public bool CurrentThreadIsLoopThread => s_uiThread == Thread.CurrentThread;
 
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action<DispatcherPriority?>? Signaled;
 
-        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
+            if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
                 Signaled?.Invoke(null);
             }
@@ -290,33 +281,44 @@ namespace Avalonia.Win32
                     }
                 }
             }
+
+            if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE 
+                && PlatformSettings is Win32PlatformSettings win32PlatformSettings)
+            {
+                var changedSetting = Marshal.PtrToStringAuto(lParam);
+                if (changedSetting == "ImmersiveColorSet" // dark/light mode
+                    || changedSetting == "WindowsThemeElement") // high contrast mode
+                {
+                    win32PlatformSettings.OnColorValuesChanged();   
+                }
+            }
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
-            return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         private void CreateMessageWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
+            _wndProcDelegate = WndProc;
 
-            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
+            WNDCLASSEX wndClassEx = new WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
+                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = UnmanagedMethods.GetModuleHandle(null),
+                hInstance = GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
             };
 
-            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+            ushort atom = RegisterClassEx(ref wndClassEx);
 
             if (atom == 0)
             {
                 throw new Win32Exception();
             }
 
-            _hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            _hwnd = CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
             if (_hwnd == IntPtr.Zero)
             {
@@ -324,7 +326,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public ITrayIconImpl CreateTrayIcon ()
+        public ITrayIconImpl CreateTrayIcon()
         {
             return new TrayIconImpl();
         }

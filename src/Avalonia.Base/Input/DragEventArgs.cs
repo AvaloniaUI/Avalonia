@@ -1,37 +1,32 @@
 ﻿using System;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
     public class DragEventArgs : RoutedEventArgs
     {
-        private Interactive _target;
-        private Point _targetLocation;
+        private readonly Interactive _target;
+        private readonly Point _targetLocation;
 
         public DragDropEffects DragEffects { get; set; }
 
-        public IDataObject Data { get; private set; }
+        public IDataObject Data { get; }
 
-        public KeyModifiers KeyModifiers { get; private set; }
+        public KeyModifiers KeyModifiers { get; }
 
-        public Point GetPosition(IVisual relativeTo)
+        public Point GetPosition(Visual relativeTo)
         {
-            var point = new Point(0, 0);
-
             if (relativeTo == null)
             {
                 throw new ArgumentNullException(nameof(relativeTo));
             }
 
-            if (_target != null)
-            {
-                point = _target.TranslatePoint(_targetLocation, relativeTo) ?? point;
-            }
-
-            return point;
+            return _target.TranslatePoint(_targetLocation, relativeTo) ?? new Point(0, 0);
         }
 
+        [Unstable]
+        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
         public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
             : base(routedEvent)
         {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -13,7 +13,6 @@ namespace Avalonia.Controls.Notifications
     [PseudoClasses(":error", ":information", ":success", ":warning")]
     public class NotificationCard : ContentControl
     {
-        private bool _isClosed;
         private bool _isClosing;
 
         static NotificationCard()
@@ -37,30 +36,29 @@ namespace Avalonia.Controls.Notifications
                     RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
                 });
 
-            // Disabling nullable checking because of https://github.com/dotnet/reactive/issues/1525
-#pragma warning disable CS8620
             this.GetObservable(ContentProperty)
-                .OfType<Notification>()
-#pragma warning restore CS8620
                 .Subscribe(x =>
                 {
-                    switch (x.Type)
+                    if (x is Notification notification)
                     {
-                        case NotificationType.Error:
-                            PseudoClasses.Add(":error");
-                            break;
+                        switch (notification.Type)
+                        {
+                            case NotificationType.Error:
+                                PseudoClasses.Add(":error");
+                                break;
 
-                        case NotificationType.Information:
-                            PseudoClasses.Add(":information");
-                            break;
+                            case NotificationType.Information:
+                                PseudoClasses.Add(":information");
+                                break;
 
-                        case NotificationType.Success:
-                            PseudoClasses.Add(":success");
-                            break;
+                            case NotificationType.Success:
+                                PseudoClasses.Add(":success");
+                                break;
 
-                        case NotificationType.Warning:
-                            PseudoClasses.Add(":warning");
-                            break;
+                            case NotificationType.Warning:
+                                PseudoClasses.Add(":warning");
+                                break;
+                        }
                     }
                 });
         }
@@ -85,15 +83,15 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public bool IsClosed
         {
-            get { return _isClosed; }
-            set { SetAndRaise(IsClosedProperty, ref _isClosed, value); }
+            get => GetValue(IsClosedProperty);
+            set => SetValue(IsClosedProperty, value);
         }
 
         /// <summary>
         /// Defines the <see cref="IsClosed"/> property.
         /// </summary>
-        public static readonly DirectProperty<NotificationCard, bool> IsClosedProperty =
-            AvaloniaProperty.RegisterDirect<NotificationCard, bool>(nameof(IsClosed), o => o.IsClosed, (o, v) => o.IsClosed = v);
+        public static readonly StyledProperty<bool> IsClosedProperty =
+            AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsClosed));
 
         /// <summary>
         /// Defines the <see cref="NotificationClosed"/> event.

@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
@@ -23,7 +25,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Theory]
         public void Should_Get_Distance_From_CharacterHit(double[] advances, int[] clusters, int start, int trailingLength, double expectedDistance)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using(UnitTestApplication.Start(TestServices.StyledWindow))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var characterHit = new CharacterHit(start, trailingLength);
@@ -42,7 +44,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void Should_Get_CharacterHit_FromDistance(double[] advances, int[] clusters, double distance, int start,
             int trailingLengthExpected, bool isInsideExpected)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using(UnitTestApplication.Start(TestServices.StyledWindow))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var textBounds = glyphRun.GetCharacterHitFromDistance(distance, out var isInside);
@@ -179,14 +181,14 @@ namespace Avalonia.Base.UnitTests.Media
         private static GlyphRun CreateGlyphRun(double[] glyphAdvances, int[] glyphClusters, int bidiLevel = 0)
         {
             var count = glyphAdvances.Length;
-            var glyphIndices = new ushort[count];
 
-            var start = bidiLevel == 0 ? glyphClusters[0] : glyphClusters[^1];
+            var glyphInfos = new GlyphInfo[count];
+            for (var i = 0; i < count; ++i)
+            {
+                glyphInfos[i] = new GlyphInfo(0, glyphClusters[i], glyphAdvances[i]);
+            }
 
-            var characters = new ReadOnlySlice<char>(Enumerable.Repeat('a', count).ToArray(), start, count);
-
-            return new GlyphRun(new GlyphTypeface(new MockGlyphTypeface()), 10, characters, glyphIndices, glyphAdvances,
-                glyphClusters: glyphClusters, biDiLevel: bidiLevel);
+            return new GlyphRun(new MockGlyphTypeface(), 10, new string('a', count).AsMemory(), glyphInfos, biDiLevel: bidiLevel);
         }
     }
 }

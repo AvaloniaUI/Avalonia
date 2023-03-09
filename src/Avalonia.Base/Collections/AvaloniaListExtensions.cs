@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 
 namespace Avalonia.Collections
 {
@@ -138,21 +138,6 @@ namespace Avalonia.Collections
 
                 return Disposable.Create(() => collection.CollectionChanged -= handler);
             }
-        }
-
-        [Obsolete("Causes memory leaks. Use DynamicData or similar instead.")]
-        public static IAvaloniaReadOnlyList<TDerived> CreateDerivedList<TSource, TDerived>(
-            this IAvaloniaReadOnlyList<TSource> collection,
-            Func<TSource, TDerived> select)
-        {
-            var result = new AvaloniaList<TDerived>();
-
-            collection.ForEachItem(
-                (i, item) => result.Insert(i, select(item)),
-                (i, item) => result.RemoveAt(i),
-                () => result.Clear());
-
-            return result;
         }
 
         /// <summary>

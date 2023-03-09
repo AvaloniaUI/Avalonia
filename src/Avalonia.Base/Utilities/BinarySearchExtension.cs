@@ -5,7 +5,7 @@
 // not use this product except in compliance with the License. You may obtain 
 // a copy of the License at
 // 
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software 
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
@@ -14,7 +14,6 @@
 // under the License.
 // Copied from: https://github.com/toptensoftware/RichTextKit
 
-using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Utilities
@@ -39,7 +38,7 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to search for</param>
         /// <param name="comparer">The comparer</param>
         /// <returns>The index of the found item; otherwise the bitwise complement of the index of the next larger item</returns>
-        public static int BinarySearch<T>(this IReadOnlyList<T> list, T value, IComparer<T> comparer) where T : IComparable
+        public static int BinarySearch<T>(this IReadOnlyList<T> list, T value, IComparer<T> comparer)
         {
             return list.BinarySearch(0, list.Count, value, comparer);
         }

@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Buffers;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
+using GlyphInfo = HarfBuzzSharp.GlyphInfo;
 
 namespace Avalonia.UnitTests
 {
-    public class HarfBuzzTextShaperImpl : ITextShaperImpl
+    internal class HarfBuzzTextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
+            var textSpan = text.Span;
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
@@ -20,17 +23,19 @@ namespace Avalonia.UnitTests
 
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
+                // HarfBuzz needs the surrounding characters to correctly shape the text
+                var containingText = GetContainingMemory(text, out var start, out var length);
+                buffer.AddUtf16(containingText.Span, start, length);
 
                 MergeBreakPair(buffer);
-                
+
                 buffer.GuessSegmentProperties();
 
                 buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
-                var font = ((HarfBuzzGlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((HarfBuzzGlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
@@ -57,15 +62,22 @@ namespace Avalonia.UnitTests
 
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    var glyphCluster = (int)sourceInfo.Cluster;
+                    var glyphCluster = (int)(sourceInfo.Cluster);
 
-                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
+                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    var targetInfo = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+                    if (textSpan[i] == '\t')
+                    {
+                        glyphIndex = typeface.GetGlyph(' ');
 
-                    shapedBuffer[i] = targetInfo;
+                        glyphAdvance = options.IncrementalTabWidth > 0 ?
+                            options.IncrementalTabWidth :
+                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    }
+
+                    shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;
@@ -77,7 +89,7 @@ namespace Avalonia.UnitTests
             var length = buffer.Length;
 
             var glyphInfos = buffer.GetGlyphInfoSpan();
-            
+
             var second = glyphInfos[length - 1];
 
             if (!new Codepoint(second.Codepoint).IsBreakChar)
@@ -88,19 +100,19 @@ namespace Avalonia.UnitTests
             if (length > 1 && glyphInfos[length - 2].Codepoint == '\r' && second.Codepoint == '\n')
             {
                 var first = glyphInfos[length - 2];
-                
+
                 first.Codepoint = '\u200C';
                 second.Codepoint = '\u200C';
                 second.Cluster = first.Cluster;
 
                 unsafe
                 {
-                    fixed (HarfBuzzSharp.GlyphInfo* p = &glyphInfos[length - 2])
+                    fixed (GlyphInfo* p = &glyphInfos[length - 2])
                     {
                         *p = first;
                     }
-                
-                    fixed (HarfBuzzSharp.GlyphInfo* p = &glyphInfos[length - 1])
+
+                    fixed (GlyphInfo* p = &glyphInfos[length - 1])
                     {
                         *p = second;
                     }
@@ -112,7 +124,7 @@ namespace Avalonia.UnitTests
 
                 unsafe
                 {
-                    fixed (HarfBuzzSharp.GlyphInfo* p = &glyphInfos[length - 1])
+                    fixed (GlyphInfo* p = &glyphInfos[length - 1])
                     {
                         *p = second;
                     }
@@ -134,8 +146,31 @@ namespace Avalonia.UnitTests
         private static double GetGlyphAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale)
         {
             // Depends on direction of layout
-            // advanceBuffer[index] = buffer.GlyphPositions[index].YAdvance * textScale;
+            // glyphPositions[index].YAdvance * textScale;
             return glyphPositions[index].XAdvance * textScale;
+        }
+
+        private static ReadOnlyMemory<char> GetContainingMemory(ReadOnlyMemory<char> memory, out int start, out int length)
+        {
+            if (MemoryMarshal.TryGetString(memory, out var containingString, out start, out length))
+            {
+                return containingString.AsMemory();
+            }
+
+            if (MemoryMarshal.TryGetArray(memory, out var segment))
+            {
+                start = segment.Offset;
+                length = segment.Count;
+                return segment.Array.AsMemory();
+            }
+
+            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char> memoryManager, out start, out length))
+            {
+                return memoryManager.Memory;
+            }
+
+            // should never happen
+            throw new InvalidOperationException("Memory not backed by string, array or manager");
         }
     }
 }

@@ -13,12 +13,11 @@ namespace Avalonia.Rendering
     /// visual. TODO: We probably want to put an upper limit on the number of visuals that can be
     /// stored and if we reach that limit, assume all visuals are dirty.
     /// </remarks>
-    internal class DirtyVisuals : IEnumerable<IVisual>
+    internal class DirtyVisuals : IEnumerable<Visual>
     {
-        private SortedDictionary<int, List<IVisual>> _inner = new SortedDictionary<int, List<IVisual>>();
-        private Dictionary<IVisual, int> _index = new Dictionary<IVisual, int>();
-        private List<IVisual> _deferredChanges = new List<IVisual>();
-        private int _deferring;
+        private SortedDictionary<int, List<Visual>> _inner = new SortedDictionary<int, List<Visual>>();
+        private Dictionary<Visual, int> _index = new Dictionary<Visual, int>();
+        private int _enumerating;
 
         /// <summary>
         /// Gets the number of dirty visuals.
@@ -29,15 +28,14 @@ namespace Avalonia.Rendering
         /// Adds a visual to the dirty list.
         /// </summary>
         /// <param name="visual">The dirty visual.</param>
-        public void Add(IVisual visual)
+        public void Add(Visual visual)
         {
-            if (_deferring > 0)
+            if (_enumerating > 0)
             {
-                _deferredChanges.Add(visual);
-                return;
+                throw new InvalidOperationException("Visual was invalidated during a render pass");
             }
 
-            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
+            var distance = visual.CalculateDistanceFromAncestor((Visual?)visual.GetVisualRoot());
 
             if (_index.TryGetValue(visual, out var existingDistance))
             {
@@ -52,7 +50,7 @@ namespace Avalonia.Rendering
 
             if (!_inner.TryGetValue(distance, out var list))
             {
-                list = new List<IVisual>();
+                list = new List<Visual>();
                 _inner.Add(distance, list);
             }
 
@@ -65,7 +63,7 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Clear()
         {
-            if (_deferring > 0)
+            if (_enumerating > 0)
             {
                 throw new InvalidOperationException("Cannot clear while enumerating");
             }
@@ -78,9 +76,9 @@ namespace Avalonia.Rendering
         /// Gets the dirty visuals, in ascending order of distance to their root.
         /// </summary>
         /// <returns>A collection of visuals.</returns>
-        public IEnumerator<IVisual> GetEnumerator()
+        public IEnumerator<Visual> GetEnumerator()
         {
-            BeginDefer();
+            _enumerating++;
             try
             {
                 foreach (var i in _inner)
@@ -93,27 +91,10 @@ namespace Avalonia.Rendering
             }
             finally
             {
-                EndDefer();
+                _enumerating--;
             }
         }
-
-        private void BeginDefer()
-        {
-            ++_deferring;
-        }
-
-        private void EndDefer()
-        {
-            if (--_deferring > 0) return;
-
-            foreach (var visual in _deferredChanges)
-            {
-                Add(visual);
-            }
-
-            _deferredChanges.Clear();
-        }
-
+        
         /// <summary>
         /// Gets the dirty visuals, in ascending order of distance to their root.
         /// </summary>

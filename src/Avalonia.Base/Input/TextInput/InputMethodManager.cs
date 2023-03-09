@@ -1,5 +1,5 @@
 using System;
-using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Input.TextInput
 {
@@ -73,10 +73,13 @@ namespace Avalonia.Input.TextInput
 
         private void UpdateCursorRect()
         {
-            if (_im == null || _client == null || _focusedElement?.VisualRoot == null)
+            if (_im == null || 
+                _client == null || 
+                _focusedElement is not Visual v || 
+                v.VisualRoot is not Visual root)
                 return;
 
-            var transform = _focusedElement.TransformToVisual(_focusedElement.VisualRoot);
+            var transform = v.TransformToVisual(root);
             if (transform == null)
                 _im.SetCursorRect(default);
             else
@@ -95,7 +98,7 @@ namespace Avalonia.Input.TextInput
                 return;
             _focusedElement = element;
 
-            var inputMethod = (element?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+            var inputMethod = ((element as Visual)?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
 
             if (_im != inputMethod)
             {

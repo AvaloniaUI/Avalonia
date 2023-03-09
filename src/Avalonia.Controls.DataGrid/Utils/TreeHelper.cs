@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Utils
         /// <param name="element">Parent Visual</param>
         /// <param name="child">Child Visual</param>
         /// <returns>True if the parent element contains the child</returns>
-        internal static bool ContainsChild(this IVisual element, IVisual child)
+        internal static bool ContainsChild(this Visual element, Visual child)
         {
             if (element != null)
             {
@@ -31,12 +31,12 @@ namespace Avalonia.Controls.Utils
                     // Walk up the visual tree.  If we hit the root, try using the framework element's
                     // parent.  We do this because Popups behave differently with respect to the visual tree,
                     // and it could have a parent even if the VisualTreeHelper doesn't find it.
-                    IVisual parent = child.GetVisualParent();
+                    Visual parent = child.GetVisualParent();
                     if (parent == null)
                     {
-                        if (child is IControl childElement)
+                        if (child is Control childElement)
                         {
-                            parent = childElement.Parent;
+                            parent = childElement.VisualParent;
                         }
                     }
                     child = parent;
@@ -52,9 +52,9 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="element">Parent Visual</param>
         /// <returns>True if the currently focused element is within the visual tree of the parent</returns>
-        internal static bool ContainsFocusedElement(this IVisual element)
+        internal static bool ContainsFocusedElement(this Visual element)
         {
-            return (element == null) ? false : element.ContainsChild(FocusManager.Instance.Current);
+            return (element == null) ? false : element.ContainsChild(FocusManager.Instance.Current as Visual);
         }
     }
 }

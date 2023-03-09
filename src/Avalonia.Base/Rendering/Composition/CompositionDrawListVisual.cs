@@ -5,6 +5,8 @@ using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.VisualTree;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition;
 
 
@@ -52,18 +54,13 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         Visual = visual;
     }
 
-    internal override bool HitTest(Point pt, Func<IVisual, bool>? filter)
+    internal override bool HitTest(Point pt)
     {
         var custom = Visual as ICustomHitTest;
         if (DrawList == null && custom == null)
             return false;
-        if (filter != null && !filter(Visual))
-            return false;
         if (custom != null)
         {
-            // Simulate the old behavior
-            // TODO: Change behavior once legacy renderers are removed
-            pt += new Point(Offset.X, Offset.Y);
             return custom.HitTest(pt);
         }
 

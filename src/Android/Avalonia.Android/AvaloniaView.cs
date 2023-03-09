@@ -1,11 +1,15 @@
 using System;
 using Android.Content;
+using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android
@@ -21,12 +25,12 @@ namespace Avalonia.Android
         {
             _view = new ViewImpl(this);
             AddView(_view.View);
-        }
 
-        internal void Prepare ()
-        {
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
+
+            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            OnConfigurationChanged();
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -64,12 +68,29 @@ namespace Avalonia.Android
                 }
 
                 _root.Renderer.Start();
+
+                if (_view.TryGetFeature<IInsetsManager>(out var insetsManager) == true)
+                {
+                    (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
+                }
             }
             else
             {
                 _root.Renderer.Stop();
                 _timerSubscription?.Dispose();
             }
+        }
+        
+        protected override void OnConfigurationChanged(Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+            OnConfigurationChanged();
+        }
+
+        private void OnConfigurationChanged()
+        {
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
+            settings?.OnViewConfigurationChanged(Context);
         }
 
         class ViewImpl : TopLevelImpl

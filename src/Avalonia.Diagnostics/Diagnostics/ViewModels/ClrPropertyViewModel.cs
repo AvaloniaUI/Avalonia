@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -41,16 +40,16 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override Type AssignedType => _assignedType;
         public override Type PropertyType => _propertyType;
+        public override bool IsReadonly => !Property.CanWrite;
 
-        public override string? Value
+        public override object? Value
         {
-            get => ConvertToString(_value);
+            get => _value;
             set
             {
                 try
                 {
-                    var convertedValue = ConvertFromString(value, Property.PropertyType);
-                    Property.SetValue(_target, convertedValue);
+                    Property.SetValue(_target, value);
                     Update();
                 }
                 catch { }

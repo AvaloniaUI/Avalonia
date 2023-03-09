@@ -5,6 +5,8 @@ using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -20,7 +22,7 @@ namespace Avalonia.Rendering.Composition
         public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
 
         private protected InlineDictionary<CompositionProperty, IAnimationInstance> PendingAnimations;
-        internal CompositionObject(Compositor compositor, ServerObject server)
+        internal CompositionObject(Compositor compositor, ServerObject? server)
         {
             Compositor = compositor;
             Server = server;
@@ -30,7 +32,7 @@ namespace Avalonia.Rendering.Composition
         /// The associated Compositor
         /// </summary>
         public Compositor Compositor { get; }
-        internal ServerObject Server { get; }
+        internal ServerObject? Server { get; }
         public bool IsDisposed { get; private set; }
         private bool _registeredForSerialization;
 

@@ -8,18 +8,23 @@ using Avalonia.Threading;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    partial class X11Window
+    internal partial class X11Window
     {
-        class XimInputMethod : ITextInputMethodImpl, IX11InputMethodControl
+        private class XimInputMethod : ITextInputMethodImpl, IX11InputMethodControl
         {
             private readonly X11Window _parent;
-            private bool _controlActive, _windowActive, _imeActive;
+            private bool _windowActive, _imeActive;
             private Rect? _queuedCursorRect;
+            private ITextInputMethodClient? _client;
 
             public XimInputMethod(X11Window parent)
             {
                 _parent = parent;
             }
+
+            public ITextInputMethodClient? Client => _client;
+
+            public bool IsActive => _client != null;
             
             public void SetCursorRect(Rect rect)
             {
@@ -59,13 +64,13 @@ namespace Avalonia.X11
 
             public void SetClient(ITextInputMethodClient client)
             {
-                _controlActive = client is { };
+                _client = client;
                 UpdateActive();
             }
 
             private void UpdateActive()
             {
-                var active = _windowActive && _controlActive;
+                var active = _windowActive && IsActive;
                 if(_parent._xic == IntPtr.Zero)
                     return;
                 if (active != _imeActive)

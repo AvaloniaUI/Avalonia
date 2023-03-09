@@ -1,52 +1,61 @@
+using System;
 using Avalonia.OpenGL.Surfaces;
 
 namespace Avalonia.OpenGL.Egl
 {
     public class EglGlPlatformSurface : EglGlPlatformSurfaceBase
     {
-        private readonly EglPlatformOpenGlInterface _egl;
+        public interface IEglWindowGlPlatformSurfaceInfo
+        {
+            IntPtr Handle { get; }
+            PixelSize Size { get; }
+            double Scaling { get; }
+        }
+        
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
         
-        public EglGlPlatformSurface(EglPlatformOpenGlInterface egl, IEglWindowGlPlatformSurfaceInfo info) : base()
+        public EglGlPlatformSurface(IEglWindowGlPlatformSurfaceInfo info)
         {
-            _egl = egl;
             _info = info;
         }
 
-        public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
-            var glSurface = _egl.CreateWindowSurface(_info.Handle);
-            return new RenderTarget(_egl, glSurface, _info);
+            var eglContext = (EglContext)context;
+            
+            var glSurface = eglContext.Display.CreateWindowSurface(_info.Handle);
+            return new RenderTarget(glSurface, eglContext, _info);
         }
 
-        class RenderTarget : EglPlatformSurfaceRenderTargetBase
+        private class RenderTarget : EglPlatformSurfaceRenderTargetBase
         {
-            private readonly EglPlatformOpenGlInterface _egl;
-            private EglSurface _glSurface;
+            private EglSurface? _glSurface;
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
             private PixelSize _currentSize;
+            private readonly IntPtr _handle;
 
-            public RenderTarget(EglPlatformOpenGlInterface egl,
-                EglSurface glSurface, IEglWindowGlPlatformSurfaceInfo info) : base(egl)
+            public RenderTarget(EglSurface glSurface, EglContext context, IEglWindowGlPlatformSurfaceInfo info) : base(context)
             {
-                _egl = egl;
                 _glSurface = glSurface;
                 _info = info;
                 _currentSize = info.Size;
+                _handle = _info.Handle;
             }
 
-            public override void Dispose() => _glSurface.Dispose();
-            
-            public override IGlPlatformSurfaceRenderingSession BeginDraw()
+            public override void Dispose() => _glSurface?.Dispose();
+
+            public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
             {
-                if (_info.Size != _currentSize || _glSurface == null)
+                if (_info.Size != _currentSize 
+                    || _handle != _info.Handle
+                    || _glSurface == null)
                 {
                     _glSurface?.Dispose();
                     _glSurface = null;
-                    _glSurface = _egl.CreateWindowSurface(_info.Handle);
+                    _glSurface = Context.Display.CreateWindowSurface(_info.Handle);
                     _currentSize = _info.Size;
                 }
-                return base.BeginDraw(_glSurface, _info);
+                return base.BeginDraw(_glSurface, _info.Size, _info.Scaling);
             }
         }
     }

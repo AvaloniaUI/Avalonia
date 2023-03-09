@@ -1,30 +1,26 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using Tmds.DBus;
-
-[assembly: InternalsVisibleTo(Connection.DynamicAssemblyName)]
+using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
     internal class DBusTrayIconImpl : ITrayIconImpl
     {
         private static int s_trayIconInstanceId;
+        public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
 
         private readonly ObjectPath _dbusMenuPath;
         private readonly Connection? _connection;
-        private IDisposable? _serviceWatchDisposable;
+        private readonly OrgFreedesktopDBus? _dBus;
 
+        private IDisposable? _serviceWatchDisposable;
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
-        private IStatusNotifierWatcher? _statusNotifierWatcher;
-        private DbusPixmap _icon;
+        private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
+        private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
         private string? _tooltipText;
@@ -51,6 +47,7 @@ namespace Avalonia.FreeDesktop
 
             IsActive = true;
 
+            _dBus = new OrgFreedesktopDBus(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
@@ -60,23 +57,10 @@ namespace Avalonia.FreeDesktop
 
         private void InitializeSNWService()
         {
-            if (_connection is null || _isDisposed) return;
-
-            try
-            {
-                _statusNotifierWatcher = _connection.CreateProxy<IStatusNotifierWatcher>(
-                    "org.kde.StatusNotifierWatcher",
-                    "/StatusNotifierWatcher");
-            }
-            catch
-            {
-                Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this,
-                        "org.kde.StatusNotifierWatcher service is not available on this system. Tray Icons will not work without it.");
-
+            if (_connection is null || _isDisposed)
                 return;
-            }
 
+            _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
             _serviceConnected = true;
         }
 
@@ -84,23 +68,24 @@ namespace Avalonia.FreeDesktop
         {
             try
             {
-                _serviceWatchDisposable =
-                    await _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
+                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item2));
+                var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
+                OnNameChange(nameOwner);
             }
-            catch (Exception e)
+            catch
             {
+                _serviceWatchDisposable = null;
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this,
-                        $"Unable to hook watcher method on org.kde.StatusNotifierWatcher: {e}");
+                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.");
             }
         }
 
-        private void OnNameChange(ServiceOwnerChangedEventArgs obj)
+        private void OnNameChange(string? newOwner)
         {
             if (_isDisposed)
                 return;
 
-            if (!_serviceConnected & obj.NewOwner != null)
+            if (!_serviceConnected & newOwner is not null)
             {
                 _serviceConnected = true;
                 InitializeSNWService();
@@ -108,55 +93,45 @@ namespace Avalonia.FreeDesktop
                 DestroyTrayIcon();
 
                 if (_isVisible)
-                {
                     CreateTrayIcon();
-                }
             }
-            else if (_serviceConnected & obj.NewOwner is null)
+            else if (_serviceConnected & newOwner is null)
             {
                 DestroyTrayIcon();
                 _serviceConnected = false;
             }
         }
 
-        private void CreateTrayIcon()
+        private async void CreateTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierWatcher is null)
                 return;
 
+#if NET5_0_OR_GREATER
+            var pid = Environment.ProcessId;
+#else
             var pid = Process.GetCurrentProcess().Id;
+#endif
             var tid = s_trayIconInstanceId++;
 
-            _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
+            _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
 
-            try
-            {
-                _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
-                _connection.RegisterServiceAsync(_sysTrayServiceName);
-                _statusNotifierWatcher?.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, $"Error creating a DBus tray icon: {e}.");
-
-                _serviceConnected = false;
-            }
+            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+            await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
+            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
             _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
-
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
         }
 
         private void DestroyTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _sysTrayServiceName is null)
                 return;
 
-            _connection.UnregisterObject(_statusNotifierItemDbusObj);
-            _connection.UnregisterServiceAsync(_sysTrayServiceName);
+            _dBus!.ReleaseNameAsync(_sysTrayServiceName);
         }
 
         public void Dispose()
@@ -164,7 +139,6 @@ namespace Avalonia.FreeDesktop
             IsActive = false;
             _isDisposed = true;
             DestroyTrayIcon();
-            _connection?.Dispose();
             _serviceWatchDisposable?.Dispose();
         }
 
@@ -175,13 +149,14 @@ namespace Avalonia.FreeDesktop
 
             if (icon is null)
             {
-                _statusNotifierItemDbusObj?.SetIcon(DbusPixmap.EmptyPixmap);
+                _statusNotifierItemDbusObj?.SetIcon(EmptyPixmap);
                 return;
             }
 
             var x11iconData = IconConverterDelegate(icon);
 
-            if (x11iconData.Length == 0) return;
+            if (x11iconData.Length == 0)
+                return;
 
             var w = (int)x11iconData[0];
             var h = (int)x11iconData[1];
@@ -199,7 +174,7 @@ namespace Avalonia.FreeDesktop
                 pixByteArray[pixByteArrayCounter++] = (byte)(rawPixel & 0xFF);
             }
 
-            _icon = new DbusPixmap(w, h, pixByteArray);
+            _icon = (w, h, pixByteArray);
             _statusNotifierItemDbusObj?.SetIcon(_icon);
         }
 
@@ -237,113 +212,50 @@ namespace Avalonia.FreeDesktop
     /// <remarks>
     /// Useful guide: https://web.archive.org/web/20210818173850/https://www.notmart.org/misc/statusnotifieritem/statusnotifieritem.html
     /// </remarks>
-    internal class StatusNotifierItemDbusObj : IStatusNotifierItem
+    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
     {
-        private readonly StatusNotifierItemProperties _backingProperties;
-        public event Action? OnTitleChanged;
-        public event Action? OnIconChanged;
-        public event Action? OnAttentionIconChanged;
-        public event Action? OnOverlayIconChanged;
-        public event Action? OnTooltipChanged;
-        public Action<string>? NewStatusAsync { get; set; }
-        public Action? ActivationDelegate { get; set; }
-        public ObjectPath ObjectPath { get; }
-
-        public StatusNotifierItemDbusObj(ObjectPath dbusmenuPath)
+        public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
-            ObjectPath = new ObjectPath($"/StatusNotifierItem");
-
-            _backingProperties = new StatusNotifierItemProperties
-            {
-                Menu = dbusmenuPath, // Needs a dbus menu somehow
-                ToolTip = new ToolTip("")
-            };
-
+            Connection = connection;
+            BackingProperties.Menu = dbusMenuPath;
+            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
+            BackingProperties.IconName = string.Empty;
+            BackingProperties.AttentionIconName = string.Empty;
+            BackingProperties.AttentionIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
+            BackingProperties.AttentionMovieName = string.Empty;
+            BackingProperties.IconThemePath = string.Empty;
+            BackingProperties.OverlayIconName = string.Empty;
+            BackingProperties.OverlayIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
             InvalidateAll();
         }
 
-        public Task ContextMenuAsync(int x, int y) => Task.CompletedTask;
+        protected override Connection Connection { get; }
 
-        public Task ActivateAsync(int x, int y)
-        {
-            ActivationDelegate?.Invoke();
-            return Task.CompletedTask;
-        }
+        public override string Path => "/StatusNotifierItem";
 
-        public Task SecondaryActivateAsync(int x, int y) => Task.CompletedTask;
+        public event Action? ActivationDelegate;
 
-        public Task ScrollAsync(int delta, string orientation) => Task.CompletedTask;
+        protected override void OnContextMenu(int x, int y) { }
+
+        protected override void OnActivate(int x, int y) => ActivationDelegate?.Invoke();
+
+        protected override void OnSecondaryActivate(int x, int y) { }
+
+        protected override void OnScroll(int delta, string orientation) { }
 
         public void InvalidateAll()
         {
-            OnTitleChanged?.Invoke();
-            OnIconChanged?.Invoke();
-            OnOverlayIconChanged?.Invoke();
-            OnAttentionIconChanged?.Invoke();
-            OnTooltipChanged?.Invoke();
+            EmitNewTitle();
+            EmitNewIcon();
+            EmitNewAttentionIcon();
+            EmitNewOverlayIcon();
+            EmitNewToolTip();
+            EmitNewStatus(BackingProperties.Status);
         }
 
-        public Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError)
+        public void SetIcon((int, int, byte[]) dbusPixmap)
         {
-            OnTitleChanged += handler;
-            return Task.FromResult(Disposable.Create(() => OnTitleChanged -= handler));
-        }
-
-        public Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError)
-        {
-            OnIconChanged += handler;
-            return Task.FromResult(Disposable.Create(() => OnIconChanged -= handler));
-        }
-
-        public Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError)
-        {
-            OnAttentionIconChanged += handler;
-            return Task.FromResult(Disposable.Create(() => OnAttentionIconChanged -= handler));
-        }
-
-        public Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError)
-        {
-            OnOverlayIconChanged += handler;
-            return Task.FromResult(Disposable.Create(() => OnOverlayIconChanged -= handler));
-        }
-
-        public Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError)
-        {
-            OnTooltipChanged += handler;
-            return Task.FromResult(Disposable.Create(() => OnTooltipChanged -= handler));
-        }
-
-        public Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError)
-        {
-            NewStatusAsync += handler;
-            return Task.FromResult(Disposable.Create(() => NewStatusAsync -= handler));
-        }
-
-        public Task<object?> GetAsync(string prop)
-        {
-            return Task.FromResult<object?>(prop switch
-            {
-                nameof(_backingProperties.Category) => _backingProperties.Category,
-                nameof(_backingProperties.Id) => _backingProperties.Id,
-                nameof(_backingProperties.Menu) => _backingProperties.Menu,
-                nameof(_backingProperties.IconPixmap) => _backingProperties.IconPixmap,
-                nameof(_backingProperties.Status) => _backingProperties.Status,
-                nameof(_backingProperties.Title) => _backingProperties.Title,
-                nameof(_backingProperties.ToolTip) => _backingProperties.ToolTip,
-                _ => null
-            });
-        }
-
-        public Task<StatusNotifierItemProperties> GetAllAsync() => Task.FromResult(_backingProperties);
-
-        public Task SetAsync(string prop, object val) => Task.CompletedTask;
-
-        public Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler) =>
-            Task.FromResult(Disposable.Empty);
-
-        public void SetIcon(DbusPixmap dbusPixmap)
-        {
-            _backingProperties.IconPixmap = new[] { dbusPixmap };
+            BackingProperties.IconPixmap = new[] { dbusPixmap };
             InvalidateAll();
         }
 
@@ -352,102 +264,12 @@ namespace Avalonia.FreeDesktop
             if (text is null)
                 return;
 
-            _backingProperties.Id = text;
-            _backingProperties.Category = "ApplicationStatus";
-            _backingProperties.Status = text;
-            _backingProperties.Title = text;
-            _backingProperties.ToolTip = new ToolTip(text);
-
+            BackingProperties.Id = text;
+            BackingProperties.Category = "ApplicationStatus";
+            BackingProperties.Status = text;
+            BackingProperties.Title = text;
+            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), text, string.Empty);
             InvalidateAll();
         }
-    }
-
-    [DBusInterface("org.kde.StatusNotifierWatcher")]
-    internal interface IStatusNotifierWatcher : IDBusObject
-    {
-        Task RegisterStatusNotifierItemAsync(string Service);
-        Task RegisterStatusNotifierHostAsync(string Service);
-    }
-
-    [DBusInterface("org.kde.StatusNotifierItem")]
-    internal interface IStatusNotifierItem : IDBusObject
-    {
-        Task ContextMenuAsync(int x, int y);
-        Task ActivateAsync(int x, int y);
-        Task SecondaryActivateAsync(int x, int y);
-        Task ScrollAsync(int delta, string orientation);
-        Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError);
-        Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError);
-        Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError);
-        Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError);
-        Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError);
-        Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError);
-        Task<object?> GetAsync(string prop);
-        Task<StatusNotifierItemProperties> GetAllAsync();
-        Task SetAsync(string prop, object val);
-        Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
-    }
-
-    // This class is used by Tmds.Dbus to ferry properties
-    // from the SNI spec.
-    // Don't change this to actual C# properties since
-    // Tmds.Dbus will get confused.
-    [Dictionary]
-    internal class StatusNotifierItemProperties
-    {
-        public string? Category;
-
-        public string? Id;
-
-        public string? Title;
-
-        public string? Status;
-
-        public ObjectPath Menu;
-
-        public DbusPixmap[]? IconPixmap;
-
-        public ToolTip ToolTip;
-    }
-
-    internal struct ToolTip
-    {
-        public readonly string First;
-        public readonly DbusPixmap[] Second;
-        public readonly string Third;
-        public readonly string Fourth;
-
-        private static readonly DbusPixmap[] s_blank =
-        {
-            new DbusPixmap(0, 0, Array.Empty<byte>()), new DbusPixmap(0, 0, Array.Empty<byte>())
-        };
-
-        public ToolTip(string message) : this("", s_blank, message, "")
-        {
-        }
-
-        public ToolTip(string first, DbusPixmap[] second, string third, string fourth)
-        {
-            First = first;
-            Second = second;
-            Third = third;
-            Fourth = fourth;
-        }
-    }
-
-    internal readonly struct DbusPixmap
-    {
-        public readonly int Width;
-        public readonly int Height;
-        public readonly byte[] Data;
-
-        public DbusPixmap(int width, int height, byte[] data)
-        {
-            Width = width;
-            Height = height;
-            Data = data;
-        }
-
-        public static DbusPixmap EmptyPixmap = new DbusPixmap(1, 1, new byte[] { 255, 0, 0, 0 });
     }
 }

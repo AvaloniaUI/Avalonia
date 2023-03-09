@@ -7,11 +7,11 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class MenuTests
+    public abstract class MenuTests
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public MenuTests(TestAppFixture fixture)
+        public MenuTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
@@ -60,6 +60,8 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Arrow_Keys()
         {
+            MovePointerOutOfTheWay();
+
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
                 .SendKeys(Keys.Down + Keys.Enter)
@@ -72,6 +74,8 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Alt_Arrow_Keys()
         {
+            MovePointerOutOfTheWay();
+
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
                 .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
@@ -84,6 +88,8 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Access_Keys()
         {
+            MovePointerOutOfTheWay();
+
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
                 .SendKeys("rc")
@@ -96,6 +102,8 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Alt_Access_Keys()
         {
+            MovePointerOutOfTheWay();
+
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
                 .SendKeys("rhg")
@@ -111,6 +119,8 @@ namespace Avalonia.IntegrationTests.Appium
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
             rootMenuItem.SendClick();
 
+            MovePointerOutOfTheWay();
+
             new Actions(_session)
                 .SendKeys(Keys.Down + Keys.Enter)
                 .Perform();
@@ -124,6 +134,8 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
             rootMenuItem.SendClick();
+
+            MovePointerOutOfTheWay();
 
             new Actions(_session)
                 .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
@@ -158,6 +170,28 @@ namespace Avalonia.IntegrationTests.Appium
             rootMenuItem.MovePointerOver();
 
             Assert.True(textBox.GetIsFocused());
+        }
+
+        private void MovePointerOutOfTheWay()
+        {
+            // Move the pointer to the menu tab item so that it's not over the menu in preparation
+            // for key press tests. This prevents the mouse accidentially selecting the wrong item
+            // by hovering.
+            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var tab = tabs.FindElementByName("Menu");
+            tab.MovePointerOver();
+        }
+
+        [Collection("Default")]
+        public class Default : MenuTests
+        {
+            public Default(DefaultAppFixture fixture) : base(fixture) { }
+        }
+
+        [Collection("OverlayPopups")]
+        public class OverlayPopups : MenuTests
+        {
+            public OverlayPopups(OverlayPopupsAppFixture fixture) : base(fixture) { }
         }
     }
 }

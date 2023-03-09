@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
@@ -43,7 +44,7 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
         }
 
@@ -64,7 +65,7 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
         }
 
@@ -99,5 +100,7 @@ namespace Avalonia.Benchmarks
         public void Custom(ICustomDrawOperation custom)
         {
         }
+
+        public object GetFeature(Type t) => null;
     }
 }

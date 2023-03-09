@@ -101,9 +101,10 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new MockFontManagerImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl());
+            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new MockPlatformRenderInterface());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate((control, scope) =>
             {
@@ -114,56 +115,56 @@ namespace Avalonia.Controls.UnitTests
                 //Skip contentpresenter
                 var flyoutButton = new Button
                 {
-                    Name = "FlyoutButton"
+                    Name = "PART_FlyoutButton"
                 }.RegisterInNameScope(scope);
                 var contentGrid = new Grid
                 {
-                    Name = "FlyoutButtonContentGrid"
+                    Name = "PART_FlyoutButtonContentGrid"
                 }.RegisterInNameScope(scope);
 
                 var firstPickerHost = new Border
                 {
-                    Name = "FirstPickerHost",
+                    Name = "PART_FirstPickerHost",
                     Child = new TextBlock
                     {
-                        Name = "HourTextBlock"
+                        Name = "PART_HourTextBlock"
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(firstPickerHost, 0);
 
                 var secondPickerHost = new Border
                 {
-                    Name = "SecondPickerHost",
+                    Name = "PART_SecondPickerHost",
                     Child = new TextBlock
                     {
-                        Name = "MinuteTextBlock"
+                        Name = "PART_MinuteTextBlock"
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(secondPickerHost, 2);
 
                 var thirdPickerHost = new Border
                 {
-                    Name = "ThirdPickerHost",
+                    Name = "PART_ThirdPickerHost",
                     Child = new TextBlock
                     {
-                        Name = "PeriodTextBlock"
+                        Name = "PART_PeriodTextBlock"
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(thirdPickerHost, 4);
 
                 var firstSpacer = new Rectangle
                 {
-                    Name = "FirstColumnDivider"
+                    Name = "PART_FirstColumnDivider"
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(firstSpacer, 1);
 
                 var secondSpacer = new Rectangle
                 {
-                    Name = "SecondColumnDivider"
+                    Name = "PART_SecondColumnDivider"
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(secondSpacer, 3);
 
-                contentGrid.Children.AddRange(new IControl[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost });
+                contentGrid.Children.AddRange(new Control[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;

@@ -18,6 +18,7 @@ using System.Xml;
 using Xunit;
 using Avalonia.Controls.Documents;
 using Avalonia.Metadata;
+using Avalonia.Themes.Simple;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -58,7 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namspace()
+        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namespace()
         {
             // Test for issue #1548
             var xaml =
@@ -447,40 +448,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.True(style.Resources.Count > 0);
 
-            style.TryGetResource("Brush", out var brush);
+            style.TryGetResource("Brush", null, out var brush);
 
             Assert.NotNull(brush);
             Assert.IsAssignableFrom<ISolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
-            style.TryGetResource("Double", out var d);
+            style.TryGetResource("Double", null, out var d);
 
             Assert.Equal(10.0, d);
-        }
-
-        [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Styles xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='avares://Avalonia.Themes.Default/Controls/ContextMenu.xaml'/>
-</Styles>";
-
-                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
-
-                Assert.True(styles.Count == 1);
-
-                var styleInclude = styles.First() as StyleInclude;
-
-                Assert.NotNull(styleInclude);
-
-                var style = styleInclude.Loaded;
-
-                Assert.NotNull(style);
-            }
         }
 
         [Fact]
@@ -724,7 +700,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 //ensure binding is set and operational first
                 Assert.Equal(100.0, tracker.Tag);
 
-                Assert.Equal("EndInit 0", tracker.Order.Last());
+                // EndInit should be second-to-last operation, as last operation will be
+                // caused by styling being applied on EndInit.
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 3]);
+
+                // Caused by styling.
+                Assert.Equal("Property FontFamily Changed", tracker.Order[tracker.Order.Count - 2]);
+                Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }
 
@@ -748,7 +730,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void DeferedXamlLoader_Should_Preserve_NamespacesContext()
+        public void DeferredXamlLoader_Should_Preserve_NamespacesContext()
         {
             var xaml =
 @"<ContentControl xmlns='https://github.com/avaloniaui'
@@ -918,6 +900,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Foo", target.Text);
         }
 
+        [Fact]
+        public void Should_Parse_And_Populate_Type_Without_Public_Ctor()
+        {
+            var xaml = @"<ObjectWithoutPublicCtor xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml' Test2='World' />";
+            var target = (ObjectWithoutPublicCtor)AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: new ObjectWithoutPublicCtor("Hello"));
+
+            Assert.NotNull(target);
+            Assert.Equal("World", target.Test2);
+            Assert.Equal("Hello", target.Test1);
+        }
+        
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -946,6 +939,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             Child = child;
         }
+    }
+    
+    public class ObjectWithoutPublicCtor
+    {
+        public ObjectWithoutPublicCtor(string param)
+        {
+            Test1 = param;
+        }
+        
+        public string Test1 { get; set; }
+        
+        public string Test2 { get; set; }
     }
 
     public class ObjectWithAddChildOfT : IAddChild, IAddChild<string>

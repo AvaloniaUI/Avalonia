@@ -9,29 +9,18 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
     public class XamlIlTests : XamlTestBase
     {
-        [Fact]
-        public void Binding_Button_IsPressed_ShouldWork()
-        {
-            var parsed = (Button)AvaloniaRuntimeXamlLoader.Parse(@"
-<Button xmlns='https://github.com/avaloniaui' IsPressed='{Binding IsPressed, Mode=TwoWay}' />");
-            var ctx = new XamlIlBugTestsDataContext();
-            parsed.DataContext = ctx;
-            parsed.SetValue(Button.IsPressedProperty, true);
-            Assert.True(ctx.IsPressed);
-        }
-
         [Fact]
         public void Transitions_Should_Be_Properly_Parsed()
         {
@@ -162,7 +151,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             
         }
 
-        void AssertThrows(Action callback, Func<Exception, bool> check)
+        static void AssertThrows(Action callback, Func<Exception, bool> check)
         {
             try
             {
@@ -314,6 +303,67 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
             Assert.NotNull(parsed.ItemTemplate);
         }
+        
+        [Fact]
+        public void Runtime_Loader_Should_Pass_Parents_From_ServiceProvider()
+        {
+            var sp = new TestServiceProvider
+            {
+                Parents = new List<object>
+                {
+                    new UserControl { Resources = { ["Resource1"] = new SolidColorBrush(Colors.Blue) } }
+                }
+            };
+            var document = new RuntimeXamlLoaderDocument(@"
+<Button xmlns='https://github.com/avaloniaui' Background='{StaticResource Resource1}' />")
+            {
+                ServiceProvider = sp
+            };
+            
+            var parsed = (Button)AvaloniaRuntimeXamlLoader.Load(document);
+            Assert.Equal(Colors.Blue, ((ISolidColorBrush)parsed.Background!).Color);
+        }
+
+        [Fact]
+        public void Style_Parser_Throws_For_Duplicate_Setter()
+        {
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='Width' Value='100'/>
+            <Setter Property='Height' Value='20'/>
+            <Setter Property='Height' Value='30'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+            AssertThrows(() => AvaloniaRuntimeXamlLoader.Load(xaml, typeof(XamlIlTests).Assembly, designMode: true),
+                e => e.Message.StartsWith("Duplicate setter encountered for property 'Height'"));
+        }
+
+        [Fact]
+        public void Control_Theme_Parser_Throws_For_Duplicate_Setter()
+        {
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+    <Window.Resources>
+        <ControlTheme x:Key='MyTheme' TargetType='u:TestTemplatedControl'>
+            <Setter Property='Width' Value='100'/>
+            <Setter Property='Height' Value='20'/>
+            <Setter Property='Height' Value='30'/>
+        </ControlTheme>
+    </Window.Resources>
+
+    <u:TestTemplatedControl Theme='{StaticResource MyTheme}'/>
+</Window>";
+            AssertThrows(() => AvaloniaRuntimeXamlLoader.Load(xaml, typeof(XamlIlTests).Assembly, designMode: true),
+                e => e.Message.StartsWith("Duplicate setter encountered for property 'Height'"));
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -365,10 +415,8 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
     public class XamlIlBugTestsDataContext : INotifyPropertyChanged
     {
-        public bool IsPressed { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

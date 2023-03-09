@@ -1,4 +1,6 @@
-﻿namespace Avalonia.MicroCom
+﻿using MicroCom.Runtime;
+
+namespace Avalonia.MicroCom
 {
     public abstract class CallbackBase : IUnknown, IMicroComShadowContainer
     {
@@ -30,11 +32,13 @@
             if (_referencedFromManaged == false && _referencedFromNative == false)
             {
                 _destroyed = true;
+                Shadow?.Dispose();
+                Shadow = null;
                 Destroyed();
             }
         }
 
-        public MicroComShadow Shadow { get; set; }
+        public MicroComShadow? Shadow { get; set; }
         public void OnReferencedFromNative()
         {
             lock (_lock) 

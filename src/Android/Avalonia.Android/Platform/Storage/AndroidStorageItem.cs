@@ -1,10 +1,12 @@
 ﻿#nullable enable
 
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Android;
+using Android.App;
 using Android.Content;
 using Android.Provider;
 using Avalonia.Logging;
@@ -18,41 +20,48 @@ namespace Avalonia.Android.Platform.Storage;
 
 internal abstract class AndroidStorageItem : IStorageBookmarkItem
 {
-    private Context? _context;
+    private Activity? _activity;
+    private readonly bool _needsExternalFilesPermission;
 
-    protected AndroidStorageItem(Context context, AndroidUri uri)
+    protected AndroidStorageItem(Activity activity, AndroidUri uri, bool needsExternalFilesPermission)
     {
-        _context = context;
+        _activity = activity;
+        _needsExternalFilesPermission = needsExternalFilesPermission;
         Uri = uri;
     }
 
     internal AndroidUri Uri { get; }
+    
+    protected Activity Activity => _activity ?? throw new ObjectDisposedException(nameof(AndroidStorageItem));
 
-    protected Context Context => _context ?? throw new ObjectDisposedException(nameof(AndroidStorageItem));
-
-    public string Name => GetColumnValue(Context, Uri, MediaStore.IMediaColumns.DisplayName)
+    public virtual string Name => GetColumnValue(Activity, Uri, MediaStore.IMediaColumns.DisplayName)
                           ?? Uri.PathSegments?.LastOrDefault() ?? string.Empty;
+
+    public Uri Path => new(Uri.ToString()!);
 
     public bool CanBookmark => true;
 
-    public Task<string?> SaveBookmark()
+    public async Task<string?> SaveBookmarkAsync()
     {
-        Context.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
-        return Task.FromResult(Uri.ToString());
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            return null;
+        }
+
+        Activity.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
+        return Uri.ToString();
     }
 
-    public Task ReleaseBookmark()
+    public async Task ReleaseBookmarkAsync()
     {
-        Context.ContentResolver?.ReleasePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
-        return Task.CompletedTask;
-    }
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            return;
+        }
 
-    public bool TryGetUri([NotNullWhen(true)] out Uri? uri)
-    {
-        uri = new Uri(Uri.ToString()!);
-        return true;
+        Activity.ContentResolver?.ReleasePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
     }
-
+    
     public abstract Task<StorageItemProperties> GetBasicPropertiesAsync();
 
     protected string? GetColumnValue(Context context, AndroidUri contentUri, string column, string? selection = null, string[]? selectionArgs = null)
@@ -76,29 +85,44 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         return null;
     }
 
-    public Task<IStorageFolder?> GetParentAsync()
+    public async Task<IStorageFolder?> GetParentAsync()
     {
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            return null;
+        }
+
         using var javaFile = new JavaFile(Uri.Path!);
 
         // Java file represents files AND directories. Don't be confused.
         if (javaFile.ParentFile is {} parentFile
             && AndroidUri.FromFile(parentFile) is {} androidUri)
         {
-            return Task.FromResult<IStorageFolder?>(new AndroidStorageFolder(Context, androidUri));
+            return new AndroidStorageFolder(Activity, androidUri, false);
         }
 
-        return Task.FromResult<IStorageFolder?>(null);
+        return null;
     }
 
+    protected async Task<bool> EnsureExternalFilesPermission(bool write)
+    {
+        if (!_needsExternalFilesPermission)
+        {
+            return true;
+        }
+
+        return await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
+    }
+    
     public void Dispose()
     {
-        _context = null;
+        _activity = null;
     }
 }
 
-internal sealed class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
+internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 {
-    public AndroidStorageFolder(Context context, AndroidUri uri) : base(context, uri)
+    public AndroidStorageFolder(Activity activity, AndroidUri uri, bool needsExternalFilesPermission) : base(activity, uri, needsExternalFilesPermission)
     {
     }
 
@@ -106,22 +130,70 @@ internal sealed class AndroidStorageFolder : AndroidStorageItem, IStorageBookmar
     {
         return Task.FromResult(new StorageItemProperties());
     }
+
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
+    {
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            yield break;
+        }
+        
+        var contentResolver = Activity.ContentResolver;
+        if (contentResolver == null)
+        {
+            yield break;
+        }
+
+        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(Uri!, DocumentsContract.GetTreeDocumentId(Uri));
+
+        var projection = new[]
+        {
+            DocumentsContract.Document.ColumnDocumentId,
+            DocumentsContract.Document.ColumnMimeType
+        };
+        if (childrenUri != null)
+        {
+            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
+
+            if (cursor != null)
+                while (cursor.MoveToNext())
+                {
+                    var mime = cursor.GetString(1);
+                    var id = cursor.GetString(0);
+                    var uri = DocumentsContract.BuildDocumentUriUsingTree(Uri!, id);
+                    if (uri == null)
+                    {
+                        continue;
+                    }
+
+                    yield return mime == DocumentsContract.Document.MimeTypeDir ? new AndroidStorageFolder(Activity, uri, false) :
+                        new AndroidStorageFile(Activity, uri);
+                }
+        }
+    }       
 }
+
+internal sealed class WellKnownAndroidStorageFolder : AndroidStorageFolder
+{
+    public WellKnownAndroidStorageFolder(Activity activity, string identifier, AndroidUri uri, bool needsExternalFilesPermission)
+        : base(activity, uri, needsExternalFilesPermission)
+    {
+        Name = identifier;
+    }
+
+    public override string Name { get; }
+} 
 
 internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkFile
 {
-    public AndroidStorageFile(Context context, AndroidUri uri) : base(context, uri)
+    public AndroidStorageFile(Activity activity, AndroidUri uri) : base(activity, uri, false)
     {
     }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
-    public Task<Stream> OpenRead() => Task.FromResult(OpenContentStream(Context, Uri, false)
+    
+    public Task<Stream> OpenReadAsync() => Task.FromResult(OpenContentStream(Activity, Uri, false)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
-    public Task<Stream> OpenWrite() => Task.FromResult(OpenContentStream(Context, Uri, true)
+    public Task<Stream> OpenWriteAsync() => Task.FromResult(OpenContentStream(Activity, Uri, true)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
     private Stream? OpenContentStream(Context context, AndroidUri uri, bool isOutput)
@@ -153,7 +225,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         return false;
     }
 
-    private Stream? GetVirtualFileStream(Context context, AndroidUri uri, bool isOutput)
+    private static Stream? GetVirtualFileStream(Context context, AndroidUri uri, bool isOutput)
     {
         var mimeTypes = context.ContentResolver?.GetStreamTypes(uri, FilePickerFileTypes.All.MimeTypes![0]);
         if (mimeTypes?.Length >= 1)
@@ -185,7 +257,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                 MediaStore.IMediaColumns.Size, MediaStore.IMediaColumns.DateAdded,
                 MediaStore.IMediaColumns.DateModified
             };
-            using var cursor = Context.ContentResolver!.Query(Uri, projection, null, null, null);
+            using var cursor = Activity.ContentResolver!.Query(Uri, projection, null, null, null);
 
             if (cursor?.MoveToFirst() == true)
             {

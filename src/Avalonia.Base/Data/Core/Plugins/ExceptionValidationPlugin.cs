@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
@@ -6,12 +7,14 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties that report errors by throwing exceptions.
     /// </summary>
-    public class ExceptionValidationPlugin : IDataValidationPlugin
+    internal class ExceptionValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public bool Match(WeakReference<object?> reference, string memberName) => true;
 
         /// <inheritdoc/>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor inner)
         {
             return new Validator(reference, name, inner);

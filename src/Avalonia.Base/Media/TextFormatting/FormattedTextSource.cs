@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     internal readonly struct FormattedTextSource : ITextSource
     {
-        private readonly ReadOnlySlice<char> _text;
+        private readonly string _text;
         private readonly TextRunProperties _defaultProperties;
         private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
-        public FormattedTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties,
+        public FormattedTextSource(string text, TextRunProperties defaultProperties,
             IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             _text = text;
@@ -25,7 +26,7 @@ namespace Avalonia.Media.TextFormatting
                 return null;
             }
 
-            var runText = _text.Skip(textSourceIndex);
+            var runText = _text.AsSpan(textSourceIndex);
 
             if (runText.IsEmpty)
             {
@@ -34,7 +35,7 @@ namespace Avalonia.Media.TextFormatting
 
             var textStyleRun = CreateTextStyleRun(runText, textSourceIndex, _defaultProperties, _textModifier);
 
-            return new TextCharacters(runText.Take(textStyleRun.Length), textStyleRun.Value);
+            return new TextCharacters(_text.AsMemory(textSourceIndex, textStyleRun.Length), textStyleRun.Value);
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The created text style run.
         /// </returns>
-        private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySlice<char> text, int firstTextSourceIndex,
+        private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySpan<char> text, int firstTextSourceIndex,
             TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             if (textModifier == null || textModifier.Count == 0)
@@ -116,7 +117,28 @@ namespace Avalonia.Media.TextFormatting
                 length = text.Length;
             }
 
+            length = CoerceLength(text, length);
+
             return new ValueSpan<TextRunProperties>(firstTextSourceIndex, length, currentProperties);
+        }
+
+        private static int CoerceLength(ReadOnlySpan<char> text, int length)
+        {
+            var finalLength = 0;
+
+            var graphemeEnumerator = new GraphemeEnumerator(text);
+
+            while (graphemeEnumerator.MoveNext(out var grapheme))
+            {
+                finalLength += grapheme.Length;
+
+                if (finalLength >= length)
+                {
+                    return finalLength;
+                }
+            }
+
+            return Math.Min(length, text.Length);
         }
     }
 }

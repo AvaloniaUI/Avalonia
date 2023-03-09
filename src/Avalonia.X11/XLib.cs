@@ -16,11 +16,11 @@ namespace Avalonia.X11
 {
     internal unsafe static class XLib
     {
-        const string libX11 = "libX11.so.6";
-        const string libX11Randr = "libXrandr.so.2";
-        const string libX11Ext = "libXext.so.6";
-        const string libXInput = "libXi.so.6";
-        const string libXCursor = "libXcursor.so.1";
+        private const string libX11 = "libX11.so.6";
+        private const string libX11Randr = "libXrandr.so.2";
+        private const string libX11Ext = "libXext.so.6";
+        private const string libXInput = "libXi.so.6";
+        private const string libXCursor = "libXcursor.so.1";
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
@@ -109,6 +109,9 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern int XFree(IntPtr data);
+        
+        [DllImport(libX11)]
+        public static extern int XFree(void* data);
 
         [DllImport(libX11)]
         public static extern int XRaiseWindow(IntPtr display, IntPtr window);
@@ -628,6 +631,12 @@ namespace Avalonia.X11
             return XISelectEvents(display, window, emasks, devices.Count);
 
         }
+        
+        [DllImport(libX11)]
+        public static extern XClassHint* XAllocClassHint();
+
+        [DllImport(libX11)]
+        public static extern int XSetClassHint(IntPtr display, IntPtr window, XClassHint* class_hints);
 
         public struct XGeometry
         {
@@ -638,6 +647,11 @@ namespace Avalonia.X11
             public int height;
             public int bw;
             public int d;
+        }
+        public struct XClassHint
+        {
+            public byte* res_name;
+            public byte* res_class;
         }
         
         public struct XSyncValue {

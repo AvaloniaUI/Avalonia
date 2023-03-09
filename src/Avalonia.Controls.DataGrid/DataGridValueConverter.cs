@@ -22,14 +22,18 @@ namespace Avalonia.Controls
             return DefaultValueConverter.Instance.Convert(value, targetType, parameter, culture);
         }
 
-        // This suppresses a warning saying that we should use String.IsNullOrEmpty instead of a string
-        // comparison, but in this case we want to explicitly check for Empty and not Null.
+
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (targetType != null && targetType.IsNullableType())
             {
-                String strValue = value as String;
-                if (strValue == String.Empty)
+                var strValue = value as string;
+
+                // This suppresses a warning saying that we should use String.IsNullOrEmpty instead of a string
+                // comparison, but in this case we want to explicitly check for Empty and not Null.
+#pragma warning disable CA1820
+                if (strValue == string.Empty)
+#pragma warning restore CA1820
                 {
                     return null;
                 }

@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
     /// A node in the scene graph which represents a line draw.
     /// </summary>
-    internal class LineNode : BrushDrawOperation
+    internal class LineNode : DrawOperationWithTransform
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GeometryNode"/> class.
@@ -19,25 +17,17 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The start point of the line.</param>
         /// <param name="p2">The end point of the line.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public LineNode(
             Matrix transform,
             IPen pen,
             Point p1,
-            Point p2,
-            IDisposable? aux = null)
-            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform, aux)
+            Point p2)
+            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform)
         {
-            Transform = transform;
             Pen = pen.ToImmutable();
             P1 = p1;
             P2 = p2;
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
 
         /// <summary>
         /// Gets the stroke pen.
@@ -73,17 +63,11 @@ namespace Avalonia.Rendering.SceneGraph
 
         public override void Render(IDrawingContextImpl context)
         {
-            context.Transform = Transform;
             context.DrawLine(Pen, P1, P2);
         }
 
         public override bool HitTest(Point p)
         {
-            if (!Transform.HasInverse)
-                return false;
-
-            p *= Transform.Invert();
-
             var halfThickness = Pen.Thickness / 2;
             var minX = Math.Min(P1.X, P2.X) - halfThickness;
             var maxX = Math.Max(P1.X, P2.X) + halfThickness;

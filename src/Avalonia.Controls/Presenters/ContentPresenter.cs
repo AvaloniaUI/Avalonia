@@ -118,8 +118,8 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly DirectProperty<ContentPresenter, IControl?> ChildProperty =
-            AvaloniaProperty.RegisterDirect<ContentPresenter, IControl?>(
+        public static readonly DirectProperty<ContentPresenter, Control?> ChildProperty =
+            AvaloniaProperty.RegisterDirect<ContentPresenter, Control?>(
                 nameof(Child),
                 o => o.Child);
 
@@ -156,16 +156,13 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="RecognizesAccessKey"/> property
         /// </summary>
-        public static readonly DirectProperty<ContentPresenter, bool> RecognizesAccessKeyProperty =
-            AvaloniaProperty.RegisterDirect<ContentPresenter, bool>(
-                nameof(RecognizesAccessKey),
-                cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
+        public static readonly StyledProperty<bool> RecognizesAccessKeyProperty =
+            AvaloniaProperty.Register<ContentPresenter, bool>(nameof(RecognizesAccessKey));
 
-        private IControl? _child;
+        private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
-        private bool _recognizesAccessKey;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -329,7 +326,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the control displayed by the presenter.
         /// </summary>
-        public IControl? Child
+        public Control? Child
         {
             get { return _child; }
             private set { SetAndRaise(ChildProperty, ref _child, value); }
@@ -386,8 +383,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public bool RecognizesAccessKey
         {
-            get => _recognizesAccessKey;
-            set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
+            get => GetValue(RecognizesAccessKeyProperty);
+            set => SetValue(RecognizesAccessKeyProperty, value);
         }
 
         /// <summary>
@@ -460,7 +457,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             // Set the DataContext if the data isn't a control.
-            if (contentTemplate is { } || !(content is IControl))
+            if (contentTemplate is { } || !(content is Control))
             {
                 DataContext = content;
             }
@@ -534,7 +531,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);
@@ -544,16 +541,16 @@ namespace Avalonia.Controls.Presenters
         /// Creates the child control.
         /// </summary>
         /// <returns>The child control or null.</returns>
-        protected virtual IControl? CreateChild()
+        protected virtual Control? CreateChild()
         {
             var content = Content;
             var oldChild = Child;
             return CreateChild(content, oldChild, ContentTemplate);
         }
 
-        private IControl? CreateChild(object? content, IControl? oldChild, IDataTemplate? template)
+        private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)
         {            
-            var newChild = content as IControl;
+            var newChild = content as Control;
 
             // We want to allow creating Child from the Template, if Content is null.
             // But it's important to not use DataTemplates, otherwise we will break content presenters in many places,

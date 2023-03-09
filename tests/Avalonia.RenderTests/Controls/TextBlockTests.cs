@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -15,6 +16,56 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         public TextBlockTests()
             : base(@"Controls\TextBlock")
         {
+        }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Draw_TextDecorations()
+        {
+            Border target = new Border
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 30,
+                Background = Brushes.White,
+                Child = new TextBlock
+                {
+                    FontFamily = TestFontFamily,                  
+                    FontSize = 12,
+                    Foreground = Brushes.Black,
+                    Text = "Neque porro quisquam est qui dolorem",
+                    VerticalAlignment = VerticalAlignment.Top,
+                    TextWrapping = TextWrapping.NoWrap,
+                    TextDecorations = new TextDecorationCollection
+                    {
+                        new TextDecoration
+                        {
+                            Location = TextDecorationLocation.Overline,
+                            StrokeThickness= 1.5,
+                            StrokeThicknessUnit = TextDecorationUnit.Pixel,
+                            Stroke = new SolidColorBrush(Colors.Red)
+                        },
+                        new TextDecoration
+                        {
+                            Location = TextDecorationLocation.Baseline,
+                            StrokeThickness= 1.5,
+                            StrokeThicknessUnit = TextDecorationUnit.Pixel,
+                            Stroke = new SolidColorBrush(Colors.Green)
+                        },
+                        new TextDecoration
+                        {
+                            Location = TextDecorationLocation.Underline,
+                            StrokeThickness= 1.5,
+                            StrokeThicknessUnit = TextDecorationUnit.Pixel,
+                            Stroke = new SolidColorBrush(Colors.Blue),
+                            StrokeOffset = 2,
+                            StrokeOffsetUnit = TextDecorationUnit.Pixel
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
         }
 
         [Win32Fact("Has text")]
@@ -45,7 +96,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         [Win32Fact("Has text")]
         public async Task RestrictedHeight_VerticalAlign()
         {
-            IControl text(VerticalAlignment verticalAlingnment, bool clip = true, bool restrictHeight = true)
+            Control text(VerticalAlignment verticalAlignment, bool clip = true, bool restrictHeight = true)
             {
                 return new Border()
                 {
@@ -62,7 +113,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         FontSize = 24,
                         Foreground = Brushes.Black,
                         Text = "L",
-                        VerticalAlignment = verticalAlingnment,
+                        VerticalAlignment = verticalAlignment,
                         ClipToBounds = clip
                     }
                 };

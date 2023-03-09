@@ -250,30 +250,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void DynamicResource_Can_Be_Assigned_To_Setter_In_Styles_File()
         {
-            var styleXaml = @"
+            var documents = new[]
+            {
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style.xaml"), @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Styles.Resources>
         <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
     </Styles.Resources>
-
     <Style Selector='Border'>
         <Setter Property='Background' Value='{DynamicResource brush}'/>
     </Style>
-</Styles>";
-
-            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
-            {
-                var xaml = @"
+</Styles>"),
+                new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <StyleInclude Source='test:style.xaml'/>
+        <StyleInclude Source='avares://Tests/Style.xaml'/>
     </Window.Styles>
     <Border Name='border'/>
-</Window>";
-
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>")
+            };
+            
+            using (StyledWindow())
+            {
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(compiled[1]);
                 var border = window.FindControl<Border>("border");
                 var brush = (ISolidColorBrush)border.Background;
 
@@ -284,13 +286,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void DynamicResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
         {
-            var styleXaml = @"
+            var documents = new[]
+            {
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style.xaml"), @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Styles.Resources>
         <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
     </Styles.Resources>
-
     <Style Selector='Button'>
         <Setter Property='Template'>
             <ControlTemplate>
@@ -298,20 +301,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             </ControlTemplate>
         </Setter>
     </Style>
-</Styles>";
-
-            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
-            {
-                var xaml = @"
+</Styles>"),
+                new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <StyleInclude Source='test:style.xaml'/>
+        <StyleInclude Source='avares://Tests/Style.xaml'/>
     </Window.Styles>
     <Button Name='button'/>
-</Window>";
-
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>")
+            };
+            
+            using (StyledWindow())
+            {
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(compiled[1]);
                 var button = window.FindControl<Button>("button");
 
                 window.Show();
@@ -553,35 +557,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void DynamicResource_Can_Be_Found_Across_Xaml_Style_Files()
         {
-            var style1Xaml = @"
+            var documents = new[]
+            {
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style1.xaml"), @"
 <Style xmlns='https://github.com/avaloniaui'
        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <Style.Resources>
     <Color x:Key='Red'>Red</Color>
   </Style.Resources>
-</Style>";
-            var style2Xaml = @"
+</Style>"),
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style2.xaml"), @"
 <Style xmlns='https://github.com/avaloniaui'
        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <Style.Resources>
     <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
   </Style.Resources>
-</Style>";
-            using (StyledWindow(
-                ("test:style1.xaml", style1Xaml), 
-                ("test:style2.xaml", style2Xaml)))
-            {
-                var xaml = @"
+</Style>"),
+                new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <StyleInclude Source='test:style1.xaml'/>
-        <StyleInclude Source='test:style2.xaml'/>
+        <StyleInclude Source='avares://Tests/Style1.xaml'/>
+        <StyleInclude Source='avares://Tests/Style2.xaml'/>
     </Window.Styles>
     <Border Name='border' Background='{DynamicResource RedBrush}'/>
-</Window>";
-
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>")
+            };
+            
+            using (StyledWindow())
+            {
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(compiled[2]);
                 var border = window.FindControl<Border>("border");
                 var borderBrush = (ISolidColorBrush)border.Background;
 
@@ -593,33 +599,35 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void DynamicResource_Can_Be_Found_In_Nested_Style_File()
         {
-            var style1Xaml = @"
+            var documents = new[]
+            {
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style1.xaml"), @"
 <Styles xmlns='https://github.com/avaloniaui'
        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-  <StyleInclude Source='test:style2.xaml'/>
-</Styles>";
-            var style2Xaml = @"
+  <StyleInclude Source='avares://Tests/Style2.xaml'/>
+</Styles>"),
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style2.xaml"), @"
 <Style xmlns='https://github.com/avaloniaui'
        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <Style.Resources>
     <Color x:Key='Red'>Red</Color>
     <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
   </Style.Resources>
-</Style>";
-            using (StyledWindow(
-                ("test:style1.xaml", style1Xaml),
-                ("test:style2.xaml", style2Xaml)))
-            {
-                var xaml = @"
+</Style>"),
+                new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <StyleInclude Source='test:style1.xaml'/>
+        <StyleInclude Source='avares://Tests/Style1.xaml'/>
     </Window.Styles>
     <Border Name='border' Background='{DynamicResource RedBrush}'/>
-</Window>";
-
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>")
+            };
+            
+            using (StyledWindow())
+            {
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(compiled[2]);
                 var border = window.FindControl<Border>("border");
                 var borderBrush = (ISolidColorBrush)border.Background;
 
@@ -930,7 +938,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public void AddOwner(IResourceHost owner) => Owner = owner;
         public void RemoveOwner(IResourceHost owner) => Owner = null;
 
-        public bool TryGetResource(object key, out object value)
+        public bool TryGetResource(object key, ThemeVariant themeVariant, out object value)
         {
             RequestedResources.Add(key);
             value = key;

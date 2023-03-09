@@ -3,6 +3,8 @@ using System.Numerics;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -51,6 +53,6 @@ namespace Avalonia.Rendering.Composition
         
         internal object? Tag { get; set; }
 
-        internal virtual bool HitTest(Point point, Func<IVisual, bool>? filter) => true;
+        internal virtual bool HitTest(Point point) => true;
     }
 }

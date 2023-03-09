@@ -1,18 +1,12 @@
 using System;
-using System.Collections.Generic;
-using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Platform;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
-using Moq;
-using Xunit;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
+using Avalonia.UnitTests;
+using Xunit;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
-using Avalonia.Threading;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
@@ -23,11 +17,8 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
-
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
                 var gesture2 = new KeyGesture(Key.B, KeyModifiers.Control);
@@ -67,13 +58,11 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var commandResult = 0;
                 var expectedParameter = 1;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -112,12 +101,10 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var isExecuted = false;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -154,12 +141,10 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var clickExecutedCount = 0;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -208,13 +193,11 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var clickExecutedCount = 0;
                 var commandExecutedCount = 0;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -321,7 +304,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             return button;
         }
 
-        private FuncControlTemplate CreateWindowTemplate()
+        private static FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
             {

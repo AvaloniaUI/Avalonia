@@ -5,6 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <DebugType>portable</DebugType>
+    <AndroidResgenNamespace>Avalonia.Android.Internal</AndroidResgenNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
@@ -16,4 +17,5 @@
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 </Project>

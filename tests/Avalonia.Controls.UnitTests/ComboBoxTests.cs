@@ -29,11 +29,36 @@ namespace Avalonia.Controls.UnitTests
             _helper.Down(target);
             _helper.Up(target);
             Assert.True(target.IsDropDownOpen);
+            Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
 
             _helper.Down(target);
             _helper.Up(target);
 
             Assert.False(target.IsDropDownOpen);
+            Assert.True(!target.Classes.Contains(ComboBox.pcDropdownOpen));
+        }
+
+        [Fact]
+        public void Clicking_On_Control_PseudoClass()
+        {
+            var target = new ComboBox
+            {
+                Items = new[] { "Foo", "Bar" },
+            };
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            _helper.Up(target);
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
+            Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            _helper.Up(target);
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
+
+            Assert.False(target.IsDropDownOpen);
+            Assert.True(!target.Classes.Contains(ComboBox.pcDropdownOpen));
         }
 
         [Fact]
@@ -55,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                ((Control)target.Presenter).ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -92,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                ((Control)target.Presenter).ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -142,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot { Child = target };
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.True(((ILogical)target).IsAttachedToLogicalTree);
@@ -156,7 +181,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(((ILogical)rectangle).IsAttachedToLogicalTree);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ComboBox>((parent, scope) =>
             {
@@ -179,7 +204,6 @@ namespace Avalonia.Controls.UnitTests
                             Child = new ItemsPresenter
                             {
                                 Name = "PART_ItemsPresenter",
-                                [!ItemsPresenter.ItemsProperty] = parent[!ComboBox.ItemsProperty],
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope)
                     }
@@ -261,7 +285,6 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ComboBox
                 {
                     Template = GetTemplate(),
-                    VirtualizationMode =  ItemVirtualizationMode.None
                 };
 
                 target.ApplyTemplate();

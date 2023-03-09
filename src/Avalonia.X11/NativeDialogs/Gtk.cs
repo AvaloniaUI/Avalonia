@@ -3,13 +3,11 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
-using JetBrains.Annotations;
 
 // ReSharper disable IdentifierTypo
 namespace Avalonia.X11.NativeDialogs
 {
-
-    static unsafe class Glib
+    internal static unsafe class Glib
     {
         private const string GlibName = "libglib-2.0.so.0";
         private const string GObjectName = "libgobject-2.0.so.0";
@@ -37,7 +35,7 @@ namespace Avalonia.X11.NativeDialogs
             IntPtr destroy);
 
 
-        class ConnectedSignal : IDisposable
+        private class ConnectedSignal : IDisposable
         {
             private readonly IntPtr _instance;
             private GCHandle _handle;
@@ -76,7 +74,7 @@ namespace Avalonia.X11.NativeDialogs
         }
 
 
-        static bool TimeoutHandler(IntPtr data)
+        private static bool TimeoutHandler(IntPtr data)
         {
             var handle = GCHandle.FromIntPtr(data);
             var cb = (Func<bool>)handle.Target;
@@ -96,7 +94,7 @@ namespace Avalonia.X11.NativeDialogs
             s_pinnedHandler = TimeoutHandler;
         }
 
-        static void AddTimeout(int priority, uint interval, Func<bool> callback)
+        private static void AddTimeout(int priority, uint interval, Func<bool> callback)
         {
             var handle = GCHandle.Alloc(callback);
             g_timeout_add_full(priority, interval, s_pinnedHandler, GCHandle.ToIntPtr(handle), IntPtr.Zero);
@@ -124,13 +122,13 @@ namespace Avalonia.X11.NativeDialogs
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    unsafe struct GSList
+    internal unsafe struct GSList
     {
         public readonly IntPtr Data;
         public readonly GSList* Next;
     }
 
-    enum GtkFileChooserAction
+    internal enum GtkFileChooserAction
     {
         Open,
         Save,
@@ -138,7 +136,7 @@ namespace Avalonia.X11.NativeDialogs
     }
 
     // ReSharper disable UnusedMember.Global
-    enum GtkResponseType
+    internal enum GtkResponseType
     {
         Help = -11,
         Apply = -10,
@@ -154,14 +152,14 @@ namespace Avalonia.X11.NativeDialogs
     }
     // ReSharper restore UnusedMember.Global
 
-    static unsafe class Gtk
+    internal static unsafe class Gtk
     {
         private static IntPtr s_display;
         private const string GdkName = "libgdk-3.so.0";
         private const string GtkName = "libgtk-3.so.0";
 
         [DllImport(GtkName)]
-        static extern void gtk_main_iteration();
+        private static extern void gtk_main_iteration();
 
 
         [DllImport(GtkName)]
@@ -232,10 +230,10 @@ namespace Avalonia.X11.NativeDialogs
         public static extern void gtk_widget_hide(IntPtr gtkWidget);
 
         [DllImport(GtkName)]
-        static extern bool gtk_init_check(int argc, IntPtr argv);
+        private static extern bool gtk_init_check(int argc, IntPtr argv);
 
         [DllImport(GdkName)]
-        static extern IntPtr gdk_x11_window_foreign_new_for_display(IntPtr display, IntPtr xid);
+        private static extern IntPtr gdk_x11_window_foreign_new_for_display(IntPtr display, IntPtr xid);
         
         [DllImport(GdkName)]
         public static extern IntPtr gdk_x11_window_get_xid(IntPtr window);
@@ -245,21 +243,18 @@ namespace Avalonia.X11.NativeDialogs
         public static extern IntPtr gtk_container_add(IntPtr container, IntPtr widget);
 
         [DllImport(GdkName)]
-        static extern IntPtr gdk_set_allowed_backends(Utf8Buffer backends);
+        private static extern IntPtr gdk_set_allowed_backends(Utf8Buffer backends);
 
         [DllImport(GdkName)]
-        static extern IntPtr gdk_display_get_default();
+        private static extern IntPtr gdk_display_get_default();
 
         [DllImport(GtkName)]
-        static extern IntPtr gtk_application_new(Utf8Buffer appId, int flags);
+        private static extern IntPtr gtk_application_new(Utf8Buffer appId, int flags);
 
         [DllImport(GdkName)]
         public static extern void gdk_window_set_transient_for(IntPtr window, IntPtr parent);
 
         public static IntPtr GetForeignWindow(IntPtr xid) => gdk_x11_window_foreign_new_for_display(s_display, xid);
-
-        static object s_startGtkLock = new();
-        static Task<bool> s_startGtkTask;
 
         public static Task<bool> StartGtk()
         {

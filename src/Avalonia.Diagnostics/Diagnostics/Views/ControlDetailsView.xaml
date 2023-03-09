@@ -1,12 +1,13 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:conv="clr-namespace:Avalonia.Diagnostics.Converters"
-             xmlns:local="clr-namespace:Avalonia.Diagnostics.Views"
-             xmlns:controls="clr-namespace:Avalonia.Diagnostics.Controls"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             xmlns:conv="using:Avalonia.Diagnostics.Converters"
+             xmlns:local="using:Avalonia.Diagnostics.Views"
+             xmlns:controls="using:Avalonia.Diagnostics.Controls"
+             xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
              xmlns:lb="using:Avalonia.Diagnostics.Behaviors"
              x:Class="Avalonia.Diagnostics.Views.ControlDetailsView"
-             x:Name="Main">
+             x:Name="Main"
+             x:DataType="vm:ControlDetailsViewModel">
 
   <UserControl.Resources>
     <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
@@ -19,7 +20,7 @@
       <ColumnDefinition Width="Auto"/>
       <!--
       When selecting the Application node, we need this trick to hide Layout Visualizer 
-      because when using the GridSplitter it sets the Witdth property of ColumnDefinition
+      because when using the GridSplitter it sets the Width property of ColumnDefinition
       (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Controls/GridSplitter.cs#L528) 
       and if we hide the contents of the column, the space is not reclaimed 
       (see discussion https://github.com/AvaloniaUI/Avalonia/discussions/6773). 
@@ -58,21 +59,28 @@
                 CanUserResizeColumns="true"
                 DoubleTapped="PropertiesGrid_OnDoubleTapped">
         <DataGrid.Columns>
-          <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
+          <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
+          <DataGridTemplateColumn Header="Value" Width="100">
+              <DataTemplate>
+                <local:PropertyValueEditorView />
+              </DataTemplate>
+          </DataGridTemplateColumn>
           <DataGridTextColumn Header="Type" Binding="{Binding Type}"
                               IsReadOnly="True"
-                              IsVisible="{Binding !$parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding !$parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                              x:DataType="vm:PropertyViewModel"
                               />
-          <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
+          <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                              x:DataType="vm:PropertyViewModel"
                               />
           <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                              x:DataType="vm:PropertyViewModel"
                               />
-          <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
+          <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
         </DataGrid.Columns>
 
         <DataGrid.Styles>
@@ -124,7 +132,7 @@
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <MultiBinding Converter="{x:Static BoolConverters.Or}" >
                         <Binding Path="IsActive" />
-                        <Binding Path="#Main.DataContext.ShowInactiveStyles" />
+                        <Binding Path="#Main.((vm:ControlDetailsViewModel)DataContext).ShowInactiveStyles" />
                       </MultiBinding>
                       <Binding Path="IsVisible" />
                     </MultiBinding>

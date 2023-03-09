@@ -1,9 +1,11 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
@@ -34,6 +36,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ItemTemplate_Can_Be_Changed()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+            };
+
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.IsType<Canvas>(container.Child);
+
+            target.ItemTemplate = new FuncDataTemplate<string>((_, __) => new Border());
+            container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.IsType<Border>(container.Child);
+        }
+
+        [Fact]
         public void Panel_Should_Have_TemplatedParent_Set_To_ItemsControl()
         {
             var target = new ItemsControl();
@@ -44,6 +71,19 @@ namespace Avalonia.Controls.UnitTests
             target.Presenter.ApplyTemplate();
 
             Assert.Equal(target, target.Presenter.Panel.TemplatedParent);
+        }
+
+        [Fact]
+        public void Panel_Should_Have_ItemsHost_Set_To_True()
+        {
+            var target = new ItemsControl();
+
+            target.Template = GetTemplate();
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            Assert.True(target.Presenter.Panel!.IsItemsHost);
         }
 
         [Fact]
@@ -64,7 +104,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Container_Should_Have_Theme_Set_To_ItemContainerTheme()
         {
-            var theme = new ControlTheme();
+            var theme = new ControlTheme { TargetType = typeof(ContentPresenter) };
             var target = new ItemsControl
             {
                 ItemContainerTheme = theme,
@@ -91,7 +131,7 @@ namespace Avalonia.Controls.UnitTests
                 root.Content = target;
 
                 var templatedParent = new Button();
-                target.SetValue(StyledElement.TemplatedParentProperty, templatedParent);
+                target.TemplatedParent = templatedParent;
                 target.Template = GetTemplate();
 
                 target.Items = new[] { "Foo" };
@@ -117,6 +157,25 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
+        }
+
+        [Fact]
+        public void Control_Item_Should_Be_Logical_Child_After_Layout()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+            };
+            var root = new TestRoot(target);
+            var child = new Control();
+
+            target.Template = GetTemplate();
+            target.Items = new[] { child };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(target, child.Parent);
+            Assert.Equal(target, child.GetLogicalParent());
             Assert.Equal(new[] { child }, target.GetLogicalChildren());
         }
 
@@ -366,12 +425,13 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+            var panel = target.Presenter.Panel;
+            Assert.Equal(2, panel.Children.Count());
 
             target.Template = GetTemplate();
             target.ApplyTemplate();
 
-            Assert.Empty(target.ItemContainerGenerator.Containers);
+            Assert.Empty(panel.Children);
         }
 
         [Fact]
@@ -535,27 +595,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Presenter_Explicitly_Should_Set_Item_Parent()
-        {
-            var target = new TestItemsControl();
-            var child = new Control();
-
-            var presenter = new ItemsPresenter
-            {
-                [StyledElement.TemplatedParentProperty] = target,
-                [~ItemsPresenter.ItemsProperty] = target[~ItemsControl.ItemsProperty],
-            };
-
-            presenter.ApplyTemplate();
-            target.Presenter = presenter;
-            target.Items = new[] { child };
-            target.ApplyTemplate();
-
-            Assert.Equal(target, child.Parent);
-            Assert.Equal(target, ((ILogical)child).LogicalParent);
-        }
-
-        [Fact]
         public void DataContexts_Should_Be_Correctly_Set()
         {
             var items = new object[]
@@ -608,7 +647,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = target.Presenter.Panel.LogicalChildren[0];
+            var item = target.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TextBlock)item));
         }
 
@@ -684,36 +723,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Presenter_Items_Should_Be_In_Sync()
-        {
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = new object[]
-                {
-                    new Button(),
-                    new Button(),
-                },
-            };
-
-            var root = new TestRoot { Child = target };
-            var otherPanel = new StackPanel();
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-            
-            target.ItemContainerGenerator.Materialized += (s, e) =>
-            {
-                Assert.IsType<Canvas>(e.Containers[0].Item);
-            };
-
-            target.Items = new[]
-            {
-                new Canvas()
-            };
-        }
-
-        [Fact]
         public void Detaching_Then_Reattaching_To_Logical_Tree_Twice_Does_Not_Throw()
         {
             // # Issue 3487
@@ -736,6 +745,76 @@ namespace Avalonia.Controls.UnitTests
             root.Child = null;
             root.Child = target;
         }
+        
+        [Fact]
+        public void Should_Use_DisplayMemberBinding()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DisplayMemberBinding = new Binding("Length")
+            };
+
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "3");
+        }
+
+        [Fact]
+        public void DisplayMemberBinding_Can_Be_Changed()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DisplayMemberBinding = new Binding("Value")
+            };
+
+            target.Items = new[] { new Item("Foo", "Bar") };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "Bar");
+
+            target.DisplayMemberBinding = new Binding("Caption");
+            
+            container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "Foo");
+        }
+
+        [Fact]
+        public void Cannot_Set_Both_DisplayMemberBinding_And_ItemTemplate_1()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DisplayMemberBinding = new Binding("Length")
+            };
+
+            Assert.Throws<InvalidOperationException>(() => 
+                target.ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock()));
+        }
+
+        [Fact]
+        public void Cannot_Set_Both_DisplayMemberBinding_And_ItemTemplate_2()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock()),
+            };
+
+            Assert.Throws<InvalidOperationException>(() => target.DisplayMemberBinding = new Binding("Length"));
+        }
 
         private class Item
         {
@@ -744,10 +823,17 @@ namespace Avalonia.Controls.UnitTests
                 Value = value;
             }
 
+            public Item(string caption, string value)
+            {
+                Caption = caption;
+                Value = value;
+            }
+
+            public string Caption { get; }
             public string Value { get; }
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {
@@ -757,19 +843,9 @@ namespace Avalonia.Controls.UnitTests
                     Child = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }.RegisterInNameScope(scope)
                 };
             });
-        }
-
-        private class TestItemsControl : ItemsControl
-        {
-            public new IItemsPresenter Presenter
-            {
-                get { return base.Presenter; }
-                set { base.Presenter = value; }
-            }
         }
     }
 }

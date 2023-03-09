@@ -19,11 +19,10 @@
                 Padding="{DynamicResource FlyoutBorderThemePadding}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        Theme="{StaticResource FluentMenuScrollViewer}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
                             Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                             KeyboardNavigation.TabNavigation="Continue"
                             Grid.IsSharedSizeScope="True" />

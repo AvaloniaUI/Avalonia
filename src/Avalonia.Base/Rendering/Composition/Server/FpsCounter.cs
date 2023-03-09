@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
-using Avalonia.Utilities;
+
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
 namespace Avalonia.Rendering.Composition.Server;
 
@@ -14,26 +14,18 @@ namespace Avalonia.Rendering.Composition.Server;
 internal class FpsCounter
 {
     private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+    private readonly DiagnosticTextRenderer _textRenderer;
+
     private int _framesThisSecond;
     private int _totalFrames;
     private int _fps;
     private TimeSpan _lastFpsUpdate;
-    const int FirstChar = 32;
-    const int LastChar = 126;
-    // ASCII chars
-    private GlyphRun[] _runs = new GlyphRun[LastChar - FirstChar + 1];
-    
-    public FpsCounter(GlyphTypeface typeface)
-    {
-        for (var c = FirstChar; c <= LastChar; c++)
-        {
-            var s = new string((char)c, 1);
-            var glyph = typeface.GetGlyph((uint)(s[0]));
-            _runs[c - FirstChar] = new GlyphRun(typeface, 18, new ReadOnlySlice<char>(s.AsMemory()), new ushort[] { glyph });
-        }
-    }
 
-    public void FpsTick() => _framesThisSecond++;
+    public FpsCounter(DiagnosticTextRenderer textRenderer)
+        => _textRenderer = textRenderer;
+
+    public void FpsTick()
+        => _framesThisSecond++;
 
     public void RenderFps(IDrawingContextImpl context, string aux)
     {
@@ -50,27 +42,24 @@ internal class FpsCounter
             _lastFpsUpdate = now;
         }
 
-        var fpsLine = $"Frame #{_totalFrames:00000000} FPS: {_fps:000} " + aux;
-        double width = 0;
-        double height = 0;
-        foreach (var ch in fpsLine)
-        {
-            var run = _runs[ch - FirstChar];
-            width +=  run.Size.Width;
-            height = Math.Max(height, run.Size.Height);
-        }
+#if NET6_0_OR_GREATER
+        var fpsLine = string.Create(CultureInfo.InvariantCulture, $"Frame #{_totalFrames:00000000} FPS: {_fps:000} {aux}");
+#else
+        var fpsLine = FormattableString.Invariant($"Frame #{_totalFrames:00000000} FPS: {_fps:000} {aux}");
+#endif
 
-        var rect = new Rect(0, 0, width + 3, height + 3);
+        var size = _textRenderer.MeasureAsciiText(fpsLine.AsSpan());
+        var rect = new Rect(0.0, 0.0, size.Width + 3.0, size.Height + 3.0);
 
         context.DrawRectangle(Brushes.Black, null, rect);
 
-        double offset = 0;
-        foreach (var ch in fpsLine)
-        {
-            var run = _runs[ch - FirstChar];
-            context.Transform = Matrix.CreateTranslation(offset, 0);
-            context.DrawGlyphRun(Brushes.White, run);
-            offset += run.Size.Width;
-        }
+        _textRenderer.DrawAsciiText(context, fpsLine.AsSpan(), Brushes.White);
+    }
+
+    public void Reset()
+    {
+        _framesThisSecond = 0;
+        _totalFrames = 0;
+        _fps = 0;
     }
 }

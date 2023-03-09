@@ -5,11 +5,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using static Avalonia.X11.XLib;
-using JetBrains.Annotations;
 
 namespace Avalonia.X11
 {
-    class X11Screens  : IScreenImpl
+    internal class X11Screens : IScreenImpl
     {
         private IX11Screens _impl;
 
@@ -18,7 +17,7 @@ namespace Avalonia.X11
             _impl = impl;
         }
 
-        static unsafe X11Screen[] UpdateWorkArea(X11Info info, X11Screen[] screens)
+        private static unsafe X11Screen[] UpdateWorkArea(X11Info info, X11Screen[] screens)
         {
             var rect = default(PixelRect);
             foreach (var s in screens)
@@ -59,14 +58,14 @@ namespace Avalonia.X11
             XFree(prop);
             return screens;
         }
-        
-        class Randr15ScreensImpl : IX11Screens
+
+        private class Randr15ScreensImpl : IX11Screens
         {
             private readonly X11ScreensUserSettings _settings;
             private X11Screen[] _cache;
             private X11Info _x11;
             private IntPtr _window;
-            const int EDIDStructureLength = 32; // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
+            private const int EDIDStructureLength = 32; // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
             
             public Randr15ScreensImpl(AvaloniaX11Platform platform, X11ScreensUserSettings settings)
             {
@@ -161,7 +160,7 @@ namespace Avalonia.X11
             }
         }
 
-        class FallbackScreensImpl : IX11Screens
+        private class FallbackScreensImpl : IX11Screens
         {
             public FallbackScreensImpl(X11Info info, X11ScreensUserSettings settings)
             {
@@ -218,20 +217,20 @@ namespace Avalonia.X11
         public int ScreenCount => _impl.Screens.Length;
 
         public IReadOnlyList<Screen> AllScreens =>
-            _impl.Screens.Select(s => new Screen(s.PixelDensity, s.Bounds, s.WorkingArea, s.Primary)).ToArray();
+            _impl.Screens.Select(s => new Screen(s.Scaling, s.Bounds, s.WorkingArea, s.IsPrimary)).ToArray();
     }
 
-    interface IX11Screens
+    internal interface IX11Screens
     {
         X11Screen[] Screens { get; }
     }
 
-    class X11ScreensUserSettings
+    internal class X11ScreensUserSettings
     {
         public double GlobalScaleFactor { get; set; } = 1;
         public Dictionary<string, double> NamedScaleFactors { get; set; }
 
-        static double? TryParse(string s)
+        private static double? TryParse(string s)
         {
             if (s == null)
                 return null;
@@ -277,34 +276,38 @@ namespace Avalonia.X11
         }
     }
 
-    class X11Screen
+    internal class X11Screen
     {
         private const int FullHDWidth = 1920;
         private const int FullHDHeight = 1080;
-        public bool Primary { get; }
+        public bool IsPrimary { get; }
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
         public Size? PhysicalSize { get; set; }
-        public double PixelDensity { get; set; }
+        public double Scaling { get; set; }
         public PixelRect WorkingArea { get; set; }
 
-        public X11Screen(PixelRect bounds, bool primary,
-            string name, Size? physicalSize, double? pixelDensity)
+        public X11Screen(
+            PixelRect bounds,
+            bool isPrimary,
+            string name,
+            Size? physicalSize,
+            double? scaling)
         {
-            Primary = primary;
+            IsPrimary = isPrimary;
             Name = name;
             Bounds = bounds;
-            if (physicalSize == null && pixelDensity == null)
+            if (physicalSize == null && scaling == null)
             {
-                PixelDensity = 1;
+                Scaling = 1;
             }
-            else if (pixelDensity == null)
+            else if (scaling == null)
             {
-                PixelDensity = GuessPixelDensity(bounds, physicalSize.Value);
+                Scaling = GuessPixelDensity(bounds, physicalSize.Value);
             }
             else
             {
-                PixelDensity = pixelDensity.Value;
+                Scaling = scaling.Value;
                 PhysicalSize = physicalSize;
             }
         }

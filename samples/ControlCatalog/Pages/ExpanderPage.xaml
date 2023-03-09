@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ExpanderPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ExpanderPage"
+             x:DataType="viewModels:ExpanderPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Expands to show nested content</TextBlock>
 
@@ -32,7 +34,42 @@
           <TextBlock>Expanded content</TextBlock>
         </StackPanel>
       </Expander>
+      <Expander ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <Expander.Header>
+          <Button Content="Control in Header" />
+        </Expander.Header>
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
+      <Expander Header="Disabled"
+                IsEnabled="False"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
       <CheckBox IsChecked="{Binding Rounded}">Rounded</CheckBox>
+      <Expander x:Name="CollapsingDisabledExpander"
+                Header="Collapsing Disabled"
+                IsExpanded="True"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="ExpandingDisabledExpander"
+                Header="Expanding Disabled"
+                IsExpanded="False"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
     </StackPanel>
   </StackPanel>
 </UserControl>

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+#pragma warning disable CS0618
 
 namespace Avalonia.Input
 {
@@ -77,8 +79,8 @@ namespace Avalonia.Input
             {
                 pointer.Capture(source);
                 var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                var doubleClickTime = settings?.DoubleClickTime.TotalMilliseconds ?? 500;
-                var doubleClickSize = settings?.DoubleClickSize ?? new Size(4, 4);
+                var doubleClickTime = settings?.GetDoubleTapTime(PointerType.Pen).TotalMilliseconds ?? 500;
+                var doubleClickSize = settings?.GetDoubleTapSize(PointerType.Pen) ?? new Size(4, 4);
 
                 if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
                 {
@@ -90,7 +92,7 @@ namespace Avalonia.Input
                 _lastClickRect = new Rect(p, new Size())
                     .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                 _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                var e = new PointerPressedEventArgs(source, pointer, root, p, timestamp, properties, inputModifiers, _clickCount);
+                var e = new PointerPressedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
                 source.RaiseEvent(e);
                 return e.Handled;
             }
@@ -98,7 +100,7 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool PenMove(Pointer pointer, ulong timestamp,
+        private static bool PenMove(Pointer pointer, ulong timestamp,
             IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
@@ -107,7 +109,7 @@ namespace Avalonia.Input
 
             if (source is not null)
             {
-                var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, pointer, root,
+                var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, pointer, (Visual)root,
                     p, timestamp, properties, inputModifiers, intermediatePoints);
 
                 source.RaiseEvent(e);
@@ -125,11 +127,12 @@ namespace Avalonia.Input
 
             if (source is not null)
             {
-                var e = new PointerReleasedEventArgs(source, pointer, root, p, timestamp, properties, inputModifiers,
+                var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
                     _lastMouseDownButton);
 
-                source?.RaiseEvent(e);
+                source.RaiseEvent(e);
                 pointer.Capture(null);
+                _lastMouseDownButton = default;
                 return e.Handled;
             }
 

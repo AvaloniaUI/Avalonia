@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Collections;
@@ -7,9 +10,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -19,7 +22,7 @@ namespace Avalonia.Controls.UnitTests
     public class ListBoxTests
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Should_Use_ItemTemplate_To_Create_Item_Content()
         {
@@ -100,7 +103,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new[] { "Foo", "Bar", "Baz " };
-                var theme = new ControlTheme();
+                var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
@@ -122,7 +125,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new[] { "Foo", "Bar", "Baz " };
-                var theme = new ControlTheme();
+                var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
@@ -218,6 +221,7 @@ namespace Avalonia.Controls.UnitTests
 
                 // Scroll down a page.
                 target.Scroll.Offset = new Vector(0, 10);
+                Layout(target);
 
                 // Make sure recycled item isn't now selected.
                 Assert.False(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
@@ -239,8 +243,8 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                Assert.Equal(new Size(20, 20), target.Scroll.Extent);
-                Assert.Equal(new Size(100, 10), target.Scroll.Viewport);
+                Assert.Equal(new Size(100, 200), target.Scroll.Extent);
+                Assert.Equal(new Size(100, 100), target.Scroll.Viewport);
             }
         }
 
@@ -263,11 +267,13 @@ namespace Avalonia.Controls.UnitTests
 
                 items.Clear();
                 items.AddRange(Enumerable.Range(0, 11).Select(x => $"Item {x}"));
-                items.Remove("Item 2");
+                Layout(target);
 
-                Assert.Equal(
-                    items,
-                    target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content));
+                items.Remove("Item 2");
+                Layout(target);
+
+                var actual = target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content).ToList();
+                Assert.Equal(items.OrderBy(x => x), actual.OrderBy(x => x));
             }
         }
 
@@ -329,46 +335,8 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ListBox_After_Scroll_IndexOutOfRangeException_Shouldnt_Be_Thrown()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var items = Enumerable.Range(0, 11).Select(x => $"{x}").ToArray();
-
-                var target = new ListBox
-                {
-                    Template = ListBoxTemplate(),
-                    Items = items,
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 11 })
-                };
-
-                Prepare(target);
-
-                var panel = target.Presenter.Panel as IVirtualizingPanel;
-
-                var listBoxItems = panel.Children.OfType<ListBoxItem>();
-
-                //virtualization should have created exactly 10 items
-                Assert.Equal(10, listBoxItems.Count());
-                Assert.Equal("0", listBoxItems.First().DataContext);
-                Assert.Equal("9", listBoxItems.Last().DataContext);
-
-                //instead pixeloffset > 0 there could be pretty complex sequence for repro
-                //it involves add/remove/scroll to end multiple actions
-                //which i can't find so far :(, but this is the simplest way to add it to unit test
-                panel.PixelOffset = 1;
-
-                //here scroll to end -> IndexOutOfRangeException is thrown
-                target.Scroll.Offset = new Vector(0, 2);
-
-                Assert.True(true);
-            }
-        }
-
-        [Fact]
         public void LayoutManager_Should_Measure_Arrange_All()
         {
-            var virtualizationMode = ItemVirtualizationMode.Simple;
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var items = new AvaloniaList<string>(Enumerable.Range(1, 7).Select(v => v.ToString()));
@@ -386,7 +354,6 @@ namespace Avalonia.Controls.UnitTests
                 target.Height = 110;
                 target.Width = 50;
                 target.DataContext = items;
-                target.VirtualizationMode = virtualizationMode;
 
                 target.ItemTemplate = new FuncDataTemplate<object>((c, _) =>
                 {
@@ -425,11 +392,51 @@ namespace Avalonia.Controls.UnitTests
                 lm.ExecuteLayoutPass();
 
                 var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
-                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
+                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
+                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
 
                 Assert.Equal(0, toMeasure.Count());
                 Assert.Equal(0, toArrange.Count());
+            }
+        }
+
+        [Fact]
+        public void ListBox_Should_Be_Valid_After_Remove_Of_Item_In_NonVisibleArea()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new AvaloniaList<string>(Enumerable.Range(1, 30).Select(v => v.ToString()));
+
+                var wnd = new Window() { Width = 100, Height = 100, IsVisible = true };
+
+                var target = new ListBox()
+                {
+                    AutoScrollToSelectedItem = true,
+                    Height = 100,
+                    Width = 50,
+                    ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
+                    Items = items,
+                };
+                wnd.Content = target;
+
+                var lm = wnd.LayoutManager;
+
+                lm.ExecuteInitialLayoutPass();
+
+                //select last / scroll to last item
+                target.SelectedItem = items.Last();
+
+                lm.ExecuteLayoutPass();
+
+                //remove the first item (in non realized area of the listbox)
+                items.Remove("1");
+                lm.ExecuteLayoutPass();
+
+                Assert.Equal("30", target.ContainerFromIndex(items.Count - 1).DataContext);
+                Assert.Equal("29", target.ContainerFromIndex(items.Count - 2).DataContext);
+                Assert.Equal("28", target.ContainerFromIndex(items.Count - 3).DataContext);
+                Assert.Equal("27", target.ContainerFromIndex(items.Count - 4).DataContext);
+                Assert.Equal("26", target.ContainerFromIndex(items.Count - 5).DataContext);
             }
         }
 
@@ -446,7 +453,6 @@ namespace Avalonia.Controls.UnitTests
                     Items = items,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                     SelectionMode = SelectionMode.AlwaysSelected,
-                    VirtualizationMode = ItemVirtualizationMode.None,
                 };
 
                 Prepare(target);
@@ -487,10 +493,9 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new ListBox()
                 {
-                    VerticalAlignment = Layout.VerticalAlignment.Top,
+                    VerticalAlignment = VerticalAlignment.Top,
                     AutoScrollToSelectedItem = true,
                     Width = 50,
-                    VirtualizationMode = ItemVirtualizationMode.Simple,
                     ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
                     Items = items,
                 };
@@ -550,7 +555,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
         }
 
-        private FuncControlTemplate ListBoxTemplate()
+        private static FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
                 new ScrollViewer
@@ -560,14 +565,12 @@ namespace Avalonia.Controls.UnitTests
                     Content = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                         [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
-                        [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).ToBinding(),
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ListBoxItemTemplate()
+        private static FuncControlTemplate ListBoxItemTemplate()
         {
             return new FuncControlTemplate<ListBoxItem>((parent, scope) =>
                 new ContentPresenter
@@ -578,7 +581,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ScrollViewerTemplate()
+        private static FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
                 new Panel
@@ -592,6 +595,8 @@ namespace Avalonia.Controls.UnitTests
                             [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
                             [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
                             [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
+                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {
@@ -603,47 +608,30 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private void Prepare(ListBox target)
+        private static void Prepare(ListBox target)
         {
-            // The ListBox needs to be part of a rooted visual tree.
-            var root = new TestRoot();
-            root.Child = target;
+            target.Width = target.Height = 100;
 
-            // Apply the template to the ListBox itself.
-            target.ApplyTemplate();
-
-            // Then to its inner ScrollViewer.
-            var scrollViewer = (ScrollViewer)target.GetVisualChildren().Single();
-            scrollViewer.ApplyTemplate();
-
-            // Then make the ScrollViewer create its child.
-            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
-
-            // Now the ItemsPresenter should be reigstered, so apply its template.
-            target.Presenter.ApplyTemplate();
-
-            // Because ListBox items are virtualized we need to do a layout to make them appear.
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
-            // Now set and apply the item templates.
-            foreach (ListBoxItem item in target.Presenter.Panel.Children)
+            var root = new TestRoot(target)
             {
-                item.Template = ListBoxItemTemplate();
-                item.ApplyTemplate();
-                item.Presenter.ApplyTemplate();
-                ((ContentPresenter)item.Presenter).UpdateChild();
-            }
+                Resources =
+                {
+                    { 
+                        typeof(ListBoxItem),
+                        new ControlTheme(typeof(ListBoxItem))
+                        {
+                            Setters = { new Setter(ListBoxItem.TemplateProperty, ListBoxItemTemplate()) }
+                        }
+                    }
+                }
+            };
 
-            // The items were created before the template was applied, so now we need to go back
-            // and re-arrange everything.
-            foreach (IControl i in target.GetSelfAndVisualDescendants())
-            {
-                i.InvalidateMeasure();
-            }
+            root.LayoutManager.ExecuteInitialLayoutPass();
+        }
 
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
+        private static void Layout(Control c)
+        {
+            ((ILayoutRoot)c.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
         }
 
         private class Item
@@ -656,7 +644,6 @@ namespace Avalonia.Controls.UnitTests
             public string Value { get; }
         }
 
-
         [Fact]
         public void SelectedItem_Validation()
         {
@@ -666,20 +653,84 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
                 SelectionMode = SelectionMode.AlwaysSelected,
-                VirtualizationMode = ItemVirtualizationMode.None
             };
 
             Prepare(target);
-            
+
             var exception = new System.InvalidCastException("failed validation");
             var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
             target.Bind(ComboBox.SelectedItemProperty, textObservable);
-                
+
             Assert.True(DataValidationErrors.GetHasErrors(target));
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
 
-        private void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
+        [Fact]
+        public void Handles_Resetting_Items()
+        {
+            var items = new ResettingCollection(100);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas { Height = 10 }),
+            };
+
+            Prepare(target);
+
+            var realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{x}"), realized);
+
+            items.Reverse();
+            Layout(target);
+
+            realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{99 - x}"), realized);
+        }
+
+        [Fact]
+        public void Handles_Resetting_Items_With_Existing_Selection_And_AutoScrollToSelectedItem()
+        {
+            var items = new ResettingCollection(100);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas { Height = 10 }),
+                AutoScrollToSelectedItem = true,
+                SelectedIndex = 1,
+            };
+
+            Prepare(target);
+
+            var realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{x}"), realized);
+
+            items.Reverse();
+            Layout(target);
+
+            realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            // "Item1" should remain selected, and now be at the bottom of the viewport.
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{10 - x}"), realized);
+        }
+
+        private static void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
         {
             listBox.RaiseEvent(new KeyEventArgs
             {
@@ -708,6 +759,7 @@ namespace Avalonia.Controls.UnitTests
                 var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
 
                 var first = lbItems.First();
+                var beforeLast = lbItems[^2];
                 var last = lbItems.Last();
 
                 first.Focus();
@@ -718,6 +770,12 @@ namespace Avalonia.Controls.UnitTests
                 RaiseKeyEvent(target, Key.Up);
                 Assert.Equal(true, last.IsSelected);
 
+                RaiseKeyEvent(target, Key.Up);
+                Assert.Equal(true, beforeLast.IsSelected);
+
+                RaiseKeyEvent(target, Key.Down);
+                Assert.Equal(true, last.IsSelected);
+
                 RaiseKeyEvent(target, Key.Down);
                 Assert.Equal(true, first.IsSelected);
 
@@ -726,6 +784,24 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(true, first.IsSelected);
             }
+        }
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(int itemCount)
+            {
+                AddRange(Enumerable.Range(0, itemCount).Select(x => $"Item{x}"));
+            }
+
+            public new void Reverse()
+            {
+                base.Reverse();
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
         }
     }
 }

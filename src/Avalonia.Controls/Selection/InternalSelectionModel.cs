@@ -203,7 +203,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {

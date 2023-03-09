@@ -79,12 +79,12 @@ namespace Avalonia.Controls
         }
 
         public static readonly DirectProperty<NativeMenu, NativeMenuItem?> ParentProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenu, NativeMenuItem?>("Parent", o => o.Parent, (o, v) => o.Parent = v);
+            AvaloniaProperty.RegisterDirect<NativeMenu, NativeMenuItem?>(nameof(Parent), o => o.Parent);
 
         public NativeMenuItem? Parent
         {
             get => _parent;
-            set => SetAndRaise(ParentProperty, ref _parent, value);
+            internal set => SetAndRaise(ParentProperty, ref _parent, value);
         }
 
         public void Add(NativeMenuItemBase item) => _items.Add(item);

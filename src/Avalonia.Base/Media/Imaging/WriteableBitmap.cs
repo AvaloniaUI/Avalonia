@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Imaging
@@ -9,19 +10,9 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class WriteableBitmap : Bitmap
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WriteableBitmap"/> class.
-        /// </summary>
-        /// <param name="size">The size of the bitmap in device pixels.</param>
-        /// <param name="dpi">The DPI of the bitmap.</param>
-        /// <param name="format">The pixel format (optional).</param>
-        /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        [Obsolete("Use overload taking an AlphaFormat.")]
-        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
-            : base(CreatePlatformImpl(size, dpi, format, null))
-        {
-        }
-
+        // Holds a buffer with pixel format that requires transcoding
+        private BitmapMemory? _pixelFormatMemory = null;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="WriteableBitmap"/> class.
         /// </summary>
@@ -30,17 +21,68 @@ namespace Avalonia.Media.Imaging
         /// <param name="format">The pixel format (optional).</param>
         /// <param name="alphaFormat">The alpha format (optional).</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat) 
-            : base(CreatePlatformImpl(size, dpi, format, alphaFormat))
+        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null) 
+            : this(CreatePlatformImpl(size, dpi, format, alphaFormat))
         {
         }
 
-        private WriteableBitmap(IWriteableBitmapImpl impl) : base(impl)
+        private WriteableBitmap((IBitmapImpl impl, BitmapMemory? mem) bitmapWithMem) : this(bitmapWithMem.impl,
+            bitmapWithMem.mem)
         {
             
         }
+        
+        private WriteableBitmap(IBitmapImpl impl, BitmapMemory? pixelFormatMemory = null) : base(impl)
+        {
+            _pixelFormatMemory = pixelFormatMemory;
+        }
 
-        public ILockedFramebuffer Lock() => ((IWriteableBitmapImpl) PlatformImpl.Item).Lock();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WriteableBitmap"/> class with existing pixel data
+        /// The data is copied to the bitmap
+        /// </summary>
+        /// <param name="format">The pixel format.</param>
+        /// <param name="alphaFormat">The alpha format.</param>
+        /// <param name="data">The pointer to the source bytes.</param>
+        /// <param name="size">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
+        /// <param name="stride">The number of bytes per row.</param>
+        public unsafe WriteableBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
+            : this(size, dpi, format, alphaFormat)
+        {
+            var minStride = (format.BitsPerPixel * size.Width + 7) / 8;
+            if (minStride > stride)
+                throw new ArgumentOutOfRangeException(nameof(stride));
+
+            using (var locked = Lock())
+            {
+                for (var y = 0; y < size.Height; y++)
+                    Unsafe.CopyBlock((locked.Address + locked.RowBytes * y).ToPointer(),
+                        (data + y * stride).ToPointer(), (uint)minStride);
+            }
+        }
+
+        public override PixelFormat? Format => _pixelFormatMemory?.Format ?? base.Format;
+        
+        public ILockedFramebuffer Lock()
+        {
+            if (_pixelFormatMemory == null)
+                return ((IWriteableBitmapImpl)PlatformImpl.Item).Lock();
+            
+            return new LockedFramebuffer(_pixelFormatMemory.Address, _pixelFormatMemory.Size,
+                _pixelFormatMemory.RowBytes,
+                Dpi, _pixelFormatMemory.Format, () =>
+                {
+                    using var inner = ((IWriteableBitmapImpl)PlatformImpl.Item).Lock();
+                    _pixelFormatMemory.CopyToRgba(inner.Address, inner.RowBytes);
+                });
+        }
+
+        public override void CopyPixels(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride)
+        {
+            using (var fb = Lock())
+                CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
+        }
 
         public static WriteableBitmap Decode(Stream stream)
         {
@@ -79,14 +121,25 @@ namespace Avalonia.Media.Imaging
             return new WriteableBitmap(ri.LoadWriteableBitmapToHeight(stream, height, interpolationMode));
         }
 
-        private static IBitmapImpl CreatePlatformImpl(PixelSize size, in Vector dpi, PixelFormat? format, AlphaFormat? alphaFormat)
+        private static (IBitmapImpl, BitmapMemory?) CreatePlatformImpl(PixelSize size, in Vector dpi, PixelFormat? format, AlphaFormat? alphaFormat)
         {
+            if (size.Width <= 0 || size.Height <= 0)
+                throw new ArgumentException("Size should be >= (1,1)", nameof(size));
+            
             var ri = GetFactory();
 
             PixelFormat finalFormat = format ?? ri.DefaultPixelFormat;
             AlphaFormat finalAlphaFormat = alphaFormat ?? ri.DefaultAlphaFormat;
 
-            return ri.CreateWriteableBitmap(size, dpi, finalFormat, finalAlphaFormat);
+            if (ri.IsSupportedBitmapPixelFormat(finalFormat))
+                return (ri.CreateWriteableBitmap(size, dpi, finalFormat, finalAlphaFormat), null);
+
+            if (!PixelFormatReader.SupportsFormat(finalFormat))
+                throw new NotSupportedException($"Pixel format {finalFormat} is not supported");
+
+            var impl = ri.CreateWriteableBitmap(size, dpi, PixelFormat.Rgba8888,
+                finalFormat.HasAlpha ? finalAlphaFormat : AlphaFormat.Opaque);
+            return (impl, new BitmapMemory(finalFormat, size));
         }
 
         private static IPlatformRenderInterface GetFactory()

@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
@@ -22,8 +23,11 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
         using (var doc = new UIDocument(url))
         {
-            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl.Path;
-            Name = doc.LocalizedName ?? Path.GetFileName(_filePath) ?? url.FilePathUrl.LastPathComponent;
+            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl?.Path ?? string.Empty;
+            Name = doc.LocalizedName 
+                ?? System.IO.Path.GetFileName(_filePath) 
+                ?? url.FilePathUrl?.LastPathComponent
+                ?? string.Empty;
         }
     }
 
@@ -32,6 +36,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
     public bool CanBookmark => true;
 
     public string Name { get; }
+    public Uri Path => Url!;
 
     public Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
@@ -49,13 +54,13 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(Url.RemoveLastPathComponent()));
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         // no-op
         return Task.CompletedTask;
     }
 
-    public Task<string?> SaveBookmark()
+    public Task<string?> SaveBookmarkAsync()
     {
         try
         {
@@ -81,12 +86,6 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         }
     }
 
-    public bool TryGetUri([NotNullWhen(true)] out Uri uri)
-    {
-        uri = Url;
-        return uri is not null;
-    }
-
     public void Dispose()
     {
     }
@@ -97,17 +96,13 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
     public IOSStorageFile(NSUrl url) : base(url)
     {
     }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
-    public Task<Stream> OpenRead()
+    
+    public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
     }
 
-    public Task<Stream> OpenWrite()
+    public Task<Stream> OpenWriteAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Write));
     }
@@ -117,5 +112,41 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
 {
     public IOSStorageFolder(NSUrl url) : base(url)
     {
+    }
+
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
+    {
+        // TODO: find out if it can be lazily enumerated.
+        var tcs = new TaskCompletionSource<IReadOnlyList<IStorageItem>>();
+
+        new NSFileCoordinator().CoordinateRead(Url,
+            NSFileCoordinatorReadingOptions.WithoutChanges,
+            out var error,
+            uri =>
+            {
+                var content = NSFileManager.DefaultManager.GetDirectoryContent(uri, null, NSDirectoryEnumerationOptions.None, out var error);
+                if (error is not null)
+                {
+                    tcs.TrySetException(new NSErrorException(error));
+                }
+                else
+                {
+                    var items = content
+                        .Select(u => u.HasDirectoryPath ? (IStorageItem)new IOSStorageFolder(u) : new IOSStorageFile(u))
+                        .ToArray();
+                    tcs.TrySetResult(items);
+                }
+            });
+        
+        if (error is not null)
+        {
+            throw new NSErrorException(error);
+        }
+
+        var items = await tcs.Task;
+        foreach (var item in items)
+        {
+            yield return item;
+        }
     }
 }

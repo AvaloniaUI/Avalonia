@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="BindingDemo.MainWindow"
-        xmlns:vm="clr-namespace:BindingDemo.ViewModels" 
-        xmlns:local="clr-namespace:BindingDemo"
+        xmlns:vm="using:BindingDemo.ViewModels" 
+        xmlns:local="using:BindingDemo"
         Title="AvaloniaUI Bindings Test"
         Width="800"
         Height="600"
@@ -81,7 +81,7 @@
           <TextBlock FontSize="16" Text="Multiple"/>
           <ListBox Items="{Binding Items}" SelectionMode="Multiple" Selection="{Binding Selection}"/>
         </StackPanel>
-        <ContentControl Content="{Binding SelectedItems[0]}">
+        <ContentControl Content="{ReflectionBinding Selection.SelectedItems[0]}">
           <ContentControl.DataTemplates>
             <DataTemplate DataType="vm:TestItem">
               <local:TestItemView></local:TestItemView>

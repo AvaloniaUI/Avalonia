@@ -2,10 +2,11 @@
 using System.Runtime.ExceptionServices;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    public abstract class NativeCallbackBase : CallbackBase, IMicroComExceptionCallback
+    internal abstract class NativeCallbackBase : CallbackBase, IMicroComExceptionCallback
     {
         public void RaiseException(Exception e)
         {

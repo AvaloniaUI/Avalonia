@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dialogs="using:Avalonia.Dialogs"
         MaxWidth="400"
         MaxHeight="475"
         MinWidth="430"
@@ -7,7 +8,8 @@
         Title="About Avalonia"
         Background="Purple"
         FontFamily="/Assets/Roboto-Light.ttf#Roboto"
-        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog">
+        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog"
+        x:DataType="dialogs:AboutAvaloniaDialog">
   <Window.Styles>
     <Style>
       <Style.Resources>
@@ -76,7 +78,11 @@
     </Canvas>
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="18">
       <Border Height="70" Width="70">
-        <DrawingPresenter Drawing="{DynamicResource AvaloniaLogo}" />
+        <Image>
+          <Image.Source>
+            <DrawingImage Drawing="{DynamicResource AvaloniaLogo}"/>
+          </Image.Source>
+        </Image>
       </Border>
       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,-10,0,0">
         <TextBlock Text="{Binding Version, StringFormat=Avalonia {0}}" FontSize="40" Foreground="White" />

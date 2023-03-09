@@ -20,32 +20,18 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
         /// <param name="boxShadows">The box shadow parameters</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public RectangleNode(
             Matrix transform,
-            IBrush? brush,
+            IImmutableBrush? brush,
             IPen? pen,
             RoundedRect rect,
-            BoxShadows boxShadows,
-            IDisposable? aux = null)
-            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform, aux)
+            BoxShadows boxShadows)
+            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform, brush)
         {
-            Transform = transform;
-            Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
             BoxShadows = boxShadows;
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
-
-        /// <summary>
-        /// Gets the fill brush.
-        /// </summary>
-        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
@@ -85,35 +71,22 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override void Render(IDrawingContextImpl context)
-        {
-            context.Transform = Transform;
-
-            context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
-        }
+        public override void Render(IDrawingContextImpl context) => context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
 
         /// <inheritdoc/>
         public override bool HitTest(Point p)
         {
-            // TODO: This doesn't respect CornerRadius yet.
-            if (Transform.HasInverse)
+            if (Brush != null)
             {
-                p *= Transform.Invert();
-
-                if (Brush != null)
-                {
-                    var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    return rect.Contains(p);
-                }
-                else
-                {
-                    var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
-                    return borderRect.Contains(p) && !emptyRect.Contains(p);
-                }
+                var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                return rect.ContainsExclusive(p);
             }
-
-            return false;
+            else
+            {
+                var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
+                return borderRect.ContainsExclusive(p) && !emptyRect.ContainsExclusive(p);
+            }
         }
     }
 }

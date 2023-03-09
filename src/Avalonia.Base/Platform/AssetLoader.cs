@@ -1,18 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !BUILDTASK
 using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
+#endif
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
-    public class AssetLoader : IAssetLoader
+    public class AssetLoader
+#if !BUILDTASK
+        : IAssetLoader
+#endif
     {
+#if !BUILDTASK
         private static IAssemblyDescriptorResolver s_assemblyDescriptorResolver = new AssemblyDescriptorResolver();
 
         private AssemblyDescriptor? _defaultResmAssembly;
@@ -56,7 +63,7 @@ namespace Avalonia.Platform
         /// <returns>True if the asset could be found; otherwise false.</returns>
         public bool Exists(Uri uri, Uri? baseUri = null)
         {
-            return GetAsset(uri, baseUri) != null;
+            return TryGetAsset(uri, baseUri, out _);
         }
 
         /// <summary>
@@ -88,21 +95,27 @@ namespace Avalonia.Platform
         /// </exception>
         public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri? baseUri = null)
         {
-            var asset = GetAsset(uri, baseUri);
-
-            if (asset == null)
+            if (TryGetAsset(uri, baseUri, out var assetDescriptor))
             {
-                throw new FileNotFoundException($"The resource {uri} could not be found.");
+                return (assetDescriptor.GetStream(), assetDescriptor.Assembly);
             }
 
-            return (asset.GetStream(), asset.Assembly);
+            throw new FileNotFoundException($"The resource {uri} could not be found.");
         }
 
         public Assembly? GetAssembly(Uri uri, Uri? baseUri)
         {
             if (!uri.IsAbsoluteUri && baseUri != null)
+            {
                 uri = new Uri(baseUri, uri);
-            return GetAssembly(uri)?.Assembly;
+            }
+
+            if (TryGetAssembly(uri, out var assemblyDescriptor))
+            {
+                return assemblyDescriptor.Assembly;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -115,97 +128,144 @@ namespace Avalonia.Platform
         {
             if (uri.IsAbsoluteResm())
             {
-                var assembly = GetAssembly(uri);
+                if (!TryGetAssembly(uri, out var assembly))
+                {
+                    assembly = _defaultResmAssembly;
+                }
 
                 return assembly?.Resources?
-                           .Where(x => x.Key.IndexOf(uri.GetUnescapeAbsolutePath(), StringComparison.Ordinal) >= 0)
-                           .Select(x =>new Uri($"resm:{x.Key}?assembly={assembly.Name}")) ??
-                       Enumerable.Empty<Uri>();
+                        .Where(x => x.Key.Contains(uri.GetUnescapeAbsolutePath()))
+                        .Select(x => new Uri($"resm:{x.Key}?assembly={assembly.Name}")) ??
+                    Enumerable.Empty<Uri>();
             }
 
             uri = uri.EnsureAbsolute(baseUri);
+
             if (uri.IsAvares())
             {
-                var (asm, path) = GetResAsmAndPath(uri);
-                if (asm == null)
+                if (!TryGetResAsmAndPath(uri, out var assembly, out var path))
                 {
-                    throw new ArgumentException(
-                        "No default assembly, entry assembly or explicit assembly specified; " +
-                        "don't know where to look up for the resource, try specifying assembly explicitly.");
+                    return Enumerable.Empty<Uri>();
                 }
 
-                if (asm.AvaloniaResources == null)
+                if (assembly?.AvaloniaResources == null)
+                {
                     return Enumerable.Empty<Uri>();
+                }
 
-                if (path[path.Length - 1] != '/')
+                if (path.Length > 0 && path[path.Length - 1] != '/')
+                {
                     path += '/';
+                }
 
-                return asm.AvaloniaResources
+                return assembly.AvaloniaResources
                     .Where(r => r.Key.StartsWith(path, StringComparison.Ordinal))
-                    .Select(x => new Uri($"avares://{asm.Name}{x.Key}"));
+                    .Select(x => new Uri($"avares://{assembly.Name}{x.Key}"));
             }
 
             return Enumerable.Empty<Uri>();
         }
-        
-        private IAssetDescriptor? GetAsset(Uri uri, Uri? baseUri)
-        {           
+
+        private bool TryGetAsset(Uri uri, Uri? baseUri, [NotNullWhen(true)] out IAssetDescriptor? assetDescriptor)
+        {
+            assetDescriptor = null;
+
             if (uri.IsAbsoluteResm())
             {
-                var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultResmAssembly;
-
-                if (asm == null)
+                if (!TryGetAssembly(uri, out var assembly) && !TryGetAssembly(baseUri, out assembly))
                 {
-                    throw new ArgumentException(
-                        "No default assembly, entry assembly or explicit assembly specified; " +
-                        "don't know where to look up for the resource, try specifying assembly explicitly.");
+                    assembly = _defaultResmAssembly;
                 }
 
-                var resourceKey = uri.AbsolutePath;
-                IAssetDescriptor? rv = null;
-                asm.Resources?.TryGetValue(resourceKey, out rv);
-                return rv;
+                if (assembly?.Resources != null)
+                {
+                    var resourceKey = uri.AbsolutePath;
+
+                    if (assembly.Resources.TryGetValue(resourceKey, out assetDescriptor))
+                    {
+                        return true;
+                    }
+                }
             }
 
             uri = uri.EnsureAbsolute(baseUri);
 
             if (uri.IsAvares())
             {
-                var (asm, path) = GetResAsmAndPath(uri);
-                if (asm.AvaloniaResources == null)
-                    return null;
-                asm.AvaloniaResources.TryGetValue(path, out var desc);
-                return desc;
+                if (TryGetResAsmAndPath(uri, out var assembly, out var path))
+                {
+                    if (assembly.AvaloniaResources == null)
+                    {
+                        return false;
+                    }
+
+                    if (assembly.AvaloniaResources.TryGetValue(path, out assetDescriptor))
+                    {
+                        return true;
+                    }
+                }
             }
 
-            throw new ArgumentException($"Unsupported url type: " + uri.Scheme, nameof(uri));
+            return false;
         }
 
-        private (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
+        private static bool TryGetResAsmAndPath(Uri uri, [NotNullWhen(true)] out IAssemblyDescriptor? assembly, out string path)
         {
-            var asm = s_assemblyDescriptorResolver.GetAssembly(uri.Authority);
-            return (asm, uri.GetUnescapeAbsolutePath());
+            path = uri.GetUnescapeAbsolutePath();
+
+            if (TryLoadAssembly(uri.Authority, out assembly))
+            {
+                return true;
+            }
+
+            return false;
         }
-        
-        private IAssemblyDescriptor? GetAssembly(Uri? uri)
+
+        private static bool TryGetAssembly(Uri? uri, [NotNullWhen(true)] out IAssemblyDescriptor? assembly)
         {
+            assembly = null;
+
             if (uri != null)
             {
                 if (!uri.IsAbsoluteUri)
-                    return null;
-                if (uri.IsAvares())
-                    return GetResAsmAndPath(uri).asm;
+                {
+                    return false;
+                }
+
+                if (uri.IsAvares() && TryGetResAsmAndPath(uri, out assembly, out _))
+                {
+                    return true;
+                }
 
                 if (uri.IsResm())
                 {
                     var assemblyName = uri.GetAssemblyNameFromQuery();
-                    if (assemblyName.Length > 0)
-                        return s_assemblyDescriptorResolver.GetAssembly(assemblyName);
+
+                    if (assemblyName.Length > 0 && TryLoadAssembly(assemblyName, out assembly))
+                    {
+                        return true;
+                    }
                 }
             }
 
-            return null;
+            return false;
         }
+
+        private static bool TryLoadAssembly(string assemblyName, [NotNullWhen(true)] out IAssemblyDescriptor? assembly)
+        {
+            assembly = null;
+
+            try
+            {
+                assembly = s_assemblyDescriptorResolver.GetAssembly(assemblyName);
+
+                return true;
+            }
+            catch (Exception) { }
+
+            return false;
+        }
+#endif
 
         public static void RegisterResUriParsers()
         {

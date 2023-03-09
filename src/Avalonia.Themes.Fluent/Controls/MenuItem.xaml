@@ -1,9 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
-                    xmlns:sys="clr-namespace:System;assembly=netstandard"
-                    x:DataType="MenuItem"
-                    x:CompileBindings="True">
+                    xmlns:conv="using:Avalonia.Controls.Converters">
   <Design.PreviewWith>
     <Border Padding="20" Width="320">
       <StackPanel Spacing="20" HorizontalAlignment="Left">
@@ -95,6 +92,7 @@
 
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding ItemTemplate}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 RecognizesAccessKey="True"
@@ -134,9 +132,7 @@
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
                 <ItemsPresenter Name="PART_ItemsPresenter"
-                                Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
                                 Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                                 Grid.IsSharedSizeScope="True" />
               </ScrollViewer>

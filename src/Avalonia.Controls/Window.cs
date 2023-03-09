@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
@@ -11,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -78,16 +77,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<SizeToContent> SizeToContentProperty =
             AvaloniaProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
-
-        /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
-        /// </summary>
-        [Obsolete("Use SystemDecorationsProperty instead")]
-        public static readonly DirectProperty<Window, bool> HasSystemDecorationsProperty =
-            AvaloniaProperty.RegisterDirect<Window, bool>(
-                nameof(HasSystemDecorations),
-                o => o.HasSystemDecorations,
-                (o, v) => o.HasSystemDecorations = v);
 
         /// <summary>
         /// Defines the <see cref="ExtendClientAreaToDecorationsHint"/> property.
@@ -159,11 +148,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="WindowStartupLocation"/> property.
         /// </summary>
-        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
-            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
-                nameof(WindowStartupLocation),
-                o => o.WindowStartupLocation,
-                (o, v) => o.WindowStartupLocation = v);
+        public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.Register<Window, WindowStartupLocation>(nameof(WindowStartupLocation));
 
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
@@ -179,13 +165,10 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
-
-
-
-        private readonly NameScope _nameScope = new NameScope();
         private object? _dialogResult;
         private readonly Size _maxPlatformClientSize;
-        private WindowStartupLocation _windowStartupLocation;
+        private bool _shown;
+        private bool _showingAsDialog;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -243,7 +226,7 @@ namespace Avalonia.Controls
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
-            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;            
+            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
@@ -290,25 +273,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
-        /// </summary>
-        [Obsolete("Use SystemDecorations instead")]
-        public bool HasSystemDecorations
-        {
-            get => SystemDecorations == SystemDecorations.Full;
-            set
-            {
-                var oldValue = HasSystemDecorations;
-
-                if (oldValue != value)
-                {
-                    SystemDecorations = value ? SystemDecorations.Full : SystemDecorations.None;
-                    RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets or sets if the ClientArea is Extended into the Window Decorations (chrome or border).
         /// </summary>
         public bool ExtendClientAreaToDecorationsHint
@@ -336,7 +300,7 @@ namespace Avalonia.Controls
         {
             get => GetValue(ExtendClientAreaTitleBarHeightHintProperty);
             set => SetValue(ExtendClientAreaTitleBarHeightHintProperty, value);
-        }        
+        }
 
         /// <summary>
         /// Gets if the ClientArea is Extended into the Window Decorations.
@@ -345,7 +309,7 @@ namespace Avalonia.Controls
         {
             get => _isExtendedIntoWindowDecorations;
             private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
-        }        
+        }
 
         /// <summary>
         /// Gets the WindowDecorationMargin.
@@ -355,7 +319,7 @@ namespace Avalonia.Controls
         {
             get => _windowDecorationMargin;
             private set => SetAndRaise(WindowDecorationMarginProperty, ref _windowDecorationMargin, value);
-        }        
+        }
 
         /// <summary>
         /// Gets the window margin that is hidden off the screen area.
@@ -407,8 +371,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Enables or disables resizing of the window.
-        /// Note that if <see cref="HasSystemDecorations"/> is set to False then this property
-        /// has no effect and should be treated as a recommendation for the user setting HasSystemDecorations.
         /// </summary>
         public bool CanResize
         {
@@ -430,8 +392,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowStartupLocation WindowStartupLocation
         {
-            get { return _windowStartupLocation; }
-            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLocation, value); }
+            get => GetValue(WindowStartupLocationProperty);
+            set => SetValue(WindowStartupLocationProperty, value);
         }
 
         /// <summary>
@@ -463,14 +425,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs>? Closing;
+        public event EventHandler<WindowClosingEventArgs>? Closing;
 
         /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
-            Close(false);
+            CloseCore(WindowCloseReason.WindowClosing, true);
         }
 
         /// <summary>
@@ -483,19 +445,19 @@ namespace Avalonia.Controls
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
         /// </remarks>
-        public void Close(object dialogResult)
+        public void Close(object? dialogResult)
         {
             _dialogResult = dialogResult;
-            Close(false);
+            CloseCore(WindowCloseReason.WindowClosing, true);
         }
 
-        internal void Close(bool ignoreCancel)
+        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic)
         {
             bool close = true;
 
             try
             {
-                if (!ignoreCancel && ShouldCancelClose())
+                if (ShouldCancelClose(new WindowClosingEventArgs(reason, isProgrammatic)))
                 {
                     close = false;
                 }
@@ -513,14 +475,15 @@ namespace Avalonia.Controls
         /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
         /// <returns>true if closing is cancelled. Otherwise false.</returns>
         /// </summary>
-        protected virtual bool HandleClosing()
+        /// <param name="reason">The reason the window is closing.</param>
+        private protected virtual bool HandleClosing(WindowCloseReason reason)
         {
-            if (!ShouldCancelClose())
+            if (!ShouldCancelClose(new WindowClosingEventArgs(reason, false)))
             {
                 CloseInternal();
                 return false;
             }
-            
+
             return true;
         }
 
@@ -539,22 +502,26 @@ namespace Avalonia.Controls
             Owner = null;
 
             PlatformImpl?.Dispose();
+
+            _showingAsDialog = false;
         }
 
-        private bool ShouldCancelClose(CancelEventArgs? args = null)
+        private bool ShouldCancelClose(WindowClosingEventArgs args)
         {
-            if (args is null)
-            {
-                args = new CancelEventArgs();
-            }
-            
             bool canClose = true;
 
-            foreach (var (child, _) in _children.ToArray())
+            if (_children.Count > 0)
             {
-                if (child.ShouldCancelClose(args))
+                var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
+                    new WindowClosingEventArgs(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
+                    args;
+
+                foreach (var (child, _) in _children.ToArray())
                 {
-                    canClose = false;
+                    if (child.ShouldCancelClose(childArgs))
+                    {
+                        canClose = false;
+                    }
                 }
             }
 
@@ -594,29 +561,33 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Hide()
         {
-            if (!IsVisible)
+            using (FreezeVisibilityChangeHandling())
             {
-                return;
-            }
-
-            Renderer?.Stop();
-
-            if (Owner is Window owner)
-            {
-                owner.RemoveChild(this);
-            }
-
-            if (_children.Count > 0)
-            {
-                foreach (var child in _children.ToArray())
+                if (!_shown)
                 {
-                    child.child.Hide();
+                    return;
                 }
-            }
 
-            Owner = null;
-            PlatformImpl?.Hide();
-            IsVisible = false;
+                Renderer.Stop();
+
+                if (Owner is Window owner)
+                {
+                    owner.RemoveChild(this);
+                }
+
+                if (_children.Count > 0)
+                {
+                    foreach (var child in _children.ToArray())
+                    {
+                        child.child.Hide();
+                    }
+                }
+
+                Owner = null;
+                PlatformImpl?.Hide();
+                IsVisible = false;
+                _shown = false;
+            }
         }
 
         /// <summary>
@@ -630,80 +601,124 @@ namespace Avalonia.Controls
             ShowCore(null);
         }
 
+        protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (!IgnoreVisibilityChanges)
+            {
+                var isVisible = e.GetNewValue<bool>();
+
+                if (_shown != isVisible)
+                {
+                    if (!_shown)
+                    {
+                        Show();
+                    }
+                    else
+                    {
+                        if (_showingAsDialog)
+                        {
+                            Close(false);
+                        }
+                        else
+                        {
+                            Hide();
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
-        /// Shows the window as a child of <paramref name="parent"/>.
+        /// Shows the window as a child of <paramref name="owner"/>.
         /// </summary>
-        /// <param name="parent">Window that will be a parent of the shown window.</param>
+        /// <param name="owner">Window that will be the owner of the shown window.</param>
         /// <exception cref="InvalidOperationException">
         /// The window has already been closed.
         /// </exception>
-        public void Show(Window parent)
+        public void Show(Window owner)
         {
-            if (parent is null)
+            if (owner is null)
             {
-                throw new ArgumentNullException(nameof(parent), "Showing a child window requires valid parent.");
+                throw new ArgumentNullException(nameof(owner), "Showing a child window requires valid parent.");
             }
 
-            ShowCore(parent);
+            ShowCore(owner);
         }
 
-        private void ShowCore(Window? parent)
+        private void EnsureStateBeforeShow()
         {
             if (PlatformImpl == null)
             {
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
+        }
 
-            if (parent != null)
+        private void EnsureParentStateBeforeShow(Window owner)
+        {
+            if (owner.PlatformImpl == null)
             {
-                if (parent.PlatformImpl == null)
+                throw new InvalidOperationException("Cannot show a window with a closed owner.");
+            }
+
+            if (owner == this)
+            {
+                throw new InvalidOperationException("A Window cannot be its own owner.");
+            }
+
+            if (!owner.IsVisible)
+            {
+                throw new InvalidOperationException("Cannot show window with non-visible owner.");
+            }
+        }
+
+        private void ShowCore(Window? owner)
+        {
+            using (FreezeVisibilityChangeHandling())
+            {
+                EnsureStateBeforeShow();
+
+                if (owner != null)
                 {
-                    throw new InvalidOperationException("Cannot show a window with a closed parent.");
+                    EnsureParentStateBeforeShow(owner);
                 }
-                else if (parent == this)
+
+                if (_shown)
                 {
-                    throw new InvalidOperationException("A Window cannot be its own parent.");
+                    return;
                 }
-                else if (!parent.IsVisible)
+
+                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+                EnsureInitialized();
+                ApplyStyling();
+                _shown = true;
+                IsVisible = true;
+
+                var initialSize = new Size(
+                    double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
+                    double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
+
+                if (initialSize != ClientSize)
                 {
-                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
                 }
+
+                LayoutManager.ExecuteInitialLayoutPass();
+
+                if (PlatformImpl != null && owner?.PlatformImpl is not null)
+                {
+                    PlatformImpl.SetParent(owner.PlatformImpl);
+                }
+
+                Owner = owner;
+                owner?.AddChild(this, false);
+
+                SetWindowStartupLocation(owner?.PlatformImpl);
+
+                PlatformImpl?.Show(ShowActivated, false);
+                Renderer.Start();
+                OnOpened(EventArgs.Empty);
             }
-
-            if (IsVisible)
-            {
-                return;
-            }
-
-            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-            EnsureInitialized();
-            IsVisible = true;
-
-            var initialSize = new Size(
-                double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
-                double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
-
-            if (initialSize != ClientSize)
-            {
-                PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
-            }
-
-            LayoutManager.ExecuteInitialLayoutPass();
-
-            if (PlatformImpl != null && parent?.PlatformImpl is not null)
-            {
-                PlatformImpl.SetParent(parent.PlatformImpl);
-            }
-
-            Owner = parent;
-            parent?.AddChild(this, false);
-
-            SetWindowStartupLocation(Owner?.PlatformImpl);
-
-            PlatformImpl?.Show(ShowActivated, false);
-            Renderer?.Start();
-            OnOpened(EventArgs.Empty);
         }
 
         /// <summary>
@@ -733,74 +748,73 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(Window owner)
         {
-            if (owner == null)
+            using (FreezeVisibilityChangeHandling())
             {
-                throw new ArgumentNullException(nameof(owner));
-            }
-            else if (owner.PlatformImpl == null)
-            {
-                throw new InvalidOperationException("Cannot show a window with a closed owner.");
-            }
-            else if (owner == this)
-            {
-                throw new InvalidOperationException("A Window cannot be its own owner.");
-            }
-            else if (IsVisible)
-            {
-                throw new InvalidOperationException("The window is already being shown.");
-            }
-            else if (!owner.IsVisible)
-            {
-                throw new InvalidOperationException("Cannot show window with non-visible parent.");
-            }
+                EnsureStateBeforeShow();
 
-            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-            EnsureInitialized();
-            IsVisible = true;
-
-            var initialSize = new Size(
-                double.IsNaN(Width) ? ClientSize.Width : Width,
-                double.IsNaN(Height) ? ClientSize.Height : Height);
-
-            if (initialSize != ClientSize)
-            {
-                PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
-            }
-
-            LayoutManager.ExecuteInitialLayoutPass();
-
-            var result = new TaskCompletionSource<TResult>();
-
-            PlatformImpl?.SetParent(owner.PlatformImpl);
-            Owner = owner;
-            owner.AddChild(this, true);
-
-            SetWindowStartupLocation(owner.PlatformImpl);
-
-            PlatformImpl?.Show(ShowActivated, true);
-
-            Renderer?.Start();
-
-            Observable.FromEventPattern<EventHandler, EventArgs>(
-                    x => Closed += x,
-                    x => Closed -= x)
-                .Take(1)
-                .Subscribe(_ =>
+                if (owner == null)
                 {
-                    owner.Activate();
-                    result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
-                });
+                    throw new ArgumentNullException(nameof(owner));
+                }
 
-            OnOpened(EventArgs.Empty);
-            return result.Task;
+                EnsureParentStateBeforeShow(owner);
+
+                if (_shown)
+                {
+                    throw new InvalidOperationException("The window is already being shown.");
+                }
+
+                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+                EnsureInitialized();
+                ApplyStyling();
+                _shown = true;
+                _showingAsDialog = true;
+                IsVisible = true;
+
+                var initialSize = new Size(
+                    double.IsNaN(Width) ? ClientSize.Width : Width,
+                    double.IsNaN(Height) ? ClientSize.Height : Height);
+
+                if (initialSize != ClientSize)
+                {
+                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                }
+
+                LayoutManager.ExecuteInitialLayoutPass();
+
+                var result = new TaskCompletionSource<TResult>();
+
+                PlatformImpl?.SetParent(owner.PlatformImpl!);
+                Owner = owner;
+                owner.AddChild(this, true);
+
+                SetWindowStartupLocation(owner.PlatformImpl);
+
+                PlatformImpl?.Show(ShowActivated, true);
+
+                Renderer.Start();
+
+                Observable.FromEventPattern(
+                        x => Closed += x,
+                        x => Closed -= x)
+                    .Take(1)
+                    .Subscribe(_ =>
+                    {
+                        owner.Activate();
+                        result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
+                    });
+
+                OnOpened(EventArgs.Empty);
+                return result.Task;
+            }
         }
 
         private void UpdateEnabled()
         {
             bool isEnabled = true;
 
-            foreach (var (_, isDialog)  in _children)
+            foreach (var (_, isDialog) in _children)
             {
                 if (isDialog)
                 {
@@ -837,7 +851,7 @@ namespace Avalonia.Controls
         {
             Window? firstDialogChild = null;
 
-            foreach (var (child, isDialog)  in _children)
+            foreach (var (child, isDialog) in _children)
             {
                 if (isDialog)
                 {
@@ -861,10 +875,11 @@ namespace Avalonia.Controls
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                Owner is Window ownerWindow &&
-                ownerWindow.WindowState == WindowState.Minimized)
+                (owner is null ||
+                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+                )
             {
-                // If startup location is CenterOwner, but owner is minimized then fall back
+                // If startup location is CenterOwner, but owner is null or minimized then fall back
                 // to CenterScreen. This behavior is consistent with WPF.
                 startupLocation = WindowStartupLocation.CenterScreen;
             }
@@ -882,31 +897,24 @@ namespace Avalonia.Controls
 
                 if (owner is not null)
                 {
-                    screen = Screens.ScreenFromWindow(owner);
-
-                    screen ??= Screens.ScreenFromPoint(owner.Position);
+                    screen = Screens.ScreenFromWindow(owner)
+                             ?? Screens.ScreenFromPoint(owner.Position);
                 }
 
-                if (screen is null)
-                {
-                    screen = Screens.ScreenFromPoint(Position);
-                }
+                screen ??= Screens.ScreenFromPoint(Position);
 
-                if (screen != null)
+                if (screen is not null)
                 {
                     Position = screen.WorkingArea.CenterRect(rect).Position;
                 }
             }
             else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
-                if (owner != null)
-                {
-                    var ownerSize = owner.FrameSize ?? owner.ClientSize;
-                    var ownerRect = new PixelRect(
-                        owner.Position,
-                        PixelSize.FromSize(ownerSize, scaling));
-                    Position = ownerRect.CenterRect(rect).Position;
-                }
+                var ownerSize = owner!.FrameSize ?? owner.ClientSize;
+                var ownerRect = new PixelRect(
+                    owner.Position,
+                    PixelSize.FromSize(ownerSize, scaling));
+                Position = ownerRect.CenterRect(rect).Position;
             }
         }
 
@@ -985,9 +993,6 @@ namespace Avalonia.Controls
             Owner = null;
         }
 
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected sealed override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
-
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
@@ -1026,26 +1031,16 @@ namespace Avalonia.Controls
         /// overridden method must call <see cref="OnClosing"/> on the base class if the
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
-        protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
+        protected virtual void OnClosing(WindowClosingEventArgs e) => Closing?.Invoke(this, e);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
-                var (typedOldValue, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
+                var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
-
-                var o = typedOldValue == SystemDecorations.Full;
-                var n = typedNewValue == SystemDecorations.Full;
-
-                if (o != n)
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    RaisePropertyChanged(HasSystemDecorationsProperty, o, n);
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
             }
         }
 

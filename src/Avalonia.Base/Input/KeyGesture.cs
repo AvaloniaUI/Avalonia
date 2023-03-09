@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Avalonia.Utilities;
 
@@ -96,7 +97,7 @@ namespace Avalonia.Input
 
         public override string ToString()
         {
-            var s = new StringBuilder();
+            var s = StringBuilderCache.Acquire();
 
             static void Plus(StringBuilder s)
             {
@@ -132,10 +133,10 @@ namespace Avalonia.Input
             Plus(s);
             s.Append(Key);
 
-            return s.ToString();
+            return StringBuilderCache.GetStringAndRelease(s);
         }
 
-        public bool Matches(KeyEventArgs keyEvent) =>
+        public bool Matches(KeyEventArgs? keyEvent) =>
             keyEvent != null &&
             keyEvent.KeyModifiers == KeyModifiers &&
             ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
@@ -143,7 +144,7 @@ namespace Avalonia.Input
         // TODO: Move that to external key parser
         private static Key ParseKey(string key)
         {
-            if (s_keySynonyms.TryGetValue(key.ToLower(), out Key rv))
+            if (s_keySynonyms.TryGetValue(key.ToLower(CultureInfo.InvariantCulture), out Key rv))
                 return rv;
 
             return EnumHelper.Parse<Key>(key, true);
@@ -166,7 +167,7 @@ namespace Avalonia.Input
             return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
         }
 
-        private Key ResolveNumPadOperationKey(Key key)
+        private static Key ResolveNumPadOperationKey(Key key)
         {
             switch (key)
             {

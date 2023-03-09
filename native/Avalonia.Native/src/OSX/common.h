@@ -26,13 +26,15 @@ extern IAvnTrayIcon* CreateTrayIcon();
 extern IAvnMenuItem* CreateAppMenuItem();
 extern IAvnMenuItem* CreateAppMenuItemSeparator();
 extern IAvnApplicationCommands* CreateApplicationCommands();
+extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
+extern IAvnPlatformSettings* CreatePlatformSettings();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 
-extern void InitializeAvnApp(IAvnApplicationEvents* events);
+extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate);
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
 extern NSRect ToNSRect (AvnRect r);

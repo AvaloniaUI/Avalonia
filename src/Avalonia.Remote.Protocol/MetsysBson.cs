@@ -32,6 +32,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -71,7 +72,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
-
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal class Serializer
     {
         private static readonly IDictionary<Type, Types> _typeMap = new Dictionary<Type, Types>
@@ -562,7 +563,7 @@ namespace Metsys.Bson
         {
             if (_string == null && Value != null)
             {
-                _string = BitConverter.ToString(Value).Replace("-", string.Empty).ToLower();
+                _string = BitConverter.ToString(Value).Replace("-", string.Empty).ToLowerInvariant();
             }
 
             return _string;
@@ -687,6 +688,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal class TypeHelper
     {
         private static readonly IDictionary<Type, TypeHelper> _cachedTypeLookup = new Dictionary<Type, TypeHelper>();
@@ -787,6 +789,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal class ListWrapper : BaseWrapper
     {
         private IList _list;
@@ -821,6 +824,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal static class ListHelper
     {
         public static Type GetListItemType(Type enumerableType)
@@ -865,6 +869,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal class CollectionWrapper<T> : BaseWrapper
     {
         private ICollection<T> _list;
@@ -892,6 +897,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal abstract class BaseWrapper
     {
         public static BaseWrapper Create(Type type, Type itemType, object existingContainer)
@@ -948,7 +954,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
-
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal class ArrayWrapper<T> : BaseWrapper
     {
         private readonly List<T> _list = new List<T>();
@@ -1000,6 +1006,7 @@ namespace Metsys.Bson
 
 namespace Metsys.Bson
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     internal class Deserializer
     {
         internal class Options
@@ -1363,14 +1370,14 @@ namespace Metsys.Bson
             var pattern = ReadName();
             var optionsString = ReadName();
 
-            var options = RegexOptions.None;
-            if (optionsString.Contains("e")) options = options | RegexOptions.ECMAScript;
-            if (optionsString.Contains("i")) options = options | RegexOptions.IgnoreCase;
-            if (optionsString.Contains("l")) options = options | RegexOptions.CultureInvariant;
-            if (optionsString.Contains("m")) options = options | RegexOptions.Multiline;
-            if (optionsString.Contains("s")) options = options | RegexOptions.Singleline;
-            if (optionsString.Contains("w")) options = options | RegexOptions.IgnorePatternWhitespace;
-            if (optionsString.Contains("x")) options = options | RegexOptions.ExplicitCapture;
+            var options = RegexOptions.Compiled;
+            if (optionsString.Contains('e')) options = options | RegexOptions.ECMAScript;
+            if (optionsString.Contains('i')) options = options | RegexOptions.IgnoreCase;
+            if (optionsString.Contains('l')) options = options | RegexOptions.CultureInvariant;
+            if (optionsString.Contains('m')) options = options | RegexOptions.Multiline;
+            if (optionsString.Contains('s')) options = options | RegexOptions.Singleline;
+            if (optionsString.Contains('w')) options = options | RegexOptions.IgnorePatternWhitespace;
+            if (optionsString.Contains('x')) options = options | RegexOptions.ExplicitCapture;
 
             return new Regex(pattern, options);
         }

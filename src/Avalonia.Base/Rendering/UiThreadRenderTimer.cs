@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering
@@ -8,13 +8,20 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Render timer that ticks on UI thread. Useful for debugging or bootstrapping on new platforms 
     /// </summary>
-    
     public class UiThreadRenderTimer : DefaultRenderTimer
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UiThreadRenderTimer"/> class.
+        /// </summary>
+        /// <param name="framesPerSecond">The number of frames per second at which the loop should run.</param>
         public UiThreadRenderTimer(int framesPerSecond) : base(framesPerSecond)
         {
         }
 
+        /// <inheritdoc />
+        public override bool RunsInBackground => false;
+
+        /// <inheritdoc />
         protected override IDisposable StartCore(Action<TimeSpan> tick)
         {
             bool cancelled = false;

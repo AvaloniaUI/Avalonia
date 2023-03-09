@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
-namespace Avalonia.Rendering.Composition.Animations;
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
+namespace Avalonia.Rendering.Composition.Animations;
 
 /// <summary>
 /// The base class for both key-frame and expression animation instances
@@ -79,4 +80,6 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
         _invalidated = true;
         TargetObject.NotifyAnimatedValueChanged(Property);
     }
+
+    public void OnTick() => Invalidate();
 }

@@ -376,28 +376,28 @@ namespace Avalonia.Markup.Parsers
 
             if (r.Peek == 'o')
             {
-                var constArg = r.TakeUntil(')').ToString().Trim();
-                if (constArg.Equals("odd", StringComparison.Ordinal))
+                var constArg = r.TakeUntil(')').Trim();
+                if (constArg.SequenceEqual("odd".AsSpan()))
                 {
                     step = 2;
                     offset = 1;
                 }
                 else
                 {
-                    throw new ExpressionParseException(r.Position, $"Expected nth-child(odd). Actual '{constArg}'.");
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(odd). Actual '{constArg.ToString()}'.");
                 }
             }
             else if (r.Peek == 'e')
             {
-                var constArg = r.TakeUntil(')').ToString().Trim();
-                if (constArg.Equals("even", StringComparison.Ordinal))
+                var constArg = r.TakeUntil(')').Trim();
+                if (constArg.SequenceEqual("even".AsSpan()))
                 {
                     step = 2;
                     offset = 0;
                 }
                 else
                 {
-                    throw new ExpressionParseException(r.Position, $"Expected nth-child(even). Actual '{constArg}'.");
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(even). Actual '{constArg.ToString()}'.");
                 }
             }
             else
@@ -405,7 +405,7 @@ namespace Avalonia.Markup.Parsers
                 r.SkipWhitespace();
 
                 var stepOrOffset = 0;
-                var stepOrOffsetStr = r.TakeWhile(c => char.IsDigit(c) || c == '-' || c == '+').ToString();
+                var stepOrOffsetStr = r.TakeWhile(c => char.IsDigit(c) || c == '-' || c == '+');
                 if (stepOrOffsetStr.Length == 0
                     || (stepOrOffsetStr.Length == 1
                     && stepOrOffsetStr[0] == '+'))
@@ -417,7 +417,7 @@ namespace Avalonia.Markup.Parsers
                 {
                     stepOrOffset = -1;
                 }
-                else if (!int.TryParse(stepOrOffsetStr.ToString(), out stepOrOffset))
+                else if (!stepOrOffsetStr.TryParseInt(out stepOrOffset))
                 {
                     throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step or offset value. Integer was expected.");
                 }
@@ -462,7 +462,7 @@ namespace Avalonia.Markup.Parsers
                         r.SkipWhitespace();
 
                         if (sign != 0
-                            && !int.TryParse(r.TakeUntil(')').ToString(), out offset))
+                            && !r.TakeUntil(')').TryParseInt(out offset))
                         {
                             throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
                         }
@@ -552,7 +552,8 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object? obj)
             {
-                return obj is ClassSyntax && ((ClassSyntax)obj).Class == Class;
+                return obj is ClassSyntax syntax &&
+                       syntax.Class == Class;
             }
         }
 
@@ -562,7 +563,8 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object? obj)
             {
-                return obj is NameSyntax && ((NameSyntax)obj).Name == Name;
+                return obj is NameSyntax syntax &&
+                       syntax.Name == Name;
             }
         }
 
@@ -574,9 +576,9 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object? obj)
             {
-                return obj is PropertySyntax && 
-                    ((PropertySyntax)obj).Property == Property && 
-                    ((PropertySyntax)obj).Value == Value;
+                return obj is PropertySyntax syntax &&
+                       syntax.Property == Property &&
+                       syntax.Value == Value;
             }
         }
 

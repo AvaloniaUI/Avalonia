@@ -18,9 +18,14 @@ namespace Avalonia.Media.TextFormatting
         public abstract TextRun Symbol { get; }
 
         /// <summary>
+        /// Gets the flow direction that is used for collapsing.
+        /// </summary>
+        public abstract FlowDirection FlowDirection { get; }
+
+        /// <summary>
         /// Collapses given text line.
         /// </summary>
         /// <param name="textLine">Text line to collapse.</param>
-        public abstract List<DrawableTextRun>? Collapse(TextLine textLine);
+        public abstract TextRun[]? Collapse(TextLine textLine);
     }
 }

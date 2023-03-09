@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Text;
 using Avalonia.Animation.Animators;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -21,7 +21,7 @@ namespace Avalonia.Media
         {
             _first = shadow;
             _list = null;
-            Count = _first.IsEmpty ? 0 : 1;
+            Count = _first.IsDefault ? 0 : 1;
         }
 
         public BoxShadows(BoxShadow first, BoxShadow[] rest)
@@ -45,7 +45,7 @@ namespace Avalonia.Media
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Acquire();
 
             if (Count == 0)
             {
@@ -57,12 +57,14 @@ namespace Avalonia.Media
                 sb.AppendFormat("{0} ", boxShadow.ToString());
             }
 
-            return sb.ToString();
+            return StringBuilderCache.GetStringAndRelease(sb);
 
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
         public struct BoxShadowsEnumerator
+#pragma warning restore CA1815 // Override equals and operator equals on value types
         {
             private int _index;
             private BoxShadows _shadows;
@@ -118,7 +120,7 @@ namespace Avalonia.Media
             get
             {
                 foreach(var boxShadow in this)
-                    if (!boxShadow.IsEmpty && boxShadow.IsInset)
+                    if (!boxShadow.IsDefault && boxShadow.IsInset)
                         return true;
                 return false;
             }
@@ -149,5 +151,11 @@ namespace Avalonia.Media
                 return hashCode;
             }
         }
+
+        public static bool operator ==(BoxShadows left, BoxShadows right) => 
+            left.Equals(right);
+
+        public static bool operator !=(BoxShadows left, BoxShadows right) =>
+            !(left == right);
     }
 }

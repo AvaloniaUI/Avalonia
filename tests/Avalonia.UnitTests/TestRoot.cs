@@ -1,9 +1,7 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -18,19 +16,19 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
-            Renderer = Mock.Of<IRenderer>();
+            Renderer = RendererMocks.CreateRenderer().Object;
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         }
 
-        public TestRoot(IControl child)
+        public TestRoot(Control child)
             : this(false, child)
         {
             Child = child;
         }
 
-        public TestRoot(bool useGlobalStyles, IControl child)
+        public TestRoot(bool useGlobalStyles, Control child)
             : this()
         {
             if (useGlobalStyles)
@@ -72,12 +70,12 @@ namespace Avalonia.UnitTests
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
                 var layer = new Mock<IDrawingContextLayerImpl>();
-                layer.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(layerDc.Object);
+                layer.Setup(x => x.CreateDrawingContext()).Returns(layerDc.Object);
                 return layer.Object;
             });
 
             var result = new Mock<IRenderTarget>();
-            result.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(dc.Object);
+            result.Setup(x => x.CreateDrawingContext()).Returns(dc.Object);
             return result.Object;
         }
 
@@ -101,7 +99,7 @@ namespace Avalonia.UnitTests
                         scope.Register(element.Name, element);
                 }
 
-                if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))
+                if(element is Visual visual && (force || NameScope.GetNameScope(element) == null))
                     foreach(var child in visual.GetVisualChildren())
                         if (child is StyledElement styledChild)
                             Visit(styledChild);

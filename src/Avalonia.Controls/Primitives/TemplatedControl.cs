@@ -5,14 +5,16 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, ITemplatedControl
+    public class TemplatedControl : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -273,7 +275,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     foreach (var child in this.GetTemplateChildren())
                     {
-                        child.SetValue(TemplatedParentProperty, null);
+                        child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
                     }
 
@@ -288,18 +290,9 @@ namespace Avalonia.Controls.Primitives
                     ApplyTemplatedParent(child, this);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
-                    
-                    // Existing code kinda expect to see a NameScope even if it's empty
-                    if (nameScope == null)
-                    {
-                        nameScope = new NameScope();
-                    }
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
-#pragma warning disable CS0618 // Type or member is obsolete
-                    OnTemplateApplied(e);
-#pragma warning restore CS0618 // Type or member is obsolete
                     RaiseEvent(e);
                 }
 
@@ -308,7 +301,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override IControl GetTemplateFocusTarget()
+        protected override Control GetTemplateFocusTarget()
         {
             foreach (Control child in this.GetTemplateChildren())
             {
@@ -321,6 +314,7 @@ namespace Avalonia.Controls.Primitives
             return this;
         }
 
+        /// <inheritdoc />
         protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;
@@ -367,26 +361,6 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == ThemeProperty)
-            {
-                foreach (var child in this.GetTemplateChildren())
-                    child.InvalidateStyles();
-            }
-        }
-
-        /// <summary>
-        /// Called when the control's template is applied.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        [Obsolete("Use OnApplyTemplate")]
-        protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-        }
-
         /// <summary>
         /// Called when the <see cref="Template"/> property changes.
         /// </summary>
@@ -401,18 +375,33 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="templatedParent">The templated parent to apply.</param>
-        internal static void ApplyTemplatedParent(IStyledElement control, ITemplatedControl? templatedParent)
+        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
-            control.SetValue(TemplatedParentProperty, templatedParent);
+            control.TemplatedParent = templatedParent;
 
             var children = control.LogicalChildren;
             var count = children.Count;
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IStyledElement child && child.TemplatedParent is null)
+                if (children[i] is StyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
+                }
+            }
+        }
+
+        private protected override void OnControlThemeChanged()
+        {
+            base.OnControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == this)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
                 }
             }
         }

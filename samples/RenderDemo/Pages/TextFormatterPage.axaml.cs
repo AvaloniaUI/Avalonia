@@ -78,7 +78,7 @@ namespace RenderDemo.Pages
                 _defaultProperties = defaultProperties;
             }
             
-            public TextRun? GetTextRun(int textSourceIndex)
+            public TextRun GetTextRun(int textSourceIndex)
             {
                 if (textSourceIndex >= _text.Length * 2 + TextRun.DefaultTextSourceLength)
                 {
@@ -90,7 +90,7 @@ namespace RenderDemo.Pages
                     return new ControlRun(_control, _defaultProperties);
                 }
 
-                return new TextCharacters(_text.AsMemory(), _defaultProperties);
+                return new TextCharacters(_text, _defaultProperties);
             }
         }
 
@@ -107,7 +107,7 @@ namespace RenderDemo.Pages
             public Control Control => _control;
             public override Size Size => _control.DesiredSize;
             public override double Baseline => 0;
-            public override TextRunProperties? Properties { get; }
+            public override TextRunProperties Properties { get; }
 
             public override void Draw(DrawingContext drawingContext, Point origin)
             {

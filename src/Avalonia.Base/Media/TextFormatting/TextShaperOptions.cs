@@ -5,26 +5,28 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// Options to customize text shaping.
     /// </summary>
-    public readonly struct TextShaperOptions
+    public readonly record struct TextShaperOptions
     {
         public TextShaperOptions(
-            GlyphTypeface typeface, 
+            IGlyphTypeface typeface, 
             double fontRenderingEmSize = 12, 
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
-            double incrementalTabWidth = 0)
+            double incrementalTabWidth = 0,
+            double letterSpacing = 0)
         {
             Typeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
             Culture = culture;
             IncrementalTabWidth = incrementalTabWidth;
+            LetterSpacing = letterSpacing;
         }
 
         /// <summary>
         /// Get the typeface.
         /// </summary>
-        public GlyphTypeface Typeface { get; }
+        public IGlyphTypeface Typeface { get; }
         /// <summary>
         /// Get the font rendering em size.
         /// </summary>
@@ -44,6 +46,11 @@ namespace Avalonia.Media.TextFormatting
         /// Get the incremental tab width.
         /// </summary>
         public double IncrementalTabWidth { get; }
+
+        /// <summary>
+        /// Get the letter spacing.
+        /// </summary>
+        public double LetterSpacing { get; }
 
     }
 }

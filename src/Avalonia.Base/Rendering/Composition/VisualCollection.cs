@@ -1,6 +1,8 @@
 using System;
 using Avalonia.Rendering.Composition.Server;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -67,7 +69,7 @@ namespace Avalonia.Rendering.Composition
         {
             if (item.Parent != null)
                 throw new InvalidOperationException("Visual already has a parent");
-            item.Parent = item;
+            item.Parent = _owner;
         }
     }
 }

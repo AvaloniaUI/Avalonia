@@ -4,12 +4,13 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Rendering;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class MockPlatformRenderInterface : IPlatformRenderInterface
+    public class MockPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
@@ -33,27 +34,33 @@ namespace Avalonia.UnitTests
                 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 var m = new Mock<IDrawingContextImpl>();
                 m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
                     .Returns(() =>
                         {
                             var r = new Mock<IDrawingContextLayerImpl>();
-                            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
-                                .Returns(CreateDrawingContext(null));
+                            r.Setup(r => r.CreateDrawingContext())
+                                .Returns(CreateDrawingContext());
                             return r.Object;
                         }
                     );
                 return m.Object;
 
             }
+
+            public bool IsCorrupted => false;
         }
         
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             return new MockRenderTarget();
         }
+
+        public bool IsLost => false;
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -142,14 +149,32 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            return Mock.Of<IGlyphRunImpl>();
+            return new MockGlyphRun(glyphInfos);
         }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IGlyphRunBuffer>();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IHorizontalGlyphRunBuffer>();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IPositionedGlyphRunBuffer>();
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
@@ -157,5 +182,10 @@ namespace Avalonia.UnitTests
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+
+        public void Dispose()
+        {
+        }
     }
 }

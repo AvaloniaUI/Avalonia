@@ -119,7 +119,7 @@ namespace Avalonia.Media
 
                 case 2:
                     {
-                        var source = segments[0].StartsWith("/")
+                        var source = segments[0].StartsWith("/", StringComparison.Ordinal)
                             ? new Uri(segments[0], UriKind.Relative)
                             : new Uri(segments[0], UriKind.RelativeOrAbsolute);
 
@@ -128,7 +128,7 @@ namespace Avalonia.Media
 
                 default:
                     {
-                        throw new ArgumentException("Specified family is not supported.");
+                        return new FontFamilyIdentifier(name, null);
                     }
             }
         }
@@ -188,7 +188,7 @@ namespace Avalonia.Media
         {
             unchecked
             {
-                return ((FamilyNames != null ? FamilyNames.GetHashCode() : 0) * 397) ^ (Key != null ? Key.GetHashCode() : 0);
+                return (FamilyNames.GetHashCode() * 397) ^ (Key is not null ? Key.GetHashCode() : 0);
             }
         }
 

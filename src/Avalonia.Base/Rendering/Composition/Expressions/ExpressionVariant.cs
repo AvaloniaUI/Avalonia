@@ -4,6 +4,8 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Expressions
 {
     internal enum VariantType
@@ -652,7 +654,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
             }
 
-            res = default(T);
+            res = default;
             return false;
         }
 

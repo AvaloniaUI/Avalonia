@@ -3,7 +3,6 @@
     <TargetFrameworks>net6.0;net47</TargetFrameworks>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
@@ -18,18 +17,25 @@
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls.ItemsRepeater\Avalonia.Controls.ItemsRepeater.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Xaml\Style1.xaml">
+    <AvaloniaResource Include="Xaml\Style1.xaml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Xaml\Style2.xaml">
+    </AvaloniaResource>
+    <AvaloniaResource Include="Xaml\Style2.xaml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
+    </AvaloniaResource>
     <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
     <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
+    <AvaloniaResource Include="Xaml\StyleWithServiceProvider.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
+      <Link>PlatformFactAttribute.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

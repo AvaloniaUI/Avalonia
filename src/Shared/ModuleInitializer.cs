@@ -1,7 +1,8 @@
 namespace System.Runtime.CompilerServices
 {
-#if !NET5_0_OR_GREATER
-    internal class ModuleInitializerAttribute : Attribute
+#if NETSTANDARD2_0
+    [AttributeUsage(AttributeTargets.Method)]
+    internal sealed class ModuleInitializerAttribute : Attribute
     {
 
     }

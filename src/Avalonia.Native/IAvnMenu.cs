@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
@@ -44,11 +43,9 @@ namespace Avalonia.Native.Interop.Impl
 {
     partial class __MicroComIAvnMenuProxy
     {
-        private MenuEvents _events;
         private AvaloniaNativeMenuExporter _exporter;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
-        private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
         public void RaiseNeedsUpdate()
         {
@@ -71,23 +68,13 @@ namespace Avalonia.Native.Interop.Impl
 
         public static __MicroComIAvnMenuProxy Create(IAvaloniaNativeFactory factory)
         {
-            var events = new MenuEvents();
+            using var events = new MenuEvents();
 
             var menu = (__MicroComIAvnMenuProxy)factory.CreateMenu(events);
 
             events.Initialise(menu);
 
-            menu._events = events;
-
             return menu;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _events.Dispose();
-            }
         }
 
         private void RemoveAndDispose(__MicroComIAvnMenuItemProxy item)
@@ -123,7 +110,7 @@ namespace Avalonia.Native.Interop.Impl
             return result;
         }
 
-        private __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
+        private static __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
             var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeparator ?
                 factory.CreateMenuItemSeparator() :

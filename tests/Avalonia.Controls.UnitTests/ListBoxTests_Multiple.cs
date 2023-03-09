@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Styling;
@@ -27,7 +28,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[1].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
                 KeyModifiers = KeyModifiers.Shift
             });
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Focusing_Item_With_Ctrl_And_Arrow_Key_Should_Add_To_Selection()
+        public void Focusing_Item_With_Ctrl_And_Arrow_Key_Should_Not_Add_To_Selection()
         {
             var target = new ListBox
             {
@@ -51,16 +51,15 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[1].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
                 KeyModifiers = KeyModifiers.Control
             });
 
-            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Foo" }, target.SelectedItems);
         }
 
         [Fact]
-        public void Focusing_Selected_Item_With_Ctrl_And_Arrow_Key_Should_Remove_From_Selection()
+        public void Focusing_Selected_Item_With_Ctrl_And_Arrow_Key_Should_Not_Remove_From_Selection()
         {
             var target = new ListBox
             {
@@ -76,15 +75,14 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
                 KeyModifiers = KeyModifiers.Control
             });
 
-            Assert.Equal(new[] { "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)
+        private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollViewer
             {
@@ -92,22 +90,21 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             };
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
+        private Control CreateScrollViewerTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollContentPresenter
             {
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] =
-                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+                    ((Control)parent).GetObservable(ContentControl.ContentProperty).ToBinding(),
             }.RegisterInNameScope(scope);
         }
 
-        private void ApplyTemplate(ListBox target)
+        private static void ApplyTemplate(ListBox target)
         {
             // Apply the template to the ListBox itself.
             target.ApplyTemplate();
@@ -120,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
             ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
 
             // Now the ItemsPresenter should be reigstered, so apply its template.
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Metadata;
 using SharpDX.WIC;
 using Bitmap = SharpDX.Direct2D1.Bitmap;
 
@@ -9,8 +8,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// A Direct2D Bitmap implementation that uses a GPU memory bitmap as its image.
     /// </summary>
-    [Unstable]
-    public class D2DBitmapImpl : BitmapImpl
+    internal class D2DBitmapImpl : BitmapImpl
     {
         private readonly Bitmap _direct2DBitmap;
 
@@ -43,7 +41,7 @@ namespace Avalonia.Direct2D1.Media
             return new OptionalDispose<Bitmap>(_direct2DBitmap, false);
         }
 
-        public override void Save(Stream stream)
+        public override void Save(Stream stream, int? quality = null)
         {
             using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
             using (var frame = new BitmapFrameEncode(encoder))

@@ -37,12 +37,11 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                        unit.NormalizeWhitespace().ToFullString();
             _output.AddSource(string.Join("_", path), text);
         }
-        
-        
-        SyntaxToken Semicolon() => Token(SyntaxKind.SemicolonToken);
 
-        
-        FieldDeclarationSyntax DeclareConstant(string type, string name, LiteralExpressionSyntax value)
+        static SyntaxToken Semicolon() => Token(SyntaxKind.SemicolonToken);
+
+
+        static FieldDeclarationSyntax DeclareConstant(string type, string name, LiteralExpressionSyntax value)
             => FieldDeclaration(
                     VariableDeclaration(ParseTypeName(type),
                         SingletonSeparatedList(
@@ -51,10 +50,10 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 ).WithSemicolonToken(Semicolon())
                 .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.ConstKeyword)));
 
-        FieldDeclarationSyntax DeclareField(string type, string name, params SyntaxKind[] modifiers) =>
+        static FieldDeclarationSyntax DeclareField(string type, string name, params SyntaxKind[] modifiers) =>
             DeclareField(type, name, null, modifiers);
 
-        FieldDeclarationSyntax DeclareField(string type, string name, EqualsValueClauseSyntax initializer,
+        static FieldDeclarationSyntax DeclareField(string type, string name, EqualsValueClauseSyntax? initializer,
             params SyntaxKind[] modifiers) =>
             FieldDeclaration(
                     VariableDeclaration(ParseTypeName(type),

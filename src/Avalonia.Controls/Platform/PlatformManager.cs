@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 
@@ -20,36 +20,20 @@ namespace Avalonia.Controls.Platform
         {
         }
 
-        public static ITrayIconImpl? CreateTrayIcon()
-        {
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-
-            if (platform == null)
-            {
-                throw new Exception("Could not CreateTrayIcon(): IWindowingPlatform is not registered.");
-            }
-
-            return s_designerMode ? null : platform.CreateTrayIcon();
-        }
+        public static ITrayIconImpl? CreateTrayIcon() =>
+            s_designerMode ? null : AvaloniaLocator.Current.GetService<IWindowingPlatform>()?.CreateTrayIcon();
 
 
         public static IWindowImpl CreateWindow()
         {
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-            
-            if (platform == null)
-            {
-                throw new Exception("Could not CreateWindow(): IWindowingPlatform is not registered.");
-            }
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
 
             return s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow();
         }
 
         public static IWindowImpl CreateEmbeddableWindow()
         {
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-            if (platform == null)
-                throw new Exception("Could not CreateEmbeddableWindow(): IWindowingPlatform is not registered.");
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             return platform.CreateEmbeddableWindow();
         }
     }

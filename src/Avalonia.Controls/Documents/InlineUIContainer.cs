@@ -3,7 +3,6 @@ using System.Text;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -16,8 +15,8 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly StyledProperty<IControl> ChildProperty =
-            AvaloniaProperty.Register<InlineUIContainer, IControl>(nameof(Child));
+        public static readonly StyledProperty<Control> ChildProperty =
+            AvaloniaProperty.Register<InlineUIContainer, Control>(nameof(Child));
 
         static InlineUIContainer()
         {
@@ -42,7 +41,7 @@ namespace Avalonia.Controls.Documents
         /// <param name="child">
         /// UIElement set as a child of this inline item
         /// </param>
-        public InlineUIContainer(IControl child)
+        public InlineUIContainer(Control child)
         {
             Child = child;
         }
@@ -51,7 +50,7 @@ namespace Avalonia.Controls.Documents
         /// The content spanned by this TextElement.
         /// </summary>
         [Content]
-        public IControl Child
+        public Control Child
         {
             get => GetValue(ChildProperty);
             set => SetValue(ChildProperty, value);
@@ -59,66 +58,28 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            if(InlineHost == null)
-            {
-                return;
-            }
-
-            ((ISetLogicalParent)Child).SetParent(InlineHost);
-
-            InlineHost.AddVisualChild(Child);
-
-            textRuns.Add(new InlineRun(Child, CreateTextRunProperties()));
+            textRuns.Add(new EmbeddedControlRun(Child, CreateTextRunProperties()));
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
         {
         }
 
-        private class InlineRun : DrawableTextRun
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            public InlineRun(IControl control, TextRunProperties properties)
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ChildProperty)
             {
-                Control = control;
-                Properties = properties;
-            }
-
-            public IControl Control { get; }
-
-            public override TextRunProperties? Properties { get; }
-
-            public override Size Size
-            {
-                get
+                if(change.OldValue is Control oldChild)
                 {
-                    if (!Control.IsMeasureValid)
-                    {
-                        Control.Measure(Size.Infinity);
-                    }
-
-                    return Control.DesiredSize;
+                    LogicalChildren.Remove(oldChild);
                 }
-            }
 
-            public override double Baseline
-            {
-                get
+                if(change.NewValue is Control newChild)
                 {
-                    double baseline = Size.Height;
-                    double baselineOffsetValue = Control.GetValue<double>(TextBlock.BaselineOffsetProperty);
-
-                    if (!MathUtilities.IsZero(baselineOffsetValue))
-                    {
-                        baseline = baselineOffsetValue;
-                    }
-
-                    return -baseline;
+                    LogicalChildren.Add(newChild);
                 }
-            }
-
-            public override void Draw(DrawingContext drawingContext, Point origin)
-            {             
-                Control.Arrange(new Rect(origin, Size));                
             }
         }
     }

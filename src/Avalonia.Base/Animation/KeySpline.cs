@@ -79,15 +79,12 @@ namespace Avalonia.Animation
         /// <param name="culture">culture of the string</param>
         /// <exception cref="FormatException">Thrown if the string does not have 4 values</exception>
         /// <returns>A <see cref="KeySpline"/> with the appropriate values set</returns>
-        public static KeySpline Parse(string value, CultureInfo culture)
+        public static KeySpline Parse(string value, CultureInfo? culture)
         {
-            if (culture is null)
-                culture = CultureInfo.InvariantCulture;
+            culture ??= CultureInfo.InvariantCulture;
 
-            using (var tokenizer = new StringTokenizer((string)value, culture, exceptionMessage: $"Invalid KeySpline string: \"{value}\"."))
-            {
-                return new KeySpline(tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble());
-            }
+            using var tokenizer = new StringTokenizer(value, culture, exceptionMessage: $"Invalid KeySpline string: \"{value}\".");
+            return new KeySpline(tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble());
         }
 
         /// <summary>
@@ -196,7 +193,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private bool IsValidXValue(double value)
+        private static bool IsValidXValue(double value)
         {
             return value >= 0.0 && value <= 1.0;
         }

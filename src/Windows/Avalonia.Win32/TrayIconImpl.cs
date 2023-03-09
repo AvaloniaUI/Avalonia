@@ -11,24 +11,20 @@ using Avalonia.Styling;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
-#nullable enable
-
 namespace Avalonia.Win32
 {
-    [Unstable]
-    public class TrayIconImpl : ITrayIconImpl
+    internal class TrayIconImpl : ITrayIconImpl
     {
         private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
-        
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
         private IconImpl? _icon;
         private string? _tooltipText;
         private readonly Win32NativeToManagedMenuExporter _exporter;
-        private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
+        private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new();
         private bool _disposedValue;
-        private static readonly uint WM_TASKBARCREATED = UnmanagedMethods.RegisterWindowMessage("TaskbarCreated");
+        private static readonly uint WM_TASKBARCREATED = RegisterWindowMessage("TaskbarCreated");
 
         public TrayIconImpl()
         {
@@ -63,17 +59,20 @@ namespace Avalonia.Win32
             }
         }
 
+        /// <inheritdoc />
         public void SetIcon(IWindowIconImpl? icon)
         {
             _icon = icon as IconImpl;
             UpdateIcon();
         }
 
+        /// <inheritdoc />
         public void SetIsVisible(bool visible)
         {
             UpdateIcon(!visible);
         }
 
+        /// <inheritdoc />
         public void SetToolTipText(string? text)
         {
             _tooltipText = text;
@@ -82,19 +81,18 @@ namespace Avalonia.Win32
 
         private void UpdateIcon(bool remove = false)
         {
-            var iconData = new NOTIFYICONDATA()
+            var iconData = new NOTIFYICONDATA
             {
                 hWnd = Win32Platform.Instance.Handle,
-                uID = _uniqueId,
-                uFlags = NIF.TIP | NIF.MESSAGE,
-                uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE,
-                hIcon = _icon?.HIcon ?? s_emptyIcon,
-                szTip = _tooltipText ?? ""
+                uID = _uniqueId
             };
 
             if (!remove)
             {
-                iconData.uFlags |= NIF.ICON;
+                iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
+                iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
+                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon;
+                iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)
                 {
@@ -108,6 +106,7 @@ namespace Avalonia.Win32
             }
             else
             {
+                iconData.uFlags = 0;
                 Shell_NotifyIcon(NIM.DELETE, iconData);
                 _iconAdded = false;
             }
@@ -137,6 +136,12 @@ namespace Avalonia.Win32
 
         private void OnRightClicked()
         {
+            var menuItems = _exporter.GetMenu();
+            if (null == menuItems || menuItems.Count == 0)
+            {
+                return;
+            }
+
             var _trayMenu = new TrayPopupRoot()
             {
                 SystemDecorations = SystemDecorations.None,
@@ -145,7 +150,7 @@ namespace Avalonia.Win32
                 TransparencyLevelHint = WindowTransparencyLevel.Transparent,
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
-                    Items = _exporter.GetMenu()
+                    Items = menuItems
                 }
             };
 
@@ -204,8 +209,11 @@ namespace Avalonia.Win32
 
             private void MoveResize(PixelPoint position, Size size, double scaling)
             {
-                PlatformImpl!.Move(position);
-                PlatformImpl!.Resize(size, PlatformResizeReason.Layout);
+                if (PlatformImpl is { } platformImpl)
+                {
+                    platformImpl.Move(position);
+                    platformImpl.Resize(size, PlatformResizeReason.Layout);
+                }
             }
 
             protected override void ArrangeCore(Rect finalRect)
@@ -216,7 +224,7 @@ namespace Avalonia.Win32
                 {
                     Anchor = PopupAnchor.TopLeft,
                     Gravity = PopupGravity.BottomRight,
-                    AnchorRectangle = new Rect(Position.ToPoint(1) / Screens.Primary.PixelDensity, new Size(1, 1)),
+                    AnchorRectangle = new Rect(Position.ToPoint(Screens.Primary?.Scaling ?? 1.0), new Size(1, 1)),
                     Size = finalRect.Size,
                     ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY,
                 });
@@ -242,18 +250,22 @@ namespace Avalonia.Win32
                 {
                     get
                     {
-                        var point = _hiddenWindow.Screens.Primary.Bounds.TopLeft;
-                        var size = _hiddenWindow.Screens.Primary.Bounds.Size;
-                        return new Rect(point.X, point.Y, size.Width * _hiddenWindow.Screens.Primary.PixelDensity, size.Height * _hiddenWindow.Screens.Primary.PixelDensity);
+                        if (_hiddenWindow.Screens.Primary is { } screen)
+                        {
+                            var point = screen.Bounds.TopLeft;
+                            var size = screen.Bounds.Size;
+                            return new Rect(point.X, point.Y, size.Width * screen.Scaling, size.Height * screen.Scaling);
+                        }
+                        return default;
                     }
                 }
 
                 public void MoveAndResize(Point devicePoint, Size virtualSize)
                 {
-                    _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _hiddenWindow.Screens.Primary.PixelDensity);
+                    _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, Scaling);
                 }
 
-                public double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
+                public double Scaling => _hiddenWindow.Screens.Primary?.Scaling ?? 1.0;
             }
         }
 

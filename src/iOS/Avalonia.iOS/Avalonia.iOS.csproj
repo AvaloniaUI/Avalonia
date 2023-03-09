@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0-ios</TargetFramework>
-    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
   <ItemGroup>
@@ -10,4 +10,5 @@
   </ItemGroup>
   
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 </Project>

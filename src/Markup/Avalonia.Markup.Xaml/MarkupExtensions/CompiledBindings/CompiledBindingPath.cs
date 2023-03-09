@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
@@ -12,17 +12,19 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     public class CompiledBindingPath
     {
-        private readonly List<ICompiledBindingPathElement> _elements = new List<ICompiledBindingPathElement>();
+        private readonly ICompiledBindingPathElement[] _elements;
 
-        public CompiledBindingPath() { }
+        public CompiledBindingPath()
+            => _elements = Array.Empty<ICompiledBindingPathElement>();
 
-        internal CompiledBindingPath(IEnumerable<ICompiledBindingPathElement> bindingPath, object rawSource)
+        internal CompiledBindingPath(ICompiledBindingPathElement[] elements, object rawSource)
         {
-            _elements = new List<ICompiledBindingPathElement>(bindingPath);
+            _elements = elements;
             RawSource = rawSource;
         }
 
-        public ExpressionNode BuildExpression(bool enableValidation)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.CompiledBindingSafeSupressWarningMessage)]
+        internal ExpressionNode BuildExpression(bool enableValidation)
         {
             ExpressionNode pathRoot = null;
             ExpressionNode path = null;
@@ -75,13 +77,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
 
         internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
-        
-        internal SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
+
+        internal SourceMode SourceMode => Array.Exists(_elements, e => e is IControlSourceBindingPathElement)
+            ? SourceMode.Control : SourceMode.Data;
 
         internal object RawSource { get; }
 
         public override string ToString()
-            => string.Concat(_elements);
+            => string.Concat((IEnumerable<ICompiledBindingPathElement>) _elements);
     }
 
     public class CompiledBindingPathBuilder
@@ -166,7 +169,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPath Build() => new CompiledBindingPath(_elements, _rawSource);
+        public CompiledBindingPath Build() => new CompiledBindingPath(_elements.ToArray(), _rawSource);
     }
 
     public interface ICompiledBindingPathElement
@@ -274,7 +277,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public int Level { get; }
 
         public override string ToString()
-           => $"$parent[{AncestorType?.Name},{Level}]";
+           => FormattableString.Invariant($"$parent[{AncestorType?.Name},{Level}]");
     }
 
     internal class VisualAncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
@@ -315,7 +318,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public int[] Indices { get; }
         public Type ElementType { get; }
         public override string ToString()
-            => $"[{string.Join(",", Indices)}]";
+            => FormattableString.Invariant($"[{string.Join(",", Indices)}]");
     }
 
     internal class TypeCastPathElement<T> : ITypeCastElement

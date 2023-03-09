@@ -1,7 +1,6 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Peers;
 using Avalonia.Input;
+using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -61,10 +60,9 @@ namespace Avalonia.Controls.Primitives
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        protected internal override void RenderCore(DrawingContext context)
         {
-            base.Render(context);
-
+            base.RenderCore(context);
             int underscore = Text?.IndexOf('_') ?? -1;
 
             if (underscore != -1 && ShowAccessKey)

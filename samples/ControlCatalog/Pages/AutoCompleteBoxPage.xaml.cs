@@ -1,8 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
-using Avalonia.Markup;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
+using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
@@ -34,7 +33,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private StateData[] BuildAllStates()
+        private static StateData[] BuildAllStates()
         {
             return new StateData[]
             {
@@ -92,7 +91,7 @@ namespace ControlCatalog.Pages
         }
         public StateData[] States { get; private set; }
         
-        private LinkedList<string>[] BuildAllSentences()
+        private static LinkedList<string>[] BuildAllSentences()
         {
             return new string[]
             {
@@ -144,7 +143,7 @@ namespace ControlCatalog.Pages
                     .OfType<AutoCompleteBox>();
         }
 
-        private bool StringContains(string str, string? query)
+        private static bool StringContains(string str, string? query)
         {
             if (query == null) return false;
             return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
@@ -161,23 +160,23 @@ namespace ControlCatalog.Pages
         private bool LastWordContains(string? searchText, string? item)
         {
             var words = searchText?.Split(' ') ?? Array.Empty<string>();
-            var options = Sentences.Select(x => x.First).ToArray();
+            var options = Sentences.Select(x => x.First)
+                .ToArray<LinkedListNode<string>?>();
             for (var i = 0; i < words.Length; ++i)
             {
                 var word = words[i];
                 for (var j = 0; word is { } && j < options.Length; ++j)
                 {
-                    var option = options[j];
-                    if (option == null)
-                        continue;
-
-                    if (i == words.Length - 1)
+                    if (options[i] is { } option)
                     {
-                        options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
-                    }
-                    else
-                    {
-                        options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                        if (i == words.Length - 1)
+                        {
+                            options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
+                        }
+                        else
+                        {
+                            options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                        }
                     }
                 }
             }

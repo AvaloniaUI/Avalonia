@@ -1,10 +1,13 @@
 using System;
-using System.Reactive.Disposables;
+using System.Collections.Generic;
 using System.Threading;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Features;
+using Avalonia.Reactive;
+
 namespace Avalonia.X11.Glx
 {
-    class GlxContext : IGlContext
+    internal class GlxContext : IGlContext
     {
         public  IntPtr Handle { get; }
         public GlxInterface Glx { get; }
@@ -13,6 +16,7 @@ namespace Avalonia.X11.Glx
         private readonly IntPtr _defaultXid;
         private readonly bool _ownsPBuffer;
         private readonly object _lock = new object();
+        private ExternalObjectsOpenGlExtensionFeature? _externalObjects;
 
         public GlxContext(GlxInterface glx, IntPtr handle, GlxDisplay display,
             GlxContext sharedWith,
@@ -31,7 +35,10 @@ namespace Avalonia.X11.Glx
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             using (MakeCurrent())
+            {
                 GlInterface = new GlInterface(version, GlxInterface.SafeGetProcAddress);
+                _externalObjects = ExternalObjectsOpenGlExtensionFeature.TryCreate(this);
+            }
         }
         
         public GlxDisplay Display { get; }
@@ -39,8 +46,8 @@ namespace Avalonia.X11.Glx
         public GlInterface GlInterface { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
-        
-        class RestoreContext : IDisposable
+
+        private class RestoreContext : IDisposable
         {
             private GlxInterface _glx;
             private IntPtr _defaultDisplay;
@@ -70,6 +77,8 @@ namespace Avalonia.X11.Glx
         }
         
         public IDisposable MakeCurrent() => MakeCurrent(_defaultXid);
+        public bool IsLost => false;
+
         public IDisposable EnsureCurrent()
         {
             if(IsCurrent)
@@ -85,6 +94,11 @@ namespace Avalonia.X11.Glx
                    || _sharedWith == context
                    || _sharedWith != null && _sharedWith == c._sharedWith;
         }
+
+        public bool CanCreateSharedContext => true;
+
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+            Display.CreateContext(_sharedWith ?? this);
 
         public IDisposable MakeCurrent(IntPtr xid)
         {
@@ -113,6 +127,13 @@ namespace Avalonia.X11.Glx
             Glx.DestroyContext(_x11.Display, Handle);
             if (_ownsPBuffer)
                 Glx.DestroyPbuffer(_x11.Display, _defaultXid);
+        }
+
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IGlContextExternalObjectsFeature))
+                return _externalObjects;
+            return null;
         }
     }
 }

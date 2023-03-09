@@ -8,14 +8,31 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents all screens available on a device.
+    /// </summary>
     public class Screens
     {
         private readonly IScreenImpl _iScreenImpl;
 
+        /// <summary>
+        /// Gets the total number of screens available on the device.
+        /// </summary>
         public int ScreenCount => _iScreenImpl?.ScreenCount ?? 0;
-        public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens ?? Array.Empty<Screen>();
-        public Screen? Primary => All.FirstOrDefault(x => x.Primary);
 
+        /// <summary>
+        /// Gets the list of all screens available on the device.
+        /// </summary>
+        public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens ?? Array.Empty<Screen>();
+
+        /// <summary>
+        /// Gets the primary screen on the device.
+        /// </summary>
+        public Screen? Primary => All.FirstOrDefault(x => x.IsPrimary);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Screens"/> class.
+        /// </summary>
         public Screens(IScreenImpl iScreenImpl)
         {
             _iScreenImpl = iScreenImpl;
@@ -25,18 +42,18 @@ namespace Avalonia.Controls
         {
             return _iScreenImpl.ScreenFromRect(bounds);
         }
-        
+
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             return _iScreenImpl.ScreenFromWindow(window);
         }
 
         public Screen? ScreenFromPoint(PixelPoint point)
-        {      
+        {
             return _iScreenImpl.ScreenFromPoint(point);
         }
 
-        public Screen? ScreenFromVisual(IVisual visual)
+        public Screen? ScreenFromVisual(Visual visual)
         {
             var tl = visual.PointToScreen(visual.Bounds.TopLeft);
             var br = visual.PointToScreen(visual.Bounds.BottomRight);

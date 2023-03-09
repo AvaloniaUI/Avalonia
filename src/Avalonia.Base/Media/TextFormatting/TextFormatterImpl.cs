@@ -1,68 +1,86 @@
-﻿using System;
+﻿// ReSharper disable ForCanBeConvertedToForeach
+using System;
+using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
+using static Avalonia.Media.TextFormatting.FormattingObjectPool;
 
 namespace Avalonia.Media.TextFormatting
 {
-    internal class TextFormatterImpl : TextFormatter
+    internal sealed class TextFormatterImpl : TextFormatter
     {
         private static readonly char[] s_empty = { ' ' };
+        private static readonly char[] s_defaultText = new char[TextRun.DefaultTextSourceLength];
+
+        [ThreadStatic] private static BidiData? t_bidiData;
+        [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
 
         /// <inheritdoc cref="TextFormatter.FormatLine"/>
-        public override TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+        public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
         {
-            var textWrapping = paragraphProperties.TextWrapping;
-            FlowDirection resolvedFlowDirection;
             TextLineBreak? nextLineBreak = null;
-            List<DrawableTextRun> drawableTextRuns;
+            var objectPool = FormattingObjectPool.Instance;
+            var fontManager = FontManager.Current;
 
-            var textRuns = FetchTextRuns(textSource, firstTextSourceIndex,
-                out var textEndOfLine, out var textSourceLength);
-
-            if (previousLineBreak?.RemainingRuns != null)
+            // we've wrapped the previous line and need to continue wrapping: ignore the textSource and do that instead
+            if (previousLineBreak is WrappingTextLineBreak wrappingTextLineBreak
+                && wrappingTextLineBreak.AcquireRemainingRuns() is { } remainingRuns
+                && paragraphProperties.TextWrapping != TextWrapping.NoWrap)
             {
-                resolvedFlowDirection = previousLineBreak.FlowDirection;
-                drawableTextRuns = previousLineBreak.RemainingRuns.ToList();
-                nextLineBreak = previousLineBreak;
+                return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth,
+                    paragraphProperties, previousLineBreak.FlowDirection, previousLineBreak, objectPool);
             }
-            else
+
+            RentedList<TextRun>? fetchedRuns = null;
+            RentedList<TextRun>? shapedTextRuns = null;
+            try
             {
-                drawableTextRuns = ShapeTextRuns(textRuns, paragraphProperties, out resolvedFlowDirection);
+                fetchedRuns = FetchTextRuns(textSource, firstTextSourceIndex, objectPool, out var textEndOfLine,
+                    out var textSourceLength);
+
+                if (fetchedRuns.Count == 0)
+                {
+                    return null;
+                }
+
+                shapedTextRuns = ShapeTextRuns(fetchedRuns, paragraphProperties, objectPool, fontManager,
+                    out var resolvedFlowDirection);
 
                 if (nextLineBreak == null && textEndOfLine != null)
                 {
                     nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
                 }
-            }
 
-            TextLineImpl textLine;
-
-            switch (textWrapping)
-            {
-                case TextWrapping.NoWrap:
+                switch (paragraphProperties.TextWrapping)
+                {
+                    case TextWrapping.NoWrap:
                     {
-                        textLine = new TextLineImpl(drawableTextRuns, firstTextSourceIndex, textSourceLength,
+                        var textLine = new TextLineImpl(shapedTextRuns.ToArray(), firstTextSourceIndex,
+                            textSourceLength,
                             paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
 
-                        textLine.FinalizeLine();
+                            textLine.FinalizeLine();
 
-                        break;
+                        return textLine;
                     }
-                case TextWrapping.WrapWithOverflow:
-                case TextWrapping.Wrap:
+                    case TextWrapping.WrapWithOverflow:
+                    case TextWrapping.Wrap:
                     {
-                        textLine = PerformTextWrapping(drawableTextRuns, firstTextSourceIndex, paragraphWidth, paragraphProperties,
-                            resolvedFlowDirection, nextLineBreak);
-                        break;
+                        return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
+                            paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
                     }
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(textWrapping));
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
+                }
             }
-
-            return textLine;
+            finally
+            {
+                objectPool.TextRunLists.Return(ref shapedTextRuns);
+                objectPool.TextRunLists.Return(ref fetchedRuns);
+            }
         }
 
         /// <summary>
@@ -70,25 +88,27 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="textRuns">The text run's.</param>
         /// <param name="length">The length to split at.</param>
+        /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
         /// <returns>The split text runs.</returns>
-        internal static SplitResult<List<DrawableTextRun>> SplitDrawableRuns(List<DrawableTextRun> textRuns, int length)
+        internal static SplitResult<RentedList<TextRun>> SplitTextRuns(IReadOnlyList<TextRun> textRuns, int length,
+            FormattingObjectPool objectPool)
         {
+            var first = objectPool.TextRunLists.Rent();
             var currentLength = 0;
 
             for (var i = 0; i < textRuns.Count; i++)
             {
                 var currentRun = textRuns[i];
+                var currentRunLength = currentRun.Length;
 
-                if (currentLength + currentRun.TextSourceLength < length)
+                if (currentLength + currentRunLength < length)
                 {
-                    currentLength += currentRun.TextSourceLength;
+                    currentLength += currentRunLength;
 
                     continue;
                 }
 
-                var firstCount = currentRun.TextSourceLength >= 1 ? i + 1 : i;
-
-                var first = new List<DrawableTextRun>(firstCount);
+                var firstCount = currentRunLength >= 1 ? i + 1 : i;
 
                 if (firstCount > 1)
                 {
@@ -100,13 +120,13 @@ namespace Avalonia.Media.TextFormatting
 
                 var secondCount = textRuns.Count - firstCount;
 
-                if (currentLength + currentRun.TextSourceLength == length)
+                if (currentLength + currentRunLength == length)
                 {
-                    var second = secondCount > 0 ? new List<DrawableTextRun>(secondCount) : null;
+                    var second = secondCount > 0 ? objectPool.TextRunLists.Rent() : null;
 
                     if (second != null)
                     {
-                        var offset = currentRun.TextSourceLength >= 1 ? 1 : 0;
+                        var offset = currentRunLength >= 1 ? 1 : 0;
 
                         for (var j = 0; j < secondCount; j++)
                         {
@@ -116,33 +136,38 @@ namespace Avalonia.Media.TextFormatting
 
                     first.Add(currentRun);
 
-                    return new SplitResult<List<DrawableTextRun>>(first, second);
+                    return new SplitResult<RentedList<TextRun>>(first, second);
                 }
                 else
                 {
                     secondCount++;
 
-                    var second = new List<DrawableTextRun>(secondCount);
+                    var second = objectPool.TextRunLists.Rent();
 
-                    if (currentRun is ShapedTextCharacters shapedTextCharacters)
+                    if (currentRun is ShapedTextRun shapedTextCharacters)
                     {
                         var split = shapedTextCharacters.Split(length - currentLength);
 
                         first.Add(split.First);
 
                         second.Add(split.Second!);
-                    }                
+                    }
 
                     for (var j = 1; j < secondCount; j++)
                     {
                         second.Add(textRuns[i + j]);
                     }
 
-                    return new SplitResult<List<DrawableTextRun>>(first, second);
+                    return new SplitResult<RentedList<TextRun>>(first, second);
                 }
             }
 
-            return new SplitResult<List<DrawableTextRun>>(textRuns, null);
+            for (var i = 0; i < textRuns.Count; i++)
+            {
+                first.Add(textRuns[i]);
+            }
+
+            return new SplitResult<RentedList<TextRun>>(first, null);
         }
 
         /// <summary>
@@ -151,148 +176,225 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textRuns">The text runs to shape.</param>
         /// <param name="paragraphProperties">The default paragraph properties.</param>
         /// <param name="resolvedFlowDirection">The resolved flow direction.</param>
+        /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
+        /// <param name="fontManager">The font manager to use.</param>
         /// <returns>
         /// A list of shaped text characters.
         /// </returns>
-        private static List<DrawableTextRun> ShapeTextRuns(List<TextRun> textRuns, TextParagraphProperties paragraphProperties,
-            out FlowDirection resolvedFlowDirection)
+        private static RentedList<TextRun> ShapeTextRuns(IReadOnlyList<TextRun> textRuns,
+            TextParagraphProperties paragraphProperties, FormattingObjectPool objectPool,
+            FontManager fontManager, out FlowDirection resolvedFlowDirection)
         {
             var flowDirection = paragraphProperties.FlowDirection;
-            var drawableTextRuns = new List<DrawableTextRun>();
-            var biDiData = new BidiData((sbyte)flowDirection);
+            var shapedRuns = objectPool.TextRunLists.Rent();
 
-            foreach (var textRun in textRuns)
+            if (textRuns.Count == 0)
             {
-                if (textRun.Text.IsEmpty)
-                {
-                    var text = new char[textRun.TextSourceLength];
-
-                    biDiData.Append(text);
-                }
-                else
-                {
-                    biDiData.Append(textRun.Text);
-                }
+                resolvedFlowDirection = flowDirection;
+                return shapedRuns;
             }
 
-            var biDi = new BidiAlgorithm();
+            var bidiData = t_bidiData ??= new();
+            bidiData.Reset();
+            bidiData.ParagraphEmbeddingLevel = (sbyte)flowDirection;
 
-            biDi.Process(biDiData);
+            for (var i = 0; i < textRuns.Count; ++i)
+            {
+                var textRun = textRuns[i];
 
-            var resolvedEmbeddingLevel = biDi.ResolveEmbeddingLevel(biDiData.Classes);
+                ReadOnlySpan<char> text;
+                if (!textRun.Text.IsEmpty)
+                    text = textRun.Text.Span;
+                else if (textRun.Length == TextRun.DefaultTextSourceLength)
+                    text = s_defaultText;
+                else
+                    text = new char[textRun.Length];
+
+                bidiData.Append(text);
+            }
+
+            var bidiAlgorithm = t_bidiAlgorithm ??= new();
+            bidiAlgorithm.Process(bidiData);
+
+            var resolvedEmbeddingLevel = bidiAlgorithm.ResolveEmbeddingLevel(bidiData.Classes);
 
             resolvedFlowDirection =
                 (resolvedEmbeddingLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 
-            var processedRuns = new List<TextRun>(textRuns.Count);
+            var processedRuns = objectPool.TextRunLists.Rent();
+            var groupedRuns = objectPool.UnshapedTextRunLists.Rent();
 
-            foreach (var coalescedRuns in CoalesceLevels(textRuns, biDi.ResolvedLevels))
+            try
             {
-                processedRuns.AddRange(coalescedRuns);
-            }
+                CoalesceLevels(textRuns, bidiAlgorithm.ResolvedLevels.Span, fontManager, processedRuns);
 
-            for (var index = 0; index < processedRuns.Count; index++)
-            {
-                var currentRun = processedRuns[index];
+                bidiData.Reset();
+                bidiAlgorithm.Reset();
 
-                switch (currentRun)
+
+                var textShaper = TextShaper.Current;
+
+                for (var index = 0; index < processedRuns.Count; index++)
                 {
-                    case DrawableTextRun drawableRun:
-                        {
-                            drawableTextRuns.Add(drawableRun);
+                    var currentRun = processedRuns[index];
 
-                            break;
-                        }
-
-                    case ShapeableTextCharacters shapeableRun:
-                        {
-                            var groupedRuns = new List<ShapeableTextCharacters>(2) { shapeableRun };
-                            var text = currentRun.Text;
-                            var start = currentRun.Text.Start;
-                            var length = currentRun.Text.Length;
-                            var bufferOffset = currentRun.Text.BufferOffset;
-
-                            while (index + 1 < processedRuns.Count)
+                    switch (currentRun)
+                    {
+                        case UnshapedTextRun shapeableRun:
                             {
-                                if (processedRuns[index + 1] is not ShapeableTextCharacters nextRun)
+                                groupedRuns.Clear();
+                                groupedRuns.Add(shapeableRun);
+
+                                var text = shapeableRun.Text;
+                                var properties = shapeableRun.Properties;
+
+                                while (index + 1 < processedRuns.Count)
                                 {
+                                    if (processedRuns[index + 1] is not UnshapedTextRun nextRun)
+                                    {
+                                        break;
+                                    }
+
+                                    if (shapeableRun.BidiLevel == nextRun.BidiLevel
+                                        && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
+                                        && CanShapeTogether(properties, nextRun.Properties))
+                                    {
+                                        groupedRuns.Add(nextRun);
+                                        index++;
+                                        shapeableRun = nextRun;
+                                        text = joinedText;
+                                        continue;
+                                    }
+
                                     break;
                                 }
 
-                                if (shapeableRun.CanShapeTogether(nextRun))
-                                {
-                                    groupedRuns.Add(nextRun);
+                                var shaperOptions = new TextShaperOptions(
+                                    properties.CachedGlyphTypeface,
+                                    properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
+                                    paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
-                                    length += nextRun.Text.Length;
-
-                                    if (start > nextRun.Text.Start)
-                                    {
-                                        start = nextRun.Text.Start;
-                                    }
-
-                                    if (bufferOffset > nextRun.Text.BufferOffset)
-                                    {
-                                        bufferOffset = nextRun.Text.BufferOffset;
-                                    }
-
-                                    text = new ReadOnlySlice<char>(text.Buffer, start, length, bufferOffset);
-
-                                    index++;
-
-                                    shapeableRun = nextRun;
-
-                                    continue;
-                                }
+                                ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
 
                                 break;
                             }
+                        default:
+                            {
+                                shapedRuns.Add(currentRun);
 
-                            var shaperOptions = new TextShaperOptions(currentRun.Properties!.Typeface.GlyphTypeface,
-                                        currentRun.Properties.FontRenderingEmSize,
-                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, paragraphProperties.DefaultIncrementalTab);
-
-                            drawableTextRuns.AddRange(ShapeTogether(groupedRuns, text, shaperOptions));
-
-                            break;
-                        }
+                                break;
+                            }
+                    }
                 }
             }
-
-            return drawableTextRuns;
-        }
-
-        private static IReadOnlyList<ShapedTextCharacters> ShapeTogether(
-            IReadOnlyList<ShapeableTextCharacters> textRuns, ReadOnlySlice<char> text, TextShaperOptions options)
-        {
-            var shapedRuns = new List<ShapedTextCharacters>(textRuns.Count);
-
-            var shapedBuffer = TextShaper.Current.ShapeText(text, options);
-
-            for (var i = 0; i < textRuns.Count; i++)
+            finally
             {
-                var currentRun = textRuns[i];
-
-                var splitResult = shapedBuffer.Split(currentRun.Text.Length);
-
-                shapedRuns.Add(new ShapedTextCharacters(splitResult.First, currentRun.Properties));
-
-                shapedBuffer = splitResult.Second!;
+                objectPool.TextRunLists.Return(ref processedRuns);
+                objectPool.UnshapedTextRunLists.Return(ref groupedRuns);
             }
 
             return shapedRuns;
         }
 
         /// <summary>
-        /// Coalesces ranges of the same bidi level to form <see cref="ShapeableTextCharacters"/>
+        /// Tries to join two potnetially contiguous memory regions.
         /// </summary>
-        /// <param name="textCharacters">The text characters to form <see cref="ShapeableTextCharacters"/> from.</param>
+        /// <param name="x">The first memory region.</param>
+        /// <param name="y">The second memory region.</param>
+        /// <param name="joinedMemory">On success, a memory region representing the union of the two regions.</param>
+        /// <returns>true if the two regions were contigous; false otherwise.</returns>
+        private static bool TryJoinContiguousMemories(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y,
+            out ReadOnlyMemory<char> joinedMemory)
+        {
+            if (MemoryMarshal.TryGetString(x, out var xString, out var xStart, out var xLength))
+            {
+                if (MemoryMarshal.TryGetString(y, out var yString, out var yStart, out var yLength)
+                    && ReferenceEquals(xString, yString)
+                    && TryGetContiguousStart(xStart, xLength, yStart, yLength, out var joinedStart))
+                {
+                    joinedMemory = xString.AsMemory(joinedStart, xLength + yLength);
+                    return true;
+                }
+            }
+
+            else if (MemoryMarshal.TryGetArray(x, out var xSegment))
+            {
+                if (MemoryMarshal.TryGetArray(y, out var ySegment)
+                    && ReferenceEquals(xSegment.Array, ySegment.Array)
+                    && TryGetContiguousStart(xSegment.Offset, xSegment.Count, ySegment.Offset, ySegment.Count, out var joinedStart))
+                {
+                    joinedMemory = xSegment.Array.AsMemory(joinedStart, xSegment.Count + ySegment.Count);
+                    return true;
+                }
+            }
+
+            else if (MemoryMarshal.TryGetMemoryManager(x, out MemoryManager<char>? xManager, out xStart, out xLength))
+            {
+                if (MemoryMarshal.TryGetMemoryManager(y, out MemoryManager<char>? yManager, out var yStart, out var yLength)
+                    && ReferenceEquals(xManager, yManager)
+                    && TryGetContiguousStart(xStart, xLength, yStart, yLength, out var joinedStart))
+                {
+                    joinedMemory = xManager.Memory.Slice(joinedStart, xLength + yLength);
+                    return true;
+                }
+            }
+
+            joinedMemory = default;
+            return false;
+
+            static bool TryGetContiguousStart(int xStart, int xLength, int yStart, int yLength, out int joinedStart)
+            {
+                var xRange = (Start: xStart, Length: xLength);
+                var yRange = (Start: yStart, Length: yLength);
+
+                var (firstRange, secondRange) = xStart <= yStart ? (xRange, yRange) : (yRange, xRange);
+                if (firstRange.Start + firstRange.Length == secondRange.Start)
+                {
+                    joinedStart = firstRange.Start;
+                    return true;
+                }
+
+                joinedStart = default;
+                return false;
+            }
+        }
+
+        private static bool CanShapeTogether(TextRunProperties x, TextRunProperties y)
+            => MathUtilities.AreClose(x.FontRenderingEmSize, y.FontRenderingEmSize)
+               && x.Typeface == y.Typeface
+               && x.BaselineAlignment == y.BaselineAlignment;
+
+        private static void ShapeTogether(IReadOnlyList<UnshapedTextRun> textRuns, ReadOnlyMemory<char> text,
+            TextShaperOptions options, TextShaper textShaper, RentedList<TextRun> results)
+        {
+            var shapedBuffer = textShaper.ShapeText(text, options);
+
+            for (var i = 0; i < textRuns.Count; i++)
+            {
+                var currentRun = textRuns[i];
+
+                var splitResult = shapedBuffer.Split(currentRun.Length);
+
+                results.Add(new ShapedTextRun(splitResult.First, currentRun.Properties));
+
+                shapedBuffer = splitResult.Second!;
+            }
+        }
+
+        /// <summary>
+        /// Coalesces ranges of the same bidi level to form <see cref="UnshapedTextRun"/>
+        /// </summary>
+        /// <param name="textCharacters">The text characters to form <see cref="UnshapedTextRun"/> from.</param>
         /// <param name="levels">The bidi levels.</param>
+        /// <param name="fontManager">The font manager to use.</param>
+        /// <param name="processedRuns">A list that will be filled with the processed runs.</param>
         /// <returns></returns>
-        private static IEnumerable<IReadOnlyList<TextRun>> CoalesceLevels(IReadOnlyList<TextRun> textCharacters, ArraySlice<sbyte> levels)
+        private static void CoalesceLevels(IReadOnlyList<TextRun> textCharacters, ReadOnlySpan<sbyte> levels,
+            FontManager fontManager, RentedList<TextRun> processedRuns)
         {
             if (levels.Length == 0)
             {
-                yield break;
+                return;
             }
 
             var levelIndex = 0;
@@ -300,7 +402,7 @@ namespace Avalonia.Media.TextFormatting
 
             TextRunProperties? previousProperties = null;
             TextCharacters? currentRun = null;
-            var runText = ReadOnlySlice<char>.Empty;
+            ReadOnlyMemory<char> runText = default;
 
             for (var i = 0; i < textCharacters.Count; i++)
             {
@@ -311,18 +413,19 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var drawableRun = textCharacters[i];
 
-                    yield return new[] { drawableRun };
+                    processedRuns.Add(drawableRun);
 
-                    levelIndex += drawableRun.TextSourceLength;
+                    levelIndex += drawableRun.Length;
 
                     continue;
                 }
 
                 runText = currentRun.Text;
+                var runTextSpan = runText.Span;
 
-                for (; j < runText.Length;)
+                for (; j < runTextSpan.Length;)
                 {
-                    Codepoint.ReadAt(runText, j, out var count);
+                    Codepoint.ReadAt(runTextSpan, j, out var count);
 
                     if (levelIndex + 1 == levels.Length)
                     {
@@ -332,9 +435,10 @@ namespace Avalonia.Media.TextFormatting
                     levelIndex++;
                     j += count;
 
-                    if (j == runText.Length)
+                    if (j == runTextSpan.Length)
                     {
-                        yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties);
+                        currentRun.GetShapeableCharacters(runText.Slice(0, j), runLevel, fontManager,
+                            ref previousProperties, processedRuns);
 
                         runLevel = levels[levelIndex];
 
@@ -347,9 +451,11 @@ namespace Avalonia.Media.TextFormatting
                     }
 
                     // End of this run
-                    yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties);
+                    currentRun.GetShapeableCharacters(runText.Slice(0, j), runLevel, fontManager,
+                        ref previousProperties, processedRuns);
 
-                    runText = runText.Skip(j);
+                    runText = runText.Slice(j);
+                    runTextSpan = runText.Span;
 
                     j = 0;
 
@@ -360,10 +466,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (currentRun is null || runText.IsEmpty)
             {
-                yield break;
+                return;
             }
 
-            yield return currentRun.GetShapeableCharacters(runText, runLevel, ref previousProperties);
+            currentRun.GetShapeableCharacters(runText, runLevel, fontManager, ref previousProperties, processedRuns);
         }
 
         /// <summary>
@@ -371,36 +477,32 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="textSource">The text source.</param>
         /// <param name="firstTextSourceIndex">The first text source index.</param>
-        /// <param name="endOfLine"></param>
-        /// <param name="textSourceLength"></param>
+        /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
+        /// <param name="endOfLine">On return, the end of line, if any.</param>
+        /// <param name="textSourceLength">On return, the processed text source length.</param>
         /// <returns>
         /// The formatted text runs.
         /// </returns>
-        private static List<TextRun> FetchTextRuns(ITextSource textSource, int firstTextSourceIndex,
-            out TextEndOfLine? endOfLine, out int textSourceLength)
+        private static RentedList<TextRun> FetchTextRuns(ITextSource textSource, int firstTextSourceIndex,
+            FormattingObjectPool objectPool, out TextEndOfLine? endOfLine, out int textSourceLength)
         {
             textSourceLength = 0;
 
             endOfLine = null;
 
-            var textRuns = new List<TextRun>();
+            var textRuns = objectPool.TextRunLists.Rent();
 
             var textRunEnumerator = new TextRunEnumerator(textSource, firstTextSourceIndex);
 
             while (textRunEnumerator.MoveNext())
             {
-                var textRun = textRunEnumerator.Current;
-
-                if (textRun == null)
-                {
-                    break;
-                }
+                TextRun textRun = textRunEnumerator.Current!;
 
                 if (textRun is TextEndOfLine textEndOfLine)
                 {
                     endOfLine = textEndOfLine;
 
-                    textSourceLength += textEndOfLine.TextSourceLength;
+                    textSourceLength += textEndOfLine.Length;
 
                     textRuns.Add(textRun);
 
@@ -413,7 +515,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (TryGetLineBreak(textCharacters, out var runLineBreak))
                             {
-                                var splitResult = new TextCharacters(textCharacters.Text.Take(runLineBreak.PositionWrap),
+                                var splitResult = new TextCharacters(textCharacters.Text.Slice(0, runLineBreak.PositionWrap),
                                     textCharacters.Properties);
 
                                 textRuns.Add(splitResult);
@@ -434,7 +536,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
 
-                textSourceLength += textRun.TextSourceLength;
+                textSourceLength += textRun.Length;
             }
 
             return textRuns;
@@ -444,78 +546,87 @@ namespace Avalonia.Media.TextFormatting
         {
             lineBreak = default;
 
-            if (textRun.Text.IsEmpty)
+            var text = textRun.Text;
+
+            if (text.IsEmpty)
             {
                 return false;
             }
 
-            var lineBreakEnumerator = new LineBreakEnumerator(textRun.Text);
+            var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
-            while (lineBreakEnumerator.MoveNext())
+            while (lineBreakEnumerator.MoveNext(out lineBreak))
             {
-                if (!lineBreakEnumerator.Current.Required)
+                if (!lineBreak.Required)
                 {
                     continue;
                 }
 
-                lineBreak = lineBreakEnumerator.Current;
-
-                return lineBreak.PositionWrap >= textRun.Text.Length || true;
+                return lineBreak.PositionWrap >= textRun.Length || true;
             }
 
             return false;
         }
 
-        private static bool TryMeasureLength(IReadOnlyList<DrawableTextRun> textRuns, double paragraphWidth, out int measuredLength)
+        private static bool TryMeasureLength(IReadOnlyList<TextRun> textRuns, double paragraphWidth, out int measuredLength)
         {
             measuredLength = 0;
             var currentWidth = 0.0;
 
-            foreach (var currentRun in textRuns)
+            for (var i = 0; i < textRuns.Count; ++i)
             {
+                var currentRun = textRuns[i];
+
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedTextCharacters:
+                    case ShapedTextRun shapedTextCharacters:
                         {
-                            var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphClusters[0];
-                            var lastCluster = firstCluster;
-
-                            for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
+                            if (shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
-                                var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
+                                var firstCluster = shapedTextCharacters.ShapedBuffer[0].GlyphCluster;
+                                var lastCluster = firstCluster;
 
-                                if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                                for (var j = 0; j < shapedTextCharacters.ShapedBuffer.Length; j++)
                                 {
-                                    measuredLength += Math.Max(0, lastCluster - firstCluster);
+                                    var glyphInfo = shapedTextCharacters.ShapedBuffer[j];
 
-                                    goto found;
+                                    if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                                    {
+                                        measuredLength += Math.Max(0, lastCluster - firstCluster);
+
+                                        return measuredLength != 0;
+                                    }
+
+                                    lastCluster = glyphInfo.GlyphCluster;
+                                    currentWidth += glyphInfo.GlyphAdvance;
                                 }
 
-                                lastCluster = glyphInfo.GlyphCluster;
-                                currentWidth += glyphInfo.GlyphAdvance;
+                                measuredLength += currentRun.Length;
                             }
-
-                            measuredLength += currentRun.TextSourceLength;
 
                             break;
                         }
 
-                    case { } drawableTextRun:
+                    case DrawableTextRun drawableTextRun:
                         {
-                            if (currentWidth + drawableTextRun.Size.Width > paragraphWidth)
+                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
                             {
-                                goto found;
+                                return measuredLength != 0;
                             }
 
-                            measuredLength += currentRun.TextSourceLength;
-                            currentWidth += currentRun.Size.Width;
+                            measuredLength += currentRun.Length;
+                            currentWidth += drawableTextRun.Size.Width;
+
+                            break;
+                        }
+                    default:
+                        {
+                            measuredLength += currentRun.Length;
 
                             break;
                         }
                 }
             }
-
-            found:
 
             return measuredLength != 0;
         }
@@ -524,40 +635,44 @@ namespace Avalonia.Media.TextFormatting
         /// Creates an empty text line.
         /// </summary>
         /// <returns>The empty text line.</returns>
-        public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, double paragraphWidth, TextParagraphProperties paragraphProperties)
+        public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, double paragraphWidth,
+            TextParagraphProperties paragraphProperties)
         {
             var flowDirection = paragraphProperties.FlowDirection;
             var properties = paragraphProperties.DefaultTextRunProperties;
-            var glyphTypeface = properties.Typeface.GlyphTypeface;
-            var text = new ReadOnlySlice<char>(s_empty, firstTextSourceIndex, 1);
+            var glyphTypeface = properties.CachedGlyphTypeface;
             var glyph = glyphTypeface.GetGlyph(s_empty[0]);
-            var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex) };
+            var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex, 0.0) };
 
-            var shapedBuffer = new ShapedBuffer(text, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
+            var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
-            var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
+            var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
-            return new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection).FinalizeLine();
+            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+            line.FinalizeLine();
+            return line;
         }
 
         /// <summary>
         /// Performs text wrapping returns a list of text lines.
         /// </summary>
         /// <param name="textRuns"></param>
+        /// <param name="canReuseTextRunList">Whether <see cref="TextRun"/> can be reused to store the split runs.</param>
         /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
         /// <param name="paragraphProperties">The text paragraph properties.</param>
         /// <param name="resolvedFlowDirection"></param>
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
+        /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
         /// <returns>The wrapped text line.</returns>
-        private static TextLineImpl PerformTextWrapping(List<DrawableTextRun> textRuns, int firstTextSourceIndex,
-            double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection,
-            TextLineBreak? currentLineBreak)
+        private static TextLineImpl PerformTextWrapping(List<TextRun> textRuns, bool canReuseTextRunList,
+            int firstTextSourceIndex, double paragraphWidth, TextParagraphProperties paragraphProperties,
+            FlowDirection resolvedFlowDirection, TextLineBreak? currentLineBreak, FormattingObjectPool objectPool)
         {
-            if(textRuns.Count == 0)
+            if (textRuns.Count == 0)
             {
-                return CreateEmptyTextLine(firstTextSourceIndex,paragraphWidth, paragraphProperties);
+                return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
             }
 
             if (!TryMeasureLength(textRuns, paragraphWidth, out var measuredLength))
@@ -573,99 +688,112 @@ namespace Avalonia.Media.TextFormatting
 
             for (var index = 0; index < textRuns.Count; index++)
             {
-                var currentRun = textRuns[index];
-
-                var lineBreaker = new LineBreakEnumerator(currentRun.Text);
-
                 var breakFound = false;
 
-                while (lineBreaker.MoveNext())
+                var currentRun = textRuns[index];
+
+                switch (currentRun)
                 {
-                    if (lineBreaker.Current.Required &&
-                        currentLength + lineBreaker.Current.PositionMeasure <= measuredLength)
-                    {
-                        //Explicit break found
-                        breakFound = true;
-
-                        currentPosition = currentLength + lineBreaker.Current.PositionWrap;
-
-                        break;
-                    }
-
-                    if (currentLength + lineBreaker.Current.PositionMeasure > measuredLength)
-                    {
-                        if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
+                    case ShapedTextRun:
                         {
-                            if (lastWrapPosition > 0)
+                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+
+                            while (lineBreaker.MoveNext(out var lineBreak))
                             {
-                                currentPosition = lastWrapPosition;
-
-                                breakFound = true;
-
-                                break;
-                            }
-
-                            //Find next possible wrap position (overflow)
-                            if (index < textRuns.Count - 1)
-                            {
-                                if (lineBreaker.Current.PositionWrap != currentRun.Text.Length)
+                                if (lineBreak.Required &&
+                                    currentLength + lineBreak.PositionMeasure <= measuredLength)
                                 {
-                                    //We already found the next possible wrap position.
+                                    //Explicit break found
                                     breakFound = true;
 
-                                    currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                    currentPosition = currentLength + lineBreak.PositionWrap;
 
                                     break;
                                 }
 
-                                while (lineBreaker.MoveNext() && index < textRuns.Count)
+                                if (currentLength + lineBreak.PositionMeasure > measuredLength)
                                 {
-                                    currentPosition += lineBreaker.Current.PositionWrap;
-
-                                    if (lineBreaker.Current.PositionWrap != currentRun.Text.Length)
+                                    if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
                                     {
+                                        if (lastWrapPosition > 0)
+                                        {
+                                            currentPosition = lastWrapPosition;
+
+                                            breakFound = true;
+
+                                            break;
+                                        }
+
+                                        //Find next possible wrap position (overflow)
+                                        if (index < textRuns.Count - 1)
+                                        {
+                                            if (lineBreak.PositionWrap != currentRun.Length)
+                                            {
+                                                //We already found the next possible wrap position.
+                                                breakFound = true;
+
+                                                currentPosition = currentLength + lineBreak.PositionWrap;
+
+                                                break;
+                                            }
+
+                                            while (lineBreaker.MoveNext(out lineBreak))
+                                            {
+                                                currentPosition += lineBreak.PositionWrap;
+
+                                                if (lineBreak.PositionWrap != currentRun.Length)
+                                                {
+                                                    break;
+                                                }
+
+                                                index++;
+
+                                                if (index >= textRuns.Count)
+                                                {
+                                                    break;
+                                                }
+
+                                                currentRun = textRuns[index];
+
+                                                lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            currentPosition = currentLength + lineBreak.PositionWrap;
+                                        }
+
+                                        if (currentPosition == 0 && measuredLength > 0)
+                                        {
+                                            currentPosition = measuredLength;
+                                        }
+
+                                        breakFound = true;
+
                                         break;
                                     }
 
-                                    index++;
+                                    //We overflowed so we use the last available wrap position.
+                                    currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
 
-                                    if (index >= textRuns.Count)
-                                    {
-                                        break;
-                                    }
+                                    breakFound = true;
 
-                                    currentRun = textRuns[index];
+                                    break;
+                                }
 
-                                    lineBreaker = new LineBreakEnumerator(currentRun.Text);
+                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap)
+                                {
+                                    lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
                             }
-                            else
-                            {
-                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
-                            }
-
-                            breakFound = true;
 
                             break;
                         }
-
-                        //We overflowed so we use the last available wrap position.
-                        currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
-
-                        breakFound = true;
-
-                        break;
-                    }
-
-                    if (lineBreaker.Current.PositionMeasure != lineBreaker.Current.PositionWrap)
-                    {
-                        lastWrapPosition = currentLength + lineBreaker.Current.PositionWrap;
-                    }
                 }
 
                 if (!breakFound)
                 {
-                    currentLength += currentRun.Text.Length;
+                    currentLength += currentRun.Length;
 
                     continue;
                 }
@@ -675,24 +803,56 @@ namespace Avalonia.Media.TextFormatting
                 break;
             }
 
-            var splitResult = SplitDrawableRuns(textRuns, measuredLength);
+            var (preSplitRuns, postSplitRuns) = SplitTextRuns(textRuns, measuredLength, objectPool);
 
-            var remainingCharacters = splitResult.Second;
-
-            var lineBreak = remainingCharacters?.Count > 0 ?
-                new TextLineBreak(currentLineBreak?.TextEndOfLine, resolvedFlowDirection, remainingCharacters) :
-                null;
-
-            if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
+            try
             {
-                lineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, resolvedFlowDirection);
+                TextLineBreak? textLineBreak;
+                if (postSplitRuns?.Count > 0)
+                {
+                    List<TextRun> remainingRuns;
+
+                    // reuse the list as much as possible:
+                    // if canReuseTextRunList == true it's coming from previous remaining runs
+                    if (canReuseTextRunList)
+                    {
+                        remainingRuns = textRuns;
+                        remainingRuns.Clear();
+                    }
+                    else
+                    {
+                        remainingRuns = new List<TextRun>();
+                    }
+
+                    for (var i = 0; i < postSplitRuns.Count; ++i)
+                    {
+                        remainingRuns.Add(postSplitRuns[i]);
+                    }
+
+                    textLineBreak = new WrappingTextLineBreak(null, resolvedFlowDirection, remainingRuns);
+                }
+                else if (currentLineBreak?.TextEndOfLine is { } textEndOfLine)
+                {
+                    textLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
+                }
+                else
+                {
+                    textLineBreak = null;
+                }
+
+                var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
+                    paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                    textLineBreak);
+
+                textLine.FinalizeLine();
+
+                return textLine;
             }
-
-            var textLine = new TextLineImpl(splitResult.First, firstTextSourceIndex, measuredLength,
-                paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                lineBreak);
-
-            return textLine.FinalizeLine();
+            finally
+            {
+                objectPool.TextRunLists.Return(ref preSplitRuns);
+                objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
         }
 
         private struct TextRunEnumerator
@@ -719,12 +879,12 @@ namespace Avalonia.Media.TextFormatting
                     return false;
                 }
 
-                if (Current.TextSourceLength == 0)
+                if (Current.Length == 0)
                 {
                     return false;
                 }
 
-                _pos += Current.TextSourceLength;
+                _pos += Current.Length;
 
                 return true;
             }
@@ -738,11 +898,11 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The shaped symbol.
         /// </returns>
-        internal static ShapedTextCharacters CreateSymbol(TextRun textRun, FlowDirection flowDirection)
+        internal static ShapedTextRun CreateSymbol(TextRun textRun, FlowDirection flowDirection)
         {
             var textShaper = TextShaper.Current;
 
-            var glyphTypeface = textRun.Properties!.Typeface.GlyphTypeface;
+            var glyphTypeface = textRun.Properties!.CachedGlyphTypeface;
 
             var fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
 
@@ -752,7 +912,7 @@ namespace Avalonia.Media.TextFormatting
 
             var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
 
-            return new ShapedTextCharacters(shapedBuffer, textRun.Properties);
+            return new ShapedTextRun(shapedBuffer, textRun.Properties);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Avalonia.Media
         private const double MaxFontEmSize = RealInfiniteWidth / GreatestMultiplierOfEm;
 
         // properties and format runs
-        private ReadOnlySlice<char> _text;
+        private string _text;
         private readonly SpanVector _formatRuns = new SpanVector(null);
         private SpanPosition _latestPosition;
 
@@ -67,9 +67,7 @@ namespace Avalonia.Media
 
             ValidateFontSize(emSize);
 
-            _text = textToFormat != null ?
-                new ReadOnlySlice<char>(textToFormat.AsMemory()) :
-                throw new ArgumentNullException(nameof(textToFormat));
+            _text = textToFormat;
 
             var runProps = new GenericTextRunProperties(
                 typeface,
@@ -91,7 +89,8 @@ namespace Avalonia.Media
                 runProps,
                 TextWrapping.WrapWithOverflow,
                 0, // line height not specified
-                0 // indentation not specified
+                0, // indentation not specified
+                0
             );
 
             InvalidateMetrics();
@@ -654,14 +653,16 @@ namespace Avalonia.Media
 
             // line break before _currentLine, needed in case we have to reformat it with collapsing symbol
             private TextLineBreak? _previousLineBreak;
+            private int _position;
+            private int _length;
 
             internal LineEnumerator(FormattedText text)
             {
                 _previousHeight = 0;
-                Length = 0;
+                _length = 0;
                 _previousLineBreak = null;
 
-                Position = 0;
+                _position = 0;
                 _lineCount = 0;
                 _totalHeight = 0;
                 Current = null;
@@ -678,9 +679,17 @@ namespace Avalonia.Media
                 _nextLine = null;
             }
 
-            private int Position { get; set; }
+            public int Position 
+            { 
+                get => _position; 
+                private set => _position = value;
+            }
 
-            private int Length { get; set; }
+            public int Length 
+            { 
+                get => _length; 
+                private set => _length = value; 
+            }
 
             /// <summary>
             /// Gets the current text line in the collection
@@ -732,6 +741,11 @@ namespace Avalonia.Media
                         null // no previous line break
                         );
 
+                    if(Current is null)
+                    {
+                        return false;
+                    }
+
                     // check if this line fits the text height
                     if (_totalHeight + Current.Height > _that._maxTextHeight)
                     {
@@ -770,7 +784,7 @@ namespace Avalonia.Media
                 // maybe there is no next line at all
                 if (Position + Current.Length < _that._text.Length)
                 {
-                    bool nextLineFits;
+                    bool nextLineFits = false;
 
                     if (_lineCount + 1 >= _that._maxLineCount)
                     {
@@ -786,7 +800,10 @@ namespace Avalonia.Media
                             currentLineBreak
                             );
 
-                        nextLineFits = (_totalHeight + Current.Height + _nextLine.Height <= _that._maxTextHeight);
+                        if(_nextLine != null)
+                        {
+                            nextLineFits = (_totalHeight + Current.Height + _nextLine.Height <= _that._maxTextHeight);
+                        }
                     }
 
                     if (!nextLineFits)
@@ -810,16 +827,22 @@ namespace Avalonia.Media
                                 _previousLineBreak
                                 );
 
-                            currentLineBreak = Current.TextLineBreak;
+                            if(Current != null)
+                            {
+                                currentLineBreak = Current.TextLineBreak;
+                            }
 
                             _that._defaultParaProps.SetTextWrapping(currentWrap);
                         }
                     }
                 }
 
-                _previousHeight = Current.Height;
+                if(Current != null)
+                {
+                    _previousHeight = Current.Height;
 
-                Length = Current.Length;
+                    Length = Current.Length;
+                }
 
                 _previousLineBreak = currentLineBreak;
 
@@ -829,7 +852,7 @@ namespace Avalonia.Media
             /// <summary>
             /// Wrapper of TextFormatter.FormatLine that auto-collapses the line if needed.
             /// </summary>
-            private TextLine FormatLine(ITextSource textSource, int textSourcePosition, double maxLineLength, TextParagraphProperties paraProps, TextLineBreak? lineBreak)
+            private TextLine? FormatLine(ITextSource textSource, int textSourcePosition, double maxLineLength, TextParagraphProperties paraProps, TextLineBreak? lineBreak)
             {
                 var line = _formatter.FormatLine(
                     textSource,
@@ -839,7 +862,7 @@ namespace Avalonia.Media
                     lineBreak
                     );
 
-                if (_that._trimming != TextTrimming.None && line.HasOverflowed && line.Length > 0)
+                if (line != null && _that._trimming != TextTrimming.None && line.HasOverflowed && line.Length > 0)
                 {
                     // what I really need here is the last displayed text run of the line
                     // textSourcePosition + line.Length - 1 works except the end of paragraph case,
@@ -854,7 +877,7 @@ namespace Avalonia.Media
 
                     var lastRunProps = (GenericTextRunProperties)thatFormatRider.CurrentElement!;
 
-                    TextCollapsingProperties collapsingProperties = _that._trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(maxLineLength, lastRunProps));
+                    TextCollapsingProperties collapsingProperties = _that._trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(maxLineLength, lastRunProps, paraProps.FlowDirection));
 
                     var collapsedLine = line.Collapse(collapsingProperties);
 
@@ -1293,6 +1316,92 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Builds a highlight geometry object.
+        /// </summary>
+        /// <param name="origin">The origin of the highlight region</param>
+        /// <returns>Geometry that surrounds the text.</returns>
+        public Geometry? BuildHighlightGeometry(Point origin)
+        {
+            return BuildHighlightGeometry(origin, 0, _text.Length);
+        }
+
+        /// <summary>
+        /// Builds a highlight geometry object for a given character range.
+        /// </summary>
+        /// <param name="origin">The origin of the highlight region.</param>
+        /// <param name="startIndex">The start index of initial character the bounds should be obtained for.</param>
+        /// <param name="count">The number of characters the bounds should be obtained for.</param>
+        /// <returns>Geometry that surrounds the specified character range.</returns>
+        public Geometry? BuildHighlightGeometry(Point origin, int startIndex, int count)
+        {
+            ValidateRange(startIndex, count);
+
+            Geometry? accumulatedBounds = null;
+
+            using (var enumerator = GetEnumerator())
+            {
+                var lineOrigin = origin;
+
+                while (enumerator.MoveNext())
+                {
+                    var currentLine = enumerator.Current!;
+
+                    int x0 = Math.Max(enumerator.Position, startIndex);
+                    int x1 = Math.Min(enumerator.Position + enumerator.Length, startIndex + count);
+
+                    // check if this line is intersects with the specified character range
+                    if (x0 < x1)
+                    {
+                        var highlightBounds = currentLine.GetTextBounds(x0,x1 - x0);
+
+                        if (highlightBounds.Count > 0)
+                        {
+                            foreach (var bound in highlightBounds)
+                            {
+                                var rect = bound.Rectangle;
+
+                                if (FlowDirection == FlowDirection.RightToLeft)
+                                {
+                                    // Convert logical units (which extend leftward from the right edge
+                                    // of the paragraph) to physical units.
+                                    //
+                                    // Note that since rect is in logical units, rect.Right corresponds to
+                                    // the visual *left* edge of the rectangle in the RTL case. Specifically,
+                                    // is the distance leftward from the right edge of the formatting rectangle
+                                    // whose width is the paragraph width passed to FormatLine.
+                                    //
+                                    rect = rect.WithX(enumerator.CurrentParagraphWidth - rect.Right);
+                                }
+
+                                rect = new Rect(new Point(rect.X + lineOrigin.X, rect.Y + lineOrigin.Y), rect.Size);
+
+                                RectangleGeometry rectangleGeometry = new RectangleGeometry(rect);
+
+                                if (accumulatedBounds == null)
+                                {
+                                    accumulatedBounds = rectangleGeometry;
+                                }
+                                else
+                                {
+                                    accumulatedBounds = Geometry.Combine(accumulatedBounds, rectangleGeometry, GeometryCombineMode.Union);
+                                }
+                            }
+                        }
+                    }
+
+                    AdvanceLineOrigin(ref lineOrigin, currentLine);
+                }
+            }
+
+            if (accumulatedBounds?.PlatformImpl == null || accumulatedBounds.PlatformImpl.Bounds.IsDefault)
+            {
+                return null;
+            }            
+
+            return accumulatedBounds;
+        }
+
+        /// <summary>
         /// Draws the text object
         /// </summary>
         internal void Draw(DrawingContext drawingContext, Point origin)
@@ -1506,21 +1615,18 @@ namespace Avalonia.Media
             }
 
             /// <inheritdoc/>
-            public TextRun? GetTextRun(int textSourceCharacterIndex)
+            public TextRun GetTextRun(int textSourceCharacterIndex)
             {
                 if (textSourceCharacterIndex >= _that._text.Length)
                 {
-                    return null;
+                    return new TextEndOfParagraph();
                 }
 
                 var thatFormatRider = new SpanRider(_that._formatRuns, _that._latestPosition, textSourceCharacterIndex);
 
+                var text = _that._text.AsMemory(textSourceCharacterIndex, thatFormatRider.Length);
                 TextRunProperties properties = (GenericTextRunProperties)thatFormatRider.CurrentElement!;
-
-                var textCharacters = new TextCharacters(_that._text, textSourceCharacterIndex, thatFormatRider.Length,
-                    properties);
-
-                return textCharacters;
+                return new TextCharacters(text, properties);
             }
         }
     }

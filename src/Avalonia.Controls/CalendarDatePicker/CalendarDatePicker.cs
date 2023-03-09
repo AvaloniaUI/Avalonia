@@ -1,13 +1,13 @@
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -45,17 +45,11 @@ namespace Avalonia.Controls
         private DateTime? _onOpenSelectedDate;
         private bool _settingSelectedDate;
 
-        private DateTime _displayDate;
-        private DateTime? _displayDateStart;
-        private DateTime? _displayDateEnd;
-        private bool _isDropDownOpen;
-        private DateTime? _selectedDate;
-        private string? _text;
-        private bool _suspendTextChangeHandler = false;
-        private bool _isPopupClosing = false;
-        private bool _ignoreButtonClick = false;
-        private bool _isFlyoutOpen = false;
-        private bool _isPressed = false;
+        private bool _suspendTextChangeHandler;
+        private bool _isPopupClosing;
+        private bool _ignoreButtonClick;
+        private bool _isFlyoutOpen;
+        private bool _isPressed;
 
         /// <summary>
         /// Occurs when the drop-down
@@ -92,9 +86,9 @@ namespace Avalonia.Controls
         /// </summary>
         public CalendarDatePicker()
         {
-            FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
+            SetCurrentValue(FirstDayOfWeekProperty, DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek);
             _defaultText = string.Empty;
-            DisplayDate = DateTime.Today;
+            SetCurrentValue(DisplayDateProperty, DateTime.Today);
         }
 
         /// <summary>
@@ -185,7 +179,7 @@ namespace Avalonia.Controls
             {
                 _textBox.KeyDown += TextBox_KeyDown;
                 _textBox.GotFocus += TextBox_GotFocus;
-                _textBoxTextChangedSubscription = _textBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBox_TextChanged());
+                _textBoxTextChangedSubscription = _textBox.GetObservable(TextBox.TextProperty).Subscribe(_ => TextBox_TextChanged());
 
                 if(SelectedDate.HasValue)
                 {
@@ -257,7 +251,7 @@ namespace Avalonia.Controls
                     Threading.Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         _settingSelectedDate = true;
-                        Text = DateTimeToString(day);
+                        SetCurrentValue(TextProperty, DateTimeToString(day));
                         _settingSelectedDate = false;
                         OnDateSelected(addedDate, removedDate);
                     });
@@ -268,7 +262,7 @@ namespace Avalonia.Controls
                     // be changed by the Calendar
                     if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) && (_calendar == null || !_calendar.CalendarDatePickerDisplayDateFlag))
                     {
-                        DisplayDate = day;
+                        SetCurrentValue(DisplayDateProperty, day);
                     }
 
                     if(_calendar != null)
@@ -292,7 +286,7 @@ namespace Avalonia.Controls
             // Text
             else if (change.Property == TextProperty)
             {
-                var (oldValue, newValue) = change.GetOldAndNewValue<string>();
+                var (_, newValue) = change.GetOldAndNewValue<string?>();
 
                 if (!_suspendTextChangeHandler)
                 {
@@ -317,7 +311,7 @@ namespace Avalonia.Controls
                         if (!_settingSelectedDate)
                         {
                             _settingSelectedDate = true;
-                            SelectedDate = null;
+                            SetCurrentValue(SelectedDateProperty, null);
                             _settingSelectedDate = false;
                         }
                     }
@@ -400,7 +394,7 @@ namespace Avalonia.Controls
                 DateTime? newDate = DateTimeHelper.AddDays(selectedDate, e.Delta.Y > 0 ? -1 : 1);
                 if (newDate.HasValue && Calendar.IsValidDateSelection(_calendar, newDate.Value))
                 {
-                    SelectedDate = newDate;
+                    SetCurrentValue(SelectedDateProperty, newDate);
                     e.Handled = true;
                 }
             }
@@ -478,7 +472,7 @@ namespace Avalonia.Controls
             {
                 if (SelectedDate.HasValue)
                 {
-                    Text = DateTimeToString(SelectedDate.Value);
+                    SetCurrentValue(TextProperty, DateTimeToString(SelectedDate.Value));
                 }
                 else if (string.IsNullOrEmpty(_textBox.Text))
                 {
@@ -491,7 +485,7 @@ namespace Avalonia.Controls
                     if (date != null)
                     {
                         string? s = DateTimeToString((DateTime)date);
-                        Text = s;
+                        SetCurrentValue(TextProperty, s);
                     }
                 }
             }
@@ -547,7 +541,7 @@ namespace Avalonia.Controls
         private void Calendar_DayButtonMouseUp(object? sender, PointerReleasedEventArgs e)
         {
             Focus();
-            IsDropDownOpen = false;
+            SetCurrentValue(IsDropDownOpenProperty, false);
         }
 
         private void Calendar_DisplayDateChanged(object? sender, CalendarDateChangedEventArgs e)
@@ -564,13 +558,13 @@ namespace Avalonia.Controls
 
             if (e.AddedItems.Count > 0 && SelectedDate.HasValue && DateTime.Compare((DateTime)e.AddedItems[0]!, SelectedDate.Value) != 0)
             {
-                SelectedDate = (DateTime?)e.AddedItems[0];
+                SetCurrentValue(SelectedDateProperty, (DateTime?)e.AddedItems[0]);
             }
             else
             {
                 if (e.AddedItems.Count == 0)
                 {
-                    SelectedDate = null;
+                    SetCurrentValue(SelectedDateProperty, null);
                     return;
                 }
 
@@ -578,7 +572,7 @@ namespace Avalonia.Controls
                 {
                     if (e.AddedItems.Count > 0)
                     {
-                        SelectedDate = (DateTime?)e.AddedItems[0];
+                        SetCurrentValue(SelectedDateProperty, (DateTime?)e.AddedItems[0]);
                     }
                 }
             }
@@ -595,23 +589,23 @@ namespace Avalonia.Controls
 
         private void Calendar_KeyDown(object? sender, KeyEventArgs e)
         {
-            Calendar? c = sender as Calendar ?? throw new ArgumentException("Sender must be Calendar.", nameof(sender));
-
-            if (!e.Handled && (e.Key == Key.Enter || e.Key == Key.Space || e.Key == Key.Escape) && c.DisplayMode == CalendarMode.Month)
+            if (!e.Handled
+                && sender is Calendar { DisplayMode: CalendarMode.Month }
+                && (e.Key == Key.Enter || e.Key == Key.Space || e.Key == Key.Escape))
             {
                 Focus();
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
 
                 if (e.Key == Key.Escape)
                 {
-                    SelectedDate = _onOpenSelectedDate;
+                    SetCurrentValue(SelectedDateProperty, _onOpenSelectedDate);
                 }
             }
         }
 
         private void TextBox_GotFocus(object? sender, RoutedEventArgs e)
         {
-            IsDropDownOpen = false;
+            SetCurrentValue(IsDropDownOpenProperty, false);
         }
 
         private void TextBox_KeyDown(object? sender, KeyEventArgs e)
@@ -627,7 +621,7 @@ namespace Avalonia.Controls
             if (_textBox != null)
             {
                 _suspendTextChangeHandler = true;
-                Text = _textBox.Text;
+                SetCurrentValue(TextProperty, _textBox.Text);
                 _suspendTextChangeHandler = false;
             }
         }
@@ -660,7 +654,7 @@ namespace Avalonia.Controls
 
         private void PopUp_Closed(object? sender, EventArgs e)
         {
-            IsDropDownOpen = false;
+            SetCurrentValue(IsDropDownOpenProperty, false);
 
             if(!_isPopupClosing)
             {
@@ -678,12 +672,12 @@ namespace Avalonia.Controls
             if (IsDropDownOpen)
             {
                 Focus();
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
             }
             else
             {
                 SetSelectedDate();
-                IsDropDownOpen = true;
+                SetCurrentValue(IsDropDownOpenProperty, true);
                 _calendar!.Focus();
             }
         }
@@ -821,14 +815,14 @@ namespace Avalonia.Controls
                     
                     if (SelectedDate != d)
                     {
-                        SelectedDate = d;
+                        SetCurrentValue(SelectedDateProperty, d);
                     }
                 }
                 else
                 {
                     if (SelectedDate != null)
                     {
-                        SelectedDate = null;
+                        SetCurrentValue(SelectedDateProperty, null);
                     }
                 }
             }
@@ -838,7 +832,7 @@ namespace Avalonia.Controls
 
                 if (SelectedDate != d)
                 {
-                    SelectedDate = d;
+                    SetCurrentValue(SelectedDateProperty, d);
                 }
             }
         }
@@ -884,7 +878,7 @@ namespace Avalonia.Controls
                 if (string.IsNullOrEmpty(Watermark) && !UseFloatingWatermark)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
-                    Text = string.Empty;
+                    SetCurrentValue(TextProperty, string.Empty);
                     _defaultText = string.Empty;
                     var watermarkFormat = "<{0}>";
                     string watermarkText;

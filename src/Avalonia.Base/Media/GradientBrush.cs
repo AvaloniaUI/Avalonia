@@ -6,13 +6,14 @@ using System.ComponentModel;
 using Avalonia.Animation.Animators;
 using Avalonia.Collections;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Base class for brushes that draw with a gradient.
     /// </summary>
-    public abstract class GradientBrush : Brush, IGradientBrush
+    public abstract class GradientBrush : Brush, IGradientBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="SpreadMethod"/> property.
@@ -92,5 +93,7 @@ namespace Avalonia.Media
         {
             RaiseInvalidated(EventArgs.Empty);
         }
+
+        public abstract IImmutableBrush ToImmutable();
     }
 }

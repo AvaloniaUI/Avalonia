@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -19,29 +17,15 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GeometryNode(Matrix transform,
-            IBrush? brush,
+            IImmutableBrush? brush,
             IPen? pen,
-            IGeometryImpl geometry,
-            IDisposable? aux)
-            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform, aux)
+            IGeometryImpl geometry)
+            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform, brush)
         {
-            Transform = transform;
-            Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Geometry = geometry;
         }
-
-        /// <summary>
-        /// Gets the transform with which the node will be drawn.
-        /// </summary>
-        public Matrix Transform { get; }
-
-        /// <summary>
-        /// Gets the fill brush.
-        /// </summary>
-        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
@@ -76,21 +60,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            context.Transform = Transform;
             context.DrawGeometry(Brush, Pen, Geometry);
         }
 
         /// <inheritdoc/>
         public override bool HitTest(Point p)
         {
-            if (Transform.HasInverse)
-            {
-                p *= Transform.Invert();
-                return (Brush != null && Geometry.FillContains(p)) ||
-                    (Pen != null && Geometry.StrokeContains(Pen, p));
-            }
-
-            return false;
+            return (Brush != null && Geometry.FillContains(p)) ||
+                   (Pen != null && Geometry.StrokeContains(Pen, p));
         }
     }
 }

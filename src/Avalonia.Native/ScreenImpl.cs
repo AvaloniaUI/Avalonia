@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    class ScreenImpl : IScreenImpl, IDisposable
+    internal class ScreenImpl : IScreenImpl, IDisposable
     {
         private IAvnScreens _native;
 
@@ -30,10 +30,10 @@ namespace Avalonia.Native
                         var screen = _native.GetScreen(i);
 
                         result[i] = new Screen(
-                            screen.PixelDensity,
+                            screen.Scaling,
                             screen.Bounds.ToAvaloniaPixelRect(),
                             screen.WorkingArea.ToAvaloniaPixelRect(),
-                            screen.Primary.FromComBool());
+                            screen.IsPrimary.FromComBool());
                     }
 
                     return result;

@@ -79,7 +79,6 @@ namespace Avalonia.Animation
                 var animation = new Animation
                 {
                     Easing = SlideOutEasing,
-                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame
@@ -110,7 +109,6 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
-                    FillMode = FillMode.Forward,
                     Easing = SlideInEasing,
                     Children =
                     {
@@ -157,7 +155,7 @@ namespace Avalonia.Animation
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        protected static IVisual GetVisualParent(IVisual? from, IVisual? to)
+        protected static Visual GetVisualParent(Visual? from, Visual? to)
         {
             var p1 = (from ?? to)!.VisualParent;
             var p2 = (to ?? from)!.VisualParent;

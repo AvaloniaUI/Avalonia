@@ -4,111 +4,97 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.Platform.Interop;
+using Avalonia.SourceGenerator;
+
 // ReSharper disable UnassignedGetOnlyAutoProperty
 
 namespace Avalonia.X11.Glx
 {
-    unsafe class GlxInterface : GlInterfaceBase
+    internal unsafe partial class GlxInterface
     {
         private const string libGL = "libGL.so.1";
-        [GlEntryPointAttribute("glXMakeContextCurrent")]
-        public GlxMakeContextCurrent MakeContextCurrent { get; }
-        public delegate bool GlxMakeContextCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
+        [GetProcAddress("glXMakeContextCurrent")]
+        public partial bool MakeContextCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
 
-        [GlEntryPoint("glXGetCurrentContext")]
-        public GlxGetCurrentContext GetCurrentContext { get; }
-        public delegate IntPtr GlxGetCurrentContext();
+        [GetProcAddress("glXGetCurrentContext")]
+        public partial IntPtr GetCurrentContext();
 
-        [GlEntryPoint("glXGetCurrentDisplay")]
-        public GlxGetCurrentDisplay GetCurrentDisplay { get; }
-        public delegate IntPtr GlxGetCurrentDisplay();
+        [GetProcAddress("glXGetCurrentDisplay")]
+        public partial IntPtr GetCurrentDisplay();
         
-        [GlEntryPoint("glXGetCurrentDrawable")]
-        public GlxGetCurrentDrawable GetCurrentDrawable { get; }
-        public delegate IntPtr GlxGetCurrentDrawable();
+        [GetProcAddress("glXGetCurrentDrawable")]
+        public partial IntPtr GetCurrentDrawable();
         
-        [GlEntryPoint("glXGetCurrentReadDrawable")]
-        public GlxGetCurrentReadDrawable GetCurrentReadDrawable { get; }
-        public delegate IntPtr GlxGetCurrentReadDrawable();
+        [GetProcAddress("glXGetCurrentReadDrawable")]
+        public partial IntPtr GetCurrentReadDrawable();
         
-        [GlEntryPoint("glXCreatePbuffer")]
-        public GlxCreatePbuffer CreatePbuffer { get; }
-        public delegate IntPtr GlxCreatePbuffer(IntPtr dpy, IntPtr fbc, int[] attrib_list);
+        [GetProcAddress("glXCreatePbuffer")]
+        public partial IntPtr CreatePbuffer(IntPtr dpy, IntPtr fbc, int[] attrib_list);
         
-        [GlEntryPoint("glXDestroyPbuffer")]
-        public GlxDestroyPbuffer DestroyPbuffer { get; }
-        public delegate IntPtr GlxDestroyPbuffer(IntPtr dpy, IntPtr fb);
+        [GetProcAddress("glXDestroyPbuffer")]
+        public partial IntPtr DestroyPbuffer(IntPtr dpy, IntPtr fb);
         
-        [GlEntryPointAttribute("glXChooseVisual")]
-        public GlxChooseVisual ChooseVisual { get; }
-        public delegate  XVisualInfo* GlxChooseVisual(IntPtr dpy, int screen, int[] attribList);
+        [GetProcAddress("glXChooseVisual")]
+        public partial  XVisualInfo* ChooseVisual(IntPtr dpy, int screen, int[] attribList);
         
         
-        [GlEntryPointAttribute("glXCreateContext")]
-        public GlxCreateContext CreateContext { get; }
-        public delegate  IntPtr GlxCreateContext(IntPtr dpy,  XVisualInfo* vis,  IntPtr shareList,  bool direct);
+        [GetProcAddress("glXCreateContext")]
+        public partial  IntPtr CreateContext(IntPtr dpy,  XVisualInfo* vis,  IntPtr shareList,  bool direct);
         
 
-        [GlEntryPointAttribute("glXCreateContextAttribsARB")]
-        public GlxCreateContextAttribsARB CreateContextAttribsARB { get; }
-        public delegate IntPtr GlxCreateContextAttribsARB(IntPtr dpy, IntPtr fbconfig, IntPtr shareList,
+        [GetProcAddress("glXCreateContextAttribsARB")]
+        public partial IntPtr CreateContextAttribsARB(IntPtr dpy, IntPtr fbconfig, IntPtr shareList,
             bool direct, int[] attribs);
         
 
         [DllImport(libGL, EntryPoint = "glXGetProcAddress")]
-        public static extern IntPtr GlxGetProcAddress(Utf8Buffer buffer);
+        public static extern IntPtr GlxGetProcAddress(string buffer);
 
         
-        [GlEntryPointAttribute("glXDestroyContext")]
-        public GlxDestroyContext DestroyContext { get; }
-        public delegate  void GlxDestroyContext(IntPtr dpy, IntPtr ctx);
+        [GetProcAddress("glXDestroyContext")]
+        public partial  void DestroyContext(IntPtr dpy, IntPtr ctx);
         
         
-        [GlEntryPointAttribute("glXChooseFBConfig")]
-        public GlxChooseFBConfig ChooseFBConfig { get; }
-        public delegate  IntPtr* GlxChooseFBConfig(IntPtr dpy,  int screen,  int[] attrib_list,  out int nelements);
+        [GetProcAddress("glXChooseFBConfig")]
+        public partial  IntPtr* ChooseFBConfig(IntPtr dpy,  int screen,  int[] attrib_list,  out int nelements);
         
         
-        public  IntPtr* GlxChooseFbConfig(IntPtr dpy, int screen, IEnumerable<int> attribs, out int nelements)
+        public  IntPtr* ChooseFbConfig(IntPtr dpy, int screen, IEnumerable<int> attribs, out int nelements)
         {
             var arr = attribs.Concat(new[]{0}).ToArray();
             return ChooseFBConfig(dpy, screen, arr, out nelements);
         }
         
-        [GlEntryPointAttribute("glXGetVisualFromFBConfig")]
-        public GlxGetVisualFromFBConfig GetVisualFromFBConfig { get; }
-        public delegate  XVisualInfo * GlxGetVisualFromFBConfig(IntPtr dpy,  IntPtr config);
+        [GetProcAddress("glXGetVisualFromFBConfig")]
+        public partial  XVisualInfo * GetVisualFromFBConfig(IntPtr dpy,  IntPtr config);
         
         
-        [GlEntryPointAttribute("glXGetFBConfigAttrib")]
-        public GlxGetFBConfigAttrib GetFBConfigAttrib { get; }
-        public delegate  int GlxGetFBConfigAttrib(IntPtr dpy, IntPtr config, int attribute, out int value);
+        [GetProcAddress("glXGetFBConfigAttrib")]
+        public partial  int GetFBConfigAttrib(IntPtr dpy, IntPtr config, int attribute, out int value);
         
         
-        [GlEntryPointAttribute("glXSwapBuffers")]
-        public GlxSwapBuffers SwapBuffers { get; }
-        public delegate  void GlxSwapBuffers(IntPtr dpy,  IntPtr drawable);
+        [GetProcAddress("glXSwapBuffers")]
+        public partial  void SwapBuffers(IntPtr dpy,  IntPtr drawable);
         
         
-        [GlEntryPointAttribute("glXWaitX")]
-        public GlxWaitX WaitX { get; }
-        public delegate  void GlxWaitX();
+        [GetProcAddress("glXWaitX")]
+        public partial  void WaitX();
         
         
-        [GlEntryPointAttribute("glXWaitGL")]
-        public GlxWaitGL WaitGL { get; }
-        public delegate void GlxWaitGL();
+        [GetProcAddress("glXWaitGL")]
+        public partial void WaitGL();
         
-        public delegate int GlGetError();
-        [GlEntryPoint("glGetError")]
-        public GlGetError GetError { get; }
 
-        public delegate IntPtr GlxQueryExtensionsString(IntPtr display, int screen);
-        [GlEntryPoint("glXQueryExtensionsString")]
-        public GlxQueryExtensionsString QueryExtensionsString { get; }
+        [GetProcAddress("glGetError")]
+        public partial int GlGetError();
 
-        public GlxInterface() : base(SafeGetProcAddress)
+        
+        [GetProcAddress("glXQueryExtensionsString")]
+        public partial IntPtr QueryExtensionsString(IntPtr display, int screen);
+
+        public GlxInterface()
         {
+            Initialize(SafeGetProcAddress);
         }
 
         // Ignores egl functions.
@@ -122,10 +108,9 @@ namespace Avalonia.X11.Glx
                 return IntPtr.Zero;
             }
 
-            return GlxConverted(proc);
+            return GlxGetProcAddress(proc);
         }
 
-        private static readonly Func<string, IntPtr> GlxConverted = ConvertNative(GlxGetProcAddress);
 
         public string[] GetExtensions(IntPtr display)
         {

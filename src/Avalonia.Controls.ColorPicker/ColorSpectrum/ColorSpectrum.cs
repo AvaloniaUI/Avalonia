@@ -15,6 +15,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -73,6 +74,8 @@ namespace Avalonia.Controls.Primitives
         private WriteableBitmap? _saturationMaximumBitmap;
 
         private WriteableBitmap? _valueBitmap;
+        private WriteableBitmap? _minBitmap;
+        private WriteableBitmap? _maxBitmap;
 
         // Fields used by UpdateEllipse() to ensure that it's using the data
         // associated with the last call to CreateBitmapsAndColorMap(),
@@ -95,7 +98,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSpectrum"/> class.
         /// </summary>
-        public ColorSpectrum()
+        public ColorSpectrum() : base()
         {
             _shapeFromLastBitmapCreation = Shape;
             _componentsFromLastBitmapCreation = Components;
@@ -170,6 +173,18 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+
+            // If the color was updated while this ColorSpectrum was not part of the visual tree,
+            // the selection ellipse may be in an incorrect position. This is because the spectrum
+            // renders based on layout scaling to avoid color banding; however, layout scale is only
+            // available when the control is attached to the visual tree. The ColorSpectrum's color
+            // may be updated from code-behind or from binding with another control when it's not
+            // part of the visual tree.
+            //
+            //  See discussion: https://github.com/AvaloniaUI/Avalonia/discussions/9077
+            //
+            // To work-around this issue the selection ellipse is refreshed here.
+            UpdateEllipse();
 
             // OnAttachedToVisualTree is called after OnApplyTemplate so events cannot be connected here
         }
@@ -489,6 +504,23 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ComponentsProperty)
             {
+                // Calculate and update the ThirdComponent value
+                switch (Components)
+                {
+                    case ColorSpectrumComponents.HueSaturation:
+                    case ColorSpectrumComponents.SaturationHue:
+                        ThirdComponent = (ColorComponent)HsvComponent.Value;
+                        break;
+                    case ColorSpectrumComponents.HueValue:
+                    case ColorSpectrumComponents.ValueHue:
+                        ThirdComponent = (ColorComponent)HsvComponent.Saturation;
+                        break;
+                    case ColorSpectrumComponents.SaturationValue:
+                    case ColorSpectrumComponents.ValueSaturation:
+                        ThirdComponent = (ColorComponent)HsvComponent.Hue;
+                        break;
+                }
+
                 CreateBitmapsAndColorMap();
             }
 
@@ -588,6 +620,10 @@ namespace Avalonia.Controls.Primitives
             RaiseColorChanged();
         }
 
+        /// <summary>
+        /// Updates the selected <see cref="HsvColor"/> and <see cref="Color"/> based on a point within the color spectrum.
+        /// </summary>
+        /// <param name="point">The point on the spectrum representing the color.</param>
         private void UpdateColorFromPoint(PointerPoint point)
         {
             // If we haven't initialized our HSV value array yet, then we should just ignore any user input -
@@ -664,6 +700,9 @@ namespace Avalonia.Controls.Primitives
             UpdateColor(hsvAtPoint);
         }
 
+        /// <summary>
+        /// Updates the position of the selection ellipse on the spectrum which indicates the selected color.
+        /// </summary>
         private void UpdateEllipse()
         {
             if (_selectionEllipsePanel == null)
@@ -832,6 +871,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             // Remember the bitmap size follows physical device pixels
+            // Warning: LayoutHelper.GetLayoutScale() doesn't work unless the control is visible
+            // This will not be true in all cases if the color is updated from another control or code-behind
             var scale = LayoutHelper.GetLayoutScale(this);
             Canvas.SetLeft(_selectionEllipsePanel, (xPosition / scale) - (_selectionEllipsePanel.Width / 2));
             Canvas.SetTop(_selectionEllipsePanel, (yPosition / scale) - (_selectionEllipsePanel.Height / 2));
@@ -973,13 +1014,13 @@ namespace Avalonia.Controls.Primitives
 
             // The middle 4 are only needed and used in the case of hue as the third dimension.
             // Saturation and luminosity need only a min and max.
-            List<byte> bgraMinPixelData = new List<byte>();
-            List<byte> bgraMiddle1PixelData = new List<byte>();
-            List<byte> bgraMiddle2PixelData = new List<byte>();
-            List<byte> bgraMiddle3PixelData = new List<byte>();
-            List<byte> bgraMiddle4PixelData = new List<byte>();
-            List<byte> bgraMaxPixelData = new List<byte>();
-            List<Hsv> newHsvValues = new List<Hsv>();
+            ArrayList<byte> bgraMinPixelData;
+            ArrayList<byte> bgraMiddle1PixelData;
+            ArrayList<byte> bgraMiddle2PixelData;
+            ArrayList<byte> bgraMiddle3PixelData;
+            ArrayList<byte> bgraMiddle4PixelData;
+            ArrayList<byte> bgraMaxPixelData;
+            List<Hsv> newHsvValues;
 
             // In Avalonia, Bounds returns the actual device-independent pixel size of a control.
             // However, this is not necessarily the size of the control rendered on a display.
@@ -990,20 +1031,27 @@ namespace Avalonia.Controls.Primitives
             int pixelDimension = (int)Math.Round(minDimension * scale);
             var pixelCount = pixelDimension * pixelDimension;
             var pixelDataSize = pixelCount * 4;
-            bgraMinPixelData.Capacity = pixelDataSize;
+
+            bgraMinPixelData = new ArrayList<byte>(pixelDataSize);
+            bgraMaxPixelData = new ArrayList<byte>(pixelDataSize);
+            newHsvValues = new List<Hsv>(pixelCount);
 
             // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
             if (components == ColorSpectrumComponents.ValueSaturation ||
                 components == ColorSpectrumComponents.SaturationValue)
             {
-                bgraMiddle1PixelData.Capacity = pixelDataSize;
-                bgraMiddle2PixelData.Capacity = pixelDataSize;
-                bgraMiddle3PixelData.Capacity = pixelDataSize;
-                bgraMiddle4PixelData.Capacity = pixelDataSize;
+                bgraMiddle1PixelData = new ArrayList<byte>(pixelDataSize);
+                bgraMiddle2PixelData = new ArrayList<byte>(pixelDataSize);
+                bgraMiddle3PixelData = new ArrayList<byte>(pixelDataSize);
+                bgraMiddle4PixelData = new ArrayList<byte>(pixelDataSize);
             }
-
-            bgraMaxPixelData.Capacity = pixelDataSize;
-            newHsvValues.Capacity = pixelCount;
+            else
+            {
+                bgraMiddle1PixelData = new ArrayList<byte>(0);
+                bgraMiddle2PixelData = new ArrayList<byte>(0);
+                bgraMiddle3PixelData = new ArrayList<byte>(0);
+                bgraMiddle4PixelData = new ArrayList<byte>(0);
+            }
 
             await Task.Run(() =>
             {
@@ -1056,28 +1104,28 @@ namespace Avalonia.Controls.Primitives
 
                 ColorSpectrumComponents components2 = Components;
 
-                WriteableBitmap minBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
-                WriteableBitmap maxBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
+                _minBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
+                _maxBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
 
                 switch (components2)
                 {
                     case ColorSpectrumComponents.HueValue:
                     case ColorSpectrumComponents.ValueHue:
-                        _saturationMinimumBitmap = minBitmap;
-                        _saturationMaximumBitmap = maxBitmap;
+                        _saturationMinimumBitmap = _minBitmap;
+                        _saturationMaximumBitmap = _maxBitmap;
                         break;
                     case ColorSpectrumComponents.HueSaturation:
                     case ColorSpectrumComponents.SaturationHue:
-                        _valueBitmap = maxBitmap;
+                        _valueBitmap = _maxBitmap;
                         break;
                     case ColorSpectrumComponents.ValueSaturation:
                     case ColorSpectrumComponents.SaturationValue:
-                        _hueRedBitmap = minBitmap;
+                        _hueRedBitmap = _minBitmap;
                         _hueYellowBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle1PixelData, pixelWidth, pixelHeight);
                         _hueGreenBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle2PixelData, pixelWidth, pixelHeight);
                         _hueCyanBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle3PixelData, pixelWidth, pixelHeight);
                         _hueBlueBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle4PixelData, pixelWidth, pixelHeight);
-                        _huePurpleBitmap = maxBitmap;
+                        _huePurpleBitmap = _maxBitmap;
                         break;
                 }
 
@@ -1099,7 +1147,7 @@ namespace Avalonia.Controls.Primitives
             });
         }
 
-        private void FillPixelForBox(
+        private static void FillPixelForBox(
             double x,
             double y,
             Hsv baseHsv,
@@ -1111,12 +1159,12 @@ namespace Avalonia.Controls.Primitives
             double maxSaturation,
             double minValue,
             double maxValue,
-            List<byte> bgraMinPixelData,
-            List<byte> bgraMiddle1PixelData,
-            List<byte> bgraMiddle2PixelData,
-            List<byte> bgraMiddle3PixelData,
-            List<byte> bgraMiddle4PixelData,
-            List<byte> bgraMaxPixelData,
+            ArrayList<byte> bgraMinPixelData,
+            ArrayList<byte> bgraMiddle1PixelData,
+            ArrayList<byte> bgraMiddle2PixelData,
+            ArrayList<byte> bgraMiddle3PixelData,
+            ArrayList<byte> bgraMiddle4PixelData,
+            ArrayList<byte> bgraMaxPixelData,
             List<Hsv> newHsvValues)
         {
             double hMin = minHue;
@@ -1271,12 +1319,12 @@ namespace Avalonia.Controls.Primitives
             double maxSaturation,
             double minValue,
             double maxValue,
-            List<byte> bgraMinPixelData,
-            List<byte> bgraMiddle1PixelData,
-            List<byte> bgraMiddle2PixelData,
-            List<byte> bgraMiddle3PixelData,
-            List<byte> bgraMiddle4PixelData,
-            List<byte> bgraMaxPixelData,
+            ArrayList<byte> bgraMinPixelData,
+            ArrayList<byte> bgraMiddle1PixelData,
+            ArrayList<byte> bgraMiddle2PixelData,
+            ArrayList<byte> bgraMiddle3PixelData,
+            ArrayList<byte> bgraMiddle4PixelData,
+            ArrayList<byte> bgraMaxPixelData,
             List<Hsv> newHsvValues)
         {
             double hMin = minHue;

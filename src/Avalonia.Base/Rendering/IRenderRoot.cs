@@ -1,6 +1,4 @@
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
@@ -8,7 +6,7 @@ namespace Avalonia.Rendering
     /// Represents the root of a renderable tree.
     /// </summary>
     [NotClientImplementable]
-    public interface IRenderRoot : IVisual
+    public interface IRenderRoot
     {
         /// <summary>
         /// Gets the client size of the window.
@@ -24,18 +22,6 @@ namespace Avalonia.Rendering
         /// The scaling factor to use in rendering.
         /// </summary>
         double RenderScaling { get; }
-
-        /// <summary>
-        /// Creates a render target for the window.
-        /// </summary>
-        /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget();
-
-        /// <summary>
-        /// Adds a rectangle to the window's dirty region.
-        /// </summary>
-        /// <param name="rect">The rectangle.</param>
-        void Invalidate(Rect rect);
 
         /// <summary>
         /// Converts a point from screen to client coordinates.

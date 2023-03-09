@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
-using System.Text;
 using Avalonia.LogicalTree;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 namespace Avalonia.Styling
 {
@@ -48,7 +48,7 @@ namespace Avalonia.Styling
         public int Step { get; }
         public int Offset { get; }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is ILogical logical))
             {
@@ -61,7 +61,7 @@ namespace Avalonia.Styling
             {
                 return subscribe
                     ? new SelectorMatch(new NthChildActivator(logical, childIndexProvider, Step, Offset, _reversed))
-                    : Evaluate(logical, childIndexProvider, Step, Offset, _reversed);
+                    : Evaluate(childIndexProvider.GetChildIndex(logical), childIndexProvider, Step, Offset, _reversed);
             }
             else
             {
@@ -70,10 +70,9 @@ namespace Avalonia.Styling
         }
 
         internal static SelectorMatch Evaluate(
-            ILogical logical, IChildIndexProvider childIndexProvider,
+            int index, IChildIndexProvider childIndexProvider,
             int step, int offset, bool reversed)
         {
-            var index = childIndexProvider.GetChildIndex(logical);
             if (index < 0)
             {
                 return SelectorMatch.NeverThisInstance;
@@ -107,10 +106,11 @@ namespace Avalonia.Styling
         protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
-            var stringBuilder = new StringBuilder(_previous?.ToString(), expectedCapacity);
+            var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
+            stringBuilder.Append(_previous?.ToString(owner));
             
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);
@@ -140,7 +140,7 @@ namespace Avalonia.Styling
 
             stringBuilder.Append(')');
 
-            return stringBuilder.ToString();
+            return StringBuilderCache.GetStringAndRelease(stringBuilder);
         }
     }
 }

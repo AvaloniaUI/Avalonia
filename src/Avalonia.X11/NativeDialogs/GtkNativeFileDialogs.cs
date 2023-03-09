@@ -59,7 +59,7 @@ namespace Avalonia.X11.NativeDialogs
                 return res?.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray() ?? Array.Empty<IStorageFolder>();
             });
         }
-
+        
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
             return await await RunOnGlibThread(async () =>
@@ -196,10 +196,10 @@ namespace Avalonia.X11.NativeDialogs
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Cancel);
             }
 
-            Uri? folderPath = null;
-            if (initialFolder?.TryGetUri(out folderPath) == true)
+            var folderLocalPath = initialFolder?.TryGetLocalPath();
+            if (folderLocalPath is not null)
             {
-                using var dir = new Utf8Buffer(folderPath.LocalPath);
+                using var dir = new Utf8Buffer(folderLocalPath);
                 gtk_file_chooser_set_current_folder(dlg, dir);
             }
 
@@ -207,7 +207,7 @@ namespace Avalonia.X11.NativeDialogs
             {
                 // gtk_file_chooser_set_filename() expects full path
                 using var fn = action == GtkFileChooserAction.Open
-                    ? new Utf8Buffer(Path.Combine(folderPath?.LocalPath ?? "", initialFileName))
+                    ? new Utf8Buffer(Path.Combine(folderLocalPath ?? "", initialFileName))
                     : new Utf8Buffer(initialFileName);
 
                 if (action == GtkFileChooserAction.Save)

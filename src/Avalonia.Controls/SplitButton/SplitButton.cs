@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -24,7 +25,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Click
+        public event EventHandler<RoutedEventArgs>? Click
         {
             add => AddHandler(ClickEvent, value);
             remove => RemoveHandler(ClickEvent, value);
@@ -34,15 +35,15 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<SplitButton, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
+            RoutedEvent.Register<SplitButton, RoutedEventArgs>(
+                nameof(Click),
+                RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<SplitButton, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<SplitButton>(
-                splitButton => splitButton.Command,
-                (splitButton, command) => splitButton.Command = command);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<SplitButton>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
@@ -56,8 +57,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             Button.FlyoutProperty.AddOwner<SplitButton>();
 
-        private ICommand? _Command;
-
         private Button? _primaryButton   = null;
         private Button? _secondaryButton = null;
 
@@ -68,10 +67,6 @@ namespace Avalonia.Controls
 
         private IDisposable? _flyoutPropertyChangedDisposable;
 
-        ////////////////////////////////////////////////////////////////////////
-        // Constructor / Destructors
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SplitButton"/> class.
         /// </summary>
@@ -79,17 +74,13 @@ namespace Avalonia.Controls
         {
         }
 
-        ////////////////////////////////////////////////////////////////////////
-        // Properties
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Gets or sets the <see cref="ICommand"/> invoked when the primary part is pressed.
         /// </summary>
         public ICommand? Command
         {
-            get => _Command;
-            set => SetAndRaise(CommandProperty, ref _Command, value);
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -122,10 +113,6 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-
-        ////////////////////////////////////////////////////////////////////////
-        // Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
@@ -185,7 +172,7 @@ namespace Avalonia.Controls
                 flyout.Opened += Flyout_Opened;
                 flyout.Closed += Flyout_Closed;
 
-                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(FlyoutBase.PlacementProperty).Subscribe(Flyout_PlacementPropertyChanged);
+                _flyoutPropertyChangedDisposable = flyout.GetPropertyChangedObservable(Popup.PlacementModeProperty).Subscribe(Flyout_PlacementPropertyChanged);
             }
         }
 
@@ -220,10 +207,6 @@ namespace Avalonia.Controls
                 _secondaryButton.Click -= SecondaryButton_Click;
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // OnEvent Overridable Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -428,10 +411,6 @@ namespace Avalonia.Controls
             // Available for derived types
         }
 
-        ////////////////////////////////////////////////////////////////////////
-        // Event Handling
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Event handler for when the internal primary button part is pressed.
         /// </summary>
@@ -453,7 +432,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="FlyoutBase.Placement"/> property changes.
+        /// Called when the <see cref="PopupFlyoutBase.Placement"/> property changes.
         /// </summary>
         private void Flyout_PlacementPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {

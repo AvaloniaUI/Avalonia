@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
@@ -224,7 +224,7 @@ namespace Avalonia.Controls
     /// </para>
     /// </remarks>
     [TemplatePart(PART_ElementMonth, typeof(CalendarItem))]
-    [TemplatePart(PART_ElementRoot,  typeof(Panel))]
+    [TemplatePart(PART_ElementRoot, typeof(Panel))]
     public class Calendar : TemplatedControl
     {
         internal const int RowsPerMonth = 7;
@@ -232,16 +232,11 @@ namespace Avalonia.Controls
         internal const int RowsPerYear = 3;
         internal const int ColumnsPerYear = 4;
 
-        private DateTime? _selectedDate;
         private DateTime _selectedMonth;
         private DateTime _selectedYear;
 
-        private DateTime _displayDate = DateTime.Today;
-        private DateTime? _displayDateStart = null;
-        private DateTime? _displayDateEnd = null;
-
         private bool _isShiftPressed;
-        private bool _displayDateIsChanging = false;
+        private bool _displayDateIsChanging;
 
         internal CalendarDayButton? FocusButton { get; set; }
         internal CalendarButton? FocusCalendarButton { get; set; }
@@ -291,7 +286,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                throw new ArgumentOutOfRangeException("d", "Invalid DayOfWeek");
+                throw new ArgumentOutOfRangeException(nameof(e), "Invalid DayOfWeek");
             }
         }
 
@@ -338,21 +333,18 @@ namespace Avalonia.Controls
         /// <param name="e">The DependencyPropertyChangedEventArgs.</param>
         private void OnIsTodayHighlightedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (DisplayDate != null)
-            {
-                int i = DateTimeHelper.CompareYearMonth(DisplayDateInternal, DateTime.Today);
+            int i = DateTimeHelper.CompareYearMonth(DisplayDateInternal, DateTime.Today);
 
-                if (i > -2 && i < 2)
-                {
-                    UpdateMonths();
-                }
+            if (i > -2 && i < 2)
+            {
+                UpdateMonths();
             }
         }
 
-        public static readonly StyledProperty<IBrush> HeaderBackgroundProperty =
-            AvaloniaProperty.Register<Calendar, IBrush>(nameof(HeaderBackground));
+        public static readonly StyledProperty<IBrush?> HeaderBackgroundProperty =
+            AvaloniaProperty.Register<Calendar, IBrush?>(nameof(HeaderBackground));
 
-        public IBrush HeaderBackground
+        public IBrush? HeaderBackground
         {
             get { return GetValue(HeaderBackgroundProperty); }
             set { SetValue(HeaderBackgroundProperty, value); }
@@ -399,13 +391,13 @@ namespace Avalonia.Controls
                         }
                     case CalendarMode.Year:
                         {
-                            DisplayDate = SelectedMonth;
+                            SetCurrentValue(DisplayDateProperty, SelectedMonth);
                             SelectedYear = SelectedMonth;
                             break;
                         }
                     case CalendarMode.Decade:
                         {
-                            DisplayDate = SelectedYear;
+                            SetCurrentValue(DisplayDateProperty, SelectedYear);
                             SelectedMonth = SelectedYear;
                             break;
                         }
@@ -475,13 +467,13 @@ namespace Avalonia.Controls
             if (IsValidSelectionMode(e.NewValue!))
             {
                 _displayDateIsChanging = true;
-                SelectedDate = null;
+                SetCurrentValue(SelectedDateProperty, null);
                 _displayDateIsChanging = false;
                 SelectedDates.Clear();
             }
             else
             {
-                throw new ArgumentOutOfRangeException("d", "Invalid SelectionMode");
+                throw new ArgumentOutOfRangeException(nameof(e), "Invalid SelectionMode");
             }
         }
 
@@ -500,11 +492,8 @@ namespace Avalonia.Controls
                 || mode == CalendarSelectionMode.None;
         }
 
-        public static readonly DirectProperty<Calendar, DateTime?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime?>(
-                nameof(SelectedDate),
-                o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v,
+        public static readonly StyledProperty<DateTime?> SelectedDateProperty =
+            AvaloniaProperty.Register<Calendar, DateTime?>(nameof(SelectedDate),
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -532,8 +521,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime? SelectedDate
         {
-            get { return _selectedDate; }
-            set { SetAndRaise(SelectedDateProperty, ref _selectedDate, value); }
+            get => GetValue(SelectedDateProperty);
+            set => SetValue(SelectedDateProperty, value);
         }
         private void OnSelectedDateChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -577,7 +566,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException("d", "SelectedDate value is not valid.");
+                        throw new ArgumentOutOfRangeException(nameof(e), "SelectedDate value is not valid.");
                     }
                 }
                 else
@@ -655,7 +644,7 @@ namespace Avalonia.Controls
                 SelectedDatesChanged?.Invoke(this, e);
             }
         }
-        
+
         internal Collection<DateTime> RemovedItems { get; set; }
         internal DateTime? LastSelectedDateInternal { get; set; }
         internal DateTime? LastSelectedDate
@@ -729,11 +718,8 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly DirectProperty<Calendar, DateTime> DisplayDateProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime>(
-                nameof(DisplayDate),
-                o => o.DisplayDate,
-                (o, v) => o.DisplayDate = v,
+        public static readonly StyledProperty<DateTime> DisplayDateProperty =
+            AvaloniaProperty.Register<Calendar, DateTime>(nameof(DisplayDate),
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -763,8 +749,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime DisplayDate
         {
-            get { return _displayDate; }
-            set { SetAndRaise(DisplayDateProperty, ref _displayDate, value); }
+            get => GetValue(DisplayDateProperty);
+            set => SetValue(DisplayDateProperty, value);
         }
         internal DateTime DisplayDateInternal { get; private set; }
 
@@ -799,11 +785,8 @@ namespace Avalonia.Controls
             DisplayDateChanged?.Invoke(this, e);
         }
 
-        public static readonly DirectProperty<Calendar, DateTime?> DisplayDateStartProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime?>(
-                nameof(DisplayDateStart),
-                o => o.DisplayDateStart,
-                (o, v) => o.DisplayDateStart = v,
+        public static readonly StyledProperty<DateTime?> DisplayDateStartProperty =
+            AvaloniaProperty.Register<Calendar, DateTime?>(nameof(DisplayDateStart),
                 defaultBindingMode: BindingMode.TwoWay);
         /// <summary>
         /// Gets or sets the first date to be displayed.
@@ -817,8 +800,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime? DisplayDateStart
         {
-            get { return _displayDateStart; }
-            set { SetAndRaise(DisplayDateStartProperty, ref _displayDateStart, value); }
+            get => GetValue(DisplayDateStartProperty);
+            set => SetValue(DisplayDateStartProperty, value);
         }
         private void OnDisplayDateStartChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -834,7 +817,7 @@ namespace Avalonia.Controls
 
                     if (selectedDateMin.HasValue && DateTime.Compare(selectedDateMin.Value, newValue.Value) < 0)
                     {
-                        DisplayDateStart = selectedDateMin.Value;
+                        SetCurrentValue(DisplayDateStartProperty, selectedDateMin.Value);
                         return;
                     }
 
@@ -842,14 +825,14 @@ namespace Avalonia.Controls
                     // DisplayDateEnd = DisplayDateStart
                     if (DateTime.Compare(newValue.Value, DisplayDateRangeEnd) > 0)
                     {
-                        DisplayDateEnd = DisplayDateStart;
+                        SetCurrentValue(DisplayDateEndProperty, DisplayDateStart);
                     }
 
                     // If DisplayDate < DisplayDateStart,
                     // DisplayDate = DisplayDateStart
                     if (DateTimeHelper.CompareYearMonth(newValue.Value, DisplayDateInternal) > 0)
                     {
-                        DisplayDate = newValue.Value;
+                        SetCurrentValue(DisplayDateProperty, newValue.Value);
                     }
                 }
                 UpdateMonths();
@@ -908,13 +891,10 @@ namespace Avalonia.Controls
             get { return DisplayDateStart.GetValueOrDefault(DateTime.MinValue); }
         }
 
-        public static readonly DirectProperty<Calendar, DateTime?> DisplayDateEndProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime?>(
-                nameof(DisplayDateEnd),
-                o => o.DisplayDateEnd,
-                (o, v) => o.DisplayDateEnd = v,
+        public static readonly StyledProperty<DateTime?> DisplayDateEndProperty =
+            AvaloniaProperty.Register<Calendar, DateTime?>(nameof(DisplayDateEnd),
                 defaultBindingMode: BindingMode.TwoWay);
-        
+
         /// <summary>
         /// Gets or sets the last date to be displayed.
         /// </summary>
@@ -927,8 +907,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime? DisplayDateEnd
         {
-            get { return _displayDateEnd; }
-            set { SetAndRaise(DisplayDateEndProperty, ref _displayDateEnd, value); }
+            get => GetValue(DisplayDateEndProperty);
+            set => SetValue(DisplayDateEndProperty, value);
         }
 
         private void OnDisplayDateEndChanged(AvaloniaPropertyChangedEventArgs e)
@@ -945,7 +925,7 @@ namespace Avalonia.Controls
 
                     if (selectedDateMax.HasValue && DateTime.Compare(selectedDateMax.Value, newValue.Value) > 0)
                     {
-                        DisplayDateEnd = selectedDateMax.Value;
+                        SetCurrentValue(DisplayDateEndProperty, selectedDateMax.Value);
                         return;
                     }
 
@@ -953,7 +933,7 @@ namespace Avalonia.Controls
                     // DisplayDateEnd = DisplayDateStart
                     if (DateTime.Compare(newValue.Value, DisplayDateRangeStart) < 0)
                     {
-                        DisplayDateEnd = DisplayDateStart;
+                        SetCurrentValue(DisplayDateEndProperty, DisplayDateStart);
                         return;
                     }
 
@@ -961,7 +941,7 @@ namespace Avalonia.Controls
                     // DisplayDate = DisplayDateEnd
                     if (DateTimeHelper.CompareYearMonth(newValue.Value, DisplayDateInternal) < 0)
                     {
-                        DisplayDate = newValue.Value;
+                        SetCurrentValue(DisplayDateProperty, newValue.Value);
                     }
                 }
                 UpdateMonths();
@@ -1242,7 +1222,7 @@ namespace Avalonia.Controls
                                     {
                                         b.IsSelected = false;
                                     }
-                                } 
+                                }
                             }
                         }
                     }
@@ -1278,7 +1258,7 @@ namespace Avalonia.Controls
 
         internal void OnPreviousClick()
         {
-            if (DisplayMode == CalendarMode.Month && DisplayDate != null)
+            if (DisplayMode == CalendarMode.Month)
             {
                 DateTime? d = DateTimeHelper.AddMonths(DateTimeHelper.DiscardDayTime(DisplayDate), -1);
                 if (d.HasValue)
@@ -1287,7 +1267,7 @@ namespace Avalonia.Controls
                     {
                         LastSelectedDate = d.Value;
                     }
-                    DisplayDate = d.Value;
+                    SetCurrentValue(DisplayDateProperty, d.Value);
                 }
             }
             else
@@ -1326,7 +1306,7 @@ namespace Avalonia.Controls
         }
         internal void OnNextClick()
         {
-            if (DisplayMode == CalendarMode.Month && DisplayDate != null)
+            if (DisplayMode == CalendarMode.Month)
             {
                 DateTime? d = DateTimeHelper.AddMonths(DateTimeHelper.DiscardDayTime(DisplayDate), 1);
                 if (d.HasValue)
@@ -1335,7 +1315,7 @@ namespace Avalonia.Controls
                     {
                         LastSelectedDate = d.Value;
                     }
-                    DisplayDate = d.Value;
+                    SetCurrentValue(DisplayDateProperty, d.Value);
                 }
             }
             else
@@ -1645,7 +1625,7 @@ namespace Avalonia.Controls
         {
             if (DisplayMode == CalendarMode.Month)
             {
-                if (LastSelectedDate.HasValue && DisplayDateInternal != null)
+                if (LastSelectedDate.HasValue)
                 {
                     // If a blackout day is inactive, when clicked on it, the
                     // previous inactive day which is not a blackout day can get
@@ -1722,7 +1702,7 @@ namespace Avalonia.Controls
                         if (ctrl)
                         {
                             SelectedMonth = DisplayDateInternal;
-                            DisplayMode = CalendarMode.Year;
+                            SetCurrentValue(DisplayModeProperty, CalendarMode.Year);
                         }
                         else
                         {
@@ -1736,7 +1716,7 @@ namespace Avalonia.Controls
                         if (ctrl)
                         {
                             SelectedYear = SelectedMonth;
-                            DisplayMode = CalendarMode.Decade;
+                            SetCurrentValue(DisplayModeProperty, CalendarMode.Decade);
                         }
                         else
                         {
@@ -1773,8 +1753,8 @@ namespace Avalonia.Controls
                     {
                         if (ctrl)
                         {
-                            DisplayDate = SelectedMonth;
-                            DisplayMode = CalendarMode.Month;
+                            SetCurrentValue(DisplayDateProperty, SelectedMonth);
+                            SetCurrentValue(DisplayModeProperty, CalendarMode.Month);
                         }
                         else
                         {
@@ -1788,7 +1768,7 @@ namespace Avalonia.Controls
                         if (ctrl)
                         {
                             SelectedMonth = SelectedYear;
-                            DisplayMode = CalendarMode.Year;
+                            SetCurrentValue(DisplayModeProperty, CalendarMode.Year);
                         }
                         else
                         {
@@ -1853,14 +1833,14 @@ namespace Avalonia.Controls
             {
                 case CalendarMode.Year:
                     {
-                        DisplayDate = SelectedMonth;
-                        DisplayMode = CalendarMode.Month;
+                        SetCurrentValue(DisplayDateProperty, SelectedMonth);
+                        SetCurrentValue(DisplayModeProperty, CalendarMode.Month);
                         return true;
                     }
                 case CalendarMode.Decade:
                     {
                         SelectedMonth = SelectedYear;
-                        DisplayMode = CalendarMode.Year;
+                        SetCurrentValue(DisplayModeProperty, CalendarMode.Year);
                         return true;
                     }
             }
@@ -1897,24 +1877,21 @@ namespace Avalonia.Controls
             {
                 case CalendarMode.Month:
                     {
-                        if (DisplayDate != null)
-                        {
-                            DateTime? selectedDate = new DateTime(DisplayDateInternal.Year, DisplayDateInternal.Month, 1);
+                        DateTime? selectedDate = new DateTime(DisplayDateInternal.Year, DisplayDateInternal.Month, 1);
 
-                            if (DateTimeHelper.CompareYearMonth(DateTime.MaxValue, selectedDate.Value) > 0)
-                            {
-                                // since DisplayDate is not equal to
-                                // DateTime.MaxValue we are sure selectedDate is\
-                                // not null
-                                selectedDate = DateTimeHelper.AddMonths(selectedDate.Value, 1)!.Value;
-                                selectedDate = DateTimeHelper.AddDays(selectedDate.Value, -1)!.Value;
-                            }
-                            else
-                            {
-                                selectedDate = DateTime.MaxValue;
-                            }
-                            ProcessSelection(shift, selectedDate, null);
+                        if (DateTimeHelper.CompareYearMonth(DateTime.MaxValue, selectedDate.Value) > 0)
+                        {
+                            // since DisplayDate is not equal to
+                            // DateTime.MaxValue we are sure selectedDate is\
+                            // not null
+                            selectedDate = DateTimeHelper.AddMonths(selectedDate.Value, 1)!.Value;
+                            selectedDate = DateTimeHelper.AddDays(selectedDate.Value, -1)!.Value;
                         }
+                        else
+                        {
+                            selectedDate = DateTime.MaxValue;
+                        }
+                        ProcessSelection(shift, selectedDate, null);
                         break;
                     }
                 case CalendarMode.Year:
@@ -2026,7 +2003,6 @@ namespace Avalonia.Controls
                             focusDate = DisplayDate;
                             LastSelectedDate = DisplayDate;
                         }
-                        Debug.Assert(focusDate != null, "focusDate should not be null!");
                         FocusButton = FindDayButtonFromDay(focusDate);
 
                         if (FocusButton != null)
@@ -2091,17 +2067,17 @@ namespace Avalonia.Controls
 
         static Calendar()
         {
-            IsEnabledProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsEnabledChanged(e));
-            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnFirstDayOfWeekChanged(e));
-            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsTodayHighlightedChanged(e));
-            DisplayModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayModePropertyChanged(e));
-            SelectionModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectionModeChanged(e));
-            SelectedDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectedDateChanged(e));
-            DisplayDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateChanged(e));
-            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateStartChanged(e));
-            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateEndChanged(e));
-            KeyDownEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyDown(e));
-            KeyUpEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyUp(e));
+            IsEnabledProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnIsEnabledChanged(e));
+            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnFirstDayOfWeekChanged(e));
+            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnIsTodayHighlightedChanged(e));
+            DisplayModeProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayModePropertyChanged(e));
+            SelectionModeProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnSelectionModeChanged(e));
+            SelectedDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnSelectedDateChanged(e));
+            DisplayDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateChanged(e));
+            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateStartChanged(e));
+            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateEndChanged(e));
+            KeyDownEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyDown(e));
+            KeyUpEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyUp(e));
         }
 
         /// <summary>
@@ -2110,14 +2086,15 @@ namespace Avalonia.Controls
         /// </summary>
         public Calendar()
         {
-            UpdateDisplayDate(this, this.DisplayDate, DateTime.MinValue);
+            SetCurrentValue(DisplayDateProperty, DateTime.Today);
+            UpdateDisplayDate(this, DisplayDate, DateTime.MinValue);
             BlackoutDates = new CalendarBlackoutDatesCollection(this);
             SelectedDates = new SelectedDatesCollection(this);
             RemovedItems = new Collection<DateTime>();
         }
 
-        private const string PART_ElementRoot = "Root";
-        private const string PART_ElementMonth = "CalendarItem";
+        private const string PART_ElementRoot = "PART_Root";
+        private const string PART_ElementMonth = "PART_CalendarItem";
 
         /// <summary>
         /// Builds the visual tree for the

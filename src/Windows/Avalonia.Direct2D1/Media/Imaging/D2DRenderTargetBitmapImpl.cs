@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -10,8 +9,7 @@ using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    [Unstable]
-    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
+    internal class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
     {
         private readonly BitmapRenderTarget _renderTarget;
 
@@ -32,10 +30,12 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new D2DRenderTargetBitmapImpl(bitmapRenderTarget);
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
-            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
+            return new DrawingContextImpl( this, _renderTarget, null, () => Version++);
         }
+
+        public bool IsCorrupted => false;
 
         public void Blit(IDrawingContextImpl context) => throw new NotSupportedException();
 
@@ -56,7 +56,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new OptionalDispose<D2DBitmap>(_renderTarget.Bitmap, false);
         }
 
-        public override void Save(Stream stream)
+        public override void Save(Stream stream, int? quality = null)
         {
             using (var wic = new WicRenderTargetBitmapImpl(PixelSize, Dpi))
             {

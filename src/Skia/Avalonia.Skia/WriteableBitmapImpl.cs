@@ -4,7 +4,6 @@ using System.Threading;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -16,7 +15,7 @@ namespace Avalonia.Skia
     {
         private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
         private readonly SKBitmap _bitmap;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         
         /// <summary>
         /// Create a WriteableBitmap from given stream.
@@ -25,8 +24,9 @@ namespace Avalonia.Skia
         public WriteableBitmapImpl(Stream stream)
         {
             using (var skiaStream = new SKManagedStream(stream))
+            using (var skData = SKData.Create(skiaStream))
             {
-                _bitmap = SKBitmap.Decode(skiaStream);
+                _bitmap = SKBitmap.Decode(skData);
 
                 if (_bitmap == null)
                 {
@@ -41,7 +41,8 @@ namespace Avalonia.Skia
         public WriteableBitmapImpl(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
             using (var skStream = new SKManagedStream(stream))
-            using (var codec = SKCodec.Create(skStream))
+            using (var skData = SKData.Create(skStream))
+            using (var codec = SKCodec.Create(skData))
             {
                 var info = codec.Info;
 
@@ -95,9 +96,9 @@ namespace Avalonia.Skia
 
             SKColorType colorType = format.ToSkColorType();
             SKAlphaType alphaType = alphaFormat.ToSkAlphaType();
-            
-            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-            
+
+            var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+
             if (runtimePlatform != null)
             {
                 _bitmap = new SKBitmap();
@@ -136,22 +137,24 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Save(Stream stream)
+        public void Save(Stream stream, int? quality = null)
         {
             using (var image = GetSnapshot())
             {
-                ImageSavingHelper.SaveImage(image, stream);
+                ImageSavingHelper.SaveImage(image, stream, quality);
             }
         }
 
         /// <inheritdoc />
-        public void Save(string fileName)
+        public void Save(string fileName, int? quality = null)
         {
             using (var image = GetSnapshot())
             {
-                ImageSavingHelper.SaveImage(image, fileName);
+                ImageSavingHelper.SaveImage(image, fileName, quality);
             }
         }
+
+        public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
 
         /// <inheritdoc />
         public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);
@@ -202,8 +205,8 @@ namespace Avalonia.Skia
                 _bitmap.NotifyPixelsChanged();
                 _parent.Version++;
                 Monitor.Exit(_parent._lock);
-                _bitmap = null;
-                _parent = null;
+                _bitmap = null!;
+                _parent = null!;
             }
             
             /// <inheritdoc />
@@ -216,8 +219,7 @@ namespace Avalonia.Skia
             public int RowBytes => _bitmap.RowBytes;
 
             /// <inheritdoc />
-            public Vector Dpi { get; } = SkiaPlatform.DefaultDpi;
-
+            public Vector Dpi => _parent.Dpi;
             /// <inheritdoc />
             public PixelFormat Format => _bitmap.ColorType.ToPixelFormat();
         }

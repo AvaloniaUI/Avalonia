@@ -5,15 +5,20 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Base.UnitTests.VisualTree
 {
-    class MockRenderInterface : IPlatformRenderInterface
+    class MockRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             throw new NotImplementedException();
         }
+
+        public bool IsLost => false;
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -72,14 +77,21 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             throw new NotImplementedException();
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        {
+            return this;
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
         public AlphaFormat DefaultAlphaFormat { get; }
         public PixelFormat DefaultPixelFormat { get; }
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IFontManagerImpl CreateFontManager()
         {
@@ -235,7 +247,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
 
                 public bool FillContains(Point point)
                 {
-                    // Use the algorithm from http://www.blackpawn.com/texts/pointinpoly/default.html
+                    // Use the algorithm from https://www.blackpawn.com/texts/pointinpoly/default.html
                     // to determine if the point is in the geometry (since it will always be convex in this situation)
                     for (int i = 0; i < points.Count; i++)
                     {
@@ -262,6 +274,11 @@ namespace Avalonia.Base.UnitTests.VisualTree
                     return false;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 

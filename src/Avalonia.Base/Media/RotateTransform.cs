@@ -1,10 +1,11 @@
 using System;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Rotates an <see cref="IVisual"/>.
+    /// Rotates an <see cref="Visual"/>.
     /// </summary>
     public class RotateTransform : Transform
     {

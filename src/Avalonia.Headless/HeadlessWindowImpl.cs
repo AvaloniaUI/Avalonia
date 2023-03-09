@@ -18,7 +18,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow, ITopLevelImplWithStorageProvider
+    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
     {
         private IKeyboardDevice _keyboard;
         private Stopwatch _st = Stopwatch.StartNew();
@@ -54,10 +54,8 @@ namespace Avalonia.Headless
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-            => AvaloniaHeadlessPlatform.Compositor != null
-                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor)
-                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>());
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces);
 
         public void Invalidate(Rect rect)
         {
@@ -174,7 +172,7 @@ namespace Avalonia.Headless
 
         }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         class FramebufferProxy : ILockedFramebuffer
         {
@@ -249,8 +247,15 @@ namespace Avalonia.Headless
         public Action LostFocus { get; set; }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
 
-        public IStorageProvider StorageProvider => new NoopStorageProvider();
+            return null;
+        }
 
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
@@ -282,6 +287,18 @@ namespace Avalonia.Headless
                 button == 0 ? RawPointerEventType.LeftButtonUp :
                 button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
                 point, modifiers));
+        }
+        
+        void IHeadlessWindow.MouseWheel(Point point, Vector delta, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot,
+                point, delta, modifiers));
+        }
+        
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            Input?.Invoke(new RawDragEvent(device, type, InputRoot, point, data, effects, modifiers));
         }
 
         void IWindowImpl.Move(PixelPoint point)
@@ -341,6 +358,11 @@ namespace Avalonia.Headless
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            
+        }
+        
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             
         }

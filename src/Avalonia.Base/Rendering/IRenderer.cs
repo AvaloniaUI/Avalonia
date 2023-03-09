@@ -1,6 +1,6 @@
 ﻿using System;
-using Avalonia.VisualTree;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Rendering
@@ -11,15 +11,9 @@ namespace Avalonia.Rendering
     public interface IRenderer : IDisposable
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the renderer should draw an FPS counter.
+        /// Gets a value indicating whether the renderer should draw specific diagnostics.
         /// </summary>
-        bool DrawFps { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the renderer should draw a visual representation
-        /// of its dirty rectangles.
-        /// </summary>
-        bool DrawDirtyRects { get; set; }
+        RendererDiagnostics Diagnostics { get; }
 
         /// <summary>
         /// Raised when a portion of the scene has been invalidated.
@@ -34,7 +28,7 @@ namespace Avalonia.Rendering
         /// Mark a visual as dirty and needing re-rendering.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        void AddDirty(IVisual visual);
+        void AddDirty(Visual visual);
 
         /// <summary>
         /// Hit tests a location to find the visuals at the specified point.
@@ -46,7 +40,7 @@ namespace Avalonia.Rendering
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visuals at the specified point, topmost first.</returns>
-        IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter);
+        IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter);
 
         /// <summary>
         /// Hit tests a location to find first visual at the specified point.
@@ -58,13 +52,13 @@ namespace Avalonia.Rendering
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visual at the specified point, topmost first.</returns>
-        IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter);
+        Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool> filter);
 
         /// <summary>
         /// Informs the renderer that the z-ordering of a visual's children has changed.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        void RecalculateChildren(IVisual visual);
+        void RecalculateChildren(Visual visual);
 
         /// <summary>
         /// Called when a resize notification is received by the control being rendered.
@@ -87,10 +81,18 @@ namespace Avalonia.Rendering
         /// Stops the renderer.
         /// </summary>
         void Stop();
+
+        /// <summary>
+        /// Attempts to query for a feature from the platform render interface
+        /// </summary>
+        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType);
     }
     
     public interface IRendererWithCompositor : IRenderer
     {
+        /// <summary>
+        /// The associated <see cref="Avalonia.Rendering.Composition.Compositor"/> object
+        /// </summary>
         Compositor Compositor { get; }
     }
 }

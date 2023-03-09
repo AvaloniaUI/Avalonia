@@ -11,23 +11,12 @@ namespace ControlCatalog
 {
     public class MainWindow : Window
     {
-        private WindowNotificationManager _notificationArea;
         private NativeMenu? _recentMenu;
 
         public MainWindow()
         {
             this.InitializeComponent();
 
-            //Renderer.DrawFps = true;
-            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
-
-            _notificationArea = new WindowNotificationManager(this)
-            {
-                Position = NotificationPosition.TopRight,
-                MaxItems = 3
-            };
-
-            DataContext = new MainWindowViewModel(_notificationArea);
             _recentMenu = ((NativeMenu.GetMenu(this)?.Items[0] as NativeMenuItem)?.Menu?.Items[2] as NativeMenuItem)?.Menu;
         }
 

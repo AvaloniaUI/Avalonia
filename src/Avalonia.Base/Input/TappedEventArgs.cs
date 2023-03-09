@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -17,6 +18,6 @@ namespace Avalonia.Input
         public KeyModifiers KeyModifiers => lastPointerEventArgs.KeyModifiers;
         public ulong Timestamp => lastPointerEventArgs.Timestamp;
         
-        public Point GetPosition(IVisual? relativeTo) => lastPointerEventArgs.GetPosition(relativeTo);
+        public Point GetPosition(Visual? relativeTo) => lastPointerEventArgs.GetPosition(relativeTo);
     }
 }

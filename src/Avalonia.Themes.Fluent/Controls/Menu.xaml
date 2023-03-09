@@ -5,7 +5,7 @@
       <Menu>
         <MenuItem Header="_Standard" />
         <MenuItem Header="Selected" IsSelected="True" />
-        <MenuItem Header="Disabled" IsEnabled="False"/>
+        <MenuItem Header="Disabled" IsEnabled="False" />
       </Menu>
     </Border>
   </Design.PreviewWith>
@@ -46,11 +46,9 @@
                       MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
                       HorizontalAlignment="Stretch"
                       CornerRadius="{DynamicResource OverlayCornerRadius}">
-                <ScrollViewer Classes="menuscroller">
+                <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
                                   Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                                   Grid.IsSharedSizeScope="True" />
                 </ScrollViewer>
@@ -91,7 +89,7 @@
   <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Height" Value="{DynamicResource MenuBarHeight}" />
-    <Setter Property="ItemContainerTheme" Value="{StaticResource FluentTopLevelMenuItem}"/>
+    <Setter Property="ItemContainerTheme" Value="{StaticResource FluentTopLevelMenuItem}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"
@@ -101,9 +99,7 @@
                 HorizontalAlignment="Stretch"
                 Padding="{TemplateBinding Padding}">
           <ItemsPresenter Name="PART_ItemsPresenter"
-                          Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
-                          ItemTemplate="{TemplateBinding ItemTemplate}"
                           VerticalAlignment="Stretch"
                           KeyboardNavigation.TabNavigation="Continue" />
         </Border>

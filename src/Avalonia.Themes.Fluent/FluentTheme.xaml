@@ -1,0 +1,18 @@
+﻿<Styles x:Class="Avalonia.Themes.Fluent.FluentTheme"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="/Accents/AccentColors.xaml" />
+        <MergeResourceInclude Source="/Accents/Base.xaml" />
+        <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      
+      <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
+      <StyleInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
+    </ResourceDictionary>
+  </Styles.Resources>
+  
+  <StyleInclude Source="/Controls/FluentControls.xaml" />
+</Styles>

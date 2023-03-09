@@ -8,8 +8,7 @@ namespace Avalonia.Base.UnitTests.Rendering
         public bool HitTest(Point point)
         {
             // Move hit testing window halfway to the left
-            return Bounds
-                .WithX(Bounds.X - Bounds.Width / 2)  
+            return new Rect( -Bounds.Width / 2,0, Bounds.Width, Bounds.Height)
                 .Contains(point);
         }
     }

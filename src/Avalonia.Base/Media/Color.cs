@@ -9,6 +9,7 @@ using System;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
+using static Avalonia.Utilities.SpanHelpers;
 #endif
 
 namespace Avalonia.Media
@@ -146,16 +147,11 @@ namespace Avalonia.Media
         /// <param name="s">The color string.</param>
         /// <param name="color">The parsed color</param>
         /// <returns>The status of the operation.</returns>
-        public static bool TryParse(string s, out Color color)
+        public static bool TryParse(string? s, out Color color)
         {
             color = default;
 
-            if (s is null)
-            {
-                return false;
-            }
-
-            if (s.Length == 0)
+            if (string.IsNullOrEmpty(s))
             {
                 return false;
             }
@@ -295,9 +291,7 @@ namespace Avalonia.Media
                     return false;
                 }
 
-                // TODO: (netstandard 2.1) Can use allocation free parsing.
-                if (!uint.TryParse(input.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                    out var parsed))
+                if (!input.TryParseUInt(NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsed))
                 {
                     return false;
                 }
@@ -337,7 +331,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Parses the given string representing a CSS color value into a new <see cref="Color"/>.
         /// </summary>
-        private static bool TryParseCssFormat(string s, out Color color)
+        private static bool TryParseCssFormat(string? s, out Color color)
         {
             bool prefixMatched = false;
 
@@ -382,9 +376,9 @@ namespace Avalonia.Media
 
             if (components.Length == 3) // RGB
             {
-                if (InternalTryParseByte(components[0], out byte red) &&
-                    InternalTryParseByte(components[1], out byte green) &&
-                    InternalTryParseByte(components[2], out byte blue))
+                if (InternalTryParseByte(components[0].AsSpan(), out byte red) &&
+                    InternalTryParseByte(components[1].AsSpan(), out byte green) &&
+                    InternalTryParseByte(components[2].AsSpan(), out byte blue))
                 {
                     color = new Color(0xFF, red, green, blue);
                     return true;
@@ -392,10 +386,10 @@ namespace Avalonia.Media
             }
             else if (components.Length == 4) // RGBA
             {
-                if (InternalTryParseByte(components[0], out byte red) &&
-                    InternalTryParseByte(components[1], out byte green) &&
-                    InternalTryParseByte(components[2], out byte blue) &&
-                    InternalTryParseDouble(components[3], out double alpha))
+                if (InternalTryParseByte(components[0].AsSpan(), out byte red) &&
+                    InternalTryParseByte(components[1].AsSpan(), out byte green) &&
+                    InternalTryParseByte(components[2].AsSpan(), out byte blue) &&
+                    InternalTryParseDouble(components[3].AsSpan(), out double alpha))
                 {
                     color = new Color((byte)Math.Round(alpha * 255.0), red, green, blue);
                     return true;
@@ -403,17 +397,14 @@ namespace Avalonia.Media
             }
 
             // Local function to specially parse a byte value with an optional percentage sign
-            bool InternalTryParseByte(string inString, out byte outByte)
+            bool InternalTryParseByte(ReadOnlySpan<char> inString, out byte outByte)
             {
                 // The percent sign, if it exists, must be at the end of the number
-                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+                int percentIndex = inString.IndexOf("%".AsSpan(), StringComparison.Ordinal);
 
                 if (percentIndex >= 0)
                 {
-                    var result = double.TryParse(
-                        inString.Substring(0, percentIndex),
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out double percentage);
 
                     outByte = (byte)Math.Round((percentage / 100.0) * 255.0);
@@ -421,37 +412,28 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    return byte.TryParse(
-                        inString,
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    return inString.TryParseByte(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outByte);
                 }
             }
 
             // Local function to specially parse a double value with an optional percentage sign
-            bool InternalTryParseDouble(string inString, out double outDouble)
+            bool InternalTryParseDouble(ReadOnlySpan<char> inString, out double outDouble)
             {
                 // The percent sign, if it exists, must be at the end of the number
-                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+                int percentIndex = inString.IndexOf("%".AsSpan(), StringComparison.Ordinal);
 
                 if (percentIndex >= 0)
                 {
-                    var result = double.TryParse(
-                        inString.Substring(0, percentIndex),
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
-                        out double percentage);
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                         out double percentage);
 
                     outDouble = percentage / 100.0;
                     return result;
                 }
                 else
                 {
-                    return double.TryParse(
-                        inString,
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outDouble);
                 }
             }

@@ -19,7 +19,7 @@ namespace ControlCatalog.ViewModels
     {
         public TransitioningContentControlPageViewModel()
         {
-            var assetLoader = AvaloniaLocator.Current?.GetService<IAssetLoader>()!;
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             var images = new string[] 
             { 
@@ -117,9 +117,9 @@ namespace ControlCatalog.ViewModels
             PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Vertical);
 
             var compositeTransition = new CompositePageTransition();
-            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition);
-            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition);
-            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition);
+            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition!);
+            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition!);
+            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition!);
             PageTransitions[4].Transition = compositeTransition;
 
             PageTransitions[5].Transition = new CustomTransition(TimeSpan.FromMilliseconds(Duration));
@@ -293,10 +293,10 @@ namespace ControlCatalog.ViewModels
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        private static IVisual GetVisualParent(IVisual? from, IVisual? to)
+        private static Visual GetVisualParent(Visual? from, Visual? to)
         {
-            var p1 = (from ?? to)!.VisualParent;
-            var p2 = (to ?? from)!.VisualParent;
+            var p1 = (from ?? to)!.GetVisualParent();
+            var p2 = (to ?? from)!.GetVisualParent();
 
             if (p1 != null && p2 != null && p1 != p2)
             {

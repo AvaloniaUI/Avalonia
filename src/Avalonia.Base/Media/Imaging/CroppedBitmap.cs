@@ -48,8 +48,6 @@ namespace Avalonia.Media.Imaging
 
         public CroppedBitmap()
         {
-            Source = null;
-            SourceRect = default;
         }
 
         public CroppedBitmap(IImage source, PixelRect sourceRect)
@@ -78,8 +76,8 @@ namespace Avalonia.Media.Imaging
             get
             {
                 if (Source is not IBitmap bmp)
-                    return Size.Empty;
-                if (SourceRect.IsEmpty)
+                    return default;
+                if (SourceRect.IsDefault)
                     return Source.Size;
                 return SourceRect.Size.ToSizeWithDpi(bmp.Dpi);
             }

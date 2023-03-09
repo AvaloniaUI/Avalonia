@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Platform.Interop;
+using Avalonia.SourceGenerator;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.OpenGL
 {
-    public delegate IntPtr GlGetProcAddressDelegate(string procName);
-    
-    public unsafe class GlInterface : GlBasicInfoInterface<GlInterface.GlContextInfo>
+    public unsafe partial class GlInterface : GlBasicInfoInterface
     {
-        public string Version { get; }
-        public string Vendor { get; }
-        public string Renderer { get; }
+        private readonly Func<string, IntPtr> _getProcAddress;
+        public string? Version { get; }
+        public string? Vendor { get; }
+        public string? Renderer { get; }
         public GlContextInfo ContextInfo { get; }
 
         public class GlContextInfo
@@ -35,12 +35,14 @@ namespace Avalonia.OpenGL
             }
         }
 
-        private GlInterface(GlContextInfo info, Func<string, IntPtr> getProcAddress) : base(getProcAddress, info)
+        private GlInterface(GlContextInfo info, Func<string, IntPtr> getProcAddress) : base(getProcAddress)
         {
+            _getProcAddress = getProcAddress;
             ContextInfo = info;
-            Version = GetString(GlConsts.GL_VERSION);
-            Renderer = GetString(GlConsts.GL_RENDERER);
-            Vendor = GetString(GlConsts.GL_VENDOR);   
+            Version = GetString(GL_VERSION);
+            Renderer = GetString(GL_RENDERER);
+            Vendor = GetString(GL_VENDOR);
+            Initialize(getProcAddress, ContextInfo);
         }
 
         public GlInterface(GlVersion version, Func<string, IntPtr> getProcAddress) : this(
@@ -48,92 +50,55 @@ namespace Avalonia.OpenGL
         {
         }
 
-        public GlInterface(GlVersion version, Func<Utf8Buffer, IntPtr> n) : this(version, ConvertNative(n))
+        public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
+
+        [GetProcAddress("glGetError")]
+        public partial int GetError();
+
+        [GetProcAddress("glClearStencil")]
+        public partial void ClearStencil(int s);
+
+        [GetProcAddress("glClearColor")]
+        public partial void ClearColor(float r, float g, float b, float a);
+
+        [GetProcAddress("glClear")]
+        public partial void Clear(int bits);
+
+        [GetProcAddress("glViewport")]
+        public partial void Viewport(int x, int y, int width, int height);
+
+        [GetProcAddress("glFlush")]
+        public partial void Flush();
+
+        [GetProcAddress("glFinish")]
+        public partial void Finish();
+
+        [GetProcAddress("glGenFramebuffers")]
+        public partial void GenFramebuffers(int count, int* res);
+
+        public int GenFramebuffer()
         {
-            
+            int rv = 0;
+            GenFramebuffers(1, &rv);
+            return rv;
         }
 
-        public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<Utf8Buffer, IntPtr> getProcAddress) =>
-            new GlInterface(version, getProcAddress);
+        [GetProcAddress("glDeleteFramebuffers")]
+        public partial void DeleteFramebuffers(int count, int* framebuffers);
 
-        
-        public T GetProcAddress<T>(string proc) => Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(proc));
-
-        // ReSharper disable UnassignedGetOnlyAutoProperty
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int GlGetError();
-        [GlEntryPoint("glGetError")]
-        public GlGetError GetError { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlClearStencil(int s);
-        [GlEntryPoint("glClearStencil")]
-        public GlClearStencil ClearStencil { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlClearColor(float r, float g, float b, float a);
-        [GlEntryPoint("glClearColor")]
-        public GlClearColor ClearColor { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlClear(int bits);
-        [GlEntryPoint("glClear")]
-        public GlClear Clear { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlViewport(int x, int y, int width, int height);
-        [GlEntryPoint("glViewport")]
-        public GlViewport Viewport { get; }
-        
-        [GlEntryPoint("glFlush")]
-        public UnmanagedAction Flush { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void UnmanagedAction();
-        
-        [GlEntryPoint("glFinish")]
-        public UnmanagedAction Finish { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr GlGetString(int v);
-        [GlEntryPoint("glGetString")]
-        public GlGetString GetStringNative { get; }
-
-        public string GetString(int v)
+        public void DeleteFramebuffer(int fb)
         {
-            var ptr = GetStringNative(v);
-            if (ptr != IntPtr.Zero)
-                return Marshal.PtrToStringAnsi(ptr);
-            return null;
+            DeleteFramebuffers(1, &fb);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGetIntegerv(int name, out int rv);
-        [GlEntryPoint("glGetIntegerv")]
-        public GlGetIntegerv GetIntegerv { get; }
+        [GetProcAddress("glBindFramebuffer")]
+        public partial void BindFramebuffer(int target, int fb);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGenFramebuffers(int count, int[] res);
-        [GlEntryPoint("glGenFramebuffers")]
-        public GlGenFramebuffers GenFramebuffers { get; }
+        [GetProcAddress("glCheckFramebufferStatus")]
+        public partial int CheckFramebufferStatus(int target);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDeleteFramebuffers(int count, int[] framebuffers);
-        [GlEntryPoint("glDeleteFramebuffers")]
-        public GlDeleteFramebuffers DeleteFramebuffers { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBindFramebuffer(int target, int fb);
-        [GlEntryPoint("glBindFramebuffer")]
-        public GlBindFramebuffer BindFramebuffer { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int GlCheckFramebufferStatus(int target);
-        [GlEntryPoint("glCheckFramebufferStatus")]
-        public GlCheckFramebufferStatus CheckFramebufferStatus { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBlitFramebuffer(int srcX0,
+        [GlMinVersionEntryPoint("glBlitFramebuffer", 3, 0), GetProcAddress(true)]
+        public partial void BlitFramebuffer(int srcX0,
             int srcY0,
             int srcX1,
             int srcY1,
@@ -143,89 +108,78 @@ namespace Avalonia.OpenGL
             int dstY1,
             int mask,
             int filter);
-        [GlMinVersionEntryPoint("glBlitFramebuffer", 3, 0), GlOptionalEntryPoint]
-        public GlBlitFramebuffer BlitFramebuffer { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGenRenderbuffers(int count, int[] res);
-        [GlEntryPoint("glGenRenderbuffers")]
-        public GlGenRenderbuffers GenRenderbuffers { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDeleteRenderbuffers(int count, int[] renderbuffers);
-        [GlEntryPoint("glDeleteRenderbuffers")]
-        public GlDeleteTextures DeleteRenderbuffers { get; }
+        [GetProcAddress("glGenRenderbuffers")]
+        public partial void GenRenderbuffers(int count, int* res);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBindRenderbuffer(int target, int fb);
-        [GlEntryPoint("glBindRenderbuffer")]
-        public GlBindRenderbuffer BindRenderbuffer { get; }
+        public int GenRenderbuffer()
+        {
+            int rv = 0;
+            GenRenderbuffers(1, &rv);
+            return rv;
+        }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlRenderbufferStorage(int target, int internalFormat, int width, int height);
-        [GlEntryPoint("glRenderbufferStorage")]
-        public GlRenderbufferStorage RenderbufferStorage { get; }
+        [GetProcAddress("glDeleteRenderbuffers")]
+        public partial void DeleteRenderbuffers(int count, int* renderbuffers);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlFramebufferRenderbuffer(int target, int attachment,
+        public void DeleteRenderbuffer(int renderbuffer)
+        {
+            DeleteRenderbuffers(1, &renderbuffer);
+        }
+
+        [GetProcAddress("glBindRenderbuffer")]
+        public partial void BindRenderbuffer(int target, int fb);
+
+        [GetProcAddress("glRenderbufferStorage")]
+        public partial void RenderbufferStorage(int target, int internalFormat, int width, int height);
+
+        [GetProcAddress("glFramebufferRenderbuffer")]
+        public partial void FramebufferRenderbuffer(int target, int attachment,
             int renderbufferTarget, int renderbuffer);
-        [GlEntryPoint("glFramebufferRenderbuffer")]
-        public GlFramebufferRenderbuffer FramebufferRenderbuffer { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGenTextures(int count, int[] res);
-        [GlEntryPoint("glGenTextures")]
-        public GlGenTextures GenTextures { get; }
+        [GetProcAddress("glGenTextures")]
+        public partial void GenTextures(int count, int* res);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBindTexture(int target, int fb);
-        [GlEntryPoint("glBindTexture")]
-        public GlBindTexture BindTexture { get; }
+        public int GenTexture()
+        {
+            int rv = 0;
+            GenTextures(1, &rv);
+            return rv;
+        }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlActiveTexture(int texture);
-        [GlEntryPoint("glActiveTexture")]
-        public GlActiveTexture ActiveTexture { get; }
+        [GetProcAddress("glBindTexture")]
+        public partial void BindTexture(int target, int fb);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDeleteTextures(int count, int[] textures);
-        [GlEntryPoint("glDeleteTextures")]
-        public GlDeleteTextures DeleteTextures { get; }
+        [GetProcAddress("glActiveTexture")]
+        public partial void ActiveTexture(int texture);
 
+        [GetProcAddress("glDeleteTextures")]
+        public partial void DeleteTextures(int count, int* textures);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlTexImage2D(int target, int level, int internalFormat, int width, int height, int border,
+        public void DeleteTexture(int texture) => DeleteTextures(1, &texture);
+
+        [GetProcAddress("glTexImage2D")]
+        public partial void TexImage2D(int target, int level, int internalFormat, int width, int height, int border,
             int format, int type, IntPtr data);
-        [GlEntryPoint("glTexImage2D")]
-        public GlTexImage2D TexImage2D { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlCopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y,
+        [GetProcAddress("glCopyTexSubImage2D")]
+        public partial void CopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y,
             int width, int height);
-        
-        [GlEntryPoint("glCopyTexSubImage2D")]
-        public GlCopyTexSubImage2D CopyTexSubImage2D { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlTexParameteri(int target, int name, int value);
-        [GlEntryPoint("glTexParameteri")]
-        public GlTexParameteri TexParameteri { get; }
+        [GetProcAddress("glTexParameteri")]
+        public partial void TexParameteri(int target, int name, int value);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlFramebufferTexture2D(int target, int attachment,
+
+        [GetProcAddress("glFramebufferTexture2D")]
+        public partial void FramebufferTexture2D(int target, int attachment,
             int texTarget, int texture, int level);
-        [GlEntryPoint("glFramebufferTexture2D")]
-        public GlFramebufferTexture2D FramebufferTexture2D { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int GlCreateShader(int shaderType);
-        [GlEntryPoint("glCreateShader")]
-        public GlCreateShader CreateShader { get; }
+        [GetProcAddress("glCreateShader")]
+        public partial int CreateShader(int shaderType);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlShaderSource(int shader, int count, IntPtr strings, IntPtr lengths);
-        [GlEntryPoint("glShaderSource")]
-        public GlShaderSource ShaderSource { get; }
+        [GetProcAddress("glShaderSource")]
+        public partial void ShaderSource(int shader, int count, IntPtr strings, IntPtr lengths);
 
         public void ShaderSourceString(int shader, string source)
         {
@@ -237,22 +191,16 @@ namespace Avalonia.OpenGL
             }
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlCompileShader(int shader);
-        [GlEntryPoint("glCompileShader")]
-        public GlCompileShader CompileShader { get; }
+        [GetProcAddress("glCompileShader")]
+        public partial void CompileShader(int shader);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGetShaderiv(int shader, int name, int* parameters);
-        [GlEntryPoint("glGetShaderiv")]
-        public GlGetShaderiv GetShaderiv { get; }
+        [GetProcAddress("glGetShaderiv")]
+        public partial void GetShaderiv(int shader, int name, int* parameters);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGetShaderInfoLog(int shader, int maxLength, out int length, void*infoLog);
-        [GlEntryPoint("glGetShaderInfoLog")]
-        public GlGetShaderInfoLog GetShaderInfoLog { get; }
+        [GetProcAddress("glGetShaderInfoLog")]
+        public partial void GetShaderInfoLog(int shader, int maxLength, out int length, void* infoLog);
 
-        public unsafe string CompileShaderAndGetError(int shader, string source)
+        public unsafe string? CompileShaderAndGetError(int shader, string source)
         {
             ShaderSourceString(shader, source);
             CompileShader(shader);
@@ -268,35 +216,26 @@ namespace Avalonia.OpenGL
             int len;
             fixed (void* ptr = logData)
                 GetShaderInfoLog(shader, logLength, out len, ptr);
-            return Encoding.UTF8.GetString(logData,0, len);
+            return Encoding.UTF8.GetString(logData, 0, len);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int GlCreateProgram();
-        [GlEntryPoint("glCreateProgram")]
-        public GlCreateProgram CreateProgram { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlAttachShader(int program, int shader);
-        [GlEntryPoint("glAttachShader")]
-        public GlAttachShader AttachShader { get; }
+        [GetProcAddress("glCreateProgram")]
+        public partial int CreateProgram();
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlLinkProgram(int program);
-        [GlEntryPoint("glLinkProgram")]
-        public GlLinkProgram LinkProgram { get; }
+        [GetProcAddress("glAttachShader")]
+        public partial void AttachShader(int program, int shader);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGetProgramiv(int program, int name, int* parameters);
-        [GlEntryPoint("glGetProgramiv")]
-        public GlGetProgramiv GetProgramiv { get; }
+        [GetProcAddress("glLinkProgram")]
+        public partial void LinkProgram(int program);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGetProgramInfoLog(int program, int maxLength, out int len, void* infoLog);
-        [GlEntryPoint("glGetProgramInfoLog")]
-        public GlGetProgramInfoLog GetProgramInfoLog { get; }
+        [GetProcAddress("glGetProgramiv")]
+        public partial void GetProgramiv(int program, int name, int* parameters);
 
-        public unsafe string LinkProgramAndGetError(int program)
+        [GetProcAddress("glGetProgramInfoLog")]
+        public partial void GetProgramInfoLog(int program, int maxLength, out int len, void* infoLog);
+
+        public unsafe string? LinkProgramAndGetError(int program)
         {
             LinkProgram(program);
             int compiled;
@@ -309,13 +248,11 @@ namespace Avalonia.OpenGL
             int len;
             fixed (void* ptr = logData)
                 GetProgramInfoLog(program, logLength, out len, ptr);
-            return Encoding.UTF8.GetString(logData,0, len);
+            return Encoding.UTF8.GetString(logData, 0, len);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBindAttribLocation(int program, int index, IntPtr name);
-        [GlEntryPoint("glBindAttribLocation")]
-        public GlBindAttribLocation BindAttribLocation { get; }
+        [GetProcAddress("glBindAttribLocation")]
+        public partial void BindAttribLocation(int program, int index, IntPtr name);
 
         public void BindAttribLocationString(int program, int index, string name)
         {
@@ -323,32 +260,24 @@ namespace Avalonia.OpenGL
                 BindAttribLocation(program, index, b.DangerousGetHandle());
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlGenBuffers(int len, int[] rv);
-        [GlEntryPoint("glGenBuffers")]
-        public GlGenBuffers GenBuffers { get; }
+        [GetProcAddress("glGenBuffers")]
+        public partial void GenBuffers(int len, int* rv);
 
         public int GenBuffer()
         {
-            var rv = new int[1];
-            GenBuffers(1, rv);
-            return rv[0];
+            int rv;
+            GenBuffers(1, &rv);
+            return rv;
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBindBuffer(int target, int buffer);
-        [GlEntryPoint("glBindBuffer")]
-        public GlBindBuffer BindBuffer { get; }
+        [GetProcAddress("glBindBuffer")]
+        public partial void BindBuffer(int target, int buffer);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlBufferData(int target, IntPtr size, IntPtr data, int usage);
-        [GlEntryPoint("glBufferData")]
-        public GlBufferData BufferData { get; }
+        [GetProcAddress("glBufferData")]
+        public partial void BufferData(int target, IntPtr size, IntPtr data, int usage);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int GlGetAttribLocation(int program, IntPtr name);
-        [GlEntryPoint("glGetAttribLocation")]
-        public GlGetAttribLocation GetAttribLocation { get; }
+        [GetProcAddress("glGetAttribLocation")]
+        public partial int GetAttribLocation(int program, IntPtr name);
 
         public int GetAttribLocationString(int program, string name)
         {
@@ -356,36 +285,24 @@ namespace Avalonia.OpenGL
                 return GetAttribLocation(program, b.DangerousGetHandle());
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlVertexAttribPointer(int index, int size, int type,
+        [GetProcAddress("glVertexAttribPointer")]
+        public partial void VertexAttribPointer(int index, int size, int type,
             int normalized, int stride, IntPtr pointer);
-        [GlEntryPoint("glVertexAttribPointer")]
-        public GlVertexAttribPointer VertexAttribPointer { get; }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlEnableVertexAttribArray(int index);
-        [GlEntryPoint("glEnableVertexAttribArray")]
-        public GlEnableVertexAttribArray EnableVertexAttribArray { get; }
+        [GetProcAddress("glEnableVertexAttribArray")]
+        public partial void EnableVertexAttribArray(int index);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlUseProgram(int program);
-        [GlEntryPoint("glUseProgram")]
-        public GlUseProgram UseProgram { get; }
+        [GetProcAddress("glUseProgram")]
+        public partial void UseProgram(int program);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDrawArrays(int mode, int first, IntPtr count);
-        [GlEntryPoint("glDrawArrays")]
-        public GlDrawArrays DrawArrays { get; }
+        [GetProcAddress("glDrawArrays")]
+        public partial void DrawArrays(int mode, int first, IntPtr count);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDrawElements(int mode, int count, int type, IntPtr indices);
-        [GlEntryPoint("glDrawElements")]
-        public GlDrawElements DrawElements { get; }
+        [GetProcAddress("glDrawElements")]
+        public partial void DrawElements(int mode, int count, int type, IntPtr indices);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int GlGetUniformLocation(int program, IntPtr name);
-        [GlEntryPoint("glGetUniformLocation")]
-        public GlGetUniformLocation GetUniformLocation { get; }
+        [GetProcAddress("glGetUniformLocation")]
+        public partial int GetUniformLocation(int program, IntPtr name);
 
         public int GetUniformLocationString(int program, string name)
         {
@@ -393,41 +310,65 @@ namespace Avalonia.OpenGL
                 return GetUniformLocation(program, b.DangerousGetHandle());
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlUniform1f(int location, float falue);
-        [GlEntryPoint("glUniform1f")]
-        public GlUniform1f Uniform1f { get; }
+        [GetProcAddress("glUniform1f")]
+        public partial void Uniform1f(int location, float falue);
 
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlUniformMatrix4fv(int location, int count, bool transpose, void* value);
-        [GlEntryPoint("glUniformMatrix4fv")]
-        public GlUniformMatrix4fv UniformMatrix4fv { get; }
+        [GetProcAddress("glUniformMatrix4fv")]
+        public partial void UniformMatrix4fv(int location, int count, bool transpose, void* value);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlEnable(int what);
-        [GlEntryPoint("glEnable")]
-        public GlEnable Enable { get; }
+        [GetProcAddress("glEnable")]
+        public partial void Enable(int what);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDeleteBuffers(int count, int[] buffers);
-        [GlEntryPoint("glDeleteBuffers")]
-        public GlDeleteBuffers DeleteBuffers { get; }
+        [GetProcAddress("glDeleteBuffers")]
+        public partial void DeleteBuffers(int count, int* buffers);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDeleteProgram(int program);
-        [GlEntryPoint("glDeleteProgram")]
-        public GlDeleteProgram DeleteProgram { get; }
+        public void DeleteBuffer(int buffer) => DeleteBuffers(1, &buffer);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GlDeleteShader(int shader);
-        [GlEntryPoint("glDeleteShader")]
-        public GlDeleteShader DeleteShader { get; }
-        
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void GLGetRenderbufferParameteriv(int target, int name, int[] value);
-        [GlEntryPoint("glGetRenderbufferParameteriv")]
-        public GLGetRenderbufferParameteriv GetRenderbufferParameteriv { get; }
+        [GetProcAddress("glDeleteProgram")]
+        public partial void DeleteProgram(int program);
+
+        [GetProcAddress("glDeleteShader")]
+        public partial void DeleteShader(int shader);
+
+        [GetProcAddress("glGetRenderbufferParameteriv")]
+        public partial void GetRenderbufferParameteriv(int target, int name, out int value);
         // ReSharper restore UnassignedGetOnlyAutoProperty
+
+        [GetProcAddress(true)]
+        [GlMinVersionEntryPoint("glDeleteVertexArrays", 3, 0)]
+        [GlExtensionEntryPoint("glDeleteVertexArraysOES", "GL_OES_vertex_array_object")]
+        public partial void DeleteVertexArrays(int count, int* arrays);
+
+        public void DeleteVertexArray(int array) => DeleteVertexArrays(1, &array);
+
+        [GetProcAddress(true)]
+        [GlMinVersionEntryPoint("glBindVertexArray", 3, 0)]
+        [GlExtensionEntryPoint("glBindVertexArrayOES", "GL_OES_vertex_array_object")]
+        public partial void BindVertexArray(int array);
+
+
+        [GetProcAddress(true)]
+        [GlMinVersionEntryPoint("glGenVertexArrays", 3, 0)]
+        [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
+        public partial void GenVertexArrays(int n, int* rv);
+
+        public int GenVertexArray()
+        {
+            int rv = 0;
+            GenVertexArrays(1, &rv);
+            return rv;
+        }
+
+        public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<IntPtr, IntPtr> getProcAddress)
+        {
+            return new GlInterface(version, s =>
+            {
+                var ptr = Marshal.StringToHGlobalAnsi(s);
+                var rv = getProcAddress(ptr);
+                Marshal.FreeHGlobal(ptr);
+                return rv;
+            });
+        }
     }
 }

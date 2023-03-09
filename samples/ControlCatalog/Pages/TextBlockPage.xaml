@@ -9,7 +9,7 @@
       <WrapPanel.Styles>
         <Style Selector="Border">
           <Setter Property="BorderThickness" Value="1" />
-          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource CatalogBaseMediumColor}" />
           <Setter Property="Padding" Value="2" />
           <Setter Property="Margin" Value="10" />
           <Setter Property="Width" Value="200" />
@@ -118,7 +118,7 @@
         </StackPanel>
       </Border>
       <Border>
-        <RichTextBlock Margin="10" TextWrapping="Wrap">
+        <SelectableTextBlock SelectionBrush="LightBlue" Margin="10" TextWrapping="Wrap">
           This <Span FontWeight="Bold">is</Span> a
           <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
           with <Span TextDecorations="Underline">several</Span>
@@ -126,7 +126,7 @@
           <Span Foreground="Blue">
             using a <Bold>variety</Bold> of <Italic>styles</Italic>
           </Span>.
-        </RichTextBlock>
+        </SelectableTextBlock>
       </Border>
     </WrapPanel>
   </StackPanel>

@@ -7,9 +7,9 @@ namespace Avalonia.Media
     /// <summary>
     /// The <see cref="UnicodeRange"/> descripes a set of Unicode characters.
     /// </summary>
-    public readonly struct UnicodeRange
+    public readonly record struct UnicodeRange
     {
-        public static UnicodeRange Default = Parse("0-10FFFD");
+        public readonly static UnicodeRange Default = Parse("0-10FFFD");
 
         private readonly UnicodeRangeSegment _single;
         private readonly IReadOnlyList<UnicodeRangeSegment>? _segments = null;
@@ -102,9 +102,9 @@ namespace Avalonia.Media
         }
     }
 
-    public readonly struct UnicodeRangeSegment
+    public readonly record struct UnicodeRangeSegment
     {
-        private static Regex s_regex = new Regex(@"^(?:[uU]\+)?(?:([0-9a-fA-F](?:[0-9a-fA-F?]{1,5})?))$");
+        private static Regex s_regex = new Regex(@"^(?:[uU]\+)?(?:([0-9a-fA-F](?:[0-9a-fA-F?]{1,5})?))$", RegexOptions.Compiled);
 
         public UnicodeRangeSegment(int start, int end)
         {
@@ -163,7 +163,7 @@ namespace Avalonia.Media
                             throw new FormatException("Could not parse specified Unicode range segment.");
                         }
 
-                        if (!single.Value.Contains("?"))
+                        if (!single.Value.Contains('?'))
                         {
                             start = int.Parse(single.Groups[1].Value, System.Globalization.NumberStyles.HexNumber);
                             end = start;

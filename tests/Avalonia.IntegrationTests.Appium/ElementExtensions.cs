@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -110,24 +111,40 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 var oldWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
                 var oldWindowTitles = oldWindows.ToDictionary(x => x.Text);
-                
+
                 element.Click();
+                
+                // Wait for animations to run.
+                Thread.Sleep(1000);
 
                 var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
-                var newWindowTitles = newWindows.ToDictionary(x => x.Text);
-                var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
-                var newWindow = (AppiumWebElement)newWindowTitles[newWindowTitle]; 
                 
+                // Try to find the new window by looking for a window with a title that didn't exist before the button
+                // was clicked. Sometimes it seems that when a window becomes fullscreen, all other windows in the
+                // application lose their titles, so filter out windows with no title (this may have started happening
+                // with macOS 13.1?)
+                var newWindowTitles = newWindows
+                    .Select(x => (x.Text, x))
+                    .Where(x => !string.IsNullOrEmpty(x.Text))
+                    .ToDictionary(x => x.Text, x => x.x);
+
+                var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
+
                 return Disposable.Create(() =>
                 {
                     // TODO: We should be able to use Cmd+W here but Avalonia apps don't seem to have this shortcut
                     // set up by default.
-                    var (close, _, _) = newWindow.GetChromeButtons();
+                    var windows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                    var text = windows.Select(x => x.Text).ToList();
+                    var newWindow = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
+                        .First(x => x.Text == newWindowTitle);
+                    var (close, _, _) = ((AppiumWebElement)newWindow).GetChromeButtons();
                     close!.Click();
+                    Thread.Sleep(1000);
                 });
             }
         }
-
+    
         public static void SendClick(this AppiumWebElement element)
         {
             // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls

@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "target": "es2018",
+      "module": "es2020",
+      "strict": true,
+      "sourceMap": true,
+      "noEmitOnError": true,
+      "moduleResolution": "node",
+      "skipLibCheck": true,
+      "isolatedModules": true, // we need it for esbuild
+      "lib": [
+        "dom",
+        "es2018",
+        "esnext.asynciterable"
+      ]
+    },
+    "exclude": [
+      "node_modules"
+    ]
+  }
+  

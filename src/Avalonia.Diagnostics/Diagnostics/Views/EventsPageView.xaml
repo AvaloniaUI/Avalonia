@@ -1,10 +1,10 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
-             xmlns:conv="clr-namespace:Avalonia.Diagnostics.Converters"
-             xmlns:controls="clr-namespace:Avalonia.Diagnostics.Controls"
+             xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
+             xmlns:controls="using:Avalonia.Diagnostics.Controls"
              x:Class="Avalonia.Diagnostics.Views.EventsPageView"
-             Margin="2">
+             Margin="2"
+             x:DataType="vm:EventsPageViewModel">
   <UserControl.Styles>
     <Style Selector="TextBlock.nav" >
       <Setter Property="TextDecorations">
@@ -28,7 +28,8 @@
     </Style>
 
     <Style Selector="ListBoxItem.handled" >
-      <Setter Property="Background" Value="#d9ffdc" />
+      <Setter Property="Background" Value="#34c940" />
+      <Setter Property="Foreground" Value="Black" />
     </Style>
   </UserControl.Styles>
 
@@ -52,7 +53,7 @@
           </TreeDataTemplate>
         </TreeView.DataTemplates>
         <TreeView.Styles>
-          <Style Selector="TreeViewItem">
+          <Style Selector="TreeViewItem" x:DataType="vm:EventTreeNodeBase">
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
             <Setter Property="IsVisible" Value="{Binding IsVisible}" />
           </Style>
@@ -128,7 +129,7 @@
 
       </DockPanel>
 
-      <StackPanel Orientation="Horizontal" Grid.Row="3" Spacing="2" Margin="0,2">
+      <StackPanel Orientation="Horizontal" Grid.Row="3" Spacing="2" Margin="2">
         <Button Content="Clear" Command="{Binding Clear}" />
       </StackPanel>
 

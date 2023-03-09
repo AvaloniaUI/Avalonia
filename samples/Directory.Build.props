@@ -2,6 +2,9 @@
   <PropertyGroup>
       <IsPackable>false</IsPackable>
       <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Designer.HostApp\bin\Debug\netcoreapp2.0\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+      <EnableNETAnalyzers>false</EnableNETAnalyzers>
+      <LangVersion>11</LangVersion>
   </PropertyGroup>
   <Import Project="..\build\SharedVersion.props" />
+  <Import Project="..\build\DevAnalyzers.props" />
 </Project>

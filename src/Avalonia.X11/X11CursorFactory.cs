@@ -5,13 +5,14 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.SourceGenerator;
 using Avalonia.Utilities;
 
 #nullable enable
 
 namespace Avalonia.X11
 {
-    class X11CursorFactory : ICursorFactory
+    internal partial class X11CursorFactory : ICursorFactory
     {
         private static readonly byte[] NullCursorData = new byte[] { 0 };
 
@@ -48,11 +49,14 @@ namespace Avalonia.X11
                 {StandardCursorType.TopRightCorner, CursorFontShape.XC_top_right_corner},
             };
 
+        [GenerateEnumValueList]
+        private static partial CursorFontShape[] GetAllCursorShapes();
+        
         public X11CursorFactory(IntPtr display)
         {
             _display = display;
             _nullCursor = GetNullCursor(display);
-            _cursors = Enum.GetValues(typeof(CursorFontShape)).Cast<CursorFontShape>()
+            _cursors = GetAllCursorShapes()
                 .ToDictionary(id => id, id => XLib.XCreateFontCursor(_display, id));
         }
 
@@ -109,8 +113,9 @@ namespace Avalonia.X11
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
                
-                using (var renderTarget = platformRenderInterface.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext(null))
+                using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
+                using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
+                using (var ctx = renderTarget.CreateDrawingContext())
                 {
                     var r = new Rect(_pixelSize.ToSize(1)); 
                     ctx.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, r, r);
@@ -137,7 +142,7 @@ namespace Avalonia.X11
         }
     }
 
-    class CursorImpl : ICursorImpl
+    internal class CursorImpl : ICursorImpl
     {
         public CursorImpl() { }
         public CursorImpl(IntPtr handle) => Handle = handle;

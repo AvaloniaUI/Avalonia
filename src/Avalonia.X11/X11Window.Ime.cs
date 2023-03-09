@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -12,7 +11,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    partial class X11Window
+    internal partial class X11Window
     {
         private ITextInputMethodImpl _ime;
         private IX11InputMethodControl _imeControl;
@@ -21,7 +20,7 @@ namespace Avalonia.X11
         private Queue<(RawKeyEventArgs args, XEvent xev, int keyval, int keycode)> _imeQueue =
             new Queue<(RawKeyEventArgs args, XEvent xev, int keyVal, int keyCode)>();
 
-        unsafe void CreateIC()
+        private unsafe void CreateIC()
         {
             if (_x11.HasXim)
             {
@@ -66,8 +65,8 @@ namespace Avalonia.X11
                     new IntPtr((int)(XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing)),
                     XNames.XNClientWindow, _handle, XNames.XNFocusWindow, _handle, IntPtr.Zero);
         }
-        
-        void InitializeIme()
+
+        private void InitializeIme()
         {
             var ime =  AvaloniaLocator.Current.GetService<IX11InputMethodFactory>()?.CreateClient(_handle);
             if (ime == null && _x11.HasXim)
@@ -90,9 +89,9 @@ namespace Avalonia.X11
             }
         }
 
-        void UpdateImePosition() => _imeControl?.UpdateWindowInfo(Position, RenderScaling);
+        private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(Position, RenderScaling);
 
-        void HandleKeyEvent(ref XEvent ev)
+        private void HandleKeyEvent(ref XEvent ev)
         {
             var index = ev.KeyEvent.state.HasAllFlags(XModifierMask.ShiftMask);
 
@@ -104,16 +103,21 @@ namespace Avalonia.X11
             if (ev.KeyEvent.state.HasAllFlags(XModifierMask.Mod2Mask)
                 && key > X11Key.Num_Lock && key <= X11Key.KP_9)
                 key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
-            
-            var filtered = ScheduleKeyInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
-                ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev, (int)key, ev.KeyEvent.keycode);
-           
-            if (ev.type == XEventName.KeyPress && !filtered) 
-                TriggerClassicTextInputEvent(ref ev);
+
+            var convertedKey = X11KeyTransform.ConvertKey(key);
+            var modifiers = TranslateModifiers(ev.KeyEvent.state);
+            var timestamp = (ulong)ev.KeyEvent.time.ToInt64();
+            RawKeyEventArgs args =
+                ev.type == XEventName.KeyPress
+                    ? new RawKeyEventArgsWithText(_keyboard, timestamp, _inputRoot, RawKeyEventType.KeyDown,
+                        convertedKey, modifiers, TranslateEventToString(ref ev))
+                    : new RawKeyEventArgs(_keyboard, timestamp, _inputRoot, RawKeyEventType.KeyUp, convertedKey,
+                        modifiers);
+
+            ScheduleKeyInput(args, ref ev, (int)key, ev.KeyEvent.keycode);
         }
 
-        void TriggerClassicTextInputEvent(ref XEvent ev)
+        private void TriggerClassicTextInputEvent(ref XEvent ev)
         {
             var text = TranslateEventToString(ref ev);
             if (text != null)
@@ -124,8 +128,8 @@ namespace Avalonia.X11
 
         private const int ImeBufferSize = 64 * 1024;
         [ThreadStatic] private static IntPtr ImeBuffer;
-        
-        unsafe string TranslateEventToString(ref XEvent ev)
+
+        private unsafe string TranslateEventToString(ref XEvent ev)
         {
             if (ImeBuffer == IntPtr.Zero)
                 ImeBuffer = Marshal.AllocHGlobal(ImeBufferSize);
@@ -154,21 +158,20 @@ namespace Avalonia.X11
 
             return text;
         }
-        
-        
-        bool ScheduleKeyInput(RawKeyEventArgs args, ref XEvent xev, int keyval, int keycode)
+
+
+        private void ScheduleKeyInput(RawKeyEventArgs args, ref XEvent xev, int keyval, int keycode)
         {
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
-            if (_imeControl != null && _imeControl.IsEnabled)
-            {
-                if (FilterIme(args, xev, keyval, keycode))
-                    return true;
-            }
+            
+            if (_imeControl is { IsEnabled: true } 
+                && FilterIme(args, xev, keyval, keycode)) 
+                return;
+            
             ScheduleInput(args);
-            return false;
         }
-        
-        bool FilterIme(RawKeyEventArgs args, XEvent xev, int keyval, int keycode)
+
+        private bool FilterIme(RawKeyEventArgs args, XEvent xev, int keyval, int keycode)
         {
             if (_ime == null)
                 return false;
@@ -179,7 +182,7 @@ namespace Avalonia.X11
             return true;
         }
 
-        async void ProcessNextImeEvent()
+        private async void ProcessNextImeEvent()
         {
             if(_processingIme)
                 return;
@@ -190,17 +193,26 @@ namespace Avalonia.X11
                 {
                     var ev = _imeQueue.Dequeue();
                     if (_imeControl == null || !await _imeControl.HandleEventAsync(ev.args, ev.keyval, ev.keycode))
-                    {
                         ScheduleInput(ev.args);
-                        if (ev.args.Type == RawKeyEventType.KeyDown)
-                            TriggerClassicTextInputEvent(ref ev.xev);
-                    }
                 }
             }
             finally
             {
                 _processingIme = false;
             }
+        }
+
+        // This class is used to attach the text value of the key to an asynchronously dispatched KeyDown event
+        private class RawKeyEventArgsWithText : RawKeyEventArgs
+        {
+            public RawKeyEventArgsWithText(IKeyboardDevice device, ulong timestamp, IInputRoot root,
+                RawKeyEventType type, Key key, RawInputModifiers modifiers, string text) :
+                base(device, timestamp, root, type, key, modifiers)
+            {
+                Text = text;
+            }
+            
+            public string Text { get; }
         }
     }
 }

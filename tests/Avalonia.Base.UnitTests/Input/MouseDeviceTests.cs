@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -17,11 +12,58 @@ namespace Avalonia.Base.UnitTests.Input
     public class MouseDeviceTests : PointerTestsBase
     {
         [Fact]
+        public void Initial_Buttons_Are_Not_Set_Without_Corresponding_Mouse_Down()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var settingsMock = new Mock<IPlatformSettings>();
+            var threadingMock = new Mock<IPlatformThreadingInterface>();
+
+            threadingMock.Setup(x => x.CurrentThreadIsLoopThread).Returns(true);
+
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
+
+            using var app = UnitTestApplication.Start(
+                new TestServices(
+                    inputManager: new InputManager(),
+                    threadingInterface: threadingMock.Object));
+
+            var renderer = RendererMocks.CreateRenderer();
+            var device = new MouseDevice();
+            var impl = CreateTopLevelImplMock(renderer.Object);
+
+            var control = new Control();
+            var root = CreateInputRoot(impl.Object, control);
+           
+            MouseButton button = default;
+
+            root.PointerReleased += (s, e) => button = e.InitialPressMouseButton;
+
+            var down = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonDown);
+            var up = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonUp);
+
+            SetHit(renderer, control);
+
+            impl.Object.Input!(up);
+
+            Assert.Equal(MouseButton.None, button);
+
+            impl.Object.Input!(down);
+            impl.Object.Input!(up);
+
+            Assert.Equal(MouseButton.Left, button);
+           
+            impl.Object.Input!(up);
+
+            Assert.Equal(MouseButton.None, button);        
+        }
+
+        [Fact]
         public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -45,7 +87,7 @@ namespace Avalonia.Base.UnitTests.Input
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
 
             Assert.NotNull(result);
-            
+           
             result.Capture(control);
             Assert.Same(control, result.Captured);
 
@@ -59,7 +101,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -75,8 +117,8 @@ namespace Avalonia.Base.UnitTests.Input
                     })
                 }
             });
-            
-            
+           
+           
             Point? result = null;
             root.PointerMoved += (_, a) =>
             {

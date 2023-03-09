@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -16,21 +17,21 @@ namespace Avalonia.Skia
             return SKTypeface.Default.FamilyName;
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
             if (checkForUpdates)
             {
                 _skFontManager = SKFontManager.CreateDefault();
             }
 
-            return _skFontManager.FontFamilies;
+            return _skFontManager.GetFontFamilies();
         }
 
-        [ThreadStatic] private static string[] t_languageTagBuffer;
+        [ThreadStatic] private static string[]? t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight, FontStretch fontStretch,
-            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
@@ -53,20 +54,13 @@ namespace Avalonia.Skia
                     break;
             }
 
-            if (culture == null)
-            {
-                culture = CultureInfo.CurrentUICulture;
-            }
+            culture ??= CultureInfo.CurrentUICulture;
 
-            if (t_languageTagBuffer == null)
-            {
-                t_languageTagBuffer = new string[2];
-            }
-
+            t_languageTagBuffer ??= new string[2];
             t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
             t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
 
-            if (fontFamily != null && fontFamily.FamilyNames.HasFallbacks)
+            if (fontFamily is not null && fontFamily.FamilyNames.HasFallbacks)
             {
                 var familyNames = fontFamily.FamilyNames;
 
@@ -102,57 +96,58 @@ namespace Avalonia.Skia
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            SKTypeface skTypeface = null;
+            glyphTypeface = null;
 
-            if (typeface.FontFamily.Key == null)
+            var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch,
+                (SKFontStyleSlant)style);
+
+            var skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
+
+            if (skTypeface is null)
             {
-                var defaultName = SKTypeface.Default.FamilyName;
-
-                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, (SKFontStyleWidth)typeface.Stretch,
-                    (SKFontStyleSlant)typeface.Style);
-
-                foreach (var familyName in typeface.FontFamily.FamilyNames)
-                {
-                    if(familyName == FontFamily.DefaultFontFamilyName)
-                    {
-                        continue;
-                    }
-
-                    skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
-
-                    if (skTypeface is null || defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    break;
-                }
-
-                // MatchTypeface can return "null" if matched typeface wasn't found for the style
-                // Fallback to the default typeface and styles instead.
-                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
-                    ?? SKTypeface.Default;
-            }
-            else
-            {
-                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-
-                skTypeface = fontCollection.Get(typeface);
+                return false;
             }
 
-            if (skTypeface == null)
+            //MatchFamily can return a font other than we requested so we have to verify we got the expected.
+            if (!skTypeface.FamilyName.ToLower(CultureInfo.InvariantCulture).Equals(familyName.ToLower(CultureInfo.InvariantCulture), StringComparison.Ordinal))
             {
-                throw new InvalidOperationException(
-                    $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+                return false;
             }
 
-            var isFakeBold = (int)typeface.Weight >= 600 && !skTypeface.IsBold;
+            var fontSimulations = FontSimulations.None;
 
-            var isFakeItalic = typeface.Style == FontStyle.Italic && !skTypeface.IsItalic;
-            
-            return new GlyphTypefaceImpl(skTypeface, isFakeBold, isFakeItalic);
+            if ((int)weight >= 600 && !skTypeface.IsBold)
+            {
+                fontSimulations |= FontSimulations.Bold;
+            }
+
+            if (style == FontStyle.Italic && !skTypeface.IsItalic)
+            {
+                fontSimulations |= FontSimulations.Oblique;
+            }
+
+            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+
+            return true;
+        }
+
+        public bool TryCreateGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            var skTypeface = SKTypeface.FromStream(stream);
+
+            if (skTypeface != null)
+            {
+                glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+
+                return true;
+            }
+
+            glyphTypeface = null;
+
+            return false;
         }
     }
 }

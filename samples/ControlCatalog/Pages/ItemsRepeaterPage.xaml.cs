@@ -44,7 +44,7 @@ namespace ControlCatalog.Pages
 
         public void OnSelectTemplateKey(object sender, SelectTemplateEventArgs e)
         {
-            if (e.DataContext is ItemsRepeaterPageViewModel.Item item)
+            if (e.DataContext is ItemsRepeaterPageViewModelItem item)
             {
                 e.TemplateKey = (item.Index % 2 == 0) ? "even" : "odd";
             }
@@ -123,16 +123,16 @@ namespace ControlCatalog.Pages
             element.BringIntoView();
         }
 
-        private void RepeaterClick(object sender, PointerPressedEventArgs e)
+        private void RepeaterClick(object? sender, PointerPressedEventArgs e)
         {
-            if ((e.Source as TextBlock)?.DataContext is ItemsRepeaterPageViewModel.Item item)
+            if ((e.Source as TextBlock)?.DataContext is ItemsRepeaterPageViewModelItem item)
             {
                 _viewModel.SelectedItem = item;
                 _selectedIndex = _viewModel.Items.IndexOf(item);
             }
         }
 
-        private void RepeaterOnKeyDown(object sender, KeyEventArgs e)
+        private void RepeaterOnKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.F5)
             {
@@ -140,17 +140,17 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private void scrollToLast_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void scrollToLast_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_viewModel.Items.Count - 1);
         }
 
-        private void scrollToRandom_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void scrollToRandom_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_random.Next(_viewModel.Items.Count - 1));
         }
 
-        private void scrollToSelected_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void scrollToSelected_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_selectedIndex);
         }

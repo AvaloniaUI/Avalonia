@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
@@ -217,6 +218,69 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
+        [Fact]
+        public void Should_Not_Pass_UnsetValue_To_MultiBinding_During_ApplyTemplate()
+        {
+            var converter = new MultiConverter();
+            var source = new Button
+            {
+                Content = "foo",
+                Template = new FuncControlTemplate<Button>((parent, _) =>
+                    new ContentPresenter
+                    {
+                        [~ContentPresenter.ContentProperty] = new MultiBinding
+                        {
+                            Converter = converter,
+                            Bindings =
+                            {
+                                new TemplateBinding(ContentControl.ContentProperty),
+                            }
+                        }
+                    }),
+            };
+
+            source.ApplyTemplate();
+
+            var target = (ContentPresenter)source.GetVisualChildren().Single();
+
+            // #8672 was caused by TemplateBinding passing "unset" to the MultiBinding during
+            // ApplyTemplate as the TemplatedParent property doesn't get setup until after the
+            // binding is initiated.
+            Assert.Equal(new[] { "foo" }, converter.Values);
+        }
+        
+        [Fact]
+        public void Should_Execute_Converter_Without_Specific_TargetType()
+        {
+            // See https://github.com/AvaloniaUI/Avalonia/issues/9766
+            var source = new Button
+            {
+                Template = new FuncControlTemplate<Button>((parent, _) =>
+                    new ContentPresenter
+                    {
+                        [~ContentPresenter.IsVisibleProperty] = new MultiBinding
+                        {
+                            Converter = BoolConverters.And,
+                            Bindings =
+                            {
+                                new TemplateBinding(ContentControl.ContentProperty)
+                                {
+                                    Converter = ObjectConverters.IsNotNull
+                                }
+                            }
+                        }
+                    }),
+            };
+
+            source.ApplyTemplate();
+
+            var target = (ContentPresenter)source.GetVisualChildren().Single();
+
+            Assert.False(target.IsVisible);
+            source.Content = "foo";
+            Assert.True(target.IsVisible);
+        }
+
         private class PrefixConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -245,6 +309,17 @@ namespace Avalonia.Markup.UnitTests.Data
                 }
 
                 return null;
+            }
+        }
+
+        private class MultiConverter : IMultiValueConverter
+        {
+            public List<object> Values { get; } = new();
+
+            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            {
+                Values.AddRange(values);
+                return values.FirstOrDefault();
             }
         }
     }

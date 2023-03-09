@@ -1,3 +1,4 @@
+using Avalonia.Input;
 using Avalonia.Platform;
 
 namespace Avalonia.Native
@@ -13,7 +14,8 @@ namespace Avalonia.Native
             Point p)
         {
             var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-            var doubleClickTime = settings.DoubleClickTime.TotalMilliseconds;
+            var doubleClickTime = settings?.GetDoubleTapTime(PointerType.Mouse).TotalMilliseconds ?? 500;
+            var doubleClickSize = settings?.GetDoubleTapSize(PointerType.Mouse) ?? new Size(4, 4);
 
             if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
             {
@@ -23,7 +25,7 @@ namespace Avalonia.Native
             ++_clickCount;
             _lastClickTime = timestamp;
             _lastClickRect = new Rect(p, new Size())
-                .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
+                .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
 
             return _clickCount == 2;
         }

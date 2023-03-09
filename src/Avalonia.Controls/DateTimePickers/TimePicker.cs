@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
-using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using System;
@@ -12,53 +11,38 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time.
     /// </summary>
-    [TemplatePart("FirstColumnDivider",      typeof(Rectangle))]
-    [TemplatePart("FirstPickerHost",         typeof(Border))]
-    [TemplatePart("FlyoutButton",            typeof(Button))]
-    [TemplatePart("FlyoutButtonContentGrid", typeof(Grid))]
-    [TemplatePart("HourTextBlock",           typeof(TextBlock))]
-    [TemplatePart("MinuteTextBlock",         typeof(TextBlock))]
-    [TemplatePart("PeriodTextBlock",         typeof(TextBlock))]
-    [TemplatePart("PickerPresenter",         typeof(TimePickerPresenter))]
-    [TemplatePart("Popup",                   typeof(Popup))]
-    [TemplatePart("SecondColumnDivider",     typeof(Rectangle))]
-    [TemplatePart("SecondPickerHost",        typeof(Border))]
-    [TemplatePart("ThirdPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FirstColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("PART_FirstPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FlyoutButton",            typeof(Button))]
+    [TemplatePart("PART_FlyoutButtonContentGrid", typeof(Grid))]
+    [TemplatePart("PART_HourTextBlock",           typeof(TextBlock))]
+    [TemplatePart("PART_MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_PeriodTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_PickerPresenter",         typeof(TimePickerPresenter))]
+    [TemplatePart("PART_Popup",                   typeof(Popup))]
+    [TemplatePart("PART_SecondColumnDivider",     typeof(Rectangle))]
+    [TemplatePart("PART_SecondPickerHost",        typeof(Border))]
+    [TemplatePart("PART_ThirdPickerHost",         typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
         /// <summary>
         /// Defines the <see cref="MinuteIncrement"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePicker, int> MinuteIncrementProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, int>(nameof(MinuteIncrement),
-                x => x.MinuteIncrement, (x, v) => x.MinuteIncrement = v);
-
-        /// <summary>
-        /// Defines the <see cref="Header"/> property
-        /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<TimePicker, object>(nameof(Header));
-
-        /// <summary>
-        /// Defines the <see cref="HeaderTemplate"/> property
-        /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<TimePicker, IDataTemplate>(nameof(HeaderTemplate));
+        public static readonly StyledProperty<int> MinuteIncrementProperty =
+            AvaloniaProperty.Register<TimePicker, int>(nameof(MinuteIncrement), 1, coerce: CoerceMinuteIncrement);
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePicker, string> ClockIdentifierProperty =
-           AvaloniaProperty.RegisterDirect<TimePicker, string>(nameof(ClockIdentifier),
-               x => x.ClockIdentifier, (x, v) => x.ClockIdentifier = v);
+        public static readonly StyledProperty<string> ClockIdentifierProperty =
+           AvaloniaProperty.Register<TimePicker, string>(nameof(ClockIdentifier), "12HourClock", coerce: CoerceClockIdentifier);
 
         /// <summary>
         /// Defines the <see cref="SelectedTime"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePicker, TimeSpan?> SelectedTimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>(nameof(SelectedTime),
-                x => x.SelectedTime, (x, v) => x.SelectedTime = v,
+        public static readonly StyledProperty<TimeSpan?> SelectedTimeProperty =
+            AvaloniaProperty.Register<TimePicker, TimeSpan?>(nameof(SelectedTime),
                 defaultBindingMode: BindingMode.TwoWay);
 
         // Template Items
@@ -75,17 +59,13 @@ namespace Avalonia.Controls
         private Grid? _contentGrid;
         private Popup? _popup;
 
-        private TimeSpan? _selectedTime;
-        private int _minuteIncrement = 1;
-        private string _clockIdentifier = "12HourClock";
-
         public TimePicker()
         {
             PseudoClasses.Set(":hasnotime", true);
 
             var timePattern = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern;
             if (timePattern.IndexOf("H") != -1)
-                _clockIdentifier = "24HourClock";
+                SetCurrentValue(ClockIdentifierProperty, "24HourClock");
         }
 
         /// <summary>
@@ -93,32 +73,16 @@ namespace Avalonia.Controls
         /// </summary>
         public int MinuteIncrement
         {
-            get => _minuteIncrement;
-            set
-            {
-                if (value < 1 || value > 59)
-                    throw new ArgumentOutOfRangeException("1 >= MinuteIncrement <= 59");
-                SetAndRaise(MinuteIncrementProperty, ref _minuteIncrement, value);
-                SetSelectedTimeText();
-            }
+            get => GetValue(MinuteIncrementProperty);
+            set => SetValue(MinuteIncrementProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the header
-        /// </summary>
-        public object Header
+        private static int CoerceMinuteIncrement(AvaloniaObject sender, int value)
         {
-            get => GetValue(HeaderProperty);
-            set => SetValue(HeaderProperty, value);
-        }
+            if (value < 1 || value > 59)
+                throw new ArgumentOutOfRangeException(null, "1 >= MinuteIncrement <= 59");
 
-        /// <summary>
-        /// Gets or sets the header template
-        /// </summary>
-        public IDataTemplate HeaderTemplate
-        {
-            get => GetValue(HeaderTemplateProperty);
-            set => SetValue(HeaderTemplateProperty, value);
+            return value;
         }
 
         /// <summary>
@@ -126,15 +90,17 @@ namespace Avalonia.Controls
         /// </summary>
         public string ClockIdentifier
         {
-            get => _clockIdentifier;
-            set
-            {
-                if (!(string.IsNullOrEmpty(value) || value == "" || value == "12HourClock" || value == "24HourClock"))
-                    throw new ArgumentException("Invalid ClockIdentifier");
-                SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
-                SetGrid();
-                SetSelectedTimeText();
-            }
+
+            get => GetValue(ClockIdentifierProperty);
+            set => SetValue(ClockIdentifierProperty, value);
+        }
+
+        private static string CoerceClockIdentifier(AvaloniaObject sender, string value)
+        {
+            if (!(string.IsNullOrEmpty(value) || value == "12HourClock" || value == "24HourClock"))
+                throw new ArgumentException("Invalid ClockIdentifier", default(string));
+
+            return value;
         }
 
         /// <summary>
@@ -142,14 +108,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TimeSpan? SelectedTime
         {
-            get => _selectedTime;
-            set
-            {
-                var old = _selectedTime;
-                SetAndRaise(SelectedTimeProperty, ref _selectedTime, value);
-                OnSelectedTimeChanged(old, value);
-                SetSelectedTimeText();
-            }
+            get => GetValue(SelectedTimeProperty);
+            set => SetValue(SelectedTimeProperty, value);
         }
 
         /// <summary>
@@ -169,23 +129,23 @@ namespace Avalonia.Controls
             }
             base.OnApplyTemplate(e);
 
-            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
+            _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
 
-            _firstPickerHost = e.NameScope.Find<Border>("FirstPickerHost");
-            _secondPickerHost = e.NameScope.Find<Border>("SecondPickerHost");
-            _thirdPickerHost = e.NameScope.Find<Border>("ThirdPickerHost");
+            _firstPickerHost = e.NameScope.Find<Border>("PART_FirstPickerHost");
+            _secondPickerHost = e.NameScope.Find<Border>("PART_SecondPickerHost");
+            _thirdPickerHost = e.NameScope.Find<Border>("PART_ThirdPickerHost");
 
-            _hourText = e.NameScope.Find<TextBlock>("HourTextBlock");
-            _minuteText = e.NameScope.Find<TextBlock>("MinuteTextBlock");
-            _periodText = e.NameScope.Find<TextBlock>("PeriodTextBlock");
+            _hourText = e.NameScope.Find<TextBlock>("PART_HourTextBlock");
+            _minuteText = e.NameScope.Find<TextBlock>("PART_MinuteTextBlock");
+            _periodText = e.NameScope.Find<TextBlock>("PART_PeriodTextBlock");
 
-            _firstSplitter = e.NameScope.Find<Rectangle>("FirstColumnDivider");
-            _secondSplitter = e.NameScope.Find<Rectangle>("SecondColumnDivider");
+            _firstSplitter = e.NameScope.Find<Rectangle>("PART_FirstColumnDivider");
+            _secondSplitter = e.NameScope.Find<Rectangle>("PART_SecondColumnDivider");
 
-            _contentGrid = e.NameScope.Find<Grid>("FlyoutButtonContentGrid");
+            _contentGrid = e.NameScope.Find<Grid>("PART_FlyoutButtonContentGrid");
 
-            _popup = e.NameScope.Find<Popup>("Popup");
-            _presenter = e.NameScope.Find<TimePickerPresenter>("PickerPresenter");
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+            _presenter = e.NameScope.Find<TimePickerPresenter>("PART_PickerPresenter");
 
             if (_flyoutButton != null)
                 _flyoutButton.Click += OnFlyoutButtonClicked;
@@ -200,6 +160,27 @@ namespace Avalonia.Controls
 
                 _presenter[!TimePickerPresenter.MinuteIncrementProperty] = this[!MinuteIncrementProperty];
                 _presenter[!TimePickerPresenter.ClockIdentifierProperty] = this[!ClockIdentifierProperty];
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == MinuteIncrementProperty)
+            {
+                SetSelectedTimeText();
+            }
+            else if (change.Property == ClockIdentifierProperty)
+            {
+                SetGrid();
+                SetSelectedTimeText();
+            }
+            else if (change.Property == SelectedTimeProperty)
+            {
+                var (oldValue, newValue) = change.GetOldAndNewValue<TimeSpan?>();
+                OnSelectedTimeChanged(oldValue, newValue);
+                SetSelectedTimeText();
             }
         }
 
@@ -300,7 +281,7 @@ namespace Avalonia.Controls
         private void OnConfirmed(object? sender, EventArgs e)
         {
             _popup!.Close();
-            SelectedTime = _presenter!.Time;
+            SetCurrentValue(SelectedTimeProperty, _presenter!.Time);
         }
     }
 }
