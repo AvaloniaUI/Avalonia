@@ -6,11 +6,12 @@ WindowOverlayImpl::WindowOverlayImpl(void* parentWindow, char* parentView, IAvnW
 
     [this->parentView addSubview:View];
 
-    // Here we substract the powerpoint bottom status bar
-    // This is needed in order to correctly sync our view with the origin, which on macos is at bottom left corner
+    // We should ideally choose our parentview to be positioned exactly as the main window
+    // This is needed to replicate default avalonia behaviour
+    // If parentview is positioned differently, we shall adjust the origin and size accordingly (bottom left coordinates)
     NSRect frame = this->parentView.frame;
-    frame.size.height += 22;
-    frame.origin.y -= 22;
+    frame.size.height += frame.origin.y;
+    frame.origin.y = -frame.origin.y;
 
     [View setFrame:frame];
 }
