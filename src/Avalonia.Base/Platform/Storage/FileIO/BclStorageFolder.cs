@@ -57,14 +57,16 @@ internal class BclStorageFolder : IStorageBookmarkFolder
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
-         var items = DirectoryInfo.GetDirectories()
+        var items = DirectoryInfo.EnumerateDirectories()
             .Select(d => (IStorageItem)new BclStorageFolder(d))
-            .Concat(DirectoryInfo.GetFiles().Select(f => new BclStorageFile(f)))
-            .ToArray();
+            .Concat(DirectoryInfo.EnumerateFiles().Select(f => new BclStorageFile(f)));
 
-         return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
+        foreach (var item in items)
+        {
+            yield return item;
+        }
     }
 
     public virtual Task<string?> SaveBookmarkAsync()
