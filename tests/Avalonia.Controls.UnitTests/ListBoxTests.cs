@@ -786,7 +786,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ContainerPrepared_Is_Called_For_Each_Item_Container_On_Layout()
+        public void ContainerPrepared_Is_Raised_For_Each_Item_Container_On_Layout()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
@@ -812,7 +812,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ContainerPrepared_Is_Called_For_Each_ItemsSource_Container_On_Layout()
+        public void ContainerPrepared_Is_Raised_For_Each_ItemsSource_Container_On_Layout()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
@@ -838,7 +838,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ContainerPrepared_Is_Called_For_Added_Item()
+        public void ContainerPrepared_Is_Raised_For_Added_Item()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
@@ -866,7 +866,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ContainerIndexChanged_Is_Called_When_Item_Added()
+        public void ContainerIndexChanged_Is_Raised_When_Item_Added()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
@@ -897,7 +897,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ContainerClearing_Is_Called_When_Item_Removed()
+        public void ContainerClearing_Is_Raised_When_Item_Removed()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
