@@ -45,7 +45,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
 
             Assert.Equal(
                 new TransformedBounds(
-                    new Rect(250, 250, 500, 500),
+                    new Rect(0, 0, 500, 500),
                     new Rect(0, 0, 1000, 1000),
                     Matrix.CreateTranslation(250, 250)),
                 target.GetTransformedBounds());
@@ -75,7 +75,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
 
             Assert.Equal(
                 new TransformedBounds(
-                    new Rect(150, 150, 500, 500),
+                    new Rect(0, 0, 500, 500),
                     new Rect(0, 0, 1000, 1000),
                     Matrix.CreateTranslation(250, 250)),
                 target.GetTransformedBounds());
@@ -106,7 +106,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
 
             Assert.Equal(
                 new TransformedBounds(
-                    new Rect(150, 150, 500, 500),
+                    new Rect(0, 0, 500, 500),
                     new Rect(100, 100, 800, 800),
                     Matrix.CreateTranslation(250, 250)),
                 target.GetTransformedBounds());
@@ -138,7 +138,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
 
             Assert.Equal(
                 new TransformedBounds(
-                    new Rect(150, 150, 500, 500),
+                    new Rect(0, 0, 500, 500),
                     new Rect(110, 120, 800, 800),
                     Matrix.CreateTranslation(260, 270)),
                 target.GetTransformedBounds());
