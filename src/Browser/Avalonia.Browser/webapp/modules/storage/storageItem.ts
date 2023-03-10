@@ -97,6 +97,49 @@ export class StorageItem {
         return (item.handle as any).entries();
     }
 
+    public static async createFile(item: StorageItem, name: string) : Promise<any | null> {
+        if (item.kind !== "directory" || !item.handle) {
+            throw new TypeError("Unable to create item in the requested directory");
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await (item.handle as any).getFileHandle(name, { create: true });
+    }
+
+    public static async createFolder(item: StorageItem, name: string) : Promise<any | null> {
+        if (item.kind !== "directory" || !item.handle) {
+            throw new TypeError("Unable to create item in the requested directory");
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await (item.handle as any).getDirectoryHandle(name, { create: true });
+    }
+
+    public static async deleteAsync(item: StorageItem) : Promise<any | null> {
+        if (!item.handle) {
+            return null;
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await (item.handle as any).remove({recursive: true});
+    }
+
+    public static async moveAsync(item: StorageItem, destination: StorageItem) : Promise<any | null> {
+        if (!item.handle) {
+            return null;
+        }
+        if (destination.kind !== "directory" || !destination.handle) {
+            throw new TypeError("Unable to move item to the requested directory");
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await (item.handle as any).move(destination /*, newName */);
+    }
+
     private async verityPermissions(mode: "read" | "readwrite"): Promise<void | never> {
         if (!this.handle) {
             return;
