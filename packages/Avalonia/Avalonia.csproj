@@ -43,6 +43,10 @@
        <Pack>true</Pack>
        <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
+    <Content Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.props">
+      <Pack>true</Pack>
+      <PackagePath>build\;buildTransitive\</PackagePath>
+    </Content>
     <Content Include="*.targets">
       <Pack>true</Pack>
       <PackagePath>build\;buildTransitive\</PackagePath>
