@@ -199,6 +199,33 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
         return Task.FromResult<IStorageFolder?>(null);
     }
 
+    public Task DeleteAsync()
+    {
+        return StorageHelper.DeleteAsync(FileHandle);
+    }
+
+    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    {
+        if (destination is not JSStorageFolder folder)
+        {
+            throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
+        }
+
+        var storageItem = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
+        if (storageItem is null)
+        {
+            return null;
+        }
+
+        var kind = storageItem.GetPropertyAsString("kind");
+        return kind switch
+        {
+            "directory" => new JSStorageFolder(storageItem),
+            "file" => new JSStorageFile(storageItem),
+            _ => this
+        };
+    }
+
     public Task ReleaseBookmarkAsync()
     {
         if (!CanBookmark)
@@ -297,6 +324,42 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
                     yield return new JSStorageFile(storageItem);
                     break;
             }
+        }
+    }
+
+    public async Task<IStorageFile?> CreateFileAsync(string name)
+    {
+        try
+        {
+            var storageFile = await StorageHelper.CreateFile(FileHandle, name);
+            if (storageFile is null)
+            {
+                return null;
+            }
+
+            return new JSStorageFile(storageFile);
+        }
+        catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
+        {
+            throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
+        }
+    }
+
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
+    {
+        try
+        {
+            var storageFile = await StorageHelper.CreateFolder(FileHandle, name);
+            if (storageFile is null)
+            {
+                return null;
+            }
+
+            return new JSStorageFolder(storageFile);
+        }
+        catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
+        {
+            throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
         }
     }
 }
