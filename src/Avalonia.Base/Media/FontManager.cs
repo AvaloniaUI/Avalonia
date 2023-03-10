@@ -119,7 +119,9 @@ namespace Avalonia.Media
                     }
                 }
 
-                if (fontCollection != null && fontCollection.TryGetGlyphTypeface(fontFamily.FamilyNames.PrimaryFamilyName,
+                var familyName = fontFamily.FamilyNames.PrimaryFamilyName.ToUpperInvariant();
+
+                if (fontCollection != null && fontCollection.TryGetGlyphTypeface(familyName,
                     typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {
                     return true;
@@ -133,13 +135,13 @@ namespace Avalonia.Media
 
             foreach (var familyName in fontFamily.FamilyNames)
             {
-                if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
+                if (SystemFonts.TryGetGlyphTypeface(familyName.ToUpperInvariant(), typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
                 {
                     return true;
                 }
             }
 
-            return SystemFonts.TryGetGlyphTypeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
+            return TryGetGlyphTypeface(new Typeface(DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
         }
 
         /// <summary>

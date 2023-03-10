@@ -167,6 +167,9 @@
       <TabItem Header="SliderTab">
           <Slider VerticalAlignment="Top" Name="Slider" Value="30"/>
       </TabItem>
+      <TabItem Header="ScrollBarTab">
+        <ScrollBar Name="MyScrollBar" Orientation="Horizontal" AllowAutoHide="False" Width="200" Height="30" Value="20"/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>
