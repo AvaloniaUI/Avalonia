@@ -172,7 +172,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public async Task<IStorageFile?> CreateFile(string name)
+    public async Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
         var newFile = Document.CreateFile(mimeType, name);
@@ -185,7 +185,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         return new AndroidStorageFile(Activity, newFile.Uri, this);
     }
 
-    public async Task<IStorageFolder?> CreateFolder(string name)
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         var newFolder = Document?.CreateDirectory(name);
 
@@ -211,9 +211,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
         async Task DeleteContents(AndroidStorageFolder storageFolder)
         {
-            var files = await storageFolder.GetItemsAsync();
-
-            foreach (var file in files)
+            await foreach (var file in storageFolder.GetItemsAsync())
             {
                 if(file is AndroidStorageFolder folder)
                 {
@@ -240,7 +238,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         {
             yield break;
         }
-        
+
         var contentResolver = Activity.ContentResolver;
         if (contentResolver == null)
         {
@@ -273,7 +271,6 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     {
                         continue;
                     }
-
                     yield return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
                         new AndroidStorageFile(Activity, uri, this, root);
                 }
@@ -291,15 +288,14 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
         async Task<AndroidStorageFolder?> MoveRecursively(AndroidStorageFolder storageFolder, AndroidStorageFolder destination)
         {
-            destination = await destination.CreateFolder(storageFolder.Name) as AndroidStorageFolder;
+            destination = await destination.CreateFolderAsync(storageFolder.Name) as AndroidStorageFolder;
 
             if (destination == null)
             {
                 return null;
             }
-            var files = await storageFolder.GetItemsAsync();
 
-            foreach (var file in files)
+            await foreach (var file in storageFolder.GetItemsAsync())
             {
                 if (file is AndroidStorageFolder folder)
                 {
@@ -502,20 +498,27 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
             }
         }
 
-        async Task<AndroidStorageFile> MoveFileByCopy()
+        async Task<AndroidStorageFile?> MoveFileByCopy()
         {
-            var newFile = await storageFolder.CreateFile(Name) as AndroidStorageFile;
+            var newFile = await storageFolder.CreateFileAsync(Name) as AndroidStorageFile;
 
-            if (newFile != null)
+            try
             {
-                using var input = await OpenReadAsync();
-                using var output = await newFile.OpenWriteAsync();
+                if (newFile != null)
+                {
+                    using var input = await OpenReadAsync();
+                    using var output = await newFile.OpenWriteAsync();
 
-                await input.CopyToAsync(output);
+                    await input.CopyToAsync(output);
 
-                await DeleteAsync();
+                    await DeleteAsync();
 
-                return new AndroidStorageFile(Activity, newFile.Uri, storageFolder);
+                    return new AndroidStorageFile(Activity, newFile.Uri, storageFolder);
+                }
+            }
+            catch
+            {
+                newFile?.DeleteAsync();
             }
 
             return null;
