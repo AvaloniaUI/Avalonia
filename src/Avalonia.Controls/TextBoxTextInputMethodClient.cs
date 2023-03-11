@@ -106,7 +106,7 @@ namespace Avalonia.Controls
         {
             if (_presenter != null && _textEditable != null)
             {
-                _presenter.CompositionRegion = new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd);
+                _presenter.SetCurrentValue(TextPresenter.CompositionRegionProperty, new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd));
             }
         }
 
@@ -179,7 +179,7 @@ namespace Avalonia.Controls
 
             _presenter.SetCurrentValue(TextPresenter.TextProperty, text);
 
-            _presenter.PreeditText = preeditText;
+            _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
 
             _presenter.UpdateCaret(new CharacterHit(_compositionStart + (preeditText != null ? preeditText.Length : 0)), false);
 
@@ -201,9 +201,12 @@ namespace Avalonia.Controls
                 return preeditText;
             }
 
-            var text = _presenterText.Substring(0, _compositionStart) + preeditText + _presenterText.Substring(_compositionStart);
+            var sb = StringBuilderCache.Acquire(_presenterText.Length + preeditText.Length);
 
-            return text;
+            sb.Append(_presenterText);
+            sb.Insert(_compositionStart, preeditText);
+
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
         public void SetComposingRegion(TextRange? region)
@@ -213,7 +216,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            _presenter.CompositionRegion = region;
+            _presenter.SetCurrentValue(TextPresenter.CompositionRegionProperty, region);
         }
 
         public void SelectInSurroundingText(int start, int end)
@@ -252,9 +255,9 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
-                _presenter.PreeditText = null;
+                _presenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                _presenter.CompositionRegion = null;
+                _presenter.ClearValue(TextPresenter.CompositionRegionProperty);
 
                 _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
             }
