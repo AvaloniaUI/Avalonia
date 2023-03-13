@@ -145,7 +145,7 @@ namespace Avalonia.IntegrationTests.Appium
                     var text = windows.Select(x => x.Text).ToList();
                     var newWindow = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
                         .First(x => x.Text == newWindowTitle);
-                    var close = ((AppiumWebElement)newWindow).GetChromeButtons().Close;
+                    var close = ((AppiumWebElement)newWindow).FindElementByAccessibilityId("_XCUI:CloseWindow");
                     close!.Click();
                     Thread.Sleep(1000);
                 });

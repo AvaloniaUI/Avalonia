@@ -83,9 +83,9 @@ namespace Avalonia.IntegrationTests.Appium
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
         {
             var mainWindow = GetWindow("MainWindow");
-            var buttons = mainWindow.GetChromeButtons();
+            var fullScreen = mainWindow.FindElementByAccessibilityId("_XCUI:FullScreenWindow");
 
-            buttons.FullScreen.Click();
+            fullScreen.Click();
 
             Thread.Sleep(500);
 
@@ -275,7 +275,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var miniaturizeButton = secondaryWindow.GetChromeButtons().Minimize;
+                var miniaturizeButton = secondaryWindow.FindElementByAccessibilityId("_XCUI:MinimizeWindow");
 
                 Assert.False(miniaturizeButton.Enabled);
             }
@@ -289,7 +289,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var miniaturizeButton = secondaryWindow.GetChromeButtons().Minimize;
+                var miniaturizeButton = secondaryWindow.FindElementByAccessibilityId("_XCUI:MinimizeWindow");
 
                 miniaturizeButton.Click();
                 Thread.Sleep(1000);
@@ -333,7 +333,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             // Close the window manually.
             secondaryWindow = GetWindow("SecondaryWindow");
-            secondaryWindow.GetChromeButtons().Close.Click();
+            secondaryWindow.FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
         }
 
         [PlatformTheory(TestPlatforms.MacOS)]
@@ -345,7 +345,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var zoomButton = secondaryWindow.GetChromeButtons().Maximize;
+                var zoomButton = secondaryWindow.FindElementByAccessibilityId("_XCUI:ZoomWindow");
                 Assert.False(zoomButton.Enabled);
             }
         }
