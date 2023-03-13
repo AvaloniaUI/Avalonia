@@ -12,6 +12,7 @@ namespace Avalonia.Controls
     {
         public static ToolTipService Instance { get; } = new ToolTipService();
 
+        private Point _startPosition;
         private DispatcherTimer? _timer;
 
         private ToolTipService() { }
@@ -28,12 +29,18 @@ namespace Avalonia.Controls
             {
                 control.PointerEntered -= ControlPointerEntered;
                 control.PointerExited -= ControlPointerExited;
+                control.PointerPressed -= ControlPointerPressed;
+                control.PointerReleased -= ControlPointerReleased;
+                control.PointerMoved -= ControlPointerMoved;
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEntered += ControlPointerEntered;
                 control.PointerExited += ControlPointerExited;
+                control.PointerPressed += ControlPointerPressed;
+                control.PointerReleased += ControlPointerReleased;
+                control.PointerMoved += ControlPointerMoved;
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -92,7 +99,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                StartShowTimer(showDelay, control);
+                StartShowTimer(showDelay, control, e);
             }
         }
 
@@ -107,6 +114,50 @@ namespace Avalonia.Controls
             Close(control);
         }
 
+        private void ControlPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (_timer is null)
+                return;
+
+            var control = (Control)sender!;
+            var distanceLimit = ToolTip.GetShowDistanceLimit(control);
+
+            if (double.IsNaN(distanceLimit) || distanceLimit < 0)
+                return;
+
+            var position = e.GetPosition(control);
+
+            Vector moved = position - _startPosition;
+
+            if (moved.Length > distanceLimit)
+            {
+                _startPosition = position;
+                _timer.Stop();
+                _timer.Start();
+            }
+        }
+
+        private void ControlPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            StopTimer();
+
+            var control = (Control)sender!;
+            var showDelay = ToolTip.GetShowDelay(control);
+            if (showDelay == 0)
+            {
+                Open(control);
+            }
+            else
+            {
+                StartShowTimer(showDelay, control, e);
+            }
+        }
+
+        private void ControlPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            StopTimer();
+        }
+
         private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
         {
             var control = (Control)sender!;
@@ -114,8 +165,9 @@ namespace Avalonia.Controls
             toolTip?.RecalculatePosition(control);
         }
 
-        private void StartShowTimer(int showDelay, Control control)
+        private void StartShowTimer(int showDelay, Control control, PointerEventArgs e)
         {
+            _startPosition = e.GetPosition(control);
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(showDelay) };
             _timer.Tick += (o, e) => Open(control);
             _timer.Start();
