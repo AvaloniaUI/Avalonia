@@ -60,38 +60,43 @@ namespace Avalonia.FreeDesktop
 
             public override string Path { get; }
 
-            protected override (uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout) OnGetLayout(int parentId, int recursionDepth, string[] propertyNames)
-            {
-                var menu = GetMenu(parentId);
-                var layout = GetLayout(menu.item, menu.menu, recursionDepth, propertyNames);
-                if (!IsNativeMenuExported)
+            protected override async ValueTask<(uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout)> OnGetLayoutAsync(int parentId, int recursionDepth, string[]? propertyNames) =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    IsNativeMenuExported = true;
-                    Dispatcher.UIThread.Post(() => OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty));
-                }
+                    var menu = GetMenu(parentId);
+                    var layout = GetLayout(menu.item, menu.menu, recursionDepth, propertyNames);
+                    if (!IsNativeMenuExported)
+                    {
+                        IsNativeMenuExported = true;
+                        OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty);
+                    }
 
-                return (_revision, layout);
+                    return (_revision, layout);
+                });
+
+            protected override async ValueTask<(int, Dictionary<string, DBusVariantItem>)[]> OnGetGroupPropertiesAsync(int[] ids, string[] propertyNames) =>
+                await Dispatcher.UIThread.InvokeAsync(() => ids.Select(id => (id, GetProperties(GetMenu(id), propertyNames))).ToArray());
+
+            protected override async ValueTask<DBusVariantItem> OnGetPropertyAsync(int id, string name) =>
+                await Dispatcher.UIThread.InvokeAsync(() => GetProperty(GetMenu(id), name) ?? new DBusVariantItem("i", new DBusInt32Item(0)));
+
+            protected override ValueTask OnEventAsync(int id, string eventId, DBusVariantItem data, uint timestamp)
+            {
+                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId));
+                return new ValueTask();
             }
 
-            protected override (int, Dictionary<string, DBusVariantItem>)[] OnGetGroupProperties(int[] ids, string[] propertyNames) =>
-                ids.Select(id => (id, GetProperties(GetMenu(id), propertyNames))).ToArray();
-
-            protected override DBusVariantItem OnGetProperty(int id, string name) => GetProperty(GetMenu(id), name) ?? new DBusVariantItem("i", new DBusInt32Item(0));
-
-            protected override void OnEvent(int id, string eventId, DBusVariantItem data, uint timestamp) =>
-                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId));
-
-            protected override int[] OnEventGroup((int, string, DBusVariantItem, uint)[] events)
+            protected override ValueTask<int[]> OnEventGroupAsync((int, string, DBusVariantItem, uint)[] events)
             {
                 foreach (var e in events)
                     Dispatcher.UIThread.Post(() => HandleEvent(e.Item1, e.Item2));
-                return Array.Empty<int>();
+                return new ValueTask<int[]>(Array.Empty<int>());
             }
 
-            protected override bool OnAboutToShow(int id) => false;
+            protected override ValueTask<bool> OnAboutToShowAsync(int id) => new(false);
 
-            protected override (int[] updatesNeeded, int[] idErrors) OnAboutToShowGroup(int[] ids) =>
-                (Array.Empty<int>(), Array.Empty<int>());
+            protected override ValueTask<(int[] updatesNeeded, int[] idErrors)> OnAboutToShowGroupAsync(int[] ids) =>
+                new((Array.Empty<int>(), Array.Empty<int>()));
 
             private async Task InitializeAsync()
             {
