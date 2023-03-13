@@ -12,6 +12,7 @@ namespace Avalonia.Controls
     {
         public static ToolTipService Instance { get; } = new ToolTipService();
 
+        private Point _startPosition;
         private DispatcherTimer? _timer;
 
         private ToolTipService() { }
@@ -30,6 +31,7 @@ namespace Avalonia.Controls
                 control.PointerExited -= ControlPointerExited;
                 control.PointerPressed -= ControlPointerPressed;
                 control.PointerReleased -= ControlPointerReleased;
+                control.PointerMoved -= ControlPointerMoved;
             }
 
             if (e.NewValue != null)
@@ -38,6 +40,7 @@ namespace Avalonia.Controls
                 control.PointerExited += ControlPointerExited;
                 control.PointerPressed += ControlPointerPressed;
                 control.PointerReleased += ControlPointerReleased;
+                control.PointerMoved += ControlPointerMoved;
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -51,6 +54,23 @@ namespace Avalonia.Controls
                     var tip = control.GetValue(ToolTip.ToolTipProperty);
 
                     tip!.Content = e.NewValue;
+                }
+            }
+        }
+
+        private void ControlPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if(_timer != null)
+            {
+                var control = (Control)sender!;
+                var position = e.GetPosition(control);
+
+                Vector moved = position - _startPosition;
+
+                if (moved.Length > 10)
+                {
+                    _timer.Stop();
+                    _timer.Start();
                 }
             }
         }
@@ -96,7 +116,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                StartShowTimer(showDelay, control);
+                StartShowTimer(showDelay, control, e);
             }
         }
 
@@ -124,7 +144,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                StartShowTimer(showDelay, control);
+                StartShowTimer(showDelay, control, e);
             }
         }
 
@@ -140,8 +160,9 @@ namespace Avalonia.Controls
             toolTip?.RecalculatePosition(control);
         }
 
-        private void StartShowTimer(int showDelay, Control control)
+        private void StartShowTimer(int showDelay, Control control, PointerEventArgs e)
         {
+            _startPosition = e.GetPosition(control);
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(showDelay) };
             _timer.Tick += (o, e) => Open(control);
             _timer.Start();
