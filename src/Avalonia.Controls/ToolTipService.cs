@@ -58,28 +58,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ControlPointerMoved(object? sender, PointerEventArgs e)
-        {
-            if (_timer is null)
-                return;
-            
-            var control = (Control)sender!;
-            var distanceLimit = ToolTip.GetShowDistanceLimit(control);
-
-            if (double.IsNaN(distanceLimit) || distanceLimit < 0)
-                return;
-
-            var position = e.GetPosition(control);
-
-            Vector moved = position - _startPosition;
-
-            if (moved.Length > distanceLimit)
-            {
-                _timer.Stop();
-                _timer.Start();
-            }
-        }
-
         internal void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
@@ -136,6 +114,28 @@ namespace Avalonia.Controls
             Close(control);
         }
 
+        private void ControlPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (_timer is null)
+                return;
+
+            var control = (Control)sender!;
+            var distanceLimit = ToolTip.GetShowDistanceLimit(control);
+
+            if (double.IsNaN(distanceLimit) || distanceLimit < 0)
+                return;
+
+            var position = e.GetPosition(control);
+
+            Vector moved = position - _startPosition;
+
+            if (moved.Length > distanceLimit)
+            {
+                _startPosition = position;
+                _timer.Stop();
+                _timer.Start();
+            }
+        }
 
         private void ControlPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
