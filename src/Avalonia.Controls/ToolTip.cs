@@ -55,6 +55,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);
 
         /// <summary>
+        /// Defines the ToolTip.ShowDistanceLimit property.
+        /// </summary>
+        public static readonly AttachedProperty<double> ShowDistanceLimitProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("ShowDistanceLimit", 10);
+
+        /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
@@ -76,6 +82,7 @@ namespace Avalonia.Controls
             VerticalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
             PlacementProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
         }
+
 
         /// <summary>
         /// Gets the value of the ToolTip.Tip attached property.
@@ -207,6 +214,28 @@ namespace Avalonia.Controls
         public static void SetShowDelay(Control element, int value)
         {
             element.SetValue(ShowDelayProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the ToolTip.ShowDistanceLimit attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating the distance the pointer travels before resetting the timer.
+        /// </returns>
+        public static double GetShowDistanceLimit(Control element)
+        {
+            return element.GetValue(ShowDistanceLimitProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.ShowDistanceLimit attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating the distance the pointer travels before resetting the timer.</param>
+        public static void SetShowDistanceLimit(Control element, double value)
+        {
+            element.SetValue(ShowDistanceLimitProperty, value);
         }
 
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)

@@ -60,18 +60,23 @@ namespace Avalonia.Controls
 
         private void ControlPointerMoved(object? sender, PointerEventArgs e)
         {
-            if(_timer != null)
+            if (_timer is null)
+                return;
+            
+            var control = (Control)sender!;
+            var distanceLimit = ToolTip.GetShowDistanceLimit(control);
+
+            if (double.IsNaN(distanceLimit) || distanceLimit < 0)
+                return;
+
+            var position = e.GetPosition(control);
+
+            Vector moved = position - _startPosition;
+
+            if (moved.Length > distanceLimit)
             {
-                var control = (Control)sender!;
-                var position = e.GetPosition(control);
-
-                Vector moved = position - _startPosition;
-
-                if (moved.Length > 10)
-                {
-                    _timer.Stop();
-                    _timer.Start();
-                }
+                _timer.Stop();
+                _timer.Start();
             }
         }
 
