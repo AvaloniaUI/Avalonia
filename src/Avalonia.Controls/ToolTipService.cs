@@ -28,12 +28,16 @@ namespace Avalonia.Controls
             {
                 control.PointerEntered -= ControlPointerEntered;
                 control.PointerExited -= ControlPointerExited;
+                control.PointerPressed -= ControlPointerPressed;
+                control.PointerReleased -= ControlPointerReleased;
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEntered += ControlPointerEntered;
                 control.PointerExited += ControlPointerExited;
+                control.PointerPressed += ControlPointerPressed;
+                control.PointerReleased += ControlPointerReleased;
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -105,6 +109,28 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender!;
             Close(control);
+        }
+
+
+        private void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            StopTimer();
+
+            var control = (Control)sender!;
+            var showDelay = ToolTip.GetShowDelay(control);
+            if (showDelay == 0)
+            {
+                Open(control);
+            }
+            else
+            {
+                StartShowTimer(showDelay, control);
+            }
+        }
+
+        private void ControlPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            StopTimer();
         }
 
         private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
