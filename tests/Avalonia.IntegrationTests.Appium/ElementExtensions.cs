@@ -11,19 +11,24 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
+    public record class WindowChrome(
+        AppiumWebElement Close,
+        AppiumWebElement Minimize,
+        AppiumWebElement Maximize);
+
     internal static class ElementExtensions
     {
         public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
             element.FindElementsByXPath("*/*");
 
-        public static (AppiumWebElement close, AppiumWebElement minimize, AppiumWebElement maximize) GetChromeButtons(this AppiumWebElement window)
+        public static WindowChrome GetChromeButtons(this AppiumWebElement window)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 var closeButton = window.FindElementByXPath("//XCUIElementTypeButton[1]");
                 var fullscreenButton = window.FindElementByXPath("//XCUIElementTypeButton[2]");
                 var minimizeButton = window.FindElementByXPath("//XCUIElementTypeButton[3]");
-                return (closeButton, minimizeButton, fullscreenButton);
+                return new(closeButton, minimizeButton, fullscreenButton);
             }
 
             throw new NotSupportedException("GetChromeButtons not supported on this platform.");

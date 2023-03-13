@@ -85,7 +85,7 @@ namespace Avalonia.IntegrationTests.Appium
             var mainWindow = GetWindow("MainWindow");
             var buttons = mainWindow.GetChromeButtons();
 
-            buttons.maximize.Click();
+            buttons.Maximize.Click();
 
             Thread.Sleep(500);
 
@@ -332,7 +332,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             // Close the window manually.
             secondaryWindow = GetWindow("SecondaryWindow");
-            secondaryWindow.GetChromeButtons().close.Click();
+            secondaryWindow.GetChromeButtons().Close.Click();
         }
 
         [PlatformTheory(TestPlatforms.MacOS)]
