@@ -242,14 +242,14 @@ namespace Avalonia.IntegrationTests.Appium
             var windowChrome = window.GetChromeButtons();
 
             Assert.True(windowChrome.Close!.Enabled);
-            Assert.True(windowChrome.Maximize!.Enabled);
-            Assert.True(windowChrome.Maximize.Enabled);
-            Assert.Null(windowChrome.FullScreen!.Enabled);
+            Assert.True(windowChrome.FullScreen!.Enabled);
+            Assert.True(windowChrome.Minimize!.Enabled);
+            Assert.Null(windowChrome.Maximize);
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
-                Assert.False(windowChrome.Close.Enabled);
-                Assert.False(windowChrome.Maximize.Enabled);
+                Assert.False(windowChrome.Close!.Enabled);
+                Assert.False(windowChrome.FullScreen!.Enabled);
                 Assert.False(windowChrome.Minimize!.Enabled);
             }
         }
@@ -345,7 +345,9 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var zoomButton = secondaryWindow.FindElementByAccessibilityId("_XCUI:ZoomWindow");
+                var zoomButton = mode == ShowWindowMode.NonOwned ?
+                    secondaryWindow.FindElementByAccessibilityId("_XCUI:FullScreenWindow") :
+                    secondaryWindow.FindElementByAccessibilityId("_XCUI:ZoomWindow");
                 Assert.False(zoomButton.Enabled);
             }
         }
