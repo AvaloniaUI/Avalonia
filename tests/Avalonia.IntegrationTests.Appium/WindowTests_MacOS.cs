@@ -85,7 +85,7 @@ namespace Avalonia.IntegrationTests.Appium
             var mainWindow = GetWindow("MainWindow");
             var buttons = mainWindow.GetChromeButtons();
 
-            buttons.Maximize.Click();
+            buttons.FullScreen.Click();
 
             Thread.Sleep(500);
 
@@ -239,17 +239,18 @@ namespace Avalonia.IntegrationTests.Appium
         public void Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
         {
             var window = GetWindow("MainWindow");
-            var (closeButton, miniaturizeButton, zoomButton) = window.GetChromeButtons();
+            var windowChrome = window.GetChromeButtons();
 
-            Assert.True(closeButton.Enabled);
-            Assert.True(zoomButton.Enabled);
-            Assert.True(miniaturizeButton.Enabled);
+            Assert.True(windowChrome.Close.Enabled);
+            Assert.True(windowChrome.Maximize.Enabled);
+            Assert.True(windowChrome.Maximize.Enabled);
+            Assert.Null(windowChrome.FullScreen.Enabled);
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
-                Assert.False(closeButton.Enabled);
-                Assert.False(zoomButton.Enabled);
-                Assert.False(miniaturizeButton.Enabled);
+                Assert.False(windowChrome.Close.Enabled);
+                Assert.False(windowChrome.Maximize.Enabled);
+                Assert.False(windowChrome.Minimize.Enabled);
             }
         }
 
@@ -259,11 +260,11 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (closeButton, miniaturizeButton, zoomButton) = secondaryWindow.GetChromeButtons();
+                var windowChrome = secondaryWindow.GetChromeButtons();
 
-                Assert.True(closeButton.Enabled);
-                Assert.True(zoomButton.Enabled);
-                Assert.False(miniaturizeButton.Enabled);
+                Assert.True(windowChrome.Close.Enabled);
+                Assert.True(windowChrome.Maximize.Enabled);
+                Assert.False(windowChrome.Minimize.Enabled);
             }
         }
         
@@ -274,7 +275,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
+                var miniaturizeButton = secondaryWindow.GetChromeButtons().Minimize;
 
                 Assert.False(miniaturizeButton.Enabled);
             }
@@ -288,7 +289,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
+                var miniaturizeButton = secondaryWindow.GetChromeButtons().Minimize;
 
                 miniaturizeButton.Click();
                 Thread.Sleep(1000);
@@ -344,7 +345,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (_, _, zoomButton) = secondaryWindow.GetChromeButtons();
+                var zoomButton = secondaryWindow.GetChromeButtons().Maximize;
                 Assert.False(zoomButton.Enabled);
             }
         }
