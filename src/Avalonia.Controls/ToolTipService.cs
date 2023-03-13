@@ -112,7 +112,7 @@ namespace Avalonia.Controls
         }
 
 
-        private void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
+        private void ControlPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             StopTimer();
 
@@ -128,7 +128,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ControlPointerPressed(object sender, PointerPressedEventArgs e)
+        private void ControlPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             StopTimer();
         }
