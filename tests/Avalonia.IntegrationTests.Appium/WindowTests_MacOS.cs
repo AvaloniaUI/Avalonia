@@ -241,16 +241,16 @@ namespace Avalonia.IntegrationTests.Appium
             var window = GetWindow("MainWindow");
             var windowChrome = window.GetChromeButtons();
 
-            Assert.True(windowChrome.Close.Enabled);
+            Assert.True(windowChrome.Close!.Enabled);
+            Assert.True(windowChrome.Maximize!.Enabled);
             Assert.True(windowChrome.Maximize.Enabled);
-            Assert.True(windowChrome.Maximize.Enabled);
-            Assert.Null(windowChrome.FullScreen.Enabled);
+            Assert.Null(windowChrome.FullScreen!.Enabled);
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
                 Assert.False(windowChrome.Close.Enabled);
                 Assert.False(windowChrome.Maximize.Enabled);
-                Assert.False(windowChrome.Minimize.Enabled);
+                Assert.False(windowChrome.Minimize!.Enabled);
             }
         }
 
@@ -262,9 +262,9 @@ namespace Avalonia.IntegrationTests.Appium
                 var secondaryWindow = GetWindow("SecondaryWindow");
                 var windowChrome = secondaryWindow.GetChromeButtons();
 
-                Assert.True(windowChrome.Close.Enabled);
-                Assert.True(windowChrome.Maximize.Enabled);
-                Assert.False(windowChrome.Minimize.Enabled);
+                Assert.True(windowChrome.Close!.Enabled);
+                Assert.True(windowChrome.Maximize!.Enabled);
+                Assert.False(windowChrome.Minimize!.Enabled);
             }
         }
         
