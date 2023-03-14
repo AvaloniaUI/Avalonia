@@ -114,57 +114,42 @@ namespace Avalonia.Controls
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
-        /// <summary>
-        /// Gets or sets the Horizontal offset of the context menu in relation to the <see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.HorizontalOffset"/>
         public double HorizontalOffset
         {
             get => GetValue(HorizontalOffsetProperty);
             set => SetValue(HorizontalOffsetProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the Vertical offset of the context menu in relation to the <see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.VerticalOffset"/>
         public double VerticalOffset
         {
             get => GetValue(VerticalOffsetProperty);
             set => SetValue(VerticalOffsetProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="Placement"/>
-        /// is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementAnchor"/>
         public PopupAnchor PlacementAnchor
         {
             get => GetValue(PlacementAnchorProperty);
             set => SetValue(PlacementAnchorProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value describing how the context menu position will be adjusted if the
-        /// unadjusted position would result in the context menu being partly constrained.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementConstraintAdjustment"/>
         public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
         {
             get => GetValue(PlacementConstraintAdjustmentProperty);
             set => SetValue(PlacementConstraintAdjustmentProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value which defines in what direction the context menu should open
-        /// when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementGravity"/>
         public PopupGravity PlacementGravity
         {
             get => GetValue(PlacementGravityProperty);
             set => SetValue(PlacementGravityProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the desired placement of the context menu in relation to the<see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.Placement"/>
         public PlacementMode Placement
         {
             get => GetValue(PlacementProperty);
@@ -177,26 +162,14 @@ namespace Avalonia.Controls
             set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
-        /// relative to when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
-        /// <remarks>
-        /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
-        /// which the popup will be opened, with <see cref="PlacementAnchor"/> determining which edge
-        /// of the placement target is used.
-        /// 
-        /// If unset, the anchor rectangle will be the bounds of the <see cref="PlacementTarget"/>.
-        /// </remarks>
+        /// <inheritdoc cref="Popup.PlacementRect"/>
         public Rect? PlacementRect
         {
             get => GetValue(PlacementRectProperty);
             set => SetValue(PlacementRectProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the control that is used to determine the popup's position.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementTarget"/>
         public Control? PlacementTarget
         {
             get => GetValue(PlacementTargetProperty);
