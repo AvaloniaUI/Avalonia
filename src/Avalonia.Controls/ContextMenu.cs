@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
-            Popup.PlacementModeProperty.AddOwner<ContextMenu>();
+            Popup.PlacementProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
@@ -343,7 +343,7 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
 
-            _popup.PlacementMode = !requestedByPointer && PlacementMode == PlacementMode.Pointer
+            _popup.Placement = !requestedByPointer && PlacementMode == PlacementMode.Pointer
                 ? PlacementMode.Bottom
                 : PlacementMode;
 

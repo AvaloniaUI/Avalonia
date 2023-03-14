@@ -66,10 +66,10 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PopupGravity>(nameof(PlacementGravity));
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
+        /// Defines the <see cref="Placement"/> property.
         /// </summary>
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
-            AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
+        public static readonly StyledProperty<PlacementMode> PlacementProperty =
+            AvaloniaProperty.Register<Popup, PlacementMode>(nameof(Placement), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
@@ -205,7 +205,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
+        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="Placement"/>
         /// is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         public PopupAnchor PlacementAnchor
@@ -226,7 +226,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Gets or sets a value which defines in what direction the popup should open
-        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         public PopupGravity PlacementGravity
         {
@@ -235,17 +235,17 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the placement mode of the popup in relation to the <see cref="PlacementTarget"/>.
+        /// Gets or sets the desired placement of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
-        public PlacementMode PlacementMode
+        public PlacementMode Placement
         {
-            get { return GetValue(PlacementModeProperty); }
-            set { SetValue(PlacementModeProperty, value); }
+            get { return GetValue(PlacementProperty); }
+            set { SetValue(PlacementProperty, value); }
         }
 
         /// <summary>
         /// Gets or sets the the anchor rectangle within the parent that the popup will be placed
-        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// relative to when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         /// <remarks>
         /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
@@ -404,7 +404,7 @@ namespace Avalonia.Controls.Primitives
                     (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
 
                 // Recalculate popup position on parent moved/resized, but not if placement was on pointer
-                if (PlacementMode != PlacementMode.Pointer)
+                if (Placement != PlacementMode.Pointer)
                 {
                     SubscribeToEventHandler<IWindowImpl, Action<PixelPoint>>(window.PlatformImpl, WindowPositionChanged,
                         (x, handler) => x.PositionChanged += handler,
@@ -534,7 +534,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateHostSizing(_openState.PopupHost, _openState.TopLevel, _openState.PlacementTarget);
                 }
                 else if (change.Property == PlacementTargetProperty ||
-                         change.Property == PlacementModeProperty ||
+                         change.Property == PlacementProperty ||
                          change.Property == HorizontalOffsetProperty ||
                          change.Property == VerticalOffsetProperty ||
                          change.Property == PlacementAnchorProperty ||
@@ -567,7 +567,7 @@ namespace Avalonia.Controls.Primitives
         {
             popupHost.ConfigurePosition(
                 placementTarget,
-                PlacementMode,
+                Placement,
                 new Point(HorizontalOffset, VerticalOffset),
                 PlacementAnchor,
                 PlacementGravity,
@@ -615,7 +615,7 @@ namespace Avalonia.Controls.Primitives
                     return;
                 _openState.PopupHost.ConfigurePosition(
                     placementTarget,
-                    PlacementMode,
+                    Placement,
                     new Point(HorizontalOffset, VerticalOffset),
                     PlacementAnchor,
                     PlacementGravity,
