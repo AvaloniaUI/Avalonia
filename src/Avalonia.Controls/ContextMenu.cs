@@ -55,9 +55,9 @@ namespace Avalonia.Controls
             Popup.PlacementGravityProperty.AddOwner<ContextMenu>();
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
+        /// Defines the <see cref="Placement"/> property.
         /// </summary>
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
+        public static readonly StyledProperty<PlacementMode> PlacementProperty =
             Popup.PlacementProperty.AddOwner<ContextMenu>();
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Avalonia.Controls
         static ContextMenu()
         {
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
-            PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
+            PlacementProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
@@ -133,7 +133,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
+        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="Placement"/>
         /// is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         public PopupAnchor PlacementAnchor
@@ -154,7 +154,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets a value which defines in what direction the context menu should open
-        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         public PopupGravity PlacementGravity
         {
@@ -163,12 +163,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the placement mode of the context menu in relation to the<see cref="PlacementTarget"/>.
+        /// Gets or sets the desired placement of the context menu in relation to the<see cref="PlacementTarget"/>.
         /// </summary>
-        public PlacementMode PlacementMode
+        public PlacementMode Placement
         {
-            get { return GetValue(PlacementModeProperty); }
-            set { SetValue(PlacementModeProperty, value); }
+            get { return GetValue(PlacementProperty); }
+            set { SetValue(PlacementProperty, value); }
         }
 
         public bool WindowManagerAddShadowHint
@@ -179,7 +179,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
-        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// relative to when <see cref="Placement"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         /// <remarks>
         /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
@@ -343,9 +343,9 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
 
-            _popup.Placement = !requestedByPointer && PlacementMode == PlacementMode.Pointer
+            _popup.Placement = !requestedByPointer && Placement == PlacementMode.Pointer
                 ? PlacementMode.Bottom
-                : PlacementMode;
+                : Placement;
 
             //Position of the line below is really important. 
             //All styles are being applied only when control has logical parent.
