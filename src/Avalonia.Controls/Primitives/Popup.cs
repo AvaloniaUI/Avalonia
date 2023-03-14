@@ -146,8 +146,8 @@ namespace Avalonia.Controls.Primitives
 
         public bool WindowManagerAddShadowHint
         {
-            get { return GetValue(WindowManagerAddShadowHintProperty); }
-            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
         /// <summary>
@@ -156,8 +156,8 @@ namespace Avalonia.Controls.Primitives
         [Content]
         public Control? Child
         {
-            get { return GetValue(ChildProperty); }
-            set { SetValue(ChildProperty, value); }
+            get => GetValue(ChildProperty);
+            set => SetValue(ChildProperty, value);
         }
 
         /// <summary>
@@ -210,8 +210,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public PopupAnchor PlacementAnchor
         {
-            get { return GetValue(PlacementAnchorProperty); }
-            set { SetValue(PlacementAnchorProperty, value); }
+            get => GetValue(PlacementAnchorProperty);
+            set => SetValue(PlacementAnchorProperty, value);
         }
 
         /// <summary>
@@ -220,8 +220,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
         {
-            get { return GetValue(PlacementConstraintAdjustmentProperty); }
-            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+            get => GetValue(PlacementConstraintAdjustmentProperty);
+            set => SetValue(PlacementConstraintAdjustmentProperty, value);
         }
 
         /// <summary>
@@ -230,8 +230,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public PopupGravity PlacementGravity
         {
-            get { return GetValue(PlacementGravityProperty); }
-            set { SetValue(PlacementGravityProperty, value); }
+            get => GetValue(PlacementGravityProperty);
+            set => SetValue(PlacementGravityProperty, value);
         }
 
         /// <summary>
@@ -239,8 +239,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public PlacementMode Placement
         {
-            get { return GetValue(PlacementProperty); }
-            set { SetValue(PlacementProperty, value); }
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
         }
 
         /// <summary>
@@ -256,8 +256,8 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         public Rect? PlacementRect
         {
-            get { return GetValue(PlacementRectProperty); }
-            set { SetValue(PlacementRectProperty, value); }
+            get => GetValue(PlacementRectProperty);
+            set => SetValue(PlacementRectProperty, value);
         }
 
         /// <summary>
@@ -266,8 +266,8 @@ namespace Avalonia.Controls.Primitives
         [ResolveByName]
         public Control? PlacementTarget
         {
-            get { return GetValue(PlacementTargetProperty); }
-            set { SetValue(PlacementTargetProperty, value); }
+            get => GetValue(PlacementTargetProperty);
+            set => SetValue(PlacementTargetProperty, value);
         }
 
         /// <summary>
@@ -301,8 +301,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public double HorizontalOffset
         {
-            get { return GetValue(HorizontalOffsetProperty); }
-            set { SetValue(HorizontalOffsetProperty, value); }
+            get => GetValue(HorizontalOffsetProperty);
+            set => SetValue(HorizontalOffsetProperty, value);
         }
 
         /// <summary>
@@ -310,8 +310,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public double VerticalOffset
         {
-            get { return GetValue(VerticalOffsetProperty); }
-            set { SetValue(VerticalOffsetProperty, value); }
+            get => GetValue(VerticalOffsetProperty);
+            set => SetValue(VerticalOffsetProperty, value);
         }
 
         /// <summary>
@@ -319,8 +319,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool Topmost
         {
-            get { return GetValue(TopmostProperty); }
-            set { SetValue(TopmostProperty, value); }
+            get => GetValue(TopmostProperty);
+            set => SetValue(TopmostProperty, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;

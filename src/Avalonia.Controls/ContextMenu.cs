@@ -119,8 +119,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double HorizontalOffset
         {
-            get { return GetValue(HorizontalOffsetProperty); }
-            set { SetValue(HorizontalOffsetProperty, value); }
+            get => GetValue(HorizontalOffsetProperty);
+            set => SetValue(HorizontalOffsetProperty, value);
         }
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double VerticalOffset
         {
-            get { return GetValue(VerticalOffsetProperty); }
-            set { SetValue(VerticalOffsetProperty, value); }
+            get => GetValue(VerticalOffsetProperty);
+            set => SetValue(VerticalOffsetProperty, value);
         }
 
         /// <summary>
@@ -138,8 +138,8 @@ namespace Avalonia.Controls
         /// </summary>
         public PopupAnchor PlacementAnchor
         {
-            get { return GetValue(PlacementAnchorProperty); }
-            set { SetValue(PlacementAnchorProperty, value); }
+            get => GetValue(PlacementAnchorProperty);
+            set => SetValue(PlacementAnchorProperty, value);
         }
 
         /// <summary>
@@ -148,8 +148,8 @@ namespace Avalonia.Controls
         /// </summary>
         public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
         {
-            get { return GetValue(PlacementConstraintAdjustmentProperty); }
-            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+            get => GetValue(PlacementConstraintAdjustmentProperty);
+            set => SetValue(PlacementConstraintAdjustmentProperty, value);
         }
 
         /// <summary>
@@ -158,8 +158,8 @@ namespace Avalonia.Controls
         /// </summary>
         public PopupGravity PlacementGravity
         {
-            get { return GetValue(PlacementGravityProperty); }
-            set { SetValue(PlacementGravityProperty, value); }
+            get => GetValue(PlacementGravityProperty);
+            set => SetValue(PlacementGravityProperty, value);
         }
 
         /// <summary>
@@ -167,14 +167,14 @@ namespace Avalonia.Controls
         /// </summary>
         public PlacementMode Placement
         {
-            get { return GetValue(PlacementProperty); }
-            set { SetValue(PlacementProperty, value); }
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
         }
 
         public bool WindowManagerAddShadowHint
         {
-            get { return GetValue(WindowManagerAddShadowHintProperty); }
-            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
         /// <summary>
@@ -190,8 +190,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public Rect? PlacementRect
         {
-            get { return GetValue(PlacementRectProperty); }
-            set { SetValue(PlacementRectProperty, value); }
+            get => GetValue(PlacementRectProperty);
+            set => SetValue(PlacementRectProperty, value);
         }
 
         /// <summary>
@@ -199,8 +199,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Control? PlacementTarget
         {
-            get { return GetValue(PlacementTargetProperty); }
-            set { SetValue(PlacementTargetProperty, value); }
+            get => GetValue(PlacementTargetProperty);
+            set => SetValue(PlacementTargetProperty, value);
         }
 
         /// <summary>
