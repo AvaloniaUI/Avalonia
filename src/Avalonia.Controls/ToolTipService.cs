@@ -27,20 +27,20 @@ namespace Avalonia.Controls
 
             if (e.OldValue != null)
             {
-                control.PointerEntered -= ControlPointerEntered;
-                control.PointerExited -= ControlPointerExited;
-                control.PointerPressed -= ControlPointerPressed;
-                control.PointerReleased -= ControlPointerReleased;
-                control.PointerMoved -= ControlPointerMoved;
+                control.RemoveHandler(InputElement.PointerEnteredEvent, ControlPointerEntered);
+                control.RemoveHandler(InputElement.PointerExitedEvent, ControlPointerExited);
+                control.RemoveHandler(InputElement.PointerPressedEvent, ControlPointerPressed);
+                control.RemoveHandler(InputElement.PointerReleasedEvent, ControlPointerReleased);
+                control.RemoveHandler(InputElement.PointerMovedEvent, ControlPointerMoved);
             }
 
             if (e.NewValue != null)
             {
-                control.PointerEntered += ControlPointerEntered;
-                control.PointerExited += ControlPointerExited;
-                control.PointerPressed += ControlPointerPressed;
-                control.PointerReleased += ControlPointerReleased;
-                control.PointerMoved += ControlPointerMoved;
+                control.AddHandler(InputElement.PointerEnteredEvent, ControlPointerEntered, handledEventsToo: true);
+                control.AddHandler(InputElement.PointerExitedEvent, ControlPointerExited, handledEventsToo: true);
+                control.AddHandler(InputElement.PointerPressedEvent, ControlPointerPressed, handledEventsToo: true);
+                control.AddHandler(InputElement.PointerReleasedEvent, ControlPointerReleased, handledEventsToo: true);
+                control.AddHandler(InputElement.PointerMovedEvent, ControlPointerMoved, handledEventsToo: true);
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
