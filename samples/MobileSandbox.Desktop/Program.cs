@@ -16,6 +16,12 @@ namespace MobileSandbox.Desktop
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+            .With(new Win32PlatformOptions()
+            {
+                CompositionBackdropCornerRadius = 20,
+                UseWindowsUIComposition = true,
+                AllowEglInitialization = true,
+            })
                 .LogToTrace();
     }
 }

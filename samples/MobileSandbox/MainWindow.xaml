@@ -4,6 +4,8 @@
         x:Name="MainWindow"
         CanResize="False"
         Width="720" Height="1280"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
         Title="Mobile Sandbox"
         Icon="/Assets/test_icon.ico"
         WindowStartupLocation="CenterScreen"
