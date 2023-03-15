@@ -281,9 +281,12 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
 
             case SystemDecorationsFull:
                 [Window setHasShadow:YES];
-                [Window setTitleVisibility:NSWindowTitleVisible];
-                [Window setTitlebarAppearsTransparent:NO];
                 [Window setTitle:_lastTitle];
+
+                if (!_isClientAreaExtended) {
+                    [Window setTitleVisibility:NSWindowTitleVisible];
+                    [Window setTitlebarAppearsTransparent:NO];
+                }
 
                 if (currentWindowState == Maximized) {
                     auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
