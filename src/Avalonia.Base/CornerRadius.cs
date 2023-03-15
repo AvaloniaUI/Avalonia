@@ -65,10 +65,6 @@ namespace Avalonia
         /// </summary>
         public bool IsDefault => TopLeft == 0 && TopRight == 0 && BottomLeft == 0 && BottomRight == 0;
 
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
-
         /// <summary>
         /// Gets a value indicating whether all corner radii are equal.
         /// </summary>

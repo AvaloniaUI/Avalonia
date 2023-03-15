@@ -97,10 +97,6 @@ namespace Avalonia
         /// </summary>
         public double Bottom => _bottom;
 
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
-
         /// <summary>
         /// Gets a value indicating whether all sides are equal.
         /// </summary>

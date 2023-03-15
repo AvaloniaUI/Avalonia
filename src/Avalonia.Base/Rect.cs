@@ -17,12 +17,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// An empty rectangle.
-        /// </summary>
-        [Obsolete("Use the default keyword instead.")]
-        public static readonly Rect Empty = default;
-
-        /// <summary>
         /// The X position.
         /// </summary>
         private readonly double _x;
@@ -176,10 +170,6 @@ namespace Avalonia
         // ReSharper disable CompareOfFloatsByEqualityOperator
         public bool IsDefault => _width == 0 && _height == 0;
         // ReSharper restore CompareOfFloatsByEqualityOperator
-
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.

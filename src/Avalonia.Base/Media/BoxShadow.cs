@@ -50,10 +50,6 @@ namespace Avalonia.Media
         /// </summary>
         public bool IsDefault => OffsetX == 0 && OffsetY == 0 && Blur == 0 && Spread == 0;
 
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
-
         private readonly static char[] s_Separator = new char[] { ' ', '\t' };
 
         struct ArrayReader
