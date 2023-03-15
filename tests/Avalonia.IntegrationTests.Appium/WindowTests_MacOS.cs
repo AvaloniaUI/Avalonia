@@ -352,17 +352,85 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
         
+        [Fact]
+        public void Toggling_SystemDecorations_Should_Preserve_ExtendClientArea()
+        {
+            // #10650
+            using (OpenWindow(extendClientArea: true))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+                
+                // The XPath of the title bar text _should_ be "XCUIElementTypeStaticText"
+                // but Appium seems to put a fake node between the window and the title bar
+                // https://stackoverflow.com/a/71914227/6448
+                var titleBar = secondaryWindow.FindElementsByXPath("/*/XCUIElementTypeStaticText").Count;
+                
+                Assert.Equal(0, titleBar);
+
+                secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                _session.FindElementByAccessibilityId("SystemDecorationsNone").SendClick();
+                secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                _session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+
+                titleBar = secondaryWindow.FindElementsByXPath("/*/XCUIElementTypeStaticText").Count;
+                Assert.Equal(0, titleBar);
+            }
+        }
+        
+        [Theory]
+        [InlineData(SystemDecorations.None)]
+        [InlineData(SystemDecorations.BorderOnly)]
+        [InlineData(SystemDecorations.Full)]
+        public void ExtendClientArea_SystemDecorations_Shows_Correct_Buttons(SystemDecorations decorations)
+        {
+            // #10650
+            using (OpenWindow(extendClientArea: true, systemDecorations: decorations))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+
+                try
+                {
+                    var chrome = secondaryWindow.GetChromeButtons();
+                
+                    if (decorations == SystemDecorations.Full)
+                    {
+                        Assert.NotNull(chrome.Close);
+                        Assert.NotNull(chrome.Minimize);
+                        Assert.NotNull(chrome.FullScreen);
+                    }
+                    else
+                    {
+                        Assert.Null(chrome.Close);
+                        Assert.Null(chrome.Minimize);
+                        Assert.Null(chrome.FullScreen);
+                    }
+                }
+                finally
+                {
+                    if (decorations != SystemDecorations.Full)
+                    {
+                        secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                        _session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+                    }
+                }
+            }
+        }
+
         private IDisposable OpenWindow(
-            PixelSize? size,
-            ShowWindowMode mode,
-            WindowStartupLocation location,
-            bool canResize = true)
+            PixelSize? size = null,
+            ShowWindowMode mode = ShowWindowMode.NonOwned,
+            WindowStartupLocation location = WindowStartupLocation.Manual,
+            bool canResize = true,
+            SystemDecorations systemDecorations = SystemDecorations.Full,
+            bool extendClientArea = false)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
             var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+            var systemDecorationsComboBox = _session.FindElementByAccessibilityId("ShowWindowSystemDecorations");
+            var extendClientAreaCheckBox = _session.FindElementByAccessibilityId("ShowWindowExtendClientAreaToDecorationsHint");
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
@@ -382,6 +450,15 @@ namespace Avalonia.IntegrationTests.Appium
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
 
+            if (systemDecorationsComboBox.GetComboBoxValue() != systemDecorations.ToString())
+            {
+                systemDecorationsComboBox.Click();
+                _session.FindElementByName(systemDecorations.ToString()).SendClick();
+            }
+            
+            if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)
+                extendClientAreaCheckBox.Click();
+            
             return showButton.OpenWindowWithClick();
         }
 
