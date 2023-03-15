@@ -66,6 +66,12 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PopupGravity>(nameof(PlacementGravity));
 
         /// <summary>
+        /// Defines the <see cref="PlacementMode"/> property.
+        /// </summary>
+        [Obsolete("Use the Placement property instead.")]
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
+
+        /// <summary>
         /// Defines the <see cref="Placement"/> property.
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
@@ -232,6 +238,14 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(PlacementGravityProperty);
             set => SetValue(PlacementGravityProperty, value);
+        }
+
+        /// <inheritdoc cref="Placement"/>
+        [Obsolete("Use the Placement property instead.")]
+        public PlacementMode PlacementMode
+        {
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
         }
 
         /// <summary>
