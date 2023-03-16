@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
         [Obsolete("Use the Placement property instead.")]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty!;
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
         /// Defines the <see cref="Placement"/> property.
