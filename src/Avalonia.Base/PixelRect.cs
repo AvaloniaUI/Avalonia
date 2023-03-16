@@ -128,11 +128,6 @@ namespace Avalonia
         public PixelPoint Center => new PixelPoint(X + (Width / 2), Y + (Height / 2));
 
         /// <summary>
-        /// Gets a value indicating whether the instance has default values (the rectangle is empty).
-        /// </summary>
-        public bool IsDefault => Width == 0 && Height == 0;
-
-        /// <summary>
         /// Checks for equality between two <see cref="PixelRect"/>s.
         /// </summary>
         /// <param name="left">The first rect.</param>
@@ -285,11 +280,11 @@ namespace Avalonia
         /// <returns>The union.</returns>
         public PixelRect Union(PixelRect rect)
         {
-            if (IsDefault)
+            if (Width == 0 && Height == 0)
             {
                 return rect;
             }
-            else if (rect.IsDefault)
+            else if (rect.Width == 0 && rect.Height == 0)
             {
                 return this;
             }

@@ -130,8 +130,8 @@ namespace Avalonia.Rendering.Composition.Server
             }
 
             _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
-            
-            if(_dirtyRect.IsDefault && !_redrawRequested)
+
+            if (_dirtyRect == default && !_redrawRequested)
                 return;
 
             Revision++;
@@ -163,7 +163,7 @@ namespace Avalonia.Rendering.Composition.Server
                     _dirtyRect = new Rect(0, 0, layerSize.Width, layerSize.Height);
                 }
 
-                if (!_dirtyRect.IsDefault)
+                if (_dirtyRect.Width != 0 || _dirtyRect.Height != 0)
                 {
                     using (var context = _layer.CreateDrawingContext())
                     {
@@ -260,7 +260,7 @@ namespace Avalonia.Rendering.Composition.Server
         
         public void AddDirtyRect(Rect rect)
         {
-            if(rect.IsDefault)
+            if (rect.Width == 0 && rect.Height == 0)
                 return;
             var snapped = SnapToDevicePixels(rect, Scaling);
             DebugEvents?.RectInvalidated(rect);
@@ -275,7 +275,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Dispose()
         {
-            if(_disposed)
+            if (_disposed)
                 return;
             _disposed = true;
             using (_compositor.RenderInterface.EnsureCurrent())
@@ -302,7 +302,7 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
-            if(visual.IsVisibleInFrame)
+            if (visual.IsVisibleInFrame)
                 AddDirtyRect(visual.TransformedOwnContentBounds);
         }
 

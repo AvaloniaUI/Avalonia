@@ -375,7 +375,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsDefault && !boxShadow.IsInset)
+                if (boxShadow != default && !boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
                     {
@@ -432,7 +432,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsDefault && boxShadow.IsInset)
+                if (boxShadow != default && boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
                     {

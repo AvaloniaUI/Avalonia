@@ -300,10 +300,5 @@ namespace Avalonia
             width = this._width;
             height = this._height;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the Width and Height values are zero.
-        /// </summary>
-        public bool IsDefault => (_width == 0) && (_height == 0);
     }
 }

@@ -289,11 +289,5 @@ namespace Avalonia
             right = this._right;
             bottom = this._bottom;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the instance has default values
-        /// (the left, top, right and bottom values are zero).
-        /// </summary>
-        public bool IsDefault => (_left == 0) && (_top == 0) && (_right == 0) && (_bottom == 0);
     }
 }

@@ -45,11 +45,6 @@ namespace Avalonia.Media
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the instance has default values.
-        /// </summary>
-        public bool IsDefault => OffsetX == 0 && OffsetY == 0 && Blur == 0 && Spread == 0;
-
         private readonly static char[] s_Separator = new char[] { ' ', '\t' };
 
         struct ArrayReader
@@ -85,7 +80,7 @@ namespace Avalonia.Media
         {
             var sb = StringBuilderCache.Acquire();
 
-            if (IsDefault)
+            if (this == default)
             {
                 return "none";
             }
