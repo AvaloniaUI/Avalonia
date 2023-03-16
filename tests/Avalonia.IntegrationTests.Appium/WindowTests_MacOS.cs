@@ -351,8 +351,8 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.False(zoomButton.Enabled);
             }
         }
-        
-        [Fact]
+
+        [PlatformFact(TestPlatforms.MacOS)]
         public void Toggling_SystemDecorations_Should_Preserve_ExtendClientArea()
         {
             // #10650
@@ -376,8 +376,8 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(0, titleBar);
             }
         }
-        
-        [Theory]
+
+        [PlatformTheory(TestPlatforms.MacOS)]
         [InlineData(SystemDecorations.None)]
         [InlineData(SystemDecorations.BorderOnly)]
         [InlineData(SystemDecorations.Full)]
