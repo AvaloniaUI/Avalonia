@@ -221,7 +221,7 @@ namespace Avalonia.Diagnostics.Views
                 return CreateControl<ComboBox>(
                     SelectingItemsControl.SelectedItemProperty, init: c =>
                     {
-                        c.Items = Enum.GetValues(propertyType);
+                        c.ItemsSource = Enum.GetValues(propertyType);
                     });
 
             var tb = CreateControl<CommitTextBox>(

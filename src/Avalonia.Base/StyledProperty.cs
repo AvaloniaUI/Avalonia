@@ -34,7 +34,6 @@ namespace Avalonia
         {
             Inherits = inherits;
             ValidateValue = validate;
-            HasCoercion |= metadata.CoerceValue != null;
 
             if (validate?.Invoke(metadata.DefaultValue) == false)
             {
@@ -47,12 +46,6 @@ namespace Avalonia
         /// A method which returns "false" for values that are never valid for this property.
         /// </summary>
         public Func<TValue, bool>? ValidateValue { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this property has any value coercion callbacks defined
-        /// in its metadata.
-        /// </summary>
-        internal bool HasCoercion { get; private set; }
 
         /// <summary>
         /// Registers the property on another type.
@@ -130,10 +123,7 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="metadata">The metadata.</param>
-        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : AvaloniaObject
-        {
-            base.OverrideMetadata(typeof(T), metadata);
-        }
+        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : AvaloniaObject => OverrideMetadata(typeof(T), metadata);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.
@@ -150,8 +140,6 @@ namespace Avalonia
                         $"'{metadata.DefaultValue}' is not a valid default value for '{Name}'.");
                 }
             }
-
-            HasCoercion |= metadata.CoerceValue != null;
 
             base.OverrideMetadata(type, metadata);
         }

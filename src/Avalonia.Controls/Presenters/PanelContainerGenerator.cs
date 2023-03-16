@@ -22,7 +22,6 @@ namespace Avalonia.Controls.Presenters
             Debug.Assert(presenter.Panel is not null or VirtualizingPanel);
             
             _presenter = presenter;
-            _presenter.ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
             _presenter.ItemsControl.ItemsView.PostCollectionChanged += OnItemsChanged;
 
             OnItemsChanged(null, CollectionUtils.ResetEventArgs);
@@ -32,9 +31,7 @@ namespace Avalonia.Controls.Presenters
         {
             if (_presenter.ItemsControl is { } itemsControl)
             {
-                itemsControl.PropertyChanged -= OnItemsControlPropertyChanged;
                 itemsControl.ItemsView.PostCollectionChanged -= OnItemsChanged;
-
                 ClearItemsControlLogicalChildren();
             }
 
@@ -42,18 +39,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         internal void Refresh() => OnItemsChanged(null, CollectionUtils.ResetEventArgs);
-
-        private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property == ItemsControl.ItemsProperty)
-            {
-                if (e.OldValue is INotifyCollectionChanged inccOld)
-                    inccOld.CollectionChanged -= OnItemsChanged;
-                OnItemsChanged(null, CollectionUtils.ResetEventArgs);
-                if (e.NewValue is INotifyCollectionChanged inccNew)
-                    inccNew.CollectionChanged += OnItemsChanged;
-            }
-        }
 
         private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {

@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Multiple
             };
 
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Multiple
             };
 
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Multiple
             };
 

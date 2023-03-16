@@ -31,7 +31,7 @@ namespace Avalonia.PropertyStore
 
             var value = inherited is null ? _metadata.DefaultValue : inherited.Value;
 
-            if (property.HasCoercion && _metadata.CoerceValue is { } coerce)
+            if (_metadata.CoerceValue is { } coerce)
             {
                 _uncommon = new()
                 {

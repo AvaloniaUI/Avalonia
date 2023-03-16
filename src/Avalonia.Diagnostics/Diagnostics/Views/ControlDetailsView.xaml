@@ -124,7 +124,7 @@
         </Grid>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
-          <ItemsControl Items="{Binding AppliedStyles}" >
+          <ItemsControl ItemsSource="{Binding AppliedStyles}" >
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C" Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}">
@@ -142,7 +142,7 @@
                       <TextBlock Grid.Row="0" Text="{Binding Name}" />
                     </Expander.Header>
 
-                    <ItemsControl Margin="20,0,0,0" Grid.Row="1" Items="{Binding Setters}">
+                    <ItemsControl Margin="20,0,0,0" Grid.Row="1" ItemsSource="{Binding Setters}">
                       
                       <ItemsControl.Styles>
                         <Style Selector="TextBlock.property-name">
@@ -253,7 +253,7 @@
         </ScrollViewer>
 
         <Expander Header="Pseudo Classes" Grid.Row="2">
-          <ItemsControl Items="{Binding PseudoClasses}">
+          <ItemsControl ItemsSource="{Binding PseudoClasses}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel />

@@ -53,7 +53,7 @@
             
             <StackPanel Margin="5" Spacing="5" Grid.IsSharedSizeScope="True">
                 <HeaderedContentControl Header="Select a transition">
-                     <ComboBox Items="{Binding PageTransitions}" SelectedItem="{Binding SelectedTransition}" />
+                     <ComboBox ItemsSource="{Binding PageTransitions}" SelectedItem="{Binding SelectedTransition}" />
                 </HeaderedContentControl>
                 <HeaderedContentControl Header="Duration">
                      <NumericUpDown Value="{Binding Duration}" Increment="250" Minimum="100" />

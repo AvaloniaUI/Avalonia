@@ -4,6 +4,8 @@ namespace Avalonia.Controls.Utils
 {
     class UndoRedoHelper<TState>
     {
+        public const int DefaultUndoLimit = 10;
+
         private readonly IUndoRedoHost _host;
 
         public interface IUndoRedoHost
@@ -23,7 +25,7 @@ namespace Avalonia.Controls.Utils
         /// Maximum number of states this helper can store for undo/redo.
         /// If -1, no limit is imposed.
         /// </summary>
-        public int Limit { get; set; } = 10;
+        public int Limit { get; set; } = DefaultUndoLimit;
 
         public bool CanUndo => _currentNode?.Previous != null;
 
