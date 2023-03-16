@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// <typeparam name="TAppBuilder">The type of the AppBuilder class itself.</typeparam>
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
-        private static bool s_setupWasAlreadyCalled;
+        private bool s_setupWasAlreadyCalled;
         private Action _optionsInitializers;
         private Func<Application> _appFactory;
         private IApplicationLifetime _lifetime;
