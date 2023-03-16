@@ -407,7 +407,7 @@ namespace Avalonia.Controls.Primitives
         {
             Size sz;
             // Popup.Child can't be null here, it was set in ShowAtCore.
-            if (Popup.Child!.DesiredSize.IsDefault)
+            if (Popup.Child!.DesiredSize == default)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
