@@ -55,20 +55,16 @@ namespace Avalonia.Controls
             Popup.PlacementGravityProperty.AddOwner<ContextMenu>();
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
-        /// </summary>
-        [Obsolete("Use the Placement property instead.")]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
-
-#pragma warning disable AVP1013 // AvaloniaProperty owners should not be added superfluously
-
-        /// <summary>
         /// Defines the <see cref="Placement"/> property.
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
             Popup.PlacementProperty.AddOwner<ContextMenu>();
 
-#pragma warning restore AVP1013 // AvaloniaProperty owners should not be added superfluously
+        /// <summary>
+        /// Defines the <see cref="PlacementMode"/> property.
+        /// </summary>
+        [Obsolete("Use the Placement property instead.")]
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
