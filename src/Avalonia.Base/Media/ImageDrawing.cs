@@ -1,7 +1,5 @@
 ﻿#nullable enable
 
-using Avalonia.Rendering;
-
 namespace Avalonia.Media
 {
     /// <summary>
