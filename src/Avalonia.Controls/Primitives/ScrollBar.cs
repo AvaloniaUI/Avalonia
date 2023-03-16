@@ -6,6 +6,9 @@ using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.Controls.Metadata;
 using Avalonia.Automation.Peers;
+using Avalonia.VisualTree;
+using Avalonia.Reactive;
+using System.Linq;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -80,6 +83,7 @@ namespace Avalonia.Controls.Primitives
         private Button? _pageDownButton;
         private DispatcherTimer? _timer;
         private bool _isExpanded;
+        private CompositeDisposable? _ownerSubscriptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -88,6 +92,8 @@ namespace Avalonia.Controls.Primitives
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
+
+            FocusableProperty.OverrideMetadata<ScrollBar>(new(false));
         }
 
         /// <summary>
@@ -178,7 +184,60 @@ namespace Avalonia.Controls.Primitives
                 _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
             };
 
-            SetValue(IsVisibleProperty, isVisible);
+            SetCurrentValue(IsVisibleProperty, isVisible);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            AttachToScrollViewer();
+        }
+
+        /// <summary>
+        /// Locates the first <see cref="ScrollViewer"/> ancestor and binds to its properties. Properties which have been set through other means are not bound.
+        /// </summary>
+        /// <remarks>
+        /// This method is automatically called when the control is attached to a visual tree.
+        /// </remarks>
+        protected internal virtual void AttachToScrollViewer()
+        {
+            _ownerSubscriptions?.Dispose();
+
+            var owner = this.FindAncestorOfType<ScrollViewer>();
+
+            if (owner == null)
+            {
+                return;
+            }
+
+            var visibilitySource = Orientation == Orientation.Horizontal ? ScrollViewer.HorizontalScrollBarVisibilityProperty : ScrollViewer.VerticalScrollBarVisibilityProperty;
+
+            var subscriptionDisposables = new IDisposable?[]
+            {
+                IfUnset(MaximumProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ScrollBarMaximumProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(ValueProperty, p => new CompositeDisposable(
+                        Bind(p, owner.GetObservable(ScrollViewer.OffsetProperty).Select(ExtractOrdinate), BindingPriority.Template),
+                        this.GetObservable(ValueProperty).Subscribe(v => SetScrollViewerOffset(owner, v)))),
+                IfUnset(ViewportSizeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ViewportProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(VisibilityProperty, p => Bind(p, owner.GetObservable(visibilitySource), BindingPriority.Template)),
+                IfUnset(AllowAutoHideProperty, p => Bind(p, owner.GetObservable(ScrollViewer.AllowAutoHideProperty), BindingPriority.Template)),
+                IfUnset(LargeChangeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.LargeChangeProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(SmallChangeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.SmallChangeProperty).Select(ExtractOrdinate), BindingPriority.Template))
+            }.Where(d => d != null).Cast<IDisposable>().ToArray();
+
+            _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
+
+            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => GetValueStore().IsSet(property) ? null : func(property);
+        }
+
+        private double ExtractOrdinate(Vector v) => Orientation == Orientation.Horizontal ? v.X : v.Y;
+        private double ExtractOrdinate(Size v) => Orientation == Orientation.Horizontal ? v.Width : v.Height;
+        private void SetScrollViewerOffset(ScrollViewer viewer, double value) => viewer.SetCurrentValue(ScrollViewer.OffsetProperty, Orientation == Orientation.Horizontal ? viewer.Offset.WithX(value) : viewer.Offset.WithY(value));
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _ownerSubscriptions?.Dispose();
+            base.OnDetachedFromVisualTree(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -202,6 +261,7 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == OrientationProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<Orientation>());
+                AttachToScrollViewer(); // there's no way to manually refresh bindings, so reapply them
             }
             else if (change.Property == AllowAutoHideProperty)
             {
@@ -373,25 +433,25 @@ namespace Avalonia.Controls.Primitives
 
         private void SmallDecrement()
         {
-            Value = Math.Max(Value - SmallChange, Minimum);
+            SetCurrentValue(ValueProperty, Math.Max(Value - SmallChange, Minimum));
             OnScroll(ScrollEventType.SmallDecrement);
         }
 
         private void SmallIncrement()
         {
-            Value = Math.Min(Value + SmallChange, Maximum);
+            SetCurrentValue(ValueProperty, Math.Min(Value + SmallChange, Maximum));
             OnScroll(ScrollEventType.SmallIncrement);
         }
 
         private void LargeDecrement()
         {
-            Value = Math.Max(Value - LargeChange, Minimum);
+            SetCurrentValue(ValueProperty, Math.Max(Value - LargeChange, Minimum));
             OnScroll(ScrollEventType.LargeDecrement);
         }
 
         private void LargeIncrement()
         {
-            Value = Math.Min(Value + LargeChange, Maximum);
+            SetCurrentValue(ValueProperty, Math.Min(Value + LargeChange, Maximum));
             OnScroll(ScrollEventType.LargeIncrement);
         }
 
