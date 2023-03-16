@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var itemsControl = new ItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => result)
             };
 

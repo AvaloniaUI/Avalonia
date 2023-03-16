@@ -1832,7 +1832,7 @@ namespace Avalonia.Controls.UnitTests
             return (TreeViewItem)c;
         }
 
-        private IList<Node> CreateTestTreeData()
+        private AvaloniaList<Node> CreateTestTreeData()
         {
             return new AvaloniaList<Node>
             {

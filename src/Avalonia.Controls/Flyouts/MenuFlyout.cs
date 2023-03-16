@@ -19,7 +19,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Items"/> property
         /// </summary>
         public static readonly DirectProperty<MenuFlyout, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<MenuFlyout>(x => x.Items,
+            AvaloniaProperty.RegisterDirect<MenuFlyout, IEnumerable?>(
+                nameof(Items),
+                x => x.Items,
                 (x, v) => x.Items = v);
 
         /// <summary>
