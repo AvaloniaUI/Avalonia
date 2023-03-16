@@ -150,7 +150,7 @@ namespace Avalonia.Win32
                 TransparencyLevelHint = WindowTransparencyLevel.Transparent,
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
-                    Items = menuItems
+                    ItemsSource = menuItems
                 }
             };
 

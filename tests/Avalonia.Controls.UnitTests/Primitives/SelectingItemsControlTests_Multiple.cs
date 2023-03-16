@@ -27,7 +27,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -42,7 +42,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz" },
                 Template = Template(),
             };
 
@@ -94,7 +94,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // Issue #2565.
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz" },
                 Template = Template(),
             };
 
@@ -112,7 +112,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -157,7 +157,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -179,7 +179,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -200,26 +200,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_SelectedItems_Should_Set_Item_IsSelected()
         {
-            var items = new[]
-            {
-                new ListBoxItem(),
-                new ListBoxItem(),
-                new ListBoxItem(),
-            };
-
             var target = new TestSelector
             {
-                Items = items,
+                Items = 
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                },
                 Template = Template(),
             };
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            target.SelectedItems.Add(items[0]);
-            target.SelectedItems.Add(items[1]);
+            target.SelectedItems.Add(target.Items[0]);
+            target.SelectedItems.Add(target.Items[1]);
 
-            var foo = target.Presenter.Panel.Children[0];
-
+            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.True(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
             Assert.False(items[2].IsSelected);
@@ -228,23 +225,22 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_SelectedItems_Should_Set_Item_IsSelected()
         {
-            var items = new[]
-            {
-                new ListBoxItem(),
-                new ListBoxItem(),
-                new ListBoxItem(),
-            };
-
             var target = new TestSelector
             {
-                Items = items,
+                Items =
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                },
                 Template = Template(),
             };
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            target.SelectedItems = new AvaloniaList<object> { items[0], items[1] };
+            target.SelectedItems = new AvaloniaList<object> { target.Items[0], target.Items[1] };
 
+            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.True(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
             Assert.False(items[2].IsSelected);
@@ -253,25 +249,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_SelectedItems_Should_Clear_Item_IsSelected()
         {
-            var items = new[]
-            {
-                new ListBoxItem(),
-                new ListBoxItem(),
-                new ListBoxItem(),
-            };
-
             var target = new TestSelector
             {
-                Items = items,
+                Items =
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                },
                 Template = Template(),
             };
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            target.SelectedItems.Add(items[0]);
-            target.SelectedItems.Add(items[1]);
-            target.SelectedItems.Remove(items[1]);
+            target.SelectedItems.Add(target.Items[0]);
+            target.SelectedItems.Add(target.Items[1]);
+            target.SelectedItems.Remove(target.Items[1]);
 
+            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.True(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
         }
@@ -279,25 +274,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Reassigning_SelectedItems_Should_Clear_Item_IsSelected()
         {
-            var items = new[]
-            {
-                new ListBoxItem(),
-                new ListBoxItem(),
-                new ListBoxItem(),
-            };
-
             var target = new TestSelector
             {
-                Items = items,
+                Items = 
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                },
                 Template = Template(),
             };
 
             target.ApplyTemplate();
-            target.SelectedItems.Add(items[0]);
-            target.SelectedItems.Add(items[1]);
+            target.SelectedItems.Add(target.Items[0]);
+            target.SelectedItems.Add(target.Items[1]);
 
-            target.SelectedItems = new AvaloniaList<object> { items[0], items[1] };
+            target.SelectedItems = new AvaloniaList<object> { target.Items[0], target.Items[1] };
 
+            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.False(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
         }
@@ -307,7 +301,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz" },
                 Template = Template(),
             };
 
@@ -329,7 +323,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "foo",
                     "bar",
@@ -353,7 +347,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "foo",
                     "bar",
@@ -378,7 +372,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "foo",
                     "bar",
@@ -404,7 +398,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz", "qux" },
+                ItemsSource = new[] { "foo", "bar", "baz", "qux" },
                 Template = Template(),
                 SelectedIndex = 0,
                 SelectionMode = SelectionMode.Multiple,
@@ -427,7 +421,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz", "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz", "foo", "bar", "baz" },
                 Template = Template(),
                 SelectedIndex = 0,
                 SelectionMode = SelectionMode.Multiple,
@@ -450,7 +444,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz" },
                 Template = Template(),
             };
 
@@ -471,7 +465,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz" },
                 Template = Template(),
             };
 
@@ -536,8 +530,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Mode = BindingMode.OneWay,
             };
 
-            // Bind Items and SelectedItems to the VM.
-            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+            // Bind ItemsSource and SelectedItems to the VM.
+            target.Bind(TestSelector.ItemsSourceProperty, itemsBinding);
             target.Bind(TestSelector.SelectedItemsProperty, selectedItemsBinding);
 
             // Set DataContext and SelectedIndex
@@ -576,8 +570,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Mode = BindingMode.OneWay,
             };
 
-            // Bind Items and Selection to the VM.
-            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+            // Bind ItemsSource and Selection to the VM.
+            target.Bind(TestSelector.ItemsSourceProperty, itemsBinding);
             target.Bind(TestSelector.SelectionProperty, selectionBinding);
 
             // Set DataContext and SelectedIndex
@@ -610,9 +604,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var itemsBinding = new Binding { Path = "Items" };
-            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+            target.Bind(TestSelector.ItemsSourceProperty, itemsBinding);
 
-            Assert.Same(data.Items, target.Items);
+            Assert.Same(data.Items, target.ItemsSource);
 
             target.SelectedItems.Add("bar");
             target.DataContext = null;
@@ -629,7 +623,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 DataContext = items,
                 Template = Template(),
-                Items = items,
+                ItemsSource = items,
             };
 
             var called = false;
@@ -653,7 +647,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
                 SelectedItem = "bar",
             };
@@ -679,7 +673,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
                 SelectedItem = "bar",
             };
@@ -708,7 +702,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -733,7 +727,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Qux" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -791,7 +785,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Qux" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -825,7 +819,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -856,7 +850,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -884,7 +878,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -912,7 +906,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -940,7 +934,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Qux" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -992,7 +986,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
                     Height = 100,
@@ -1026,7 +1020,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new TestSelector
             {
                 Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1045,7 +1039,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new TestSelector
             {
                 Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1059,7 +1053,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectAll();
 
             Assert.NotNull(receivedArgs);
-            Assert.Equal(target.Items, receivedArgs.AddedItems);
+            Assert.Equal(target.ItemsSource, receivedArgs.AddedItems);
             Assert.Empty(receivedArgs.RemovedItems);
         }
 
@@ -1069,7 +1063,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new TestSelector
             {
                 Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
                 SelectionMode = SelectionMode.Multiple,
                 SelectedIndex = 0,
             };
@@ -1089,7 +1083,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new TestSelector
             {
                 Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1113,7 +1107,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new ListBox
             {
                 Template = Template(),
-                Items = items,
+                ItemsSource = items,
                 SelectionMode = SelectionMode.Multiple,
                 Width = 100,
                 Height = 100,
@@ -1145,7 +1139,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new TestSelector
             {
                 Template = Template(),
-                Items = items,
+                ItemsSource = items,
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1178,7 +1172,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new ListBox
             {
                 Template = Template(),
-                Items = items,
+                ItemsSource = items,
                 SelectionMode = SelectionMode.Multiple,
                 Width = 100,
                 Height = 100,
@@ -1209,7 +1203,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new ListBox
             {
                 Template = Template(),
-                Items = items,
+                ItemsSource = items,
                 SelectionMode = SelectionMode.Multiple,
                 Width = 100,
                 Height = 100,
@@ -1232,7 +1226,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
@@ -1262,7 +1256,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
@@ -1290,7 +1284,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
@@ -1315,27 +1309,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_Selected_ItemContainers_Should_Update_Selection()
         {
-            var items = new AvaloniaList<ItemContainer>(new[]
-            {
-                new ItemContainer(),
-                new ItemContainer(),
-            });
-
             var target = new TestSelector
             {
-                Items = items,
+                Items =
+                {
+                    new ItemContainer(),
+                    new ItemContainer(),
+                },
                 SelectionMode = SelectionMode.Multiple,
                 Template = Template(),
             };
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            items.Add(new ItemContainer { IsSelected = true });
-            items.Add(new ItemContainer { IsSelected = true });
+            target.Items.Add(new ItemContainer { IsSelected = true });
+            target.Items.Add(new ItemContainer { IsSelected = true });
 
             Assert.Equal(2, target.SelectedIndex);
-            Assert.Equal(items[2], target.SelectedItem);
-            Assert.Equal(new[] { items[2], items[3] }, target.SelectedItems);
+            Assert.Equal(target.Items[2], target.SelectedItem);
+            Assert.Equal(new[] { target.Items[2], target.Items[3] }, target.SelectedItems);
         }
 
         [Fact]
@@ -1346,7 +1338,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
@@ -1373,7 +1365,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new ListBox
                 {
                     Template = Template(),
-                    Items = new[] { "Foo", "Bar", "Baz" },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
                     Width = 100,
@@ -1397,7 +1389,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -1412,7 +1404,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -1429,7 +1421,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -1442,14 +1434,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
             var selection = new SelectionModel<string>();
             target.Selection = selection;
 
-            Assert.Same(target.Items, selection.Source);
+            Assert.Same(target.ItemsSource, selection.Source);
         }
 
         [Fact]
@@ -1457,7 +1449,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -1478,7 +1470,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar", "baz" },
+                ItemsSource = new[] { "foo", "bar", "baz" },
                 Template = Template(),
             };
 
@@ -1499,7 +1491,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -1514,16 +1506,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Selection_Should_Set_Item_IsSelected()
         {
-            var items = new[]
-            {
-                new ListBoxItem(),
-                new ListBoxItem(),
-                new ListBoxItem(),
-            };
-
             var target = new TestSelector
             {
-                Items = items,
+                Items =
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                    new ListBoxItem(),
+                },
                 Template = Template(),
             };
 
@@ -1534,6 +1524,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             selection.SelectRange(0, 1);
             target.Selection = selection;
 
+            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.True(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
             Assert.False(items[2].IsSelected);
@@ -1546,7 +1537,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
                 SelectedItem = "bar",
             };
