@@ -131,7 +131,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
 
-            if (_dirtyRect == default && !_redrawRequested)
+            if ((_dirtyRect.Width == 0 && _dirtyRect.Height == 0) && !_redrawRequested)
                 return;
 
             Revision++;
