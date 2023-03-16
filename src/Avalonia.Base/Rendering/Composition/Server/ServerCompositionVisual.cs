@@ -149,7 +149,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (ownBounds != _oldOwnContentBounds || positionChanged)
             {
                 _oldOwnContentBounds = ownBounds;
-                if (ownBounds == default)
+                if (ownBounds.Width == 0 && ownBounds.Height == 0)
                     TransformedOwnContentBounds = default;
                 else
                     TransformedOwnContentBounds =
@@ -179,7 +179,7 @@ namespace Avalonia.Rendering.Composition.Server
             IsHitTestVisibleInFrame = _parent?.IsHitTestVisibleInFrame != false
                                       && Visible
                                       && !_isBackface
-                                      && _combinedTransformedClipBounds != default;
+                                      && (_combinedTransformedClipBounds.Width != 0 || _combinedTransformedClipBounds.Height != 0);
 
             IsVisibleInFrame = IsHitTestVisibleInFrame
                                && _parent?.IsVisibleInFrame != false
