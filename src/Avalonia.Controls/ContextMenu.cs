@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
         [Obsolete("Use the Placement property instead.")]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty!;
 
 #pragma warning disable AVP1013 // AvaloniaProperty owners should not be added superfluously
 
