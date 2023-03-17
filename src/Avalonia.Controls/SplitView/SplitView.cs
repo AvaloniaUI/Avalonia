@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -142,10 +143,6 @@ namespace Avalonia.Controls
         public SplitView()
         {
             TemplateSettings = new SplitViewTemplateSettings();
-        }
-
-        static SplitView()
-        {
         }
 
         /// <summary>
@@ -316,12 +313,6 @@ namespace Avalonia.Controls
             // soon as we're attached so the template applies. The other visual states can
             // be updated after the template applies
             UpdateVisualStateForPanePlacementProperty(PanePlacement);
-
-            var topLevel = this.VisualRoot;
-            if (topLevel is Window window)
-            {
-                _pointerDisposable = window.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
-            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -385,21 +376,27 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PointerPressedOutside(object? sender, PointerPressedEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (!IsPaneOpen)
+            if (!e.Handled && e.Key == Key.Escape)
+            {
+                if (IsPaneOpen && IsInOverlayMode())
+                {
+                    SetCurrentValue(IsPaneOpenProperty, false);
+                }
+            }
+
+            base.OnKeyDown(e);
+        }
+
+        private void PointerReleasedOutside(object? sender, PointerReleasedEventArgs e)
+        {
+            if (!IsPaneOpen || _pane == null)
             {
                 return;
             }
 
-            //If we click within the Pane, don't do anything
-            //Otherwise, ClosePane if open & using an overlay display mode
-            bool closePane = ShouldClosePane();
-            if (!closePane)
-            {
-                return;
-            }
-
+            var closePane = true;
             var src = e.Source as Visual;
             while (src != null)
             {
@@ -416,6 +413,7 @@ namespace Avalonia.Controls
 
                 src = src.VisualParent;
             }
+
             if (closePane)
             {
                 SetCurrentValue(IsPaneOpenProperty, false);
@@ -423,7 +421,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool ShouldClosePane()
+        private bool IsInOverlayMode()
         {
             return (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay);
         }
@@ -435,6 +433,7 @@ namespace Avalonia.Controls
 
         protected virtual void OnPaneOpened(RoutedEventArgs args)
         {
+            EnableLightDismiss();
             RaiseEvent(args);
         }
 
@@ -445,6 +444,8 @@ namespace Avalonia.Controls
 
         protected virtual void OnPaneClosed(RoutedEventArgs args)
         {
+            _pointerDisposable?.Dispose();
+            _pointerDisposable = null;
             RaiseEvent(args);
         }
 
@@ -548,6 +549,39 @@ namespace Avalonia.Controls
 
             _lastPlacementPseudoclass = GetPseudoClass(newValue);
             PseudoClasses.Add(_lastPlacementPseudoclass);
+        }
+
+        private void EnableLightDismiss()
+        {
+            if (_pane == null)
+                return;
+
+            // If this returns false, we're not in Overlay or CompactOverlay DisplayMode
+            // and don't need the light dismiss behavior
+            if (!IsInOverlayMode())
+                return;
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null)
+            {
+                _pointerDisposable = Disposable.Create(() =>
+                {
+                    topLevel.PointerReleased -= PointerReleasedOutside;
+                    topLevel.BackRequested -= TopLevelBackRequested;
+                });
+
+                topLevel.PointerReleased += PointerReleasedOutside;
+                topLevel.BackRequested += TopLevelBackRequested;
+            }
+        }
+
+        private void TopLevelBackRequested(object sender, RoutedEventArgs e)
+        {
+            if (!IsInOverlayMode())
+                return;
+
+            SetCurrentValue(IsPaneOpenProperty, false);
+            e.Handled = true;
         }
 
         /// <summary>
