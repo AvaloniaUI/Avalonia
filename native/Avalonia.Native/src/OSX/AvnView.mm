@@ -598,13 +598,13 @@
 {
     [[_markedText mutableString] setString:@""];
     
+    [[self inputContext] discardMarkedText];
+    
     if(!_parent->InputMethod->IsActive()){
         return;
     }
     
     _parent->InputMethod->Client->SetPreeditText(nullptr);
-    
-    [[self inputContext] discardMarkedText];
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -619,17 +619,12 @@
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    //[_text replaceCharactersInRange:replacementRange withString:string];
-    
     [self unmarkText];
-    
-    //if(!_lastKeyHandled)
-    //{
-        if(_parent != nullptr)
-        {
-            _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
-        }
-    //}
+
+    if(_parent != nullptr)
+    {
+        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+    }
     
     [[self inputContext] invalidateCharacterCoordinates];
 }

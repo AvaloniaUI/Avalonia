@@ -30,7 +30,9 @@ namespace Avalonia.Controls
                     return default;
                 }
 
-                var transform = _presenter.TransformToVisual(_parent);
+                var visualRoot = _presenter.VisualRoot!;
+
+                var transform = _presenter.TransformToVisual((Visual)visualRoot);
 
                 if (transform == null)
                 {
@@ -38,7 +40,7 @@ namespace Avalonia.Controls
                 }
 
                 var rect = _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
-
+                
                 return rect;
             }
         }
