@@ -9,7 +9,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    internal unsafe class X11PlatformThreading : IPlatformThreadingInterface
+    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl, IDispatcherClock
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _display;
@@ -68,44 +68,11 @@ namespace Avalonia.X11
         private int _sigread, _sigwrite;
         private object _lock = new object();
         private bool _signaled;
-        private DispatcherPriority _signaledPriority;
+        private bool _wakeupRequested;
+        private long? _nextTimer;
         private int _epoll;
         private Stopwatch _clock = Stopwatch.StartNew();
 
-        private class X11Timer : IDisposable
-        {
-            private readonly X11PlatformThreading _parent;
-
-            public X11Timer(X11PlatformThreading parent, DispatcherPriority prio, TimeSpan interval, Action tick)
-            {
-                _parent = parent;
-                Priority = prio;
-                Tick = tick;
-                Interval = interval;
-                Reschedule();
-            }
-            
-            public DispatcherPriority Priority { get; }
-            public TimeSpan NextTick { get; private set; }
-            public TimeSpan Interval { get; }
-            public Action Tick { get; }
-            public bool Disposed { get; private set; }
-
-            public void Reschedule()
-            {
-                NextTick = _parent._clock.Elapsed + Interval;
-            }
-
-            public void Dispose()
-            {
-                Disposed = true;
-                lock (_parent._lock)
-                    _parent._timers.Remove(this);
-            }
-        }
-
-        private List<X11Timer> _timers = new List<X11Timer>();
-        
         public X11PlatformThreading(AvaloniaX11Platform platform)
         {
             _platform = platform;
@@ -139,29 +106,16 @@ namespace Avalonia.X11
                 throw new X11Exception("Unable to attach signal pipe to epoll");
         }
 
-        private int TimerComparer(X11Timer t1, X11Timer t2)
-        {
-            return t2.Priority - t1.Priority;
-        }
-
         private void CheckSignaled()
         {
-            int buf = 0;
-            while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
-            {
-            }
-
-            DispatcherPriority prio;
             lock (_lock)
             {
                 if (!_signaled)
                     return;
                 _signaled = false;
-                prio = _signaledPriority;
-                _signaledPriority = DispatcherPriority.MinValue;
             }
 
-            Signaled?.Invoke(prio);
+            Signaled?.Invoke();
         }
 
         private unsafe void HandleX11(CancellationToken cancellationToken)
@@ -170,6 +124,7 @@ namespace Avalonia.X11
             {
                 if (cancellationToken.IsCancellationRequested)
                     return;
+                
                 XNextEvent(_display, out var xev);
                 if(XFilterEvent(ref xev, IntPtr.Zero))
                     continue;
@@ -195,90 +150,94 @@ namespace Avalonia.X11
                         XFreeEventData(_display, &xev.GenericEventCookie);
                 }
             }
-
-            Dispatcher.UIThread.RunJobs();
         }
-        
+
         public void RunLoop(CancellationToken cancellationToken)
         {
-            var readyTimers = new List<X11Timer>();
             while (!cancellationToken.IsCancellationRequested)
             {
-                var now = _clock.Elapsed;
-                TimeSpan? nextTick = null;
-                readyTimers.Clear();
-                lock(_timers)
-                    foreach (var t in _timers)
-                    {
-                        if (nextTick == null || t.NextTick < nextTick.Value)
-                            nextTick = t.NextTick;
-                        if (t.NextTick < now)
-                            readyTimers.Add(t);
-                    }
-                
-                readyTimers.Sort(TimerComparer);
-                
-                foreach (var t in readyTimers)
+                var now = _clock.ElapsedMilliseconds;
+                if (_nextTimer.HasValue && now > _nextTimer.Value)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
-                    t.Tick();
-                    if(!t.Disposed)
-                    {
-                        t.Reschedule();
-                        if (nextTick == null || t.NextTick < nextTick.Value)
-                            nextTick = t.NextTick;
-                    }
+                    Timer?.Invoke();
                 }
 
                 if (cancellationToken.IsCancellationRequested)
                     return;
+                
                 //Flush whatever requests were made to XServer
                 XFlush(_display);
                 epoll_event ev;
                 if (XPending(_display) == 0)
-                    epoll_wait(_epoll, &ev, 1,
-                        nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds));
+                {
+                    now = _clock.ElapsedMilliseconds;
+                    if (_nextTimer < now)
+                        continue;
+                    
+                    var timeout = _nextTimer == null ? (int)-1 : Math.Max(1, _nextTimer.Value - now);
+                    epoll_wait(_epoll, &ev, 1, (int)Math.Min(int.MaxValue, timeout));
+                    
+                    // Drain the signaled pipe
+                    int buf = 0;
+                    while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
+                    {
+                    }
+
+                    lock (_lock)
+                        _wakeupRequested = false;
+                }
+
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 CheckSignaled();
                 HandleX11(cancellationToken);
+                while (_platform.EventGrouperDispatchQueue.HasJobs)
+                {
+                    CheckSignaled();
+                    _platform.EventGrouperDispatchQueue.DispatchNext();
+                }
             }
         }
 
-        
-
-        public void Signal(DispatcherPriority priority)
+        private void Wakeup()
         {
             lock (_lock)
             {
-                if (priority > _signaledPriority)
-                    _signaledPriority = priority;
-                
-                if(_signaled)
+                if(_wakeupRequested)
                     return;
-                _signaled = true;
+                _wakeupRequested = true;
                 int buf = 0;
                 write(_sigwrite, &buf, new IntPtr(1));
             }
         }
 
-        public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
-        public event Action<DispatcherPriority?> Signaled;
-        
-        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
+        public void Signal()
         {
-            if (_mainThread != Thread.CurrentThread)
-                throw new InvalidOperationException("StartTimer can be only called from UI thread");
-            if (interval <= TimeSpan.Zero)
-                throw new ArgumentException("Interval must be positive", nameof(interval));
-            
-            // We assume that we are on the main thread and outside of epoll_wait, so there is no need for wakeup signal
-            
-            var timer = new X11Timer(this, priority, interval, tick);
-            lock(_timers)
-                _timers.Add(timer);
-            return timer;
+            lock (_lock)
+            {
+                if(_signaled)
+                    return;
+                _signaled = true;
+                Wakeup();
+            }
         }
+
+        public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
+        
+        public event Action Signaled;
+        public event Action Timer;
+
+        public void UpdateTimer(int? dueTimeInTicks)
+        {
+            _nextTimer = dueTimeInTicks;
+            if (_nextTimer != null)
+                Wakeup();
+        }
+
+
+        public int TickCount => (int)_clock.ElapsedMilliseconds;
+        public bool CanQueryPendingInput => true;
+
+        public bool HasPendingInput => _platform.EventGrouperDispatchQueue.HasJobs || XPending(_display) != 0;
     }
 }

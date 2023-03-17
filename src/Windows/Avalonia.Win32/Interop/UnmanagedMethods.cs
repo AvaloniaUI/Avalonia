@@ -1784,6 +1784,49 @@ namespace Avalonia.Win32.Interop
             return result;
         }
 
+        [Flags]
+        internal enum QueueStatusFlags
+        {
+            QS_KEY = 0x0001,
+            QS_MOUSEMOVE = 0x0002,
+            QS_MOUSEBUTTON = 0x0004,
+            QS_POSTMESSAGE = 0x0008,
+            QS_TIMER = 0x0010,
+            QS_PAINT = 0x0020,
+            QS_SENDMESSAGE = 0x0040,
+            QS_HOTKEY = 0x0080,
+            QS_ALLPOSTMESSAGE = 0x0100,
+            QS_EVENT = 0x0200,
+            QS_MOUSE = QS_MOUSEMOVE | QS_MOUSEBUTTON,
+            QS_INPUT = QS_MOUSE | QS_KEY,
+            QS_ALLEVENTS = QS_INPUT | QS_POSTMESSAGE | QS_TIMER | QS_PAINT | QS_HOTKEY,
+            QS_ALLINPUT = QS_INPUT | QS_POSTMESSAGE | QS_TIMER | QS_PAINT | QS_HOTKEY | QS_SENDMESSAGE
+        }
+
+        [Flags]
+        internal enum MsgWaitForMultipleObjectsFlags
+        {
+            MWMO_WAITALL = 0x0001,
+            MWMO_ALERTABLE = 0x0002,
+            MWMO_INPUTAVAILABLE = 0x0004
+        }
+
+        [DllImport("user32", EntryPoint="MsgWaitForMultipleObjectsEx", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Auto)]
+        private static extern int IntMsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds,
+            QueueStatusFlags dwWakeMask, MsgWaitForMultipleObjectsFlags dwFlags);
+
+        internal static int MsgWaitForMultipleObjectsEx(int nCount, IntPtr[]? pHandles, int dwMilliseconds, 
+            QueueStatusFlags dwWakeMask, MsgWaitForMultipleObjectsFlags dwFlags)
+        {
+            int result = IntMsgWaitForMultipleObjectsEx(nCount, pHandles, dwMilliseconds, dwWakeMask, dwFlags);
+            if(result == -1)
+            {
+                throw new Win32Exception();
+            }
+
+            return result;
+        }
+
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 

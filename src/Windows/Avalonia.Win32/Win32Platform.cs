@@ -107,21 +107,21 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    internal class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    internal class Win32Platform : IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new();
-        private static Thread? s_uiThread;
         private static Win32PlatformOptions? s_options;
         private static Compositor? s_compositor;
 
         private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
-        private readonly List<Delegate> _delegates = new();
+        private Win32DispatcherImpl _dispatcher;
 
         public Win32Platform()
         {
             SetDpiAwareness();
             CreateMessageWindow();
+            _dispatcher = new Win32DispatcherImpl(_hwnd);
         }
 
         internal static Win32Platform Instance => s_instance;
@@ -157,7 +157,7 @@ namespace Avalonia.Win32
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
-                .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
+                .Bind<IDispatcherImpl>().ToConstant(s_instance._dispatcher)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(renderTimer)
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
@@ -174,8 +174,6 @@ namespace Avalonia.Win32
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
             
-            s_uiThread = Thread.CurrentThread;
-
             var platformGraphics = options.CustomPlatformGraphics
                                    ?? Win32GlManager.Initialize();
             
@@ -205,67 +203,15 @@ namespace Avalonia.Win32
             }
         }
 
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-            var result = 0;
-            while (!cancellationToken.IsCancellationRequested 
-                && (result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
-            {
-                TranslateMessage(ref msg);
-                DispatchMessage(ref msg);
-            }
-            if (result < 0)
-            {
-                Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
-                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
-            }
-        }
-
-        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
-        {
-            TimerProc timerDelegate = (_, _, _, _) => callback();
-
-            IntPtr handle = SetTimer(
-                IntPtr.Zero,
-                IntPtr.Zero,
-                (uint)interval.TotalMilliseconds,
-                timerDelegate);
-
-            // Prevent timerDelegate being garbage collected.
-            _delegates.Add(timerDelegate);
-
-            return Disposable.Create(() =>
-            {
-                _delegates.Remove(timerDelegate);
-                KillTimer(IntPtr.Zero, handle);
-            });
-        }
-
-        private const int SignalW = unchecked((int)0xdeadbeaf);
-        private const int SignalL = unchecked((int)0x12345678);
-
-        public void Signal(DispatcherPriority prio)
-        {
-            PostMessage(
-                _hwnd,
-                (int)WindowsMessage.WM_DISPATCH_WORK_ITEM,
-                new IntPtr(SignalW),
-                new IntPtr(SignalL));
-        }
-
-        public bool CurrentThreadIsLoopThread => s_uiThread == Thread.CurrentThread;
-
-        public event Action<DispatcherPriority?>? Signaled;
-
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
-            {
-                Signaled?.Invoke(null);
-            }
+            if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM 
+                && wParam.ToInt64() == Win32DispatcherImpl.SignalW 
+                && lParam.ToInt64() == Win32DispatcherImpl.SignalL) 
+                _dispatcher?.DispatchWorkItem();
 
             if(msg == (uint)WindowsMessage.WM_QUERYENDSESSION)
             {

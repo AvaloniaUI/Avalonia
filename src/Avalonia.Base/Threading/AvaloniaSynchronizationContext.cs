@@ -30,7 +30,7 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public override void Post(SendOrPostCallback d, object? state)
         {
-           Dispatcher.UIThread.Post(d, state, DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(() => d(state), DispatcherPriority.Background);
         }
 
         /// <inheritdoc/>

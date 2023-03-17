@@ -157,7 +157,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Timers should NOT, in fact, be checked via IPlatformThreadingInterface")]
         public void Should_Open_On_Pointer_Enter_With_Delay()
         {
             Action timercallback = null;

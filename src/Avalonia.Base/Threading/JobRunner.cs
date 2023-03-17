@@ -28,7 +28,7 @@ namespace Avalonia.Threading
         /// <param name="priority">Priority to execute jobs for. Pass null if platform doesn't have internal priority system</param>
         public void RunJobs(DispatcherPriority? priority)
         {
-            var minimumPriority = priority ?? DispatcherPriority.MinValue;
+            var minimumPriority = priority ?? DispatcherPriority.MinimumActiveValue;
             while (true)
             {
                 var job = GetNextJob(minimumPriority);

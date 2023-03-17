@@ -12,28 +12,47 @@ namespace Avalonia;
   While doing that it groups Move and TouchUpdate events so we could provide GetIntermediatePoints API
  */
 
-internal class RawEventGrouper : IDisposable
+internal interface IRawEventGrouperDispatchQueue
 {
-    private readonly Action<RawInputEventArgs> _eventCallback;
-    private readonly Queue<RawInputEventArgs> _inputQueue = new();
-    private readonly Action _dispatchFromQueue;
-    private readonly Dictionary<long, RawPointerEventArgs> _lastTouchPoints = new();
-    private RawInputEventArgs? _lastEvent;
+    void Add(RawInputEventArgs args, Action<RawInputEventArgs> handler);
+}
 
-    public RawEventGrouper(Action<RawInputEventArgs> eventCallback)
+
+class ManualRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQueue
+{
+    private readonly Queue<(RawInputEventArgs args, Action<RawInputEventArgs> handler)> _inputQueue = new();
+    public void Add(RawInputEventArgs args, Action<RawInputEventArgs> handler) => _inputQueue.Enqueue((args, handler));
+
+    public bool HasJobs => _inputQueue.Count > 0;
+    
+    public void DispatchNext()
     {
-        _eventCallback = eventCallback;
+        if (_inputQueue.Count == 0)
+            return;
+        var ev = _inputQueue.Dequeue();
+        ev.handler(ev.args);
+    }
+}
+
+internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQueue
+{
+    private readonly Queue<(RawInputEventArgs args, Action<RawInputEventArgs> handler)> _inputQueue = new();
+    private readonly Action _dispatchFromQueue;
+
+    public AutomaticRawEventGrouperDispatchQueue()
+    {
         _dispatchFromQueue = DispatchFromQueue;
     }
     
-    private void AddToQueue(RawInputEventArgs args)
+    public void Add(RawInputEventArgs args, Action<RawInputEventArgs> handler)
     {
-        _lastEvent = args;
-        _inputQueue.Enqueue(args);
+        _inputQueue.Enqueue((args, handler));
+        
         if (_inputQueue.Count == 1)
             Dispatcher.UIThread.Post(_dispatchFromQueue, DispatcherPriority.Input);
+        
     }
-
+    
     private void DispatchFromQueue()
     {
         while (true)
@@ -43,17 +62,8 @@ internal class RawEventGrouper : IDisposable
 
             var ev = _inputQueue.Dequeue();
 
-            if (_lastEvent == ev) 
-                _lastEvent = null;
+            ev.handler(ev.args);
             
-            if (ev is RawTouchEventArgs { Type: RawPointerEventType.TouchUpdate } touchUpdate)
-                _lastTouchPoints.Remove(touchUpdate.RawPointerId);
-
-            _eventCallback?.Invoke(ev);
-
-            if (ev is RawPointerEventArgs { IntermediatePoints.Value: PooledList<RawPointerPoint> list }) 
-                list.Dispose();
-
             if (Dispatcher.UIThread.HasJobsWithPriority(DispatcherPriority.Input + 1))
             {
                 Dispatcher.UIThread.Post(_dispatchFromQueue, DispatcherPriority.Input);
@@ -61,6 +71,47 @@ internal class RawEventGrouper : IDisposable
             }
         }
     }
+}
+
+internal class RawEventGrouper : IDisposable
+{
+    private readonly Action<RawInputEventArgs> _eventCallback;
+    private readonly IRawEventGrouperDispatchQueue _queue;
+    private readonly Dictionary<long, RawPointerEventArgs> _lastTouchPoints = new();
+    private RawInputEventArgs? _lastEvent;
+    private Action<RawInputEventArgs> _dispatch;
+    private bool _disposed;
+
+    public RawEventGrouper(Action<RawInputEventArgs> eventCallback, IRawEventGrouperDispatchQueue? queue = null)
+    {
+        _eventCallback = eventCallback;
+        _queue = queue ?? new AutomaticRawEventGrouperDispatchQueue();
+        _dispatch = Dispatch;
+    }
+    
+    private void AddToQueue(RawInputEventArgs args)
+    {
+        _lastEvent = args;
+        _queue.Add(args, _dispatch);
+    }
+
+    private void Dispatch(RawInputEventArgs ev)
+    {
+        if (!_disposed)
+        {
+            if (_lastEvent == ev)
+                _lastEvent = null;
+
+            if (ev is RawTouchEventArgs { Type: RawPointerEventType.TouchUpdate } touchUpdate)
+                _lastTouchPoints.Remove(touchUpdate.RawPointerId);
+            
+            _eventCallback?.Invoke(ev);
+        }
+
+        if (ev is RawPointerEventArgs { IntermediatePoints.Value: PooledList<RawPointerPoint> list }) 
+            list.Dispose();
+    }
+
     
     public void HandleEvent(RawInputEventArgs args)
     {
@@ -123,7 +174,7 @@ internal class RawEventGrouper : IDisposable
 
     public void Dispose()
     {
-        _inputQueue.Clear();
+        _disposed = true;
         _lastEvent = null;
         _lastTouchPoints.Clear();
     }
