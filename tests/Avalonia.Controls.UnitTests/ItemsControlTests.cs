@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -829,6 +830,135 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.Throws<InvalidOperationException>(() => target.DisplayMemberBinding = new Binding("Length"));
+        }
+
+        [Fact]
+        public void ContainerPrepared_Is_Raised_For_Each_Item_Container_On_Layout()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            var result = new List<Control>();
+            var index = 0;
+
+            target.ContainerPrepared += (s, e) =>
+            {
+                Assert.Equal(index++, e.Index);
+                result.Add(e.Container);
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(target.GetRealizedContainers(), result);
+        }
+
+        [Fact]
+        public void ContainerPrepared_Is_Raised_For_Each_ItemsSource_Container_On_Layout()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+            };
+
+            var result = new List<Control>();
+            var index = 0;
+
+            target.ContainerPrepared += (s, e) =>
+            {
+                Assert.Equal(index++, e.Index);
+                result.Add(e.Container);
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(target.GetRealizedContainers(), result);
+        }
+
+        [Fact]
+        public void ContainerPrepared_Is_Raised_For_Added_Item()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var result = new List<Control>();
+
+            target.ContainerPrepared += (s, e) =>
+            {
+                Assert.Equal(3, e.Index);
+                result.Add(e.Container);
+            };
+
+            target.Items.Add("Qux");
+
+            Assert.Equal(1, result.Count);
+        }
+
+        [Fact]
+        public void ContainerIndexChanged_Is_Raised_When_Item_Added()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var result = new List<Control>();
+            var index = 1;
+
+            target.ContainerIndexChanged += (s, e) =>
+            {
+                Assert.Equal(index++, e.OldIndex);
+                Assert.Equal(index, e.NewIndex);
+                result.Add(e.Container);
+            };
+
+            target.Items.Insert(1, "Qux");
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal(target.GetRealizedContainers().Skip(2), result);
+        }
+
+        [Fact]
+        public void ContainerClearing_Is_Raised_When_Item_Removed()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var expected = target.ContainerFromIndex(1);
+            var raised = 0;
+
+            target.ContainerClearing += (s, e) =>
+            {
+                Assert.Same(expected, e.Container);
+                ++raised;
+            };
+
+            target.Items.RemoveAt(1);
+
+            Assert.Equal(1, raised);
         }
 
         private class Item

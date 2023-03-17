@@ -274,6 +274,34 @@ namespace Avalonia.Controls
             remove => _childIndexChanged -= value;
         }
 
+        /// <summary>
+        /// Occurs each time a container is prepared for use.
+        /// </summary>
+        /// <remarks>
+        /// The prepared element might be newly created or an existing container that is being re-
+        /// used.
+        /// </remarks>
+        public event EventHandler<ContainerPreparedEventArgs>? ContainerPrepared;
+
+        /// <summary>
+        /// Occurs for each realized container when the index for the item it represents has changed.
+        /// </summary>
+        /// <remarks>
+        /// This event is raised for each realized container where the index for the item it
+        /// represents has changed. For example, when another item is added or removed in the data
+        /// source, the index for items that come after in the ordering will be impacted.
+        /// </remarks>
+        public event EventHandler<ContainerIndexChangedEventArgs>? ContainerIndexChanged;
+
+        /// <summary>
+        /// Occurs each time a container is cleared.
+        /// </summary>
+        /// <remarks>
+        /// This event is raised immediately each time an container is cleared, such as when it
+        /// falls outside the range of realized items or the corresponding item is removed.
+        /// </remarks>
+        public event EventHandler<ContainerClearingEventArgs>? ContainerClearing;
+
         /// <inheritdoc />
         public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
         {
@@ -649,18 +677,21 @@ namespace Avalonia.Controls
         {
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
             _scrollViewer?.RegisterAnchorCandidate(container);
+            ContainerPrepared?.Invoke(this, new(container, index));
         }
 
         internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
         {
             ContainerIndexChangedOverride(container, oldIndex, newIndex);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, newIndex));
+            ContainerIndexChanged?.Invoke(this, new(container, oldIndex, newIndex));
         }
 
         internal void ClearItemContainer(Control container)
         {
             _scrollViewer?.UnregisterAnchorCandidate(container);
             ClearContainerForItemOverride(container);
+            ContainerClearing?.Invoke(this, new(container));
         }
 
         private void AddControlItemsToLogicalChildren(IEnumerable? items)
