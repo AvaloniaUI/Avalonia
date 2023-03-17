@@ -2,7 +2,7 @@
 
 namespace Avalonia.Win32
 {
-    internal static class Win32TypeExtensions
+    public static class Win32TypeExtensions
     {
         public static PixelRect ToPixelRect(this RECT rect)
         {
