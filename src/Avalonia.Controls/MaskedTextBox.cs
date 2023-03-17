@@ -15,9 +15,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
-        public static readonly DirectProperty<MaskedTextBox, CultureInfo?> CultureProperty =
-             AvaloniaProperty.RegisterDirect<MaskedTextBox, CultureInfo?>(nameof(Culture), o => o.Culture,
-                (o, v) => o.Culture = v, CultureInfo.CurrentCulture);
+        public static readonly StyledProperty<CultureInfo?> CultureProperty =
+             AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture), CultureInfo.CurrentCulture);
 
         public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
@@ -32,26 +31,49 @@ namespace Avalonia.Controls
              AvaloniaProperty.Register<MaskedTextBox, string?>(nameof(Mask), string.Empty);
 
         public static readonly StyledProperty<char> PromptCharProperty =
-             AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
+             AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_', coerce: CoercePromptChar);
 
-        public static readonly DirectProperty<MaskedTextBox, bool> ResetOnPromptProperty =
-             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnPrompt), o => o.ResetOnPrompt, (o, v) => o.ResetOnPrompt = v);
+        public static readonly StyledProperty<bool> ResetOnPromptProperty =
+             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(ResetOnPrompt), true);
 
-        public static readonly DirectProperty<MaskedTextBox, bool> ResetOnSpaceProperty =
-             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnSpace), o => o.ResetOnSpace, (o, v) => o.ResetOnSpace = v);
-
-        private CultureInfo? _culture;
-
-        private bool _resetOnPrompt = true;
+        public static readonly StyledProperty<bool> ResetOnSpaceProperty =
+             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(ResetOnSpace), true);
 
         private bool _ignoreTextChanges;
 
-        private bool _resetOnSpace = true;
-
         static MaskedTextBox()
         {
-            PasswordCharProperty
-                .OverrideDefaultValue<MaskedTextBox>('\0');
+            PasswordCharProperty.OverrideMetadata<MaskedTextBox>(new('\0', coerce: CoercePasswordChar));
+        }
+
+        private static char CoercePasswordChar(AvaloniaObject sender, char baseValue)
+        {
+            if (!MaskedTextProvider.IsValidPasswordChar(baseValue))
+            {
+                throw new ArgumentException($"'{baseValue}' is not a valid value for PasswordChar.");
+            }
+            var textbox = (MaskedTextBox)sender;
+            if (textbox.MaskProvider is { } maskProvider && baseValue == maskProvider.PromptChar)
+            {
+                // Prompt and password chars must be different.
+                throw new InvalidOperationException("PasswordChar and PromptChar values cannot be the same.");
+            }
+
+            return baseValue;
+        }
+
+        private static char CoercePromptChar(AvaloniaObject sender, char baseValue)
+        {
+            if (!MaskedTextProvider.IsValidInputChar(baseValue))
+            {
+                throw new ArgumentException($"'{baseValue}' is not a valid value for PromptChar.");
+            }
+            if (baseValue == sender.GetValue(PasswordCharProperty))
+            {
+                throw new InvalidOperationException("PasswordChar and PromptChar values cannot be the same.");
+            }
+
+            return baseValue;
         }
 
         public MaskedTextBox() { }
@@ -59,6 +81,9 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Constructs the MaskedTextBox with the specified MaskedTextProvider object.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", 
+            "AVP1012:An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values", 
+            Justification = "These values are being explicitly provided by a constructor parameter.")]
         public MaskedTextBox(MaskedTextProvider maskedTextProvider)
         {
             if (maskedTextProvider == null)
@@ -87,8 +112,8 @@ namespace Avalonia.Controls
         /// </summary>
         public CultureInfo? Culture
         {
-            get => _culture;
-            set => SetAndRaise(CultureProperty, ref _culture, value);
+            get => GetValue(CultureProperty);
+            set => SetValue(CultureProperty, value);
         }
 
         /// <summary>
@@ -132,15 +157,6 @@ namespace Avalonia.Controls
         public MaskedTextProvider? MaskProvider { get; private set; }
 
         /// <summary>
-        /// Gets or sets the character to be displayed in substitute for user input.
-        /// </summary>
-        public new char PasswordChar
-        {
-            get => GetValue(PasswordCharProperty);
-            set => SetValue(PasswordCharProperty, value);
-        }
-
-        /// <summary>
         /// Gets or sets the character used to represent the absence of user input in MaskedTextBox.
         /// </summary>
         public char PromptChar
@@ -154,16 +170,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ResetOnPrompt
         {
-            get => _resetOnPrompt;
-            set
-            {
-                SetAndRaise(ResetOnPromptProperty, ref _resetOnPrompt, value);
-                if (MaskProvider != null)
-                {
-                    MaskProvider.ResetOnPrompt = value;
-                }
-
-            }
+            get => GetValue(ResetOnPromptProperty);
+            set => SetValue(ResetOnPromptProperty, value);
         }
 
         /// <summary>
@@ -171,16 +179,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ResetOnSpace
         {
-            get => _resetOnSpace;
-            set
-            {
-                SetAndRaise(ResetOnSpaceProperty, ref _resetOnSpace, value);
-                if (MaskProvider != null)
-                {
-                    MaskProvider.ResetOnSpace = value;
-                }
-
-            }
+            get => GetValue(ResetOnSpaceProperty);
+            set => SetValue(ResetOnSpaceProperty, value);
         }
 
         Type IStyleable.StyleKey => typeof(TextBox);
@@ -190,7 +190,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                Text = MaskProvider.ToDisplayString();
+                SetCurrentValue(TextProperty, MaskProvider.ToDisplayString());
             }
             base.OnGotFocus(e);
         }
@@ -225,11 +225,11 @@ namespace Avalonia.Controls
                     var index = GetNextCharacterPosition(CaretIndex);
                     if (MaskProvider.InsertAt(item, index))
                     {
-                        CaretIndex = ++index;
+                        SetCurrentValue(CaretIndexProperty, ++index);
                     }
                 }
 
-                Text = MaskProvider.ToDisplayString();
+                SetCurrentValue(TextProperty, MaskProvider.ToDisplayString());
                 e.Handled = true;
                 return;
             }
@@ -279,7 +279,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave && MaskProvider != null)
             {
-                Text = MaskProvider.ToString(!HidePromptOnLeave, true);
+                SetCurrentValue(TextProperty, MaskProvider.ToString(!HidePromptOnLeave, true));
             }
             base.OnLostFocus(e);
         }
@@ -326,15 +326,6 @@ namespace Avalonia.Controls
             }
             else if (change.Property == PasswordCharProperty)
             {
-                if (!MaskedTextProvider.IsValidPasswordChar(PasswordChar))
-                {
-                    throw new ArgumentException("Specified character value is not allowed for this property.", nameof(PasswordChar));
-                }
-                if (MaskProvider != null && PasswordChar == MaskProvider.PromptChar)
-                {
-                    // Prompt and password chars must be different.
-                    throw new InvalidOperationException("PasswordChar and PromptChar values cannot be the same.");
-                }
                 if (MaskProvider != null && MaskProvider.PasswordChar != PasswordChar)
                 {
                     UpdateMaskProvider();
@@ -342,17 +333,23 @@ namespace Avalonia.Controls
             }
             else if (change.Property == PromptCharProperty)
             {
-                if (!MaskedTextProvider.IsValidInputChar(PromptChar))
-                {
-                    throw new ArgumentException("Specified character value is not allowed for this property.");
-                }
-                if (PromptChar == PasswordChar)
-                {
-                    throw new InvalidOperationException("PasswordChar and PromptChar values cannot be the same.");
-                }
                 if (MaskProvider != null && MaskProvider.PromptChar != PromptChar)
                 {
                     UpdateMaskProvider();
+                }
+            }
+            else if (change.Property == ResetOnPromptProperty)
+            {
+                if (MaskProvider != null && change.GetNewValue<bool>() is { } newValue)
+                {
+                    MaskProvider.ResetOnPrompt = newValue;
+                }
+            }
+            else if (change.Property == ResetOnSpaceProperty)
+            {
+                if (MaskProvider != null && change.GetNewValue<bool>() is { } newValue)
+                {
+                    MaskProvider.ResetOnSpace = newValue;
                 }
             }
             else if (change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
@@ -390,7 +387,7 @@ namespace Avalonia.Controls
 
                 if (CaretIndex < Text?.Length)
                 {
-                    CaretIndex = GetNextCharacterPosition(CaretIndex);
+                    SetCurrentValue(CaretIndexProperty, GetNextCharacterPosition(CaretIndex));
 
                     if (MaskProvider.InsertAt(e.Text!, CaretIndex))
                     {
@@ -399,7 +396,7 @@ namespace Avalonia.Controls
                     var nextPos = GetNextCharacterPosition(CaretIndex);
                     if (nextPos != 0 && CaretIndex != Text.Length)
                     {
-                        CaretIndex = nextPos;
+                        SetCurrentValue(CaretIndexProperty, nextPos);
                     }
                 }
 
@@ -434,8 +431,8 @@ namespace Avalonia.Controls
         {
             if (provider != null)
             {
-                Text = provider.ToDisplayString();
-                CaretIndex = position;
+                SetCurrentValue(TextProperty, provider.ToDisplayString());
+                SetCurrentValue(CaretIndexProperty, position);
             }
         }
 

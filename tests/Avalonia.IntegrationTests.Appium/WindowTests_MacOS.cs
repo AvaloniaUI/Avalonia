@@ -83,9 +83,9 @@ namespace Avalonia.IntegrationTests.Appium
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
         {
             var mainWindow = GetWindow("MainWindow");
-            var buttons = mainWindow.GetChromeButtons();
+            var fullScreen = mainWindow.FindElementByAccessibilityId("_XCUI:FullScreenWindow");
 
-            buttons.maximize.Click();
+            fullScreen.Click();
 
             Thread.Sleep(500);
 
@@ -239,17 +239,18 @@ namespace Avalonia.IntegrationTests.Appium
         public void Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
         {
             var window = GetWindow("MainWindow");
-            var (closeButton, miniaturizeButton, zoomButton) = window.GetChromeButtons();
+            var windowChrome = window.GetChromeButtons();
 
-            Assert.True(closeButton.Enabled);
-            Assert.True(zoomButton.Enabled);
-            Assert.True(miniaturizeButton.Enabled);
+            Assert.True(windowChrome.Close!.Enabled);
+            Assert.True(windowChrome.FullScreen!.Enabled);
+            Assert.True(windowChrome.Minimize!.Enabled);
+            Assert.Null(windowChrome.Maximize);
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
-                Assert.False(closeButton.Enabled);
-                Assert.False(zoomButton.Enabled);
-                Assert.False(miniaturizeButton.Enabled);
+                Assert.False(windowChrome.Close!.Enabled);
+                Assert.False(windowChrome.FullScreen!.Enabled);
+                Assert.False(windowChrome.Minimize!.Enabled);
             }
         }
 
@@ -259,11 +260,11 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (closeButton, miniaturizeButton, zoomButton) = secondaryWindow.GetChromeButtons();
+                var windowChrome = secondaryWindow.GetChromeButtons();
 
-                Assert.True(closeButton.Enabled);
-                Assert.True(zoomButton.Enabled);
-                Assert.False(miniaturizeButton.Enabled);
+                Assert.True(windowChrome.Close!.Enabled);
+                Assert.True(windowChrome.Maximize!.Enabled);
+                Assert.False(windowChrome.Minimize!.Enabled);
             }
         }
         
@@ -274,7 +275,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
+                var miniaturizeButton = secondaryWindow.FindElementByAccessibilityId("_XCUI:MinimizeWindow");
 
                 Assert.False(miniaturizeButton.Enabled);
             }
@@ -288,7 +289,7 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
+                var miniaturizeButton = secondaryWindow.FindElementByAccessibilityId("_XCUI:MinimizeWindow");
 
                 miniaturizeButton.Click();
                 Thread.Sleep(1000);
@@ -332,7 +333,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             // Close the window manually.
             secondaryWindow = GetWindow("SecondaryWindow");
-            secondaryWindow.GetChromeButtons().close.Click();
+            secondaryWindow.FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
         }
 
         [PlatformTheory(TestPlatforms.MacOS)]
@@ -344,22 +345,92 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
-                var (_, _, zoomButton) = secondaryWindow.GetChromeButtons();
+                var zoomButton = mode == ShowWindowMode.NonOwned ?
+                    secondaryWindow.FindElementByAccessibilityId("_XCUI:FullScreenWindow") :
+                    secondaryWindow.FindElementByAccessibilityId("_XCUI:ZoomWindow");
                 Assert.False(zoomButton.Enabled);
             }
         }
-        
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void Toggling_SystemDecorations_Should_Preserve_ExtendClientArea()
+        {
+            // #10650
+            using (OpenWindow(extendClientArea: true))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+                
+                // The XPath of the title bar text _should_ be "XCUIElementTypeStaticText"
+                // but Appium seems to put a fake node between the window and the title bar
+                // https://stackoverflow.com/a/71914227/6448
+                var titleBar = secondaryWindow.FindElementsByXPath("/*/XCUIElementTypeStaticText").Count;
+                
+                Assert.Equal(0, titleBar);
+
+                secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                _session.FindElementByAccessibilityId("SystemDecorationsNone").SendClick();
+                secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                _session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+
+                titleBar = secondaryWindow.FindElementsByXPath("/*/XCUIElementTypeStaticText").Count;
+                Assert.Equal(0, titleBar);
+            }
+        }
+
+        [PlatformTheory(TestPlatforms.MacOS)]
+        [InlineData(SystemDecorations.None)]
+        [InlineData(SystemDecorations.BorderOnly)]
+        [InlineData(SystemDecorations.Full)]
+        public void ExtendClientArea_SystemDecorations_Shows_Correct_Buttons(SystemDecorations decorations)
+        {
+            // #10650
+            using (OpenWindow(extendClientArea: true, systemDecorations: decorations))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+
+                try
+                {
+                    var chrome = secondaryWindow.GetChromeButtons();
+                
+                    if (decorations == SystemDecorations.Full)
+                    {
+                        Assert.NotNull(chrome.Close);
+                        Assert.NotNull(chrome.Minimize);
+                        Assert.NotNull(chrome.FullScreen);
+                    }
+                    else
+                    {
+                        Assert.Null(chrome.Close);
+                        Assert.Null(chrome.Minimize);
+                        Assert.Null(chrome.FullScreen);
+                    }
+                }
+                finally
+                {
+                    if (decorations != SystemDecorations.Full)
+                    {
+                        secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                        _session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+                    }
+                }
+            }
+        }
+
         private IDisposable OpenWindow(
-            PixelSize? size,
-            ShowWindowMode mode,
-            WindowStartupLocation location,
-            bool canResize = true)
+            PixelSize? size = null,
+            ShowWindowMode mode = ShowWindowMode.NonOwned,
+            WindowStartupLocation location = WindowStartupLocation.Manual,
+            bool canResize = true,
+            SystemDecorations systemDecorations = SystemDecorations.Full,
+            bool extendClientArea = false)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
             var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+            var systemDecorationsComboBox = _session.FindElementByAccessibilityId("ShowWindowSystemDecorations");
+            var extendClientAreaCheckBox = _session.FindElementByAccessibilityId("ShowWindowExtendClientAreaToDecorationsHint");
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
@@ -379,6 +450,15 @@ namespace Avalonia.IntegrationTests.Appium
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
 
+            if (systemDecorationsComboBox.GetComboBoxValue() != systemDecorations.ToString())
+            {
+                systemDecorationsComboBox.Click();
+                _session.FindElementByName(systemDecorations.ToString()).SendClick();
+            }
+            
+            if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)
+                extendClientAreaCheckBox.Click();
+            
             return showButton.OpenWindowWithClick();
         }
 

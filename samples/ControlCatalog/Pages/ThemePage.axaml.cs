@@ -12,7 +12,7 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
-            Selector.Items = new[]
+            Selector.ItemsSource = new[]
             {
                 ThemeVariant.Default,
                 ThemeVariant.Dark,

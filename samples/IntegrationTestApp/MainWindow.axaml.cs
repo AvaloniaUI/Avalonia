@@ -68,6 +68,8 @@ namespace IntegrationTestApp
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
             var stateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
+            var systemDecorations = this.GetControl<ComboBox>("ShowWindowSystemDecorations");
+            var extendClientArea = this.GetControl<CheckBox>("ShowWindowExtendClientAreaToDecorationsHint");
             var canResizeCheckBox = this.GetControl<CheckBox>("ShowWindowCanResize");
             var owner = (Window)this.GetVisualRoot()!;
 
@@ -95,6 +97,8 @@ namespace IntegrationTestApp
             }
 
             sizeTextBox.Text = string.Empty;
+            window.ExtendClientAreaToDecorationsHint = extendClientArea.IsChecked ?? false;
+            window.SystemDecorations = (SystemDecorations)systemDecorations.SelectedIndex;
             window.WindowState = (WindowState)stateComboBox.SelectedIndex;
 
             switch (modeComboBox.SelectedIndex)
@@ -158,7 +162,7 @@ namespace IntegrationTestApp
             var popup = new Popup
             {
                 WindowManagerAddShadowHint = false,
-                PlacementMode = PlacementMode.AnchorAndGravity,
+                Placement = PlacementMode.AnchorAndGravity,
                 PlacementAnchor = PopupAnchor.Top,
                 PlacementGravity = PopupGravity.Bottom,
                 Width= 200,

@@ -40,9 +40,9 @@ internal static partial class StorageHelper
     [JSImport("StorageItem.openRead", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject> OpenRead(JSObject item);
 
-    [JSImport("StorageItem.getItems", AvaloniaModule.StorageModuleName)]
-    [return: JSMarshalAs<JSType.Promise<JSType.Object>>]
-    public static partial Task<JSObject?> GetItems(JSObject item);
+    [JSImport("StorageItem.getItemsIterator", AvaloniaModule.StorageModuleName)]
+    [return: JSMarshalAs<JSType.Object>]
+    public static partial JSObject? GetItemsIterator(JSObject item);
 
     [JSImport("StorageItems.itemsArray", AvaloniaModule.StorageModuleName)]
     public static partial JSObject[] ItemsArray(JSObject item);
@@ -52,4 +52,16 @@ internal static partial class StorageHelper
 
     [JSImport("StorageProvider.createAcceptType", AvaloniaModule.StorageModuleName)]
     public static partial JSObject CreateAcceptType(string description, string[] mimeTypes, string[]? extensions);
+
+    [JSImport("StorageProvider.deleteAsync", AvaloniaModule.StorageModuleName)]
+    public static partial Task DeleteAsync(JSObject fileHandle);
+    
+    [JSImport("StorageProvider.moveAsync", AvaloniaModule.StorageModuleName)]
+    public static partial Task<JSObject?> MoveAsync(JSObject fileHandle, JSObject destinationFolder);
+    
+    [JSImport("StorageProvider.createFile", AvaloniaModule.StorageModuleName)]
+    public static partial Task<JSObject?> CreateFile(JSObject folderHandle, string name);
+    
+    [JSImport("StorageProvider.createFolder", AvaloniaModule.StorageModuleName)]
+    public static partial Task<JSObject?> CreateFolder(JSObject folderHandle, string name);
 }

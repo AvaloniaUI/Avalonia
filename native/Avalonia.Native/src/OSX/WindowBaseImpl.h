@@ -107,6 +107,8 @@ BEGIN_INTERFACE_MAP()
                            
     virtual HRESULT GetInputMethod(IAvnTextInputMethod **retOut) override;
 
+    virtual bool CanZoom() { return false; }
+                           
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
     virtual void UpdateStyle();
