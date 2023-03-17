@@ -162,7 +162,7 @@ namespace IntegrationTestApp
             var popup = new Popup
             {
                 WindowManagerAddShadowHint = false,
-                PlacementMode = PlacementMode.AnchorAndGravity,
+                Placement = PlacementMode.AnchorAndGravity,
                 PlacementAnchor = PopupAnchor.Top,
                 PlacementGravity = PopupGravity.Bottom,
                 Width= 200,
