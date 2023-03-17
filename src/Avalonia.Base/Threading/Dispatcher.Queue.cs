@@ -47,6 +47,20 @@ public partial class Dispatcher
         }
     }
 
+    class DummyShuttingDownUnitTestDispatcherImpl : IDispatcherImpl
+    {
+        public bool CurrentThreadIsLoopThread => true;
+        public void Signal()
+        {
+        }
+
+        public event Action? Signaled;
+        public event Action? Timer;
+        public void UpdateTimer(int? dueTimeInTicks)
+        {
+        }
+    }
+    
     internal static void ResetForUnitTests()
     {
         if (s_uiThread == null)
@@ -54,6 +68,8 @@ public partial class Dispatcher
         var st = Stopwatch.StartNew();
         while (true)
         {
+            s_uiThread._pendingInputImpl = s_uiThread._controlledImpl = null;
+            s_uiThread._impl = new DummyShuttingDownUnitTestDispatcherImpl();
             if (st.Elapsed.TotalSeconds > 5)
                 throw new InvalidProgramException("You've caused dispatcher loop");
             

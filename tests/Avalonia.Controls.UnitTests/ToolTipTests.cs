@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
@@ -157,24 +158,10 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact(Skip = "Timers should NOT, in fact, be checked via IPlatformThreadingInterface")]
+        [Fact]
         public void Should_Open_On_Pointer_Enter_With_Delay()
         {
-            Action timercallback = null;
-            var delay = TimeSpan.Zero;
-
-            var pti = Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true);
-
-            Mock.Get(pti)
-                .Setup(v => v.StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
-                .Callback<DispatcherPriority, TimeSpan, Action>((priority, interval, tick) =>
-                {
-                    delay = interval;
-                    timercallback = tick;
-                })
-                .Returns(Disposable.Empty);
-
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(threadingInterface: pti)))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var window = new Window();
 
@@ -194,11 +181,11 @@ namespace Avalonia.Controls.UnitTests
 
                 _mouseHelper.Enter(target);
 
-                Assert.Equal(TimeSpan.FromMilliseconds(1), delay);
-                Assert.NotNull(timercallback);
+                var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+                Assert.Equal(TimeSpan.FromMilliseconds(1), timer.Interval);
                 Assert.False(ToolTip.GetIsOpen(target));
 
-                timercallback();
+                timer.ForceFire();
 
                 Assert.True(ToolTip.GetIsOpen(target));
             }

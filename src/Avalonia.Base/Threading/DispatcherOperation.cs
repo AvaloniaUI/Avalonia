@@ -261,6 +261,45 @@ public class DispatcherOperation<T> : DispatcherOperation
     }
 }
 
+internal class SendOrPostCallbackDispatcherOperation : DispatcherOperation
+{
+    private readonly object? _arg;
+
+    internal SendOrPostCallbackDispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, 
+        SendOrPostCallback callback, object? arg, bool throwOnUiThread) 
+        : base(dispatcher, priority, throwOnUiThread)
+    {
+        Callback = callback;
+        _arg = arg;
+    }
+    
+    protected override void InvokeCore()
+    {
+        try
+        {
+            ((SendOrPostCallback)Callback!)(_arg);
+            lock (Dispatcher.InstanceLock)
+            {
+                Status = DispatcherOperationStatus.Completed;
+                if (TaskSource is TaskCompletionSource<object?> tcs)
+                    tcs.SetResult(null);
+            }
+        }
+        catch (Exception e)
+        {
+            lock (Dispatcher.InstanceLock)
+            {
+                Status = DispatcherOperationStatus.Completed;
+                if (TaskSource is TaskCompletionSource<object?> tcs)
+                    tcs.SetException(e);
+            }
+
+            if (ThrowOnUiThread)
+                throw;
+        }
+    }
+}
+
 public enum DispatcherOperationStatus
 {
     Pending = 0,

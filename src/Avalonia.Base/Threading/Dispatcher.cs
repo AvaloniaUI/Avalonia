@@ -16,13 +16,13 @@ namespace Avalonia.Threading;
 /// </remarks>
 public partial class Dispatcher : IDispatcher
 {
-    private readonly IDispatcherImpl _impl;
+    private IDispatcherImpl _impl;
     internal IDispatcherClock Clock { get; }
     internal object InstanceLock { get; } = new();
     private bool _hasShutdownFinished;
-    private readonly IControlledDispatcherImpl? _controlledImpl;
+    private IControlledDispatcherImpl? _controlledImpl;
     private static Dispatcher? s_uiThread;
-    private readonly IDispatcherImplWithPendingInput? _pendingInputImpl;
+    private IDispatcherImplWithPendingInput? _pendingInputImpl;
 
     internal Dispatcher(IDispatcherImpl impl, IDispatcherClock clock)
     {

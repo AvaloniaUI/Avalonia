@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Threading;
 
@@ -168,4 +169,7 @@ public partial class Dispatcher
             UpdateOSTimer();
         }
     }
+
+    internal static List<DispatcherTimer> SnapshotTimersForUnitTests() =>
+        s_uiThread!._timers.Where(t => t != s_uiThread._backgroundTimer).ToList();
 }
