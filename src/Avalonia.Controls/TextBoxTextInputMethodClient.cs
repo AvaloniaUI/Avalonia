@@ -40,7 +40,7 @@ namespace Avalonia.Controls
                 }
 
                 var rect = _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
-                
+
                 return rect;
             }
         }
