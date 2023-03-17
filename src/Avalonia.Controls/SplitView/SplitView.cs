@@ -15,18 +15,21 @@ namespace Avalonia.Controls
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
     [TemplatePart("PART_PaneRoot", typeof(Panel))]
-    [PseudoClasses(":open", ":closed")]
-    [PseudoClasses(":compactoverlay", ":compactinline", ":overlay", ":inline")]
-    [PseudoClasses(":left", ":right")]
-    [PseudoClasses(":lightdismiss")]
+    [PseudoClasses(pcOpen, pcClosed)]
+    [PseudoClasses(pcCompactOverlay, pcCompactInline, pcOverlay, pcInline)]
+    [PseudoClasses(pcLeft, pcRight)]
+    [PseudoClasses(pcLightDismiss)]
     public class SplitView : ContentControl
     {
-        /*
-            Pseudo classes & combos
-            :open / :closed
-            :compactoverlay :compactinline :overlay :inline
-            :left :right
-        */
+        protected const string pcOpen = ":open";
+        protected const string pcClosed = ":closed";
+        protected const string pcCompactOverlay = ":compactoverlay";
+        protected const string pcCompactInline = ":compactInline";
+        protected const string pcOverlay = ":overlay";
+        protected const string pcInline = ":inline";
+        protected const string pcLeft = ":left";
+        protected const string pcRight = ":right";
+        protected const string pcLightDismiss = ":lightDismiss";
 
         /// <summary>
         /// Defines the <see cref="CompactPaneLength"/> property
@@ -346,15 +349,15 @@ namespace Avalonia.Controls
 
                 if (isPaneOpen)
                 {
-                    PseudoClasses.Add(":open");
-                    PseudoClasses.Remove(":closed");
+                    PseudoClasses.Add(pcOpen);
+                    PseudoClasses.Remove(pcClosed);
 
                     OnPaneOpened(new RoutedEventArgs(PaneOpenedEvent, this));
                 }
                 else
                 {
-                    PseudoClasses.Add(":closed");
-                    PseudoClasses.Remove(":open");
+                    PseudoClasses.Add(pcClosed);
+                    PseudoClasses.Remove(pcOpen);
 
                     OnPaneClosed(new RoutedEventArgs(PaneClosedEvent, this));
                 }
@@ -378,7 +381,7 @@ namespace Avalonia.Controls
             else if (change.Property == UseLightDismissOverlayModeProperty)
             {
                 var mode = change.GetNewValue<bool>();
-                PseudoClasses.Set(":lightdismiss", mode);
+                PseudoClasses.Set(pcLightDismiss, mode);
             }
         }
 
@@ -452,10 +455,10 @@ namespace Avalonia.Controls
         {
             return mode switch
             {
-                SplitViewDisplayMode.Inline => ":inline",
-                SplitViewDisplayMode.CompactInline => ":compactinline",
-                SplitViewDisplayMode.Overlay => ":overlay",
-                SplitViewDisplayMode.CompactOverlay => ":compactoverlay",
+                SplitViewDisplayMode.Inline => pcInline,
+                SplitViewDisplayMode.CompactInline => pcCompactInline,
+                SplitViewDisplayMode.Overlay => pcOverlay,
+                SplitViewDisplayMode.CompactOverlay => pcCompactOverlay,
                 _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
             };
         }
@@ -467,8 +470,8 @@ namespace Avalonia.Controls
         {
             return placement switch
             {
-                SplitViewPanePlacement.Left => ":left",
-                SplitViewPanePlacement.Right => ":right",
+                SplitViewPanePlacement.Left => pcLeft,
+                SplitViewPanePlacement.Right => pcRight,
                 _ => throw new ArgumentOutOfRangeException(nameof(placement), placement, null)
             };
         }
