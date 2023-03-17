@@ -83,7 +83,7 @@ namespace Avalonia.Rendering
                     }
                 }
 
-                using (context.PushPostTransform(m))
+                using (context.PushTransform(m))
                 using (context.PushOpacity(opacity, bounds))
                 using (clipToBounds
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -95,7 +95,7 @@ namespace Avalonia.Rendering
 
                 using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default)
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default)
-                using (context.PushTransformContainer())
+                using (context.PushTransform(Matrix.Identity))
                 {
                     visual.Render(context);
                     

@@ -9,14 +9,11 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
-
-#nullable enable
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -53,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Empty(itemsControl.GetRealizedContainers());
 
-            itemsControl.Items = new[] { "foo", "bar" };
+            itemsControl.ItemsSource = new[] { "foo", "bar" };
             Layout(target);
 
             AssertRealizedItems(target, itemsControl, 0, 2);
@@ -99,7 +96,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.Items!;
+            var items = (IList)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -131,7 +128,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.Items!;
+            var items = (IList)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -161,7 +158,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (ObservableCollection<string>)itemsControl.Items!;
+            var items = (ObservableCollection<string>)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -190,7 +187,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
-            var items = (ObservableCollection<string>)itemsControl.Items!;
+            var items = (ObservableCollection<string>)itemsControl.ItemsSource!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -409,6 +406,36 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void ContainerPrepared_Is_Raised_When_Scrolling()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var raised = 0;
+
+            itemsControl.ContainerPrepared += (s, e) => ++raised;
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.Equal(10, raised);
+        }
+
+        [Fact]
+        public void ContainerClearing_Is_Raised_When_Scrolling()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+            var raised = 0;
+
+            itemsControl.ContainerClearing += (s, e) => ++raised;
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.Equal(10, raised);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -473,7 +500,7 @@ namespace Avalonia.Controls.UnitTests
 
             var itemsControl = new ItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
                 ItemsPanel = new FuncTemplate<Panel>(() => target),
             };

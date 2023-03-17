@@ -166,7 +166,7 @@
                     </TabItem.Header>
                     <ListBox Theme="{StaticResource ColorViewPaletteListBoxTheme}"
                              ItemContainerTheme="{StaticResource ColorViewPaletteListBoxItemTheme}"
-                             Items="{TemplateBinding PaletteColors}"
+                             ItemsSource="{TemplateBinding PaletteColors}"
                              SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DoNothingForNullConverter}, Mode=TwoWay}"
                              UseLayoutRounding="False"
                              Margin="12">

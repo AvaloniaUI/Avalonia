@@ -459,7 +459,8 @@ namespace Avalonia.Controls
 
             while (c is not null)
             {
-                if (!c.Bounds.IsDefault && c.TransformToVisual(this) is Matrix transform)
+                if ((c.Bounds.Width != 0 || c.Bounds.Height != 0) &&
+                    c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);
@@ -1078,7 +1079,7 @@ namespace Avalonia.Controls
                     // elements after the insertion point.
                     var elementCount = _elements.Count;
                     var start = Math.Max(realizedIndex, 0);
-                    var newIndex = first + count;
+                    var newIndex = realizedIndex + count;
 
                     for (var i = start; i < elementCount; ++i)
                     {

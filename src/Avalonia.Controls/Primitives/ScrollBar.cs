@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.Controls.Metadata;
+using Avalonia.Automation.Peers;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -285,6 +286,8 @@ namespace Avalonia.Controls.Primitives
                 _pageDownButton.Click += PageDownClick;
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new ScrollBarAutomationPeer(this);
 
         private void InvokeAfterDelay(Action handler, TimeSpan delay)
         {

@@ -416,14 +416,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [InlineData("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor",
-            new[] { "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing elit, ", "sed do eiusmod " })]
+            new[] { "Lorem ipsum ", "dolor sit ", "amet, ", "consectetur ", "adipisicing ", "elit, sed do ", "eiusmod tempor" })]
 
         [Theory]
         public void Should_Produce_Wrapped_And_Trimmed_Lines(string text, string[] expectedLines)
         {
             using (Start())
             {
-                var typeface = new Typeface("Verdana");
+                var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface, 32, foregroundBrush: Brushes.Black);
 
@@ -432,9 +432,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new ValueSpan<TextRunProperties>(0, 5,
                         new GenericTextRunProperties(typeface, 48)),
                     new ValueSpan<TextRunProperties>(6, 11,
-                        new GenericTextRunProperties(new Typeface("Verdana", weight: FontWeight.Bold), 32)),
+                        new GenericTextRunProperties(new Typeface(FontFamily.Default, weight: FontWeight.Bold), 32)),
                     new ValueSpan<TextRunProperties>(28, 28,
-                        new GenericTextRunProperties(new Typeface("Verdana", FontStyle.Italic),32))
+                        new GenericTextRunProperties(new Typeface(FontFamily.Default, FontStyle.Italic),32))
                 };
 
                 var textSource = new FormattedTextSource(text, defaultProperties, styleSpans);
@@ -792,7 +792,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override double Baseline => 0;
             public override void Draw(DrawingContext drawingContext, Point origin)
             {
-                using (drawingContext.PushPreTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
+                using (drawingContext.PushTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
                 {
                     drawingContext.FillRectangle(_fill, _rect);
                 }

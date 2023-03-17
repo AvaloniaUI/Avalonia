@@ -109,7 +109,7 @@
           <StackPanel DockPanel.Dock="Bottom">
             <Button Name="ListBoxSelectionClear">Clear Selection</Button>
           </StackPanel>
-          <ListBox Name="BasicListBox" Items="{Binding ListBoxItems}" SelectionMode="Multiple"/>
+          <ListBox Name="BasicListBox" ItemsSource="{Binding ListBoxItems}" SelectionMode="Multiple"/>
         </DockPanel>
       </TabItem>
       
@@ -151,6 +151,12 @@
               <ComboBoxItem Name="ShowWindowStateMaximized">Maximized</ComboBoxItem>
               <ComboBoxItem Name="ShowWindowStateFullScreen">FullScreen</ComboBoxItem>
             </ComboBox>
+            <ComboBox Name="ShowWindowSystemDecorations" SelectedIndex="2">
+              <ComboBoxItem Name="ShowWindowSystemDecorationsNone">None</ComboBoxItem>
+              <ComboBoxItem Name="ShowWindowSystemDecorationsBorderOnly">BorderOnly</ComboBoxItem>
+              <ComboBoxItem Name="ShowWindowSystemDecorationsFull">Full</ComboBoxItem>
+            </ComboBox>
+            <CheckBox Name="ShowWindowExtendClientAreaToDecorationsHint">ExtendClientAreaToDecorationsHint</CheckBox>
             <CheckBox Name="ShowWindowCanResize" IsChecked="True">Can Resize</CheckBox>
             <Button Name="ShowWindow">Show Window</Button>
             <Button Name="SendToBack">Send to Back</Button>
@@ -166,6 +172,9 @@
       </TabItem>
       <TabItem Header="SliderTab">
           <Slider VerticalAlignment="Top" Name="Slider" Value="30"/>
+      </TabItem>
+      <TabItem Header="ScrollBarTab">
+        <ScrollBar Name="MyScrollBar" Orientation="Horizontal" AllowAutoHide="False" Width="200" Height="30" Value="20"/>
       </TabItem>
     </TabControl>
   </DockPanel>

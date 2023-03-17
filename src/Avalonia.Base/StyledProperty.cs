@@ -18,7 +18,10 @@ namespace Avalonia
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
-        /// <param name="validate">A value validation callback.</param>
+        /// <param name="validate">
+        /// <para>A method which returns "false" for values that are never valid for this property.</para>
+        /// <para>This method is not part of the property's metadata and so cannot be changed after registration.</para>
+        /// </param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
         public StyledProperty(
             string name,
@@ -31,7 +34,6 @@ namespace Avalonia
         {
             Inherits = inherits;
             ValidateValue = validate;
-            HasCoercion |= metadata.CoerceValue != null;
 
             if (validate?.Invoke(metadata.DefaultValue) == false)
             {
@@ -41,15 +43,9 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the value validation callback for the property.
+        /// A method which returns "false" for values that are never valid for this property.
         /// </summary>
         public Func<TValue, bool>? ValidateValue { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this property has any value coercion callbacks defined
-        /// in its metadata.
-        /// </summary>
-        internal bool HasCoercion { get; private set; }
 
         /// <summary>
         /// Registers the property on another type.
@@ -127,10 +123,7 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="metadata">The metadata.</param>
-        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : AvaloniaObject
-        {
-            base.OverrideMetadata(typeof(T), metadata);
-        }
+        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : AvaloniaObject => OverrideMetadata(typeof(T), metadata);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.
@@ -147,8 +140,6 @@ namespace Avalonia
                         $"'{metadata.DefaultValue}' is not a valid default value for '{Name}'.");
                 }
             }
-
-            HasCoercion |= metadata.CoerceValue != null;
 
             base.OverrideMetadata(type, metadata);
         }

@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var target = new Popup() {PlacementMode = PlacementMode.Pointer};
+                var target = new Popup() {Placement = PlacementMode.Pointer};
                 var root = PreparedWindow(target);
 
                 target.Open();
@@ -226,7 +226,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var window = PreparedWindow();
-                var target = new Popup() {PlacementMode = PlacementMode.Pointer};
+                var target = new Popup() {Placement = PlacementMode.Pointer};
 
                 window.Content = target;
 
@@ -249,7 +249,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var window = PreparedWindow();
-                var target = new Popup() {PlacementMode = PlacementMode.Pointer};
+                var target = new Popup() {Placement = PlacementMode.Pointer};
 
                 window.Content = target;
                 window.ApplyTemplate();
@@ -274,7 +274,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var window = PreparedWindow();
-                var target = new Popup() { PlacementMode = PlacementMode.Pointer };
+                var target = new Popup() { Placement = PlacementMode.Pointer };
 
                 window.Content = target;
                 window.ApplyTemplate();
@@ -395,7 +395,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var item = new Border();
                 var root = PreparedWindow(target = new PopupItemsControl
                 {
-                    Items = new[] { item },
+                    Items = { item },
                     Template = new FuncControlTemplate<PopupItemsControl>(PopupItemsControlTemplate),
                 }); ;
                 root.Show();
@@ -490,7 +490,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var item = new Border();
                 var root = PreparedWindow(target = new PopupItemsControl
                 {
-                    Items = new[] { item },
+                    Items = { item },
                     Template = new FuncControlTemplate<PopupItemsControl>(PopupItemsControlTemplate),
                 });
                 root.Show();
@@ -742,7 +742,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     Width = 400,
                     Height = 200,
-                    PlacementMode = PlacementMode.Pointer
+                    Placement = PlacementMode.Pointer
                 };
                 var window = PreparedWindow(popup);
                 window.Show();
@@ -791,7 +791,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = new Popup()
                 {
                     PlacementTarget = placementTarget,
-                    PlacementMode = PlacementMode.Bottom,
+                    Placement = PlacementMode.Bottom,
                     Width = 10,
                     Height = 10
                 };
@@ -852,7 +852,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = new Popup()
                 {
                     PlacementTarget = placementTarget,
-                    PlacementMode = PlacementMode.Pointer,
+                    Placement = PlacementMode.Pointer,
                     Width = 10,
                     Height = 10
                 };
@@ -907,7 +907,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = new Popup()
                 {
                     PlacementTarget = placementTarget,
-                    PlacementMode = PlacementMode.Bottom,
+                    Placement = PlacementMode.Bottom,
                     Width = 10,
                     Height = 10
                 };
@@ -967,7 +967,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = new Popup()
                 {
                     PlacementTarget = placementTarget,
-                    PlacementMode = PlacementMode.Pointer,
+                    Placement = PlacementMode.Pointer,
                     Width = 10,
                     Height = 10
                 };
@@ -1020,7 +1020,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Width = 20,
                     Height = 20,
                     PlacementTarget = parentPopup, 
-                    PlacementMode = PlacementMode.AnchorAndGravity,
+                    Placement = PlacementMode.AnchorAndGravity,
                     PlacementAnchor = PopupAnchor.TopLeft,
                     PlacementGravity = PopupGravity.BottomRight
                 };

@@ -218,7 +218,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var carousel = new Carousel
             {
-                Items = items,
+                ItemsSource = items,
                 Template = CarouselTemplate(),
                 PageTransition = transition,
             };
