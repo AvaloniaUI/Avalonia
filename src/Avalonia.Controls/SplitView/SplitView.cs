@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         protected const string pcOpen = ":open";
         protected const string pcClosed = ":closed";
         protected const string pcCompactOverlay = ":compactoverlay";
-        protected const string pcCompactInline = ":compactInline";
+        protected const string pcCompactInline = ":compactinline";
         protected const string pcOverlay = ":overlay";
         protected const string pcInline = ":inline";
         protected const string pcLeft = ":left";
