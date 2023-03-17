@@ -253,10 +253,9 @@ public class DispatcherOperation<T> : DispatcherOperation
     {
         get
         {
-            if (TaskCompletionSource.Task.IsCompleted)
+            if (TaskCompletionSource.Task.IsCompleted || !Dispatcher.CheckAccess())
                 return TaskCompletionSource.Task.GetAwaiter().GetResult();
             throw new InvalidOperationException("Synchronous wait is only supported on non-UI threads");
-
         }
     }
 }
