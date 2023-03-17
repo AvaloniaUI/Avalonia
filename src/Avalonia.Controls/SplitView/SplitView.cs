@@ -136,9 +136,9 @@ namespace Avalonia.Controls
 
         private Panel? _pane;
         private IDisposable? _pointerDisposable;
-        private SplitViewTemplateSettings _templateSettings;
-        private string _lastDisplayModePseudoclass;
-        private string _lastPlacementPseudoclass;
+        private SplitViewTemplateSettings _templateSettings = null!;
+        private string? _lastDisplayModePseudoclass;
+        private string? _lastPlacementPseudoclass;
 
         public SplitView()
         {
@@ -575,7 +575,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TopLevelBackRequested(object sender, RoutedEventArgs e)
+        private void TopLevelBackRequested(object? sender, RoutedEventArgs e)
         {
             if (!IsInOverlayMode())
                 return;
