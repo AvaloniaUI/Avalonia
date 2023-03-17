@@ -16,7 +16,10 @@ public partial class Dispatcher
         {
             _backgroundTimer =
                 new DispatcherTimer(this, DispatcherPriority.Send,
-                    TimeSpan.FromMilliseconds(1));
+                    TimeSpan.FromMilliseconds(1))
+                {
+                    Tag = "Dispatcher.RequestBackgroundProcessing"
+                };
             _backgroundTimer.Tick += delegate
             {
                 _backgroundTimer.Stop();
