@@ -351,6 +351,47 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("inheriteddefault", target.Inherited);
         }
 
+        [Fact]
+        public void SetCurrent_Value_Persists_When_Toggling_Style_3()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.BarProperty, "bar"),
+                            new Setter(Class1.InheritedProperty, "inherited"),
+                        },
+                    }
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SetValue(Class1.FooProperty, "not current", BindingPriority.Template);
+            target.SetCurrentValue(Class1.FooProperty, "current");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+            Assert.Equal("inheriteddefault", target.Inherited);
+
+            target.Classes.Add("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bar", target.Bar);
+            Assert.Equal("inherited", target.Inherited);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+            Assert.Equal("inheriteddefault", target.Inherited);
+        }
+
         private BindingPriority GetPriority(AvaloniaObject target, AvaloniaProperty property)
         {
             return target.GetDiagnostic(property).Priority;
