@@ -301,7 +301,6 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
             _pane = e.NameScope.Find<Panel>("PART_PaneRoot");
 
-            UpdateVisualStateForCompactPaneLength(CompactPaneLength);
             UpdateVisualStateForDisplayMode(DisplayMode);
         }
 
