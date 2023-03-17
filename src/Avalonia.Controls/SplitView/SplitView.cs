@@ -94,8 +94,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TemplateSettings"/> property
         /// </summary>
-        public static readonly StyledProperty<SplitViewTemplateSettings> TemplateSettingsProperty =
-            AvaloniaProperty.Register<SplitView, SplitViewTemplateSettings>(nameof(TemplateSettings));
+        public static readonly DirectProperty<SplitView, SplitViewTemplateSettings> TemplateSettingsProperty =
+            AvaloniaProperty.RegisterDirect<SplitView, SplitViewTemplateSettings>(nameof(TemplateSettings),
+                x => x.TemplateSettings);
 
         /// <summary>
         /// Defines the <see cref="PaneClosed"/> event.
@@ -131,12 +132,12 @@ namespace Avalonia.Controls
 
         private Panel? _pane;
         private IDisposable? _pointerDisposable;
+        private SplitViewTemplateSettings _templateSettings;
+        private string _lastDisplayModePseudoclass;
+        private string _lastPlacementPseudoclass;
 
         public SplitView()
         {
-            PseudoClasses.Add(":overlay");
-            PseudoClasses.Add(":left");
-
             TemplateSettings = new SplitViewTemplateSettings();
         }
 
@@ -208,7 +209,7 @@ namespace Avalonia.Controls
             get => GetValue(PaneProperty);
             set => SetValue(PaneProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the data template used to display the header content of the control.
         /// </summary>
@@ -235,8 +236,8 @@ namespace Avalonia.Controls
         /// </summary>
         public SplitViewTemplateSettings TemplateSettings
         {
-            get => GetValue(TemplateSettingsProperty);
-            set => SetValue(TemplateSettingsProperty, value);
+            get => _templateSettings;
+            private set => SetAndRaise(TemplateSettingsProperty, ref _templateSettings, value);
         }
 
         /// <summary>
@@ -291,7 +292,7 @@ namespace Avalonia.Controls
             {
                 return true;
             }
-            
+
             return result;
         }
 
@@ -299,11 +300,19 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             _pane = e.NameScope.Find<Panel>("PART_PaneRoot");
+
+            UpdateVisualStateForCompactPaneLength(CompactPaneLength);
+            UpdateVisualStateForDisplayMode(DisplayMode);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+
+            // :left and :right style triggers contain the template so we need to do this as
+            // soon as we're attached so the template applies. The other visual states can
+            // be updated after the template applies
+            UpdateVisualStateForPanePlacementProperty(PanePlacement);
 
             var topLevel = this.VisualRoot;
             if (topLevel is Window window)
@@ -325,36 +334,11 @@ namespace Avalonia.Controls
 
             if (change.Property == CompactPaneLengthProperty)
             {
-                var newLen = change.GetNewValue<double>();
-                var displayMode = DisplayMode;
-                if (displayMode == SplitViewDisplayMode.CompactInline)
-                {
-                    TemplateSettings.ClosedPaneWidth = newLen;
-                }
-                else if (displayMode == SplitViewDisplayMode.CompactOverlay)
-                {
-                    TemplateSettings.ClosedPaneWidth = newLen;
-                    TemplateSettings.PaneColumnGridLength = new GridLength(newLen, GridUnitType.Pixel);
-                }
+                UpdateVisualStateForCompactPaneLength(change.GetNewValue<double>());
             }
             else if (change.Property == DisplayModeProperty)
             {
-                var oldState = GetPseudoClass(change.GetOldValue<SplitViewDisplayMode>());
-                var newState = GetPseudoClass(change.GetNewValue<SplitViewDisplayMode>());
-
-                PseudoClasses.Remove($":{oldState}");
-                PseudoClasses.Add($":{newState}");
-
-                var (closedPaneWidth, paneColumnGridLength) = change.GetNewValue<SplitViewDisplayMode>() switch
-                {
-                    SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
-                    SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
-                    SplitViewDisplayMode.Inline => (0, new GridLength(0, GridUnitType.Auto)),
-                    SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
-                    _ => throw new NotImplementedException(),
-                };
-                TemplateSettings.ClosedPaneWidth = closedPaneWidth;
-                TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
+                UpdateVisualStateForDisplayMode(change.GetNewValue<SplitViewDisplayMode>());
             }
             else if (change.Property == IsPaneOpenProperty)
             {
@@ -389,10 +373,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == PanePlacementProperty)
             {
-                var oldState = GetPseudoClass(change.GetOldValue<SplitViewPanePlacement>());
-                var newState = GetPseudoClass(change.GetNewValue<SplitViewPanePlacement>());
-                PseudoClasses.Remove($":{oldState}");
-                PseudoClasses.Add($":{newState}");
+                UpdateVisualStateForPanePlacementProperty(change.GetNewValue<SplitViewPanePlacement>());
             }
             else if (change.Property == UseLightDismissOverlayModeProperty)
             {
@@ -438,7 +419,7 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
         }
-                
+
         private bool ShouldClosePane()
         {
             return (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay);
@@ -471,14 +452,14 @@ namespace Avalonia.Controls
         {
             return mode switch
             {
-                SplitViewDisplayMode.Inline => "inline",
-                SplitViewDisplayMode.CompactInline => "compactinline",
-                SplitViewDisplayMode.Overlay => "overlay",
-                SplitViewDisplayMode.CompactOverlay => "compactoverlay",
+                SplitViewDisplayMode.Inline => ":inline",
+                SplitViewDisplayMode.CompactInline => ":compactinline",
+                SplitViewDisplayMode.Overlay => ":overlay",
+                SplitViewDisplayMode.CompactOverlay => ":compactoverlay",
                 _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
             };
         }
-        
+
         /// <summary>
         /// Gets the appropriate PseudoClass for the given <see cref="SplitViewPanePlacement"/>.
         /// </summary>
@@ -486,8 +467,8 @@ namespace Avalonia.Controls
         {
             return placement switch
             {
-                SplitViewPanePlacement.Left => "left",
-                SplitViewPanePlacement.Right => "right",
+                SplitViewPanePlacement.Left => ":left",
+                SplitViewPanePlacement.Right => ":right",
                 _ => throw new ArgumentOutOfRangeException(nameof(placement), placement, null)
             };
         }
@@ -517,6 +498,53 @@ namespace Avalonia.Controls
             }
 
             return value;
+        }
+
+        private void UpdateVisualStateForCompactPaneLength(double newLen)
+        {
+            var displayMode = DisplayMode;
+            if (displayMode == SplitViewDisplayMode.CompactInline)
+            {
+                TemplateSettings.ClosedPaneWidth = newLen;
+            }
+            else if (displayMode == SplitViewDisplayMode.CompactOverlay)
+            {
+                TemplateSettings.ClosedPaneWidth = newLen;
+                TemplateSettings.PaneColumnGridLength = new GridLength(newLen, GridUnitType.Pixel);
+            }
+        }
+
+        private void UpdateVisualStateForDisplayMode(SplitViewDisplayMode newValue)
+        {
+            if (!string.IsNullOrEmpty(_lastDisplayModePseudoclass))
+            {
+                PseudoClasses.Remove(_lastDisplayModePseudoclass);
+            }
+
+            _lastDisplayModePseudoclass = GetPseudoClass(newValue);
+            PseudoClasses.Add(_lastDisplayModePseudoclass);
+
+            var (closedPaneWidth, paneColumnGridLength) = newValue switch
+            {
+                SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
+                SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
+                SplitViewDisplayMode.Inline => (0, new GridLength(0, GridUnitType.Auto)),
+                SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
+                _ => throw new NotImplementedException(),
+            };
+            TemplateSettings.ClosedPaneWidth = closedPaneWidth;
+            TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
+        }
+
+        private void UpdateVisualStateForPanePlacementProperty(SplitViewPanePlacement newValue)
+        {
+            if (!string.IsNullOrEmpty(_lastPlacementPseudoclass))
+            {
+                PseudoClasses.Remove(_lastPlacementPseudoclass);
+            }
+
+            _lastPlacementPseudoclass = GetPseudoClass(newValue);
+            PseudoClasses.Add(_lastPlacementPseudoclass);
         }
 
         /// <summary>
