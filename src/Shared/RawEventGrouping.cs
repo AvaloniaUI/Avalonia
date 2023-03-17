@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections.Pooled;
+using Avalonia.Controls.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Threading;
 
@@ -32,6 +33,19 @@ class ManualRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQueue
         var ev = _inputQueue.Dequeue();
         ev.handler(ev.args);
     }
+}
+
+internal class ManualRawEventGrouperDispatchQueueDispatcherInputProvider : ManagedDispatcherImpl.IManagedDispatcherInputProvider
+{
+    private readonly ManualRawEventGrouperDispatchQueue _queue;
+
+    public ManualRawEventGrouperDispatchQueueDispatcherInputProvider(ManualRawEventGrouperDispatchQueue queue)
+    {
+        _queue = queue;
+    }
+
+    public bool HasInput => _queue.HasJobs;
+    public void DispatchNextInputEvent() => _queue.DispatchNext();
 }
 
 internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQueue

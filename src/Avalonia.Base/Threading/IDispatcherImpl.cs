@@ -4,11 +4,8 @@ using Avalonia.Platform;
 
 namespace Avalonia.Threading;
 
-interface IDispatcherImpl
+public interface IDispatcherImpl
 {
-    
-    //IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick);
-  
     bool CurrentThreadIsLoopThread { get; }
 
     // Asynchronously triggers Signaled callback
@@ -19,7 +16,7 @@ interface IDispatcherImpl
 }
 
 
-interface IDispatcherImplWithPendingInput : IDispatcherImpl
+public interface IDispatcherImplWithPendingInput : IDispatcherImpl
 {
     // Checks if dispatcher implementation can 
     bool CanQueryPendingInput { get; }
@@ -27,7 +24,7 @@ interface IDispatcherImplWithPendingInput : IDispatcherImpl
     bool HasPendingInput { get; }
 }
 
-interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
+public interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
 {
     // Runs the event loop
     void RunLoop(CancellationToken token);

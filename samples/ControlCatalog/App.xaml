@@ -60,7 +60,7 @@
     <Style Selector="Label.h3">
       <Setter Property="FontSize" Value="12" />
     </Style>
-  </Application.Styles>
+  </Application.Styles><!--
   <TrayIcon.Icons>
     <TrayIcons>
       <TrayIcon Icon="/Assets/test_icon.ico" ToolTipText="Avalonia Tray Icon ToolTip">
@@ -81,5 +81,5 @@
         </TrayIcon.Menu>
       </TrayIcon>
     </TrayIcons>
-  </TrayIcon.Icons>
+  </TrayIcon.Icons>-->
 </Application>

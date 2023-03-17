@@ -17,6 +17,7 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
 #if AVALONIA_SKIA
@@ -122,7 +123,8 @@ namespace Avalonia.Direct2D1.RenderTests
 
                 // Free pools
                 for (var c = 0; c < 11; c++)
-                    TestThreadingInterface.RunTimers();
+                    foreach (var dp in Dispatcher.SnapshotTimersForUnitTests())
+                        dp.ForceFire();
                 writableBitmap.Save(compositedPath);
             }
         }
