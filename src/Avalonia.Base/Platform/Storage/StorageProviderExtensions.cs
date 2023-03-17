@@ -16,8 +16,13 @@ public static class StorageProviderExtensions
         {
             return Task.FromResult(StorageProviderHelpers.TryCreateBclStorageItem(filePath) as IStorageFile);
         }
-        
-        return provider.TryGetFileFromPathAsync(StorageProviderHelpers.FilePathToUri(filePath));
+
+        if (StorageProviderHelpers.TryFilePathToUri(filePath, out var uri))
+        {
+            return provider.TryGetFileFromPathAsync(uri);
+        }
+
+        return Task.FromResult<IStorageFile?>(null);
     }
 
     /// <inheritdoc cref="IStorageProvider.TryGetFolderFromPathAsync"/>
@@ -29,7 +34,12 @@ public static class StorageProviderExtensions
             return Task.FromResult(StorageProviderHelpers.TryCreateBclStorageItem(folderPath) as IStorageFolder);
         }
 
-        return provider.TryGetFolderFromPathAsync(StorageProviderHelpers.FilePathToUri(folderPath));
+        if (StorageProviderHelpers.TryFilePathToUri(folderPath, out var uri))
+        {
+            return provider.TryGetFolderFromPathAsync(uri);
+        }
+
+        return Task.FromResult<IStorageFolder?>(null);
     }
 
     /// <summary>
