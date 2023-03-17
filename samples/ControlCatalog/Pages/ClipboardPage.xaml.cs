@@ -9,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace ControlCatalog.Pages
 {
@@ -113,7 +114,7 @@ namespace ControlCatalog.Pages
             {
                 var files = await clipboard.GetDataAsync(DataFormats.Files) as IEnumerable<Avalonia.Platform.Storage.IStorageItem>;
 
-                ClipboardContent.Text = files != null ? string.Join(Environment.NewLine, files.Select(f => f.Path)) : string.Empty;
+                ClipboardContent.Text = files != null ? string.Join(Environment.NewLine, files.Select(f => f.TryGetLocalPath() ?? f.Name)) : string.Empty;
             }
         }
 

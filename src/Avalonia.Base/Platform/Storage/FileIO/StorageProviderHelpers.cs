@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,7 @@ internal static class StorageProviderHelpers
 
         return null;
     }
-    
+
     public static Uri FilePathToUri(string path)
     {
         var uriPath = new StringBuilder(path)
@@ -33,6 +34,20 @@ internal static class StorageProviderHelpers
             .ToString();
 
         return new UriBuilder("file", string.Empty) { Path = uriPath }.Uri;
+    }
+    
+    public static bool TryFilePathToUri(string path, [NotNullWhen(true)] out Uri? uri)
+    {
+        try
+        {
+            uri = FilePathToUri(path);
+            return true;
+        }
+        catch
+        {
+            uri = null;
+            return false;
+        }
     }
     
     public static string NameWithExtension(string path, string? defaultExtension, FilePickerFileType? filter)
