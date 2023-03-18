@@ -132,7 +132,7 @@ public partial class DispatcherTimer
 
             if (updateOSTimer)
             {
-                _dispatcher.UpdateOSTimer();
+                _dispatcher.UpdateOSTimerForTimers();
             }
         }
     }

@@ -99,15 +99,12 @@ public class DispatcherTests
         Assert.False(impl.AskedForSignal);
         Assert.NotNull(impl.NextTimer);
 
-        impl.ExecuteTimer();
-        Assert.True(impl.AskedForSignal);
-        Assert.Null(impl.NextTimer);
-
         for (var c = 0; c < 4; c++)
         {
-            if (impl.NextTimer != null)
-                impl.ExecuteTimer();
-            Assert.True(impl.AskedForSignal);
+            Assert.NotNull(impl.NextTimer);
+            Assert.False(impl.AskedForSignal);
+            impl.ExecuteTimer();
+            Assert.False(impl.AskedForSignal);
             impl.ExecuteSignal();
             var expectedCount = (c + 1) * 3;
             if (c == 3)
@@ -129,7 +126,7 @@ public class DispatcherTests
     public void DispatcherStopsItemProcessingWhenInputIsPending()
     {
         var impl = new SimpleDispatcherImpl();
-        impl.TestInputPending = false;
+        impl.TestInputPending = true;
         var disp = new Dispatcher(impl, impl);
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
@@ -144,17 +141,13 @@ public class DispatcherTests
         }
         Assert.False(impl.AskedForSignal);
         Assert.NotNull(impl.NextTimer);
-
-        impl.ExecuteTimer();
-        Assert.True(impl.AskedForSignal);
-        Assert.Null(impl.NextTimer);
+        impl.TestInputPending = false;
 
         for (var c = 0; c < 4; c++)
         {
-            if (impl.NextTimer != null)
-                impl.ExecuteTimer();
-            Assert.True(impl.AskedForSignal);
-            impl.ExecuteSignal();
+            Assert.NotNull(impl.NextTimer);
+            impl.ExecuteTimer();
+            Assert.False(impl.AskedForSignal);
             var expectedCount = c switch
             {
                 0 => 1,

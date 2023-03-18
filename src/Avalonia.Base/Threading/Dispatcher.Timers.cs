@@ -10,13 +10,30 @@ public partial class Dispatcher
     private long _timersVersion;
     private bool _dueTimeFound;
     private int _dueTimeInMs;
-    private bool _isOsTimerSet;
 
-    internal void UpdateOSTimer()
+    private int? _dueTimeForTimers;
+    private int? _dueTimeForBackgroundProcessing;
+    private int? _osTimerSetTo;
+
+    private void UpdateOSTimer()
+    {
+        lock (InstanceLock)
+        {
+            var nextDueTime =
+                (_dueTimeForTimers.HasValue && _dueTimeForBackgroundProcessing.HasValue)
+                    ? Math.Min(_dueTimeForTimers.Value, _dueTimeForBackgroundProcessing.Value)
+                    : _dueTimeForTimers ?? _dueTimeForBackgroundProcessing;
+            if(_osTimerSetTo == nextDueTime)
+                return;
+            _impl.UpdateTimer(_osTimerSetTo = nextDueTime);
+        }
+    }
+
+    internal void UpdateOSTimerForTimers()
     {
         if (!CheckAccess())
         {
-            Post(UpdateOSTimer, DispatcherPriority.Send);
+            Post(UpdateOSTimerForTimers, DispatcherPriority.Send);
             return;
         }
 
@@ -46,16 +63,16 @@ public partial class Dispatcher
 
                 if (_dueTimeFound)
                 {
-                    if (!_isOsTimerSet || !oldDueTimeFound || (oldDueTimeInTicks != _dueTimeInMs))
+                    if (_dueTimeForTimers == null || !oldDueTimeFound || (oldDueTimeInTicks != _dueTimeInMs))
                     {
-                        _impl.UpdateTimer(Math.Max(1, _dueTimeInMs));
-                        _isOsTimerSet = true;
+                        _dueTimeForTimers = _dueTimeInMs;
+                        UpdateOSTimer();
                     }
                 }
                 else if (oldDueTimeFound)
                 {
-                    _impl.UpdateTimer(null);
-                    _isOsTimerSet = false;
+                    _dueTimeForTimers = null;
+                    UpdateOSTimer();
                 }
             }
         }
@@ -72,7 +89,7 @@ public partial class Dispatcher
             }
         }
 
-        UpdateOSTimer();
+        UpdateOSTimerForTimers();
     }
 
     internal void RemoveTimer(DispatcherTimer timer)
@@ -86,17 +103,29 @@ public partial class Dispatcher
             }
         }
 
-        UpdateOSTimer();
+        UpdateOSTimerForTimers();
     }
 
     private void OnOSTimer()
     {
+        bool needToPromoteTimers = false;
+        bool needToProcessQueue = false;
         lock (InstanceLock)
         {
-            _impl.UpdateTimer(null);
-            _isOsTimerSet = false;
+            needToPromoteTimers = _dueTimeForTimers.HasValue && _dueTimeForTimers.Value <= Clock.TickCount;
+            if (needToPromoteTimers)
+                _dueTimeForTimers = null;
+            needToProcessQueue = _dueTimeForBackgroundProcessing.HasValue &&
+                                 _dueTimeForBackgroundProcessing.Value <= Clock.TickCount;
+            if (needToProcessQueue)
+                _dueTimeForBackgroundProcessing = null;
+            UpdateOSTimer();
         }
-        PromoteTimers();
+
+        if (needToPromoteTimers)
+            PromoteTimers();
+        if (needToProcessQueue)
+            ExecuteJobsCore();
     }
     
     internal void PromoteTimers()
@@ -166,10 +195,10 @@ public partial class Dispatcher
         }
         finally
         {
-            UpdateOSTimer();
+            UpdateOSTimerForTimers();
         }
     }
 
     internal static List<DispatcherTimer> SnapshotTimersForUnitTests() =>
-        s_uiThread!._timers.Where(t => t != s_uiThread._backgroundTimer).ToList();
+        s_uiThread!._timers.ToList();
 }

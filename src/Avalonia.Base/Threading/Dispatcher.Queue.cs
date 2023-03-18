@@ -7,26 +7,18 @@ public partial class Dispatcher
 {
     private readonly DispatcherPriorityQueue _queue = new();
     private bool _signaled;
-    private DispatcherTimer? _backgroundTimer;
     private const int MaximumTimeProcessingBackgroundJobs = 50;
     
     void RequestBackgroundProcessing()
     {
-        if (_backgroundTimer == null)
+        lock (InstanceLock)
         {
-            _backgroundTimer =
-                new DispatcherTimer(this, DispatcherPriority.Send,
-                    TimeSpan.FromMilliseconds(1))
-                {
-                    Tag = "Dispatcher.RequestBackgroundProcessing"
-                };
-            _backgroundTimer.Tick += delegate
+            if (_dueTimeForBackgroundProcessing == null)
             {
-                _backgroundTimer.Stop();
-            };
+                _dueTimeForBackgroundProcessing = Clock.TickCount + 1;
+                UpdateOSTimer();
+            }
         }
-
-        _backgroundTimer.IsEnabled = true;
     }
 
     /// <summary>
@@ -167,8 +159,19 @@ public partial class Dispatcher
     {
         lock (InstanceLock)
         {
+            if (!CheckAccess())
+            {
+                RequestForegroundProcessing();
+                return true;
+            }
+
             if (_queue.MaxPriority <= DispatcherPriority.Input)
-                RequestBackgroundProcessing();
+            {
+                if (_pendingInputImpl is { CanQueryPendingInput: true, HasPendingInput: false })
+                    RequestForegroundProcessing();
+                else
+                    RequestBackgroundProcessing();
+            }
             else
                 RequestForegroundProcessing();
         }
