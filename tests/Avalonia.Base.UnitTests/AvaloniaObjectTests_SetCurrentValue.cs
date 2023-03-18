@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -408,6 +409,43 @@ namespace Avalonia.Base.UnitTests
             
             Assert.Equal("new", target.Foo);
         }
+
+        [Fact]
+        public void CurrentValue_Is_Replaced_By_New_Style_Activation()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "initial"),
+                            new Setter(Class1.BarProperty, "bar"),
+                        },
+                    },
+                    new Style(x => x.OfType<Class1>().Class("bar"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "new"),
+                            new Setter(Class1.BarProperty, "baz"),
+                        },
+                    },                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.Classes.Add("foo");
+            Assert.Equal("initial", target.Foo);
+
+            target.SetCurrentValue(Class1.FooProperty, "current");
+            target.Classes.Add("bar");
+
+            Assert.Equal("new", target.Foo);
+        }
         
         private BindingPriority GetPriority(AvaloniaObject target, AvaloniaProperty property)
         {
@@ -439,6 +477,24 @@ namespace Avalonia.Base.UnitTests
             private static double Coerce(AvaloniaObject sender, double value)
             {
                 return Math.Min(value, ((Class1)sender).CoerceMax);
+            }
+        }
+
+        private class ViewModel : NotifyingBase
+        {
+            private string _value;
+
+            public string Value
+            {
+                get => _value;
+                set
+                {
+                    if (_value != value)
+                    {
+                        _value = value;
+                        RaisePropertyChanged();
+                    }
+                }
             }
         }
     }
