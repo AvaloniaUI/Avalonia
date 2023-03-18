@@ -136,14 +136,9 @@ namespace Avalonia.Controls
 
         private Panel? _pane;
         private IDisposable? _pointerDisposable;
-        private SplitViewTemplateSettings _templateSettings = null!;
+        private SplitViewTemplateSettings _templateSettings = new SplitViewTemplateSettings();
         private string? _lastDisplayModePseudoclass;
         private string? _lastPlacementPseudoclass;
-
-        public SplitView()
-        {
-            TemplateSettings = new SplitViewTemplateSettings();
-        }
 
         /// <summary>
         /// Gets or sets the length of the pane when in <see cref="SplitViewDisplayMode.CompactOverlay"/> 
