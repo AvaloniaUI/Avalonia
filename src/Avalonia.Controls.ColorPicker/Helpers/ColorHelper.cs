@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Globalization;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Utilities;
 
@@ -11,8 +11,11 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public static class ColorHelper
     {
-        private static readonly Dictionary<Color, string> cachedDisplayNames = new Dictionary<Color, string>();
-        private static readonly object cacheMutex = new object();
+        private static readonly Dictionary<Color, string> _cachedDisplayNames = new Dictionary<Color, string>();
+        private static readonly Dictionary<KnownColor, double> _cachedKnownColorHues = new Dictionary<KnownColor, double>();
+        private static readonly Dictionary<KnownColor, string> _cachedKnownColorNames = new Dictionary<KnownColor, string>();
+        private static readonly object _displayNameCacheMutex = new object();
+        private static readonly object _knownColorCacheMutex = new object();
 
         /// <summary>
         /// Gets the relative (perceptual) luminance/brightness of the given color.
@@ -74,37 +77,91 @@ namespace Avalonia.Controls.Primitives
                 Convert.ToByte(Math.Round(color.R / rounding) * rounding),
                 Convert.ToByte(Math.Round(color.G / rounding) * rounding),
                 Convert.ToByte(Math.Round(color.B / rounding) * rounding));
+            var hsvColor = color.ToHsv();
+
+            // Handle extremes that are outside the below algorithm
+            if (color.A == 0x00)
+            {
+                return GetDisplayName(KnownColor.Transparent);
+            }
+            else if (hsvColor.S <= 0.0)
+            {
+                return GetDisplayName(KnownColor.White);
+            }
+            else if (hsvColor.V <= 0.0)
+            {
+                return GetDisplayName(KnownColor.Black);
+            }
 
             // Attempt to use a previously cached display name
-            lock (cacheMutex)
+            lock (_displayNameCacheMutex)
             {
-                if (cachedDisplayNames.TryGetValue(roundedColor, out var displayName))
+                if (_cachedDisplayNames.TryGetValue(roundedColor, out var displayName))
                 {
                     return displayName;
                 }
             }
 
-            // Find the closest known color by measuring 3D Euclidean distance (ignore alpha)
-            var closestKnownColor = KnownColor.None;
-            var closestKnownColorDistance = double.PositiveInfinity;
-            var knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
-
-            for (int i = 1; i < knownColors.Length; i++) // Skip 'None'
+            // Build KnownColor caches if they don't already exist
+            lock (_knownColorCacheMutex)
             {
-                // Transparent is skipped since alpha is ignored making it equivalent to White
-                if (knownColors[i] != KnownColor.Transparent)
+                if (_cachedKnownColorHues.Count == 0 ||
+                    _cachedKnownColorNames.Count == 0)
                 {
-                    Color knownColor = KnownColors.ToColor(knownColors[i]);
+                    _cachedKnownColorHues.Clear();
+                    _cachedKnownColorNames.Clear();
 
-                    double distance = Math.Sqrt(
-                        Math.Pow((double)(roundedColor.R - knownColor.R), 2.0) +
-                        Math.Pow((double)(roundedColor.G - knownColor.G), 2.0) +
-                        Math.Pow((double)(roundedColor.B - knownColor.B), 2.0));
-
-                    if (distance < closestKnownColorDistance)
+                    var knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
+                    for (int i = 1; i < knownColors.Length; i++) // Skip 'None' so start at 1
                     {
-                        closestKnownColor = knownColors[i];
-                        closestKnownColorDistance = distance;
+                        KnownColor knownColor = knownColors[i];
+
+                        // Transparent is skipped since alpha is ignored making it equivalent to White
+                        if (knownColor == KnownColor.Transparent)
+                        {
+                            continue;
+                        }
+
+                        double hue = KnownColors.ToColor(knownColor).ToHsv().H;
+
+                        // Some known colors have the same numerical value. For example:
+                        //  - Aqua = 0xff00ffff
+                        //  - Cyan = 0xff00ffff
+                        //
+                        // This is not possible to represent in a dictionary which requires
+                        // unique values. Therefore, only the first value is used.
+
+                        if (!_cachedKnownColorHues.ContainsKey(knownColor))
+                        {
+                            _cachedKnownColorHues.Add(knownColor, hue);
+                        }
+
+                        if (!_cachedKnownColorNames.ContainsKey(knownColor))
+                        {
+                            _cachedKnownColorNames.Add(knownColor, GetDisplayName(knownColor));
+                        }
+                    }
+                }
+            }
+
+            // Find the closest known color by finding nearest Hue
+            // Since Hue is the best measure of human perception of the color itself
+            // it is not necessary to check other components (Saturation, Value).
+            var closestKnownColor = KnownColor.None;
+            var closestKnownColorHueDiff = double.PositiveInfinity;
+
+            lock (_knownColorCacheMutex)
+            {
+                foreach (var hueEntry in _cachedKnownColorHues)
+                {
+                    // Closest hue before or after is allowed
+                    // Therefore, use an absolute value
+                    double difference = Math.Abs(hsvColor.H - hueEntry.Value);
+
+                    if (difference < closestKnownColorHueDiff)
+                    {
+                        closestKnownColor = hueEntry.Key;
+                        closestKnownColorHueDiff = difference;
                     }
                 }
             }
@@ -113,26 +170,19 @@ namespace Avalonia.Controls.Primitives
             // Cache results for next time as well
             if (closestKnownColor != KnownColor.None)
             {
-                var sb = StringBuilderCache.Acquire();
-                string name = closestKnownColor.ToString();
+                string displayName;
 
-                // Add spaces converting PascalCase to human-readable names
-                for (int i = 0; i < name.Length; i++)
+                lock (_knownColorCacheMutex)
                 {
-                    if (i != 0 &&
-                        char.IsUpper(name[i]))
+                    if (!_cachedKnownColorNames.TryGetValue(closestKnownColor, out displayName))
                     {
-                        sb.Append(' ');
+                        displayName = GetDisplayName(closestKnownColor);
                     }
-
-                    sb.Append(name[i]);
                 }
 
-                string displayName = StringBuilderCache.GetStringAndRelease(sb);
-
-                lock (cacheMutex)
+                lock (_displayNameCacheMutex)
                 {
-                    cachedDisplayNames.Add(roundedColor, displayName);
+                    _cachedDisplayNames.Add(roundedColor, displayName);
                 }
 
                 return displayName;
@@ -141,6 +191,36 @@ namespace Avalonia.Controls.Primitives
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Gets the human-readable display name for the given <see cref="KnownColor"/>.
+        /// </summary>
+        /// <remarks>
+        /// This currently uses the <see cref="KnownColor"/> enum value's C# name directly
+        /// which limits it to the EN language only. In the future this should be localized
+        /// to other cultures.
+        /// </remarks>
+        /// <param name="knownColor">The <see cref="KnownColor"/> to get the display name for.</param>
+        /// <returns>The human-readable display name for the given <see cref="KnownColor"/>.</returns>
+        private static string GetDisplayName(KnownColor knownColor)
+        {
+            var sb = StringBuilderCache.Acquire();
+            string name = knownColor.ToString();
+
+            // Add spaces converting PascalCase to human-readable names
+            for (int i = 0; i < name.Length; i++)
+            {
+                if (i != 0 &&
+                    char.IsUpper(name[i]))
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append(name[i]);
+            }
+
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
     }
 }
