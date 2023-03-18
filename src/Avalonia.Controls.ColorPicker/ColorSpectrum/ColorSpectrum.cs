@@ -13,9 +13,9 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -48,6 +48,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isPointerPressed = false;
         private bool _shouldShowLargeSelection = false;
         private List<Hsv> _hsvValues = new List<Hsv>();
+        private ColorComponent _thirdComponent = ColorComponent.Component3; // HsvComponent.Value
 
         private IDisposable? _layoutRootDisposable;
         private IDisposable? _selectionEllipsePanelDisposable;
@@ -509,15 +510,15 @@ namespace Avalonia.Controls.Primitives
                 {
                     case ColorSpectrumComponents.HueSaturation:
                     case ColorSpectrumComponents.SaturationHue:
-                        SetCurrentValue(ThirdComponentProperty, (ColorComponent)HsvComponent.Value);
+                        ThirdComponent = (ColorComponent)HsvComponent.Value;
                         break;
                     case ColorSpectrumComponents.HueValue:
                     case ColorSpectrumComponents.ValueHue:
-                        SetCurrentValue(ThirdComponentProperty, (ColorComponent)HsvComponent.Saturation);
+                        ThirdComponent = (ColorComponent)HsvComponent.Saturation;
                         break;
                     case ColorSpectrumComponents.SaturationValue:
                     case ColorSpectrumComponents.ValueSaturation:
-                        SetCurrentValue(ThirdComponentProperty, (ColorComponent)HsvComponent.Hue);
+                        ThirdComponent = (ColorComponent)HsvComponent.Hue;
                         break;
                 }
 
