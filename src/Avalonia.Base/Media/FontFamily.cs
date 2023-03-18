@@ -80,11 +80,6 @@ namespace Avalonia.Media
         public FontFamilyKey? Key { get; }
 
         /// <summary>
-        /// Returns <c>True</c> if this instance is the system's default.
-        /// </summary>
-        public bool IsDefault => Name.Equals(DefaultFontFamilyName);
-
-        /// <summary>
         /// Implicit conversion of string to FontFamily
         /// </summary>
         /// <param name="s"></param>

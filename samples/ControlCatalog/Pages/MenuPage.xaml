@@ -45,11 +45,11 @@
 
             <StackPanel>
                 <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
-                <Menu Items="{Binding MenuItems}">
+                <Menu ItemsSource="{Binding MenuItems}">
                     <Menu.Styles>
                         <Style Selector="MenuItem" x:DataType="viewModels:MenuItemViewModel">
                             <Setter Property="Header" Value="{Binding Header}"/>
-                            <Setter Property="Items" Value="{Binding Items}"/>
+                            <Setter Property="ItemsSource" Value="{Binding Items}"/>
                             <Setter Property="Command" Value="{Binding Command}"/>
                             <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
                         </Style>
@@ -68,7 +68,7 @@
                         <Separator/>
                         <MenuItem Header="Execu_te Script..." />
                         <Separator/>
-                        <MenuItem Header="_Recent" Items="{Binding RecentItems}">
+                        <MenuItem Header="_Recent" ItemsSource="{Binding RecentItems}">
                             <MenuItem.Styles>
                                 <Style Selector="MenuItem" x:DataType="viewModels:MenuItemViewModel">
                                     <Setter Property="Header" Value="{Binding Header}"/>

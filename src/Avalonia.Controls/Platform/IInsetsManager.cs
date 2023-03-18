@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Platform
             SafeAreaPadding = safeArePadding;
         }
 
-        /// <inheritdoc cref="IInsetsManager.GetSafeAreaPadding"/>
+        /// <inheritdoc cref="IInsetsManager.SafeAreaPadding"/>
         public Thickness SafeAreaPadding { get; }
     }
 

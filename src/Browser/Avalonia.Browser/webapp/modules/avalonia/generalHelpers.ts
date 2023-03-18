@@ -1,5 +1,5 @@
 export class GeneralHelpers {
-    public static itemsArrayAt(instance: any, key: string): any[] {
+    public static itemsArrayAt(instance: any, key: any): any[] {
         const items = instance[key];
         if (!items) {
             return [];
@@ -10,6 +10,11 @@ export class GeneralHelpers {
             retItems[i] = items[i];
         }
         return retItems;
+    }
+
+    public static itemAt(instance: any, key: any): any {
+        const item = instance[key];
+        return item;
     }
 
     public static callMethod(instance: any, name: string /*, args */): any {

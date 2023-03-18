@@ -191,7 +191,7 @@ namespace Avalonia.Controls.UnitTests
                     return true;
                 });
                 var target = new MenuItem();
-                var contextMenu = new ContextMenu { Items = new AvaloniaList<MenuItem> { target } };
+                var contextMenu = new ContextMenu { Items = { target } };
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyStyling();
                 window.ApplyTemplate();
@@ -270,8 +270,8 @@ namespace Avalonia.Controls.UnitTests
                     return true;
                 });
                 var target = new MenuItem();
-                var parentMenuItem = new MenuItem { Items = new AvaloniaList<MenuItem> { target } };
-                var contextMenu = new ContextMenu { Items = new AvaloniaList<MenuItem> { parentMenuItem } };
+                var parentMenuItem = new MenuItem { Items = { target } };
+                var contextMenu = new ContextMenu { Items = { parentMenuItem } };
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyStyling();
                 window.ApplyTemplate();
@@ -317,12 +317,12 @@ namespace Avalonia.Controls.UnitTests
                 MenuItem childMenu2;
                 var menu = new Menu
                 {
-                    Items = new[]
+                    Items =
                     {
                         (topLevelMenu = new MenuItem
                         {
                             Header = "Foo",
-                            Items = new[]
+                            Items =
                             {
                                 (childMenu1 = new MenuItem { Header = "Bar" }),
                                 (childMenu2 = new MenuItem { Header = "Baz" }),

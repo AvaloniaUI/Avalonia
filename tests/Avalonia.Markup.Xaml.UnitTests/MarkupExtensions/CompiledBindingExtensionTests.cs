@@ -122,7 +122,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:TestDataContext'>
-    <ItemsControl Name='itemsControl' Items='{CompiledBinding Path=ListProperty}'>
+    <ItemsControl Name='itemsControl' ItemsSource='{CompiledBinding Path=ListProperty}'>
 	    <ItemsControl.ItemTemplate>
 		    <DataTemplate>
 			    <TextBlock />
@@ -143,7 +143,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.DataContext = dataContext;
 
-                Assert.Equal(dataContext.ListProperty, textBlock.Items);
+                Assert.Equal(dataContext.ListProperty, textBlock.ItemsSource);
             }
         }
         
@@ -528,7 +528,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:TestDataContext'>
-    <ItemsControl Items='{CompiledBinding ListProperty}' Name='target'>
+    <ItemsControl ItemsSource='{CompiledBinding ListProperty}' Name='target'>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <TextBlock Text='{CompiledBinding}' Name='textBlock' />
@@ -1782,7 +1782,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:TestDataContext'
         x:CompileBindings='True'>
-    <ComboBox x:Name='comboBox' Items='{Binding GenericProperty}' SelectedItem='{Binding GenericProperty.CurrentItem}' />
+    <ComboBox x:Name='comboBox' ItemsSource='{Binding GenericProperty}' SelectedItem='{Binding GenericProperty.CurrentItem}' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var comboBox = window.FindControl<ComboBox>("comboBox");
@@ -1991,7 +1991,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class DataGridLikeControl : Control
     {
         public static readonly DirectProperty<DataGridLikeControl, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<DataGridLikeControl>(o => o.Items, (o, v) => o.Items = v);
+            AvaloniaProperty.RegisterDirect<DataGridLikeControl, IEnumerable?>(
+                nameof(Items),
+                x => x.Items,
+                (x, v) => x.Items = v);
 
         private IEnumerable _items;
         public IEnumerable Items

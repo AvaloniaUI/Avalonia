@@ -34,7 +34,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items to display.
         /// </summary>
-        protected IReadOnlyList<object?> Items => ItemsControl?.ItemsView ?? ItemsSourceView.Empty;
+        protected IReadOnlyList<object?> Items => (IReadOnlyList<object?>?)ItemsControl?.ItemsView ?? 
+            Array.Empty<object?>();
 
         /// <summary>
         /// Gets the <see cref="ItemsControl"/> that the panel is displaying items for.
@@ -192,17 +193,13 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The VirtualizingPanel is already attached to an ItemsControl");
 
             ItemsControl = itemsControl;
-            ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
             ItemsControl.ItemsView.PostCollectionChanged += OnItemsControlItemsChanged;
         }
 
         internal void Detach()
         {
             var itemsControl = EnsureItemsControl();
-
-            itemsControl.PropertyChanged -= OnItemsControlPropertyChanged;
             itemsControl.ItemsView.PostCollectionChanged -= OnItemsControlItemsChanged;
-
             ItemsControl = null;
             Children.Clear();
         }
@@ -216,20 +213,9 @@ namespace Avalonia.Controls
             return ItemsControl;
         }
 
-        private protected virtual void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property == ItemsControl.ItemsViewProperty)
-            {
-                var (oldValue, newValue) = e.GetOldAndNewValue<ItemsSourceView>();
-                oldValue.PostCollectionChanged -= OnItemsControlItemsChanged;
-                Refresh();
-                newValue.PostCollectionChanged += OnItemsControlItemsChanged;
-            }
-        }
-
         private void OnItemsControlItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            OnItemsChanged(_itemsControl?.ItemsView ?? ItemsSourceView.Empty, e);
+            OnItemsChanged(Items, e);
         }
 
         [DoesNotReturn]

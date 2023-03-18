@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using SkiaSharp;
@@ -7,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media
 {
-    public class FontManagerImplTests
+    public class FontManagerTests
     {
         private static string s_fontUri = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
 
@@ -74,6 +73,48 @@ namespace Avalonia.Skia.UnitTests.Media
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
                 Assert.Throws<InvalidOperationException>(() => new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown").GlyphTypeface);
+            }
+        }
+
+        [Fact]
+        public void Should_Return_False_For_Unregistered_FontCollection_Uri()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("fonts:invalid#Something"), out _);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public void Should_Load_Embedded_Font_With_Wrong_CharacterCasing()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#noto mOnO"), out var glyphTypeface);
+
+                Assert.True(result);
+
+                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+            }
+        }
+
+        [Fact]
+        public void Should_Load_Embedded_DefaultFontFamily()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = s_fontUri });
+
+                    var result = FontManager.Current.TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName), out var glyphTypeface);
+
+                    Assert.True(result);
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
             }
         }
     }

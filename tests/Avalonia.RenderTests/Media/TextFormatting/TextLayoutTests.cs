@@ -312,7 +312,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     var rotate = Matrix.CreateTranslation(-100, -100) *
                         Matrix.CreateRotation(MathUtilities.Deg2Rad(90)) *
                         Matrix.CreateTranslation(100, 100);
-                    using var transform = c.PushPreTransform(rotate);
+                    using var transform = c.PushTransform(rotate);
                     c.DrawRectangle(Brushes.Yellow, null, rect);
                     t.Draw(c, rect.Position);
                 }),

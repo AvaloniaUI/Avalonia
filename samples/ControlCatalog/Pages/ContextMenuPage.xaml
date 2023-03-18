@@ -51,13 +51,13 @@
         <Border.Styles>
           <Style Selector="ContextMenu MenuItem" x:DataType="viewModels:MenuItemViewModel">
             <Setter Property="Header" Value="{Binding Header}"/>
-            <Setter Property="Items" Value="{Binding Items}"/>
+            <Setter Property="ItemsSource" Value="{Binding Items}"/>
             <Setter Property="Command" Value="{Binding Command}"/>
             <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
           </Style>
         </Border.Styles>
         <Border.ContextMenu>
-          <ContextMenu Items="{Binding MenuItems}" />
+          <ContextMenu ItemsSource="{Binding MenuItems}" />
         </Border.ContextMenu>
         <TextBlock Text="Dynamically Generated"/>
       </Border>

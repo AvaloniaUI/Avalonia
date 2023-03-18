@@ -39,6 +39,7 @@
       "src\\Markup\\Avalonia.Markup\\Avalonia.Markup.csproj",
       "src\\Skia\\Avalonia.Skia\\Avalonia.Skia.csproj",
       "src\\tools\\Avalonia.Generators\\Avalonia.Generators.csproj",
+      "src\\tools\\Avalonia.Generators\\Avalonia.Generators.csproj",
       "src\\tools\\DevAnalyzers\\DevAnalyzers.csproj",
       "src\\tools\\DevGenerators\\DevGenerators.csproj",
       "src\\tools\\PublicAnalyzers\\Avalonia.Analyzers.csproj",

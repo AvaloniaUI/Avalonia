@@ -177,14 +177,14 @@ namespace Avalonia.Controls
                 }
 
                 bool? uneditedValue = editingCheckBox.IsChecked;
-                if(editingEventArgs is PointerPressedEventArgs args)
+                if (editingEventArgs is PointerPressedEventArgs args)
                 {
                     void ProcessPointerArgs()
                     {
                         // Editing was triggered by a mouse click
                         Point position = args.GetPosition(editingCheckBox);
                         Rect rect = new Rect(0, 0, editingCheckBox.Bounds.Width, editingCheckBox.Bounds.Height);
-                        if(rect.Contains(position))
+                        if (rect.Contains(position))
                         {
                             EditValue();
                         }
@@ -192,14 +192,14 @@ namespace Avalonia.Controls
                     
                     void OnLayoutUpdated(object sender, EventArgs e)
                     {
-                        if(!editingCheckBox.Bounds.IsDefault)
+                        if (editingCheckBox.Bounds.Width != 0 || editingCheckBox.Bounds.Height != 0)
                         {
                             editingCheckBox.LayoutUpdated -= OnLayoutUpdated;
                             ProcessPointerArgs();
                         }
                     }
 
-                    if(editingCheckBox.Bounds.IsDefault)
+                    if (editingCheckBox.Bounds.Width == 0 && editingCheckBox.Bounds.Height == 0)
                     {
                         editingCheckBox.LayoutUpdated += OnLayoutUpdated;
                     }

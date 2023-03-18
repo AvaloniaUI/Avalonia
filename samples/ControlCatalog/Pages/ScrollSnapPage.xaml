@@ -16,14 +16,14 @@
         <StackPanel Orientation="Vertical"
                     Spacing="4">
           <TextBlock Text="Snap Point Type" />
-          <ComboBox Items="{Binding AvailableSnapPointsType}"
+          <ComboBox ItemsSource="{Binding AvailableSnapPointsType}"
                     SelectedItem="{Binding SnapPointsType}" />
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
                     Spacing="4">
           <TextBlock Text="Snap Point Alignment" />
-          <ComboBox Items="{Binding AvailableSnapPointsAlignment}"
+          <ComboBox ItemsSource="{Binding AvailableSnapPointsAlignment}"
                     SelectedItem="{Binding SnapPointsAlignment}" />
         </StackPanel>
 
