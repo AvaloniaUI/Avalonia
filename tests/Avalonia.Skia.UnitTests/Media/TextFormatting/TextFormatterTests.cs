@@ -792,7 +792,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override double Baseline => 0;
             public override void Draw(DrawingContext drawingContext, Point origin)
             {
-                using (drawingContext.PushPreTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
+                using (drawingContext.PushTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
                 {
                     drawingContext.FillRectangle(_fill, _rect);
                 }

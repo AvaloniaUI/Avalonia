@@ -39,7 +39,10 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly DirectProperty<ItemsRepeater, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<ItemsRepeater>(o => o.Items, (o, v) => o.Items = v);
+            AvaloniaProperty.RegisterDirect<ItemsRepeater, IEnumerable?>(
+                nameof(Items),
+                o => o.Items,
+                (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="Layout"/> property.

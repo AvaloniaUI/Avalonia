@@ -55,10 +55,16 @@ namespace Avalonia.Controls
             Popup.PlacementGravityProperty.AddOwner<ContextMenu>();
 
         /// <summary>
+        /// Defines the <see cref="Placement"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PlacementMode> PlacementProperty =
+            Popup.PlacementProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
-            Popup.PlacementModeProperty.AddOwner<ContextMenu>();
+        [Obsolete("Use the Placement property instead.")]
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
@@ -108,99 +114,80 @@ namespace Avalonia.Controls
         static ContextMenu()
         {
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
-            PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
+            PlacementProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
-        /// <summary>
-        /// Gets or sets the Horizontal offset of the context menu in relation to the <see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.HorizontalOffset"/>
         public double HorizontalOffset
         {
-            get { return GetValue(HorizontalOffsetProperty); }
-            set { SetValue(HorizontalOffsetProperty, value); }
+            get => GetValue(HorizontalOffsetProperty);
+            set => SetValue(HorizontalOffsetProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the Vertical offset of the context menu in relation to the <see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.VerticalOffset"/>
         public double VerticalOffset
         {
-            get { return GetValue(VerticalOffsetProperty); }
-            set { SetValue(VerticalOffsetProperty, value); }
+            get => GetValue(VerticalOffsetProperty);
+            set => SetValue(VerticalOffsetProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
-        /// is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementAnchor"/>
         public PopupAnchor PlacementAnchor
         {
-            get { return GetValue(PlacementAnchorProperty); }
-            set { SetValue(PlacementAnchorProperty, value); }
+            get => GetValue(PlacementAnchorProperty);
+            set => SetValue(PlacementAnchorProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value describing how the context menu position will be adjusted if the
-        /// unadjusted position would result in the context menu being partly constrained.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementConstraintAdjustment"/>
         public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
         {
-            get { return GetValue(PlacementConstraintAdjustmentProperty); }
-            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+            get => GetValue(PlacementConstraintAdjustmentProperty);
+            set => SetValue(PlacementConstraintAdjustmentProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value which defines in what direction the context menu should open
-        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementGravity"/>
         public PopupGravity PlacementGravity
         {
-            get { return GetValue(PlacementGravityProperty); }
-            set { SetValue(PlacementGravityProperty, value); }
+            get => GetValue(PlacementGravityProperty);
+            set => SetValue(PlacementGravityProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the placement mode of the context menu in relation to the<see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Placement"/>
+        [Obsolete("Use the Placement property instead.")]
         public PlacementMode PlacementMode
         {
-            get { return GetValue(PlacementModeProperty); }
-            set { SetValue(PlacementModeProperty, value); }
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
+        }
+
+        /// <inheritdoc cref="Popup.Placement"/>
+        public PlacementMode Placement
+        {
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
         }
 
         public bool WindowManagerAddShadowHint
         {
-            get { return GetValue(WindowManagerAddShadowHintProperty); }
-            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
-        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
-        /// <remarks>
-        /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
-        /// which the popup will be opened, with <see cref="PlacementAnchor"/> determining which edge
-        /// of the placement target is used.
-        /// 
-        /// If unset, the anchor rectangle will be the bounds of the <see cref="PlacementTarget"/>.
-        /// </remarks>
+        /// <inheritdoc cref="Popup.PlacementRect"/>
         public Rect? PlacementRect
         {
-            get { return GetValue(PlacementRectProperty); }
-            set { SetValue(PlacementRectProperty, value); }
+            get => GetValue(PlacementRectProperty);
+            set => SetValue(PlacementRectProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the control that is used to determine the popup's position.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementTarget"/>
         public Control? PlacementTarget
         {
-            get { return GetValue(PlacementTargetProperty); }
-            set { SetValue(PlacementTargetProperty, value); }
+            get => GetValue(PlacementTargetProperty);
+            set => SetValue(PlacementTargetProperty, value);
         }
 
         /// <summary>
@@ -343,9 +330,9 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
 
-            _popup.PlacementMode = !requestedByPointer && PlacementMode == PlacementMode.Pointer
+            _popup.Placement = !requestedByPointer && Placement == PlacementMode.Pointer
                 ? PlacementMode.Bottom
-                : PlacementMode;
+                : Placement;
 
             //Position of the line below is really important. 
             //All styles are being applied only when control has logical parent.
