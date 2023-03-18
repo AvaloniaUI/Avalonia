@@ -227,9 +227,9 @@ namespace Avalonia.X11
         public event Action Signaled;
         public event Action Timer;
 
-        public void UpdateTimer(int? dueTimeInTicks)
+        public void UpdateTimer(int? dueTimeInMs)
         {
-            _nextTimer = dueTimeInTicks;
+            _nextTimer = dueTimeInMs;
             if (_nextTimer != null)
                 Wakeup();
         }

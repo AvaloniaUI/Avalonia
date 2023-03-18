@@ -39,14 +39,14 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
 
     void TimerProc(IntPtr hWnd, uint uMsg, IntPtr nIdEvent, uint dwTime) => Timer?.Invoke();
 
-    public void UpdateTimer(int? dueTimeInTicks)
+    public void UpdateTimer(int? dueTimeInMs)
     {
         if (_timerHandle.HasValue)
             KillTimer(IntPtr.Zero, _timerHandle.Value);
-        if (dueTimeInTicks == null)
+        if (dueTimeInMs == null)
             return;
 
-        var interval = (uint)Math.Max(1, TickCount - dueTimeInTicks.Value);
+        var interval = (uint)Math.Max(1, TickCount - dueTimeInMs.Value);
 
         _timerHandle = SetTimer(
             IntPtr.Zero,

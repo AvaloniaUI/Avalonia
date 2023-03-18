@@ -59,7 +59,7 @@ public partial class Dispatcher
 
         public event Action? Signaled;
         public event Action? Timer;
-        public void UpdateTimer(int? dueTimeInTicks)
+        public void UpdateTimer(int? dueTimeInMs)
         {
         }
     }

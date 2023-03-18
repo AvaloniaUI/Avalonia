@@ -9,7 +9,7 @@ public partial class Dispatcher
     private List<DispatcherTimer> _timers = new();
     private long _timersVersion;
     private bool _dueTimeFound;
-    private int _dueTimeInTicks;
+    private int _dueTimeInMs;
     private bool _isOsTimerSet;
 
     internal void UpdateOSTimer()
@@ -25,9 +25,9 @@ public partial class Dispatcher
             if (!_hasShutdownFinished) // Dispatcher thread, does not technically need the lock to read
             {
                 bool oldDueTimeFound = _dueTimeFound;
-                int oldDueTimeInTicks = _dueTimeInTicks;
+                int oldDueTimeInTicks = _dueTimeInMs;
                 _dueTimeFound = false;
-                _dueTimeInTicks = 0;
+                _dueTimeInMs = 0;
 
                 if (_timers.Count > 0)
                 {
@@ -36,19 +36,19 @@ public partial class Dispatcher
                     {
                         var timer = _timers[i];
 
-                        if (!_dueTimeFound || timer.DueTimeInMs - _dueTimeInTicks < 0)
+                        if (!_dueTimeFound || timer.DueTimeInMs - _dueTimeInMs < 0)
                         {
                             _dueTimeFound = true;
-                            _dueTimeInTicks = timer.DueTimeInMs;
+                            _dueTimeInMs = timer.DueTimeInMs;
                         }
                     }
                 }
 
                 if (_dueTimeFound)
                 {
-                    if (!_isOsTimerSet || !oldDueTimeFound || (oldDueTimeInTicks != _dueTimeInTicks))
+                    if (!_isOsTimerSet || !oldDueTimeFound || (oldDueTimeInTicks != _dueTimeInMs))
                     {
-                        _impl.UpdateTimer(Math.Max(1, _dueTimeInTicks));
+                        _impl.UpdateTimer(Math.Max(1, _dueTimeInMs));
                         _isOsTimerSet = true;
                     }
                 }
@@ -111,7 +111,7 @@ public partial class Dispatcher
             {
                 if (!_hasShutdownFinished) // Could be a non-dispatcher thread, lock to read
                 {
-                    if (_dueTimeFound && _dueTimeInTicks - currentTimeInTicks <= 0)
+                    if (_dueTimeFound && _dueTimeInMs - currentTimeInTicks <= 0)
                     {
                         timers = _timers;
                         timersVersion = _timersVersion;

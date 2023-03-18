@@ -40,13 +40,13 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public void UpdateTimer(int? dueTimeInTicks)
+    public void UpdateTimer(int? dueTimeInMs)
     {
         lock (_lock)
         {
-            _nextTimer = dueTimeInTicks == null
+            _nextTimer = dueTimeInMs == null
                 ? null
-                : _clock.Elapsed + TimeSpan.FromMilliseconds(dueTimeInTicks.Value);
+                : _clock.Elapsed + TimeSpan.FromMilliseconds(dueTimeInMs.Value);
             if (!CurrentThreadIsLoopThread)
                 _wakeup.Set();
         }

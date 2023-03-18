@@ -54,9 +54,9 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
 
     public void Signal() => _native.Signal();
 
-    public void UpdateTimer(int? dueTimeInTicks)
+    public void UpdateTimer(int? dueTimeInMs)
     {
-        var ms = dueTimeInTicks == null ? -1 : Math.Max(1, dueTimeInTicks.Value - TickCount);
+        var ms = dueTimeInMs == null ? -1 : Math.Max(1, dueTimeInMs.Value - TickCount);
         _native.UpdateTimer(ms);
     }
 

@@ -12,7 +12,7 @@ public interface IDispatcherImpl
     void Signal();
     event Action Signaled;
     event Action Timer;
-    void UpdateTimer(int? dueTimeInTicks);
+    void UpdateTimer(int? dueTimeInMs);
 }
 
 
@@ -46,13 +46,13 @@ internal class LegacyDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public void UpdateTimer(int? dueTimeInTicks)
+    public void UpdateTimer(int? dueTimeInMs)
     {
         _timer?.Dispose();
         _timer = null;
-        if (dueTimeInTicks.HasValue)
+        if (dueTimeInMs.HasValue)
             _timer = _platformThreading.StartTimer(DispatcherPriority.Send,
-                TimeSpan.FromMilliseconds(dueTimeInTicks.Value),
+                TimeSpan.FromMilliseconds(dueTimeInMs.Value),
                 OnTick);
     }
 
@@ -80,7 +80,7 @@ class NullDispatcherImpl : IDispatcherImpl
     public event Action? Signaled;
     public event Action? Timer;
 
-    public void UpdateTimer(int? dueTimeInTicks)
+    public void UpdateTimer(int? dueTimeInMs)
     {
         
     }
