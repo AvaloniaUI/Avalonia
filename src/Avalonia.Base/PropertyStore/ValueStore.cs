@@ -810,10 +810,13 @@ namespace Avalonia.PropertyStore
                     // We're interested in the value if:
                     // - There is no current effective value, or
                     // - The value's priority is higher than the current effective value's priority, or
+                    // - The value's priority is equal to the current effective value's priority, but the effective
+                    //   value was set via SetCurrentValue, or
                     // - The value is a non-animation value and its priority is higher than the current
                     //   effective value's base priority
                     var isRelevantPriority = current is null ||
                         (priority < current.Priority && priority < current.BasePriority) ||
+                        (priority == current.Priority && current.IsOverridenCurrentValue) ||
                         (priority > BindingPriority.Animation && priority < current.BasePriority);
 
                     if (foundEntry && isRelevantPriority && entry!.HasValue)
