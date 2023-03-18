@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
@@ -392,6 +393,22 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("inheriteddefault", target.Inherited);
         }
 
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        [InlineData(BindingPriority.Animation)]
+        public void CurrentValue_Is_Replaced_By_Binding_Value(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<string>("initial");
+
+            target.Bind(Class1.FooProperty, source, priority);
+            target.SetCurrentValue(Class1.FooProperty, "current");
+            source.OnNext("new");
+            
+            Assert.Equal("new", target.Foo);
+        }
+        
         private BindingPriority GetPriority(AvaloniaObject target, AvaloniaProperty property)
         {
             return target.GetDiagnostic(property).Priority;
