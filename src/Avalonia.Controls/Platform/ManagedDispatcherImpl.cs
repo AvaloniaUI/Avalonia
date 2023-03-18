@@ -46,7 +46,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
         {
             _nextTimer = dueTimeInMs == null
                 ? null
-                : _clock.Elapsed + TimeSpan.FromMilliseconds(dueTimeInMs.Value);
+                : TimeSpan.FromMilliseconds(dueTimeInMs.Value);
             if (!CurrentThreadIsLoopThread)
                 _wakeup.Set();
         }

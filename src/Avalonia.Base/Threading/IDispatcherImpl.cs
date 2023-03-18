@@ -30,7 +30,7 @@ public interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
     void RunLoop(CancellationToken token);
 }
 
-internal class LegacyDispatcherImpl : IControlledDispatcherImpl
+internal class LegacyDispatcherImpl : DefaultDispatcherClock, IControlledDispatcherImpl
 {
     private readonly IPlatformThreadingInterface _platformThreading;
     private IDisposable? _timer;
@@ -50,10 +50,14 @@ internal class LegacyDispatcherImpl : IControlledDispatcherImpl
     {
         _timer?.Dispose();
         _timer = null;
+
         if (dueTimeInMs.HasValue)
+        {
+            var interval = Math.Max(1, dueTimeInMs.Value - TickCount);
             _timer = _platformThreading.StartTimer(DispatcherPriority.Send,
-                TimeSpan.FromMilliseconds(dueTimeInMs.Value),
+                TimeSpan.FromMilliseconds(interval),
                 OnTick);
+        }
     }
 
     private void OnTick()
