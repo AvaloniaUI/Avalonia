@@ -1796,7 +1796,7 @@ namespace Avalonia.Win32.Interop
             QS_SENDMESSAGE = 0x0040,
             QS_HOTKEY = 0x0080,
             QS_ALLPOSTMESSAGE = 0x0100,
-            QS_EVENT = 0x0200,
+            QS_EVENT = 0x02000,
             QS_MOUSE = QS_MOUSEMOVE | QS_MOUSEBUTTON,
             QS_INPUT = QS_MOUSE | QS_KEY,
             QS_ALLEVENTS = QS_INPUT | QS_POSTMESSAGE | QS_TIMER | QS_PAINT | QS_HOTKEY,

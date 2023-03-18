@@ -17,23 +17,21 @@ public partial class Dispatcher
 
     private void UpdateOSTimer()
     {
-        lock (InstanceLock)
-        {
-            var nextDueTime =
-                (_dueTimeForTimers.HasValue && _dueTimeForBackgroundProcessing.HasValue)
-                    ? Math.Min(_dueTimeForTimers.Value, _dueTimeForBackgroundProcessing.Value)
-                    : _dueTimeForTimers ?? _dueTimeForBackgroundProcessing;
-            if(_osTimerSetTo == nextDueTime)
-                return;
-            _impl.UpdateTimer(_osTimerSetTo = nextDueTime);
-        }
+        VerifyAccess();
+        var nextDueTime =
+            (_dueTimeForTimers.HasValue && _dueTimeForBackgroundProcessing.HasValue) ?
+                Math.Min(_dueTimeForTimers.Value, _dueTimeForBackgroundProcessing.Value) :
+                _dueTimeForTimers ?? _dueTimeForBackgroundProcessing;
+        if (_osTimerSetTo == nextDueTime)
+            return;
+        _impl.UpdateTimer(_osTimerSetTo = nextDueTime);
     }
 
-    internal void UpdateOSTimerForTimers()
+    internal void RescheduleTimers()
     {
         if (!CheckAccess())
         {
-            Post(UpdateOSTimerForTimers, DispatcherPriority.Send);
+            Post(RescheduleTimers, DispatcherPriority.Send);
             return;
         }
 
@@ -89,7 +87,7 @@ public partial class Dispatcher
             }
         }
 
-        UpdateOSTimerForTimers();
+        RescheduleTimers();
     }
 
     internal void RemoveTimer(DispatcherTimer timer)
@@ -103,15 +101,18 @@ public partial class Dispatcher
             }
         }
 
-        UpdateOSTimerForTimers();
+        RescheduleTimers();
     }
 
     private void OnOSTimer()
     {
+        _impl.UpdateTimer(null);
+        _osTimerSetTo = null;
         bool needToPromoteTimers = false;
         bool needToProcessQueue = false;
         lock (InstanceLock)
         {
+            _impl.UpdateTimer(_osTimerSetTo = null);
             needToPromoteTimers = _dueTimeForTimers.HasValue && _dueTimeForTimers.Value <= Clock.TickCount;
             if (needToPromoteTimers)
                 _dueTimeForTimers = null;
@@ -119,13 +120,13 @@ public partial class Dispatcher
                                  _dueTimeForBackgroundProcessing.Value <= Clock.TickCount;
             if (needToProcessQueue)
                 _dueTimeForBackgroundProcessing = null;
-            UpdateOSTimer();
         }
 
         if (needToPromoteTimers)
             PromoteTimers();
         if (needToProcessQueue)
             ExecuteJobsCore();
+        UpdateOSTimer();
     }
     
     internal void PromoteTimers()
@@ -195,7 +196,7 @@ public partial class Dispatcher
         }
         finally
         {
-            UpdateOSTimerForTimers();
+            RescheduleTimers();
         }
     }
 

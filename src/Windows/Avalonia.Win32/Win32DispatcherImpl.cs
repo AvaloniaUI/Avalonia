@@ -10,13 +10,10 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
 {
     private readonly IntPtr _messageWindow;
     private static Thread? s_uiThread;
-    private IntPtr? _timerHandle;
-    private readonly TimerProc _timerDelegate;
     public Win32DispatcherImpl(IntPtr messageWindow)
     {
         _messageWindow = messageWindow;
         s_uiThread = Thread.CurrentThread;
-        _timerDelegate = TimerProc;
     }
     
     public bool CurrentThreadIsLoopThread => s_uiThread == Thread.CurrentThread;
@@ -37,26 +34,27 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
     public event Action? Signaled;
     public event Action? Timer;
 
-    void TimerProc(IntPtr hWnd, uint uMsg, IntPtr nIdEvent, uint dwTime) => Timer?.Invoke();
+    public void FireTimer() => Timer?.Invoke();
 
     public void UpdateTimer(int? dueTimeInMs)
     {
-        if (_timerHandle.HasValue)
-            KillTimer(IntPtr.Zero, _timerHandle.Value);
         if (dueTimeInMs == null)
-            return;
-
-        var interval = (uint)Math.Max(1, TickCount - dueTimeInMs.Value);
-
-        _timerHandle = SetTimer(
-            IntPtr.Zero,
-            IntPtr.Zero,
-            interval,
-            _timerDelegate);
+        {
+            KillTimer(_messageWindow, (IntPtr)Win32Platform.TIMERID_DISPATCHER);
+        }
+        else
+        {
+            var interval = (uint)Math.Max(1, TickCount - dueTimeInMs.Value);
+            SetTimer(
+                _messageWindow,
+                (IntPtr)Win32Platform.TIMERID_DISPATCHER,
+                interval,
+                null!);
+        }
     }
 
     public bool CanQueryPendingInput => true;
-
+    
     public bool HasPendingInput
     {
         get

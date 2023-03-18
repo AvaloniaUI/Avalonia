@@ -112,6 +112,7 @@ namespace Avalonia.Win32
         private static readonly Win32Platform s_instance = new();
         private static Win32PlatformOptions? s_options;
         private static Compositor? s_compositor;
+        internal const int TIMERID_DISPATCHER = 1;
 
         private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
@@ -182,27 +183,7 @@ namespace Avalonia.Win32
             
             s_compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
         }
-
-        public bool HasMessages()
-        {
-            return PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
-        }
-
-        public void ProcessMessage()
-        {
-            if (GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
-            {
-                TranslateMessage(ref msg);
-                DispatchMessage(ref msg);
-            }
-            else
-            {
-                Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
-                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(ProcessMessage), Marshal.GetLastWin32Error());
-
-            }
-        }
-
+        
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
@@ -237,6 +218,12 @@ namespace Avalonia.Win32
                 {
                     win32PlatformSettings.OnColorValuesChanged();   
                 }
+            }
+
+            if (msg == (uint)WindowsMessage.WM_TIMER)
+            {
+                if (wParam == (IntPtr)TIMERID_DISPATCHER)
+                    _dispatcher?.FireTimer();
             }
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
