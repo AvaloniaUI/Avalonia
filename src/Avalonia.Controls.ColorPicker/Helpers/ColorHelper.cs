@@ -11,11 +11,11 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public static class ColorHelper
     {
-        private static readonly Dictionary<Color, string> _cachedDisplayNames = new Dictionary<Color, string>();
-        private static readonly Dictionary<KnownColor, double> _cachedKnownColorHues = new Dictionary<KnownColor, double>();
+        private static readonly Dictionary<HsvColor, string> _cachedDisplayNames = new Dictionary<HsvColor, string>();
         private static readonly Dictionary<KnownColor, string> _cachedKnownColorNames = new Dictionary<KnownColor, string>();
         private static readonly object _displayNameCacheMutex = new object();
         private static readonly object _knownColorCacheMutex = new object();
+        private static readonly KnownColor[] _knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
 
         /// <summary>
         /// Gets the relative (perceptual) luminance/brightness of the given color.
@@ -62,7 +62,36 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The approximate color display name.</returns>
         public static string ToDisplayName(Color color)
         {
-            // Without rounding, there are 16,777,216 possible RGB colors (without alpha).
+            var hsvColor = color.ToHsv();
+
+            // Handle extremes that are outside the below algorithm
+            if (color.A == 0x00)
+            {
+                return GetDisplayName(KnownColor.Transparent);
+            }
+
+            // HSV ----------------------------------------------------------------------
+            //
+            // There are far too many possible HSV colors to cache and search through
+            // for performance reasons. Therefore, the HSV color is rounded.
+            // Rounding is tolerable in this algorithm because it is perception based.
+            // Hue is the most important for user perception so is rounded the least.
+            // Then there is a lot of loss in rounding the saturation and value components
+            // which are not as closely related to perceived color.
+            //
+            //         Hue : Round to nearest int (0..360)
+            //  Saturation : Round to the nearest 1/10 (0..1)
+            //       Value : Round to the nearest 1/10 (0..1)
+            //       Alpha : Is ignored in this algorithm
+            //
+            // Rounding results in ~36_000 values to cache in the worse case.
+            //
+            // RGB ----------------------------------------------------------------------
+            //
+            // The original algorithm worked in RGB color space.
+            // If this code is every adjusted to work in RGB again note the following:
+            //
+            // Without rounding, there are 16_777_216 possible RGB colors (without alpha).
             // This is too many to cache and search through for performance reasons.
             // It is also needlessly large as there are only ~140 known/named colors.
             // Therefore, rounding of the input color's component values is done to
@@ -71,58 +100,29 @@ namespace Avalonia.Controls.Primitives
             // The rounding value of 5 is specially chosen.
             // It is a factor of 255 and therefore evenly divisible which improves
             // the quality of the calculations.
-            double rounding = 5;
-            var roundedColor = new Color(
-                0xFF,
-                Convert.ToByte(Math.Round(color.R / rounding) * rounding),
-                Convert.ToByte(Math.Round(color.G / rounding) * rounding),
-                Convert.ToByte(Math.Round(color.B / rounding) * rounding));
-            var hsvColor = color.ToHsv();
-
-            // Handle extremes that are outside the below algorithm
-            if (color.A == 0x00)
-            {
-                return GetDisplayName(KnownColor.Transparent);
-            }
-            else if (hsvColor.S <= 0.0)
-            {
-                return GetDisplayName(KnownColor.White);
-            }
-            else if (hsvColor.V <= 0.0)
-            {
-                return GetDisplayName(KnownColor.Black);
-            }
+            var roundedHsvColor = new HsvColor(
+                1.0,
+                Math.Round(hsvColor.H, 0),
+                Math.Round(hsvColor.S, 1),
+                Math.Round(hsvColor.V, 1));
 
             // Attempt to use a previously cached display name
             lock (_displayNameCacheMutex)
             {
-                if (_cachedDisplayNames.TryGetValue(roundedColor, out var displayName))
+                if (_cachedDisplayNames.TryGetValue(roundedHsvColor, out var displayName))
                 {
                     return displayName;
                 }
             }
 
-            // Build KnownColor caches if they don't already exist
+            // Build the KnownColor name cache if it doesn't already exist
             lock (_knownColorCacheMutex)
             {
-                if (_cachedKnownColorHues.Count == 0 ||
-                    _cachedKnownColorNames.Count == 0)
+                if (_cachedKnownColorNames.Count == 0)
                 {
-                    _cachedKnownColorHues.Clear();
-                    _cachedKnownColorNames.Clear();
-
-                    var knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
-                    for (int i = 1; i < knownColors.Length; i++) // Skip 'None' so start at 1
+                    for (int i = 1; i < _knownColors.Length; i++) // Skip 'None' so start at 1
                     {
-                        KnownColor knownColor = knownColors[i];
-
-                        // Transparent is skipped since alpha is ignored making it equivalent to White
-                        if (knownColor == KnownColor.Transparent)
-                        {
-                            continue;
-                        }
-
-                        double hue = KnownColors.ToColor(knownColor).ToHsv().H;
+                        KnownColor knownColor = _knownColors[i];
 
                         // Some known colors have the same numerical value. For example:
                         //  - Aqua = 0xff00ffff
@@ -130,11 +130,6 @@ namespace Avalonia.Controls.Primitives
                         //
                         // This is not possible to represent in a dictionary which requires
                         // unique values. Therefore, only the first value is used.
-
-                        if (!_cachedKnownColorHues.ContainsKey(knownColor))
-                        {
-                            _cachedKnownColorHues.Add(knownColor, hue);
-                        }
 
                         if (!_cachedKnownColorNames.ContainsKey(knownColor))
                         {
@@ -144,24 +139,29 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            // Find the closest known color by finding nearest Hue
-            // Since Hue is the best measure of human perception of the color itself
-            // it is not necessary to check other components (Saturation, Value).
+            // Find the closest known color by measuring 3D Euclidean distance (ignore alpha)
+            // This is done in HSV color space to most closely match user-perception
             var closestKnownColor = KnownColor.None;
-            var closestKnownColorHueDiff = double.PositiveInfinity;
+            var closestKnownColorDistance = double.PositiveInfinity;
 
-            lock (_knownColorCacheMutex)
+            for (int i = 1; i < _knownColors.Length; i++) // Skip 'None' so start at 1
             {
-                foreach (var hueEntry in _cachedKnownColorHues)
-                {
-                    // Closest hue before or after is allowed
-                    // Therefore, use an absolute value
-                    double difference = Math.Abs(hsvColor.H - hueEntry.Value);
+                KnownColor knownColor = _knownColors[i];
 
-                    if (difference < closestKnownColorHueDiff)
+                // Transparent is skipped since alpha is ignored making it equivalent to White
+                if (knownColor != KnownColor.Transparent)
+                {
+                    HsvColor knownHsvColor = KnownColors.ToColor(knownColor).ToHsv();
+
+                    double distance = Math.Sqrt(
+                        Math.Pow((roundedHsvColor.H - knownHsvColor.H), 2.0) +
+                        Math.Pow((roundedHsvColor.S - knownHsvColor.S), 2.0) +
+                        Math.Pow((roundedHsvColor.V - knownHsvColor.V), 2.0));
+
+                    if (distance < closestKnownColorDistance)
                     {
-                        closestKnownColor = hueEntry.Key;
-                        closestKnownColorHueDiff = difference;
+                        closestKnownColor = knownColor;
+                        closestKnownColorDistance = distance;
                     }
                 }
             }
@@ -182,7 +182,7 @@ namespace Avalonia.Controls.Primitives
 
                 lock (_displayNameCacheMutex)
                 {
-                    _cachedDisplayNames.Add(roundedColor, displayName);
+                    _cachedDisplayNames.Add(roundedHsvColor, displayName);
                 }
 
                 return displayName;
