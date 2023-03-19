@@ -23,7 +23,7 @@ public partial class Dispatcher
             }
             else if (_dueTimeForBackgroundProcessing == null)
             {
-                _dueTimeForBackgroundProcessing = Clock.TickCount + 1;
+                _dueTimeForBackgroundProcessing = Now + 1;
                 UpdateOSTimer();
             }
         }
@@ -68,7 +68,8 @@ public partial class Dispatcher
 
         public event Action? Signaled;
         public event Action? Timer;
-        public void UpdateTimer(int? dueTimeInMs)
+        public long Now => 0;
+        public void UpdateTimer(long? dueTimeInMs)
         {
         }
     }
@@ -119,7 +120,7 @@ public partial class Dispatcher
 
     void ExecuteJobsCore()
     {
-        int? backgroundJobExecutionStartedAt = null;
+        long? backgroundJobExecutionStartedAt = null;
         while (true)
         {
             DispatcherOperation? job;
@@ -153,9 +154,9 @@ public partial class Dispatcher
             else
             {
                 if (backgroundJobExecutionStartedAt == null)
-                    backgroundJobExecutionStartedAt = Clock.TickCount;
+                    backgroundJobExecutionStartedAt = Now;
                 
-                if (Clock.TickCount - backgroundJobExecutionStartedAt.Value > MaximumTimeProcessingBackgroundJobs)
+                if (Now - backgroundJobExecutionStartedAt.Value > MaximumTimeProcessingBackgroundJobs)
                 {
                     _signaled = true;
                     RequestBackgroundProcessing();

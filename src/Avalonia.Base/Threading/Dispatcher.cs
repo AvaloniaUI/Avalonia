@@ -17,7 +17,6 @@ namespace Avalonia.Threading;
 public partial class Dispatcher : IDispatcher
 {
     private IDispatcherImpl _impl;
-    internal IDispatcherClock Clock { get; }
     internal object InstanceLock { get; } = new();
     private bool _hasShutdownFinished;
     private IControlledDispatcherImpl? _controlledImpl;
@@ -25,10 +24,9 @@ public partial class Dispatcher : IDispatcher
     private IDispatcherImplWithPendingInput? _pendingInputImpl;
     private IDispatcherImplWithExplicitBackgroundProcessing? _backgroundProcessingImpl;
 
-    internal Dispatcher(IDispatcherImpl impl, IDispatcherClock clock)
+    internal Dispatcher(IDispatcherImpl impl)
     {
         _impl = impl;
-        Clock = clock;
         impl.Timer += OnOSTimer;
         impl.Signaled += Signaled;
         _controlledImpl = _impl as IControlledDispatcherImpl;
@@ -51,7 +49,7 @@ public partial class Dispatcher : IDispatcher
             else
                 impl = new NullDispatcherImpl();
         }
-        return new Dispatcher(impl, impl as IDispatcherClock ?? new DefaultDispatcherClock());
+        return new Dispatcher(impl);
     }
 
     /// <summary>

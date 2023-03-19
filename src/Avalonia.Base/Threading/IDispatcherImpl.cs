@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -14,7 +15,8 @@ public interface IDispatcherImpl
     void Signal();
     event Action Signaled;
     event Action Timer;
-    void UpdateTimer(int? dueTimeInMs);
+    long Now { get; }
+    void UpdateTimer(long? dueTimeInMs);
 }
 
 [Unstable]
@@ -40,10 +42,11 @@ public interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
     void RunLoop(CancellationToken token);
 }
 
-internal class LegacyDispatcherImpl : DefaultDispatcherClock, IControlledDispatcherImpl
+internal class LegacyDispatcherImpl : IControlledDispatcherImpl
 {
     private readonly IPlatformThreadingInterface _platformThreading;
     private IDisposable? _timer;
+    private Stopwatch _clock = Stopwatch.StartNew();
 
     public LegacyDispatcherImpl(IPlatformThreadingInterface platformThreading)
     {
@@ -56,14 +59,15 @@ internal class LegacyDispatcherImpl : DefaultDispatcherClock, IControlledDispatc
 
     public event Action? Signaled;
     public event Action? Timer;
-    public void UpdateTimer(int? dueTimeInMs)
+    public long Now => _clock.ElapsedMilliseconds;
+    public void UpdateTimer(long? dueTimeInMs)
     {
         _timer?.Dispose();
         _timer = null;
 
         if (dueTimeInMs.HasValue)
         {
-            var interval = Math.Max(1, dueTimeInMs.Value - TickCount);
+            var interval = Math.Max(1, dueTimeInMs.Value - _clock.ElapsedMilliseconds);
             _timer = _platformThreading.StartTimer(DispatcherPriority.Send,
                 TimeSpan.FromMilliseconds(interval),
                 OnTick);
@@ -94,7 +98,9 @@ class NullDispatcherImpl : IDispatcherImpl
     public event Action? Signaled;
     public event Action? Timer;
 
-    public void UpdateTimer(int? dueTimeInMs)
+    public long Now => 0;
+
+    public void UpdateTimer(long? dueTimeInMs)
     {
         
     }

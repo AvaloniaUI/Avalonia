@@ -40,7 +40,8 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public void UpdateTimer(int? dueTimeInMs)
+    public long Now => _clock.ElapsedMilliseconds;
+    public void UpdateTimer(long? dueTimeInMs)
     {
         lock (_lock)
         {

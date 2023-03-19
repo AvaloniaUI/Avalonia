@@ -125,7 +125,7 @@ public partial class DispatcherTimer
 
                 if (_isEnabled)
                 {
-                    DueTimeInMs = _dispatcher.Clock.TickCount + (int)_interval.TotalMilliseconds;
+                    DueTimeInMs = _dispatcher.Now + (long)_interval.TotalMilliseconds;
                     updateOSTimer = true;
                 }
             }
@@ -288,7 +288,7 @@ public partial class DispatcherTimer
             // BeginInvoke a new operation.
             _operation = _dispatcher.InvokeAsync(FireTick, DispatcherPriority.Inactive);
 
-            DueTimeInMs = _dispatcher.Clock.TickCount + (int)_interval.TotalMilliseconds;
+            DueTimeInMs = _dispatcher.Now + (long)_interval.TotalMilliseconds;
 
             if (_interval.TotalMilliseconds == 0 && _dispatcher.CheckAccess())
             {
@@ -348,5 +348,5 @@ public partial class DispatcherTimer
     private bool _isEnabled;
 
     // used by Dispatcher
-    internal int DueTimeInMs { get; private set; }
+    internal long DueTimeInMs { get; private set; }
 }

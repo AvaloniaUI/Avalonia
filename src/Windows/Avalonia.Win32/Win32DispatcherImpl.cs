@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Threading;
@@ -6,10 +7,11 @@ using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 namespace Avalonia.Win32;
 
-internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
+internal class Win32DispatcherImpl : IControlledDispatcherImpl
 {
     private readonly IntPtr _messageWindow;
     private static Thread? s_uiThread;
+    private readonly Stopwatch _clock = Stopwatch.StartNew();
     public Win32DispatcherImpl(IntPtr messageWindow)
     {
         _messageWindow = messageWindow;
@@ -36,7 +38,7 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
 
     public void FireTimer() => Timer?.Invoke();
 
-    public void UpdateTimer(int? dueTimeInMs)
+    public void UpdateTimer(long? dueTimeInMs)
     {
         if (dueTimeInMs == null)
         {
@@ -44,7 +46,7 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
         }
         else
         {
-            var interval = (uint)Math.Max(1, TickCount - dueTimeInMs.Value);
+            var interval = (uint)Math.Min(int.MaxValue - 10, Math.Max(1, Now - dueTimeInMs.Value));
             SetTimer(
                 _messageWindow,
                 (IntPtr)Win32Platform.TIMERID_DISPATCHER,
@@ -115,5 +117,5 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
         }
     }
 
-    public int TickCount => Environment.TickCount;
+    public long Now => _clock.ElapsedMilliseconds;
 }

@@ -7,7 +7,7 @@ namespace Avalonia.Base.UnitTests;
 
 public class DispatcherTests
 {
-    class SimpleDispatcherImpl : IDispatcherImpl, IDispatcherClock, IDispatcherImplWithPendingInput
+    class SimpleDispatcherImpl : IDispatcherImpl, IDispatcherImplWithPendingInput
     {
         public bool CurrentThreadIsLoopThread => true;
 
@@ -15,15 +15,15 @@ public class DispatcherTests
 
         public event Action Signaled;
         public event Action Timer;
-        public int? NextTimer { get; private set; }
+        public long? NextTimer { get; private set; }
         public bool AskedForSignal { get; private set; }
         
-        public void UpdateTimer(int? dueTimeInTicks)
+        public void UpdateTimer(long? dueTimeInTicks)
         {
             NextTimer = dueTimeInTicks;
         }
 
-        public int TickCount { get; set; }
+        public long Now { get; set; }
 
         public void ExecuteSignal()
         {
@@ -37,7 +37,7 @@ public class DispatcherTests
         {
             if (NextTimer == null)
                 return;
-            TickCount = NextTimer.Value;
+            Now = NextTimer.Value;
             Timer?.Invoke();
         }
 
@@ -51,7 +51,7 @@ public class DispatcherTests
     public void DispatcherExecutesJobsAccordingToPriority()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl, impl);
+        var disp = new Dispatcher(impl);
         var actions = new List<string>();
         disp.Post(()=>actions.Add("Background"), DispatcherPriority.Background);
         disp.Post(()=>actions.Add("Render"), DispatcherPriority.Render);
@@ -65,7 +65,7 @@ public class DispatcherTests
     public void DispatcherPreservesOrderWhenChangingPriority()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl, impl);
+        var disp = new Dispatcher(impl);
         var actions = new List<string>();
         var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background);
         var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input);
@@ -84,7 +84,7 @@ public class DispatcherTests
     public void DispatcherStopsItemProcessingWhenInteractivityDeadlineIsReached()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl, impl);
+        var disp = new Dispatcher(impl);
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
@@ -92,7 +92,7 @@ public class DispatcherTests
             disp.Post(() =>
             {
                 actions.Add(itemId);
-                impl.TickCount += 20;
+                impl.Now += 20;
             }, DispatcherPriority.Background);
         }
 
@@ -114,7 +114,7 @@ public class DispatcherTests
             Assert.False(impl.AskedForSignal);
             if (c < 3)
             {
-                Assert.True(impl.NextTimer > impl.TickCount);
+                Assert.True(impl.NextTimer > impl.Now);
             }
             else
                 Assert.Null(impl.NextTimer);
@@ -127,7 +127,7 @@ public class DispatcherTests
     {
         var impl = new SimpleDispatcherImpl();
         impl.TestInputPending = true;
-        var disp = new Dispatcher(impl, impl);
+        var disp = new Dispatcher(impl);
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
@@ -160,8 +160,8 @@ public class DispatcherTests
             Assert.False(impl.AskedForSignal);
             if (c < 3)
             {
-                Assert.True(impl.NextTimer > impl.TickCount);
-                impl.TickCount = impl.NextTimer.Value + 1;
+                Assert.True(impl.NextTimer > impl.Now);
+                impl.Now = impl.NextTimer.Value + 1;
             }
             else
                 Assert.Null(impl.NextTimer);

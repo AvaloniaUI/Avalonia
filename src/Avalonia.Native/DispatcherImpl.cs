@@ -10,10 +10,11 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native;
 
-internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock, IDispatcherImplWithExplicitBackgroundProcessing
+internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
 {
     private readonly IAvnPlatformThreadingInterface _native;
     private Thread? _loopThread;
+    private Stopwatch _clock = Stopwatch.StartNew();
     private Stack<RunLoopFrame> _managedFrames = new();
 
     public DispatcherImpl(IAvnPlatformThreadingInterface native)
@@ -57,9 +58,9 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock, IDi
 
     public void Signal() => _native.Signal();
 
-    public void UpdateTimer(int? dueTimeInMs)
+    public void UpdateTimer(long? dueTimeInMs)
     {
-        var ms = dueTimeInMs == null ? -1 : Math.Max(1, dueTimeInMs.Value - TickCount);
+        var ms = dueTimeInMs == null ? -1 : (int)Math.Min(int.MaxValue - 10, Math.Max(1, dueTimeInMs.Value - Now));
         _native.UpdateTimer(ms);
     }
 
@@ -113,7 +114,7 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock, IDi
         }
     }
 
-    public int TickCount => Environment.TickCount;
+    public long Now => _clock.ElapsedMilliseconds;
 
     public void PropagateCallbackException(ExceptionDispatchInfo capture)
     {

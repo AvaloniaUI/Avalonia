@@ -9,7 +9,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl, IDispatcherClock
+    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _display;
@@ -227,7 +227,7 @@ namespace Avalonia.X11
         public event Action Signaled;
         public event Action Timer;
 
-        public void UpdateTimer(int? dueTimeInMs)
+        public void UpdateTimer(long? dueTimeInMs)
         {
             _nextTimer = dueTimeInMs;
             if (_nextTimer != null)
@@ -235,7 +235,7 @@ namespace Avalonia.X11
         }
 
 
-        public int TickCount => (int)_clock.ElapsedMilliseconds;
+        public long Now => (int)_clock.ElapsedMilliseconds;
         public bool CanQueryPendingInput => true;
 
         public bool HasPendingInput => _platform.EventGrouperDispatchQueue.HasJobs || XPending(_display) != 0;

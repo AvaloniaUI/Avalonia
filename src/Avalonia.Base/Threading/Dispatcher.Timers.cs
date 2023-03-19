@@ -9,11 +9,13 @@ public partial class Dispatcher
     private List<DispatcherTimer> _timers = new();
     private long _timersVersion;
     private bool _dueTimeFound;
-    private int _dueTimeInMs;
+    private long _dueTimeInMs;
 
-    private int? _dueTimeForTimers;
-    private int? _dueTimeForBackgroundProcessing;
-    private int? _osTimerSetTo;
+    private long? _dueTimeForTimers;
+    private long? _dueTimeForBackgroundProcessing;
+    private long? _osTimerSetTo;
+
+    internal long Now => _impl.Now;
 
     private void UpdateOSTimer()
     {
@@ -40,7 +42,7 @@ public partial class Dispatcher
             if (!_hasShutdownFinished) // Dispatcher thread, does not technically need the lock to read
             {
                 bool oldDueTimeFound = _dueTimeFound;
-                int oldDueTimeInTicks = _dueTimeInMs;
+                long oldDueTimeInTicks = _dueTimeInMs;
                 _dueTimeFound = false;
                 _dueTimeInMs = 0;
 
@@ -113,11 +115,11 @@ public partial class Dispatcher
         lock (InstanceLock)
         {
             _impl.UpdateTimer(_osTimerSetTo = null);
-            needToPromoteTimers = _dueTimeForTimers.HasValue && _dueTimeForTimers.Value <= Clock.TickCount;
+            needToPromoteTimers = _dueTimeForTimers.HasValue && _dueTimeForTimers.Value <= Now;
             if (needToPromoteTimers)
                 _dueTimeForTimers = null;
             needToProcessQueue = _dueTimeForBackgroundProcessing.HasValue &&
-                                 _dueTimeForBackgroundProcessing.Value <= Clock.TickCount;
+                                 _dueTimeForBackgroundProcessing.Value <= Now;
             if (needToProcessQueue)
                 _dueTimeForBackgroundProcessing = null;
         }
@@ -131,7 +133,7 @@ public partial class Dispatcher
     
     internal void PromoteTimers()
     {
-        int currentTimeInTicks = Clock.TickCount;
+        long currentTimeInTicks = Now;
         try
         {
             List<DispatcherTimer>? timers = null;
