@@ -94,15 +94,10 @@ public partial class Dispatcher
 
     private void Signaled()
     {
-        try
-        {
-            ExecuteJobsCore();
-        }
-        finally
-        {
-            lock (InstanceLock)
-                _signaled = false;
-        }
+        lock (InstanceLock)
+            _signaled = false;
+
+        ExecuteJobsCore();
     }
 
     void ExecuteJobsCore()
