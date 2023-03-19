@@ -124,7 +124,13 @@ public partial class Dispatcher
             else if (_pendingInputImpl?.CanQueryPendingInput == true)
             {
                 if (!_pendingInputImpl.HasPendingInput)
-                    ExecuteJob(job);
+                {
+                    // On platforms like macOS HasPendingInput check might trigger a timer
+                    // which would result in reentrancy here, so we check if the job 
+                    // hasn't been executed yet
+                    if (job.Status == DispatcherOperationStatus.Pending)
+                        ExecuteJob(job);
+                }
                 else
                 {
                     RequestBackgroundProcessing();

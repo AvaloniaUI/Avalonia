@@ -79,13 +79,11 @@ static double distantFutureInterval = (double)50*365*24*3600;
         bool signaled;
         @synchronized (self) {
             signaled = self->_signaled;
+            self->_signaled = false;
         }
         if(signaled)
         {
             self->_events->Signaled();
-            @synchronized (self) {
-                self->_signaled = false;
-            }
         }
     });
     CFRunLoopAddObserver(CFRunLoopGetMain(), _observer, kCFRunLoopCommonModes);
