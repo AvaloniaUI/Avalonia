@@ -96,8 +96,22 @@ namespace Avalonia.Controls.Primitives
             // independent pixels of controls.
 
             var scale = LayoutHelper.GetLayoutScale(this);
-            var pixelWidth = Convert.ToInt32(Bounds.Width * scale);
-            var pixelHeight = Convert.ToInt32(Bounds.Height * scale);
+            int pixelWidth;
+            int pixelHeight;
+
+            if (base._track != null)
+            {
+                pixelWidth = Convert.ToInt32(base._track.Bounds.Width * scale);
+                pixelHeight = Convert.ToInt32(base._track.Bounds.Height * scale);
+            }
+            else
+            {
+                // As a fallback, attempt to calculate using the overall control size
+                // This shouldn't happen as a track is a required template part of a slider
+                // However, if it does, the spectrum will still be shown
+                pixelWidth = Convert.ToInt32(Bounds.Width * scale);
+                pixelHeight = Convert.ToInt32(Bounds.Height * scale);
+            }
 
             if (pixelWidth != 0 && pixelHeight != 0)
             {
