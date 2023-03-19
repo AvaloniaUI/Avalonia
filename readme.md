@@ -82,10 +82,6 @@ Donating to the project is a fantastic way to thank our valued contributors for 
 
 If you need support see Commercial Support section below.
 
-Donate with BTC or use [Open Collective](https://opencollective.com/avalonia).
-
-**BTC**: bc1q05wx78qemgy9x6ytl5ljk2xrt00yqargyjm8gx
-
 ### Backers
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/Avalonia#backer)]
