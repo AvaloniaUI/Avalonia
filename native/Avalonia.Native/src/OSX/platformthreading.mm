@@ -66,25 +66,44 @@ static double distantFutureInterval = (double)50*365*24*3600;
     ComPtr<IAvnPlatformThreadingInterfaceEvents> _events;
     bool _wakeupDelegateSent;
     bool _signaled;
+    bool _backgroundProcessingRequested;
     CFRunLoopObserverRef _observer;
     CFRunLoopTimerRef _timer;
+}
+
+- (void) checkSignaled
+{
+    bool signaled;
+    @synchronized (self) {
+        signaled = _signaled;
+        _signaled = false;
+    }
+    if(signaled)
+    {
+        _events->Signaled();
+    }
 }
 
 - (Signaler*) init
 {
     _observer = CFRunLoopObserverCreateWithHandler(nil,
-                                                   kCFRunLoopBeforeSources | kCFRunLoopAfterWaiting,
+                                                   kCFRunLoopBeforeSources
+                                                   | kCFRunLoopAfterWaiting
+                                                   | kCFRunLoopBeforeWaiting
+                                                   ,
                                                    true, 0,
                                                    ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
-        bool signaled;
-        @synchronized (self) {
-            signaled = self->_signaled;
-            self->_signaled = false;
-        }
-        if(signaled)
+        if(activity == kCFRunLoopBeforeWaiting)
         {
-            self->_events->Signaled();
+            bool triggerProcessing;
+            @synchronized (self) {
+                triggerProcessing = self->_backgroundProcessingRequested;
+                self->_backgroundProcessingRequested = false;
+            }
+            if(triggerProcessing)
+                self->_events->ReadyForBackgroundProcessing();
         }
+        [self checkSignaled];
     });
     CFRunLoopAddObserver(CFRunLoopGetMain(), _observer, kCFRunLoopCommonModes);
     
@@ -135,8 +154,25 @@ static double distantFutureInterval = (double)50*365*24*3600;
         if(_signaled)
             return;
         _signaled = true;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self checkSignaled];
+        });
         CFRunLoopWakeUp(CFRunLoopGetMain());
     }
+}
+
+- (void) requestBackgroundProcessing
+{
+    @synchronized (self) {
+        if(_backgroundProcessingRequested)
+            return;
+        _backgroundProcessingRequested = true;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // This is needed to wakeup the loop if we are called from inside of BeforeWait hook
+        });
+    }
+    
+        
 }
 
 @end
@@ -165,15 +201,7 @@ public:
         return [NSThread isMainThread];
     };
     
-    bool HasPendingInput() override
-    {
-        auto event = [NSApp
-                      nextEventMatchingMask: NSEventMaskAny
-                      untilDate:nil
-                      inMode:NSDefaultRunLoopMode
-                      dequeue:false];
-        return event != nil;
-    };
+    
     
     void SetEvents(IAvnPlatformThreadingInterfaceEvents *cb) override
     {
@@ -226,6 +254,11 @@ public:
     {
         [_signaler updateTimer:ms];
     };
+    
+    void RequestBackgroundProcessing() override {
+        [_signaler requestBackgroundProcessing];
+    }
+    
     
 };
 

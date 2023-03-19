@@ -10,7 +10,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native;
 
-internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
+internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock, IDispatcherImplWithExplicitBackgroundProcessing
 {
     private readonly IAvnPlatformThreadingInterface _native;
     private Thread? _loopThread;
@@ -25,6 +25,7 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
     
     public event Action Signaled;
     public event Action Timer;
+    public event Action ReadyForBackgroundProcessing;
     
     private class Events : NativeCallbackBase, IAvnPlatformThreadingInterfaceEvents
     {
@@ -37,6 +38,8 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
         public void Signaled() => _parent.Signaled?.Invoke();
 
         public void Timer() => _parent.Timer?.Invoke();
+
+        public void ReadyForBackgroundProcessing() => _parent.ReadyForBackgroundProcessing?.Invoke();
     }
 
     public bool CurrentThreadIsLoopThread
@@ -60,8 +63,8 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
         _native.UpdateTimer(ms);
     }
 
-    public bool CanQueryPendingInput => true;
-    public bool HasPendingInput => _native.HasPendingInput() != 0;
+    public bool CanQueryPendingInput => false;
+    public bool HasPendingInput => false;
 
     class RunLoopFrame : IDisposable
     {
@@ -124,4 +127,5 @@ internal class DispatcherImpl : IControlledDispatcherImpl, IDispatcherClock
         frame.Exception = capture;
         frame.CancellationTokenSource.Cancel();
     }
+    public void RequestBackgroundProcessing() => _native.RequestBackgroundProcessing();
 }

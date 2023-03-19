@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Threading;
 
+[Unstable]
 public interface IDispatcherImpl
 {
     bool CurrentThreadIsLoopThread { get; }
@@ -15,7 +17,7 @@ public interface IDispatcherImpl
     void UpdateTimer(int? dueTimeInMs);
 }
 
-
+[Unstable]
 public interface IDispatcherImplWithPendingInput : IDispatcherImpl
 {
     // Checks if dispatcher implementation can 
@@ -24,6 +26,14 @@ public interface IDispatcherImplWithPendingInput : IDispatcherImpl
     bool HasPendingInput { get; }
 }
 
+[Unstable]
+public interface IDispatcherImplWithExplicitBackgroundProcessing : IDispatcherImpl
+{
+    event Action ReadyForBackgroundProcessing;
+    void RequestBackgroundProcessing();
+}
+
+[Unstable]
 public interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
 {
     // Runs the event loop

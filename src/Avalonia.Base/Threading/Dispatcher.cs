@@ -23,6 +23,7 @@ public partial class Dispatcher : IDispatcher
     private IControlledDispatcherImpl? _controlledImpl;
     private static Dispatcher? s_uiThread;
     private IDispatcherImplWithPendingInput? _pendingInputImpl;
+    private IDispatcherImplWithExplicitBackgroundProcessing? _backgroundProcessingImpl;
 
     internal Dispatcher(IDispatcherImpl impl, IDispatcherClock clock)
     {
@@ -32,6 +33,9 @@ public partial class Dispatcher : IDispatcher
         impl.Signaled += Signaled;
         _controlledImpl = _impl as IControlledDispatcherImpl;
         _pendingInputImpl = _impl as IDispatcherImplWithPendingInput;
+        _backgroundProcessingImpl = _impl as IDispatcherImplWithExplicitBackgroundProcessing;
+        if (_backgroundProcessingImpl != null)
+            _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
     }
     
     public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();

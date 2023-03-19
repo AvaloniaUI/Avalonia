@@ -649,6 +649,7 @@ interface IAvnPlatformThreadingInterfaceEvents : IUnknown
 {
      void Signaled();
      void Timer();
+     void ReadyForBackgroundProcessing();
 }
 
 [uuid(97330f88-c22b-4a8e-a130-201520091b01)]
@@ -661,12 +662,12 @@ interface IAvnLoopCancellation : IUnknown
 interface IAvnPlatformThreadingInterface : IUnknown
 {
      bool GetCurrentThreadIsLoopThread();
-     bool HasPendingInput();
      void SetEvents(IAvnPlatformThreadingInterfaceEvents* cb);
      IAvnLoopCancellation* CreateLoopCancellation();
      void RunLoop(IAvnLoopCancellation* cancel);
      void Signal();
      void UpdateTimer(int ms);
+     void RequestBackgroundProcessing();
 }
 
 [uuid(6c621a6e-e4c1-4ae3-9749-83eeeffa09b6)]

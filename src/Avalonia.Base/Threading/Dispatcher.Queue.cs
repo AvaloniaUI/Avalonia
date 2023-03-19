@@ -7,17 +7,34 @@ public partial class Dispatcher
 {
     private readonly DispatcherPriorityQueue _queue = new();
     private bool _signaled;
+    private bool _explicitBackgroundProcessingRequested;
     private const int MaximumTimeProcessingBackgroundJobs = 50;
     
     void RequestBackgroundProcessing()
     {
         lock (InstanceLock)
         {
-            if (_dueTimeForBackgroundProcessing == null)
+            if (_backgroundProcessingImpl != null)
+            {
+                if(_explicitBackgroundProcessingRequested)
+                    return;
+                _explicitBackgroundProcessingRequested = true;
+                _backgroundProcessingImpl.RequestBackgroundProcessing();
+            }
+            else if (_dueTimeForBackgroundProcessing == null)
             {
                 _dueTimeForBackgroundProcessing = Clock.TickCount + 1;
                 UpdateOSTimer();
             }
+        }
+    }
+
+    private void OnReadyForExplicitBackgroundProcessing()
+    {
+        lock (InstanceLock)
+        {
+            _explicitBackgroundProcessingRequested = false;
+            ExecuteJobsCore();
         }
     }
 
@@ -124,13 +141,7 @@ public partial class Dispatcher
             else if (_pendingInputImpl?.CanQueryPendingInput == true)
             {
                 if (!_pendingInputImpl.HasPendingInput)
-                {
-                    // On platforms like macOS HasPendingInput check might trigger a timer
-                    // which would result in reentrancy here, so we check if the job 
-                    // hasn't been executed yet
-                    if (job.Status == DispatcherOperationStatus.Pending)
-                        ExecuteJob(job);
-                }
+                    ExecuteJob(job);
                 else
                 {
                     RequestBackgroundProcessing();
