@@ -170,7 +170,7 @@ namespace Avalonia.Controls.Primitives
             // Cache results for next time as well
             if (closestKnownColor != KnownColor.None)
             {
-                string displayName;
+                string? displayName;
 
                 lock (_knownColorCacheMutex)
                 {
