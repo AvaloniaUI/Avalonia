@@ -98,6 +98,7 @@ namespace Avalonia.Controls.Presenters
         private double _verticalSnapPointOffset;
         private double _horizontalSnapPointOffset;
         private CompositeDisposable? _ownerSubscriptions;
+        private ScrollViewer? _owner;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -305,7 +306,7 @@ namespace Avalonia.Controls.Presenters
         {
             _ownerSubscriptions?.Dispose();
 
-            var owner = this.FindAncestorOfType<ScrollViewer>();
+            var owner = _owner = this.FindAncestorOfType<ScrollViewer>();
 
             if (owner == null)
             {
@@ -314,17 +315,11 @@ namespace Avalonia.Controls.Presenters
 
             var subscriptionDisposables = new IDisposable?[]
             {
-                IfUnset(CanHorizontallyScrollProperty, p => Bind(p, owner.GetObservable(ScrollViewer.HorizontalScrollBarVisibilityProperty).Select(NotDisabled), Data.BindingPriority.Template)),
-                IfUnset(CanVerticallyScrollProperty, p => Bind(p, owner.GetObservable(ScrollViewer.VerticalScrollBarVisibilityProperty).Select(NotDisabled), Data.BindingPriority.Template)),
-                IfUnset(OffsetProperty, p => new CompositeDisposable(
-                    Bind(p, owner.GetBindingObservable(ScrollViewer.OffsetProperty), Data.BindingPriority.Template),
-                    this.GetObservable(OffsetProperty).Subscribe(v => owner.SetCurrentValue(OffsetProperty, v)))),
+                IfUnset(CanHorizontallyScrollProperty, p => Bind(p, owner.GetObservable(ScrollViewer.HorizontalScrollBarVisibilityProperty, NotDisabled), Data.BindingPriority.Template)),
+                IfUnset(CanVerticallyScrollProperty, p => Bind(p, owner.GetObservable(ScrollViewer.VerticalScrollBarVisibilityProperty, NotDisabled), Data.BindingPriority.Template)),
+                IfUnset(OffsetProperty, p => Bind(p, owner.GetBindingObservable(ScrollViewer.OffsetProperty), Data.BindingPriority.Template)),
                 IfUnset(IsScrollChainingEnabledProperty, p => Bind(p, owner.GetBindingObservable(ScrollViewer.IsScrollChainingEnabledProperty), Data.BindingPriority.Template)),
                 IfUnset(ContentProperty, p => Bind(p, owner.GetBindingObservable(ContentProperty), Data.BindingPriority.Template)),
-
-                // read-only properties on ScrollViewer with internal setters:
-                this.GetObservable(ExtentProperty).Subscribe(v => owner.Extent = v),
-                this.GetObservable(ViewportProperty).Subscribe(v => owner.Viewport = v)
             }.Where(d => d != null).Cast<IDisposable>().ToArray();
 
             _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
@@ -338,6 +333,7 @@ namespace Avalonia.Controls.Presenters
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _ownerSubscriptions?.Dispose();
+            _owner = null;
             base.OnDetachedFromVisualTree(e);
         }
 
@@ -670,9 +666,14 @@ namespace Avalonia.Controls.Presenters
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (change.Property == OffsetProperty && !_arranging)
+            if (change.Property == OffsetProperty)
             {
-                InvalidateArrange();
+                if (!_arranging)
+                {
+                    InvalidateArrange();
+                }
+
+                _owner?.SetCurrentValue(OffsetProperty, change.GetNewValue<Vector>());
             }
             else if (change.Property == ContentProperty)
             {
@@ -698,6 +699,22 @@ namespace Avalonia.Controls.Presenters
                 change.Property == VerticalSnapPointsAlignmentProperty)
             {
                 UpdateSnapPoints();
+            }
+            else if (change.Property == ExtentProperty)
+            {
+                if (_owner != null)
+                {
+                    _owner.Extent = change.GetNewValue<Size>();
+                }
+                CoerceValue(OffsetProperty);
+            }
+            else if (change.Property == ViewportProperty && _owner != null)
+            {
+                if (_owner != null)
+                {
+                    _owner.Viewport = change.GetNewValue<Size>();
+                }
+                CoerceValue(OffsetProperty);
             }
 
             base.OnPropertyChanged(change);

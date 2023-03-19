@@ -84,6 +84,7 @@ namespace Avalonia.Controls.Primitives
         private DispatcherTimer? _timer;
         private bool _isExpanded;
         private CompositeDisposable? _ownerSubscriptions;
+        private ScrollViewer? _owner;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -203,7 +204,7 @@ namespace Avalonia.Controls.Primitives
         {
             _ownerSubscriptions?.Dispose();
 
-            var owner = this.FindAncestorOfType<ScrollViewer>();
+            var owner = _owner = this.FindAncestorOfType<ScrollViewer>();
 
             if (owner == null)
             {
@@ -214,11 +215,9 @@ namespace Avalonia.Controls.Primitives
 
             var subscriptionDisposables = new IDisposable?[]
             {
-                IfUnset(MaximumProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ScrollBarMaximumProperty).Select(ExtractOrdinate), BindingPriority.Template)),
-                IfUnset(ValueProperty, p => new CompositeDisposable(
-                        Bind(p, owner.GetObservable(ScrollViewer.OffsetProperty).Select(ExtractOrdinate), BindingPriority.Template),
-                        this.GetObservable(ValueProperty).Subscribe(v => SetScrollViewerOffset(owner, v)))),
-                IfUnset(ViewportSizeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ViewportProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(MaximumProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ScrollBarMaximumProperty, ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(ValueProperty, p => Bind(p, owner.GetObservable(ScrollViewer.OffsetProperty, ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(ViewportSizeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ViewportProperty, ExtractOrdinate), BindingPriority.Template)),
                 IfUnset(VisibilityProperty, p => Bind(p, owner.GetObservable(visibilitySource), BindingPriority.Template)),
                 IfUnset(AllowAutoHideProperty, p => Bind(p, owner.GetObservable(ScrollViewer.AllowAutoHideProperty), BindingPriority.Template)),
                 IfUnset(LargeChangeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.LargeChangeProperty).Select(ExtractOrdinate), BindingPriority.Template)),
@@ -232,11 +231,11 @@ namespace Avalonia.Controls.Primitives
 
         private double ExtractOrdinate(Vector v) => Orientation == Orientation.Horizontal ? v.X : v.Y;
         private double ExtractOrdinate(Size v) => Orientation == Orientation.Horizontal ? v.Width : v.Height;
-        private void SetScrollViewerOffset(ScrollViewer viewer, double value) => viewer.SetCurrentValue(ScrollViewer.OffsetProperty, Orientation == Orientation.Horizontal ? viewer.Offset.WithX(value) : viewer.Offset.WithY(value));
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _ownerSubscriptions?.Dispose();
+            _owner = null;
             base.OnDetachedFromVisualTree(e);
         }
 
@@ -266,6 +265,11 @@ namespace Avalonia.Controls.Primitives
             else if (change.Property == AllowAutoHideProperty)
             {
                 UpdateIsExpandedState();
+            }
+            else if (change.Property == ValueProperty)
+            {
+                var value = change.GetNewValue<double>();
+                _owner?.SetCurrentValue(ScrollViewer.OffsetProperty, Orientation == Orientation.Horizontal ? _owner.Offset.WithX(value) : _owner.Offset.WithY(value));
             }
             else
             {

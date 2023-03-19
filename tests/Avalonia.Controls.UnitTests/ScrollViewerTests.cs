@@ -225,8 +225,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new (100, 100);
+            target.Viewport = new(50, 50);
             target.Offset = new Vector(50, 50);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -239,7 +239,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(70, 70));
+            target.Extent = new(70, 70);
 
             Assert.Equal(0, raised);
 

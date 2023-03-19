@@ -683,6 +683,14 @@ namespace Avalonia.Controls
             {
                 CalculatedPropertiesChanged();
             }
+            else if (change.Property == ExtentProperty)
+            {
+                CoerceValue(OffsetProperty);
+            }
+            else if (change.Property == ViewportProperty)
+            {
+                CoerceValue(OffsetProperty);
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
