@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -25,8 +24,7 @@ namespace Avalonia.Controls
         private TextBox?    _hexTextBox;
         private TabControl? _tabControl;
 
-        private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
-        protected bool ignorePropertyChanged = false;
+        protected bool _ignorePropertyChanged = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorView"/> class.
@@ -43,7 +41,7 @@ namespace Avalonia.Controls
         {
             if (_hexTextBox != null)
             {
-                var convertedColor = colorToHexConverter.ConvertBack(_hexTextBox.Text, typeof(Color), null, CultureInfo.CurrentCulture);
+                var convertedColor = ColorToHexConverter.ParseHexString(_hexTextBox.Text ?? string.Empty, HexInputAlphaPosition);
 
                 if (convertedColor is Color color)
                 {
@@ -63,7 +61,7 @@ namespace Avalonia.Controls
         {
             if (_hexTextBox != null)
             {
-                _hexTextBox.Text = colorToHexConverter.Convert(Color, typeof(string), null, CultureInfo.CurrentCulture) as string;
+                _hexTextBox.Text = ColorToHexConverter.ToHexString(Color, HexInputAlphaPosition);
             }
         }
 
@@ -197,7 +195,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (ignorePropertyChanged)
+            if (_ignorePropertyChanged)
             {
                 base.OnPropertyChanged(change);
                 return;
@@ -206,7 +204,7 @@ namespace Avalonia.Controls
             // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
-                ignorePropertyChanged = true;
+                _ignorePropertyChanged = true;
 
                 SetCurrentValue(HsvColorProperty, Color.ToHsv());
                 SetColorToHexTextBox();
@@ -215,11 +213,11 @@ namespace Avalonia.Controls
                     change.GetOldValue<Color>(),
                     change.GetNewValue<Color>()));
 
-                ignorePropertyChanged = false;
+                _ignorePropertyChanged = false;
             }
             else if (change.Property == HsvColorProperty)
             {
-                ignorePropertyChanged = true;
+                _ignorePropertyChanged = true;
 
                 SetCurrentValue(ColorProperty, HsvColor.ToRgb());
                 SetColorToHexTextBox();
@@ -228,7 +226,7 @@ namespace Avalonia.Controls
                     change.GetOldValue<HsvColor>().ToRgb(),
                     change.GetNewValue<HsvColor>().ToRgb()));
 
-                ignorePropertyChanged = false;
+                _ignorePropertyChanged = false;
             }
             else if (change.Property == PaletteProperty)
             {
