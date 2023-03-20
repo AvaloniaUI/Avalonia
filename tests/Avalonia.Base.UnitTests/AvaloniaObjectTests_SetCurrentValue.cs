@@ -411,7 +411,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void CurrentValue_Is_Replaced_By_New_Style_Activation()
+        public void CurrentValue_Is_Replaced_By_New_Style_Activation_1()
         {
             var target = new Class1();
             var root = new TestRoot(target)
@@ -446,7 +446,41 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal("new", target.Foo);
         }
-        
+
+        [Fact]
+        public void CurrentValue_Is_Replaced_By_New_Style_Activation_2()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "foo"),
+                        },
+                    },
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.BarProperty, "bar"),
+                        },
+                    },
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SetValue(Class1.FooProperty, "template", BindingPriority.Template);
+            target.SetCurrentValue(Class1.FooProperty, "current");
+
+            target.Classes.Add("foo");
+            Assert.Equal("foo", target.Foo);
+        }
+
         private BindingPriority GetPriority(AvaloniaObject target, AvaloniaProperty property)
         {
             return target.GetDiagnostic(property).Priority;
