@@ -797,6 +797,12 @@ namespace Avalonia.PropertyStore
                 {
                     var frame = _frames[i];
                     var priority = frame.Priority;
+
+                    // Exit early if the current EffectiveValue has higher priority than this frame.
+                    if (current?.Priority < priority && current?.BasePriority < priority)
+                        break;
+
+                    // Try to get an entry from the frame for the property we're reevaluating.
                     var foundEntry = frame.TryGetEntryIfActive(property, out var entry, out var activeChanged);
                     
                     // If the active state of the frame has changed since the last read, and
@@ -808,9 +814,13 @@ namespace Avalonia.PropertyStore
                         return;
                     }
 
-                    var isRelevantPriority = HasHigherPriority(entry!, priority, current, changedValueEntry);
-
-                    if (foundEntry && isRelevantPriority && entry!.HasValue)
+                    // If the frame has an entry for this property with a higher priority than the
+                    // current effective value (and that entry has a value), then we have a new 
+                    // value for the property. Note that the check for entry.HasValue must be 
+                    // evaluated last as it can cause bindings to be subscribed.
+                    if (foundEntry &&
+                        HasHigherPriority(entry!, priority, current, changedValueEntry) && 
+                        entry!.HasValue)
                     {
                         if (current is not null)
                         {
@@ -826,10 +836,6 @@ namespace Avalonia.PropertyStore
 
                     if (generation != _frameGeneration)
                         goto restart;
-
-                    if (current?.Priority < BindingPriority.Unset &&
-                        current?.BasePriority < BindingPriority.Unset)
-                        break;
                 }
 
                 if (current?.Priority == BindingPriority.Unset)
