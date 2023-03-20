@@ -395,7 +395,7 @@ namespace Avalonia.PropertyStore
             if (TryGetEffectiveValue(property, out var existing))
             {
                 if (priority <= existing.BasePriority)
-                    ReevaluateEffectiveValue(property, existing);
+                    ReevaluateEffectiveValue(property, existing, changedValueEntry: entry);
             }
             else
             {
@@ -774,6 +774,7 @@ namespace Avalonia.PropertyStore
         private void ReevaluateEffectiveValue(
             AvaloniaProperty property,
             EffectiveValue? current,
+            IValueEntry? changedValueEntry = null,
             bool ignoreLocalValue = false)
         {
             ++_isEvaluating;
@@ -803,21 +804,11 @@ namespace Avalonia.PropertyStore
                     // effective values of all properties.
                     if (activeChanged && frame.EntryCount > 1)
                     {
-                        ReevaluateEffectiveValues();
+                        ReevaluateEffectiveValues(changedValueEntry);
                         return;
                     }
 
-                    // We're interested in the value if:
-                    // - There is no current effective value, or
-                    // - The value's priority is higher than the current effective value's priority, or
-                    // - The value's priority is equal to the current effective value's priority, but the effective
-                    //   value was set via SetCurrentValue, or
-                    // - The value is a non-animation value and its priority is higher than the current
-                    //   effective value's base priority
-                    var isRelevantPriority = current is null ||
-                        (priority < current.Priority && priority < current.BasePriority) ||
-                        (priority == current.Priority && current.IsOverridenCurrentValue) ||
-                        (priority > BindingPriority.Animation && priority < current.BasePriority);
+                    var isRelevantPriority = HasHigherPriority(entry!, priority, current, changedValueEntry);
 
                     if (foundEntry && isRelevantPriority && entry!.HasValue)
                     {
@@ -862,7 +853,7 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        private void ReevaluateEffectiveValues()
+        private void ReevaluateEffectiveValues(IValueEntry? changedValueEntry = null)
         {
             ++_isEvaluating;
 
@@ -897,10 +888,9 @@ namespace Avalonia.PropertyStore
                     {
                         var entry = frame.GetEntry(j);
                         var property = entry.Property;
-
-                        // Skip if we already have a value/base value for this property.
-                        if (_effectiveValues.TryGetValue(property, out var effectiveValue) &&
-                            effectiveValue.BasePriority < BindingPriority.Unset)
+                        _effectiveValues.TryGetValue(property, out var effectiveValue);
+                        
+                        if (!HasHigherPriority(entry, priority, effectiveValue, changedValueEntry))
                             continue;
 
                         if (!entry.HasValue)
@@ -943,6 +933,37 @@ namespace Avalonia.PropertyStore
             {
                 --_isEvaluating;
             }
+        }
+
+        private static bool HasHigherPriority(
+            IValueEntry entry,
+            BindingPriority entryPriority,
+            EffectiveValue? current,
+            IValueEntry? changedValueEntry)
+        {
+            // Set the value if: there is no current effective value; or
+            if (current is null)
+                return true; 
+
+            // The value's priority is higher than the current effective value's priority; or
+            if (entryPriority < current.Priority && entryPriority < current.BasePriority)
+                return true;
+
+            // - The value's priority is equal to the current effective value's priority
+            // - But the effective value was set via SetCurrentValue
+            // - As long as the SetCurrentValue wasn't overriding the value from the value entry under consideration
+            // - Or if it was, the value entry under consideration has changed; or
+            if (entryPriority == current.Priority &&
+                current.IsOverridenCurrentValue &&
+                (current.ValueEntry != entry || entry == changedValueEntry))
+                return true;
+
+            // The value is a non-animation value and its priority is higher than the current effective value's base
+            // priority.
+            if (entryPriority > BindingPriority.Animation && entryPriority < current.BasePriority)
+                return true;
+
+            return false;
         }
 
         private bool TryGetEffectiveValue(
