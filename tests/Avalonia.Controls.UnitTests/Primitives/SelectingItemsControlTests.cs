@@ -2084,13 +2084,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_IsTextSearchEnabled_Enables_Or_Disables_Text_Search()
         {
-            var pti = Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true);
-
-            Mock.Get(pti)
-                .Setup(v => v.StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
-                .Returns(Disposable.Empty);
-
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(threadingInterface: pti)))
+            var pti = Mock.Of<IDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true);
+            
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: pti)))
             {
                 var items = new[]
                 {

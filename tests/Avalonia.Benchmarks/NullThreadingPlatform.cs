@@ -6,22 +6,22 @@ using Avalonia.Threading;
 
 namespace Avalonia.Benchmarks
 {
-    internal class NullThreadingPlatform : IPlatformThreadingInterface
+    internal class NullThreadingPlatform : IDispatcherImpl
     {
-        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
+        public void Signal()
         {
-            return Disposable.Empty;
         }
-
-        public void Signal(DispatcherPriority priority)
+        
+        public void UpdateTimer(long? dueTimeInMs)
         {
         }
 
         public bool CurrentThreadIsLoopThread => true;
 
 #pragma warning disable CS0067
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action Signaled;
+        public event Action Timer;
+        public long Now => 0;
 #pragma warning restore CS0067
-
     }
 }
