@@ -161,11 +161,6 @@ namespace Avalonia.Base.UnitTests
             public event Action<DispatcherPriority?> Signaled;
 #pragma warning restore 67
 
-            public void RunLoop(CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
             public void Signal(DispatcherPriority prio)
             {
                 throw new NotImplementedException();

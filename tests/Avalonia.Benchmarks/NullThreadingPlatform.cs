@@ -8,10 +8,6 @@ namespace Avalonia.Benchmarks
 {
     internal class NullThreadingPlatform : IPlatformThreadingInterface
     {
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-        }
-
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             return Disposable.Empty;

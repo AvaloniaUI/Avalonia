@@ -253,11 +253,6 @@ namespace Avalonia.Direct2D1.RenderTests
             public event Action<DispatcherPriority?> Signaled;
 #pragma warning restore 67
 
-            public void RunLoop(CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
             public void Signal(DispatcherPriority prio)
             {
                 // No-op

@@ -42,7 +42,7 @@ public interface IControlledDispatcherImpl : IDispatcherImplWithPendingInput
     void RunLoop(CancellationToken token);
 }
 
-internal class LegacyDispatcherImpl : IControlledDispatcherImpl
+internal class LegacyDispatcherImpl : IDispatcherImpl
 {
     private readonly IPlatformThreadingInterface _platformThreading;
     private IDisposable? _timer;
@@ -80,10 +80,6 @@ internal class LegacyDispatcherImpl : IControlledDispatcherImpl
         _timer = null;
         Timer?.Invoke();
     }
-
-    public bool CanQueryPendingInput => false;
-    public bool HasPendingInput => false;
-    public void RunLoop(CancellationToken token) => _platformThreading.RunLoop(token);
 }
 
 class NullDispatcherImpl : IDispatcherImpl
