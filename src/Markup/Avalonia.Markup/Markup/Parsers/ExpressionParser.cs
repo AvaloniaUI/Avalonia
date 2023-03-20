@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Parsers
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
-        private readonly Func<string, string, Type>? _typeResolver;
+        private readonly Func<string?, string, Type>? _typeResolver;
         private readonly INameScope? _nameScope;
 
         public ExpressionParser(bool enableValidation, Func<string?, string, Type>? typeResolver, INameScope? nameScope)
@@ -88,7 +88,7 @@ namespace Avalonia.Markup.Parsers
             Type? ancestorType = null;
             var ancestorLevel = node.Level;
 
-            if (!(node.Namespace is null) && !(node.TypeName is null))
+            if (!string.IsNullOrEmpty(node.TypeName))
             {
                 if (_typeResolver == null)
                 {
@@ -104,7 +104,7 @@ namespace Avalonia.Markup.Parsers
         private TypeCastNode ParseTypeCastNode(BindingExpressionGrammar.TypeCastNode node)
         {
             Type? castType = null;
-            if (!(node.Namespace is null) && !(node.TypeName is null))
+            if (!string.IsNullOrEmpty(node.TypeName))
             {
                 if (_typeResolver == null)
                 {

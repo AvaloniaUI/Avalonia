@@ -1,7 +1,6 @@
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -14,9 +13,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Menu : MenuBase, IMainMenu
     {
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Horizontal });
-
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new (() => new StackPanel { Orientation = Orientation.Horizontal });
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Menu"/> class.

@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Peers;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -29,8 +27,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -58,8 +56,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
-            AvaloniaProperty.Register<ItemsControl, ITemplate<Panel>>(nameof(ItemsPanel), DefaultPanel);
+        public static readonly StyledProperty<ITemplate<Panel?>> ItemsPanelProperty =
+            AvaloniaProperty.Register<ItemsControl, ITemplate<Panel?>>(nameof(ItemsPanel), DefaultPanel);
 
         /// <summary>
         /// Defines the <see cref="ItemsSource"/> property.
@@ -202,7 +200,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the panel used to display the items.
         /// </summary>
-        public ITemplate<Panel> ItemsPanel
+        public ITemplate<Panel?> ItemsPanel
         {
             get => GetValue(ItemsPanelProperty);
             set => SetValue(ItemsPanelProperty, value);

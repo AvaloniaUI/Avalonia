@@ -31,9 +31,9 @@ namespace Avalonia.Markup.Xaml
         [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
         public static Type ResolveType(this IServiceProvider ctx, string? namespacePrefix, string type)
         {
-            var tr = ctx.GetService<IXamlTypeResolver>();
+            var tr = ctx.GetRequiredService<IXamlTypeResolver>();
             string name = string.IsNullOrEmpty(namespacePrefix) ? type : $"{namespacePrefix}:{type}";
-            return tr?.Resolve(name) ?? throw new XamlLoadException($"Could not find type '{name}'.");
+            return tr.Resolve(name);
         }
         
         public static object? GetDefaultAnchor(this IServiceProvider provider)
