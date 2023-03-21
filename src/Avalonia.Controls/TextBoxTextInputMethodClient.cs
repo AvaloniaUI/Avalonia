@@ -30,9 +30,7 @@ namespace Avalonia.Controls
                     return default;
                 }
 
-                var visualRoot = _presenter.VisualRoot!;
-
-                var transform = _presenter.TransformToVisual((Visual)visualRoot);
+                var transform = _presenter.TransformToVisual(_parent);
 
                 if (transform == null)
                 {
