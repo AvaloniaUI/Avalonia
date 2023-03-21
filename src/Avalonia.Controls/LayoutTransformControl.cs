@@ -91,7 +91,7 @@ namespace Avalonia.Controls
             arrangedsize = TransformRoot.Bounds.Size;
 
             // This is the first opportunity under Silverlight to find out the Child's true DesiredSize
-            if (IsSizeSmaller(finalSizeTransformed, arrangedsize) && _childActualSize.IsDefault)
+            if (IsSizeSmaller(finalSizeTransformed, arrangedsize) && _childActualSize == default)
             {
                 //// Unfortunately, all the work so far is invalid because the wrong DesiredSize was used
                 //// Make a note of the actual DesiredSize
@@ -122,7 +122,7 @@ namespace Avalonia.Controls
             }
 
             Size measureSize;
-            if (_childActualSize.IsDefault)
+            if (_childActualSize == default)
             {
                 // Determine the largest size after the transformation
                 measureSize = ComputeLargestTransformedSize(availableSize);

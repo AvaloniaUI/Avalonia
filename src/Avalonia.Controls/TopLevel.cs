@@ -15,7 +15,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;

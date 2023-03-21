@@ -177,7 +177,7 @@ namespace Avalonia.Controls
 
                 var rects = TextLayout.HitTestTextRange(start, length);
 
-                using (context.PushPostTransform(Matrix.CreateTranslation(origin)))
+                using (context.PushTransform(Matrix.CreateTranslation(origin)))
                 {
                     foreach (var rect in rects)
                     {

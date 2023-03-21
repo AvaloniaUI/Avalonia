@@ -785,6 +785,146 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void ContainerPrepared_Is_Raised_For_Each_Item_Container_On_Layout()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            var result = new List<Control>();
+            var index = 0;
+
+            target.ContainerPrepared += (s, e) =>
+            {
+                Assert.Equal(index++, e.Index);
+                result.Add(e.Container);
+            };
+
+            Prepare(target);
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(target.GetRealizedContainers(), result);
+        }
+
+        [Fact]
+        public void ContainerPrepared_Is_Raised_For_Each_ItemsSource_Container_On_Layout()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+            };
+
+            var result = new List<Control>();
+            var index = 0;
+
+            target.ContainerPrepared += (s, e) =>
+            {
+                Assert.Equal(index++, e.Index);
+                result.Add(e.Container);
+            };
+
+            Prepare(target);
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(target.GetRealizedContainers(), result);
+        }
+
+        [Fact]
+        public void ContainerPrepared_Is_Raised_For_Added_Item()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var data = new AvaloniaList<string> { "Foo", "Bar", "Baz" };
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = data,
+            };
+
+            Prepare(target);
+
+            var result = new List<Control>();
+
+            target.ContainerPrepared += (s, e) =>
+            {
+                Assert.Equal(3, e.Index);
+                result.Add(e.Container);
+            };
+
+            data.Add("Qux");
+            Layout(target);
+
+            Assert.Equal(1, result.Count);
+        }
+
+        [Fact]
+        public void ContainerIndexChanged_Is_Raised_When_Item_Added()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var data = new AvaloniaList<string> { "Foo", "Bar", "Baz" };
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = data,
+            };
+
+            Prepare(target);
+
+            var result = new List<Control>();
+            var index = 1;
+
+            target.ContainerIndexChanged += (s, e) =>
+            {
+                Assert.Equal(index++, e.OldIndex);
+                Assert.Equal(index, e.NewIndex);
+                result.Add(e.Container);
+            };
+
+            data.Insert(1, "Qux");
+            Layout(target);
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal(target.GetRealizedContainers().Skip(2), result);
+        }
+
+        [Fact]
+        public void ContainerClearing_Is_Raised_When_Item_Removed()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var data = new AvaloniaList<string> { "Foo", "Bar", "Baz" };
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = data,
+            };
+
+            Prepare(target);
+
+            var expected = target.ContainerFromIndex(1);
+            var raised = 0;
+
+            target.ContainerClearing += (s, e) =>
+            {
+                Assert.Same(expected, e.Container);
+                ++raised;
+            };
+
+            data.RemoveAt(1);
+            Layout(target);
+
+            Assert.Equal(1, raised);
+        }
+
         private class ResettingCollection : List<string>, INotifyCollectionChanged
         {
             public ResettingCollection(int itemCount)
