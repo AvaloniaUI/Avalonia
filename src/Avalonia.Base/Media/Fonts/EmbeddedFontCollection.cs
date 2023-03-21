@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
@@ -42,13 +43,11 @@ namespace Avalonia.Media.Fonts
 
                 if (fontManager.TryCreateGlyphTypeface(stream, out var glyphTypeface))
                 {
-                    var familyName = glyphTypeface.FamilyName.ToUpperInvariant();
-
-                    if (!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+                    if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
                     {
                         glyphTypefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface>();
 
-                        if (_glyphTypefaceCache.TryAdd(familyName, glyphTypefaces))
+                        if (_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, glyphTypefaces))
                         {
                             _fontFamilies.Add(new FontFamily(_key, glyphTypeface.FamilyName));
                         }
@@ -87,8 +86,6 @@ namespace Avalonia.Media.Fonts
         public bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            familyName = familyName.ToUpperInvariant();
-
             var key = new FontCollectionKey(style, weight, stretch);
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
@@ -104,11 +101,9 @@ namespace Avalonia.Media.Fonts
             {
                 var fontFamily = _fontFamilies[i];
 
-                if (fontFamily.Name.ToUpperInvariant().StartsWith(familyName.ToUpperInvariant()))
+                if (fontFamily.Name.ToLower(CultureInfo.InvariantCulture).StartsWith(familyName.ToLower(CultureInfo.InvariantCulture)))
                 {
-                    familyName = fontFamily.Name.ToUpperInvariant();
-
-                    if (_glyphTypefaceCache.TryGetValue(familyName, out glyphTypefaces) &&
+                    if (_glyphTypefaceCache.TryGetValue(fontFamily.Name, out glyphTypefaces) &&
                         TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
                     {
                         return true;
