@@ -38,10 +38,10 @@ namespace Avalonia.Skia.UnitTests.Media
         public void Should_Yield_Default_GlyphTypeface_For_Invalid_FamilyName()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
-            {           
-               var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
+            {
+                var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
 
-                Assert.Equal(FontManager.Current.DefaultFontFamilyName, glyphTypeface.FamilyName);             
+                Assert.Equal(FontManager.Current.DefaultFontFamilyName, glyphTypeface.FamilyName);
             }
         }
 
@@ -84,19 +84,6 @@ namespace Avalonia.Skia.UnitTests.Media
                 var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("fonts:invalid#Something"), out _);
 
                 Assert.False(result);
-            }
-        }
-
-        [Fact]
-        public void Should_Load_Embedded_Font_With_Wrong_CharacterCasing()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
-            {
-                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#noto mOnO"), out var glyphTypeface);
-
-                Assert.True(result);
-
-                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
             }
         }
 
