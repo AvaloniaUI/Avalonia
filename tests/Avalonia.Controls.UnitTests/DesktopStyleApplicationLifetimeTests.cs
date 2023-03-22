@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -12,10 +13,13 @@ namespace Avalonia.Controls.UnitTests
     
     public class DesktopStyleApplicationLifetimeTests
     {
+        IDispatcherImpl CreateDispatcherWithInstantMainLoop() => Mock.Of<IControlledDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true);
+
+
         [Fact]
         public void Should_Set_ExitCode_After_Shutdown()
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: CreateDispatcherWithInstantMainLoop())))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())    
             {
                 lifetime.Shutdown(1337);
@@ -215,7 +219,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Allow_Canceling_Shutdown_Via_ShutdownRequested_Event()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: CreateDispatcherWithInstantMainLoop())))
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();

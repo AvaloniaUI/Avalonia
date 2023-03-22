@@ -16,31 +16,49 @@ namespace Avalonia.Threading
         {
             Value = value;
         }
+        
+        /// <summary>
+        /// Minimum possible priority that's actually dispatched, default value
+        /// </summary>
+        internal static readonly DispatcherPriority MinimumActiveValue = new(0);
 
         /// <summary>
-        /// Minimum possible priority
+        /// A dispatcher priority for jobs that shouldn't be executed yet
         /// </summary>
-        public static readonly DispatcherPriority MinValue = new(0);
-
+        public static DispatcherPriority Inactive => new(MinimumActiveValue - 1);
+        /// <summary>
+        /// Minimum valid priority
+        /// </summary>
+        internal static readonly DispatcherPriority MinValue = new(Inactive);
+        
+        /// <summary>
+        /// Used internally in dispatcher code
+        /// </summary>
+        public static DispatcherPriority Invalid => new(MinimumActiveValue - 2);
+        
+        
+        
         /// <summary>
         /// The job will be processed when the system is idle.
         /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority SystemIdle = MinValue;
+        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority SystemIdle = MinimumActiveValue;
 
         /// <summary>
         /// The job will be processed when the application is idle.
         /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority ApplicationIdle = MinValue;
+        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority ApplicationIdle = new (SystemIdle + 1);
 
         /// <summary>
         /// The job will be processed after background operations have completed.
         /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority ContextIdle = MinValue;
+        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority ContextIdle = new(ApplicationIdle + 1);
 
         /// <summary>
         /// The job will be processed with normal priority.
         /// </summary>
-        public static readonly DispatcherPriority Normal = MinValue;
+#pragma warning disable CS0618
+        public static readonly DispatcherPriority Normal = new(ContextIdle + 1);
+#pragma warning restore CS0618
 
         /// <summary>
         /// The job will be processed after other non-idle operations have completed.
@@ -127,5 +145,11 @@ namespace Avalonia.Threading
 
         /// <inheritdoc />
         public int CompareTo(DispatcherPriority other) => Value.CompareTo(other.Value);
+
+        public static void Validate(DispatcherPriority priority, string parameterName)
+        {
+            if (priority < Inactive || priority > MaxValue)
+                throw new ArgumentException("Invalid DispatcherPriority value", parameterName);
+        }
     }
 }

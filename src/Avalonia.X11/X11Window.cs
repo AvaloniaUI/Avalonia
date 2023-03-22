@@ -190,7 +190,7 @@ namespace Avalonia.X11
             UpdateMotifHints();
             UpdateSizeHints(null);
 
-            _rawEventGrouper = new RawEventGrouper(DispatchInput);
+            _rawEventGrouper = new RawEventGrouper(DispatchInput, platform.EventGrouperDispatchQueue);
             
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
@@ -515,7 +515,6 @@ namespace Avalonia.X11
                         if (changedSize && !updatedSizeViaScaling && !_popup)
                             Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
 
-                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                     }, DispatcherPriority.Layout);
                 if (_useRenderWindow)
                     XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
