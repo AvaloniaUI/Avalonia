@@ -16,16 +16,49 @@ namespace Avalonia.Threading
         {
             Value = value;
         }
+
+        /// <summary>
+        /// The lowest foreground dispatcher priority
+        /// </summary>
+        internal static readonly DispatcherPriority Default = new(0);
         
+        /// <summary>
+        /// The job will be processed with the same priority as input.
+        /// </summary>
+        public static readonly DispatcherPriority Input = new(Default - 1);
+        
+        /// <summary>
+        /// The job will be processed after other non-idle operations have completed.
+        /// </summary>
+        public static readonly DispatcherPriority Background = new(Input - 1);
+        
+        /// <summary>
+        /// The job will be processed after background operations have completed.
+        /// </summary>
+        public static readonly DispatcherPriority ContextIdle = new(Background - 1);
+        
+        
+        /// <summary>
+        /// The job will be processed when the application is idle.
+        /// </summary>
+        public static readonly DispatcherPriority ApplicationIdle = new (ContextIdle - 1);
+        
+        /// <summary>
+        /// The job will be processed when the system is idle.
+        /// </summary>
+        public static readonly DispatcherPriority SystemIdle = new(ApplicationIdle - 1);
+
         /// <summary>
         /// Minimum possible priority that's actually dispatched, default value
         /// </summary>
-        internal static readonly DispatcherPriority MinimumActiveValue = new(0);
+        internal static readonly DispatcherPriority MinimumActiveValue = new(SystemIdle);
 
+        
         /// <summary>
         /// A dispatcher priority for jobs that shouldn't be executed yet
         /// </summary>
         public static DispatcherPriority Inactive => new(MinimumActiveValue - 1);
+        
         /// <summary>
         /// Minimum valid priority
         /// </summary>
@@ -37,43 +70,10 @@ namespace Avalonia.Threading
         public static DispatcherPriority Invalid => new(MinimumActiveValue - 2);
         
         
-        
-        /// <summary>
-        /// The job will be processed when the system is idle.
-        /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority SystemIdle = MinimumActiveValue;
-
-        /// <summary>
-        /// The job will be processed when the application is idle.
-        /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority ApplicationIdle = new (SystemIdle + 1);
-
-        /// <summary>
-        /// The job will be processed after background operations have completed.
-        /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority ContextIdle = new(ApplicationIdle + 1);
-
-        /// <summary>
-        /// The job will be processed with normal priority.
-        /// </summary>
-#pragma warning disable CS0618
-        public static readonly DispatcherPriority Normal = new(ContextIdle + 1);
-#pragma warning restore CS0618
-
-        /// <summary>
-        /// The job will be processed after other non-idle operations have completed.
-        /// </summary>
-        public static readonly DispatcherPriority Background = new(MinValue + 1);
-
-        /// <summary>
-        /// The job will be processed with the same priority as input.
-        /// </summary>
-        public static readonly DispatcherPriority Input = new(Background + 1);
-
         /// <summary>
         /// The job will be processed after layout and render but before input.
         /// </summary>
-        public static readonly DispatcherPriority Loaded = new(Input + 1);
+        public static readonly DispatcherPriority Loaded = new(Default + 1);
 
         /// <summary>
         /// The job will be processed with the same priority as render.
@@ -98,12 +98,19 @@ namespace Avalonia.Threading
         /// <summary>
         /// The job will be processed with the same priority as data binding.
         /// </summary>
-        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority DataBind = MinValue;
+        [Obsolete("WPF compatibility")] public static readonly DispatcherPriority DataBind = new(Layout);
+        
+        /// <summary>
+        /// The job will be processed with normal priority.
+        /// </summary>
+#pragma warning disable CS0618
+        public static readonly DispatcherPriority Normal = new(DataBind + 1);
+#pragma warning restore CS0618
 
         /// <summary>
         /// The job will be processed before other asynchronous operations.
         /// </summary>
-        public static readonly DispatcherPriority Send = new(Layout + 1);
+        public static readonly DispatcherPriority Send = new(Normal + 1);
 
         /// <summary>
         /// Maximum possible priority
