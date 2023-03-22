@@ -57,7 +57,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// A dispatcher priority for jobs that shouldn't be executed yet
         /// </summary>
-        public static DispatcherPriority Inactive => new(MinimumActiveValue - 1);
+        public static readonly DispatcherPriority Inactive = new(MinimumActiveValue - 1);
         
         /// <summary>
         /// Minimum valid priority
@@ -67,7 +67,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Used internally in dispatcher code
         /// </summary>
-        public static DispatcherPriority Invalid => new(MinimumActiveValue - 2);
+        public static readonly DispatcherPriority Invalid = new(MinimumActiveValue - 2);
         
         
         /// <summary>
@@ -158,5 +158,42 @@ namespace Avalonia.Threading
             if (priority < Inactive || priority > MaxValue)
                 throw new ArgumentException("Invalid DispatcherPriority value", parameterName);
         }
+        
+#pragma warning disable CS0618
+        public override string ToString()
+        {
+            if (this == Invalid)
+                return nameof(Invalid);
+            if (this == Inactive)
+                return nameof(Inactive);
+            if (this == SystemIdle)
+                return nameof(SystemIdle);
+            if (this == ContextIdle)
+                return nameof(ContextIdle);
+            if (this == ApplicationIdle)
+                return nameof(ApplicationIdle);
+            if (this == Background)
+                return nameof(Background);
+            if (this == Input)
+                return nameof(Input);
+            if (this == Default)
+                return nameof(Default);
+            if (this == Loaded)
+                return nameof(Loaded);
+            if (this == Render)
+                return nameof(Render);
+            if (this == Composition)
+                return nameof(Composition);
+            if (this == PreComposition)
+                return nameof(PreComposition);
+            if (this == DataBind)
+                return nameof(DataBind);
+            if (this == Normal)
+                return nameof(Normal);
+            if (this == Send)
+                return nameof(Send);
+            return Value.ToString();
+        }
+#pragma warning restore CS0618
     }
 }
