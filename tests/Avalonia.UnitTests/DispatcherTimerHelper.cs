@@ -1,11 +1,6 @@
 using Avalonia.Threading;
 
-namespace Avalonia.Utilities;
-
-public class DispatcherTimerHelper
-{
-    
-}
+namespace Avalonia.UnitTests;
 
 public static class DispatcherTimerUtils
 {
