@@ -29,6 +29,8 @@ using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Text;
+using Avalonia.Input.Platform;
+using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -54,6 +56,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
+
+            (AvaloniaLocator.Current.GetRequiredService<IClipboard>() as ClipboardImpl)?
+                .SetClipboardManager(avaloniaView.Context?.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
 
             RenderScaling = _view.Scaling;
 

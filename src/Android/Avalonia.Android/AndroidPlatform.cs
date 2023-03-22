@@ -38,7 +38,7 @@ namespace Avalonia.Android
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IClipboard>().ToTransient<ClipboardImpl>()
+                .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
