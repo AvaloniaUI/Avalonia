@@ -468,8 +468,13 @@ namespace Avalonia.LeakTests
                 impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
+                impl.SetupProperty(x => x.BeforeClosed);
                 impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
-                impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
+                impl.Setup(x => x.Dispose()).Callback(() =>
+                {
+                    impl.Object.BeforeClosed();
+                    impl.Object.Closed();
+                });
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
                     .ToConstant(new MockWindowingPlatform(() => impl.Object));
