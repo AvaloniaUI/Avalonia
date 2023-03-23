@@ -383,6 +383,7 @@ namespace Avalonia.Controls.UnitTests
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
                     .Returns(() => RendererMocks.CreateRenderer().Object);
+                windowImpl.SetupProperty(x => x.BeforeClosed);
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -392,6 +393,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
+                windowImpl.Object.BeforeClosed();
                 windowImpl.Object.Closed();
                 await task;
 

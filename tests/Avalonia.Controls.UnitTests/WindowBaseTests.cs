@@ -211,7 +211,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Renderer_Should_Be_Disposed_When_Impl_Signals_Close()
+        public void Renderer_Should_Be_Disposed_When_Impl_Signals_BeforeClose()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -219,13 +219,13 @@ namespace Avalonia.Controls.UnitTests
                 var windowImpl = new Mock<IPopupImpl>();
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
-                windowImpl.SetupProperty(x => x.Closed);
+                windowImpl.SetupProperty(x => x.BeforeClosed);
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
                 var target = new TestWindowBase(windowImpl.Object);
 
                 target.Show();
-                windowImpl.Object.Closed();
+                windowImpl.Object.BeforeClosed();
 
                 renderer.Verify(x => x.Dispose(), Times.Once);
             }

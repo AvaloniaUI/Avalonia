@@ -45,6 +45,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Dispose()).Callback(() =>
             {
+                windowImpl.Object.BeforeClosed?.Invoke();
                 windowImpl.Object.Closed?.Invoke();
             });
 
