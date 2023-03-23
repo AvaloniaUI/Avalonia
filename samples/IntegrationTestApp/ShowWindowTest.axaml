@@ -3,6 +3,7 @@
         xmlns:integrationTestApp="clr-namespace:IntegrationTestApp"
         x:Class="IntegrationTestApp.ShowWindowTest"
         Name="SecondaryWindow"
+        x:DataType="Window"
         Title="Show Window Test">
   <integrationTestApp:MeasureBorder Name="MyBorder">
     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
@@ -14,14 +15,14 @@
       <TextBox Name="CurrentFrameSize" Grid.Column="1" Grid.Row="2" IsReadOnly="True"
                Text="{Binding FrameSize, Mode=OneWay}" />
 
-    <Label Grid.Column="0" Grid.Row="3">Position</Label>
-    <TextBox Name="Position" Grid.Column="1" Grid.Row="3" IsReadOnly="True"/>
+      <Label Grid.Column="0" Grid.Row="3">Position</Label>
+      <TextBox Name="CurrentPosition" Grid.Column="1" Grid.Row="3" IsReadOnly="True" />
 
-    <Label Grid.Column="0" Grid.Row="4">Owner Rect</Label>
-    <TextBox Name="OwnerRect" Grid.Column="1" Grid.Row="4" IsReadOnly="True"/>
-    
-    <Label Grid.Column="0" Grid.Row="5">Screen Rect</Label>
-    <TextBox Name="ScreenRect" Grid.Column="1" Grid.Row="5" IsReadOnly="True"/>
+      <Label Grid.Column="0" Grid.Row="4">Owner Rect</Label>
+      <TextBox Name="CurrentOwnerRect" Grid.Column="1" Grid.Row="4" IsReadOnly="True" />
+
+      <Label Grid.Column="0" Grid.Row="5">Screen Rect</Label>
+      <TextBox Name="CurrentScreenRect" Grid.Column="1" Grid.Row="5" IsReadOnly="True" />
 
       <Label Grid.Column="0" Grid.Row="6">Scaling</Label>
       <TextBox Name="CurrentScaling" Grid.Column="1" Grid.Row="6" IsReadOnly="True" />
