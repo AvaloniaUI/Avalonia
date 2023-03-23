@@ -242,6 +242,7 @@ namespace Avalonia.Browser
         public Action<Size, PlatformResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+        public Action? BeforeClosed { get; set; }
         public Action? Closed { get; set; }
         public Action? LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();

@@ -35,6 +35,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Func<WindowCloseReason, bool> Closing { get; set; }
+        public Action BeforeClosed { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();

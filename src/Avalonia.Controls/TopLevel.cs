@@ -162,6 +162,7 @@ namespace Avalonia.Controls
 
             impl.SetInputRoot(this);
 
+            impl.BeforeClosed = HandleBeforeClosed;
             impl.Closed = HandleClosed;
             impl.Input = HandleInput;
             impl.Paint = HandlePaint;
@@ -473,6 +474,18 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called before native TopLevel implementation is destroyed <see cref="ITopLevelImpl.BeforeClosed"/>.
+        /// </summary>
+        protected virtual void HandleBeforeClosed()
+        {
+            Renderer.SceneInvalidated -= SceneInvalidated;
+            // We need to wait for the renderer to complete any in-flight operations
+            Renderer.Dispose();
+            // The PlatformImpl becomes completely invalid after exiting this method
+            PlatformImpl = null;
+        }
+        
+        /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
         protected virtual void HandleClosed()
@@ -487,18 +500,13 @@ namespace Avalonia.Controls
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
 
-            Renderer.SceneInvalidated -= SceneInvalidated;
-            Renderer.Dispose();
-
             _layoutDiagnosticBridge?.Dispose();
             _layoutDiagnosticBridge = null;
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
             _backGestureSubscription?.Dispose();
-
-            PlatformImpl = null;
-
+            
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 

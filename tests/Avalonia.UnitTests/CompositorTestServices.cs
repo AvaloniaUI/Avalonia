@@ -187,6 +187,7 @@ public class CompositorTestServices : IDisposable
         {
         }
 
+        public Action BeforeClosed { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();

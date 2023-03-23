@@ -85,6 +85,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         {
         }
 
+        public Action? BeforeClosed { get; set; }
         public Action? Closed { get; set; }
         public Action? LostFocus { get; set; }
         public abstract IMouseDevice MouseDevice { get; }

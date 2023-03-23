@@ -85,6 +85,8 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
+                        BeforeClosed?.Invoke();
+                        
                         if (UiaCoreTypesApi.IsNetComInteropAvailable)
                         {
                             UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
@@ -95,6 +97,17 @@ namespace Avalonia.Win32
                         {
                             Imm32InputMethod.Current.ClearLanguageAndWindow();
                         }
+                        
+                        (_gl as IDisposable)?.Dispose();
+
+                        if (_dropTarget != null)
+                        {
+                            OleContext.Current?.UnregisterDragDrop(Handle);
+                            _dropTarget.Dispose();
+                            _dropTarget = null;
+                        }
+                        
+                        _framebuffer.Dispose();
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;

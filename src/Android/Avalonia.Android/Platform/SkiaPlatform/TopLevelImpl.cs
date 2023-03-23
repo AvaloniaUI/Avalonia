@@ -83,6 +83,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public Action Closed { get; set; }
+        
+        public Action BeforeClosed { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
 

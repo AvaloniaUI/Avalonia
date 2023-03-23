@@ -142,6 +142,11 @@ namespace Avalonia.Platform
         Action? Closed { get; set; }
         
         /// <summary>
+        /// Gets or sets a method called right before the underlying implementation is destroyed.
+        /// </summary>
+        Action? BeforeClosed { get; set; }
+        
+        /// <summary>
         /// Gets or sets a method called when the input focus is lost.
         /// </summary>
         Action? LostFocus { get; set; }

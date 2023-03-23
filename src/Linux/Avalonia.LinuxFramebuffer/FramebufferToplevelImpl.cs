@@ -70,6 +70,7 @@ using Avalonia.Rendering.Composition;
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
+        public Action BeforeClosed { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
 

@@ -39,6 +39,7 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
+            BeforeClosed?.Invoke();
             Closed?.Invoke();
             _lastRenderedFrame?.Dispose();
             _lastRenderedFrame = null;
@@ -77,6 +78,7 @@ namespace Avalonia.Headless
 
         }
 
+        public Action BeforeClosed { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; }
 

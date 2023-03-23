@@ -383,6 +383,7 @@ namespace Avalonia.X11
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public Action? Closed { get; set; }
+        public Action BeforeClosed { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
         public Action? LostFocus { get; set; }
 
@@ -528,7 +529,7 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.DestroyNotify 
                      && ev.DestroyWindowEvent.window == _handle)
             {
-                Cleanup();
+                Cleanup(true);
             }
             else if (ev.type == XEventName.ClientMessage)
             {
@@ -803,7 +804,7 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
-            Cleanup();            
+            Cleanup(false);            
         }
 
         public virtual object? TryGetFeature(Type featureType)
@@ -831,8 +832,11 @@ namespace Avalonia.X11
             return null;
         }
 
-        private void Cleanup()
+        private void Cleanup(bool fromDestroyNotification)
         {
+            if (_handle != IntPtr.Zero)
+                BeforeClosed?.Invoke();
+            
             if (_rawEventGrouper != null)
             {
                 _rawEventGrouper.Dispose();
@@ -873,7 +877,8 @@ namespace Avalonia.X11
                 Closed?.Invoke();
                 _mouse.Dispose();
                 _touch.Dispose();
-                XDestroyWindow(_x11.Display, handle);
+                if (!fromDestroyNotification)
+                    XDestroyWindow(_x11.Display, handle);
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)

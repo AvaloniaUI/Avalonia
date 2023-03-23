@@ -160,6 +160,7 @@ namespace Avalonia.Native
         
         public Action<Rect> Paint { get; set; }
         public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action BeforeClosed { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
@@ -183,6 +184,7 @@ namespace Avalonia.Native
                 var n = _parent._native;
                 try
                 {
+                    _parent?.BeforeClosed?.Invoke();
                     _parent?.Closed?.Invoke();
                 }
                 finally
