@@ -49,11 +49,6 @@ namespace Avalonia.Browser
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
         }
 
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
-
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             return GetRuntimePlatform()

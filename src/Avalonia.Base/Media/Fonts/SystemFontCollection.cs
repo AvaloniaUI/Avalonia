@@ -42,8 +42,6 @@ namespace Avalonia.Media.Fonts
                 familyName = _fontManager.DefaultFontFamilyName;
             }
 
-            familyName = familyName.ToUpperInvariant();
-
             var key = new FontCollectionKey(style, weight, stretch);
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
