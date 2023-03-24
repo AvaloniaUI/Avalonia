@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation), Orientation.Vertical);
 
         /// <summary>
-        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollBar, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<ScrollBar, bool>(
