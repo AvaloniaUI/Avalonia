@@ -1088,7 +1088,7 @@ namespace Avalonia.Controls
                         ++newIndex;
                     }
 
-                    if (realizedIndex <= 0)
+                    if (realizedIndex < 0)
                     {
                         // The insertion point was before the first element, update the first index.
                         _firstIndex += count;
