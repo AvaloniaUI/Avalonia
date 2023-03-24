@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls.Primitives;
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Presents a color for user editing using a spectrum, palette and component sliders within a drop down.

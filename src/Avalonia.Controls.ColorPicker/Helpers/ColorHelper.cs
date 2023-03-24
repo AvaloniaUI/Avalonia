@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Globalization;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Utilities;
 
@@ -11,8 +11,11 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public static class ColorHelper
     {
-        private static readonly Dictionary<Color, string> cachedDisplayNames = new Dictionary<Color, string>();
-        private static readonly object cacheMutex = new object();
+        private static readonly Dictionary<HsvColor, string> _cachedDisplayNames = new Dictionary<HsvColor, string>();
+        private static readonly Dictionary<KnownColor, string> _cachedKnownColorNames = new Dictionary<KnownColor, string>();
+        private static readonly object _displayNameCacheMutex = new object();
+        private static readonly object _knownColorCacheMutex = new object();
+        private static readonly KnownColor[] _knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
 
         /// <summary>
         /// Gets the relative (perceptual) luminance/brightness of the given color.
@@ -59,7 +62,36 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The approximate color display name.</returns>
         public static string ToDisplayName(Color color)
         {
-            // Without rounding, there are 16,777,216 possible RGB colors (without alpha).
+            var hsvColor = color.ToHsv();
+
+            // Handle extremes that are outside the below algorithm
+            if (color.A == 0x00)
+            {
+                return GetDisplayName(KnownColor.Transparent);
+            }
+
+            // HSV ----------------------------------------------------------------------
+            //
+            // There are far too many possible HSV colors to cache and search through
+            // for performance reasons. Therefore, the HSV color is rounded.
+            // Rounding is tolerable in this algorithm because it is perception based.
+            // Hue is the most important for user perception so is rounded the least.
+            // Then there is a lot of loss in rounding the saturation and value components
+            // which are not as closely related to perceived color.
+            //
+            //         Hue : Round to nearest int (0..360)
+            //  Saturation : Round to the nearest 1/10 (0..1)
+            //       Value : Round to the nearest 1/10 (0..1)
+            //       Alpha : Is ignored in this algorithm
+            //
+            // Rounding results in ~36_000 values to cache in the worse case.
+            //
+            // RGB ----------------------------------------------------------------------
+            //
+            // The original algorithm worked in RGB color space.
+            // If this code is every adjusted to work in RGB again note the following:
+            //
+            // Without rounding, there are 16_777_216 possible RGB colors (without alpha).
             // This is too many to cache and search through for performance reasons.
             // It is also needlessly large as there are only ~140 known/named colors.
             // Therefore, rounding of the input color's component values is done to
@@ -68,42 +100,67 @@ namespace Avalonia.Controls.Primitives
             // The rounding value of 5 is specially chosen.
             // It is a factor of 255 and therefore evenly divisible which improves
             // the quality of the calculations.
-            double rounding = 5;
-            var roundedColor = new Color(
-                0xFF,
-                Convert.ToByte(Math.Round(color.R / rounding) * rounding),
-                Convert.ToByte(Math.Round(color.G / rounding) * rounding),
-                Convert.ToByte(Math.Round(color.B / rounding) * rounding));
+            var roundedHsvColor = new HsvColor(
+                1.0,
+                Math.Round(hsvColor.H, 0),
+                Math.Round(hsvColor.S, 1),
+                Math.Round(hsvColor.V, 1));
 
             // Attempt to use a previously cached display name
-            lock (cacheMutex)
+            lock (_displayNameCacheMutex)
             {
-                if (cachedDisplayNames.TryGetValue(roundedColor, out var displayName))
+                if (_cachedDisplayNames.TryGetValue(roundedHsvColor, out var displayName))
                 {
                     return displayName;
                 }
             }
 
+            // Build the KnownColor name cache if it doesn't already exist
+            lock (_knownColorCacheMutex)
+            {
+                if (_cachedKnownColorNames.Count == 0)
+                {
+                    for (int i = 1; i < _knownColors.Length; i++) // Skip 'None' so start at 1
+                    {
+                        KnownColor knownColor = _knownColors[i];
+
+                        // Some known colors have the same numerical value. For example:
+                        //  - Aqua = 0xff00ffff
+                        //  - Cyan = 0xff00ffff
+                        //
+                        // This is not possible to represent in a dictionary which requires
+                        // unique values. Therefore, only the first value is used.
+
+                        if (!_cachedKnownColorNames.ContainsKey(knownColor))
+                        {
+                            _cachedKnownColorNames.Add(knownColor, GetDisplayName(knownColor));
+                        }
+                    }
+                }
+            }
+
             // Find the closest known color by measuring 3D Euclidean distance (ignore alpha)
+            // This is done in HSV color space to most closely match user-perception
             var closestKnownColor = KnownColor.None;
             var closestKnownColorDistance = double.PositiveInfinity;
-            var knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
 
-            for (int i = 1; i < knownColors.Length; i++) // Skip 'None'
+            for (int i = 1; i < _knownColors.Length; i++) // Skip 'None' so start at 1
             {
+                KnownColor knownColor = _knownColors[i];
+
                 // Transparent is skipped since alpha is ignored making it equivalent to White
-                if (knownColors[i] != KnownColor.Transparent)
+                if (knownColor != KnownColor.Transparent)
                 {
-                    Color knownColor = KnownColors.ToColor(knownColors[i]);
+                    HsvColor knownHsvColor = KnownColors.ToColor(knownColor).ToHsv();
 
                     double distance = Math.Sqrt(
-                        Math.Pow((double)(roundedColor.R - knownColor.R), 2.0) +
-                        Math.Pow((double)(roundedColor.G - knownColor.G), 2.0) +
-                        Math.Pow((double)(roundedColor.B - knownColor.B), 2.0));
+                        Math.Pow((roundedHsvColor.H - knownHsvColor.H), 2.0) +
+                        Math.Pow((roundedHsvColor.S - knownHsvColor.S), 2.0) +
+                        Math.Pow((roundedHsvColor.V - knownHsvColor.V), 2.0));
 
                     if (distance < closestKnownColorDistance)
                     {
-                        closestKnownColor = knownColors[i];
+                        closestKnownColor = knownColor;
                         closestKnownColorDistance = distance;
                     }
                 }
@@ -113,26 +170,19 @@ namespace Avalonia.Controls.Primitives
             // Cache results for next time as well
             if (closestKnownColor != KnownColor.None)
             {
-                var sb = StringBuilderCache.Acquire();
-                string name = closestKnownColor.ToString();
+                string? displayName;
 
-                // Add spaces converting PascalCase to human-readable names
-                for (int i = 0; i < name.Length; i++)
+                lock (_knownColorCacheMutex)
                 {
-                    if (i != 0 &&
-                        char.IsUpper(name[i]))
+                    if (!_cachedKnownColorNames.TryGetValue(closestKnownColor, out displayName))
                     {
-                        sb.Append(' ');
+                        displayName = GetDisplayName(closestKnownColor);
                     }
-
-                    sb.Append(name[i]);
                 }
 
-                string displayName = StringBuilderCache.GetStringAndRelease(sb);
-
-                lock (cacheMutex)
+                lock (_displayNameCacheMutex)
                 {
-                    cachedDisplayNames.Add(roundedColor, displayName);
+                    _cachedDisplayNames.Add(roundedHsvColor, displayName);
                 }
 
                 return displayName;
@@ -141,6 +191,36 @@ namespace Avalonia.Controls.Primitives
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Gets the human-readable display name for the given <see cref="KnownColor"/>.
+        /// </summary>
+        /// <remarks>
+        /// This currently uses the <see cref="KnownColor"/> enum value's C# name directly
+        /// which limits it to the EN language only. In the future this should be localized
+        /// to other cultures.
+        /// </remarks>
+        /// <param name="knownColor">The <see cref="KnownColor"/> to get the display name for.</param>
+        /// <returns>The human-readable display name for the given <see cref="KnownColor"/>.</returns>
+        private static string GetDisplayName(KnownColor knownColor)
+        {
+            var sb = StringBuilderCache.Acquire();
+            string name = knownColor.ToString();
+
+            // Add spaces converting PascalCase to human-readable names
+            for (int i = 0; i < name.Length; i++)
+            {
+                if (i != 0 &&
+                    char.IsUpper(name[i]))
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append(name[i]);
+            }
+
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
     }
 }
