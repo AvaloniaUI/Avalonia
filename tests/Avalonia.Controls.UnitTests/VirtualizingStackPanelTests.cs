@@ -92,7 +92,40 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Creates_Elements_On_Item_Insert()
+        public void Creates_Elements_On_Item_Insert_1()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (IList)itemsControl.ItemsSource!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            items.Insert(0, "new");
+
+            Assert.Equal(11, target.GetRealizedElements().Count);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Blank space inserted in realized elements and subsequent indexes updated.
+            Assert.Equal(new[] { -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, indexes);
+
+            var elements = target.GetRealizedElements().ToList();
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout an element for the new element is created.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+
+            // But apart from the new element and the removed last element, all existing elements
+            // should be the same.
+            elements[0] = target.GetRealizedElements().ElementAt(0);
+            elements.RemoveAt(elements.Count - 1);
+            Assert.Equal(elements, target.GetRealizedElements());
+        }
+
+        [Fact]
+        public void Creates_Elements_On_Item_Insert_2()
         {
             using var app = App();
             var (target, _, itemsControl) = CreateTarget();
@@ -106,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
 
             var indexes = GetRealizedIndexes(target, itemsControl);
 
-            // Blank space inserted in realized elements and subsequent row indexes updated.
+            // Blank space inserted in realized elements and subsequent indexes updated.
             Assert.Equal(new[] { 0, 1, -1, 3, 4, 5, 6, 7, 8, 9, 10 }, indexes);
 
             var elements = target.GetRealizedElements().ToList();
@@ -114,10 +147,11 @@ namespace Avalonia.Controls.UnitTests
 
             indexes = GetRealizedIndexes(target, itemsControl);
 
-            // After layout an element for the new row is created.
+            // After layout an element for the new element is created.
             Assert.Equal(Enumerable.Range(0, 10), indexes);
 
-            // But apart from the new row and the removed last row, all existing elements should be the same.
+            // But apart from the new element and the removed last element, all existing elements
+            // should be the same.
             elements[2] = target.GetRealizedElements().ElementAt(2);
             elements.RemoveAt(elements.Count - 1);
             Assert.Equal(elements, target.GetRealizedElements());
