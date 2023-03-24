@@ -31,11 +31,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var text = "\t";
+                var text = "012345\t";
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12, 0, CultureInfo.CurrentCulture, 100);
-                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+                var shapedBuffer = TextShaper.Current.ShapeText(text.AsMemory().Slice(6), options);
 
-                Assert.Equal(shapedBuffer.Length, text.Length);
+                Assert.Equal(1, shapedBuffer.Length);
                 Assert.Equal(100, shapedBuffer[0].GlyphAdvance);
             }
         }

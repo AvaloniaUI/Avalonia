@@ -697,13 +697,8 @@ namespace Avalonia.Media.TextFormatting
 
                     i = lastRunIndex;
 
-                    if (directionalWidth == 0)
-                    {
-                        continue;
-                    }
-
-                    var coveredLength = 0;
-                    TextBounds? textBounds = null;
+                    int coveredLength;
+                    TextBounds? textBounds;
 
                     switch (currentDirection)
                     {
@@ -831,14 +826,8 @@ namespace Avalonia.Media.TextFormatting
 
                     i = firstRunIndex;
 
-                    if (directionalWidth == 0)
-                    {
-                        continue;
-                    }
-
-                    var coveredLength = 0;
-
                     TextBounds? textBounds = null;
+                    int coveredLength;
 
                     switch (currentDirection)
                     {
