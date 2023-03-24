@@ -52,34 +52,32 @@ namespace Avalonia.Controls
         /// </summary>
         /// <value>The identifier for the <see cref="IsTextCompletionEnabled" /> property.</value>
         public static readonly StyledProperty<bool> IsTextCompletionEnabledProperty =
-            AvaloniaProperty.Register<AutoCompleteBox, bool>(nameof(IsTextCompletionEnabled));
+            AvaloniaProperty.Register<AutoCompleteBox, bool>(
+                nameof(IsTextCompletionEnabled));
 
         /// <summary>
         /// Identifies the <see cref="ItemTemplate" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="ItemTemplate" /> property.</value>
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
-            AvaloniaProperty.Register<AutoCompleteBox, IDataTemplate>(nameof(ItemTemplate));
+            AvaloniaProperty.Register<AutoCompleteBox, IDataTemplate>(
+                nameof(ItemTemplate));
 
         /// <summary>
         /// Identifies the <see cref="IsDropDownOpen" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="IsDropDownOpen" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, bool> IsDropDownOpenProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, bool>(
-                nameof(IsDropDownOpen),
-                o => o.IsDropDownOpen,
-                (o, v) => o.IsDropDownOpen = v);
+        public static readonly StyledProperty<bool> IsDropDownOpenProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, bool>(
+                nameof(IsDropDownOpen));
 
         /// <summary>
         /// Identifies the <see cref="SelectedItem" /> property.
         /// </summary>
         /// <value>The identifier the <see cref="SelectedItem" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, object?> SelectedItemProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, object?>(
+        public static readonly StyledProperty<object?> SelectedItemProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, object?>(
                 nameof(SelectedItem),
-                o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v,
                 defaultBindingMode: BindingMode.TwoWay,
                 enableDataValidation: true);
 
@@ -115,58 +113,50 @@ namespace Avalonia.Controls
         /// Identifies the <see cref="ItemFilter" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="ItemFilter" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteFilterPredicate<object?>?> ItemFilterProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteFilterPredicate<object?>?>(
-                nameof(ItemFilter),
-                o => o.ItemFilter,
-                (o, v) => o.ItemFilter = v);
+        public static readonly StyledProperty<AutoCompleteFilterPredicate<object?>?> ItemFilterProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteFilterPredicate<object?>?>(
+                nameof(ItemFilter));
 
         /// <summary>
         /// Identifies the <see cref="TextFilter" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="TextFilter" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteFilterPredicate<string?>?> TextFilterProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteFilterPredicate<string?>?>(
+        public static readonly StyledProperty<AutoCompleteFilterPredicate<string?>?> TextFilterProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteFilterPredicate<string?>?>(
                 nameof(TextFilter),
-                o => o.TextFilter,
-                (o, v) => o.TextFilter = v,
-                unsetValue: AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith));
+                defaultValue: AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith));
 
         /// <summary>
         /// Identifies the <see cref="ItemSelector" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="ItemSelector" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<object>?> ItemSelectorProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<object>?>(
-                nameof(ItemSelector),
-                o => o.ItemSelector,
-                (o, v) => o.ItemSelector = v);
+        public static readonly StyledProperty<AutoCompleteSelector<object>?> ItemSelectorProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteSelector<object>?>(
+                nameof(ItemSelector));
 
         /// <summary>
         /// Identifies the <see cref="TextSelector" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="TextSelector" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<string?>?> TextSelectorProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<string?>?>(
-                nameof(TextSelector),
-                o => o.TextSelector,
-                (o, v) => o.TextSelector = v);
+        public static readonly StyledProperty<AutoCompleteSelector<string?>?> TextSelectorProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteSelector<string?>?>(
+                nameof(TextSelector));
 
         /// <summary>
         /// Identifies the <see cref="Items" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="Items" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, IEnumerable?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, IEnumerable?>(
-                nameof(Items),
-                o => o.Items,
-                (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, IEnumerable?>(
+                nameof(Items));
 
-        public static readonly DirectProperty<AutoCompleteBox, Func<string?, CancellationToken, Task<IEnumerable<object>>>?> AsyncPopulatorProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, Func<string?, CancellationToken, Task<IEnumerable<object>>>?>(
-                nameof(AsyncPopulator),
-                o => o.AsyncPopulator,
-                (o, v) => o.AsyncPopulator = v);
+        /// <summary>
+        /// Identifies the <see cref="AsyncPopulator" /> property.
+        /// </summary>
+        /// <value>The identifier for the <see cref="AsyncPopulator" /> property.</value>
+        public static readonly StyledProperty<Func<string?, CancellationToken, Task<IEnumerable<object>>>?> AsyncPopulatorProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, Func<string?, CancellationToken, Task<IEnumerable<object>>>?>(
+                nameof(AsyncPopulator));
 
         /// <summary>
         /// Gets or sets the minimum number of characters required to be entered
@@ -265,8 +255,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsDropDownOpen
         {
-            get => _isDropDownOpen;
-            set => SetAndRaise(IsDropDownOpenProperty, ref  _isDropDownOpen, value);
+            get => GetValue(IsDropDownOpenProperty);
+            set => SetValue(IsDropDownOpenProperty, value);
         }
 
         /// <summary>
@@ -303,8 +293,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public object? SelectedItem
         {
-            get => _selectedItem;
-            set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+            get => GetValue(SelectedItemProperty);
+            set => SetValue(SelectedItemProperty, value);
         }
 
         /// <summary>
@@ -388,8 +378,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public AutoCompleteFilterPredicate<object?>? ItemFilter
         {
-            get => _itemFilter;
-            set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
+            get => GetValue(ItemFilterProperty);
+            set => SetValue(ItemFilterProperty, value);
         }
 
         /// <summary>
@@ -406,8 +396,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public AutoCompleteFilterPredicate<string?>? TextFilter
         {
-            get => _textFilter;
-            set => SetAndRaise(TextFilterProperty, ref _textFilter, value);
+            get => GetValue(TextFilterProperty);
+            set => SetValue(TextFilterProperty, value);
         }
 
         /// <summary>
@@ -420,8 +410,8 @@ namespace Avalonia.Controls
         /// </value>
         public AutoCompleteSelector<object>? ItemSelector
         {
-            get => _itemSelector;
-            set => SetAndRaise(ItemSelectorProperty, ref _itemSelector, value);
+            get => GetValue(ItemSelectorProperty);
+            set => SetValue(ItemSelectorProperty, value);
         }
 
         /// <summary>
@@ -436,14 +426,14 @@ namespace Avalonia.Controls
         /// </value>
         public AutoCompleteSelector<string?>? TextSelector
         {
-            get => _textSelector;
-            set => SetAndRaise(TextSelectorProperty, ref _textSelector, value);
+            get => GetValue(TextSelectorProperty);
+            set => SetValue(TextSelectorProperty, value);
         }
 
         public Func<string?, CancellationToken, Task<IEnumerable<object>>>? AsyncPopulator
         {
-            get => _asyncPopulator;
-            set => SetAndRaise(AsyncPopulatorProperty, ref _asyncPopulator, value);
+            get => GetValue(AsyncPopulatorProperty);
+            set => SetValue(AsyncPopulatorProperty, value);
         }
 
         /// <summary>
@@ -454,8 +444,8 @@ namespace Avalonia.Controls
         /// drop-down portion of the <see cref="AutoCompleteBox" /> control.</value>
         public IEnumerable? Items
         {
-            get => _itemsEnumerable;
-            set => SetAndRaise(ItemsProperty, ref _itemsEnumerable, value);
+            get => GetValue(ItemsProperty);
+            set => SetValue(ItemsProperty, value);
         }
     }
 }
