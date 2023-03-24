@@ -80,7 +80,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Slider, TickPlacement>(nameof(TickPlacement), 0d);
 
         /// <summary>
-        /// Defines the <see cref="TicksProperty"/> property.
+        /// Defines the <see cref="Ticks"/> property.
         /// </summary>
         public static readonly StyledProperty<AvaloniaList<double>?> TicksProperty =
             TickBar.TicksProperty.AddOwner<Slider>();
