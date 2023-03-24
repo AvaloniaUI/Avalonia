@@ -13,7 +13,9 @@ namespace Avalonia.Platform
         Gray8,
         Gray16,
         Gray32Float,
-        Rgba64
+        Rgba64,
+        Rgb24,
+        Bgr24
     }
 
     public record struct PixelFormat
@@ -35,6 +37,8 @@ namespace Avalonia.Platform
                 else if (FormatEnum == PixelFormatEnum.Rgb565 
                          || FormatEnum == PixelFormatEnum.Gray16)
                     return 16;
+                else if (FormatEnum is PixelFormatEnum.Bgr24 or PixelFormatEnum.Rgb24)
+                    return 24;
                 else if (FormatEnum == PixelFormatEnum.Rgba64)
                     return 64;
 
@@ -70,5 +74,7 @@ namespace Avalonia.Platform
         public static PixelFormat Gray8 { get; } = new PixelFormat(PixelFormatEnum.Gray8);
         public static PixelFormat Gray16 { get; } = new PixelFormat(PixelFormatEnum.Gray16);
         public static PixelFormat Gray32Float { get; } = new PixelFormat(PixelFormatEnum.Gray32Float);
+        public static PixelFormat Rgb24 { get; } = new PixelFormat(PixelFormatEnum.Rgb24);
+        public static PixelFormat Bgr24 { get; } = new PixelFormat(PixelFormatEnum.Bgr24);
     }
 }

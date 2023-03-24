@@ -228,6 +228,44 @@ static unsafe class PixelFormatReader
 
         public void Reset(IntPtr address) => _address = (Rgba64*)address;
     }
+    
+    public unsafe struct Rgb24PixelFormatReader : IPixelFormatReader
+    {
+        private byte* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var addr = _address;
+            _address += 3;
+            return new Rgba8888Pixel
+            {
+                R = addr[0],
+                G = addr[1],
+                B = addr[2],
+                A = 255,
+            };
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+    }
+    
+    public unsafe struct Bgr24PixelFormatReader : IPixelFormatReader
+    {
+        private byte* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var addr = _address;
+            _address += 3;
+            return new Rgba8888Pixel
+            {
+                R = addr[2],
+                G = addr[1],
+                B = addr[0],
+                A = 255,
+            };
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+    }
 
     public static void Transcode(IntPtr dst, IntPtr src, PixelSize size, int strideSrc, int strideDst,
         PixelFormat format)
@@ -242,6 +280,10 @@ static unsafe class PixelFormatReader
             Transcode<Gray8PixelReader>(dst, src, size, strideSrc, strideDst);
         else if (format == PixelFormats.Gray16)
             Transcode<Gray16PixelReader>(dst, src, size, strideSrc, strideDst);
+        else if (format == PixelFormats.Rgb24)
+            Transcode<Rgb24PixelFormatReader>(dst, src, size, strideSrc, strideDst);
+        else if (format == PixelFormats.Bgr24)
+            Transcode<Bgr24PixelFormatReader>(dst, src, size, strideSrc, strideDst);
         else if (format == PixelFormats.Gray32Float)
             Transcode<Gray32FloatPixelReader>(dst, src, size, strideSrc, strideDst);
         else if (format == PixelFormats.Rgba64)
@@ -258,7 +300,9 @@ static unsafe class PixelFormatReader
                || format == PixelFormats.Gray8
                || format == PixelFormats.Gray16
                || format == PixelFormats.Gray32Float
-               || format == PixelFormats.Rgba64;
+               || format == PixelFormats.Rgba64
+               || format == PixelFormats.Bgr24
+               || format == PixelFormats.Rgb24;
     }
     
     public static void Transcode<TReader>(IntPtr dst, IntPtr src, PixelSize size, int strideSrc, int strideDst) where TReader : struct, IPixelFormatReader
