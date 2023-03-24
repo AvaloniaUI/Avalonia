@@ -54,9 +54,9 @@ namespace Avalonia.PropertyStore
         /// </remarks>
         public void BeginReevaluation(bool clearLocalValue = false)
         {
-            if (clearLocalValue || Priority != BindingPriority.LocalValue)
+            if (clearLocalValue || (Priority != BindingPriority.LocalValue && !IsOverridenCurrentValue))
                 Priority = BindingPriority.Unset;
-            if (clearLocalValue || BasePriority != BindingPriority.LocalValue)
+            if (clearLocalValue || (BasePriority != BindingPriority.LocalValue && !IsOverridenCurrentValue))
                 BasePriority = BindingPriority.Unset;
         }
 

@@ -11,8 +11,6 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IPlatformThreadingInterface
     {
-        void RunLoop(CancellationToken cancellationToken);
-
         /// <summary>
         /// Starts a timer.
         /// </summary>

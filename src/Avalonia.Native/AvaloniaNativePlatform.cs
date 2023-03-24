@@ -9,6 +9,7 @@ using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using MicroCom.Runtime;
 #nullable enable
 
@@ -98,8 +99,8 @@ namespace Avalonia.Native
             }
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>()
-                .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
+                .Bind<IDispatcherImpl>()
+                .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)

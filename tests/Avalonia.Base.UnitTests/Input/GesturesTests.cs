@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Base.UnitTests.Utilities;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
@@ -7,14 +9,16 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Moq;
 using Xunit;
+// ReSharper disable RedundantArgumentDefaultValue
 
 namespace Avalonia.Base.UnitTests.Input
 {
     public class GesturesTests
     {
-        private MouseTestHelper _mouse = new MouseTestHelper();
+        private readonly MouseTestHelper _mouse = new MouseTestHelper();
         
         [Fact]
         public void Tapped_Should_Follow_Pointer_Pressed_Released()
@@ -60,7 +64,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.TappedEvent, (_, _) => raised = true);
 
             _mouse.Click(border, MouseButton.Middle);
 
@@ -77,7 +81,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.TappedEvent, (_, _) => raised = true);
 
             _mouse.Click(border, MouseButton.Right);
 
@@ -94,7 +98,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.RightTappedEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.RightTappedEvent, (_, _) => raised = true);
 
             _mouse.Click(border, MouseButton.Right);
 
@@ -147,7 +151,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.DoubleTappedEvent, (_, _) => raised = true);
 
             _mouse.Click(border, MouseButton.Middle);
             _mouse.Down(border, MouseButton.Middle, clickCount: 2);
@@ -165,7 +169,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.DoubleTappedEvent, (_, _) => raised = true);
 
             _mouse.Click(border, MouseButton.Right);
             _mouse.Down(border, MouseButton.Right, clickCount: 2);
@@ -182,10 +186,8 @@ namespace Avalonia.Base.UnitTests.Input
             iSettingsMock.Setup(x => x.GetTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
-
-            var scheduledTimers = new List<(TimeSpan time, Action action)>();
-            using var app = UnitTestApplication.Start(new TestServices(
-                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+            
+            using var app = UnitTestApplication.Start();
 
             Border border = new Border();
             Gestures.SetIsHoldWithMouseEnabled(border, true);
@@ -195,15 +197,15 @@ namespace Avalonia.Base.UnitTests.Input
             };
             HoldingState holding = HoldingState.Cancelled;
 
-            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => holding = e.HoldingState);
+            decorator.AddHandler(Gestures.HoldingEvent, (_, e) => holding = e.HoldingState);
             
             _mouse.Down(border);
             Assert.False(holding != HoldingState.Cancelled);
             
             // Verify timer duration, but execute it immediately.
-            var timer = Assert.Single(scheduledTimers);
-            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
-            timer.action();
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.Interval);
+            timer.ForceFire();
 
             Assert.True(holding == HoldingState.Started);
 
@@ -220,10 +222,8 @@ namespace Avalonia.Base.UnitTests.Input
             iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
-
-            var scheduledTimers = new List<(TimeSpan time, Action action)>();
-            using var app = UnitTestApplication.Start(new TestServices(
-                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+            
+            using var app = UnitTestApplication.Start();
 
             Border border = new Border();
             Gestures.SetIsHoldWithMouseEnabled(border, true);
@@ -233,7 +233,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => raised = e.HoldingState == HoldingState.Started);
+            decorator.AddHandler(Gestures.HoldingEvent, (_, e) => raised = e.HoldingState == HoldingState.Started);
             
             _mouse.Down(border);
             Assert.False(raised);
@@ -242,9 +242,9 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.False(raised);
             
             // Verify timer duration, but execute it immediately.
-            var timer = Assert.Single(scheduledTimers);
-            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
-            timer.action();
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.Interval);
+            timer.ForceFire();
 
             Assert.False(raised);
         }
@@ -257,10 +257,8 @@ namespace Avalonia.Base.UnitTests.Input
             iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
-
-            var scheduledTimers = new List<(TimeSpan time, Action action)>();
-            using var app = UnitTestApplication.Start(new TestServices(
-                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+            
+            using var app = UnitTestApplication.Start();
 
             Border border = new Border();
             Gestures.SetIsHoldWithMouseEnabled(border, true);
@@ -270,7 +268,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => raised = e.HoldingState == HoldingState.Completed);
+            decorator.AddHandler(Gestures.HoldingEvent, (_, e) => raised = e.HoldingState == HoldingState.Completed);
             
             _mouse.Down(border);
             Assert.False(raised);
@@ -279,9 +277,9 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.False(raised);
             
             // Verify timer duration, but execute it immediately.
-            var timer = Assert.Single(scheduledTimers);
-            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
-            timer.action();
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.Interval);
+            timer.ForceFire();
 
             Assert.False(raised);
         }
@@ -294,10 +292,8 @@ namespace Avalonia.Base.UnitTests.Input
             iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
-
-            var scheduledTimers = new List<(TimeSpan time, Action action)>();
-            using var app = UnitTestApplication.Start(new TestServices(
-                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+            
+            using var app = UnitTestApplication.Start();
 
             Border border = new Border();
             Gestures.SetIsHoldWithMouseEnabled(border, true);
@@ -307,14 +303,14 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var cancelled = false;
 
-            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
+            decorator.AddHandler(Gestures.HoldingEvent, (_, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
             
             _mouse.Down(border);
             Assert.False(cancelled);
 
-            var timer = Assert.Single(scheduledTimers);
-            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
-            timer.action();
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.Interval);
+            timer.ForceFire();
 
             var secondMouse = new MouseTestHelper();
 
@@ -333,9 +329,7 @@ namespace Avalonia.Base.UnitTests.Input
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
 
-            var scheduledTimers = new List<(TimeSpan time, Action action)>();
-            using var app = UnitTestApplication.Start(new TestServices(
-                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+            using var app = UnitTestApplication.Start();
 
             Border border = new Border();
             Gestures.SetIsHoldWithMouseEnabled(border, true);
@@ -345,13 +339,13 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var cancelled = false;
 
-            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
+            decorator.AddHandler(Gestures.HoldingEvent, (_, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
             
             _mouse.Down(border);
 
-            var timer = Assert.Single(scheduledTimers);
-            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
-            timer.action();
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.Interval);
+            timer.ForceFire();
 
             _mouse.Move(border, position: new Point(3, 3));
 
@@ -371,9 +365,7 @@ namespace Avalonia.Base.UnitTests.Input
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
 
-            var scheduledTimers = new List<(TimeSpan time, Action action)>();
-            using var app = UnitTestApplication.Start(new TestServices(
-                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+            using var app = UnitTestApplication.Start();
             
             Border border = new Border();
             Gestures.SetIsHoldWithMouseEnabled(border, true);
@@ -383,30 +375,20 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => raised = e.HoldingState == HoldingState.Completed);
+            decorator.AddHandler(Gestures.HoldingEvent, (_, e) => raised = e.HoldingState == HoldingState.Completed);
 
             var secondMouse = new MouseTestHelper();
 
             _mouse.Down(border, MouseButton.Left);
 
             // Verify timer duration, but execute it immediately.
-            var timer = Assert.Single(scheduledTimers);
-            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
-            timer.action();
+            var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.Interval);
+            timer.ForceFire();
 
             secondMouse.Down(border, MouseButton.Left);
 
             Assert.False(raised);
-        }
-
-        private static IPlatformThreadingInterface CreatePlatformThreadingInterface(Action<(TimeSpan, Action)> callback)
-        {
-            var threadingInterface = new Mock<IPlatformThreadingInterface>();
-            threadingInterface.SetupGet(p => p.CurrentThreadIsLoopThread).Returns(true);
-            threadingInterface.Setup(p => p
-                    .StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
-                .Callback<DispatcherPriority, TimeSpan, Action>((_, t, a) => callback((t, a)));
-            return threadingInterface.Object;
         }
         
         private static void AddHandlers(
@@ -415,7 +397,7 @@ namespace Avalonia.Base.UnitTests.Input
             IList<string> result,
             bool markHandled)
         {
-            decorator.AddHandler(Border.PointerPressedEvent, (s, e) =>
+            decorator.AddHandler(InputElement.PointerPressedEvent, (_, e) =>
             {
                 result.Add("dp");
 
@@ -425,7 +407,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             });
 
-            decorator.AddHandler(Border.PointerReleasedEvent, (s, e) =>
+            decorator.AddHandler(InputElement.PointerReleasedEvent, (_, e) =>
             {
                 result.Add("dr");
 
@@ -435,13 +417,13 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             });
 
-            border.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("bp"));
-            border.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("br"));
+            border.AddHandler(InputElement.PointerPressedEvent, (_, _) => result.Add("bp"));
+            border.AddHandler(InputElement.PointerReleasedEvent, (_, _) => result.Add("br"));
 
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("dt"));
-            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("ddt"));
-            border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
-            border.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("bdt"));
+            decorator.AddHandler(Gestures.TappedEvent, (_, _) => result.Add("dt"));
+            decorator.AddHandler(Gestures.DoubleTappedEvent, (_, _) => result.Add("ddt"));
+            border.AddHandler(Gestures.TappedEvent, (_, _) => result.Add("bt"));
+            border.AddHandler(Gestures.DoubleTappedEvent, (_, _) => result.Add("bdt"));
         }
 
         [Fact]
@@ -462,7 +444,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.PinchEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.PinchEvent, (_, _) => raised = true);
 
             var firstPoint = new Point(5, 5);
             var secondPoint = new Point(10, 10);
@@ -490,7 +472,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.PinchEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.PinchEvent, (_, _) => raised = true);
 
             var firstPoint = new Point(5, 5);
             var secondPoint = new Point(10, 10);
@@ -526,7 +508,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var raised = false;
 
-            decorator.AddHandler(Gestures.ScrollGestureEvent, (s, e) => raised = true);
+            decorator.AddHandler(Gestures.ScrollGestureEvent, (_, _) => raised = true);
 
             var firstTouch = new TouchTestHelper();
 

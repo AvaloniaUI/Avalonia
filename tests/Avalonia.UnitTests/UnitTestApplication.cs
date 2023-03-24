@@ -43,7 +43,7 @@ namespace Avalonia.UnitTests
         {
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
-            Dispatcher.UIThread.UpdateServices();
+            Dispatcher.ResetForUnitTests();
             return Disposable.Create(() =>
             {
                 if (Dispatcher.UIThread.CheckAccess())
@@ -52,7 +52,7 @@ namespace Avalonia.UnitTests
                 }
 
                 scope.Dispose();
-                Dispatcher.UIThread.UpdateServices();
+                Dispatcher.ResetForUnitTests();
             });
         }
 
@@ -71,7 +71,7 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
-                .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
+                .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();

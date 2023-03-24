@@ -1,159 +1,121 @@
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 
-namespace Avalonia.Threading
+namespace Avalonia.Threading;
+
+/// <summary>
+/// Provides services for managing work items on a thread.
+/// </summary>
+/// <remarks>
+/// In Avalonia, there is usually only a single <see cref="Dispatcher"/> in the application -
+/// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
+/// </remarks>
+public partial class Dispatcher : IDispatcher
 {
-    /// <summary>
-    /// Provides services for managing work items on a thread.
-    /// </summary>
-    /// <remarks>
-    /// In Avalonia, there is usually only a single <see cref="Dispatcher"/> in the application -
-    /// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
-    /// </remarks>
-    public class Dispatcher : IDispatcher
+    private IDispatcherImpl _impl;
+    internal object InstanceLock { get; } = new();
+    private bool _hasShutdownFinished;
+    private IControlledDispatcherImpl? _controlledImpl;
+    private static Dispatcher? s_uiThread;
+    private IDispatcherImplWithPendingInput? _pendingInputImpl;
+    private IDispatcherImplWithExplicitBackgroundProcessing? _backgroundProcessingImpl;
+
+    internal Dispatcher(IDispatcherImpl impl)
     {
-        private readonly JobRunner _jobRunner;
-        private IPlatformThreadingInterface? _platform;
+        _impl = impl;
+        impl.Timer += OnOSTimer;
+        impl.Signaled += Signaled;
+        _controlledImpl = _impl as IControlledDispatcherImpl;
+        _pendingInputImpl = _impl as IDispatcherImplWithPendingInput;
+        _backgroundProcessingImpl = _impl as IDispatcherImplWithExplicitBackgroundProcessing;
+        if (_backgroundProcessingImpl != null)
+            _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
+    }
+    
+    public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();
 
-        public static Dispatcher UIThread { get; } =
-            new Dispatcher(AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>());
-
-        public Dispatcher(IPlatformThreadingInterface? platform)
+    private static Dispatcher CreateUIThreadDispatcher()
+    {
+        var impl = AvaloniaLocator.Current.GetService<IDispatcherImpl>();
+        if (impl == null)
         {
-            _platform = platform;
-            _jobRunner = new JobRunner(platform);
+            var platformThreading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
+            if (platformThreading != null)
+                impl = new LegacyDispatcherImpl(platformThreading);
+            else
+                impl = new NullDispatcherImpl();
+        }
+        return new Dispatcher(impl);
+    }
 
-            if (_platform != null)
+    /// <summary>
+    /// Checks that the current thread is the UI thread.
+    /// </summary>
+    public bool CheckAccess() => _impl?.CurrentThreadIsLoopThread ?? true;
+
+    /// <summary>
+    /// Checks that the current thread is the UI thread and throws if not.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
+    public void VerifyAccess()
+    {
+        if (!CheckAccess())
+        {
+            // Used to inline VerifyAccess.
+            [DoesNotReturn]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static void ThrowVerifyAccess()
+                => throw new InvalidOperationException("Call from invalid thread");
+
+            ThrowVerifyAccess();
+        }
+    }
+
+    internal void Shutdown()
+    {
+        DispatcherOperation? operation = null;
+        _impl.Timer -= PromoteTimers;
+        _impl.Signaled -= Signaled;
+        do
+        {
+            lock(InstanceLock)
             {
-                _platform.Signaled += _jobRunner.RunJobs;
-            }
-        }
-
-        /// <summary>
-        /// Checks that the current thread is the UI thread.
-        /// </summary>
-        public bool CheckAccess() => _platform?.CurrentThreadIsLoopThread ?? true;
-
-        /// <summary>
-        /// Checks that the current thread is the UI thread and throws if not.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">
-        /// The current thread is not the UI thread.
-        /// </exception>
-        public void VerifyAccess()
-        {
-            if (!CheckAccess())
-                throw new InvalidOperationException("Call from invalid thread");
-        }
-
-        /// <summary>
-        /// Runs the dispatcher's main loop.
-        /// </summary>
-        /// <param name="cancellationToken">
-        /// A cancellation token used to exit the main loop.
-        /// </param>
-        public void MainLoop(CancellationToken cancellationToken)
-        {
-            var platform = AvaloniaLocator.Current.GetRequiredService<IPlatformThreadingInterface>();
-            cancellationToken.Register(() => platform.Signal(DispatcherPriority.Send));
-            platform.RunLoop(cancellationToken);
-        }
-
-        /// <summary>
-        /// Runs continuations pushed on the loop.
-        /// </summary>
-        public void RunJobs()
-        {
-            _jobRunner.RunJobs(null);
-        }
-
-        /// <summary>
-        /// Use this method to ensure that more prioritized tasks are executed
-        /// </summary>
-        /// <param name="minimumPriority"></param>
-        public void RunJobs(DispatcherPriority minimumPriority) => _jobRunner.RunJobs(minimumPriority);
-        
-        /// <summary>
-        /// Use this method to check if there are more prioritized tasks
-        /// </summary>
-        /// <param name="minimumPriority"></param>
-        public bool HasJobsWithPriority(DispatcherPriority minimumPriority) =>
-            _jobRunner.HasJobsWithPriority(minimumPriority);
-
-        /// <inheritdoc/>
-        public Task InvokeAsync(Action action, DispatcherPriority priority = default)
-        {
-            _ = action ?? throw new ArgumentNullException(nameof(action));
-            return _jobRunner.InvokeAsync(action, priority);
-        }
-
-        /// <inheritdoc/>
-        public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = default)
-        {
-            _ = function ?? throw new ArgumentNullException(nameof(function));
-            return _jobRunner.InvokeAsync(function, priority);
-        }
-
-        /// <inheritdoc/>
-        public Task InvokeAsync(Func<Task> function, DispatcherPriority priority = default)
-        {
-            _ = function ?? throw new ArgumentNullException(nameof(function));
-            return _jobRunner.InvokeAsync(function, priority).Unwrap();
-        }
-
-        /// <inheritdoc/>
-        public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = default)
-        {
-            _ = function ?? throw new ArgumentNullException(nameof(function));
-            return _jobRunner.InvokeAsync(function, priority).Unwrap();
-        }
-
-        /// <inheritdoc/>
-        public void Post(Action action, DispatcherPriority priority = default)
-        {
-            _ = action ?? throw new ArgumentNullException(nameof(action));
-            _jobRunner.Post(action, priority);
-        }
-
-        /// <inheritdoc/>
-        public void Post(SendOrPostCallback action, object? arg, DispatcherPriority priority = default)
-        {
-            _ = action ?? throw new ArgumentNullException(nameof(action));
-            _jobRunner.Post(action, arg, priority);
-        }
-
-        /// <summary>
-        /// This is needed for platform backends that don't have internal priority system (e. g. win32)
-        /// To ensure that there are no jobs with higher priority
-        /// </summary>
-        /// <param name="currentPriority"></param>
-        internal void EnsurePriority(DispatcherPriority currentPriority)
-        {
-            if (currentPriority == DispatcherPriority.MaxValue)
-                return;
-            currentPriority += 1;
-            _jobRunner.RunJobs(currentPriority);
-        }
-
-        /// <summary>
-        /// Allows unit tests to change the platform threading interface.
-        /// </summary>
-        internal void UpdateServices()
-        {
-            if (_platform != null)
-            {
-                _platform.Signaled -= _jobRunner.RunJobs;
+                if(_queue.MaxPriority != DispatcherPriority.Invalid)
+                {
+                    operation = _queue.Peek();
+                }
+                else
+                {
+                    operation = null;
+                }
             }
 
-            _platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
-            _jobRunner.UpdateServices();
-
-            if (_platform != null)
+            if(operation != null)
             {
-                _platform.Signaled += _jobRunner.RunJobs;
+                operation.Abort();
             }
-        }
+        } while(operation != null);
+        _impl.UpdateTimer(null);
+        _hasShutdownFinished = true;
+    }
+
+    /// <summary>
+    /// Runs the dispatcher's main loop.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// A cancellation token used to exit the main loop.
+    /// </param>
+    public void MainLoop(CancellationToken cancellationToken)
+    {
+        if (_controlledImpl == null)
+            throw new PlatformNotSupportedException();
+        cancellationToken.Register(() => RequestProcessing());
+        _controlledImpl.RunLoop(cancellationToken);
     }
 }

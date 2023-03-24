@@ -14,11 +14,6 @@ namespace Avalonia.iOS
         public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
         
         public event Action<DispatcherPriority?> Signaled;
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-            //Mobile platforms are using external main loop
-            throw new NotSupportedException(); 
-        }
         
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, _ => tick());
