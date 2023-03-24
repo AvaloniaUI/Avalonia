@@ -30,7 +30,8 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
             GC.SuppressFinalize(needsFinalize);
 
         var updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
-        if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() == null)
+        if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() == null
+            && AvaloniaLocator.Current.GetService<IDispatcherImpl>() == null)
             _reclaimImmediately = true;
         else
             StartUpdateTimer(startTimer, updateRef);

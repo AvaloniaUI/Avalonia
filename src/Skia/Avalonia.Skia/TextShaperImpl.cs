@@ -72,7 +72,7 @@ namespace Avalonia.Skia
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (textSpan[i] == '\t')
+                    if (i < textSpan.Length && textSpan[i] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 

@@ -21,8 +21,6 @@ namespace Avalonia.Android
             _handler = new Handler(App.Context.MainLooper);
         }
 
-        public void RunLoop(CancellationToken cancellationToken) => throw new NotSupportedException();
-
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             if (interval.TotalMilliseconds < 10)

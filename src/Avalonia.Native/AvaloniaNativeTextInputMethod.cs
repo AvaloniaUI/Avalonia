@@ -60,7 +60,18 @@ namespace Avalonia.Native
                 return;
             }
 
-            _inputMethod.SetCursorRect(_client.CursorRectangle.ToAvnRect());
+            var visualRoot = _client.TextViewVisual.VisualRoot;
+
+            var transform = _client.TextViewVisual.TransformToVisual((Visual)visualRoot);
+
+            if (transform == null)
+            {
+                return;
+            }
+
+            var rect = _client.CursorRectangle.TransformToAABB(transform.Value);         
+
+            _inputMethod.SetCursorRect(rect.ToAvnRect());
         }
 
         private void OnSurroundingTextChanged(object sender, EventArgs e)

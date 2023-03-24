@@ -645,9 +645,11 @@ interface IAvnActionCallback : IUnknown
 }
 
 [uuid(6df4d2db-0b80-4f59-ad88-0baa5e21eb14)]
-interface IAvnSignaledCallback : IUnknown
+interface IAvnPlatformThreadingInterfaceEvents : IUnknown
 {
-     void Signaled(int priority, bool priorityContainsMeaningfulValue);
+     void Signaled();
+     void Timer();
+     void ReadyForBackgroundProcessing();
 }
 
 [uuid(97330f88-c22b-4a8e-a130-201520091b01)]
@@ -660,12 +662,12 @@ interface IAvnLoopCancellation : IUnknown
 interface IAvnPlatformThreadingInterface : IUnknown
 {
      bool GetCurrentThreadIsLoopThread();
-     void SetSignaledCallback(IAvnSignaledCallback* cb);
+     void SetEvents(IAvnPlatformThreadingInterfaceEvents* cb);
      IAvnLoopCancellation* CreateLoopCancellation();
-     HRESULT RunLoop(IAvnLoopCancellation* cancel);
-    // Can't pass int* to sharpgentools for some reason
-     void Signal(int priority);
-     IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback);
+     void RunLoop(IAvnLoopCancellation* cancel);
+     void Signal();
+     void UpdateTimer(int ms);
+     void RequestBackgroundProcessing();
 }
 
 [uuid(6c621a6e-e4c1-4ae3-9749-83eeeffa09b6)]
