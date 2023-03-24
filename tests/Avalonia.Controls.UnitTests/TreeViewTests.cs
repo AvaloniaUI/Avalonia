@@ -751,6 +751,23 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Expanding_SelectedItem_To_Be_Visible_Should_Result_In_Selected_Container()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data, expandAll: false);
+            
+            target.SelectedItem = data[0].Children[1];
+
+            var rootItem = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
+            rootItem.IsExpanded = true;
+            Layout(target);
+
+            var container = Assert.IsType<TreeViewItem>(rootItem.ContainerFromIndex(1));
+            Assert.True(container.IsSelected);
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
             using var app = Start();
