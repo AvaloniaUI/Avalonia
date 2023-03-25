@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Avalonia.Threading;
 using Xunit;
 namespace Avalonia.Base.UnitTests;
@@ -9,9 +11,14 @@ public class DispatcherTests
 {
     class SimpleDispatcherImpl : IDispatcherImpl, IDispatcherImplWithPendingInput
     {
-        public bool CurrentThreadIsLoopThread => true;
-
-        public void Signal() => AskedForSignal = true;
+        private Thread _loopThread = Thread.CurrentThread;
+        private object _lock = new();
+        public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _loopThread;
+        public void Signal()
+        {
+            lock (_lock)
+                AskedForSignal = true;
+        }
 
         public event Action Signaled;
         public event Action Timer;
@@ -27,9 +34,12 @@ public class DispatcherTests
 
         public void ExecuteSignal()
         {
-            if (!AskedForSignal)
-                return;
-            AskedForSignal = false;
+            lock (_lock)
+            {
+                if (!AskedForSignal)
+                    return;
+                AskedForSignal = false;
+            }
             Signaled?.Invoke();
         }
 
@@ -44,6 +54,61 @@ public class DispatcherTests
         public bool CanQueryPendingInput => TestInputPending != null;
         public bool HasPendingInput => TestInputPending == true;
         public bool? TestInputPending { get; set; }
+    }
+
+    class SimpleDispatcherWithBackgroundProcessingImpl : SimpleDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
+    {
+        public bool AskedForBackgroundProcessing { get; private set; }
+        public event Action ReadyForBackgroundProcessing;
+        public void RequestBackgroundProcessing()
+        {
+            if (!CurrentThreadIsLoopThread)
+                throw new InvalidOperationException();
+            AskedForBackgroundProcessing = true;
+        }
+
+        public void FireBackgroundProcessing()
+        {
+            if(!AskedForBackgroundProcessing)
+                return;
+            AskedForBackgroundProcessing = false;
+            ReadyForBackgroundProcessing?.Invoke();
+        }
+    }
+    
+    class SimpleControlledDispatcherImpl : SimpleDispatcherWithBackgroundProcessingImpl, IControlledDispatcherImpl
+    {
+        private readonly bool _useTestTimeout = true;
+        private readonly CancellationToken? _cancel;
+        public int RunLoopCount { get; private set; }
+        
+        public SimpleControlledDispatcherImpl()
+        {
+            
+        }
+
+        public SimpleControlledDispatcherImpl(CancellationToken cancel, bool useTestTimeout = false)
+        {
+            _useTestTimeout = useTestTimeout;
+            _cancel = cancel;
+        }
+        
+        public void RunLoop(CancellationToken token)
+        {
+            RunLoopCount++;
+            var st = Stopwatch.StartNew();
+            while (!token.IsCancellationRequested || _cancel?.IsCancellationRequested == true)
+            {
+                FireBackgroundProcessing();
+                ExecuteSignal();
+                if (_useTestTimeout)
+                    Assert.True(st.ElapsedMilliseconds < 4000, "RunLoop exceeded test time quota");
+                else
+                    Thread.Sleep(10);
+            }
+        }
+
+
     }
     
     
@@ -169,5 +234,24 @@ public class DispatcherTests
             impl.TestInputPending = false;
         }
     }
-    
+
+    [Theory,
+     InlineData(false, false),
+     InlineData(false, true),
+     InlineData(true, false),
+     InlineData(true, true)]
+    public void CanWaitForDispatcherOperationFromTheSameThread(bool controlled, bool foreground)
+    {
+        var impl = controlled ? new SimpleControlledDispatcherImpl() : new SimpleDispatcherImpl();
+        var disp = new Dispatcher(impl);
+        bool finished = false;
+
+        disp.InvokeAsync(() => finished = true,
+            foreground ? DispatcherPriority.Default : DispatcherPriority.Background).Wait();
+
+        Assert.True(finished);
+        if (controlled) 
+            Assert.Equal(foreground ? 0 : 1, ((SimpleControlledDispatcherImpl)impl).RunLoopCount);
+    }
+
 }

@@ -37,6 +37,7 @@ public partial class Dispatcher : IDispatcher
     }
     
     public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();
+    public bool SupportsRunLoops => _controlledImpl != null;
 
     private static Dispatcher CreateUIThreadDispatcher()
     {

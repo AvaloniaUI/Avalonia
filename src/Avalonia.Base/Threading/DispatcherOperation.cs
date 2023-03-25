@@ -111,11 +111,68 @@ public class DispatcherOperation
         }
     }
 
-    public void Wait()
+    /// <summary>
+    ///     Waits for this operation to complete.
+    /// </summary>
+    /// <returns>
+    ///     The status of the operation.  To obtain the return value
+    ///     of the invoked delegate, use the the Result property.
+    /// </returns>
+    public void Wait() => Wait(TimeSpan.FromMilliseconds(-1));
+
+    /// <summary>
+    ///     Waits for this operation to complete.
+    /// </summary>
+    /// <param name="timeout">
+    ///     The maximum amount of time to wait.
+    /// </param>
+    public void Wait(TimeSpan timeout)
     {
-        if (Dispatcher.CheckAccess())
-            throw new InvalidOperationException("Wait is only supported on background thread");
-        GetTask().Wait();
+        if ((Status == DispatcherOperationStatus.Pending || Status == DispatcherOperationStatus.Executing) &&
+            timeout.TotalMilliseconds != 0)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                if (Status == DispatcherOperationStatus.Executing)
+                {
+                    // We are the dispatching thread, and the current operation state is
+                    // executing, which means that the operation is in the middle of
+                    // executing (on this thread) and is trying to wait for the execution
+                    // to complete.  Unfortunately, the thread will now deadlock, so
+                    // we throw an exception instead.
+                    throw new InvalidOperationException("A thread cannot wait on operations already running on the same thread.");
+                }
+                
+                var cts = new CancellationTokenSource();
+                EventHandler finishedHandler = delegate
+                {
+                    cts.Cancel();
+                };
+                Completed += finishedHandler;
+                Aborted += finishedHandler;
+                try
+                {
+                    while (Status == DispatcherOperationStatus.Pending)
+                    {
+                        if (Dispatcher.SupportsRunLoops)
+                        {
+                            if (Priority >= DispatcherPriority.MinimumForegroundPriority)
+                                Dispatcher.RunJobs(Priority, cts.Token);
+                            else
+                                Dispatcher.MainLoop(cts.Token);
+                        }
+                        else
+                            Dispatcher.RunJobs(DispatcherPriority.MinimumActiveValue, cts.Token);
+                    }
+                }
+                finally
+                {
+                    Completed -= finishedHandler;
+                    Aborted -= finishedHandler;
+                }
+            }
+        }
+        GetTask().GetAwaiter().GetResult();
     }
 
     public Task GetTask() => GetTaskCore();

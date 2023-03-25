@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Avalonia.Threading;
 
@@ -482,7 +483,7 @@ public partial class Dispatcher
             // invoke.
             try
             {
-                operation.GetTask().Wait();
+                operation.Wait();
 
                 Debug.Assert(operation.Status == DispatcherOperationStatus.Completed ||
                              operation.Status == DispatcherOperationStatus.Aborted);
