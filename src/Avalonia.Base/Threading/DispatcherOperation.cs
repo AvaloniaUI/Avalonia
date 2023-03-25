@@ -101,11 +101,14 @@ public class DispatcherOperation
         }
     }
     
-    public void Abort()
+    public bool Abort()
     {
         lock (Dispatcher.InstanceLock)
         {
-            if (Status == DispatcherOperationStatus.Pending) Dispatcher.Abort(this);
+            if (Status != DispatcherOperationStatus.Pending)
+                return false;
+            Dispatcher.Abort(this);
+            return true;
         }
     }
 
