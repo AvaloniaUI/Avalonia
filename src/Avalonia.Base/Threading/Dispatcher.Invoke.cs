@@ -107,7 +107,8 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            callback();
+            using (AvaloniaSynchronizationContext.Ensure(priority))
+                callback();
             return;
         }
 
@@ -228,7 +229,8 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            return callback();
+            using (AvaloniaSynchronizationContext.Ensure(priority))
+                return callback();
         }
 
         // Slow-Path: go through the queue.
@@ -555,10 +557,6 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    /// <remarks>
-    /// DispatcherPriority is only respected for the initial call, any async continuations will be executed through
-    /// SynchronizationContext
-    /// </remarks>
     public Task InvokeTaskAsync(Func<Task> callback, DispatcherPriority priority = default)
     {
         _ = callback ?? throw new ArgumentNullException(nameof(callback));
@@ -580,10 +578,6 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    /// <remarks>
-    /// DispatcherPriority is only respected for the initial call, any async continuations will be executed through
-    /// SynchronizationContext
-    /// </remarks>
     public Task<TResult> InvokeTaskAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));

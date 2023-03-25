@@ -159,7 +159,7 @@ public class DispatcherOperation
                             if (Priority >= DispatcherPriority.MinimumForegroundPriority)
                                 Dispatcher.RunJobs(Priority, cts.Token);
                             else
-                                Dispatcher.MainLoop(cts.Token);
+                                Dispatcher.PushFrame(new DispatcherOperationFrame(this, timeout));
                         }
                         else
                             Dispatcher.RunJobs(DispatcherPriority.MinimumActiveValue, cts.Token);
@@ -173,6 +173,58 @@ public class DispatcherOperation
             }
         }
         GetTask().GetAwaiter().GetResult();
+    }
+
+    private class DispatcherOperationFrame : DispatcherFrame
+    {
+        // Note: we pass "exitWhenRequested=false" to the base
+        // DispatcherFrame construsctor because we do not want to exit
+        // this frame if the dispatcher is shutting down. This is
+        // because we may need to invoke operations during the shutdown process.
+        public DispatcherOperationFrame(DispatcherOperation op, TimeSpan timeout) : base(false)
+        {
+            _operation = op;
+
+            // We will exit this frame once the operation is completed or aborted.
+            _operation.Aborted += OnCompletedOrAborted;
+            _operation.Completed += OnCompletedOrAborted;
+
+            // We will exit the frame if the operation is not completed within
+            // the requested timeout.
+            if (timeout.TotalMilliseconds > 0)
+            {
+                _waitTimer = new Timer(_ => Exit(),
+                    null,
+                    timeout,
+                    TimeSpan.FromMilliseconds(-1));
+            }
+
+            // Some other thread could have aborted the operation while we were
+            // setting up the handlers.  We check the state again and mark the
+            // frame as "should not continue" if this happened.
+            if (_operation.Status != DispatcherOperationStatus.Pending)
+            {
+                Exit();
+            }
+        }
+
+        private void Exit()
+        {
+            Continue = false;
+
+            if (_waitTimer != null)
+            {
+                _waitTimer.Dispose();
+            }
+
+            _operation.Aborted -= OnCompletedOrAborted;
+            _operation.Completed -= OnCompletedOrAborted;
+        }
+
+        private void OnCompletedOrAborted(object? sender, EventArgs e) => Exit();
+
+        private DispatcherOperation _operation;
+        private Timer? _waitTimer;
     }
 
     public Task GetTask() => GetTaskCore();
@@ -205,7 +257,8 @@ public class DispatcherOperation
 
         try
         {
-            InvokeCore();
+            using (AvaloniaSynchronizationContext.Ensure(Priority))
+                InvokeCore();
         }
         finally
         {

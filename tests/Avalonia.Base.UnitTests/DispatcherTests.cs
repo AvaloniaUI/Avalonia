@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Xunit;
 namespace Avalonia.Base.UnitTests;
 
@@ -252,6 +253,209 @@ public class DispatcherTests
         Assert.True(finished);
         if (controlled) 
             Assert.Equal(foreground ? 0 : 1, ((SimpleControlledDispatcherImpl)impl).RunLoopCount);
+    }
+
+
+    class DispatcherServices : IDisposable
+    {
+        private readonly IDisposable _scope;
+
+        public DispatcherServices(IDispatcherImpl impl)
+        {
+            _scope = AvaloniaLocator.EnterScope();
+            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToConstant(impl);
+            Dispatcher.ResetForUnitTests();
+            SynchronizationContext.SetSynchronizationContext(null);
+        }
+        
+        public void Dispose()
+        {
+            Dispatcher.ResetForUnitTests();
+            _scope.Dispose();
+            SynchronizationContext.SetSynchronizationContext(null);
+        }
+    }
+    
+    [Fact]
+    public void ExitAllFramesShouldExitAllFramesAndBeAbleToContinue()
+    {
+        using (new DispatcherServices(new SimpleControlledDispatcherImpl()))
+        {
+            var actions = new List<string>();
+            var disp = Dispatcher.UIThread;
+            disp.Post(() =>
+            {
+                actions.Add("Nested frame");
+                Dispatcher.UIThread.MainLoop(CancellationToken.None);
+                actions.Add("Nested frame exited");
+            });
+            disp.Post(() =>
+            {
+                actions.Add("ExitAllFrames");
+                disp.ExitAllFrames();
+            });
+
+
+            disp.MainLoop(CancellationToken.None);
+            
+            Assert.Equal(new[] { "Nested frame", "ExitAllFrames", "Nested frame exited" }, actions);
+            actions.Clear();
+            
+            var secondLoop = new CancellationTokenSource();
+            disp.Post(() =>
+            {
+                actions.Add("Callback after exit");
+                secondLoop.Cancel();
+            });
+            disp.MainLoop(secondLoop.Token);
+            Assert.Equal(new[] { "Callback after exit" }, actions);
+        }
+    }
+    
+        
+    [Fact]
+    public void ShutdownShouldExitAllFramesAndNotAllowNewFrames()
+    {
+        using (new DispatcherServices(new SimpleControlledDispatcherImpl()))
+        {
+            var actions = new List<string>();
+            var disp = Dispatcher.UIThread;
+            disp.Post(() =>
+            {
+                actions.Add("Nested frame");
+                Dispatcher.UIThread.MainLoop(CancellationToken.None);
+                actions.Add("Nested frame exited");
+            });
+            disp.Post(() =>
+            {
+                actions.Add("Shutdown");
+                disp.BeginInvokeShutdown(DispatcherPriority.Normal);
+            });
+            
+            disp.Post(() =>
+            {
+                actions.Add("Nested frame after shutdown");
+                // This should exit immediately and not run any jobs
+                Dispatcher.UIThread.MainLoop(CancellationToken.None);
+                actions.Add("Nested frame after shutdown exited");
+            });
+            
+            var criticalFrameAfterShutdown = new DispatcherFrame(false);
+            disp.Post(() =>
+            {
+                actions.Add("Critical frame after shutdown");
+                
+                Dispatcher.UIThread.PushFrame(criticalFrameAfterShutdown);
+                actions.Add("Critical frame after shutdown exited");
+            });
+            disp.Post(() =>
+            {
+                actions.Add("Stop critical frame");
+                criticalFrameAfterShutdown.Continue = false;
+            });
+
+            disp.MainLoop(CancellationToken.None);
+
+            Assert.Equal(new[]
+            {
+                "Nested frame", 
+                "Shutdown",
+                // Normal nested frames are supposed to exit immediately
+                "Nested frame after shutdown", "Nested frame after shutdown exited",
+                // if frame is configured to not answer dispatcher requests, it should be allowed to run
+                "Critical frame after shutdown", "Stop critical frame", "Critical frame after shutdown exited",
+                // After 3-rd level frames have exited, the normal nested frame exits too
+                "Nested frame exited"
+            }, actions);
+            actions.Clear();
+            
+            disp.Post(()=>actions.Add("Frame after shutdown finished"));
+            Assert.Throws<InvalidOperationException>(() => disp.MainLoop(CancellationToken.None));
+            Assert.Empty(actions);
+        }
+    }
+
+    class WaitHelper : SynchronizationContext, NonPumpingLockHelper.IHelperImpl
+    {
+        public int WaitCount;
+        public int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
+        {
+            WaitCount++;
+            return base.Wait(waitHandles, waitAll, millisecondsTimeout);
+        }
+    }
+    
+    [Fact]
+    public void DisableProcessingShouldStopProcessing()
+    {
+        using (new DispatcherServices(new SimpleControlledDispatcherImpl()))
+        {
+            var helper = new WaitHelper();
+            AvaloniaLocator.CurrentMutable.Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(helper);
+            using (Dispatcher.UIThread.DisableProcessing())
+            {
+                Assert.True(SynchronizationContext.Current is NonPumpingSyncContext);
+                Assert.Throws<InvalidOperationException>(() => Dispatcher.UIThread.MainLoop(CancellationToken.None));
+                Assert.Throws<InvalidOperationException>(() => Dispatcher.UIThread.RunJobs());
+            }
+
+            var avaloniaContext = new AvaloniaSynchronizationContext(true);
+            SynchronizationContext.SetSynchronizationContext(avaloniaContext);
+
+            var waitHandle = new ManualResetEvent(true);
+            
+            helper.WaitCount = 0;
+            waitHandle.WaitOne(100);
+            Assert.Equal(0, helper.WaitCount);
+            using (Dispatcher.UIThread.DisableProcessing())
+            {
+                Assert.Equal(avaloniaContext, SynchronizationContext.Current);
+                waitHandle.WaitOne(100);
+                Assert.Equal(1, helper.WaitCount);
+            }
+        }
+    }
+
+    [Fact]
+    public void DispatcherOperationsHaveContextWithProperPriority()
+    {
+        using (new DispatcherServices(new SimpleControlledDispatcherImpl()))
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+            var disp = Dispatcher.UIThread;
+            var priorities = new List<DispatcherPriority>();
+
+            void DumpCurrentPriority() =>
+                priorities.Add(((AvaloniaSynchronizationContext)SynchronizationContext.Current!).Priority);
+                
+                
+            disp.Post(DumpCurrentPriority, DispatcherPriority.Normal);
+            disp.Post(DumpCurrentPriority, DispatcherPriority.Loaded);
+            disp.Post(DumpCurrentPriority, DispatcherPriority.Input);
+            disp.Post(() =>
+            {
+                DumpCurrentPriority();
+                disp.ExitAllFrames();
+            }, DispatcherPriority.Background);
+            disp.MainLoop(CancellationToken.None);
+
+            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send);
+            disp.Invoke(() =>
+            {
+                DumpCurrentPriority();
+                return 1;
+            }, DispatcherPriority.Send);
+
+            Assert.Equal(
+                new[]
+                {
+                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background,
+                    DispatcherPriority.Send, DispatcherPriority.Send,
+                },
+                priorities);
+
+
+        }
     }
 
 }

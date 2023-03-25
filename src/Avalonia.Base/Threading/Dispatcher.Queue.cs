@@ -49,6 +49,10 @@ public partial class Dispatcher
     
     internal void RunJobs(DispatcherPriority? priority, CancellationToken cancellationToken)
     {
+        if (DisabledProcessingCount > 0)
+            throw new InvalidOperationException(
+                "Cannot perform this operation while dispatcher processing is suspended.");
+        
         priority ??= DispatcherPriority.MinimumActiveValue;
         if (priority < DispatcherPriority.MinimumActiveValue)
             priority = DispatcherPriority.MinimumActiveValue;
@@ -174,7 +178,7 @@ public partial class Dispatcher
         }
     }
 
-    private bool RequestProcessing()
+    internal bool RequestProcessing()
     {
         lock (InstanceLock)
         {
