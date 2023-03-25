@@ -391,7 +391,7 @@ public partial class Dispatcher
         return operation;
     }
 
-    private void InvokeAsyncImpl(DispatcherOperation operation, CancellationToken cancellationToken)
+    internal void InvokeAsyncImpl(DispatcherOperation operation, CancellationToken cancellationToken)
     {
         bool succeeded = false;
 
