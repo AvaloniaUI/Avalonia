@@ -541,6 +541,56 @@ public partial class Dispatcher
     }
 
     /// <summary>
+    ///     Executes the specified Func<Task> asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="callback">
+    ///     A Func<Task> delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    /// <remarks>
+    /// DispatcherPriority is only respected for the initial call, any async continuations will be executed through
+    /// SynchronizationContext
+    /// </remarks>
+    public Task InvokeTaskAsync(Func<Task> callback, DispatcherPriority priority = default)
+    {
+        _ = callback ?? throw new ArgumentNullException(nameof(callback));
+        return InvokeAsync(callback, priority).GetTask().Unwrap();
+    }
+    
+    /// <summary>
+    ///     Executes the specified Func<Task<TResult>> asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="callback">
+    ///     A Func<Task<TResult>> delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    /// <remarks>
+    /// DispatcherPriority is only respected for the initial call, any async continuations will be executed through
+    /// SynchronizationContext
+    /// </remarks>
+    public Task<TResult> InvokeTaskAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
+    {
+        _ = action ?? throw new ArgumentNullException(nameof(action));
+        return InvokeAsync(action, priority).GetTask().Unwrap();
+    }
+
+    /// <summary>
     /// Posts an action that will be invoked on the dispatcher thread.
     /// </summary>
     /// <param name="action">The method.</param>
