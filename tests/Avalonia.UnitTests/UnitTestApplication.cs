@@ -43,8 +43,7 @@ namespace Avalonia.UnitTests
         public static IDisposable Start(TestServices services = null)
         {
             var scope = AvaloniaLocator.EnterScope();
-            SynchronizationContext.SetSynchronizationContext(null);
-            AvaloniaSynchronizationContext.InstallIfNeeded();
+            var oldContext = SynchronizationContext.Current;
             _ = new UnitTestApplication(services);
             Dispatcher.ResetForUnitTests();
             return Disposable.Create(() =>
@@ -56,7 +55,7 @@ namespace Avalonia.UnitTests
 
                 scope.Dispose();
                 Dispatcher.ResetForUnitTests();
-                SynchronizationContext.SetSynchronizationContext(null);
+                SynchronizationContext.SetSynchronizationContext(oldContext);
             });
         }
 
