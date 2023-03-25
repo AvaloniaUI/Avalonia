@@ -105,9 +105,7 @@ public class DispatcherOperation
     {
         lock (Dispatcher.InstanceLock)
         {
-            if (Status == DispatcherOperationStatus.Pending)
-                return;
-            Dispatcher.Abort(this);
+            if (Status == DispatcherOperationStatus.Pending) Dispatcher.Abort(this);
         }
     }
 
