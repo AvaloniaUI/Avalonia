@@ -97,6 +97,12 @@ public partial class Dispatcher
     /// </summary>
     public void BeginInvokeShutdown(DispatcherPriority priority) => Post(StartShutdownImpl, priority);
 
+    
+    /// <summary>
+    /// Initiates the shutdown process of the Dispatcher synchronously.
+    /// </summary>
+    public void InvokeShutdown() => Invoke(StartShutdownImpl, DispatcherPriority.Send);
+
     private void StartShutdownImpl()
     {
         if (!_startingShutdown)
