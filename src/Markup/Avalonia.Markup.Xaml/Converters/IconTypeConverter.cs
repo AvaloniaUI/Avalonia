@@ -2,20 +2,21 @@
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-	using System.ComponentModel;
-
     public class IconTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        /// <inheritdoc />
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        /// <inheritdoc />
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             var path = value as string;
             if (path != null)
@@ -32,7 +33,7 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotSupportedException();
         }
 
-        private static WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string s)
+        private static WindowIcon CreateIconFromPath(ITypeDescriptorContext? context, string s)
         {
             var uri = s.StartsWith("/")
                 ? new Uri(s, UriKind.Relative)
@@ -41,7 +42,7 @@ namespace Avalonia.Markup.Xaml.Converters
             if(uri.IsAbsoluteUri && uri.IsFile)
                 return new WindowIcon(uri.LocalPath);
             var assets = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-            return new WindowIcon(assets.Open(uri, context.GetContextBaseUri()));
+            return new WindowIcon(assets.Open(uri, context?.GetContextBaseUri()));
         }
     }
 }

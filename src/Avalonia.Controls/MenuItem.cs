@@ -4,7 +4,6 @@ using System.Linq;
 using Avalonia.Reactive;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -107,8 +106,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
         private bool _commandCanExecute = true;
         private bool _commandBindingError;
