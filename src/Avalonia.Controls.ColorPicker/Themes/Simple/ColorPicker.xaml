@@ -6,6 +6,8 @@
   <ControlTheme x:Key="{x:Type ColorPicker}"
                 TargetType="ColorPicker">
     <Setter Property="CornerRadius" Value="0" />
+    <!-- Alpha position should match CSS (and default slider order) instead of XAML/WinUI -->
+    <Setter Property="HexInputAlphaPosition" Value="Trailing" />
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="64" />
     <Setter Property="MinWidth" Value="64" />
