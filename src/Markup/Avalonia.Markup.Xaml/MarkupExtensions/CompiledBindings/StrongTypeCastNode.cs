@@ -5,14 +5,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     internal class StrongTypeCastNode : TypeCastNode
     {
-        private Func<object, object> _cast;
+        private readonly Func<object?, object?> _cast;
 
-        public StrongTypeCastNode(Type type, Func<object, object> cast) : base(type)
+        public StrongTypeCastNode(Type type, Func<object?, object?> cast) : base(type)
         {
             _cast = cast;
         }
 
-        protected override object Cast(object value)
+        protected override object? Cast(object? value)
             => _cast(value);
     }
 }

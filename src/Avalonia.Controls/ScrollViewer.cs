@@ -200,7 +200,7 @@ namespace Avalonia.Controls
                 ScrollBarVisibility.Auto);
 
         /// <summary>
-        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, bool> IsExpandedProperty =
             ScrollBar.IsExpandedProperty.AddOwner<ScrollViewer>(o => o.IsExpanded);

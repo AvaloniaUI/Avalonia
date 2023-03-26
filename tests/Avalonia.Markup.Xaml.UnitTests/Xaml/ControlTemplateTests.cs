@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml.Templates;
@@ -307,6 +308,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", foo.Name);
             Assert.Equal("Bar", bar.Name);
+        }
+
+        [Fact]
+        public void ControlTemplate_Can_Be_Empty()
+        {
+            var xaml = "<ControlTemplate xmlns='https://github.com/avaloniaui' />";
+            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
+
+            var templateResult = template.Build(new TemplatedControl());
+            Assert.Null(templateResult);
         }
     }
     public class ListBoxHierarchyLine : Panel

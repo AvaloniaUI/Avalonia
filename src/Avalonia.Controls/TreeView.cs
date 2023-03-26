@@ -10,6 +10,7 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -162,6 +163,9 @@ namespace Avalonia.Controls
         public void ExpandSubTree(TreeViewItem item)
         {
             item.IsExpanded = true;
+
+            if (item.Presenter?.Panel is null)
+                (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
 
             if (item.Presenter?.Panel is { } panel)
             {
