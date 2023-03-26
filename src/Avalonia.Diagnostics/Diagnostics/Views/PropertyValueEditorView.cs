@@ -129,7 +129,10 @@ namespace Avalonia.Diagnostics.Views
                     IsEnabled = !Property.IsReadonly
                 };
 
-                var cv = new ColorView();
+                var cv = new ColorView
+                {
+                    HexInputAlphaPosition = AlphaComponentPosition.Leading, // Always match XAML
+                };
 
                 cv.Bind(
                         ColorView.ColorProperty,
