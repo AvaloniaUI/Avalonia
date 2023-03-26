@@ -6,9 +6,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls.Presenters;
-using Avalonia.Input;
 using Avalonia.Input.TextInput;
-using Avalonia.Reactive;
 
 namespace Avalonia.Android
 {

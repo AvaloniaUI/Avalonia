@@ -8,6 +8,7 @@ using Avalonia.Browser.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
@@ -31,6 +32,7 @@ namespace Avalonia.Browser
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager? _insetsManager;
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView)
@@ -46,7 +48,7 @@ namespace Avalonia.Browser
             _nativeControlHost = _avaloniaView.GetNativeControlHostImpl();
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
-
+            _clipboard = new ClipboardImpl();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -280,6 +282,11 @@ namespace Avalonia.Browser
             if (featureType == typeof(IInsetsManager))
             {
                 return _insetsManager;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return _clipboard;
             }
 
             return null;
