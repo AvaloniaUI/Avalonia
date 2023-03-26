@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPath()
             => _elements = Array.Empty<ICompiledBindingPathElement>();
 
-        internal CompiledBindingPath(ICompiledBindingPathElement[] elements, object rawSource)
+        internal CompiledBindingPath(ICompiledBindingPathElement[] elements, object? rawSource)
         {
             _elements = elements;
             RawSource = rawSource;
@@ -26,14 +26,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.CompiledBindingSafeSupressWarningMessage)]
         internal ExpressionNode BuildExpression(bool enableValidation)
         {
-            ExpressionNode pathRoot = null;
-            ExpressionNode path = null;
+            ExpressionNode? pathRoot = null;
+            ExpressionNode? path = null;
             foreach (var element in _elements)
             {
-                ExpressionNode node = null;
+                ExpressionNode? node;
                 switch (element)
                 {
-                    case NotExpressionPathElement _:
+                    case NotExpressionPathElement:
                         node = new LogicalNotNode();
                         break;
                     case PropertyElement prop:
@@ -54,7 +54,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     case AncestorPathElement ancestor:
                         node = new FindAncestorNode(ancestor.AncestorType, ancestor.Level);
                         break;
-                    case SelfPathElement _:
+                    case SelfPathElement:
                         node = new SelfNode();
                         break;
                     case ElementNameElement name:
@@ -70,7 +70,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                         throw new InvalidOperationException($"Unknown binding path element type {element.GetType().FullName}");
                 }
 
-                path = pathRoot is null ? (pathRoot = node) : path.Next = node;
+                path = pathRoot is null ? (pathRoot = node) : path!.Next = node;
             }
 
             return pathRoot ?? new EmptyExpressionNode();
@@ -81,16 +81,17 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         internal SourceMode SourceMode => Array.Exists(_elements, e => e is IControlSourceBindingPathElement)
             ? SourceMode.Control : SourceMode.Data;
 
-        internal object RawSource { get; }
+        internal object? RawSource { get; }
 
+        /// <inheritdoc />
         public override string ToString()
             => string.Concat((IEnumerable<ICompiledBindingPathElement>) _elements);
     }
 
     public class CompiledBindingPathBuilder
     {
-        private object _rawSource;
-        private List<ICompiledBindingPathElement> _elements = new List<ICompiledBindingPathElement>();
+        private object? _rawSource;
+        private readonly List<ICompiledBindingPathElement> _elements = new();
 
         public CompiledBindingPathBuilder Not()
         {
@@ -98,7 +99,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
+        public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
             _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
             return this;
@@ -110,7 +111,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder Command(string methodName, Action<object, object> executeHelper, Func<object, object, bool> canExecuteHelper, string[] dependsOnProperties)
+        public CompiledBindingPathBuilder Command(string methodName, Action<object, object?> executeHelper, Func<object, object?, bool>? canExecuteHelper, string[]? dependsOnProperties)
         {
             _elements.Add(new MethodAsCommandElement(methodName, executeHelper, canExecuteHelper, dependsOnProperties ?? Array.Empty<string>()));
             return this;
@@ -163,7 +164,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder SetRawSource(object rawSource)
+        public CompiledBindingPathBuilder SetRawSource(object? rawSource)
         {
             _rawSource = rawSource;
             return this;
@@ -187,7 +188,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     {
         private readonly bool _isFirstElement;
 
-        public PropertyElement(IPropertyInfo property, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory, bool isFirstElement)
+        public PropertyElement(IPropertyInfo property, Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory, bool isFirstElement)
         {
             Property = property;
             AccessorFactory = accessorFactory;
@@ -196,7 +197,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public IPropertyInfo Property { get; }
 
-        public Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
+        public Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
 
         public override string ToString()
             => _isFirstElement ? Property.Name : $".{Property.Name}";
@@ -206,7 +207,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     {
         public MethodAsDelegateElement(RuntimeMethodHandle method, RuntimeTypeHandle delegateType)
         {
-            Method = (MethodInfo)MethodBase.GetMethodFromHandle(method);
+            Method = MethodBase.GetMethodFromHandle(method) as MethodInfo
+                ?? throw new ArgumentException("Invalid method handle", nameof(method));
             DelegateType = Type.GetTypeFromHandle(delegateType);
         }
 
@@ -217,7 +219,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class MethodAsCommandElement : ICompiledBindingPathElement
     {
-        public MethodAsCommandElement(string methodName, Action<object, object> executeHelper, Func<object, object, bool> canExecuteHelper, string[] dependsOnElements)
+        public MethodAsCommandElement(string methodName, Action<object, object?> executeHelper, Func<object, object?, bool>? canExecuteHelper, string[] dependsOnElements)
         {
             MethodName = methodName;
             ExecuteMethod = executeHelper;
@@ -226,8 +228,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
 
         public string MethodName { get; }
-        public Action<object, object> ExecuteMethod { get; }
-        public Func<object, object, bool> CanExecuteMethod { get; }
+        public Action<object, object?> ExecuteMethod { get; }
+        public Func<object, object?, bool>? CanExecuteMethod { get; }
         public HashSet<string> DependsOnProperties { get; }
     }
 
@@ -240,7 +242,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     {
         Type Type { get; }
 
-        Func<object, object> Cast { get; }
+        Func<object?, object?> Cast { get; }
     }
 
     internal class TaskStreamPathElement<T> : IStronglyTypedStreamElement
@@ -267,13 +269,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class AncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
     {
-        public AncestorPathElement(Type ancestorType, int level)
+        public AncestorPathElement(Type? ancestorType, int level)
         {
             AncestorType = ancestorType;
             Level = level;
         }
 
-        public Type AncestorType { get; }
+        public Type? AncestorType { get; }
         public int Level { get; }
 
         public override string ToString()
@@ -282,13 +284,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class VisualAncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
     {
-        public VisualAncestorPathElement(Type ancestorType, int level)
+        public VisualAncestorPathElement(Type? ancestorType, int level)
         {
             AncestorType = ancestorType;
             Level = level;
         }
 
-        public Type AncestorType { get; }
+        public Type? AncestorType { get; }
         public int Level { get; }
     }
 
@@ -323,7 +325,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class TypeCastPathElement<T> : ITypeCastElement
     {
-        private static object TryCast(object obj)
+        private static object? TryCast(object? obj)
         {
             if (obj is T result)
                 return result;
@@ -332,7 +334,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public Type Type => typeof(T);
 
-        public Func<object, object> Cast => TryCast;
+        public Func<object?, object?> Cast => TryCast;
 
         public override string ToString()
             => $"({Type.FullName})";

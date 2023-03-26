@@ -40,8 +40,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
 
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
         private TreeView? _treeView;
         private Control? _header;
