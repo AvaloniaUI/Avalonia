@@ -1,8 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using Avalonia.Platform;
-#nullable enable
+
 namespace Avalonia.Markup.Xaml
 {
     /// <summary>
@@ -79,7 +78,7 @@ namespace Avalonia.Markup.Xaml
 
             var compiledLoader = assetLocator.GetAssembly(uri, baseUri)
                 ?.GetType("CompiledAvaloniaXaml.!XamlLoader")
-                ?.GetMethod("TryLoad", new[] { typeof(System.IServiceProvider), typeof(string) });
+                ?.GetMethod("TryLoad", new[] { typeof(IServiceProvider), typeof(string) });
             if (compiledLoader != null)
             {
                 var compiledResult = compiledLoader.Invoke(null, new object?[] { sp, absoluteUri.ToString()});

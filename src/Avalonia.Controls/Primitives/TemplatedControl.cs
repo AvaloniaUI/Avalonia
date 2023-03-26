@@ -286,14 +286,17 @@ namespace Avalonia.Controls.Primitives
                 {
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(this, "Creating control template");
 
-                    var (child, nameScope) = template.Build(this);
-                    ApplyTemplatedParent(child, this);
-                    ((ISetLogicalParent)child).SetParent(this);
-                    VisualChildren.Add(child);
+                    if (template.Build(this) is { } templateResult)
+                    {
+                        var (child, nameScope) = templateResult;
+                        ApplyTemplatedParent(child, this);
+                        ((ISetLogicalParent)child).SetParent(this);
+                        VisualChildren.Add(child);
 
-                    var e = new TemplateAppliedEventArgs(nameScope);
-                    OnApplyTemplate(e);
-                    RaiseEvent(e);
+                        var e = new TemplateAppliedEventArgs(nameScope);
+                        OnApplyTemplate(e);
+                        RaiseEvent(e);
+                    }
                 }
 
                 _appliedTemplate = template;
