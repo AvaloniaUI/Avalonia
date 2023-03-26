@@ -2,16 +2,17 @@ using System;
 using System.Runtime.ConstrainedExecution;
 using System.Threading;
 using Avalonia.Utilities;
-using Avalonia.Win32.Interop;
 
-namespace Avalonia.Win32
+namespace Avalonia.Threading
 {
     internal class NonPumpingSyncContext : SynchronizationContext, IDisposable
     {
+        private readonly NonPumpingLockHelper.IHelperImpl _impl;
         private readonly SynchronizationContext? _inner;
 
-        private NonPumpingSyncContext(SynchronizationContext? inner)
+        public NonPumpingSyncContext(NonPumpingLockHelper.IHelperImpl impl, SynchronizationContext? inner)
         {
+            _impl = impl;
             _inner = inner;
             SetWaitNotificationRequired();
             SetSynchronizationContext(this);
@@ -48,15 +49,12 @@ namespace Avalonia.Win32
 #if !NET6_0_OR_GREATER
         [PrePrepareMethod]
 #endif
-        public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
-        {
-            return UnmanagedMethods.WaitForMultipleObjectsEx(waitHandles.Length, waitHandles, waitAll,
-                millisecondsTimeout, false);
-        }
+        public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout) =>
+            _impl.Wait(waitHandles, waitAll, millisecondsTimeout);
 
         public void Dispose() => SetSynchronizationContext(_inner);
 
-        public static IDisposable? Use()
+        internal static IDisposable? Use(NonPumpingLockHelper.IHelperImpl impl)
         {
             var current = Current;
             if (current == null)
@@ -67,12 +65,8 @@ namespace Avalonia.Win32
             if (current is NonPumpingSyncContext)
                 return null;
 
-            return new NonPumpingSyncContext(current);
+            return new NonPumpingSyncContext(impl, current);
         }
-
-        internal class HelperImpl : NonPumpingLockHelper.IHelperImpl
-        {
-            IDisposable? NonPumpingLockHelper.IHelperImpl.Use() => NonPumpingSyncContext.Use();
-        }
+        
     }
 }

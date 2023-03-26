@@ -18,11 +18,13 @@ public partial class Dispatcher : IDispatcher
 {
     private IDispatcherImpl _impl;
     internal object InstanceLock { get; } = new();
-    private bool _hasShutdownFinished;
     private IControlledDispatcherImpl? _controlledImpl;
     private static Dispatcher? s_uiThread;
     private IDispatcherImplWithPendingInput? _pendingInputImpl;
-    private IDispatcherImplWithExplicitBackgroundProcessing? _backgroundProcessingImpl;
+    private readonly IDispatcherImplWithExplicitBackgroundProcessing? _backgroundProcessingImpl;
+
+    private readonly AvaloniaSynchronizationContext?[] _priorityContexts =
+        new AvaloniaSynchronizationContext?[DispatcherPriority.MaxValue - DispatcherPriority.MinValue + 1];
 
     internal Dispatcher(IDispatcherImpl impl)
     {
@@ -37,6 +39,7 @@ public partial class Dispatcher : IDispatcher
     }
     
     public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();
+    public bool SupportsRunLoops => _controlledImpl != null;
 
     private static Dispatcher CreateUIThreadDispatcher()
     {
@@ -72,50 +75,14 @@ public partial class Dispatcher : IDispatcher
             [MethodImpl(MethodImplOptions.NoInlining)]
             static void ThrowVerifyAccess()
                 => throw new InvalidOperationException("Call from invalid thread");
-
             ThrowVerifyAccess();
         }
     }
 
-    internal void Shutdown()
+    internal AvaloniaSynchronizationContext GetContextWithPriority(DispatcherPriority priority)
     {
-        DispatcherOperation? operation = null;
-        _impl.Timer -= PromoteTimers;
-        _impl.Signaled -= Signaled;
-        do
-        {
-            lock(InstanceLock)
-            {
-                if(_queue.MaxPriority != DispatcherPriority.Invalid)
-                {
-                    operation = _queue.Peek();
-                }
-                else
-                {
-                    operation = null;
-                }
-            }
-
-            if(operation != null)
-            {
-                operation.Abort();
-            }
-        } while(operation != null);
-        _impl.UpdateTimer(null);
-        _hasShutdownFinished = true;
-    }
-
-    /// <summary>
-    /// Runs the dispatcher's main loop.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// A cancellation token used to exit the main loop.
-    /// </param>
-    public void MainLoop(CancellationToken cancellationToken)
-    {
-        if (_controlledImpl == null)
-            throw new PlatformNotSupportedException();
-        cancellationToken.Register(() => RequestProcessing());
-        _controlledImpl.RunLoop(cancellationToken);
+        DispatcherPriority.Validate(priority, nameof(priority));
+        var index = priority - DispatcherPriority.MinValue;
+        return _priorityContexts[index] ??= new(priority);
     }
 }
