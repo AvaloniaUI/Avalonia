@@ -487,7 +487,7 @@ namespace Avalonia
 
             for (var i = 0; i < visualChildrenCount; i++)
             {
-                if (visualChildren[i] is { } child)
+                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
