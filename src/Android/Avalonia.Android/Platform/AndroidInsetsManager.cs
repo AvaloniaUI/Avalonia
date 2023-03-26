@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using Android.OS;
 using Android.Views;
-using AndroidX.AppCompat.App;
 using AndroidX.Core.View;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls.Platform;
-using static Avalonia.Controls.Platform.IInsetsManager;
+using Avalonia.Media;
 
 namespace Avalonia.Android.Platform
 {
@@ -20,6 +19,7 @@ namespace Avalonia.Android.Platform
         private bool? _systemUiVisibility;
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
+        private Color? _systemBarColor;
 
         public event EventHandler<SafeAreaChangedArgs> SafeAreaChanged;
 
@@ -36,6 +36,16 @@ namespace Avalonia.Android.Platform
                 }
 
                 WindowCompat.SetDecorFitsSystemWindows(_activity.Window, !value);
+
+                if(value)
+                {
+                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                    _activity.Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+                }
+                else
+                {
+                    SystemBarColor = _systemBarColor;
+                }
             }
         }
 
@@ -93,6 +103,7 @@ namespace Avalonia.Android.Platform
         public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
         {
             NotifySafeAreaChanged(SafeAreaPadding);
+            insets = ViewCompat.OnApplyWindowInsets(v, insets);
             return insets;
         }
 
@@ -146,8 +157,6 @@ namespace Avalonia.Android.Platform
 
                 compat.AppearanceLightStatusBars = value == Controls.Platform.SystemBarTheme.Light;
                 compat.AppearanceLightNavigationBars = value == Controls.Platform.SystemBarTheme.Light;
-
-                AppCompatDelegate.DefaultNightMode = isDefault ? AppCompatDelegate.ModeNightFollowSystem : compat.AppearanceLightStatusBars ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
             }
         }
 
@@ -190,10 +199,36 @@ namespace Avalonia.Android.Platform
             }
         }
 
+        public Color? SystemBarColor
+        {
+            get => _systemBarColor; 
+            set
+            {
+                _systemBarColor = value;
+
+                if (_systemBarColor is { } color && !_displayEdgeToEdge && _activity.Window != null)
+                {
+                    _activity.Window.ClearFlags(WindowManagerFlags.TranslucentStatus);
+                    _activity.Window.ClearFlags(WindowManagerFlags.TranslucentNavigation);
+                    _activity.Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+
+                    var androidColor = global::Android.Graphics.Color.Argb(color.A, color.R, color.G, color.B);
+                    _activity.Window.SetStatusBarColor(androidColor);
+
+                    if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                    {
+                        // As we can only change the navigation bar's foreground api 26 and newer, we only change the background color if running on those versions
+                        _activity.Window.SetNavigationBarColor(androidColor);
+                    }
+                }
+            }
+        }
+
         internal void ApplyStatusBarState()
         {
             IsSystemBarVisible = _systemUiVisibility;
             SystemBarTheme = _statusBarTheme;
+            SystemBarColor = _systemBarColor;
         }
 
         private class InsetsAnimationCallback : WindowInsetsAnimationCompat.Callback

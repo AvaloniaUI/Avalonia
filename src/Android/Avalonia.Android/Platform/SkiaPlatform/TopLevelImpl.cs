@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
+using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -22,13 +26,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using Java.Util;
-using Math = System.Math;
-using AndroidRect = Android.Graphics.Rect;
-using Window = Android.Views.Window;
-using Android.Graphics.Drawables;
-using Android.OS;
-using Android.Text;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -286,6 +283,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                     _ => null,
                 };
             }
+
+            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
