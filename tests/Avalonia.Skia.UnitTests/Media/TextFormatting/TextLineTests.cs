@@ -623,6 +623,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Get_TextBounds_For_LineBreak()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(Environment.NewLine, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var textBounds = textLine.GetTextBounds(0, Environment.NewLine.Length);
+
+                Assert.Equal(1, textBounds.Count);
+
+                Assert.Equal(1, textBounds[0].TextRunBounds.Count);
+
+                Assert.Equal(Environment.NewLine.Length, textBounds[0].TextRunBounds[0].Length);
+            }
+        }
+
+        [Fact]
         public void Should_GetTextRange()
         {
             var text = "שדגככעיחדגכAישדגשדגחייטYDASYWIWחיחלדשSAטויליHUHIUHUIDWKLאא'ק'קחליק/'וקןגגגלךשף'/קפוכדגכשדגשיח'/קטאגשד";
