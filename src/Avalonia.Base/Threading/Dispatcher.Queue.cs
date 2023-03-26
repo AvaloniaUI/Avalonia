@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Avalonia.Threading;
 
@@ -43,10 +44,19 @@ public partial class Dispatcher
     /// </summary>
     public void RunJobs(DispatcherPriority? priority = null)
     {
+        RunJobs(priority, CancellationToken.None);
+    }
+    
+    internal void RunJobs(DispatcherPriority? priority, CancellationToken cancellationToken)
+    {
+        if (DisabledProcessingCount > 0)
+            throw new InvalidOperationException(
+                "Cannot perform this operation while dispatcher processing is suspended.");
+        
         priority ??= DispatcherPriority.MinimumActiveValue;
         if (priority < DispatcherPriority.MinimumActiveValue)
             priority = DispatcherPriority.MinimumActiveValue;
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             DispatcherOperation? job;
             lock (InstanceLock)
@@ -168,7 +178,7 @@ public partial class Dispatcher
         }
     }
 
-    private bool RequestProcessing()
+    internal bool RequestProcessing()
     {
         lock (InstanceLock)
         {

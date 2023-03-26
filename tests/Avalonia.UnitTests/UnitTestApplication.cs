@@ -8,6 +8,7 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
+using System.Threading;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
 using Avalonia.Media;
@@ -42,7 +43,8 @@ namespace Avalonia.UnitTests
         public static IDisposable Start(TestServices services = null)
         {
             var scope = AvaloniaLocator.EnterScope();
-            var app = new UnitTestApplication(services);
+            var oldContext = SynchronizationContext.Current;
+            _ = new UnitTestApplication(services);
             Dispatcher.ResetForUnitTests();
             return Disposable.Create(() =>
             {
@@ -53,6 +55,7 @@ namespace Avalonia.UnitTests
 
                 scope.Dispose();
                 Dispatcher.ResetForUnitTests();
+                SynchronizationContext.SetSynchronizationContext(oldContext);
             });
         }
 

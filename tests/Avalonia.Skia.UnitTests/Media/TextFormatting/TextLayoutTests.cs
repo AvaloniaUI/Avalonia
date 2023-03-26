@@ -1051,7 +1051,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [InlineData("שנב🧐שנב", 2, 4, FlowDirection.LeftToRight, "11.268,38.208")]
         [InlineData("שנב🧐שנב", 2, 4, FlowDirection.RightToLeft, "11.268,38.208")]
         [Theory]
-        public void Should_HitTextTextRangeBetweenRuns(string text, int start, int length, 
+        public void Should_HitTestTextRangeBetweenRuns(string text, int start, int length, 
             FlowDirection flowDirection, string expected)
         {
             using (Start())
@@ -1084,6 +1084,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     Assert.Equal(expectedRect.Right, rects[i].Right, 2);
                 }            
+            }
+        }
+
+        [Fact]
+        public void Should_HitTestTextRangeWithLineBreaks()
+        {
+            using (Start())
+            {
+                var beforeLinebreak = "Line before linebreak";
+                var afterLinebreak = "Line after linebreak";
+                var text = beforeLinebreak + Environment.NewLine + "" + Environment.NewLine + afterLinebreak;
+
+                var textLayout = new TextLayout(text, Typeface.Default, 12, Brushes.Black);
+
+                var end = text.Length - afterLinebreak.Length + 1;
+
+                var rects = textLayout.HitTestTextRange(0, end).ToArray();
+
+                Assert.Equal(3, rects.Length);
+
+                var endX = textLayout.TextLines[2].GetDistanceFromCharacterHit(new CharacterHit(end));
+
+                //First character should be covered
+                Assert.Equal(7.201171875, endX, 2);
             }
         }
 
