@@ -101,21 +101,131 @@ public class DispatcherOperation
         }
     }
     
-    public void Abort()
+    public bool Abort()
     {
         lock (Dispatcher.InstanceLock)
         {
-            if (Status == DispatcherOperationStatus.Pending)
-                return;
+            if (Status != DispatcherOperationStatus.Pending)
+                return false;
             Dispatcher.Abort(this);
+            return true;
         }
     }
 
-    public void Wait()
+    /// <summary>
+    ///     Waits for this operation to complete.
+    /// </summary>
+    /// <returns>
+    ///     The status of the operation.  To obtain the return value
+    ///     of the invoked delegate, use the the Result property.
+    /// </returns>
+    public void Wait() => Wait(TimeSpan.FromMilliseconds(-1));
+
+    /// <summary>
+    ///     Waits for this operation to complete.
+    /// </summary>
+    /// <param name="timeout">
+    ///     The maximum amount of time to wait.
+    /// </param>
+    public void Wait(TimeSpan timeout)
     {
-        if (Dispatcher.CheckAccess())
-            throw new InvalidOperationException("Wait is only supported on background thread");
-        GetTask().Wait();
+        if ((Status == DispatcherOperationStatus.Pending || Status == DispatcherOperationStatus.Executing) &&
+            timeout.TotalMilliseconds != 0)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                if (Status == DispatcherOperationStatus.Executing)
+                {
+                    // We are the dispatching thread, and the current operation state is
+                    // executing, which means that the operation is in the middle of
+                    // executing (on this thread) and is trying to wait for the execution
+                    // to complete.  Unfortunately, the thread will now deadlock, so
+                    // we throw an exception instead.
+                    throw new InvalidOperationException("A thread cannot wait on operations already running on the same thread.");
+                }
+                
+                var cts = new CancellationTokenSource();
+                EventHandler finishedHandler = delegate
+                {
+                    cts.Cancel();
+                };
+                Completed += finishedHandler;
+                Aborted += finishedHandler;
+                try
+                {
+                    while (Status == DispatcherOperationStatus.Pending)
+                    {
+                        if (Dispatcher.SupportsRunLoops)
+                        {
+                            if (Priority >= DispatcherPriority.MinimumForegroundPriority)
+                                Dispatcher.RunJobs(Priority, cts.Token);
+                            else
+                                Dispatcher.PushFrame(new DispatcherOperationFrame(this, timeout));
+                        }
+                        else
+                            Dispatcher.RunJobs(DispatcherPriority.MinimumActiveValue, cts.Token);
+                    }
+                }
+                finally
+                {
+                    Completed -= finishedHandler;
+                    Aborted -= finishedHandler;
+                }
+            }
+        }
+        GetTask().GetAwaiter().GetResult();
+    }
+
+    private class DispatcherOperationFrame : DispatcherFrame
+    {
+        // Note: we pass "exitWhenRequested=false" to the base
+        // DispatcherFrame construsctor because we do not want to exit
+        // this frame if the dispatcher is shutting down. This is
+        // because we may need to invoke operations during the shutdown process.
+        public DispatcherOperationFrame(DispatcherOperation op, TimeSpan timeout) : base(false)
+        {
+            _operation = op;
+
+            // We will exit this frame once the operation is completed or aborted.
+            _operation.Aborted += OnCompletedOrAborted;
+            _operation.Completed += OnCompletedOrAborted;
+
+            // We will exit the frame if the operation is not completed within
+            // the requested timeout.
+            if (timeout.TotalMilliseconds > 0)
+            {
+                _waitTimer = new Timer(_ => Exit(),
+                    null,
+                    timeout,
+                    TimeSpan.FromMilliseconds(-1));
+            }
+
+            // Some other thread could have aborted the operation while we were
+            // setting up the handlers.  We check the state again and mark the
+            // frame as "should not continue" if this happened.
+            if (_operation.Status != DispatcherOperationStatus.Pending)
+            {
+                Exit();
+            }
+        }
+
+        private void Exit()
+        {
+            Continue = false;
+
+            if (_waitTimer != null)
+            {
+                _waitTimer.Dispose();
+            }
+
+            _operation.Aborted -= OnCompletedOrAborted;
+            _operation.Completed -= OnCompletedOrAborted;
+        }
+
+        private void OnCompletedOrAborted(object? sender, EventArgs e) => Exit();
+
+        private DispatcherOperation _operation;
+        private Timer? _waitTimer;
     }
 
     public Task GetTask() => GetTaskCore();
@@ -148,7 +258,8 @@ public class DispatcherOperation
 
         try
         {
-            InvokeCore();
+            using (AvaloniaSynchronizationContext.Ensure(Priority))
+                InvokeCore();
         }
         finally
         {
