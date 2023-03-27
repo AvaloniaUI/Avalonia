@@ -454,7 +454,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ActualThemeVariantProperty)
             {
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)change.GetNewValue<ThemeVariant>() ?? PlatformThemeVariant.Light);
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)change.GetNewValue<ThemeVariant?>() ?? PlatformThemeVariant.Light);
             }
         }
         
