@@ -277,6 +277,13 @@ namespace Avalonia.Native
             {
                 get => AvnAutomationPeer.Wrap(_parent.GetAutomationPeer());
             }
+
+            int IAvnWindowBaseEvents.HitTest(AvnPoint p)
+            {
+                var result = _parent._inputRoot.InputHitTest(p.ToAvaloniaPoint()) != null;
+                Console.WriteLine($"HitTest {result}");
+                return result.AsComBool();
+            }
         }
        
         public void Activate()
