@@ -3,8 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>

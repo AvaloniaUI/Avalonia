@@ -20,7 +20,9 @@ namespace Avalonia.Threading
         /// <summary>
         /// The lowest foreground dispatcher priority
         /// </summary>
-        internal static readonly DispatcherPriority Default = new(0);
+        public static readonly DispatcherPriority Default = new(0);
+
+        internal static readonly DispatcherPriority MinimumForegroundPriority = Default;
         
         /// <summary>
         /// The job will be processed with the same priority as input.

@@ -1,20 +1,21 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using System.ComponentModel;
-
     public class BitmapTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        /// <inheritdoc />
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        /// <inheritdoc />
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             var s = (string)value;
             var uri = s.StartsWith("/")
@@ -25,7 +26,7 @@ namespace Avalonia.Markup.Xaml.Converters
                 return new Bitmap(uri.LocalPath);
 
             var assets = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-            return new Bitmap(assets.Open(uri, context.GetContextBaseUri()));
+            return new Bitmap(assets.Open(uri, context?.GetContextBaseUri()));
         }
     }
 }

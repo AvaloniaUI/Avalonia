@@ -75,7 +75,7 @@ namespace Avalonia.Controls
                 unsetValue: WindowTransparencyLevel.None);        
 
         /// <summary>
-        /// Defines the <see cref="TransparencyBackgroundFallbackProperty"/> property.
+        /// Defines the <see cref="TransparencyBackgroundFallback"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);

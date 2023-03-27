@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Avalonia.Threading;
 
@@ -106,7 +107,8 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            callback();
+            using (AvaloniaSynchronizationContext.Ensure(priority))
+                callback();
             return;
         }
 
@@ -227,7 +229,8 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            return callback();
+            using (AvaloniaSynchronizationContext.Ensure(priority))
+                return callback();
         }
 
         // Slow-Path: go through the queue.
@@ -388,7 +391,7 @@ public partial class Dispatcher
         return operation;
     }
 
-    private void InvokeAsyncImpl(DispatcherOperation operation, CancellationToken cancellationToken)
+    internal void InvokeAsyncImpl(DispatcherOperation operation, CancellationToken cancellationToken)
     {
         bool succeeded = false;
 
@@ -482,7 +485,7 @@ public partial class Dispatcher
             // invoke.
             try
             {
-                operation.GetTask().Wait();
+                operation.Wait();
 
                 Debug.Assert(operation.Status == DispatcherOperationStatus.Completed ||
                              operation.Status == DispatcherOperationStatus.Aborted);
@@ -537,6 +540,48 @@ public partial class Dispatcher
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         InvokeAsyncImpl(new DispatcherOperation(this, priority, action, true), CancellationToken.None);
+    }
+
+    /// <summary>
+    ///     Executes the specified Func<Task> asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="callback">
+    ///     A Func<Task> delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    public Task InvokeTaskAsync(Func<Task> callback, DispatcherPriority priority = default)
+    {
+        _ = callback ?? throw new ArgumentNullException(nameof(callback));
+        return InvokeAsync(callback, priority).GetTask().Unwrap();
+    }
+    
+    /// <summary>
+    ///     Executes the specified Func<Task<TResult>> asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="callback">
+    ///     A Func<Task<TResult>> delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    public Task<TResult> InvokeTaskAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
+    {
+        _ = action ?? throw new ArgumentNullException(nameof(action));
+        return InvokeAsync(action, priority).GetTask().Unwrap();
     }
 
     /// <summary>

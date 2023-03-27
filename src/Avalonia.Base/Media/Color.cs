@@ -309,7 +309,7 @@ namespace Avalonia.Media
             if (input.Length == 3 || input.Length == 4)
             {
                 var extendedLength = 2 * input.Length;
-                
+
 #if !BUILDTASK
                 Span<char> extended = stackalloc char[extendedLength];
 #else
