@@ -31,17 +31,6 @@ namespace Avalonia.Controls
             new(() => new StackPanel());
 
         /// <summary>
-        /// Defines the <see cref="Items"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ItemsControl, IList?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IList?>(
-                nameof(Items),
-                o => o.Items,
-#pragma warning disable CS0618 // Type or member is obsolete
-                (o, v) => o.Items = v);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.
         /// </summary>
         public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
@@ -94,7 +83,6 @@ namespace Avalonia.Controls
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
@@ -129,48 +117,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the items to display.
+        /// Gets the items to display.
         /// </summary>
         /// <remarks>
-        /// Since Avalonia 11, <see cref="ItemsControl"/> has both an <see cref="Items"/> property
-        /// and an <see cref="ItemsSource"/> property. The properties have the following differences:
-        /// 
-        /// <list type="bullet">
-        /// <item><see cref="Items"/> is initialized with an empty collection and is a direct property,
-        /// meaning that it cannot be styled </item>
-        /// <item><see cref="ItemsSource"/> is by default null, and is a styled property. This property
-        /// is marked as the content property and will be used for items added via inline XAML.</item>
-        /// </list>
-        /// 
-        /// In Avalonia 11 the two properties can be used almost interchangeably but this will change
-        /// in a later version. In order to be ready for this change, follow the following guidance:
-        /// 
-        /// <list type="bullet">
-        /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
-        /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
-        /// directly to a <see cref="ListBox"/>. Add the containers to the pre-existing list, do not
-        /// reassign the <see cref="Items"/> property via the setter or with a binding.</item>
-        /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
-        /// binding a collection of models which will be transformed by a data template.</item>
-        /// </list>
+        /// You use either the <see cref="Items"/> or the <see cref="ItemsSource"/> property to
+        /// specify the collection that should be used to generate the content of your
+        /// <see cref="ItemsControl"/>. When the <see cref="ItemsSource"/> property is set, the
+        /// <see cref="Items"/> collection is made read-only and fixed-size.
+        ///
+        /// When <see cref="ItemsSource"/> is in use, setting the <see cref="ItemsSource"/>
+        /// property to null removes the collection and restores usage to <see cref="Items"/>,
+        /// which will be an empty <see cref="ItemCollection"/>.
         /// </remarks>
         [Content]
-        public IList? Items
-        {
-            get => _items.GetItemsPropertyValue();
-
-            [Obsolete("Use ItemsSource to set or bind items.")]
-            set
-            {
-                var oldItems = _items.GetItemsPropertyValue();
-
-                if (value != oldItems)
-                {
-                    _items.SetItems(value);
-                    RaisePropertyChanged(ItemsProperty, oldItems, value);
-                }
-            }
-        }
+        public ItemCollection Items => _items;
 
         /// <summary>
         /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
@@ -210,27 +170,17 @@ namespace Avalonia.Controls
         /// Gets or sets a collection used to generate the content of the <see cref="ItemsControl"/>.
         /// </summary>
         /// <remarks>
-        /// Since Avalonia 11, <see cref="ItemsControl"/> has both an <see cref="Items"/> property
-        /// and an <see cref="ItemsSource"/> property. The properties have the following differences:
+        /// A common scenario is to use an <see cref="ItemsControl"/> such as a 
+        /// <see cref="ListBox"/> to display a data collection, or to bind an
+        /// <see cref="ItemsControl"/> to a collection object. To bind an <see cref="ItemsControl"/>
+        /// to a collection object, use the <see cref="ItemsSource"/> property.
         /// 
-        /// <list type="bullet">
-        /// <item><see cref="Items"/> is initialized with an empty collection and is a direct property,
-        /// meaning that it cannot be styled </item>
-        /// <item><see cref="ItemsSource"/> is by default null, and is a styled property. This property
-        /// is marked as the content property and will be used for items added via inline XAML.</item>
-        /// </list>
-        /// 
-        /// In Avalonia 11 the two properties can be used almost interchangeably but this will change
-        /// in a later version. In order to be ready for this change, follow the following guidance:
-        /// 
-        /// <list type="bullet">
-        /// <item>You should use the <see cref="Items"/> property when you're assigning a collection of
-        /// item containers directly, for example adding a collection of <see cref="ListBoxItem"/>s
-        /// directly to a <see cref="ListBox"/>. Add the containers to the pre-existing list, do not
-        /// reassign the <see cref="Items"/> property via the setter or with a binding.</item>
-        /// <item>You should use the <see cref="ItemsSource"/> property when you're assigning or
-        /// binding a collection of models which will be transformed by a data template.</item>
-        /// </list>
+        /// When the <see cref="ItemsSource"/> property is set, the <see cref="Items"/> collection
+        /// is made read-only and fixed-size.
+        ///
+        /// When <see cref="ItemsSource"/> is in use, setting the property to null removes the
+        /// collection and restores usage to <see cref="Items"/>, which will be an empty 
+        /// <see cref="ItemCollection"/>.
         /// </remarks>
         public IEnumerable? ItemsSource
         {
@@ -242,7 +192,6 @@ namespace Avalonia.Controls
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty);
