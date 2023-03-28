@@ -9,16 +9,16 @@ namespace Avalonia.Controls.UnitTests
         public void Can_Reassign_Items()
         {
             var target = new ItemsRepeater();
-            target.Items = new ObservableCollection<string>();
-            target.Items = new ObservableCollection<string>();
+            target.ItemsSource = new ObservableCollection<string>();
+            target.ItemsSource = new ObservableCollection<string>();
         }
 
         [Fact]
         public void Can_Reassign_Items_To_Null()
         {
             var target = new ItemsRepeater();
-            target.Items = new ObservableCollection<string>();
-            target.Items = null;
+            target.ItemsSource = new ObservableCollection<string>();
+            target.ItemsSource = null;
         }
     }
 }
