@@ -2,8 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 
-#nullable  enable
-
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class ResolveByNameExtension
@@ -18,6 +16,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public object? ProvideValue(IServiceProvider serviceProvider)
         {
             var nameScope = serviceProvider.GetService<INameScope>();
+
+            if (nameScope is null)
+                return null;
             
             var value = nameScope.FindAsync(Name);
 
@@ -25,10 +26,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 return value.GetResult();
 
             var provideValueTarget = serviceProvider.GetService<IProvideValueTarget>();
-            var target = provideValueTarget.TargetObject;
 
-            if (provideValueTarget.TargetProperty is IPropertyInfo property) 
+            if (provideValueTarget?.TargetProperty is IPropertyInfo property)
+            {
+                var target = provideValueTarget.TargetObject;
                 value.OnCompleted(() => property.Set(target, value.GetResult()));
+            }
 
             return AvaloniaProperty.UnsetValue;
         }

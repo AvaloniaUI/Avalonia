@@ -50,7 +50,7 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, Geometry?>(nameof(Clip));
 
         /// <summary>
-        /// Defines the <see cref="IsVisibleProperty"/> property.
+        /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
             AvaloniaProperty.Register<Visual, bool>(nameof(IsVisible), true);

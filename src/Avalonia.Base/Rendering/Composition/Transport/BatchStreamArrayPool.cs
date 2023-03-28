@@ -72,6 +72,11 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
 
     protected abstract T CreateItem();
 
+    protected virtual void ClearItem(T item)
+    {
+        
+    }
+
     protected virtual void DestroyItem(T item)
     {
         
@@ -94,6 +99,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
 
     public void Return(T item)
     {
+        ClearItem(item);
         lock (_pool)
         {
             _usage--;
@@ -138,7 +144,7 @@ internal sealed class BatchStreamObjectPool<T> : BatchStreamPoolBase<T[]> where 
         return new T[ArraySize];
     }
 
-    protected override void DestroyItem(T[] item)
+    protected override void ClearItem(T[] item)
     {
         Array.Clear(item, 0, item.Length);
     }

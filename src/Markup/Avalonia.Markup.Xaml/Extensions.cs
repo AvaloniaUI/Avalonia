@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls;
@@ -11,38 +10,38 @@ namespace Avalonia.Markup.Xaml
 {
     internal static class Extensions
     {
-        public static T GetService<T>(this IServiceProvider sp) => (T)sp?.GetService(typeof(T));
-        
-        
-        public static Uri GetContextBaseUri(this IServiceProvider ctx) => ctx.GetService<IUriContext>().BaseUri;
+        public static T? GetService<T>(this IServiceProvider sp) => (T?)sp.GetService(typeof(T));
 
-        public static T GetFirstParent<T>(this IServiceProvider ctx) where T : class 
-            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>().Parents.OfType<T>().FirstOrDefault();
+        public static T GetRequiredService<T>(this IServiceProvider sp)
+            => sp.GetService<T>() ?? throw new InvalidOperationException($"Service {typeof(T)} hasn't been registered");
 
-        public static T GetLastParent<T>(this IServiceProvider ctx) where T : class 
-            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>().Parents.OfType<T>().LastOrDefault();
+        public static Uri? GetContextBaseUri(this IServiceProvider ctx) => ctx.GetService<IUriContext>()?.BaseUri;
+
+        public static T? GetFirstParent<T>(this IServiceProvider ctx) where T : class
+            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents.OfType<T>().FirstOrDefault();
+
+        public static T? GetLastParent<T>(this IServiceProvider ctx) where T : class
+            => ctx.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents.OfType<T>().LastOrDefault();
 
         public static IEnumerable<T> GetParents<T>(this IServiceProvider sp)
-        {
-            return sp.GetService<IAvaloniaXamlIlParentStackProvider>().Parents.OfType<T>();
-        }
+            => sp.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents.OfType<T>() ?? Enumerable.Empty<T>();
 
         public static bool IsInControlTemplate(this IServiceProvider sp) => sp.GetService<IAvaloniaXamlIlControlTemplateProvider>() != null;
 
         [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
-        public static Type ResolveType(this IServiceProvider ctx, string namespacePrefix, string type)
+        public static Type ResolveType(this IServiceProvider ctx, string? namespacePrefix, string type)
         {
-            var tr = ctx.GetService<IXamlTypeResolver>();
+            var tr = ctx.GetRequiredService<IXamlTypeResolver>();
             string name = string.IsNullOrEmpty(namespacePrefix) ? type : $"{namespacePrefix}:{type}";
-            return tr?.Resolve(name);
+            return tr.Resolve(name);
         }
         
-        public static object GetDefaultAnchor(this IServiceProvider provider)
+        public static object? GetDefaultAnchor(this IServiceProvider provider)
         {
             // If the target is not a control, so we need to find an anchor that will let us look
             // up named controls and style resources. First look for the closest Control in
             // the context.
-            object anchor = provider.GetFirstParent<Control>();
+            object? anchor = provider.GetFirstParent<Control>();
 
             if (anchor is null)
             {
