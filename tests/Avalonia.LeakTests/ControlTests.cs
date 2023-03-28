@@ -51,7 +51,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = new DataGrid
                         {
-                            Items = _observableCollection
+                            ItemsSource = _observableCollection
                         }
                     };
 
