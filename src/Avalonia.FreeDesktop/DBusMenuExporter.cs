@@ -38,7 +38,7 @@ namespace Avalonia.FreeDesktop
             private bool _resetQueued;
             private int _nextId = 1;
 
-            public DBusMenuExporterImpl(Connection connection, IntPtr xid)
+            public DBusMenuExporterImpl(Connection connection, IntPtr xid) : this()
             {
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
@@ -47,13 +47,20 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
-            public DBusMenuExporterImpl(Connection connection, string path)
+            public DBusMenuExporterImpl(Connection connection, string path) : this()
             {
                 Connection = connection;
                 _appMenu = false;
                 Path = path;
                 SetNativeMenu(new NativeMenu());
                 _ = InitializeAsync();
+            }
+
+            private DBusMenuExporterImpl()
+            {
+                BackingProperties.Status = string.Empty;
+                BackingProperties.TextDirection = string.Empty;
+                BackingProperties.IconThemePath = Array.Empty<string>();
             }
 
             protected override Connection Connection { get; }
@@ -202,15 +209,9 @@ namespace Avalonia.FreeDesktop
                 return id;
             }
 
-            private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                QueueReset();
-            }
+            private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => QueueReset();
 
-            private void OnItemPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-            {
-                QueueReset();
-            }
+            private void OnItemPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => QueueReset();
 
             private static readonly string[] s_allProperties = {
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
