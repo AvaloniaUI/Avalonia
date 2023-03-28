@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -28,8 +24,7 @@ namespace Avalonia.Controls
         private TextBox?    _hexTextBox;
         private TabControl? _tabControl;
 
-        private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
-        protected bool ignorePropertyChanged = false;
+        protected bool _ignorePropertyChanged = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorView"/> class.
@@ -46,11 +41,11 @@ namespace Avalonia.Controls
         {
             if (_hexTextBox != null)
             {
-                var convertedColor = colorToHexConverter.ConvertBack(_hexTextBox.Text, typeof(Color), null, CultureInfo.CurrentCulture);
+                var convertedColor = ColorToHexConverter.ParseHexString(_hexTextBox.Text ?? string.Empty, HexInputAlphaPosition);
 
                 if (convertedColor is Color color)
                 {
-                    Color = color;
+                    SetCurrentValue(ColorProperty, color);
                 }
 
                 // Re-apply the hex value
@@ -66,7 +61,7 @@ namespace Avalonia.Controls
         {
             if (_hexTextBox != null)
             {
-                _hexTextBox.Text = colorToHexConverter.Convert(Color, typeof(string), null, CultureInfo.CurrentCulture) as string;
+                _hexTextBox.Text = ColorToHexConverter.ToHexString(Color, HexInputAlphaPosition);
             }
         }
 
@@ -167,7 +162,7 @@ namespace Avalonia.Controls
                 // The work-around for this is done here where SelectedIndex is forcefully
                 // synchronized with whatever the TabControl property value is. This is
                 // possible since selection validation is already done by this method.
-                SelectedIndex = _tabControl.SelectedIndex;
+                SetCurrentValue(SelectedIndexProperty, _tabControl.SelectedIndex);
             }
 
             return;
@@ -200,7 +195,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (ignorePropertyChanged)
+            if (_ignorePropertyChanged)
             {
                 base.OnPropertyChanged(change);
                 return;
@@ -209,29 +204,29 @@ namespace Avalonia.Controls
             // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
-                ignorePropertyChanged = true;
+                _ignorePropertyChanged = true;
 
-                HsvColor = Color.ToHsv();
+                SetCurrentValue(HsvColorProperty, Color.ToHsv());
                 SetColorToHexTextBox();
 
                 OnColorChanged(new ColorChangedEventArgs(
                     change.GetOldValue<Color>(),
                     change.GetNewValue<Color>()));
 
-                ignorePropertyChanged = false;
+                _ignorePropertyChanged = false;
             }
             else if (change.Property == HsvColorProperty)
             {
-                ignorePropertyChanged = true;
+                _ignorePropertyChanged = true;
 
-                Color = HsvColor.ToRgb();
+                SetCurrentValue(ColorProperty, HsvColor.ToRgb());
                 SetColorToHexTextBox();
 
                 OnColorChanged(new ColorChangedEventArgs(
                     change.GetOldValue<HsvColor>().ToRgb(),
                     change.GetNewValue<HsvColor>().ToRgb()));
 
-                ignorePropertyChanged = false;
+                _ignorePropertyChanged = false;
             }
             else if (change.Property == PaletteProperty)
             {
@@ -241,7 +236,7 @@ namespace Avalonia.Controls
                 // bound properties controlling the palette grid
                 if (palette != null)
                 {
-                    PaletteColumnCount = palette.ColorCount;
+                    SetCurrentValue(PaletteColumnCountProperty, palette.ColorCount);
 
                     List<Color> newPaletteColors = new List<Color>();
                     for (int shadeIndex = 0; shadeIndex < palette.ShadeCount; shadeIndex++)
@@ -252,14 +247,14 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    PaletteColors = newPaletteColors;
+                    SetCurrentValue(PaletteColorsProperty, newPaletteColors);
                 }
             }
             else if (change.Property == IsAlphaEnabledProperty)
             {
                 // Manually coerce the HsvColor value
                 // (Color will be coerced automatically if HsvColor changes)
-                HsvColor = OnCoerceHsvColor(HsvColor);
+                SetCurrentValue(HsvColorProperty,  OnCoerceHsvColor(HsvColor));
             }
             else if (change.Property == IsColorComponentsVisibleProperty ||
                      change.Property == IsColorPaletteVisibleProperty ||

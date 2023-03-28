@@ -43,6 +43,14 @@ namespace Avalonia.Controls
                 ColorSpectrumShape.Box);
 
         /// <summary>
+        /// Defines the <see cref="HexInputAlphaPosition"/> property.
+        /// </summary>
+        public static readonly StyledProperty<AlphaComponentPosition> HexInputAlphaPositionProperty =
+            AvaloniaProperty.Register<ColorView, AlphaComponentPosition>(
+                nameof(HexInputAlphaPosition),
+                AlphaComponentPosition.Trailing); // Match CSS (and default slider order) instead of XAML/WinUI
+
+        /// <summary>
         /// Defines the <see cref="HsvColor"/> property.
         /// </summary>
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
@@ -258,6 +266,16 @@ namespace Avalonia.Controls
         {
             get => GetValue(ColorSpectrumShapeProperty);
             set => SetValue(ColorSpectrumShapeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the position of the alpha component in the hexadecimal input box relative to
+        /// all other color components.
+        /// </summary>
+        public AlphaComponentPosition HexInputAlphaPosition
+        {
+            get => GetValue(HexInputAlphaPositionProperty);
+            set => SetValue(HexInputAlphaPositionProperty, value);
         }
 
         /// <inheritdoc cref="ColorSpectrum.HsvColor"/>

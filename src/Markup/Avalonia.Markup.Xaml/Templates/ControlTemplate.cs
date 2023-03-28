@@ -9,10 +9,10 @@ namespace Avalonia.Markup.Xaml.Templates
     {
         [Content]
         [TemplateContent]
-        public object Content { get; set; }
+        public object? Content { get; set; }
 
-        public Type TargetType { get; set; }
+        public Type? TargetType { get; set; }
 
-        public ControlTemplateResult Build(TemplatedControl control) => TemplateContent.Load(Content);
+        public ControlTemplateResult? Build(TemplatedControl control) => TemplateContent.Load(Content);
     }
 }

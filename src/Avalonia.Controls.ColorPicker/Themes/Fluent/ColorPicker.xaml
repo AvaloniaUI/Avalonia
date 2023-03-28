@@ -42,7 +42,8 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout FlyoutPresenterClasses="nopadding">
+            <Flyout FlyoutPresenterClasses="nopadding"
+                    Placement="Top">
 
               <!-- The following is copy-pasted from the ColorView's control template.
                    It MUST always be kept in sync with the ColorView (which is master).
@@ -216,6 +217,7 @@
                                        Content="RGB"
                                        CornerRadius="4,0,0,4"
                                        BorderThickness="1,1,0,1"
+                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=TwoWay}" />
                           <RadioButton x:Name="HsvRadioButton"
                                        Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
@@ -223,6 +225,7 @@
                                        Content="HSV"
                                        CornerRadius="0,4,4,0"
                                        BorderThickness="0,1,1,1"
+                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=TwoWay}" />
                         </Grid>
                         <Grid x:Name="HexInputGrid"
