@@ -230,7 +230,7 @@ namespace Avalonia.Controls.UnitTests
                     return true;
                 });
                 var target = new MenuItem();
-                var flyout = new MenuFlyout { Items = new AvaloniaList<MenuItem> { target } };
+                var flyout = new MenuFlyout { Items = { target } };
                 var button = new Button { Flyout = flyout };
                 var window = new Window { Content = button };
                 window.ApplyStyling();
