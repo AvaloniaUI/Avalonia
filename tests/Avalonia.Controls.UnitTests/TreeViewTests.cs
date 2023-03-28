@@ -721,45 +721,32 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedItem = item;
             Assert.True(called);
         }
-        
+
         [Fact]
         public void SelectedItem_Should_Be_Valid_When_SelectedItemChanged_Event_Raised()
         {
-            using (Application())
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+
+            var item = data[0].Children[1].Children[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            Assert.NotNull(container);
+
+            var called = false;
+            target.SelectionChanged += (s, e) =>
             {
-                var tree = CreateTestTreeData();
-                var target = new TreeView
-                {
-                    Template = CreateTreeViewTemplate(),
-                    ItemsSource = tree,
-                };
+                Assert.Same(item, e.AddedItems[0]);
+                Assert.Same(item, target.SelectedItem);
+                called = true;
+            };
 
-                var visualRoot = new TestRoot();
-                visualRoot.Child = target;
+            _mouse.Click(container);
 
-                CreateNodeDataTemplate(target);
-                ApplyTemplates(target);
-                ExpandAll(target);
-
-                var item = tree[0].Children[1].Children[0];
-                var container = (TreeViewItem)target.TreeContainerFromItem(item);
-
-                Assert.NotNull(container);
-                
-                var called = false;
-                target.SelectionChanged += (s, e) =>
-                {
-                    Assert.Same(item, e.AddedItems[0]);
-                    Assert.Same(item, target.SelectedItem);
-                    called = true;
-                };
-
-                _mouse.Click(container);
-
-                Assert.Equal(item, target.SelectedItem);
-                Assert.True(container.IsSelected);
-                Assert.True(called);
-            }
+            Assert.Equal(item, target.SelectedItem);
+            Assert.True(container.IsSelected);
+            Assert.True(called);
         }
 
         [Fact]
@@ -796,7 +783,7 @@ namespace Avalonia.Controls.UnitTests
             using var app = Start();
             var data = CreateTestTreeData();
             var target = CreateTarget(data: data, expandAll: false);
-            
+
             target.SelectedItem = data[0].Children[1];
 
             var rootItem = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
