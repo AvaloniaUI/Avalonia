@@ -761,4 +761,19 @@
     return [[self accessibilityChild] accessibilityFocusedUIElement];
 }
 
+- (NSView *)hitTest:(NSPoint)point {
+    NSView *result = [super hitTest:point];
+
+    auto avnPoint = [AvnView toAvnPoint:point];
+    auto localPoint = [self translateLocalPoint:avnPoint];
+
+    // Check if we hit any avalonia controls
+    if (result == self && _parent->BaseEvents->HitTest(localPoint) == false) {
+        result = nil;
+    }
+
+    return result;
+
+}
+
 @end

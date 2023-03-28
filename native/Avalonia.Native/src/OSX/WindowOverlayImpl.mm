@@ -6,7 +6,7 @@ WindowOverlayImpl::WindowOverlayImpl(void* parentWindow, char* parentView, IAvnW
 
     [this->parentView addSubview:View];
 
-    // We should ideally choose our parentview to be positioned exactly as the main window
+    // We should ideally choose our parentview to be positioned exactly on top of the main window
     // This is needed to replicate default avalonia behaviour
     // If parentview is positioned differently, we shall adjust the origin and size accordingly (bottom left coordinates)
     NSRect frame = this->parentView.frame;

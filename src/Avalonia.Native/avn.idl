@@ -595,6 +595,7 @@ interface IAvnWindowBaseEvents : IUnknown
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
      IAvnAutomationPeer* GetAutomationPeer();
+     bool HitTest(AvnPoint point);
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]
