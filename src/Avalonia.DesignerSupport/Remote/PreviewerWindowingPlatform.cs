@@ -48,7 +48,6 @@ namespace Avalonia.DesignerSupport.Remote
             s_transport = transport;
             var instance = new PreviewerWindowingPlatform();
             AvaloniaLocator.CurrentMutable
-                .Bind<IClipboard>().ToSingleton<ClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()

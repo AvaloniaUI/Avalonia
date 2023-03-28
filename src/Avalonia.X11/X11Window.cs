@@ -23,6 +23,7 @@ using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
+using Avalonia.Input.Platform;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -826,6 +827,11 @@ namespace Avalonia.X11
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
             return null;
