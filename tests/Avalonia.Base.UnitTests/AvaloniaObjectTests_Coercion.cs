@@ -277,6 +277,21 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void If_Initial_State_Has_Coerced_Default_Value_Then_CoerceValue_Must_Be_Called()
+        {
+            // This test is just explicitly describing an edge-case. If the initial state of the
+            // object results in a coerced property value then CoerceValue must be called before
+            // coercion takes effect. Confirmed as matching the behavior of WPF.
+            var target = new Class3();
+
+            Assert.Equal(11, target.Foo);
+
+            target.CoerceValue(Class3.FooProperty);
+
+            Assert.Equal(50, target.Foo);
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<int> FooProperty =
@@ -361,6 +376,28 @@ namespace Avalonia.Base.UnitTests
             public static int CoerceFoo(AvaloniaObject instance, int value)
             {
                 return -value;
+            }
+        }
+
+        private class Class3: AvaloniaObject
+        {
+            public static readonly StyledProperty<int> FooProperty =
+                AvaloniaProperty.Register<Class3, int>(
+                    "Foo",
+                    defaultValue: 11,
+                    coerce: CoerceFoo);
+
+            public int Foo
+            {
+                get => GetValue(FooProperty);
+                set => SetValue(FooProperty, value);
+            }
+
+
+            public static int CoerceFoo(AvaloniaObject instance, int value)
+            {
+                var o = (Class3)instance;
+                return Math.Clamp(value, 50, 100);
             }
         }
 
