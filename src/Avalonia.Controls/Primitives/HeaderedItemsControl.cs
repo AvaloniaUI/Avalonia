@@ -124,7 +124,7 @@ namespace Avalonia.Controls.Primitives
                 treeTemplate.Match(item) &&
                 treeTemplate.ItemsSelector(item) is { } itemsBinding)
             {
-                _itemsBinding = BindingOperations.Apply(this, ItemsProperty, itemsBinding, null);
+                _itemsBinding = BindingOperations.Apply(this, ItemsSourceProperty, itemsBinding, null);
             }
         }
 

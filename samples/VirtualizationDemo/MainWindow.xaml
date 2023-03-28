@@ -11,7 +11,7 @@
                     Margin="16 0 0 0" 
                     Width="150"
                     Spacing="4">
-            <ComboBox Items="{Binding Orientations}"
+            <ComboBox ItemsSource="{Binding Orientations}"
                       SelectedItem="{Binding Orientation}"/>
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
@@ -26,10 +26,10 @@
                      UseFloatingWatermark="True"
                      Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
             <TextBlock>Horiz. ScrollBar</TextBlock>
-            <ComboBox Items="{Binding ScrollBarVisibilities}"
+            <ComboBox ItemsSource="{Binding ScrollBarVisibilities}"
                       SelectedItem="{Binding HorizontalScrollBarVisibility}"/>
             <TextBlock>Vert. ScrollBar</TextBlock>
-            <ComboBox Items="{Binding ScrollBarVisibilities}"
+            <ComboBox ItemsSource="{Binding ScrollBarVisibilities}"
                       SelectedItem="{Binding VerticalScrollBarVisibility}"/>
             <TextBox Watermark="Item to Create"
                      UseFloatingWatermark="True"
@@ -44,7 +44,7 @@
         </StackPanel>
 
         <ListBox Name="listBox" 
-                 Items="{Binding Items}" 
+                 ItemsSource="{Binding Items}" 
                  Selection="{Binding Selection}"
                  SelectionMode="Multiple"
                  ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"
