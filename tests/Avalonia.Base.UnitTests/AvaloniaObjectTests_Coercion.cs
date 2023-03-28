@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -182,11 +185,103 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(-150, target.Foo);
         }
 
+        [Fact]
+        public void Default_Value_Can_Be_Coerced()
+        {
+            var target = new Class1();
+            var raised = 0;
+
+            target.MinFoo = 20;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Class1.FooProperty, e.Property);
+                Assert.Equal(11, e.OldValue);
+                Assert.Equal(20, e.NewValue);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                ++raised;
+            };
+
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(20, target.Foo);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void ClearValue_Respects_Coerced_Default_Value()
+        {
+            var target = new Class1();
+            var raised = 0;
+
+            target.Foo = 30;
+            target.MinFoo = 20;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Class1.FooProperty, e.Property);
+                Assert.Equal(30, e.OldValue);
+                Assert.Equal(20, e.NewValue);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                ++raised;
+            };
+
+            target.ClearValue(Class1.FooProperty);
+
+            Assert.Equal(20, target.Foo);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Deactivating_Style_Respects_Coerced_Default_Value()
+        {
+            var target = new Control1
+            {
+                MinFoo = 20,
+            };
+
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Control1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Control1.FooProperty, 50),
+                        },
+                    },
+                },
+                Child = target,
+            };
+
+            var raised = 0;
+
+            target.Classes.Add("foo");
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(50, target.Foo);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control1.FooProperty, e.Property);
+                Assert.Equal(50, e.OldValue);
+                Assert.Equal(20, e.NewValue);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                ++raised;
+            };
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal(20, target.Foo);
+            Assert.Equal(1, raised);
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<int> FooProperty =
                 AvaloniaProperty.Register<Class1, int>(
-                    "Qux",
+                    "Foo",
                     defaultValue: 11,
                     coerce: CoerceFoo);
 
@@ -215,13 +310,15 @@ namespace Avalonia.Base.UnitTests
                 set => SetValue(InheritedProperty, value);
             }
 
+            public int MinFoo { get; set; } = 0;
             public int MaxFoo { get; set; } = 100;
 
             public List<AvaloniaPropertyChangedEventArgs> CoreChanges { get; } = new();
 
             public static int CoerceFoo(AvaloniaObject instance, int value)
             {
-                return Math.Min(((Class1)instance).MaxFoo, value);
+                var o = (Class1)instance;
+                return Math.Clamp(value, o.MinFoo, o.MaxFoo);
             }
 
             protected override void OnPropertyChangedCore(AvaloniaPropertyChangedEventArgs change)
@@ -264,6 +361,30 @@ namespace Avalonia.Base.UnitTests
             public static int CoerceFoo(AvaloniaObject instance, int value)
             {
                 return -value;
+            }
+        }
+
+        private class Control1 : Control 
+        {
+            public static readonly StyledProperty<int> FooProperty =
+                AvaloniaProperty.Register<Control1, int>(
+                    "Foo",
+                    defaultValue: 11,
+                    coerce: CoerceFoo);
+
+            public int Foo
+            {
+                get => GetValue(FooProperty);
+                set => SetValue(FooProperty, value);
+            }
+
+            public int MinFoo { get; set; } = 0;
+            public int MaxFoo { get; set; } = 100;
+
+            public static int CoerceFoo(AvaloniaObject instance, int value)
+            {
+                var o = (Control1)instance;
+                return Math.Clamp(value, o.MinFoo, o.MaxFoo);
             }
         }
     }
