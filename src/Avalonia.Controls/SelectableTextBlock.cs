@@ -228,7 +228,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            var text = HasComplexContent ? Inlines.Text : Text;
+            var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
 
             if (text != null && clickInfo.Properties.IsLeftButtonPressed)
@@ -314,7 +314,7 @@ namespace Avalonia.Controls
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                var text = HasComplexContent ? Inlines.Text : Text;
+                var text = HasComplexContent ? Inlines?.Text : Text;
                 var padding = Padding;
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
@@ -397,7 +397,7 @@ namespace Avalonia.Controls
 
         private string GetSelection()
         {
-            var text = HasComplexContent ? Inlines.Text : Text;
+            var text = HasComplexContent ? Inlines?.Text : Text;
 
             var textLength = text?.Length ?? 0;
 
