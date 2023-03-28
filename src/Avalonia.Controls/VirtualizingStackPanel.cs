@@ -132,7 +132,10 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             if (!IsEffectivelyVisible)
+            {
+                InvalidateMeasure();
                 return default;
+            }
 
             _isInLayout = true;
 
