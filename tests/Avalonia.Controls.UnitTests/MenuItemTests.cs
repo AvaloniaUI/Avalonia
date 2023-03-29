@@ -381,6 +381,7 @@ namespace Avalonia.Controls.UnitTests
                 var menuItem = Assert.IsType<MenuItem>(panel.Children[i]);
 
                 Assert.Equal(items[i], menuItem.Header);
+                Assert.Same(itemTemplate, menuItem.HeaderTemplate);
 
                 var headerPresenter = Assert.IsType<ContentPresenter>(menuItem.HeaderPresenter);
                 Assert.Same(itemTemplate, headerPresenter.ContentTemplate);
