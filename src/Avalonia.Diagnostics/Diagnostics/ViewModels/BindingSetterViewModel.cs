@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 
@@ -7,7 +8,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class BindingSetterViewModel : SetterViewModel
     {
-        public BindingSetterViewModel(AvaloniaProperty property, object? value) : base(property, value)
+        public BindingSetterViewModel(AvaloniaProperty property, object? value, IClipboard? clipboard) : base(property, value, clipboard)
         {
             switch (value)
             {

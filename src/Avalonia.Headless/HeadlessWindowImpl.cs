@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Avalonia.Automation.Peers;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -252,6 +251,11 @@ namespace Avalonia.Headless
             if (featureType == typeof(IStorageProvider))
             {
                 return new NoopStorageProvider();
+            }
+
+            if(featureType == typeof(IClipboard))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
             return null;
