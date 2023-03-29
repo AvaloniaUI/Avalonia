@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 using Avalonia.Collections;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform;
@@ -348,6 +350,46 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Menu_ItemTemplate_Should_Be_Applied_To_TopLevel_MenuItem_Header()
+        {
+            using var app = Application();
+
+            var items = new[]
+            {
+                new MenuViewModel("Foo"),
+                new MenuViewModel("Bar"),
+            };
+
+            var itemTemplate = new FuncDataTemplate<MenuViewModel>((x, _) =>
+                new TextBlock { Text = x.Header });
+
+            var menu = new Menu
+            {
+                ItemTemplate = itemTemplate,
+                ItemsSource = items,
+            };
+
+            var window = new Window { Content = menu };
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
+            Assert.Equal(2, panel.Children.Count);
+
+            for (var i = 0; i <  panel.Children.Count; i++)
+            {
+                var menuItem = Assert.IsType<MenuItem>(panel.Children[i]);
+
+                Assert.Equal(items[i], menuItem.Header);
+
+                var headerPresenter = Assert.IsType<ContentPresenter>(menuItem.HeaderPresenter);
+                Assert.Same(itemTemplate, headerPresenter.ContentTemplate);
+
+                var headerControl = Assert.IsType<TextBlock>(headerPresenter.Child);
+                Assert.Equal(items[i].Header, headerControl.Text);
+            }
+        }
+
         private IDisposable Application()
         {
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
@@ -401,5 +443,7 @@ namespace Avalonia.Controls.UnitTests
 
             public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
+
+        private record MenuViewModel(string Header);
     }
 }
