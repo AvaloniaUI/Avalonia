@@ -39,7 +39,6 @@ namespace Avalonia.iOS
                 .Bind<IPlatformGraphics>().ToConstant(GlFeature)
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
-                .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

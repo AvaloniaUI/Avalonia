@@ -438,6 +438,11 @@ namespace Avalonia.Controls
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
 
+        /// <summary>
+        /// Gets the platform's clipboard implementation
+        /// </summary>
+        public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
+
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -498,7 +503,8 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ActualThemeVariantProperty)
             {
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)change.GetNewValue<ThemeVariant>() ?? PlatformThemeVariant.Light);
+                var newThemeVariant = change.GetNewValue<ThemeVariant?>() ?? ThemeVariant.Default;
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)newThemeVariant ?? PlatformThemeVariant.Light);
             }
         }
         
