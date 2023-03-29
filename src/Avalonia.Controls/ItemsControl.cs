@@ -460,13 +460,19 @@ namespace Avalonia.Controls
                     ic.ItemContainerTheme = ict;
             }
 
-            // This condition is separate because HeaderedItemsControl needs to also run the
-            // ItemsControl preparation.
+            // These conditions are separate because HeaderedItemsControl and
+            // HeaderedSelectingItemsControl also need to run the ItemsControl preparation.
             if (container is HeaderedItemsControl hic)
             {
                 hic.Header = item;
                 hic.HeaderTemplate = itemTemplate;
-                hic.PrepareItemContainer();
+                hic.PrepareItemContainer(this);
+            }
+            else if (container is HeaderedSelectingItemsControl hsic)
+            {
+                hsic.Header = item;
+                hsic.HeaderTemplate = itemTemplate;
+                hsic.PrepareItemContainer(this);
             }
         }
 
