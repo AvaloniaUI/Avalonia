@@ -307,12 +307,14 @@ namespace Avalonia.Controls
 
         private void SelectSingleItem(object item)
         {
+            var oldValue = _selectedItem;
             _syncingSelectedItems = true;
-            SelectedItems.Clear();            
+            SelectedItems.Clear();
+            _selectedItem = item;
             SelectedItems.Add(item);
             _syncingSelectedItems = false;
 
-            SetAndRaise(SelectedItemProperty, ref _selectedItem, item);            
+            RaisePropertyChanged(SelectedItemProperty, oldValue, _selectedItem);    
         }
 
         /// <summary>
