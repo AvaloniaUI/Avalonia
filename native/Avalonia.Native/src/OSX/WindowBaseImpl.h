@@ -107,6 +107,7 @@ BEGIN_INTERFACE_MAP()
     virtual void BringToFront ();
 
 protected:
+    NSSize lastSize;
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
@@ -118,7 +119,6 @@ private:
     NSCursor *cursor;
     ComPtr<IAvnGlContext> _glContext;
     bool hasPosition;
-    NSSize lastSize;
     NSSize lastMinSize;
     NSSize lastMaxSize;
     AvnMenu* lastMenu;

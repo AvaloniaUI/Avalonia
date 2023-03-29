@@ -14,6 +14,7 @@ WindowOverlayImpl::WindowOverlayImpl(void* parentWindow, char* parentView, IAvnW
     frame.origin.y = -frame.origin.y;
 
     [View setFrame:frame];
+    lastSize = frame.size;
 }
 
 bool WindowOverlayImpl::IsOverlay()
