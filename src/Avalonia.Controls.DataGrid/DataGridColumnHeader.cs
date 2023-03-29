@@ -724,7 +724,7 @@ namespace Avalonia.Controls
             }
 
             //handle entry into reorder mode
-            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
+            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null)
             {
                 var distanceFromInitial = (Vector)(mousePositionHeaders - _lastMousePositionHeaders);
                 if (distanceFromInitial.Length > DATAGRIDCOLUMNHEADER_columnsDragTreshold)
