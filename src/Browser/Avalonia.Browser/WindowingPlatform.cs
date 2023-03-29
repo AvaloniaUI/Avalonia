@@ -36,7 +36,6 @@ namespace Avalonia.Browser
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IRuntimePlatform>().ToSingleton<BrowserRuntimePlatform>()
-                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
