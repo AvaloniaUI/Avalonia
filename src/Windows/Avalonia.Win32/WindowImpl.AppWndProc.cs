@@ -729,7 +729,7 @@ namespace Avalonia.Win32
                         {
                             case GCS.GCS_RESULTSTR:                          
                                 {
-                                    if(ToInt32(wParam) >= 32)
+                                    if(!string.IsNullOrEmpty(previousComposition) && ToInt32(wParam) >= 32)
                                     {
                                         Imm32InputMethod.Current.Composition = previousComposition;
 
