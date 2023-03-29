@@ -701,7 +701,14 @@ namespace Avalonia.Media.TextFormatting
                     if (directionalWidth == 0)
                     {
                         //In case a run only contains a linebreak we don't want to skip it.
-                        if (currentRun is ShapedTextRun shaped && currentRun.Length - shaped.GlyphRun.Metrics.NewLineLength > 0)
+                        if (currentRun is ShapedTextRun shaped)
+                        {
+                            if(currentRun.Length - shaped.GlyphRun.Metrics.NewLineLength > 0)
+                            {
+                                continue;
+                            }
+                        }
+                        else
                         {
                             continue;
                         }
@@ -840,7 +847,14 @@ namespace Avalonia.Media.TextFormatting
                     if (directionalWidth == 0)
                     {
                         //In case a run only contains a linebreak we don't want to skip it.
-                        if (currentRun is ShapedTextRun shaped && currentRun.Length - shaped.GlyphRun.Metrics.NewLineLength > 0)
+                        if (currentRun is ShapedTextRun shaped)
+                        {
+                            if (currentRun.Length - shaped.GlyphRun.Metrics.NewLineLength > 0)
+                            {
+                                continue;
+                            }
+                        }
+                        else
                         {
                             continue;
                         }
