@@ -273,6 +273,10 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         return S_OK;
     }
 
+    if(this->IsOverlay()) {
+        return S_OK;
+    }
+
     _inResize = true;
 
     START_COM_CALL;
