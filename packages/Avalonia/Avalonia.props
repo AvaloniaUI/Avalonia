@@ -6,4 +6,10 @@
     <AvaloniaUseExternalMSBuild>false</AvaloniaUseExternalMSBuild>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\AvaloniaBuildTasks.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)\Avalonia.Generators.props"/>
+
+  <!-- Allow loading the AvaloniaVS extension when referencing the Avalonia nuget package -->
+  <ItemGroup>
+    <ProjectCapability Include="Avalonia"/>
+  </ItemGroup>
 </Project>

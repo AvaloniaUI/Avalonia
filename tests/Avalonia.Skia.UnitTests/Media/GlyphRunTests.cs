@@ -110,7 +110,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 if (glyphRun.IsLeftToRight)
                 {
                     var characterHit =
-                        glyphRun.GetCharacterHitFromDistance(glyphRun.Size.Width, out _);
+                        glyphRun.GetCharacterHitFromDistance(glyphRun.Bounds.Width, out _);
                     
                     Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
@@ -157,9 +157,9 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static List<Rect> BuildRects(GlyphRun glyphRun)
         {
-            var height = glyphRun.Size.Height;
+            var height = glyphRun.Bounds.Height;
 
-            var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Size.Width;
+            var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Bounds.Width;
             
             var rects = new List<Rect>(glyphRun.GlyphInfos!.Count);
 
@@ -216,12 +216,12 @@ namespace Avalonia.Skia.UnitTests.Media
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
-                shapedBuffer.GlyphInfos,
+                shapedBuffer,
                 biDiLevel: shapedBuffer.BidiLevel);
 
             if(shapedBuffer.BidiLevel == 1)
             {
-                shapedBuffer.GlyphInfos.Span.Reverse();
+                shapedBuffer.Reverse();
             }
 
             return glyphRun;

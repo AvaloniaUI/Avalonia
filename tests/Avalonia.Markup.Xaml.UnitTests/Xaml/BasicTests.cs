@@ -505,7 +505,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ItemsControl Name='itemsControl' Items='{Binding}'>
+    <ItemsControl Name='itemsControl' ItemsSource='{Binding}'>
     </ItemsControl>
 </Window>
 ";
@@ -522,7 +522,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 target.DataContext = items;
 
-                Assert.Equal(items, itemsControl.Items);
+                Assert.Equal(items, itemsControl.ItemsSource);
             }
         }
 
@@ -702,9 +702,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 // EndInit should be second-to-last operation, as last operation will be
                 // caused by styling being applied on EndInit.
-                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 2]);
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 3]);
 
                 // Caused by styling.
+                Assert.Equal("Property FontFamily Changed", tracker.Order[tracker.Order.Count - 2]);
                 Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }
@@ -759,7 +760,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
+    <ListBox ItemsSource='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
 </Window>";
 
                 var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
@@ -772,7 +773,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.DataContext = vm;
 
-                Assert.Equal(vm.Items, listBox.Items);
+                Assert.Equal(vm.Items, listBox.ItemsSource);
 
                 Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
             }

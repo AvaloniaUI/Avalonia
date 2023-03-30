@@ -30,7 +30,7 @@ namespace Avalonia.Rendering
         /// </remarks>
         public void Add(Rect rect)
         {
-            if (!rect.IsDefault)
+            if (rect.Width != 0 || rect.Height != 0)
             {
                 for (var i = 0; i < _rects.Count; ++i)
                 {

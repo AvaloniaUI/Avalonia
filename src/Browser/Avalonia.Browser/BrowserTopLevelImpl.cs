@@ -31,6 +31,7 @@ namespace Avalonia.Browser
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly IInsetsManager? _insetsManager;
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView)
         {
@@ -40,9 +41,12 @@ namespace Avalonia.Browser
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
+
+            _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = _avaloniaView.GetNativeControlHostImpl();
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
+
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -69,6 +73,8 @@ namespace Avalonia.Browser
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);
+
+                (_insetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
         }
 
@@ -163,6 +169,15 @@ namespace Avalonia.Browser
             }
 
             return false;
+        }
+        
+        public DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers, BrowserDataObject dataObject, DragDropEffects dropEffect)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataObject, dropEffect, modifiers);
+            Console.WriteLine($"{eventArgs.Location} {eventArgs.Effects} {eventArgs.Type} {eventArgs.KeyModifiers}");
+            Input?.Invoke(eventArgs);
+            return eventArgs.Effects;
         }
 
         public void Dispose()
@@ -260,6 +275,11 @@ namespace Avalonia.Browser
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
             }
 
             return null;

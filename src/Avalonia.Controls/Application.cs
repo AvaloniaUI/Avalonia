@@ -29,7 +29,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IGlobalThemeVariantProvider, IApplicationPlatformEvents
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents
     {
         /// <summary>
         /// The application-global data templates.
@@ -50,13 +50,13 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             StyledElement.DataContextProperty.AddOwner<Application>();
 
-        /// <inheritdoc cref="StyledElement.ActualThemeVariantProperty" />
+        /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            StyledElement.ActualThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
         
-        /// <inheritdoc cref="StyledElement.RequestedThemeVariantProperty" />
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            StyledElement.RequestedThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
@@ -95,11 +95,8 @@ namespace Avalonia
             set => SetValue(RequestedThemeVariantProperty, value);
         }
         
-        /// <inheritdoc cref="StyledElement.ActualThemeVariant"/>
-        public ThemeVariant ActualThemeVariant
-        {
-            get => GetValue(ActualThemeVariantProperty);
-        } 
+        /// <inheritdoc />
+        public ThemeVariant ActualThemeVariant => GetValue(ActualThemeVariantProperty);
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -256,7 +253,7 @@ namespace Avalonia
                 .Bind<IAccessKeyHandler>().ToTransient<AccessKeyHandler>()
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
-                .Bind<IGlobalThemeVariantProvider>().ToConstant(this)
+                .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IFocusManager>().ToConstant(FocusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()

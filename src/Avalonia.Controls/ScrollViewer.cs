@@ -775,6 +775,22 @@ namespace Avalonia.Controls
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
+        /// <summary>
+        /// Gets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public static bool GetIsScrollInertiaEnabled(Control control)
+        {
+            return control.GetValue(IsScrollInertiaEnabledProperty);
+        }
+
+        /// <summary>
+        /// Sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public static void SetIsScrollInertiaEnabled(Control control, bool value)
+        {
+            control.SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
         /// <inheritdoc/>
         public void RegisterAnchorCandidate(Control element)
         {

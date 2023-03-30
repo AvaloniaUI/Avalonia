@@ -6,7 +6,7 @@ using static Avalonia.X11.Glx.GlxConsts;
 
 namespace Avalonia.X11.Glx
 {
-    unsafe class GlxDisplay
+    internal unsafe class GlxDisplay
     {
         private readonly X11Info _x11;
         private readonly GlVersion[] _probeProfiles;
@@ -106,7 +106,7 @@ namespace Avalonia.X11.Glx
             }
         }
 
-        IntPtr CreatePBuffer()
+        private IntPtr CreatePBuffer()
         {
             return Glx.CreatePbuffer(_x11.Display, _fbconfig, new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 });
         }
@@ -116,8 +116,8 @@ namespace Avalonia.X11.Glx
         
         public GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
             share.SampleCount, share.StencilSize, true);
-        
-        GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
+
+        private GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
             int sampleCount, int stencilSize, bool ownsPBuffer)
         {
             var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;

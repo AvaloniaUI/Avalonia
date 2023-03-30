@@ -16,10 +16,10 @@ namespace ControlCatalog.Pages
         private Point _cursorPoint;
 
 
-        public StyledProperty<double> ScaleProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Scale), 1.0d);
+        public static readonly StyledProperty<double> ScaleProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Scale), 1.0d);
         public double Scale { get => GetValue(ScaleProperty); set => SetValue(ScaleProperty, value); }
 
-        public StyledProperty<double> RotationProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Rotation));
+        public static readonly StyledProperty<double> RotationProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Rotation));
         /// <summary>
         /// Rotation, measured in Radians!
         /// </summary>
@@ -33,10 +33,10 @@ namespace ControlCatalog.Pages
             }
         }
 
-        public StyledProperty<double> ViewportCenterYProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterY), 0.0d);
+        public static readonly StyledProperty<double> ViewportCenterYProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterY), 0.0d);
         public double ViewportCenterY { get => GetValue(ViewportCenterYProperty); set => SetValue(ViewportCenterYProperty, value); }
 
-        public StyledProperty<double> ViewportCenterXProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterX), 0.0d);
+        public static readonly StyledProperty<double> ViewportCenterXProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterX), 0.0d);
         public double ViewportCenterX { get => GetValue(ViewportCenterXProperty); set => SetValue(ViewportCenterXProperty, value); }
 
         private IPen _pen;
@@ -59,10 +59,12 @@ namespace ControlCatalog.Pages
 
             };
             StreamGeometry sg = new StreamGeometry();
-            var cntx = sg.Open();
-            cntx.BeginFigure(new Point(-25.0d, -10.0d), false);
-            cntx.ArcTo(new Point(25.0d, -10.0d), new Size(10.0d, 10.0d), 0.0d, false, SweepDirection.Clockwise);
-            cntx.EndFigure(true);
+            using (var cntx = sg.Open())
+            {
+                cntx.BeginFigure(new Point(-25.0d, -10.0d), false);
+                cntx.ArcTo(new Point(25.0d, -10.0d), new Size(10.0d, 10.0d), 0.0d, false, SweepDirection.Clockwise);
+                cntx.EndFigure(true);
+            }
             _smileGeometry = sg.Clone();
         }
 
@@ -131,17 +133,17 @@ namespace ControlCatalog.Pages
 
             // 0,0 refers to the top-left of the control now. It is not prime time to draw gui stuff because it'll be under the world 
 
-            var translateModifier = context.PushPreTransform(Avalonia.Matrix.CreateTranslation(new Avalonia.Vector(halfWidth, halfHeight)));
+            var translateModifier = context.PushTransform(Avalonia.Matrix.CreateTranslation(new Avalonia.Vector(halfWidth, halfHeight)));
 
             // now 0,0 refers to the ViewportCenter(X,Y). 
             var rotationMatrix = Avalonia.Matrix.CreateRotation(Rotation);
-            var rotationModifier = context.PushPreTransform(rotationMatrix);
+            var rotationModifier = context.PushTransform(rotationMatrix);
 
             // everything is rotated but not scaled 
 
-            var scaleModifier = context.PushPreTransform(Avalonia.Matrix.CreateScale(Scale, -Scale));
+            var scaleModifier = context.PushTransform(Avalonia.Matrix.CreateScale(Scale, -Scale));
 
-            var mapPositionModifier = context.PushPreTransform(Matrix.CreateTranslation(new Vector(-ViewportCenterX, -ViewportCenterY)));
+            var mapPositionModifier = context.PushTransform(Matrix.CreateTranslation(new Vector(-ViewportCenterX, -ViewportCenterY)));
 
             // now everything is rotated and scaled, and at the right position, now we're drawing strictly in world coordinates
 

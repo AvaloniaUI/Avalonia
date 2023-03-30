@@ -583,7 +583,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
-                                var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphInfos[0].GlyphCluster;
+                                var firstCluster = shapedTextCharacters.ShapedBuffer[0].GlyphCluster;
                                 var lastCluster = firstCluster;
 
                                 for (var j = 0; j < shapedTextCharacters.ShapedBuffer.Length; j++)
@@ -658,7 +658,7 @@ namespace Avalonia.Media.TextFormatting
         /// Performs text wrapping returns a list of text lines.
         /// </summary>
         /// <param name="textRuns"></param>
-        /// <param name="canReuseTextRunList">Whether <see cref="textRuns"/> can be reused to store the split runs.</param>
+        /// <param name="canReuseTextRunList">Whether <see cref="TextRun"/> can be reused to store the split runs.</param>
         /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
         /// <param name="paragraphProperties">The text paragraph properties.</param>

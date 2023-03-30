@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
-using Android.OS;
 using Android.Runtime;
-using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.Specific;
@@ -24,10 +22,13 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
+using Java.Util;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
 using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
+using Android.OS;
+using Android.Text;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -42,6 +43,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly AndroidInsetsManager _insetsManager;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -58,6 +60,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
+            if (avaloniaView.Context is AvaloniaMainActivity mainActivity)
+            {
+                _insetsManager = new AndroidInsetsManager(mainActivity, this);
+            }
+
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
 
@@ -69,21 +76,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                AndroidRect rect = new AndroidRect();
-                AndroidRect intersection = new AndroidRect();
-
-                _view.GetWindowVisibleDisplayFrame(intersection);
-                _view.GetGlobalVisibleRect(rect);
-
-                intersection.Intersect(rect);
-
-                return new PixelSize(intersection.Right - intersection.Left, intersection.Bottom - intersection.Top).ToSize(RenderScaling);
-            }
-        }
+        public virtual Size ClientSize => _view.Size.ToSize(RenderScaling);
 
         public Size? FrameSize => null;
 
@@ -284,7 +277,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
-            // TODO adjust status bar depending on full screen mode.
+            if(_insetsManager != null)
+            {
+                _insetsManager.SystemBarTheme = themeVariant switch
+                {
+                    PlatformThemeVariant.Light => SystemBarTheme.Light,
+                    PlatformThemeVariant.Dark => SystemBarTheme.Dark,
+                    _ => null,
+                };
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
@@ -402,6 +403,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _nativeControlHost;
             }
 
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
+            }
+
             return null;
         }
     }
@@ -410,159 +416,73 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly TopLevelImpl _topLevel;
         private readonly IAndroidInputMethod _inputMethod;
+        private readonly InputEditable _editable;
 
         public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
             _topLevel = topLevel;
             _inputMethod = inputMethod;
+            _editable = new InputEditable(_topLevel, _inputMethod, this);
         }
 
-        public TextInputMethodSurroundingText SurroundingText { get; set; }
+        public override IEditable Editable => _editable;
 
-        public string ComposingText { get; internal set; }
-
-        public ComposingRegion? ComposingRegion { get; internal set; }
-
-        public bool IsComposing => !string.IsNullOrEmpty(ComposingText);
-        public bool IsCommiting { get; private set; }
+        internal InputEditable InputEditable => _editable;
 
         public override bool SetComposingRegion(int start, int end)
         {
-            //System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {SurroundingText.Text?.Substring(start, end - start)}");
+            var ret = base.SetComposingRegion(start, end);
 
-            ComposingRegion = new ComposingRegion(start, end);
+            InputEditable.RaiseCompositionChanged();
 
-            return base.SetComposingRegion(start, end);
+            return ret;
         }
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
         {
             var composingText = text.ToString();
 
-            ComposingText = composingText;
+            if (string.IsNullOrEmpty(composingText))
+            {
+                return CommitText(text, newCursorPosition);
+            }
+            else
+            {
+                var ret = base.SetComposingText(text, newCursorPosition);
 
-            _inputMethod.Client?.SetPreeditText(ComposingText);
+                InputEditable.RaiseCompositionChanged();
 
-            return base.SetComposingText(text, newCursorPosition);
+                return ret;
+            }
+        }
+
+        public override bool BeginBatchEdit()
+        {
+            _editable.BeginBatchEdit();
+
+            return base.BeginBatchEdit();
+        }
+
+        public override bool EndBatchEdit()
+        {
+            var ret = base.EndBatchEdit();
+            _editable.EndBatchEdit();
+
+            return ret;
         }
 
         public override bool FinishComposingText()
         {
-            if (!string.IsNullOrEmpty(ComposingText))
-            {
-                CommitText(ComposingText, ComposingText.Length);
-            }
-            else
-            {
-                ComposingRegion = new ComposingRegion(SurroundingText.CursorOffset, SurroundingText.CursorOffset);
-            }
-
-            return base.FinishComposingText();
-        }
-
-        public override ICharSequence GetTextBeforeCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (!string.IsNullOrEmpty(SurroundingText.Text) && length > 0)
-            {
-                var start = System.Math.Max(SurroundingText.CursorOffset - length, 0);
-
-                var end = System.Math.Min(start + length - 1, SurroundingText.CursorOffset);
-
-                var text = SurroundingText.Text.Substring(start, end - start);
-
-                //System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
-
-                return new Java.Lang.String(text);
-            }
-
-            return null;
-        }
-
-        public override ICharSequence GetTextAfterCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (!string.IsNullOrEmpty(SurroundingText.Text))
-            {
-                var start = SurroundingText.CursorOffset;
-
-                var end = System.Math.Min(start + length, SurroundingText.Text.Length);
-
-                var text = SurroundingText.Text.Substring(start, end - start);
-
-                //System.Diagnostics.Debug.WriteLine($"Text After: {text}");
-
-                return new Java.Lang.String(text);
-            }
-
-            return null;
+            var ret = base.FinishComposingText();
+            InputEditable.RaiseCompositionChanged();
+            return ret;
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
-            IsCommiting = true;
-            var committedText = text.ToString();
-
-            _inputMethod.Client.SetPreeditText(null);
-
-            int? start, end;
-
-            if(SurroundingText.CursorOffset != SurroundingText.AnchorOffset)
-            {
-                start = Math.Min(SurroundingText.CursorOffset, SurroundingText.AnchorOffset);
-                end = Math.Max(SurroundingText.CursorOffset, SurroundingText.AnchorOffset);
-            }
-            else if (ComposingRegion != null)
-            {
-                start = ComposingRegion?.Start;
-                end = ComposingRegion?.End;
-
-                ComposingRegion = null;
-            }
-            else
-            {
-                start = end = _inputMethod.Client.SurroundingText.CursorOffset;
-            }
-
-            _inputMethod.Client.SelectInSurroundingText((int)start, (int)end);
-
-            var time = DateTime.Now.TimeOfDay;
-
-            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (ulong)time.Ticks, _topLevel.InputRoot, committedText);
-
-            _topLevel.Input(rawTextEvent);
-
-            ComposingText = null;
-
-            ComposingRegion = new ComposingRegion(newCursorPosition, newCursorPosition);
-
-            return base.CommitText(text, newCursorPosition);
-        }
-
-        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
-        {
-            var surroundingText = _inputMethod.Client.SurroundingText;
-
-            var selectionStart = surroundingText.CursorOffset;
-
-            _inputMethod.Client.SelectInSurroundingText(selectionStart - beforeLength, selectionStart + afterLength);
-
-            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-
-            surroundingText = _inputMethod.Client.SurroundingText;
-
-            selectionStart = surroundingText.CursorOffset;
-
-            ComposingRegion = new ComposingRegion(selectionStart, selectionStart);
-
-            return base.DeleteSurroundingText(beforeLength, afterLength);
-        }
-
-        public override bool SetSelection(int start, int end)
-        {
-            _inputMethod.Client.SelectInSurroundingText(start, end);
-
-            ComposingRegion = new ComposingRegion(start, end);
-
-            return base.SetSelection(start, end);
+            var ret = base.CommitText(text, newCursorPosition);
+            InputEditable.RaiseCompositionChanged();
+            return ret;
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)

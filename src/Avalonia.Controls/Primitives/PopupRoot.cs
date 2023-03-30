@@ -72,12 +72,12 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        protected internal override Interactive? InteractiveParent => Parent;
+        protected internal override Interactive? InteractiveParent => (Interactive?)Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        Visual? IHostedVisualTreeRoot.Host => Parent;
+        Visual? IHostedVisualTreeRoot.Host => VisualParent;
 
         /// <summary>
         /// Gets the styling parent of the popup root.
@@ -95,7 +95,7 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner.Update(_positionerParameters);
+            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
         }
 
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,

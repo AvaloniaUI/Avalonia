@@ -95,7 +95,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 {
                     c.DrawRectangle(brush, null, new Rect(0, 0, 100, 100));
 
-                    using (c.PushPreTransform(Matrix.CreateTranslation(100, 100)))
+                    using (c.PushTransform(Matrix.CreateTranslation(100, 100)))
                         c.DrawRectangle(brush, null, new Rect(0, 0, 100, 100));
                 }),
             };

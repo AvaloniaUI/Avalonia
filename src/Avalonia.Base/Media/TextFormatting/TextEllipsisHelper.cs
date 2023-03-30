@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Media.TextFormatting
@@ -20,7 +19,7 @@ namespace Avalonia.Media.TextFormatting
             var collapsedLength = 0;
             var shapedSymbol = TextFormatterImpl.CreateSymbol(properties.Symbol, FlowDirection.LeftToRight);
 
-            if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
+            if (properties.Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
                 //Not enough space to fit in the symbol
                 return Array.Empty<TextRun>();
@@ -28,85 +27,169 @@ namespace Avalonia.Media.TextFormatting
 
             var availableWidth = properties.Width - shapedSymbol.Size.Width;
 
-            while (runIndex < textRuns.Count)
+            if(properties.FlowDirection== FlowDirection.LeftToRight)
             {
-                var currentRun = textRuns[runIndex];
-
-                switch (currentRun)
+                while (runIndex < textRuns.Count)
                 {
-                    case ShapedTextRun shapedRun:
-                        {
-                            currentWidth += shapedRun.Size.Width;
+                    var currentRun = textRuns[runIndex];
 
-                            if (currentWidth > availableWidth)
+                    switch (currentRun)
+                    {
+                        case ShapedTextRun shapedRun:
                             {
-                                if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
+                                currentWidth += shapedRun.Size.Width;
+
+                                if (currentWidth > availableWidth)
                                 {
-                                    if (isWordEllipsis && measuredLength < textLine.Length)
+                                    if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
                                     {
-                                        var currentBreakPosition = 0;
-
-                                        var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
-
-                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
+                                        if (isWordEllipsis && measuredLength < textLine.Length)
                                         {
-                                            var nextBreakPosition = lineBreak.PositionMeasure;
+                                            var currentBreakPosition = 0;
 
-                                            if (nextBreakPosition == 0)
+                                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+
+                                            while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
                                             {
-                                                break;
+                                                var nextBreakPosition = lineBreak.PositionMeasure;
+
+                                                if (nextBreakPosition == 0)
+                                                {
+                                                    break;
+                                                }
+
+                                                if (nextBreakPosition >= measuredLength)
+                                                {
+                                                    break;
+                                                }
+
+                                                currentBreakPosition = nextBreakPosition;
                                             }
 
-                                            if (nextBreakPosition >= measuredLength)
-                                            {
-                                                break;
-                                            }
-
-                                            currentBreakPosition = nextBreakPosition;
+                                            measuredLength = currentBreakPosition;
                                         }
-
-                                        measuredLength = currentBreakPosition;
                                     }
+
+                                    collapsedLength += measuredLength;
+
+                                    return CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.LeftToRight, shapedSymbol);
                                 }
 
-                                collapsedLength += measuredLength;
+                                availableWidth -= shapedRun.Size.Width;
 
-                                return CreateCollapsedRuns(textRuns, collapsedLength, shapedSymbol);
+                                break;
                             }
 
-                            availableWidth -= shapedRun.Size.Width;
-
-                            break;
-                        }
-
-                    case DrawableTextRun drawableRun:
-                        {
-                            //The whole run needs to fit into available space
-                            if (currentWidth + drawableRun.Size.Width > availableWidth)
+                        case DrawableTextRun drawableRun:
                             {
-                                return CreateCollapsedRuns(textRuns, collapsedLength, shapedSymbol);
+                                //The whole run needs to fit into available space
+                                if (currentWidth + drawableRun.Size.Width > availableWidth)
+                                {
+                                    return CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.LeftToRight, shapedSymbol);
+                                }
+
+                                availableWidth -= drawableRun.Size.Width;
+
+                                break;
+                            }
+                    }
+
+                    collapsedLength += currentRun.Length;
+
+                    runIndex++;
+                }
+            }
+            else
+            {
+                runIndex = textRuns.Count - 1;
+
+                while (runIndex >= 0)
+                {
+                    var currentRun = textRuns[runIndex];
+
+                    switch (currentRun)
+                    {
+                        case ShapedTextRun shapedRun:
+                            {
+                                currentWidth += shapedRun.Size.Width;
+
+                                if (currentWidth > availableWidth)
+                                {
+                                    if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
+                                    {
+                                        if (isWordEllipsis && measuredLength < textLine.Length)
+                                        {
+                                            var currentBreakPosition = 0;
+
+                                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+
+                                            while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
+                                            {
+                                                var nextBreakPosition = lineBreak.PositionMeasure;
+
+                                                if (nextBreakPosition == 0)
+                                                {
+                                                    break;
+                                                }
+
+                                                if (nextBreakPosition >= measuredLength)
+                                                {
+                                                    break;
+                                                }
+
+                                                currentBreakPosition = nextBreakPosition;
+                                            }
+
+                                            measuredLength = currentBreakPosition;
+                                        }
+                                    }
+
+                                    collapsedLength += measuredLength;
+
+                                    return CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.RightToLeft, shapedSymbol);
+                                }
+
+                                availableWidth -= shapedRun.Size.Width;
+
+                                break;
                             }
 
-                            availableWidth -= drawableRun.Size.Width;
+                        case DrawableTextRun drawableRun:
+                            {
+                                //The whole run needs to fit into available space
+                                if (currentWidth + drawableRun.Size.Width > availableWidth)
+                                {
+                                    return CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.RightToLeft, shapedSymbol);
+                                }
 
-                            break;
-                        }
+                                availableWidth -= drawableRun.Size.Width;
+
+                                break;
+                            }
+                    }
+
+                    collapsedLength += currentRun.Length;
+
+                    runIndex--;
                 }
-
-                collapsedLength += currentRun.Length;
-
-                runIndex++;
             }
-
+      
             return null;
         }
 
-        private static TextRun[] CreateCollapsedRuns(IReadOnlyList<TextRun> textRuns, int collapsedLength,
-            TextRun shapedSymbol)
+        private static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength,
+            FlowDirection flowDirection, TextRun shapedSymbol)
         {
+            var textRuns = textLine.TextRuns;
+
             if (collapsedLength <= 0)
             {
                 return new[] { shapedSymbol };
+            }
+
+            if(flowDirection == FlowDirection.RightToLeft)
+            {
+                collapsedLength = textLine.Length - collapsedLength;
             }
 
             var objectPool = FormattingObjectPool.Instance;
@@ -115,10 +198,20 @@ namespace Avalonia.Media.TextFormatting
 
             try
             {
-                var collapsedRuns = new TextRun[preSplitRuns.Count + 1];
-                preSplitRuns.CopyTo(collapsedRuns);
-                collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
-                return collapsedRuns;
+                if (flowDirection == FlowDirection.RightToLeft)
+                {
+                    var collapsedRuns = new TextRun[postSplitRuns!.Count + 1];
+                    postSplitRuns.CopyTo(collapsedRuns, 1);
+                    collapsedRuns[0] = shapedSymbol;
+                    return collapsedRuns;
+                }
+                else
+                {
+                    var collapsedRuns = new TextRun[preSplitRuns!.Count + 1];
+                    preSplitRuns.CopyTo(collapsedRuns);
+                    collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
+                    return collapsedRuns;
+                }
             }
             finally
             {

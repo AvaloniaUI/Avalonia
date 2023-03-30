@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting;
@@ -13,6 +14,7 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
+        private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
@@ -33,7 +35,9 @@ namespace Avalonia.Skia
 
                 buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
+                var usedCulture = culture ?? CultureInfo.CurrentCulture;
+
+                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
@@ -52,8 +56,6 @@ namespace Avalonia.Skia
 
                 var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
-                var targetInfos = shapedBuffer.GlyphInfos;
-
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
@@ -70,7 +72,7 @@ namespace Avalonia.Skia
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (textSpan[i] == '\t')
+                    if (i < textSpan.Length && textSpan[i] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 
@@ -79,7 +81,7 @@ namespace Avalonia.Skia
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
-                    targetInfos[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+                    shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;
@@ -166,7 +168,7 @@ namespace Avalonia.Skia
                 return segment.Array.AsMemory();
             }
 
-            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char> memoryManager, out start, out length))
+            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char>? memoryManager, out start, out length))
             {
                 return memoryManager.Memory;
             }

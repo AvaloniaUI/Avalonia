@@ -11,9 +11,9 @@ namespace Avalonia.OpenGL
     public unsafe partial class GlInterface : GlBasicInfoInterface
     {
         private readonly Func<string, IntPtr> _getProcAddress;
-        public string Version { get; }
-        public string Vendor { get; }
-        public string Renderer { get; }
+        public string? Version { get; }
+        public string? Vendor { get; }
+        public string? Renderer { get; }
         public GlContextInfo ContextInfo { get; }
 
         public class GlContextInfo
@@ -39,9 +39,9 @@ namespace Avalonia.OpenGL
         {
             _getProcAddress = getProcAddress;
             ContextInfo = info;
-            Version = GetString(GlConsts.GL_VERSION);
-            Renderer = GetString(GlConsts.GL_RENDERER);
-            Vendor = GetString(GlConsts.GL_VENDOR);
+            Version = GetString(GL_VERSION);
+            Renderer = GetString(GL_RENDERER);
+            Vendor = GetString(GL_VENDOR);
             Initialize(getProcAddress, ContextInfo);
         }
 
@@ -72,9 +72,6 @@ namespace Avalonia.OpenGL
 
         [GetProcAddress("glFinish")]
         public partial void Finish();
-
-        [GetProcAddress("glGetIntegerv")]
-        public partial void GetIntegerv(int name, out int rv);
 
         [GetProcAddress("glGenFramebuffers")]
         public partial void GenFramebuffers(int count, int* res);
@@ -203,7 +200,7 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glGetShaderInfoLog")]
         public partial void GetShaderInfoLog(int shader, int maxLength, out int length, void* infoLog);
 
-        public unsafe string CompileShaderAndGetError(int shader, string source)
+        public unsafe string? CompileShaderAndGetError(int shader, string source)
         {
             ShaderSourceString(shader, source);
             CompileShader(shader);
@@ -238,7 +235,7 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glGetProgramInfoLog")]
         public partial void GetProgramInfoLog(int program, int maxLength, out int len, void* infoLog);
 
-        public unsafe string LinkProgramAndGetError(int program)
+        public unsafe string? LinkProgramAndGetError(int program)
         {
             LinkProgram(program);
             int compiled;

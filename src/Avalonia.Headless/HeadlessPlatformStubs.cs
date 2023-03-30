@@ -69,30 +69,28 @@ namespace Avalonia.Headless
     {
         public FontMetrics Metrics => new FontMetrics
         {
-
+            DesignEmHeight = 1,
+            Ascent = 8,
+            Descent = 4,
+            LineGap = 0,
+            UnderlinePosition = 2,
+            UnderlineThickness = 1,
+            StrikethroughPosition = 2,
+            StrikethroughThickness = 1,
+            IsFixedPitch = true
         };
-
-        public short DesignEmHeight => 10;
-
-        public int Ascent => 5;
-
-        public int Descent => 5;
-
-        public int LineGap => 2;
-
-        public int UnderlinePosition => 5;
-
-        public int UnderlineThickness => 5;
-
-        public int StrikethroughPosition => 5;
-
-        public int StrikethroughThickness => 2;
-
-        public bool IsFixedPitch => true;
 
         public int GlyphCount => 1337;
 
         public FontSimulations FontSimulations { get; }
+
+        public string FamilyName => "Arial";
+
+        public FontWeight Weight => FontWeight.Normal;
+
+        public FontStyle Style => FontStyle.Normal;
+
+        public FontStretch Stretch => FontStretch.Normal;
 
         public void Dispose()
         {
@@ -112,7 +110,7 @@ namespace Avalonia.Headless
 
         public int GetGlyphAdvance(ushort glyph)
         {
-            return 1;
+            return 12;
         }
 
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
@@ -136,7 +134,7 @@ namespace Avalonia.Headless
             metrics = new GlyphMetrics
             {
                 Height = 10,
-                Width = 10
+                Width = 8
             };
 
             return true;
@@ -157,19 +155,28 @@ namespace Avalonia.Headless
 
     class HeadlessFontManagerStub : IFontManagerImpl
     {
-        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
-        {
-            return new HeadlessGlyphTypefaceImpl();
-        }
-
         public string GetDefaultFontFamilyName()
         {
             return "Arial";
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
-            return new List<string> { "Arial" };
+            return new string[] { "Arial" };
+        }
+
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, out IGlyphTypeface glyphTypeface)
+        {
+            glyphTypeface= new HeadlessGlyphTypefaceImpl();
+
+            return true;
+        }
+
+        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        {
+             glyphTypeface = new HeadlessGlyphTypefaceImpl();
+
+            return true;
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,

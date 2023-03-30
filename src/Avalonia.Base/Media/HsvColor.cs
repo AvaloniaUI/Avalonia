@@ -254,7 +254,7 @@ namespace Avalonia.Media
         /// <param name="s">The HSV color string to parse.</param>
         /// <param name="hsvColor">The parsed <see cref="HsvColor"/>.</param>
         /// <returns>True if parsing was successful; otherwise, false.</returns>
-        public static bool TryParse(string s, out HsvColor hsvColor)
+        public static bool TryParse(string? s, out HsvColor hsvColor)
         {
             bool prefixMatched = false;
 

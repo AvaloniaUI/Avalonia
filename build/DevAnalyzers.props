@@ -5,5 +5,10 @@
                       ReferenceOutputAssembly="false"
                       OutputItemType="Analyzer"
                       SetTargetFramework="TargetFramework=netstandard2.0"/>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\tools\PublicAnalyzers\Avalonia.Analyzers.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer"
+                      SetTargetFramework="TargetFramework=netstandard2.0"/>
   </ItemGroup>
 </Project>

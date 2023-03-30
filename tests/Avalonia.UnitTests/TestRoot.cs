@@ -70,12 +70,12 @@ namespace Avalonia.UnitTests
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
                 var layer = new Mock<IDrawingContextLayerImpl>();
-                layer.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(layerDc.Object);
+                layer.Setup(x => x.CreateDrawingContext()).Returns(layerDc.Object);
                 return layer.Object;
             });
 
             var result = new Mock<IRenderTarget>();
-            result.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(dc.Object);
+            result.Setup(x => x.CreateDrawingContext()).Returns(dc.Object);
             return result.Object;
         }
 

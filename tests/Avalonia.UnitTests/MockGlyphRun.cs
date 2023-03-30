@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 
@@ -15,21 +16,18 @@ namespace Avalonia.UnitTests
                 width += glyphInfos[i].GlyphAdvance;
             }
 
-            Size = new Size(width, 10);
+            Bounds = new Rect(new Size(width, 10));
         }
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public Point BaselineOrigin => new Point(0, 8);
 
         public void Dispose()
         {
-            
         }
 
         public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-        {
-            return null;
-        }
+            => Array.Empty<float>();
     }
 }

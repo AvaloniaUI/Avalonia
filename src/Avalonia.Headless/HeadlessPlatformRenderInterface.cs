@@ -118,7 +118,7 @@ namespace Avalonia.Headless
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+            return new HeadlessGeometryStub(glyphRun.Bounds);
         }
 
         public IGlyphRunImpl CreateGlyphRun(
@@ -132,7 +132,7 @@ namespace Avalonia.Headless
 
         class HeadlessGlyphRunStub : IGlyphRunImpl
         {
-            public Size Size => new Size(8, 12);
+            public Rect Bounds => new Rect(new Size(8, 12));
 
             public Point BaselineOrigin => new Point(0, 8);
 
@@ -141,9 +141,7 @@ namespace Avalonia.Headless
             }
 
             public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-            {
-                return null;
-            }
+                => Array.Empty<float>();
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -327,7 +325,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }
@@ -394,7 +392,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity)
+            public void PushOpacity(double opacity, Rect rect)
             {
 
             }
@@ -493,7 +491,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            public IDrawingContextImpl CreateDrawingContext()
             {
                 return new HeadlessDrawingContextStub();
             }

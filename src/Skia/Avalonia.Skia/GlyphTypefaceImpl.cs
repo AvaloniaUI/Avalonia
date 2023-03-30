@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
-using Avalonia.Metadata;
 using HarfBuzzSharp;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    [Unstable]
-    public class GlyphTypefaceImpl : IGlyphTypeface
+    internal class GlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
 
@@ -53,6 +51,12 @@ namespace Avalonia.Skia
             GlyphCount = Typeface.GlyphCount;
 
             FontSimulations = fontSimulations;
+
+            Weight = (FontWeight)Typeface.FontWeight;
+
+            Style = Typeface.FontSlant.ToAvalonia();
+
+            Stretch = (FontStretch)Typeface.FontStyle.Width;
         }
 
         public Face Face { get; }
@@ -68,6 +72,14 @@ namespace Avalonia.Skia
         public FontMetrics Metrics { get; }
 
         public int GlyphCount { get; }
+
+        public string FamilyName => Typeface.FamilyName;
+
+        public FontWeight Weight { get; }
+
+        public FontStyle Style { get; }
+
+        public FontStretch Stretch { get; }
 
         public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
         {
@@ -142,7 +154,7 @@ namespace Avalonia.Skia
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
 
-        private Blob GetTable(Face face, Tag tag)
+        private Blob? GetTable(Face face, Tag tag)
         {
             var size = Typeface.GetTableSize(tag);
 
@@ -168,8 +180,8 @@ namespace Avalonia.Skia
                 return;
             }
 
-            Font?.Dispose();
-            Face?.Dispose();
+            Font.Dispose();
+            Face.Dispose();
         }
 
         public void Dispose()

@@ -14,90 +14,84 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void First_Tab_Should_Be_Selected_By_Default()
         {
-            var items = new[]
-            {
-                new TabItem
-                {
-                    Name = "first"
-                },
-                new TabItem
-                {
-                    Name = "second"
-                },
-            };
-
             var target = new TabStrip
             {
                 Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
-                Items = items,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Name = "first"
+                    },
+                    new TabItem
+                    {
+                        Name = "second"
+                    },
+                }
             };
 
             target.ApplyTemplate();
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.Same(items[0], target.SelectedItem);
+            Assert.Same(target.Items[0], target.SelectedItem);
         }
 
         [Fact]
         public void Setting_SelectedItem_Should_Set_Selection()
         {
-            var items = new[]
-            {
-                new TabItem
-                {
-                    Name = "first"
-                },
-                new TabItem
-                {
-                    Name = "second"
-                },
-            };
-
             var target = new TabStrip
             {
                 Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
-                Items = items,
-                SelectedItem = items[1],
+                Items =
+                {
+                    new TabItem
+                    {
+                        Name = "first"
+                    },
+                    new TabItem
+                    {
+                        Name = "second"
+                    },
+                },             
             };
 
+            target.SelectedItem = target.Items[1];
             target.ApplyTemplate();
 
             Assert.Equal(1, target.SelectedIndex);
-            Assert.Same(items[1], target.SelectedItem);
+            Assert.Same(target.Items[1], target.SelectedItem);
         }
 
         [Fact]
         public void Removing_Selected_Should_Select_First()
         {
-            var items = new ObservableCollection<TabItem>()
-            {
-                new TabItem
-                {
-                    Name = "first"
-                },
-                new TabItem
-                {
-                    Name = "second"
-                },
-                new TabItem
-                {
-                    Name = "3rd"
-                },
-            };
-
             var target = new TabStrip
             {
                 Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
-                Items = items
+                Items =
+                {
+                    new TabItem
+                    {
+                        Name = "first"
+                    },
+                    new TabItem
+                    {
+                        Name = "second"
+                    },
+                    new TabItem
+                    {
+                        Name = "3rd"
+                    },
+                }
             };
 
             target.ApplyTemplate();
-            target.SelectedItem = items[1];
-            Assert.Same(items[1], target.SelectedItem);
-            items.RemoveAt(1);
+            target.SelectedItem = target.Items[1];
+            Assert.Same(target.Items[1], target.SelectedItem);
+            target.Items.RemoveAt(1);
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.Same(items[0], target.SelectedItem);
+            Assert.Same(target.Items[0], target.SelectedItem);
             Assert.Same("first", ((TabItem)target.SelectedItem).Name);
         }
 

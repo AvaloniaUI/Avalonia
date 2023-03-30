@@ -403,7 +403,7 @@ namespace Avalonia.Controls
             if (firstIndex == -1)
             {
                 estimatedElementSize = EstimateElementSizeU();
-                firstIndex = (int)(viewportStart / estimatedElementSize);
+                firstIndex = Math.Min((int)(viewportStart / estimatedElementSize), maxIndex);
                 firstIndexU = firstIndex * estimatedElementSize;
             }
 
@@ -411,13 +411,13 @@ namespace Avalonia.Controls
             {
                 if (estimatedElementSize == -1)
                     estimatedElementSize = EstimateElementSizeU();
-                lastIndex = (int)(viewportEnd / estimatedElementSize);
+                lastIndex = Math.Min((int)(viewportEnd / estimatedElementSize), maxIndex);
             }
 
             return new MeasureViewport
             {
-                firstIndex = MathUtilities.Clamp(firstIndex, 0, maxIndex),
-                lastIndex = MathUtilities.Clamp(lastIndex, 0, maxIndex),
+                firstIndex = firstIndex,
+                lastIndex = lastIndex,
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
@@ -459,7 +459,8 @@ namespace Avalonia.Controls
 
             while (c is not null)
             {
-                if (!c.Bounds.IsDefault && c.TransformToVisual(this) is Matrix transform)
+                if ((c.Bounds.Width != 0 || c.Bounds.Height != 0) &&
+                    c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);
@@ -1078,7 +1079,7 @@ namespace Avalonia.Controls
                     // elements after the insertion point.
                     var elementCount = _elements.Count;
                     var start = Math.Max(realizedIndex, 0);
-                    var newIndex = first + count;
+                    var newIndex = realizedIndex + count;
 
                     for (var i = start; i < elementCount; ++i)
                     {
@@ -1131,6 +1132,7 @@ namespace Avalonia.Controls
                     // The removed range was before the realized elements. Update the first index and
                     // the indexes of the realized elements.
                     _firstIndex -= count;
+                    _startUUnstable = true;
 
                     var newIndex = _firstIndex;
                     for (var i = 0; i < _elements.Count; ++i)
@@ -1166,7 +1168,7 @@ namespace Avalonia.Controls
 
                     // Update the indexes of the elements after the removed range.
                     end = _elements.Count;
-                    var newIndex = first;
+                    var newIndex = first + start;
                     for (var i = start; i < end; ++i)
                     {
                         if (_elements[i] is Control element)

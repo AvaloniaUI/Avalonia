@@ -53,7 +53,7 @@ namespace Avalonia.Controls
                     }
                 }
             }
-            if (element == null) { element = GetElementFromUniqueIdResetPool(index); };
+            if (element == null) { element = GetElementFromUniqueIdResetPool(index); }
             if (element == null) { element = GetElementFromPinnedElements(index); }
             if (element == null) { element = GetElementFromElementFactory(index); }
 
@@ -221,7 +221,7 @@ namespace Avalonia.Controls
             return nextElement;
         }
 
-        public int GetElementIndex(VirtualizationInfo virtInfo)
+        public int GetElementIndex(VirtualizationInfo? virtInfo)
         {
             if (virtInfo == null)
             {
@@ -627,11 +627,7 @@ namespace Avalonia.Controls
 
             var element = GetElement();
 
-            var virtInfo = ItemsRepeater.TryGetVirtualizationInfo(element);
-            if (virtInfo == null)
-            {
-                virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
-            }
+            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             // Clear flag
             virtInfo.MustClearDataContext = false;
 
@@ -710,9 +706,8 @@ namespace Avalonia.Controls
                 {
                     if (parent is ItemsRepeater repeater)
                     {
-                        var element = child as Control;
                         if (repeater == owner &&
-                            element is not null &&
+                            child is Control element &&
                             ItemsRepeater.GetVirtualizationInfo(element).IsRealized)
                         {
                             focusedElement = element;
@@ -722,7 +717,7 @@ namespace Avalonia.Controls
                     }
 
                     child = parent;
-                    parent = child?.GetVisualParent();
+                    parent = child.GetVisualParent();
                 }
             }
 

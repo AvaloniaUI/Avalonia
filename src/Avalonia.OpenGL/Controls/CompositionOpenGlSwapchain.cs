@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -22,7 +21,7 @@ internal class CompositionOpenGlSwapchain : SwapchainBase<IGlSwapchainImage>
     }
     
     public CompositionOpenGlSwapchain(IGlContext context, ICompositionGpuInterop interop, CompositionDrawingSurface target,
-        IGlContextExternalObjectsFeature externalObjectsFeature) : base(interop, target)
+        IGlContextExternalObjectsFeature? externalObjectsFeature) : base(interop, target)
     {
         _context = context;
         _externalObjectsFeature = externalObjectsFeature;
@@ -95,7 +94,7 @@ internal class DxgiMutexOpenGlSwapChainImage : IGlSwapchainImage
     public int TextureId => _texture.TextureId;
     public int InternalFormat => _texture.InternalFormat;
     public PixelSize Size => new(_texture.Properties.Width, _texture.Properties.Height);
-    public Task LastPresent => _lastPresent;
+    public Task? LastPresent => _lastPresent;
     public void BeginDraw() => _texture.AcquireKeyedMutex(0);
 
     public void Present()

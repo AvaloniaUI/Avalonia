@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using SkiaSharp;
-#nullable enable
 
 namespace Avalonia.Skia
 {
-    /// <inheritdoc />
-    [Unstable]
-    public class GlyphRunImpl : IGlyphRunImpl
+    internal class GlyphRunImpl : IGlyphRunImpl
     {
         public GlyphRunImpl(SKTextBlob textBlob, Size size, Point baselineOrigin)
         {
-            TextBlob = textBlob ?? throw new ArgumentNullException (nameof (textBlob));
+            TextBlob = textBlob ?? throw new ArgumentNullException(nameof(textBlob));
 
-            Size = size;
+            Bounds = new Rect(new Point(baselineOrigin.X, 0), size);
 
             BaselineOrigin = baselineOrigin;
         }
@@ -25,7 +21,7 @@ namespace Avalonia.Skia
         /// </summary>
         public SKTextBlob TextBlob { get; }
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public Point BaselineOrigin { get; }
 

@@ -27,7 +27,10 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="i">The update task.</param>
         void Remove(IRenderLoopTask i);
-        
+
+        /// <summary>
+        /// Indicates if the rendering is done on a non-UI thread.
+        /// </summary>
         bool RunsInBackground { get; }
     }
 }

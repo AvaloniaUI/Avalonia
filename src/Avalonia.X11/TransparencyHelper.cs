@@ -3,7 +3,7 @@ using Avalonia.Controls;
 
 namespace Avalonia.X11
 {
-    class TransparencyHelper :  IDisposable, X11Globals.IGlobalsSubscriber
+    internal class TransparencyHelper :  IDisposable, X11Globals.IGlobalsSubscriber
     {
         private readonly X11Info _x11;
         private readonly IntPtr _window;

@@ -38,14 +38,14 @@ namespace Avalonia.Media.TextFormatting
 
         public override double Baseline => -TextMetrics.Ascent;
 
-        public override Size Size => GlyphRun.Size;
+        public override Size Size => GlyphRun.Bounds.Size;
 
         public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
+            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin)))
             {
                 if (GlyphRun.GlyphInfos.Count == 0)
                 {
@@ -85,7 +85,7 @@ namespace Avalonia.Media.TextFormatting
         {
             _glyphRun = null;
 
-            ShapedBuffer.GlyphInfos.Span.Reverse();
+            ShapedBuffer.Reverse();
 
             IsReversed = !IsReversed;
         }
@@ -106,7 +106,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
-                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
+                var advance = ShapedBuffer[i].GlyphAdvance;
 
                 if (currentWidth + advance > availableWidth)
                 {
@@ -130,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
             {
-                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
+                var advance = ShapedBuffer[i].GlyphAdvance;
 
                 if (width + advance > availableWidth)
                 {
@@ -148,32 +148,37 @@ namespace Avalonia.Media.TextFormatting
 
         internal SplitResult<ShapedTextRun> Split(int length)
         {
-            if (IsReversed)
+            var isReversed = IsReversed;
+
+            if (isReversed)
             {
                 Reverse();
-            }
 
+                length = Length - length;
+            }
 #if DEBUG
-            if(length == 0)
+            if (length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-#endif
-            
+#endif          
             var splitBuffer = ShapedBuffer.Split(length);
 
             var first = new ShapedTextRun(splitBuffer.First, Properties);
 
-            #if DEBUG
+#if DEBUG
 
             if (first.Length != length)
             {
                 throw new InvalidOperationException("Split length mismatch.");
             }
-
 #endif
-
             var second = new ShapedTextRun(splitBuffer.Second!, Properties);
+
+            if (isReversed)
+            {
+                return new SplitResult<ShapedTextRun>(second, first);
+            }
 
             return new SplitResult<ShapedTextRun>(first, second);
         }

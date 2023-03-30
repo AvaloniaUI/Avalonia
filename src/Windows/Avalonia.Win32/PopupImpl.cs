@@ -5,9 +5,9 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class PopupImpl : WindowImpl, IPopupImpl
+    internal class PopupImpl : WindowImpl, IPopupImpl
     {
-        private readonly IWindowBaseImpl _parent;
+        private readonly IWindowBaseImpl? _parent;
         private bool _dropShadowHint = true;
         private Size? _maxAutoSize;
 
@@ -94,7 +94,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero);
             s_parentHandle = IntPtr.Zero;
 
-            PopupImpl.EnableBoxShadow(result, _dropShadowHint);
+            EnableBoxShadow(result, _dropShadowHint);
 
             return result;
         }
@@ -115,7 +115,7 @@ namespace Avalonia.Win32
 
         // This is needed because we are calling virtual methods from constructors
         // One fabulous design decision leads to another, I guess
-        static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
+        private static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
         {
             s_parentHandle = parent.Handle.Handle;
             return parent;
@@ -128,7 +128,7 @@ namespace Avalonia.Win32
 
         }
 
-        private PopupImpl(IWindowBaseImpl parent, bool dummy) : base()
+        private PopupImpl(IWindowBaseImpl parent, bool dummy)
         {
             _parent = parent;
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
@@ -161,10 +161,7 @@ namespace Avalonia.Win32
         {
             _dropShadowHint = enabled;
 
-            if (Handle != null)
-            {
-                PopupImpl.EnableBoxShadow(Handle.Handle, enabled);
-            }
+            EnableBoxShadow(Handle.Handle, enabled);
         }
 
         public IPopupPositioner PopupPositioner { get; }
