@@ -334,6 +334,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = menu };
+                window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass();
 
                 topLevelMenu.IsSubMenuOpen = true;
@@ -371,6 +372,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var window = new Window { Content = menu };
+            window.Show();
             window.LayoutManager.ExecuteInitialLayoutPass();
 
             var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
