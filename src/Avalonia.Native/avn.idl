@@ -596,6 +596,7 @@ interface IAvnWindowBaseEvents : IUnknown
                                          IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
      IAvnAutomationPeer* GetAutomationPeer();
      bool HitTest(AvnPoint point);
+     void LogFirstResponder([const] char* text);
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]

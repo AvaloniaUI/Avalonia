@@ -281,8 +281,13 @@ namespace Avalonia.Native
             int IAvnWindowBaseEvents.HitTest(AvnPoint p)
             {
                 var result = _parent._inputRoot.InputHitTest(p.ToAvaloniaPoint()) != null;
-                Console.WriteLine($"HitTest {result}");
+                Console.WriteLine($"HitTest {result} {p.X} {p.Y}");
                 return result.AsComBool();
+            }
+
+            void IAvnWindowBaseEvents.LogFirstResponder(string responder)
+            {
+                Console.WriteLine($"Got first responder: {responder}");
             }
         }
        
