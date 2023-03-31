@@ -15,6 +15,8 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
+#nullable enable
+
 namespace Avalonia.Controls.UnitTests
 {
     public class VirtualizingStackPanelTests
@@ -483,10 +485,10 @@ namespace Avalonia.Controls.UnitTests
             int firstIndex,
             int count)
         {
-            Assert.All(target.GetRealizedContainers(), x => Assert.Same(target, x.VisualParent));
-            Assert.All(target.GetRealizedContainers(), x => Assert.Same(itemsControl, x.Parent));
+            Assert.All(target.GetRealizedContainers()!, x => Assert.Same(target, x.VisualParent));
+            Assert.All(target.GetRealizedContainers()!, x => Assert.Same(itemsControl, x.Parent));
 
-            var childIndexes = target.GetRealizedContainers()?
+            var childIndexes = target.GetRealizedContainers()!
                 .Select(x => itemsControl.IndexFromContainer(x))
                 .Where(x => x >= 0)
                 .OrderBy(x => x)
@@ -500,11 +502,11 @@ namespace Avalonia.Controls.UnitTests
             int firstIndex,
             int count)
         {
-            Assert.All(target.GetRealizedContainers(), x => Assert.IsType<TContainer>(x));
-            Assert.All(target.GetRealizedContainers(), x => Assert.Same(target, x.VisualParent));
-            Assert.All(target.GetRealizedContainers(), x => Assert.Same(itemsControl, x.Parent));
+            Assert.All(target.GetRealizedContainers()!, x => Assert.IsType<TContainer>(x));
+            Assert.All(target.GetRealizedContainers()!, x => Assert.Same(target, x.VisualParent));
+            Assert.All(target.GetRealizedContainers()!, x => Assert.Same(itemsControl, x.Parent));
 
-            var childIndexes = target.GetRealizedContainers()?
+            var childIndexes = target.GetRealizedContainers()!
                 .Select(x => itemsControl.IndexFromContainer(x))
                 .Where(x => x >= 0)
                 .OrderBy(x => x)
@@ -536,7 +538,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
-                ItemsPanel = new FuncTemplate<Panel>(() => target),
+                ItemsPanel = new FuncTemplate<Panel?>(() => target),
             };
 
             if (useItemTemplate)
