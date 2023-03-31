@@ -94,7 +94,6 @@ namespace Avalonia.Controls
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
-        private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
 
         /// <summary>
@@ -457,7 +456,6 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         }
 
@@ -629,7 +627,6 @@ namespace Avalonia.Controls
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
-            _scrollViewer?.RegisterAnchorCandidate(container);
             ContainerPrepared?.Invoke(this, new(container, index));
         }
 
@@ -642,7 +639,6 @@ namespace Avalonia.Controls
 
         internal void ClearItemContainer(Control container)
         {
-            _scrollViewer?.UnregisterAnchorCandidate(container);
             ClearContainerForItemOverride(container);
             ContainerClearing?.Invoke(this, new(container));
         }
