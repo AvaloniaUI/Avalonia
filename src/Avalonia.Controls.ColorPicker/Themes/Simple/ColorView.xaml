@@ -257,6 +257,8 @@
   <ControlTheme x:Key="{x:Type ColorView}"
                 TargetType="ColorView">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <!-- Alpha position should match CSS (and default slider order) instead of XAML/WinUI -->
+    <Setter Property="HexInputAlphaPosition" Value="Trailing" />
     <Setter Property="Palette">
       <controls:FluentColorPalette />
     </Setter>

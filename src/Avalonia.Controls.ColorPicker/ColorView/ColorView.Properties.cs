@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<AlphaComponentPosition> HexInputAlphaPositionProperty =
             AvaloniaProperty.Register<ColorView, AlphaComponentPosition>(
                 nameof(HexInputAlphaPosition),
-                AlphaComponentPosition.Trailing); // Match CSS (and default slider order) instead of XAML/WinUI
+                AlphaComponentPosition.Leading); // By default match XAML and the WinUI control
 
         /// <summary>
         /// Defines the <see cref="HsvColor"/> property.
