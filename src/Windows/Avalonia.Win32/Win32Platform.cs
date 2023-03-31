@@ -265,11 +265,11 @@ namespace Avalonia.Win32
             if (CurrentThreadIsLoopThread && SynchronizationContext.Current is null)
             {
                 SynchronizationContext.SetSynchronizationContext(_synchronizationContext);
-                UnmanagedMethods.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+                SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             }
         }
 
-        private readonly SynchronizationContext _synchronizationContext;
+        private readonly SynchronizationContext? _synchronizationContext;
 
         public event Action<DispatcherPriority?>? Signaled;
 
