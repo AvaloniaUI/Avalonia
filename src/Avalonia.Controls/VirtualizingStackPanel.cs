@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -324,7 +323,7 @@ namespace Avalonia.Controls
         {
             var items = Items;
 
-            if (_isInLayout || index < 0 || index >= items.Count)
+            if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null)
                 return null;
 
             if (GetRealizedElement(index) is Control element)
@@ -341,7 +340,7 @@ namespace Avalonia.Controls
                 _anchorIndex = index;
 
                 // Get the expected position of the elment and put it in place.
-                var anchorU = GetOrEstimateElementPosition(index);
+                var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
                 var rect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
                     new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
@@ -404,25 +403,15 @@ namespace Avalonia.Controls
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
-            var (firstIndex, firstIndexU) = _realizedElements.GetIndexAt(viewportStart);
-            var (lastIndex, _) = _realizedElements.GetIndexAt(viewportEnd);
-            var estimatedElementSize = -1.0;
             var itemCount = items?.Count ?? 0;
-            var maxIndex = Math.Max(itemCount - 1, 0);
-
-            if (firstIndex == -1)
-            {
-                estimatedElementSize = EstimateElementSizeU();
-                firstIndex = Math.Min((int)(viewportStart / estimatedElementSize), maxIndex);
-                firstIndexU = firstIndex * estimatedElementSize;
-            }
-
-            if (lastIndex == -1)
-            {
-                if (estimatedElementSize == -1)
-                    estimatedElementSize = EstimateElementSizeU();
-                lastIndex = Math.Min((int)(viewportEnd / estimatedElementSize), maxIndex);
-            }
+            var (firstIndex, firstIndexU) = _realizedElements.GetOrEstimateIndexAt(
+                viewportStart,
+                itemCount,
+                ref _lastEstimatedElementSizeU);
+            var (lastIndex, _) = _realizedElements.GetOrEstimateIndexAt(
+                viewportEnd,
+                itemCount,
+                ref _lastEstimatedElementSizeU);
 
             return new MeasureViewport
             {
@@ -493,10 +482,15 @@ namespace Avalonia.Controls
             var index = viewport.firstIndex;
             var u = viewport.startU;
 
+            // Nothing to do here.
+            if (items.Count == 0)
+                return;
+
             // The layout is likely invalid. Don't create any elements and instead rely on our previous
             // element size estimates to calculate a new desired size and trigger a new layout pass.
-            if (index >= items.Count)
+            if (index < 0 || index >= items.Count)
                 return;
+
             do
             {
                 var e = GetOrCreateElement(items, index);
@@ -596,12 +590,6 @@ namespace Avalonia.Controls
             generator.ItemContainerPrepared(container, item, index);
 
             return container;
-        }
-
-        private double GetOrEstimateElementPosition(int index)
-        {
-            var estimatedElementSize = EstimateElementSizeU();
-            return index * estimatedElementSize;
         }
 
         private void RecycleElement(Control element, int index)

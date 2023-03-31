@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
 {
@@ -131,6 +132,80 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
+        /// Gets or estimates the index and start U position of the element at the specified U
+        /// position.
+        /// </summary>
+        /// <param name="u">The U position.</param>
+        /// <param name="itemCount">The number of items in the list.</param>
+        /// <param name="estimatedElementSizeU">The current estimated element size.</param>
+        /// <returns>
+        /// A tuple containing:
+        /// - The index of the item at the specified U position, or -1 if the item could not be
+        ///   determined
+        /// - The U position of the start of the item, if determined
+        /// </returns>
+        public (int index, double position) GetOrEstimateIndexAt(
+            double u,
+            int itemCount,
+            ref double estimatedElementSizeU)
+        {
+            // We have no elements, nothing to do here.
+            if (itemCount <= 0)
+                return (-1, 0);
+
+            // If the position is 0 we know the first element's going to be there.
+            if (MathUtilities.IsZero(u))
+                return (0, 0);
+
+            // Try to get an already realized element at the specified position.
+            if (GetIndexAt(u) is { index: >= 0 } found)
+                return found;
+
+            // Estimate the element size, using defaultElementSizeU if we don't have any realized
+            // elements.
+            var estimatedSize = EstimateElementSizeU() switch
+            {
+                -1 => estimatedElementSizeU,
+                double v => v,
+            };
+
+            // Store the estimated size for the next layout pass.
+            estimatedElementSizeU = estimatedSize;
+
+            if (FirstIndex == -1 || _startUUnstable)
+            {
+                // We don't have any realized elements or can't rely on StartU being valid.
+                // Estimate the index using only the estimated size.
+                var index = Math.Min((int)(u / estimatedSize), itemCount - 1);
+                return (index, index * estimatedSize);
+            }
+            else if (u < _startU)
+            {
+                // The position is before the realized elements, estimate the index using the first
+                // realized element.
+                var distance = _startU - u;
+                var index = MathUtilities.Clamp(
+                    _firstIndex - (int)Math.Ceiling(distance / estimatedSize), 
+                    0,
+                    itemCount - 1);
+
+                if (index == 0)
+                    return (0, 0);
+                else
+                    return (index, _startU - ((_firstIndex - index) * estimatedSize));
+            }
+            else
+            {
+                // The position is after the realized elements, estimate the index using the last
+                // realized element.
+                var (lastIndex, endU) = GetLastElementU();
+                var distance = u - endU;
+                var index = Math.Min(lastIndex + (int)(distance / estimatedSize), itemCount - 1);
+                return (index, endU + ((index - lastIndex) * estimatedSize));
+            }
+        }
+
+        /// <summary>
         /// Gets the element at the specified position on the primary axis, if realized.
         /// </summary>
         /// <param name="position">The position.</param>
@@ -159,6 +234,82 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
+        /// Gets the position of the element with the requested index on the primary axis, if realized.
+        /// </summary>
+        /// <returns>
+        /// The position of the element, or NaN if the element is not realized.
+        /// </returns>
+        public double GetElementU(int index)
+        {
+            if (index < FirstIndex || _sizes is null)
+                return double.NaN;
+
+            var endIndex = index - FirstIndex;
+
+            if (endIndex >= _sizes.Count)
+                return double.NaN;
+
+            var u = StartU;
+
+            for (var i = 0; i < endIndex; ++i)
+                u += _sizes[i];
+
+            return u;
+        }
+
+        public double GetOrEstimateElementU(int index, ref double estimatedElementSizeU)
+        {
+            // Return the position of the existing element if realized.
+            var u = GetElementU(index);
+
+            if (!double.IsNaN(u))
+                return u;
+
+            // Estimate the element size, using defaultElementSizeU if we don't have any realized
+            // elements.
+            var estimatedSize = EstimateElementSizeU() switch
+            {
+                -1 => estimatedElementSizeU,
+                double v => v,
+            };
+
+            // Store the estimated size for the next layout pass.
+            estimatedElementSizeU = estimatedSize;
+
+            // TODO: Use _startU to work this out.
+            return index * estimatedSize;
+        }
+
+        /// <summary>
+        /// Gets the position the last realized element on the primary axis.
+        /// </summary>
+        /// <returns>
+        /// A tuple containing the index of the element (or -1 if none available) and the position
+        /// of the element on the primary axis.
+        /// </returns>
+        public (int index, double position) GetLastElementU()
+        {
+            if (_sizes is null || _sizes.Count == 0)
+                return (-1, 0);
+
+            var index = FirstIndex;
+            var u = StartU;
+            var count = _sizes.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                var size = _sizes[i];
+
+                if (double.IsNaN(size))
+                    return (index, u);
+                ++index;
+                u += size;
+            }
+
+            return (index, u);
+        }
+
+        /// <summary>
         /// Estimates the average U size of all elements in the source collection based on the
         /// realized elements.
         /// </summary>
@@ -170,13 +321,6 @@ namespace Avalonia.Controls.Utils
         {
             var total = 0.0;
             var divisor = 0.0;
-
-            // Start by averaging the size of the elements before the first realized element.
-            if (FirstIndex >= 0 && !_startUUnstable)
-            {
-                total += _startU;
-                divisor += FirstIndex;
-            }
 
             // Average the size of the realized elements.
             if (_sizes is not null)
