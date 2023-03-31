@@ -140,24 +140,24 @@ namespace Avalonia.PropertyStore
 
             var p = (StyledProperty<T>)property;
             BindingPriority priority;
-            T oldValue;
+            T newValue;
 
             if (property.Inherits && owner.TryGetInheritedValue(property, out var i))
             {
-                oldValue = ((EffectiveValue<T>)i).Value;
+                newValue = ((EffectiveValue<T>)i).Value;
                 priority = BindingPriority.Inherited;
             }
             else
             {
-                oldValue = _metadata.DefaultValue;
+                newValue = _metadata.DefaultValue;
                 priority = BindingPriority.Unset;
             }
 
-            if (!EqualityComparer<T>.Default.Equals(oldValue, Value))
+            if (!EqualityComparer<T>.Default.Equals(newValue, Value))
             {
-                owner.Owner.RaisePropertyChanged(p, Value, oldValue, priority, true);
+                owner.Owner.RaisePropertyChanged(p, Value, newValue, priority, true);
                 if (property.Inherits)
-                    owner.OnInheritedEffectiveValueDisposed(p, Value);
+                    owner.OnInheritedEffectiveValueDisposed(p, Value, newValue);
             }
 
             if (ValueEntry?.GetDataValidationState(out _, out _) ??

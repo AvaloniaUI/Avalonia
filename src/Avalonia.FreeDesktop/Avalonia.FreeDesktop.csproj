@@ -5,20 +5,20 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="../../build/TrimmingEnable.props" />
 
   <ItemGroup>
-    <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.14.0" />
-    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.4" />
+    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
+    <ProjectReference Include="../Avalonia.Controls/Avalonia.Controls.csproj" />
+    <ProjectReference Include="../Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">

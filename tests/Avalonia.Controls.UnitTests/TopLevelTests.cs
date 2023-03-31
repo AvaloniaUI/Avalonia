@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -11,6 +12,7 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+using static Avalonia.Controls.UnitTests.MaskedTextBoxTests;
 
 namespace Avalonia.Controls.UnitTests
 {

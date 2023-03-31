@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
@@ -526,6 +527,11 @@ namespace Avalonia.Native
             if (featureType == typeof(IPlatformBehaviorInhibition))
             {
                 return _platformBehaviorInhibition;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
             return null;

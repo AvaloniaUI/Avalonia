@@ -25,13 +25,17 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _isVisible, value);
         }
 
-        public SetterViewModel(AvaloniaProperty property, object? value)
+        private IClipboard? _clipboard;
+
+        public SetterViewModel(AvaloniaProperty property, object? value, IClipboard? clipboard)
         {
             Property = property;
             Name = property.Name;
             Value = value;
             IsActive = true;
             IsVisible = true;
+
+            _clipboard = clipboard;
         }
 
         public virtual void CopyValue()
@@ -51,11 +55,9 @@ namespace Avalonia.Diagnostics.ViewModels
             CopyToClipboard(Property.Name);
         }
 
-        protected static void CopyToClipboard(string value)
+        protected void CopyToClipboard(string value)
         {
-            var clipboard = AvaloniaLocator.Current.GetService<IClipboard>();
-
-            clipboard?.SetTextAsync(value);
+            _clipboard?.SetTextAsync(value);
         }
     }
 }

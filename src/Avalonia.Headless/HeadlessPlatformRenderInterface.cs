@@ -47,8 +47,8 @@ namespace Avalonia.Headless
         }
 
         public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
-        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => throw new NotImplementedException();
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) => throw new NotImplementedException();
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
         public bool IsLost => false;

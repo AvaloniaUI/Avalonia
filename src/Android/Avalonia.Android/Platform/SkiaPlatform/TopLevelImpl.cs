@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.Specific;
@@ -13,6 +16,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
@@ -22,13 +26,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using Java.Util;
-using Math = System.Math;
-using AndroidRect = Android.Graphics.Rect;
-using Window = Android.Views.Window;
-using Android.Graphics.Drawables;
-using Android.OS;
-using Android.Text;
+using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -44,6 +42,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager _insetsManager;
+        private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -54,6 +53,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
+            _clipboard = new ClipboardImpl(avaloniaView.Context?.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
 
             RenderScaling = _view.Scaling;
 
@@ -406,6 +406,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (featureType == typeof(IInsetsManager))
             {
                 return _insetsManager;
+            }
+
+            if(featureType == typeof(IClipboard))
+            {
+                return _clipboard;
             }
 
             return null;

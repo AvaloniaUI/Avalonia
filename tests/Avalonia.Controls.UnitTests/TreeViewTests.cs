@@ -723,6 +723,33 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void SelectedItem_Should_Be_Valid_When_SelectedItemChanged_Event_Raised()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+
+            var item = data[0].Children[1].Children[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            Assert.NotNull(container);
+
+            var called = false;
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Same(item, e.AddedItems[0]);
+                Assert.Same(item, target.SelectedItem);
+                called = true;
+            };
+
+            _mouse.Click(container);
+
+            Assert.Equal(item, target.SelectedItem);
+            Assert.True(container.IsSelected);
+            Assert.True(called);
+        }
+
+        [Fact]
         public void Bound_SelectedItem_Should_Not_Be_Cleared_when_Changing_Selection()
         {
             using var app = Start();
@@ -756,7 +783,7 @@ namespace Avalonia.Controls.UnitTests
             using var app = Start();
             var data = CreateTestTreeData();
             var target = CreateTarget(data: data, expandAll: false);
-            
+
             target.SelectedItem = data[0].Children[1];
 
             var rootItem = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
