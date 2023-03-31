@@ -67,6 +67,7 @@ namespace Avalonia.Controls
         private double _lastEstimatedElementSizeU = 25;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
+        private ScrollViewer? _scrollViewer;
         private Rect _viewport = s_invalidViewport;
         private Stack<Control>? _recyclePool;
         private Control? _unrealizedFocusedElement;
@@ -203,6 +204,7 @@ namespace Avalonia.Controls
                             new Rect(u, 0, sizeU, finalSize.Height) :
                             new Rect(0, u, finalSize.Width, sizeU);
                         e.Arrange(rect);
+                        _scrollViewer?.RegisterAnchorCandidate(e);
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
                 }
@@ -215,6 +217,18 @@ namespace Avalonia.Controls
 
                 RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
             }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _scrollViewer = null;
         }
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
@@ -598,6 +612,8 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
             
+            _scrollViewer?.UnregisterAnchorCandidate(element);
+
             if (element.IsSet(ItemIsOwnContainerProperty))
             {
                 element.IsVisible = false;
