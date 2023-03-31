@@ -419,7 +419,9 @@ namespace Avalonia.PropertyStore
                 ReevaluateEffectiveValue(property, current);
             }
             else
+            {
                 ReevaluateEffectiveValues();
+            }
         }
 
         /// <summary>
@@ -481,7 +483,8 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The property whose value changed.</param>
         /// <param name="oldValue">The old value of the property.</param>
-        public void OnInheritedEffectiveValueDisposed<T>(StyledProperty<T> property, T oldValue)
+        /// <param name="newValue">The new value of the property.</param>
+        public void OnInheritedEffectiveValueDisposed<T>(StyledProperty<T> property, T oldValue, T newValue)
         {
             Debug.Assert(property.Inherits);
 
@@ -489,12 +492,11 @@ namespace Avalonia.PropertyStore
 
             if (children is not null)
             {
-                var defaultValue = property.GetDefaultValue(Owner.GetType());
                 var count = children.Count;
 
                 for (var i = 0; i < count; ++i)
                 {
-                    children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, defaultValue);
+                    children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, newValue);
                 }
             }
         }
