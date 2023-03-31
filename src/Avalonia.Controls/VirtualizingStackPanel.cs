@@ -157,10 +157,7 @@ namespace Avalonia.Controls
                 // If we're bringing an item into view, ignore any layout passes until we receive a new
                 // effective viewport.
                 if (_isWaitingForViewportUpdate)
-                {
-                    var sizeV = orientation == Orientation.Horizontal ? DesiredSize.Height : DesiredSize.Width;
-                    return CalculateDesiredSize(orientation, items, sizeV);
-                }
+                    return DesiredSize;
 
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
@@ -182,7 +179,7 @@ namespace Avalonia.Controls
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
 
-                return CalculateDesiredSize(orientation, items, viewport.measuredV);
+                return CalculateDesiredSize(orientation, items.Count, viewport);
             }
             finally
             {
@@ -437,16 +434,18 @@ namespace Avalonia.Controls
             };
         }
 
-        private Size CalculateDesiredSize(Orientation orientation, IReadOnlyList<object?> items, double sizeV)
+        private Size CalculateDesiredSize(Orientation orientation, int itemCount, in MeasureViewport viewport)
         {
-            var sizeU = EstimateElementSizeU() * items.Count;
+            var sizeU = 0.0;
+            var sizeV = viewport.measuredV;
 
-            if (double.IsInfinity(sizeU) || double.IsNaN(sizeU))
-                throw new InvalidOperationException("Invalid calculated size.");
+            if (viewport.lastIndex >= 0)
+            {
+                var remaining = itemCount - viewport.lastIndex - 1;
+                sizeU = viewport.endU + (remaining * _lastEstimatedElementSizeU);
+            }
 
-            return orientation == Orientation.Horizontal ?
-                new Size(sizeU, sizeV) :
-                new Size(sizeV, sizeU);
+            return orientation == Orientation.Horizontal ? new(sizeU, sizeV) : new(sizeV, sizeU);
         }
 
         private double EstimateElementSizeU()
@@ -498,7 +497,10 @@ namespace Avalonia.Controls
 
             // Nothing to do here.
             if (items.Count == 0)
+            {
+                viewport.endU = 0;
                 return;
+            }
 
             // The layout is likely invalid. Don't create any elements and instead rely on our previous
             // element size estimates to calculate a new desired size and trigger a new layout pass.
@@ -519,6 +521,9 @@ namespace Avalonia.Controls
                 u += sizeU;
                 ++index;
             } while (u < viewport.viewportUEnd && index < items.Count);
+
+            viewport.endU = u;
+            viewport.lastIndex = index - 1;
         }
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
@@ -875,6 +880,7 @@ namespace Avalonia.Controls
             public double viewportUEnd;
             public double measuredV;
             public double startU;
+            public double endU;
         }
     }
 }
