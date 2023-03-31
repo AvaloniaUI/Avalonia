@@ -37,7 +37,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var items = Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10});
-            var (target, scroll, itemsControl) = CreateTarget(items: items, useItemTemplate: false);
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: null);
 
             Assert.Equal(1000, scroll.Extent.Height);
 
@@ -252,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = App();
             var items = new ObservableCollection<Button>(Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10 }));
-            var (target, scroll, itemsControl) = CreateTarget(items: items, useItemTemplate: false);
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: null);
 
             Assert.Equal(1000, scroll.Extent.Height);
 
@@ -472,6 +472,43 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(10, raised);
         }
 
+        [Fact]
+        public void Scrolling_Up_To_Larger_Element_Does_Not_Cause_Jump()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 1000).Select(x => new ItemWithHeight(x)).ToList();
+            items[20].Height = 200;
+
+            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
+                new Canvas
+                {
+                    Width = 100,
+                    [!Canvas.HeightProperty] = new Binding("Height"),
+                });
+
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: itemTemplate);
+
+            // Scroll past the larger element.
+            scroll.Offset = new Vector(0, 600);
+            Layout(target);
+
+            // Precondition checks
+            Assert.True(target.FirstRealizedIndex > 20);
+
+            var index = target.FirstRealizedIndex;
+
+            // Scroll up to the top.
+            while (scroll.Offset.Y > 0)
+            {
+                scroll.LineUp();
+                Layout(target);
+
+                Assert.True(target.FirstRealizedIndex <= index, $"{target.FirstRealizedIndex} is not less than {index}");
+                index = target.FirstRealizedIndex;
+            }
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -516,7 +553,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(
             IEnumerable<object>? items = null,
-            bool useItemTemplate = true,
+            Optional<IDataTemplate?> itemTemplate = default,
             IEnumerable<Style>? styles = null)
         {
             var target = new VirtualizingStackPanel();
@@ -530,6 +567,7 @@ namespace Avalonia.Controls.UnitTests
 
             var scroll = new ScrollViewer 
             { 
+                Name = "PART_ScrollViewer",
                 Content = presenter,
                 Template = ScrollViewerTemplate(),
             };
@@ -537,12 +575,10 @@ namespace Avalonia.Controls.UnitTests
             var itemsControl = new ItemsControl
             {
                 ItemsSource = items,
-                Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
+                Template = new FuncControlTemplate<ItemsControl>((_, ns) => scroll.RegisterInNameScope(ns)),
                 ItemsPanel = new FuncTemplate<Panel?>(() => target),
+                ItemTemplate = itemTemplate.GetValueOrDefault(DefaultItemTemplate()),
             };
-
-            if (useItemTemplate)
-                itemsControl.ItemTemplate = new FuncDataTemplate<object>((x, _) => new Canvas { Width = 100, Height = 10 });
 
             var root = new TestRoot(true, itemsControl);
             root.ClientSize = new(100, 100);
@@ -553,6 +589,11 @@ namespace Avalonia.Controls.UnitTests
             root.LayoutManager.ExecuteInitialLayoutPass();
 
             return (target, scroll, itemsControl);
+        }
+
+        private static IDataTemplate DefaultItemTemplate()
+        {
+            return new FuncDataTemplate<object>((x, _) => new Canvas { Width = 100, Height = 10 });
         }
 
         private static void Layout(Control target)
@@ -577,6 +618,13 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);
+
+        private class ItemWithHeight
+        {
+            public ItemWithHeight(int index) => Caption = $"Item {index}";
+            public string Caption { get; set; }
+            public double Height { get; set; } = 10;
+        }
 
         private class ResettingCollection : List<string>, INotifyCollectionChanged
         {
