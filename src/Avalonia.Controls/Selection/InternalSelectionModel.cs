@@ -67,6 +67,8 @@ namespace Avalonia.Controls.Selection
             var previousSource = Source;
             var previousWritableSelectedItems = _writableSelectedItems;
 
+            base.OnSourceCollectionChangeStarted();
+            
             try
             {
                 _skipSyncFromSelectedItems = true;
@@ -81,8 +83,20 @@ namespace Avalonia.Controls.Selection
 
             // We skipped the sync from WritableSelectedItems before; do it now that both
             // the source and WritableSelectedItems are updated.
-            if (previousSource != Source || previousWritableSelectedItems != _writableSelectedItems)
+            if (previousWritableSelectedItems != _writableSelectedItems)
+            {
+                base.OnSourceCollectionChangeFinished();
                 SyncFromSelectedItems();
+            }
+            else if (previousSource != Source)
+            {
+                SyncFromSelectedItems();
+                base.OnSourceCollectionChangeFinished();
+            }
+            else
+            {
+                base.OnSourceCollectionChangeFinished();
+            }
         }
 
         private protected override void SetSource(IEnumerable? value)
