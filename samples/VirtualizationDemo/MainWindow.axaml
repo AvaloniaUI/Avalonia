@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:ControlSamples"
+        xmlns:vm="using:VirtualizationDemo.ViewModels"
+        xmlns:views="using:VirtualizationDemo.Views"
+        x:Class="VirtualizationDemo.MainWindow"
+        Title="AvaloniaUI Virtualization Demo"
+        Width="800"
+        Height="600"
+        x:DataType="vm:MainWindowViewModel">
+  <controls:HamburgerMenu>
+    <TabItem Header="Chat" >
+      <views:ChatPageView DataContext="{Binding Chat}"/>
+    </TabItem>
+  </controls:HamburgerMenu>
+</Window>
