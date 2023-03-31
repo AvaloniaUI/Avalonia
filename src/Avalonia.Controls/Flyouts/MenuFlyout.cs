@@ -90,7 +90,7 @@ namespace Avalonia.Controls
         {
             return new MenuFlyoutPresenter
             {
-                [!ItemsControl.ItemsProperty] = this[!ItemsProperty],
+                [!ItemsControl.ItemsSourceProperty] = this[!ItemsProperty],
                 [!ItemsControl.ItemTemplateProperty] = this[!ItemTemplateProperty],
                 [!ItemsControl.ItemContainerThemeProperty] = this[!ItemContainerThemeProperty],
             };
