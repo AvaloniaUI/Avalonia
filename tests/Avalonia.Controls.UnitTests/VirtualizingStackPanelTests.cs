@@ -473,11 +473,47 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Scrolling_Up_To_Larger_Element_Does_Not_Cause_Jump()
+        public void Scrolling_Down_With_Larger_Element_Does_Not_Cause_Jump_And_Arrives_At_End()
         {
             using var app = App();
 
             var items = Enumerable.Range(0, 1000).Select(x => new ItemWithHeight(x)).ToList();
+            items[20].Height = 200;
+
+            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
+                new Canvas
+                {
+                    Width = 100,
+                    [!Canvas.HeightProperty] = new Binding("Height"),
+                });
+
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: itemTemplate);
+
+            var index = target.FirstRealizedIndex;
+
+            // Scroll down to the larger element.
+            while (target.LastRealizedIndex < items.Count - 1)
+            {
+                scroll.LineDown();
+                Layout(target);
+
+                Assert.True(
+                    target.FirstRealizedIndex >= index, 
+                    $"{target.FirstRealizedIndex} is not greater or equal to {index}");
+
+                if (scroll.Offset.Y + scroll.Viewport.Height == scroll.Extent.Height)
+                    Assert.Equal(items.Count - 1, target.LastRealizedIndex);
+
+                index = target.FirstRealizedIndex;
+            }
+        }
+
+        [Fact]
+        public void Scrolling_Up_To_Larger_Element_Does_Not_Cause_Jump()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x)).ToList();
             items[20].Height = 200;
 
             var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
@@ -508,7 +544,7 @@ namespace Avalonia.Controls.UnitTests
                 index = target.FirstRealizedIndex;
             }
         }
-
+        
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
