@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -15,10 +16,10 @@ namespace Avalonia.Skia
             Bounds = (stroke ?? fill)?.TightBounds.ToAvaloniaRect() ?? default;
         }
 
-        public static CombinedGeometryImpl ForceCreate(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        public static CombinedGeometryImpl ForceCreate(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2)
         {
-            if (g1.PlatformImpl is GeometryImpl i1
-                && g2.PlatformImpl is GeometryImpl i2
+            if (g1 is GeometryImpl i1
+                && g2 is GeometryImpl i2
                 && TryCreate(combineMode, i1, i2) is { } result)
                 return result;
             
