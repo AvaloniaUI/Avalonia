@@ -17,7 +17,8 @@
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Margin="{TemplateBinding Padding}"
-                              Content="{TemplateBinding Header}">
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
                   <AccessText Text="{Binding}" />
