@@ -37,7 +37,7 @@
             <ScrollContentPresenter.GestureRecognizers>
               <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
                                        CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
-                                       IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}" />
+                                       IsScrollInertiaEnabled="{Binding IsScrollInertiaEnabled, RelativeSource={RelativeSource TemplatedParent}}" />
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"
