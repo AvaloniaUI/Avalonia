@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.14.0" PrivateAssets="All" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.14.0" />
     <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.5" PrivateAssets="All" />
   </ItemGroup>
 
