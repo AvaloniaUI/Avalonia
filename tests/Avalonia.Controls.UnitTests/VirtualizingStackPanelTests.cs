@@ -545,6 +545,49 @@ namespace Avalonia.Controls.UnitTests
             }
         }
         
+        [Fact]
+        public void Scrolling_Up_To_Smaller_Element_Does_Not_Cause_Jump()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 30)).ToList();
+            items[20].Height = 25;
+
+            var itemTemplate = new FuncDataTemplate<ItemWithHeight>((x, _) =>
+                new Canvas
+                {
+                    Width = 100,
+                    [!Canvas.HeightProperty] = new Binding("Height"),
+                });
+
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: itemTemplate);
+
+            // Scroll past the larger element.
+            scroll.Offset = new Vector(0, 25 * items[0].Height);
+            Layout(target);
+
+            // Precondition checks
+            Assert.True(target.FirstRealizedIndex > 20);
+
+            var index = target.FirstRealizedIndex;
+
+            // Scroll up to the top.
+            while (scroll.Offset.Y > 0)
+            {
+                scroll.Offset = scroll.Offset - new Vector(0, -5);
+                Layout(target);
+
+                Assert.True(
+                    target.FirstRealizedIndex <= index, 
+                    $"{target.FirstRealizedIndex} is not less than {index}");
+                Assert.True(
+                    index - target.FirstRealizedIndex <= 1,
+                    $"FirstIndex changed from {index} to {target.FirstRealizedIndex}");
+                
+                index = target.FirstRealizedIndex;
+            }
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -657,9 +700,14 @@ namespace Avalonia.Controls.UnitTests
 
         private class ItemWithHeight
         {
-            public ItemWithHeight(int index) => Caption = $"Item {index}";
+            public ItemWithHeight(int index, double height = 10)
+            {
+                Caption = $"Item {index}";
+                Height = height;
+            }
+            
             public string Caption { get; set; }
-            public double Height { get; set; } = 10;
+            public double Height { get; set; }
         }
 
         private class ResettingCollection : List<string>, INotifyCollectionChanged
