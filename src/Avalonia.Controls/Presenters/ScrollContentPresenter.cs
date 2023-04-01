@@ -304,14 +304,22 @@ namespace Avalonia.Controls.Presenters
         /// </remarks>
         protected internal virtual void AttachToScrollViewer()
         {
-            _ownerSubscriptions?.Dispose();
-
-            var owner = _owner = this.FindAncestorOfType<ScrollViewer>();
+            var owner = this.FindAncestorOfType<ScrollViewer>();
 
             if (owner == null)
             {
+                _owner = null;
+                _ownerSubscriptions?.Dispose();
+                _ownerSubscriptions = null;
                 return;
             }
+
+            if (owner == _owner)
+            {
+                return;
+            }
+
+            _ownerSubscriptions?.Dispose();
 
             var subscriptionDisposables = new IDisposable?[]
             {
@@ -322,19 +330,12 @@ namespace Avalonia.Controls.Presenters
                 IfUnset(ContentProperty, p => Bind(p, owner.GetBindingObservable(ContentProperty), Data.BindingPriority.Template)),
             }.Where(d => d != null).Cast<IDisposable>().ToArray();
 
+            _owner = owner;
             _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
 
             static bool NotDisabled(ScrollBarVisibility v) => v != ScrollBarVisibility.Disabled;
 
-            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => GetValueStore().IsSet(property) ? null : func(property);
-        }
-
-
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            _ownerSubscriptions?.Dispose();
-            _owner = null;
-            base.OnDetachedFromVisualTree(e);
+            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => IsSet(property) ? null : func(property);
         }
 
         /// <inheritdoc/>
@@ -708,7 +709,7 @@ namespace Avalonia.Controls.Presenters
                 }
                 CoerceValue(OffsetProperty);
             }
-            else if (change.Property == ViewportProperty && _owner != null)
+            else if (change.Property == ViewportProperty)
             {
                 if (_owner != null)
                 {

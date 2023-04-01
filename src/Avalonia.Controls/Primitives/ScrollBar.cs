@@ -202,14 +202,22 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected internal virtual void AttachToScrollViewer()
         {
-            _ownerSubscriptions?.Dispose();
-
-            var owner = _owner = this.FindAncestorOfType<ScrollViewer>();
+            var owner = this.FindAncestorOfType<ScrollViewer>();
 
             if (owner == null)
             {
+                _owner = null;
+                _ownerSubscriptions?.Dispose();
+                _ownerSubscriptions = null;
                 return;
             }
+
+            if (owner == _owner)
+            {
+                return;
+            }
+
+            _ownerSubscriptions?.Dispose();
 
             var visibilitySource = Orientation == Orientation.Horizontal ? ScrollViewer.HorizontalScrollBarVisibilityProperty : ScrollViewer.VerticalScrollBarVisibilityProperty;
 
@@ -224,20 +232,14 @@ namespace Avalonia.Controls.Primitives
                 IfUnset(SmallChangeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.SmallChangeProperty).Select(ExtractOrdinate), BindingPriority.Template))
             }.Where(d => d != null).Cast<IDisposable>().ToArray();
 
+            _owner = owner;
             _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
 
-            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => GetValueStore().IsSet(property) ? null : func(property);
+            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => IsSet(property) ? null : func(property);
         }
 
         private double ExtractOrdinate(Vector v) => Orientation == Orientation.Horizontal ? v.X : v.Y;
         private double ExtractOrdinate(Size v) => Orientation == Orientation.Horizontal ? v.Width : v.Height;
-
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            _ownerSubscriptions?.Dispose();
-            _owner = null;
-            base.OnDetachedFromVisualTree(e);
-        }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -260,7 +262,10 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == OrientationProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<Orientation>());
-                AttachToScrollViewer(); // there's no way to manually refresh bindings, so reapply them
+                if (IsAttachedToVisualTree)
+                {
+                    AttachToScrollViewer(); // there's no way to manually refresh bindings, so reapply them
+                }
             }
             else if (change.Property == AllowAutoHideProperty)
             {

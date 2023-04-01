@@ -660,8 +660,11 @@ namespace Avalonia.Controls
         private void CalculatedPropertiesChanged()
         {
             var newMaximum = ScrollBarMaximum;
-            RaisePropertyChanged(ScrollBarMaximumProperty, _oldMaximum, newMaximum);
-            _oldMaximum = newMaximum;
+            if (newMaximum != _oldMaximum)
+            {
+                RaisePropertyChanged(ScrollBarMaximumProperty, _oldMaximum, newMaximum);
+                _oldMaximum = newMaximum;
+            }
 
             if (_logicalScrollable?.IsLogicalScrollEnabled == true)
             {
