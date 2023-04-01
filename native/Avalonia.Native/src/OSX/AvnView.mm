@@ -791,6 +791,17 @@
 - (NSView *)hitTest:(NSPoint)point {
     NSView *result = [super hitTest:point];
 
+    // Send the view name to c# for the focus manager
+    // We will mainly be treating these scenarios:
+    // Grunt area -> AvnView
+    // Slide area -> PPTView or TIDTextInputDriver
+    // Other area -> anything else?
+    NSString *firstResponderName = NSStringFromClass([[[self window] firstResponder] class]);
+    // Going with dispatch async on global queue in order to return control to powerpoint quickly and avoid UI hangs
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        _parent->BaseEvents->LogFirstResponder([firstResponderName UTF8String]);
+    });
+
     auto avnPoint = [AvnView toAvnPoint:point];
     auto localPoint = [self translateLocalPoint:avnPoint];
 
