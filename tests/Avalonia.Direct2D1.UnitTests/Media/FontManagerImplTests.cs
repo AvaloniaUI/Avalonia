@@ -1,4 +1,5 @@
-﻿using Avalonia.Direct2D1.Media;
+﻿using System;
+using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -16,18 +17,10 @@ namespace Avalonia.Direct2D1.UnitTests.Media
             {
                 Direct2D1Platform.Initialize();
 
-                var fontManager = new FontManagerImpl();
+                var glyphTypeface =
+                    new Typeface(new FontFamily("A, B, Arial")).GlyphTypeface;
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(new FontFamily("A, B, Arial")));
-
-                var font = glyphTypeface.DWFont;
-
-                Assert.Equal("Arial", font.FontFamily.FamilyNames.GetString(0));
-
-                Assert.Equal(SharpDX.DirectWrite.FontWeight.Normal, font.Weight);
-
-                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+                Assert.Equal("Arial", glyphTypeface.FamilyName);
             }
         }
 
@@ -38,18 +31,13 @@ namespace Avalonia.Direct2D1.UnitTests.Media
             {
                 Direct2D1Platform.Initialize();
 
-                var fontManager = new FontManagerImpl();
+                var glyphTypeface = new Typeface(new FontFamily("A, B, Arial"), weight: FontWeight.Bold).GlyphTypeface;
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(new FontFamily("A, B, Arial"), weight: FontWeight.Bold));
+                Assert.Equal("Arial", glyphTypeface.FamilyName);
 
-                var font = glyphTypeface.DWFont;
+                Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
 
-                Assert.Equal("Arial", font.FontFamily.FamilyNames.GetString(0));
-
-                Assert.Equal(SharpDX.DirectWrite.FontWeight.Bold, font.Weight);
-
-                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+                Assert.Equal(FontStyle.Normal, glyphTypeface.Style);
             }
         }
 
@@ -60,20 +48,11 @@ namespace Avalonia.Direct2D1.UnitTests.Media
             {
                 Direct2D1Platform.Initialize();
 
-                var fontManager = new FontManagerImpl();
+                var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(new FontFamily("Unknown")));
+                var defaultName = FontManager.Current.DefaultFontFamilyName;
 
-                var font = glyphTypeface.DWFont;
-
-                var defaultName = fontManager.GetDefaultFontFamilyName();
-
-                Assert.Equal(defaultName, font.FontFamily.FamilyNames.GetString(0));
-
-                Assert.Equal(SharpDX.DirectWrite.FontWeight.Normal, font.Weight);
-
-                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+                Assert.Equal(defaultName, glyphTypeface.FamilyName);
             }
         }
 
@@ -86,12 +65,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
 
                 var fontManager = new FontManagerImpl();
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(s_fontUri));
+                var glyphTypeface = new Typeface(s_fontUri).GlyphTypeface;
 
-                var font = glyphTypeface.DWFont;
-
-                Assert.Equal("Noto Mono", font.FontFamily.FamilyNames.GetString(0));
+                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
             }
         }
 
@@ -102,14 +78,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
             {
                 Direct2D1Platform.Initialize();
 
-                var fontManager = new FontManagerImpl();
+                var glyphTypeface = new Typeface(s_fontUri, FontStyle.Italic, FontWeight.Black).GlyphTypeface;
 
-                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(s_fontUri, FontStyle.Italic, FontWeight.Black));
-
-                var font = glyphTypeface.DWFont;
-
-                Assert.Equal("Noto Mono", font.FontFamily.FamilyNames.GetString(0));
+                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
             }
         }
     }

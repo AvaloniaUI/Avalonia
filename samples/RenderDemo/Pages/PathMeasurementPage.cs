@@ -37,11 +37,8 @@ namespace RenderDemo.Pages
 
         public override void Render(DrawingContext context)
         {
-            using (var ctxi = _bitmap.CreateDrawingContext(null))
-            using (var bitmapCtx = new DrawingContext(ctxi, false))
+            using (var bitmapCtx = _bitmap.CreateDrawingContext())
             {
-                ctxi.Clear(default);
-
                 var basePath = new PathGeometry();
 
                 using (var basePathCtx = basePath.Open())

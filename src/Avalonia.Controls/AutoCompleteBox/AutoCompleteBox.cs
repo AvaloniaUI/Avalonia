@@ -198,7 +198,6 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private bool _isFocused = false;
 
-        private string? _text = string.Empty;
         private string? _searchText = string.Empty;
 
         private AutoCompleteFilterPredicate<object?>? _itemFilter;
@@ -792,7 +791,7 @@ namespace Avalonia.Controls
                     Control? element = focused as Control;
                     if (element != null)
                     {
-                        parent = element.Parent;
+                        parent = element.VisualParent;
                     }
                 }
                 focused = parent;
@@ -1275,7 +1274,7 @@ namespace Avalonia.Controls
             if ((userInitiated ?? true) && Text != value)
             {
                 _ignoreTextPropertyChange++;
-                Text = value;
+                SetCurrentValue(TextProperty, value);
                 callTextChanged = true;
             }
 
@@ -1711,7 +1710,7 @@ namespace Avalonia.Controls
         /// <param name="predicate">The predicate to use for the partial or
         /// exact match.</param>
         /// <returns>Returns the object or null.</returns>
-        private object? TryGetMatch(string? searchText, AvaloniaList<object> view, AutoCompleteFilterPredicate<string?>? predicate)
+        private object? TryGetMatch(string? searchText, AvaloniaList<object>? view, AutoCompleteFilterPredicate<string?>? predicate)
         {
             if (predicate is null)
                 return null;

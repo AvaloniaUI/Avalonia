@@ -5,7 +5,6 @@
 
 using System;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Metadata;
@@ -31,14 +30,14 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             ScrollBar.OrientationProperty.AddOwner<Track>();
 
-        public static readonly StyledProperty<Thumb> ThumbProperty =
-            AvaloniaProperty.Register<Track, Thumb>(nameof(Thumb));
+        public static readonly StyledProperty<Thumb?> ThumbProperty =
+            AvaloniaProperty.Register<Track, Thumb?>(nameof(Thumb));
 
-        public static readonly StyledProperty<Button> IncreaseButtonProperty =
-            AvaloniaProperty.Register<Track, Button>(nameof(IncreaseButton));
+        public static readonly StyledProperty<Button?> IncreaseButtonProperty =
+            AvaloniaProperty.Register<Track, Button?>(nameof(IncreaseButton));
 
-        public static readonly StyledProperty<Button> DecreaseButtonProperty =
-            AvaloniaProperty.Register<Track, Button>(nameof(DecreaseButton));
+        public static readonly StyledProperty<Button?> DecreaseButtonProperty =
+            AvaloniaProperty.Register<Track, Button?>(nameof(DecreaseButton));
 
         public static readonly StyledProperty<bool> IsDirectionReversedProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IsDirectionReversed));
@@ -94,19 +93,19 @@ namespace Avalonia.Controls.Primitives
         }
 
         [Content]
-        public Thumb Thumb
+        public Thumb? Thumb
         {
             get { return GetValue(ThumbProperty); }
             set { SetValue(ThumbProperty, value); }
         }
 
-        public Button IncreaseButton
+        public Button? IncreaseButton
         {
             get { return GetValue(IncreaseButtonProperty); }
             set { SetValue(IncreaseButtonProperty, value); }
         }
 
-        public Button DecreaseButton
+        public Button? DecreaseButton
         {
             get { return GetValue(DecreaseButtonProperty); }
             set { SetValue(DecreaseButtonProperty, value); }

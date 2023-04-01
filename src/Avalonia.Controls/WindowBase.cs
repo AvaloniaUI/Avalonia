@@ -27,10 +27,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
         public static readonly DirectProperty<WindowBase, WindowBase?> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(
-                nameof(Owner),
-                o => o.Owner,
-                (o, v) => o.Owner = v);
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(nameof(Owner), o => o.Owner);
 
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
@@ -94,7 +91,7 @@ namespace Avalonia.Controls
             private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
         }
         
-        public Screens Screens { get; private set; }
+        public Screens Screens { get; }
 
         /// <summary>
         /// Gets or sets the owner of the window.
@@ -129,7 +126,7 @@ namespace Avalonia.Controls
         {
             using (FreezeVisibilityChangeHandling())
             {
-                Renderer?.Stop();
+                Renderer.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -153,7 +150,7 @@ namespace Avalonia.Controls
                 }
 
                 PlatformImpl?.Show(true, false);
-                Renderer?.Start();
+                Renderer.Start();
                 OnOpened(EventArgs.Empty);
             }
         }
@@ -219,7 +216,7 @@ namespace Avalonia.Controls
             {
                 ClientSize = clientSize;
                 LayoutManager.ExecuteLayoutPass();
-                Renderer?.Resized(clientSize);
+                Renderer.Resized(clientSize);
             }
         }
 

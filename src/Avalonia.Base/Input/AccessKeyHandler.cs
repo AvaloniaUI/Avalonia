@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Input
 {
@@ -190,7 +189,7 @@ namespace Avalonia.Input
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => x is not null && ((Visual)MainMenu!).IsVisualAncestorOf((Visual)x));
+                    matches = matches.Where(x => x is not null && ((Visual)MainMenu!).IsLogicalAncestorOf((Visual)x));
                 }
 
                 var match = matches.FirstOrDefault();

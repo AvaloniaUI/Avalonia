@@ -19,7 +19,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the minimized/maximized state of the window changes.
         /// </summary>
-        Action<WindowState> WindowStateChanged { get; set; }
+        Action<WindowState>? WindowStateChanged { get; set; }
 
         /// <summary>
         /// Sets the title of the window.
@@ -42,7 +42,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Called when a disabled window received input. Can be used to activate child windows.
         /// </summary>
-        Action GotInputWhenDisabled { get; set; }        
+        Action? GotInputWhenDisabled { get; set; }
 
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
@@ -68,7 +68,7 @@ namespace Avalonia.Platform
         /// Gets or sets a method called before the underlying implementation is destroyed.
         /// Return true to prevent the underlying implementation from closing.
         /// </summary>
-        Func<WindowCloseReason, bool> Closing { get; set; }
+        Func<WindowCloseReason, bool>? Closing { get; set; }
 
         /// <summary>
         /// Gets a value to indicate if the platform was able to extend client area to non-client area.
@@ -78,7 +78,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or Sets an action that is called whenever one of the extend client area properties changed.
         /// </summary>
-        Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         /// <summary>
         /// Gets a flag that indicates if Managed decorations i.e. caption buttons are required.

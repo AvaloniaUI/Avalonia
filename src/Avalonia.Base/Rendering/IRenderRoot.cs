@@ -1,6 +1,4 @@
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {

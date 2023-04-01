@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 
@@ -8,12 +9,12 @@ namespace Avalonia.Direct2D1.Media
     {
         public GlyphRunImpl(GlyphRun glyphRun, Size size, Point baselineOrigin)
         {
-            Size = size;
+            Bounds = new Rect(new Point(baselineOrigin.X, 0), size);
             BaselineOrigin = baselineOrigin;
             GlyphRun = glyphRun;
         }
 
-        public Size Size { get; }
+        public Rect Bounds{ get; }
 
         public Point BaselineOrigin { get; }
 
@@ -25,8 +26,6 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-        {
-            return null;
-        }
+            => Array.Empty<float>();
     }
 }

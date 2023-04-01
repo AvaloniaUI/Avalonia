@@ -9,16 +9,13 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
-using Avalonia.Input.TextInput;
 
 namespace Avalonia.Controls.Presenters
 {
     public class TextPresenter : Control
     {
-        public static readonly DirectProperty<TextPresenter, int> CaretIndexProperty =
-            TextBox.CaretIndexProperty.AddOwner<TextPresenter>(
-                o => o.CaretIndex,
-                (o, v) => o.CaretIndex = v);
+        public static readonly StyledProperty<int> CaretIndexProperty =
+            TextBox.CaretIndexProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly StyledProperty<bool> RevealPasswordProperty =
             AvaloniaProperty.Register<TextPresenter, bool>(nameof(RevealPassword));
@@ -35,33 +32,32 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
 
-        public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
-            TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
-                o => o.SelectionStart,
-                (o, v) => o.SelectionStart = v);
+        public static readonly StyledProperty<int> SelectionStartProperty =
+            TextBox.SelectionStartProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
-        public static readonly DirectProperty<TextPresenter, int> SelectionEndProperty =
-            TextBox.SelectionEndProperty.AddOwner<TextPresenter>(
-                o => o.SelectionEnd,
-                (o, v) => o.SelectionEnd = v);
+        public static readonly StyledProperty<int> SelectionEndProperty =
+            TextBox.SelectionEndProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<TextPresenter, string?> TextProperty =
-            AvaloniaProperty.RegisterDirect<TextPresenter, string?>(
-                nameof(Text),
-                o => o.Text,
-                (o, v) => o.Text = v);
+        public static readonly StyledProperty<string?> TextProperty =
+            TextBlock.TextProperty.AddOwner<TextPresenter>(new(string.Empty));
 
         /// <summary>
         /// Defines the <see cref="PreeditText"/> property.
         /// </summary>
-        public static readonly DirectProperty<TextPresenter, string?> PreeditTextProperty =
-            AvaloniaProperty.RegisterDirect<TextPresenter, string?>(
-                nameof(PreeditText),
-                o => o.PreeditText,
-                 (o, v) => o.PreeditText = v);
+        public static readonly StyledProperty<string?> PreeditTextProperty =
+            AvaloniaProperty.Register<TextPresenter, string?>(nameof(PreeditText));
+
+        /// <summary>
+        /// Defines the <see cref="CompositionRegion"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextPresenter, TextRange?> CompositionRegionProperty =
+            AvaloniaProperty.RegisterDirect<TextPresenter, TextRange?>(
+                nameof(CompositionRegion),
+                o => o.CompositionRegion,
+                 (o, v) => o.CompositionRegion = v);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -94,18 +90,14 @@ namespace Avalonia.Controls.Presenters
             Border.BackgroundProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;
-        private int _caretIndex;
-        private int _selectionStart;
-        private int _selectionEnd;
         private bool _caretBlink;
-        private string? _text;
         private TextLayout? _textLayout;
         private Size _constraint;
 
         private CharacterHit _lastCharacterHit;
         private Rect _caretBounds;
         private Point _navigationPosition;
-        private string? _preeditText;
+        private TextRange? _compositionRegion;
 
         static TextPresenter()
         {
@@ -114,7 +106,6 @@ namespace Avalonia.Controls.Presenters
 
         public TextPresenter()
         {
-            _text = string.Empty;
             _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             _caretTimer.Tick += CaretTimerTick;
         }
@@ -136,14 +127,20 @@ namespace Avalonia.Controls.Presenters
         [Content]
         public string? Text
         {
-            get => _text;
-            set => SetAndRaise(TextProperty, ref _text, value);
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         public string? PreeditText
         {
-            get => _preeditText;
-            set => SetAndRaise(PreeditTextProperty, ref _preeditText, value);
+            get => GetValue(PreeditTextProperty);
+            set => SetValue(PreeditTextProperty, value);
+        }
+
+        public TextRange? CompositionRegion
+        {
+            get => _compositionRegion;
+            set => SetAndRaise(CompositionRegionProperty, ref _compositionRegion, value);
         }
 
         /// <summary>
@@ -258,17 +255,8 @@ namespace Avalonia.Controls.Presenters
 
         public int CaretIndex
         {
-            get
-            {
-                return _caretIndex;
-            }
-            set
-            {
-                if (value != _caretIndex)
-                {
-                    MoveCaretToTextPosition(value);
-                }
-            }
+            get => GetValue(CaretIndexProperty);
+            set => SetValue(CaretIndexProperty, value);
         }
 
         public char PasswordChar
@@ -303,30 +291,14 @@ namespace Avalonia.Controls.Presenters
 
         public int SelectionStart
         {
-            get
-            {
-                return _selectionStart;
-            }
-
-            set
-            {
-                value = CoerceCaretIndex(value);
-                SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
-            }
+            get => GetValue(SelectionStartProperty);
+            set => SetValue(SelectionStartProperty, value);
         }
 
         public int SelectionEnd
         {
-            get
-            {
-                return _selectionEnd;
-            }
-
-            set
-            {
-                value = CoerceCaretIndex(value);
-                SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
-            }
+            get => GetValue(SelectionEndProperty);
+            set => SetValue(SelectionEndProperty, value);
         }
 
         protected override bool BypassFlowDirectionPolicies => true;
@@ -388,7 +360,7 @@ namespace Avalonia.Controls.Presenters
             TextLayout.Draw(context, new Point(left, top));
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
@@ -510,23 +482,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private string? GetText()
-        {
-            if (!string.IsNullOrEmpty(_preeditText))
-            {
-                if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
-                {
-                    return _preeditText;
-                }
-
-                var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
-
-                return text;
-            }
-
-            return _text;
-        }
-
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -535,12 +490,12 @@ namespace Avalonia.Controls.Presenters
         {
             TextLayout result;
 
-            var text = GetText();
+            var text = Text;
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
-            var selectionStart = CoerceCaretIndex(SelectionStart);
-            var selectionEnd = CoerceCaretIndex(SelectionEnd);
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -548,9 +503,22 @@ namespace Avalonia.Controls.Presenters
 
             var foreground = Foreground;
 
-            if (!string.IsNullOrEmpty(_preeditText))
+            if (_compositionRegion != null)
             {
-                var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_compositionRegion?.Start ?? 0, _compositionRegion?.Length ?? 0,
+                        new GenericTextRunProperties(typeface, FontSize,
+                        foregroundBrush: foreground,
+                        textDecorations: TextDecorations.Underline));
+
+                textStyleOverrides = new[]
+                {
+                    preeditHighlight
+                };
+
+            }
+            else if (!string.IsNullOrEmpty(PreeditText))
+            {
+                var preeditHighlight = new ValueSpan<TextRunProperties>(CaretIndex, PreeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
@@ -628,13 +596,6 @@ namespace Avalonia.Controls.Presenters
             _textLayout = null;
 
             return finalSize;
-        }
-
-        private int CoerceCaretIndex(int value)
-        {
-            var text = Text;
-            var length = text?.Length ?? 0;
-            return Math.Max(0, Math.Min(length, value));
         }
 
         private void CaretTimerTick(object? sender, EventArgs e)
@@ -822,7 +783,7 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        private void UpdateCaret(CharacterHit characterHit, bool updateCaretIndex = true)
+        internal void UpdateCaret(CharacterHit characterHit, bool notify = true)
         {
             _lastCharacterHit = characterHit;
 
@@ -850,9 +811,9 @@ namespace Avalonia.Controls.Presenters
                 CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            if (updateCaretIndex)
+            if (notify)
             {
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+                SetCurrentValue(CaretIndexProperty, caretIndex);
             }
         }
 
@@ -870,47 +831,19 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick -= CaretTimerTick;
         }
 
-        protected void OnPreeditTextChanged(string? oldValue, string? newValue)
-        {
-            InvalidateTextLayout();
-
-            if (string.IsNullOrEmpty(newValue))
-            {
-                UpdateCaret(_lastCharacterHit);
-            }
-            else
-            {
-                var textPosition = _caretIndex + newValue?.Length ?? 0;
-
-                var characterHit = GetCharacterHitFromTextPosition(textPosition);
-
-                UpdateCaret(characterHit, false);
-            }
-        }
-
-        private CharacterHit GetCharacterHitFromTextPosition(int textPosition)
-        {
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
-
-            var textLine = TextLayout.TextLines[lineIndex];
-
-            var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
-
-            return characterHit;
-        }
-
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property == CaretIndexProperty)
+            {
+                MoveCaretToTextPosition(change.GetNewValue<int>());
+            }
+
             switch (change.Property.Name)
             {
                 case nameof(PreeditText):
-                    {
-                        OnPreeditTextChanged(change.OldValue as string, change.NewValue as string);
-                        break;
-                    }
-
+                case nameof(CompositionRegion):
                 case nameof(Foreground):
                 case nameof(FontSize):
                 case nameof(FontStyle):
@@ -931,7 +864,6 @@ namespace Avalonia.Controls.Presenters
 
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
-
                 case nameof(FlowDirection):
                     {
                         InvalidateTextLayout();

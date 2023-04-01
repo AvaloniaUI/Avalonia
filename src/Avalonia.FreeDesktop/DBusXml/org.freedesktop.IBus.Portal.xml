@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<!--
+ Copyright (C) 2017-2019 Red Hat, Inc.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+ Author: Alexander Larsson <alexl@redhat.com>
+-->
+
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+      org.freedesktop.IBus.Portal:
+      @short_description: Portal for ibus client access
+
+      This interface is a minimal interface to IBus that is safe to expose to
+      clients.
+  -->
+  <interface name="org.freedesktop.IBus.Portal">
+    <method name='CreateInputContext'>
+      <arg direction='in'  type='s' name='client_name' />
+      <arg direction='out' type='o' name='object_path' />
+    </method>
+  </interface>
+
+  <!-- This is a copy of the interface in inputcontext.c, they should be shared.
+       We want this for the code generator so that we can be sure we verify all
+       caller types, etc.
+  -->
+  <interface name='org.freedesktop.IBus.InputContext'>
+    <method name='ProcessKeyEvent'>
+      <arg direction='in'  type='u' name='keyval' />
+      <arg direction='in'  type='u' name='keycode' />
+      <arg direction='in'  type='u' name='state' />
+      <arg direction='out' type='b' name='handled' />
+    </method>
+    <method name='SetCursorLocation'>
+      <arg direction='in' type='i' name='x' />
+      <arg direction='in' type='i' name='y' />
+      <arg direction='in' type='i' name='w' />
+      <arg direction='in' type='i' name='h' />
+    </method>
+    <method name='SetCursorLocationRelative'>
+      <arg direction='in' type='i' name='x' />
+      <arg direction='in' type='i' name='y' />
+      <arg direction='in' type='i' name='w' />
+      <arg direction='in' type='i' name='h' />
+    </method>
+    <method name='ProcessHandWritingEvent'>
+      <arg direction='in' type='ad' name='coordinates' />
+    </method>
+    <method name='CancelHandWriting'>
+      <arg direction='in' type='u' name='n_strokes' />
+    </method>
+    <method name='FocusIn' />
+    <method name='FocusOut' />
+    <method name='Reset' />
+    <method name='SetCapabilities'>
+      <arg direction='in' type='u' name='caps' />
+    </method>
+    <method name='PropertyActivate'>
+      <arg direction='in' type='s' name='name' />
+      <arg direction='in' type='u' name='state' />
+    </method>
+    <method name='SetEngine'>
+      <arg direction='in' type='s' name='name' />
+    </method>
+    <method name='GetEngine'>
+      <arg direction='out' type='v' name='desc' />
+    </method>
+    <method name='SetSurroundingText'>
+      <arg direction='in' type='v' name='text' />
+      <arg direction='in' type='u' name='cursor_pos' />
+      <arg direction='in' type='u' name='anchor_pos' />
+    </method>
+
+    <signal name='CommitText'>
+      <arg type='v' name='text' />
+    </signal>
+    <signal name='ForwardKeyEvent'>
+      <arg type='u' name='keyval' />
+      <arg type='u' name='keycode' />
+      <arg type='u' name='state' />
+    </signal>
+    <signal name='UpdatePreeditText'>
+      <arg type='v' name='text' />
+      <arg type='u' name='cursor_pos' />
+      <arg type='b' name='visible' />
+    </signal>
+    <signal name='UpdatePreeditTextWithMode'>
+      <arg type='v' name='text' />
+      <arg type='u' name='cursor_pos' />
+      <arg type='b' name='visible' />
+      <arg type='u' name='mode' />
+    </signal>
+    <signal name='ShowPreeditText'/>
+    <signal name='HidePreeditText'/>
+    <signal name='UpdateAuxiliaryText'>
+      <arg type='v' name='text' />
+      <arg type='b' name='visible' />
+    </signal>
+    <signal name='ShowAuxiliaryText'/>
+    <signal name='HideAuxiliaryText'/>
+    <signal name='UpdateLookupTable'>
+      <arg type='v' name='table' />
+      <arg type='b' name='visible' />
+    </signal>
+    <signal name='ShowLookupTable'/>
+    <signal name='HideLookupTable'/>
+    <signal name='PageUpLookupTable'/>
+    <signal name='PageDownLookupTable'/>
+    <signal name='CursorUpLookupTable'/>
+    <signal name='CursorDownLookupTable'/>
+    <signal name='RegisterProperties'>
+      <arg type='v' name='props' />
+    </signal>
+    <signal name='UpdateProperty'>
+      <arg type='v' name='prop' />
+    </signal>
+
+    <property name='ContentType' type='(uu)' access='write' />
+    <property name='ClientCommitPreedit' type='(b)' access='write' />
+  </interface>
+
+  <interface name='org.freedesktop.IBus.Service'>
+    <method name='Destroy' />
+  </interface>
+
+</node>

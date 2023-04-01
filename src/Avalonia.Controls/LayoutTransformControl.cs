@@ -28,7 +28,7 @@ namespace Avalonia.Controls
                 .AddClassHandler<LayoutTransformControl>((x, e) => x.OnLayoutTransformChanged(e));
 
             ChildProperty.Changed
-                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnChildChanged(e));
+                .AddClassHandler<LayoutTransformControl>((x, _) => x.OnChildChanged());
 
             UseRenderTransformProperty.Changed
                 .AddClassHandler<LayoutTransformControl>((x, e) => x.OnUseRenderTransformPropertyChanged(e));
@@ -91,7 +91,7 @@ namespace Avalonia.Controls
             arrangedsize = TransformRoot.Bounds.Size;
 
             // This is the first opportunity under Silverlight to find out the Child's true DesiredSize
-            if (IsSizeSmaller(finalSizeTransformed, arrangedsize) && _childActualSize.IsDefault)
+            if (IsSizeSmaller(finalSizeTransformed, arrangedsize) && _childActualSize == default)
             {
                 //// Unfortunately, all the work so far is invalid because the wrong DesiredSize was used
                 //// Make a note of the actual DesiredSize
@@ -122,7 +122,7 @@ namespace Avalonia.Controls
             }
 
             Size measureSize;
-            if (_childActualSize.IsDefault)
+            if (_childActualSize == default)
             {
                 // Determine the largest size after the transformation
                 measureSize = ComputeLargestTransformedSize(availableSize);
@@ -146,7 +146,7 @@ namespace Avalonia.Controls
             return transformedDesiredSize;
         }
 
-        IDisposable? _renderTransformChangedEvent;
+        private IDisposable? _renderTransformChangedEvent;
 
         private void OnUseRenderTransformPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -167,8 +167,7 @@ namespace Avalonia.Controls
                             .Subscribe(
                                 (x) =>
                                 {
-                                    var target2 = x.Sender as LayoutTransformControl;
-                                    if (target2 != null)
+                                    if (x.Sender is LayoutTransformControl target2)
                                     {
                                         target2.LayoutTransform = target2.RenderTransform;
                                     }
@@ -182,7 +181,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnChildChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnChildChanged()
         {
             if (null != TransformRoot)
             {
@@ -206,18 +205,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Actual DesiredSize of Child element (the value it returned from its MeasureOverride method).
         /// </summary>
-        private Size _childActualSize = default;
+        private Size _childActualSize;
 
         /// <summary>
         /// RenderTransform/MatrixTransform applied to TransformRoot.
         /// </summary>
-        private MatrixTransform _matrixTransform = new MatrixTransform();
+        private readonly MatrixTransform _matrixTransform = new();
 
         /// <summary>
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation;
-        private IDisposable? _transformChangedEvent = null;
+        private IDisposable? _transformChangedEvent;
 
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.
@@ -263,10 +262,7 @@ namespace Avalonia.Controls
             // Get the transform matrix and apply it
             _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
 
-            if (null != _matrixTransform)
-            {
-                _matrixTransform.Matrix = _transformation;
-            }
+            _matrixTransform.Matrix = _transformation;
 
             // New transform means re-layout is necessary
             InvalidateMeasure();

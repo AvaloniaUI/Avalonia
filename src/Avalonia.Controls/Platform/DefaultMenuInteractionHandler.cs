@@ -301,7 +301,7 @@ namespace Avalonia.Controls.Platform
             e.Handled = true;
         }
 
-        protected internal virtual void PointerEntered(object? sender, PointerEventArgs e)
+        protected internal virtual void PointerEntered(object? sender, RoutedEventArgs e)
         {
             var item = GetMenuItem(e.Source as Control);
 
@@ -368,7 +368,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void PointerExited(object? sender, PointerEventArgs e)
+        protected internal virtual void PointerExited(object? sender, RoutedEventArgs e)
         {
             var item = GetMenuItem(e.Source as Control);
 
@@ -553,7 +553,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected static IMenuItem? GetMenuItem(Control? item)
+        protected static IMenuItem? GetMenuItem(StyledElement? item)
         {
             while (true)
             {

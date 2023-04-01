@@ -136,7 +136,7 @@ namespace Avalonia.Input
             return StringBuilderCache.GetStringAndRelease(s);
         }
 
-        public bool Matches(KeyEventArgs keyEvent) =>
+        public bool Matches(KeyEventArgs? keyEvent) =>
             keyEvent != null &&
             keyEvent.KeyModifiers == KeyModifiers &&
             ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);

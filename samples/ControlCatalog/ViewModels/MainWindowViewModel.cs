@@ -6,6 +6,7 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using System;
 using System.ComponentModel.DataAnnotations;
+using Avalonia;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -20,6 +21,9 @@ namespace ControlCatalog.ViewModels
         private bool _systemTitleBarEnabled;
         private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
+        private bool _isSystemBarVisible;
+        private bool _displayEdgeToEdge;
+        private Thickness _safeAreaPadding;
 
         public MainWindowViewModel()
         {
@@ -78,25 +82,25 @@ namespace ControlCatalog.ViewModels
         {
             get { return _chromeHints; }
             set { this.RaiseAndSetIfChanged(ref _chromeHints, value); }
-        }        
+        }
 
         public bool ExtendClientAreaEnabled
         {
             get { return _extendClientAreaEnabled; }
             set { this.RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
-        }        
+        }
 
         public bool SystemTitleBarEnabled
         {
             get { return _systemTitleBarEnabled; }
             set { this.RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value); }
-        }        
+        }
 
         public bool PreferSystemChromeEnabled
         {
             get { return _preferSystemChromeEnabled; }
             set { this.RaiseAndSetIfChanged(ref _preferSystemChromeEnabled, value); }
-        }        
+        }
 
         public double TitleBarHeight
         {
@@ -120,6 +124,24 @@ namespace ControlCatalog.ViewModels
         {
             get { return _isMenuItemChecked; }
             set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
+        }
+
+        public bool IsSystemBarVisible
+        {
+            get { return _isSystemBarVisible; }
+            set { this.RaiseAndSetIfChanged(ref _isSystemBarVisible, value); }
+        }
+
+        public bool DisplayEdgeToEdge
+        {
+            get { return _displayEdgeToEdge; }
+            set { this.RaiseAndSetIfChanged(ref _displayEdgeToEdge, value); }
+        }
+        
+        public Thickness SafeAreaPadding
+        {
+            get { return _safeAreaPadding; }
+            set { this.RaiseAndSetIfChanged(ref _safeAreaPadding, value); }
         }
 
         public MiniCommand AboutCommand { get; }

@@ -37,6 +37,7 @@
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                   Placement="BottomEdgeAlignedLeft"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                       BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"

@@ -18,7 +18,10 @@ namespace Avalonia
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
-        /// <param name="validate">A value validation callback.</param>
+        /// <param name="validate">
+        /// <para>A method which returns "false" for values that are never valid for this property.</para>
+        /// <para>This method is not part of the property's metadata and so cannot be changed after registration.</para>
+        /// </param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
         public StyledProperty(
             string name,
@@ -31,7 +34,6 @@ namespace Avalonia
         {
             Inherits = inherits;
             ValidateValue = validate;
-            HasCoercion |= metadata.CoerceValue != null;
 
             if (validate?.Invoke(metadata.DefaultValue) == false)
             {
@@ -41,24 +43,23 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the value validation callback for the property.
+        /// A method which returns "false" for values that are never valid for this property.
         /// </summary>
         public Func<TValue, bool>? ValidateValue { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this property has any value coercion callbacks defined
-        /// in its metadata.
-        /// </summary>
-        internal bool HasCoercion { get; private set; }
 
         /// <summary>
         /// Registers the property on another type.
         /// </summary>
         /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
         /// <returns>The property.</returns>        
-        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : AvaloniaObject
+        public StyledProperty<TValue> AddOwner<TOwner>(StyledPropertyMetadata<TValue>? metadata = null) where TOwner : AvaloniaObject
         {
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);
+            if (metadata != null)
+            {
+                OverrideMetadata<TOwner>(metadata);
+            }
+
             return this;
         }
 
@@ -122,10 +123,7 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="metadata">The metadata.</param>
-        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : AvaloniaObject
-        {
-            base.OverrideMetadata(typeof(T), metadata);
-        }
+        public void OverrideMetadata<T>(StyledPropertyMetadata<TValue> metadata) where T : AvaloniaObject => OverrideMetadata(typeof(T), metadata);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.
@@ -142,8 +140,6 @@ namespace Avalonia
                         $"'{metadata.DefaultValue}' is not a valid default value for '{Name}'.");
                 }
             }
-
-            HasCoercion |= metadata.CoerceValue != null;
 
             base.OverrideMetadata(type, metadata);
         }
@@ -171,7 +167,7 @@ namespace Avalonia
 
         internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
         {
-            return new EffectiveValue<TValue>(o, this);
+            return o.GetValueStore().CreateEffectiveValue(this);
         }
 
         /// <inheritdoc/>
@@ -194,30 +190,20 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         internal override IDisposable? RouteSetValue(
             AvaloniaObject target,
             object? value,
             BindingPriority priority)
         {
-            if (value == BindingOperations.DoNothing)
-            {
-                return null;
-            }
-            else if (value == UnsetValue)
-            {
-                target.ClearValue(this);
-                return null;
-            }
-            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
-            {
-                return target.SetValue<TValue>(this, (TValue)converted!, priority);
-            }
-            else
-            {
-                var type = value?.GetType().FullName ?? "(null)";
-                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
-            }
+            if (ShouldSetValue(target, value, out var converted))
+                return target.SetValue<TValue>(this, converted, priority);
+            return null;
+        }
+
+        internal override void RouteSetCurrentValue(AvaloniaObject target, object? value)
+        {
+            if (ShouldSetValue(target, value, out var converted))
+                target.SetCurrentValue<TValue>(this, converted);
         }
 
         internal override IDisposable RouteBind(
@@ -226,6 +212,32 @@ namespace Avalonia
             BindingPriority priority)
         {
             return target.Bind<TValue>(this, source, priority);
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        private bool ShouldSetValue(AvaloniaObject target, object? value, [NotNullWhen(true)] out TValue? converted)
+        {
+            if (value == BindingOperations.DoNothing)
+            {
+                converted = default;
+                return false; 
+            }
+            if (value == UnsetValue)
+            {
+                target.ClearValue(this);
+                converted = default;
+                return false;
+            }
+            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var v))
+            {
+                converted = (TValue)v!;
+                return true;
+            }
+            else
+            {
+                var type = value?.GetType().FullName ?? "(null)";
+                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
+            }
         }
 
         private object? GetDefaultBoxedValue(Type type)

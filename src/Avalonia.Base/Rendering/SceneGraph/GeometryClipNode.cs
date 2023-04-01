@@ -5,7 +5,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A node in the scene graph which represents a geometry clip push or pop.
     /// </summary>
-    internal class GeometryClipNode : IDrawOperation
+    internal class GeometryClipNode : IDrawOperationWithTransform
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GeometryClipNode"/> class that represents a
@@ -58,8 +58,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void Render(IDrawingContextImpl context)
         {
-            context.Transform = Transform;
-
             if (Clip != null)
             {
                 context.PushGeometryClip(Clip);

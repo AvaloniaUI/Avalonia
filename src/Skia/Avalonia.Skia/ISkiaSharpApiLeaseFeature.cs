@@ -14,7 +14,7 @@ public interface ISkiaSharpApiLeaseFeature
 public interface ISkiaSharpApiLease : IDisposable
 {
     SKCanvas SkCanvas { get; }
-    GRContext GrContext { get; }
-    SKSurface SkSurface { get; }
+    GRContext? GrContext { get; }
+    SKSurface? SkSurface { get; }
     double CurrentOpacity { get; }
 }

@@ -168,6 +168,22 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Completing_Animation_Binding_Reverts_To_Set_LocalValue_With_Style_Value()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            var property = Class1.FooProperty;
+
+            target.SetValue(property, "style", BindingPriority.Style);
+            target.SetValue(property, "foo");
+            target.Bind(property, source, BindingPriority.Animation);
+            source.OnNext("bar");
+            source.OnCompleted();
+
+            Assert.Equal("foo", target.GetValue(property));
+        }
+
+        [Fact]
         public void Completing_LocalValue_Binding_Raises_PropertyChanged()
         {
             var target = new Class1();
@@ -373,6 +389,20 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void LocalValue_Bind_Generic_To_ValueType_Accepts_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<double>>();
+
+            target.Bind(Class1.QuxProperty, source);
+            source.OnNext(6.7);
+            source.OnNext(BindingValue<double>.Unset);
+
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+            Assert.True(target.IsSet(Class1.QuxProperty));
+        }
+
+        [Fact]
         public void LocalValue_Bind_NonGeneric_To_ValueType_Accepts_UnsetValue()
         {
             var target = new Class1();
@@ -383,7 +413,7 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(AvaloniaProperty.UnsetValue);
 
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-            Assert.False(target.IsSet(Class1.QuxProperty));
+            Assert.True(target.IsSet(Class1.QuxProperty));
         }
 
         [Fact]
@@ -397,7 +427,7 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(AvaloniaProperty.UnsetValue);
 
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-            Assert.False(target.IsSet(Class1.QuxProperty));
+            Assert.True(target.IsSet(Class1.QuxProperty));
         }
 
         [Fact]
@@ -858,7 +888,8 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object?>();
             var called = false;
-            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: expected {ExpectedType}, got {Value} ({ValueType})";
+            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
+            var message = "Unable to convert object 'foo' of type 'System.String' to type 'System.Double'.";
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
@@ -868,9 +899,7 @@ namespace Avalonia.Base.UnitTests
                     src == target &&
                     pv[0].GetType() == typeof(Class1) &&
                     (AvaloniaProperty)pv[1] == Class1.QuxProperty &&
-                    (Type)pv[2] == typeof(double) &&
-                    (string)pv[3] == "foo" &&
-                    (Type)pv[4] == typeof(string))
+                    (string)pv[2] == message)
                 {
                     called = true;
                 }
@@ -1283,6 +1312,24 @@ namespace Avalonia.Base.UnitTests
             source.OnCompleted();
 
             subscription.Dispose();
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void Binding_Producing_UnsetValue_Does_Not_Cause_Unsubscribe(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            
+            target.Bind(Class1.FooProperty, source, priority);
+
+            source.OnNext("foo");
+            Assert.Equal("foo", target.GetValue(Class1.FooProperty));
+            source.OnNext(BindingValue<string>.Unset);
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+            source.OnNext("bar");
+            Assert.Equal("bar", target.GetValue(Class1.FooProperty));
         }
 
         [Fact]

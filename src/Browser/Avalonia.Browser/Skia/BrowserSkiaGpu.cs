@@ -6,7 +6,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Browser.Skia
 {
-    public class BrowserSkiaGpu : ISkiaGpu
+    internal class BrowserSkiaGpu : ISkiaGpu
     {
         public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
@@ -21,7 +21,7 @@ namespace Avalonia.Browser.Skia
             return null;
         }
 
-        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session)
         {
             return null;
         }

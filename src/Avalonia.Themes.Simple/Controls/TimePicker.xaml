@@ -156,7 +156,7 @@
 
             <Popup Name="PART_Popup"
                    IsLightDismissEnabled="True"
-                   PlacementMode="Bottom"
+                   Placement="Bottom"
                    PlacementTarget="{TemplateBinding}"
                    WindowManagerAddShadowHint="False">
               <TimePickerPresenter Name="PART_PickerPresenter" />

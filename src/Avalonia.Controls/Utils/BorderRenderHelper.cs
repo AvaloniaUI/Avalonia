@@ -148,7 +148,7 @@ namespace Avalonia.Controls.Utils
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-                context.PlatformImpl.DrawRectangle(background, pen, rrect, boxShadows);
+                context.DrawRectangle(background, pen, rrect, boxShadows);
             }
         }
 

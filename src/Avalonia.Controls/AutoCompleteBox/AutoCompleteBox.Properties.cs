@@ -87,12 +87,10 @@ namespace Avalonia.Controls
         /// Identifies the <see cref="Text" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="Text" /> property.</value>
-        public static readonly DirectProperty<AutoCompleteBox, string?> TextProperty =
-            TextBlock.TextProperty.AddOwnerWithDataValidation<AutoCompleteBox>(
-                o => o.Text,
-                (o, v) => o.Text = v,
+        public static readonly StyledProperty<string?> TextProperty =
+            TextBlock.TextProperty.AddOwner<AutoCompleteBox>(new(string.Empty,
                 defaultBindingMode: BindingMode.TwoWay,
-                enableDataValidation: true);
+                enableDataValidation: true));
 
         /// <summary>
         /// Identifies the <see cref="SearchText" /> property.
@@ -317,8 +315,8 @@ namespace Avalonia.Controls
         /// <see cref="AutoCompleteBox" /> control.</value>
         public string? Text
         {
-            get => _text;
-            set => SetAndRaise(TextProperty, ref _text, value);
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         /// <summary>

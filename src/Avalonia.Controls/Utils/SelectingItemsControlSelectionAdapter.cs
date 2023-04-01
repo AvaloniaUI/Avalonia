@@ -144,13 +144,13 @@ namespace Avalonia.Controls.Utils
         {
             get
             {
-                return SelectorControl?.Items;
+                return SelectorControl?.ItemsSource;
             }
             set
             {
                 if (SelectorControl != null)
                 {
-                    SelectorControl.Items = value;
+                    SelectorControl.ItemsSource = value;
                 }
             }
         }

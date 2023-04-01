@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -19,6 +20,7 @@ namespace Avalonia.Native
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
+        private readonly AvaloniaNativeTextInputMethod _inputMethod;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
@@ -33,6 +35,8 @@ namespace Avalonia.Native
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
+            
+            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
         }
 
         internal WindowImpl(IntPtr parentWindow, string parentView, IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
@@ -83,7 +87,7 @@ namespace Avalonia.Native
             }
         }
 
-        public IAvnWindow Native => _native;
+        public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
         {
@@ -135,7 +139,8 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                    var window = _inputRoot as Window;
+                    var visual = window?.Renderer.HitTestFirst(e.Position, window, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {
@@ -244,6 +249,11 @@ namespace Avalonia.Native
 
         public override object TryGetFeature(Type featureType)
         {
+            if(featureType == typeof(ITextInputMethodImpl))
+            {
+                return _inputMethod;
+            } 
+            
             if (featureType == typeof(ITopLevelNativeMenuExporter))
             {
                 return _nativeMenuExporter;

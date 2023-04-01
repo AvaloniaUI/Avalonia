@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using SkiaSharp;
 
-#nullable enable
-
 namespace Avalonia.Skia
 {
     /// <summary>
@@ -13,24 +11,51 @@ namespace Avalonia.Skia
     {
         public GeometryGroupImpl(FillRule fillRule, IReadOnlyList<Geometry> children)
         {
-            var path = new SKPath
-            {
-                FillType = fillRule == FillRule.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd,
-            };
-
+            var fillType = fillRule == FillRule.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
             var count = children.Count;
             
+            var stroke = new SKPath
+            {
+                FillType = fillType
+            };
+            
+            bool requiresFillPass = false;
             for (var i = 0; i < count; ++i)
             {
-                if (children[i]?.PlatformImpl is GeometryImpl child)
-                    path.AddPath(child.EffectivePath);
+                if (children[i].PlatformImpl is GeometryImpl geo)
+                {
+                    if (geo.StrokePath != null)
+                        stroke.AddPath(geo.StrokePath);
+                    if (!ReferenceEquals(geo.StrokePath, geo.FillPath))
+                        requiresFillPass = true;
+                }
             }
+            
+            StrokePath = stroke;
+            
+            if (requiresFillPass)
+            {
+                var fill = new SKPath
+                {
+                    FillType = fillType
+                };
 
-            EffectivePath = path;
-            Bounds = path.Bounds.ToAvaloniaRect();
+                for (var i = 0; i < count; ++i)
+                {
+                    if (children[i].PlatformImpl is GeometryImpl { FillPath: { } fillPath })
+                        fill.AddPath(fillPath);
+                }
+
+                FillPath = fill;
+            }
+            else
+                FillPath = stroke;
+
+            Bounds = stroke.TightBounds.ToAvaloniaRect();
         }
 
         public override Rect Bounds { get; }
-        public override SKPath EffectivePath { get; }
+        public override SKPath StrokePath { get; }
+        public override SKPath FillPath { get; }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Controls;
 using Avalonia.Styling.Activators;
 using Avalonia.Utilities;
 
@@ -12,10 +11,10 @@ namespace Avalonia.Styling
     /// A selector that matches the common case of a type and/or name followed by a collection of
     /// style classes and pseudoclasses.
     /// </summary>
-    internal class TypeNameAndClassSelector : Selector
+    internal sealed class TypeNameAndClassSelector : Selector
     {
         private readonly Selector? _previous;
-        private readonly Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
+        private List<string>? _classes;
         private Type? _targetType;
         private string? _selectorString;
 
@@ -53,7 +52,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        protected TypeNameAndClassSelector(Selector? previous)
+        TypeNameAndClassSelector(Selector? previous)
         {
             _previous = previous;
         }
@@ -81,17 +80,12 @@ namespace Avalonia.Styling
         /// <summary>
         /// The style classes which the selector matches.
         /// </summary>
-        public IList<string> Classes => _classes.Value;
+        public IList<string> Classes => _classes ??= new();
 
         /// <inheritdoc/>
         public override string ToString(Style? owner)
         {
-            if (_selectorString == null)
-            {
-                _selectorString = BuildSelectorString(owner);
-            }
-
-            return _selectorString;
+            return _selectorString ??= BuildSelectorString(owner);
         }
 
         /// <inheritdoc/>
@@ -122,16 +116,16 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisInstance;
             }
 
-            if (_classes.IsValueCreated && _classes.Value.Count > 0)
+            if (_classes is { Count: > 0 })
             {
                 if (subscribe)
                 {
-                    var observable = new StyleClassActivator((Classes)control.Classes, _classes.Value);
+                    var observable = new StyleClassActivator(control.Classes, _classes);
 
                     return new SelectorMatch(observable);
                 }
 
-                if (!StyleClassActivator.AreClassesMatching(control.Classes, Classes))
+                if (!StyleClassActivator.AreClassesMatching(control.Classes, _classes))
                 {
                     return SelectorMatch.NeverThisInstance;
                 }
@@ -172,9 +166,9 @@ namespace Avalonia.Styling
                 builder.Append(Name);
             }
 
-            if (_classes.IsValueCreated && _classes.Value.Count > 0)
+            if (_classes is { Count: > 0 })
             {
-                foreach (var c in Classes)
+                foreach (var c in _classes)
                 {
                     if (!c.StartsWith(":"))
                     {

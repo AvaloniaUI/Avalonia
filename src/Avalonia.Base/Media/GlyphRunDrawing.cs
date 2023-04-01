@@ -2,19 +2,19 @@
 {
     public class GlyphRunDrawing : Drawing
     {
-        public static readonly StyledProperty<IBrush> ForegroundProperty =
-            AvaloniaProperty.Register<GlyphRunDrawing, IBrush>(nameof(Foreground));
+        public static readonly StyledProperty<IBrush?> ForegroundProperty =
+            AvaloniaProperty.Register<GlyphRunDrawing, IBrush?>(nameof(Foreground));
 
-        public static readonly StyledProperty<GlyphRun> GlyphRunProperty =
-            AvaloniaProperty.Register<GlyphRunDrawing, GlyphRun>(nameof(GlyphRun));
+        public static readonly StyledProperty<GlyphRun?> GlyphRunProperty =
+            AvaloniaProperty.Register<GlyphRunDrawing, GlyphRun?>(nameof(GlyphRun));
 
-        public IBrush Foreground
+        public IBrush? Foreground
         {
             get => GetValue(ForegroundProperty);
             set => SetValue(ForegroundProperty, value);
         }
 
-        public GlyphRun GlyphRun
+        public GlyphRun? GlyphRun
         {
             get => GetValue(GlyphRunProperty);
             set => SetValue(GlyphRunProperty, value);
@@ -32,7 +32,7 @@
 
         public override Rect GetBounds()
         {
-            return GlyphRun != null ? new Rect(GlyphRun.Size) : default;
+            return GlyphRun != null ? GlyphRun.Bounds : default;
         }
     }
 }

@@ -364,7 +364,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{AvaloniaObject, TValue, TValue}, Action{AvaloniaObject, bool})"/>
+        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{AvaloniaObject, TValue, TValue}, bool)"/>
         /// method.
         /// </remarks>
         public void Register(Type type, AvaloniaProperty property)

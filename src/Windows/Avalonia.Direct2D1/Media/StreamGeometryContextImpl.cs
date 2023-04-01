@@ -9,8 +9,7 @@ using SweepDirection = SharpDX.Direct2D1.SweepDirection;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public class StreamGeometryContextImpl : IStreamGeometryContextImpl
+    internal class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
         private readonly GeometrySink _sink;
 
