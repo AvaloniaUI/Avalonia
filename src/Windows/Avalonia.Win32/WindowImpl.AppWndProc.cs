@@ -17,7 +17,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    internal partial class WindowImpl
+    public partial class WindowImpl
     {
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
