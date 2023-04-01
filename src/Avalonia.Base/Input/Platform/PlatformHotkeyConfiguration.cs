@@ -85,6 +85,14 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.Left, KeyModifiers.Alt)
             };
+            PageUp = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageUp)
+            };
+            PageDown = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageDown)
+            };
         }
 
         public KeyModifiers CommandModifiers { get; set; }
@@ -106,5 +114,7 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { get; set; }
         public List<KeyGesture> OpenContextMenu { get; set; }
         public List<KeyGesture> Back { get; set; }
+        public List<KeyGesture> PageUp { get; set; }
+        public List<KeyGesture> PageDown { get; set; }
     }
 }
