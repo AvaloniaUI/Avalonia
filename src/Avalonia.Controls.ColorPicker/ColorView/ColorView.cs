@@ -61,7 +61,11 @@ namespace Avalonia.Controls
         {
             if (_hexTextBox != null)
             {
-                _hexTextBox.Text = ColorToHexConverter.ToHexString(Color, HexInputAlphaPosition);
+                _hexTextBox.Text = ColorToHexConverter.ToHexString(
+                    Color,
+                    HexInputAlphaPosition,
+                    includeAlpha: (IsAlphaEnabled && IsAlphaVisible),
+                    includeSymbol: false);
             }
         }
 

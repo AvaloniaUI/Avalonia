@@ -152,19 +152,15 @@ namespace Avalonia.Media
             var g1 = Geometry1;
             var g2 = Geometry2;
 
-            if (g1 is object && g2 is object)
+            if (g1?.PlatformImpl != null && g2?.PlatformImpl != null)
             {
                 var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-                return factory.CreateCombinedGeometry(GeometryCombineMode, g1, g2);
+                return factory.CreateCombinedGeometry(GeometryCombineMode, g1.PlatformImpl, g2.PlatformImpl);
             }
-            else if (GeometryCombineMode == GeometryCombineMode.Intersect)
+
+            if (GeometryCombineMode == GeometryCombineMode.Intersect)
                 return null;
-            else if (g1 is object)
-                return g1.PlatformImpl;
-            else if (g2 is object)
-                return g2.PlatformImpl;
-            else
-                return null;
+            return g1?.PlatformImpl ?? g2?.PlatformImpl;
         }
     }
 }

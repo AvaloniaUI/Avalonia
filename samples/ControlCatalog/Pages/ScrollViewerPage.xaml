@@ -3,35 +3,267 @@
              xmlns:pages="using:ControlCatalog.Pages"
              x:Class="ControlCatalog.Pages.ScrollViewerPage"
              x:DataType="pages:ScrollViewerPageViewModel">
-  <StackPanel Orientation="Vertical" Spacing="20">
-    <TextBlock TextWrapping="Wrap" Classes="h2">Allows for horizontal and vertical content scrolling. Supports snapping on touch and pointer wheel scrolling.</TextBlock>
+  <TabControl>
+    <TabItem Header="ScrollViewer">
+      <StackPanel Orientation="Vertical"
+                  Spacing="20">
+        <TextBlock TextWrapping="Wrap"
+                   Classes="h2">Allows for horizontal and vertical content scrolling. Supports snapping on touch and pointer wheel scrolling.</TextBlock>
 
-    <Grid ColumnDefinitions="Auto, *">
-      <StackPanel Orientation="Vertical" Spacing="4">
-        <ToggleSwitch IsChecked="{Binding AllowAutoHide}" Content="Allow auto hide" />
-        <ToggleSwitch IsChecked="{Binding EnableInertia}" Content="Enable Inertia" />
+        <Grid ColumnDefinitions="Auto, *">
+          <StackPanel Orientation="Vertical"
+                      Spacing="4">
+            <ToggleSwitch IsChecked="{Binding AllowAutoHide}"
+                          Content="Allow auto hide" />
+            <ToggleSwitch IsChecked="{Binding EnableInertia}"
+                          Content="Enable Inertia" />
 
-        <StackPanel Orientation="Vertical" Spacing="4">
-          <TextBlock Text="Horizontal Scroll" />
-          <ComboBox ItemsSource="{Binding AvailableVisibility}" SelectedItem="{Binding HorizontalScrollVisibility}" />
-        </StackPanel>
+            <StackPanel Orientation="Vertical"
+                        Spacing="4">
+              <TextBlock Text="Horizontal Scroll" />
+              <ComboBox ItemsSource="{Binding AvailableVisibility}"
+                        SelectedItem="{Binding HorizontalScrollVisibility}" />
+            </StackPanel>
 
-        <StackPanel Orientation="Vertical" Spacing="4">
-          <TextBlock Text="Vertical Scroll" />
-          <ComboBox ItemsSource="{Binding AvailableVisibility}" SelectedItem="{Binding VerticalScrollVisibility}" />
-        </StackPanel>
+            <StackPanel Orientation="Vertical"
+                        Spacing="4">
+              <TextBlock Text="Vertical Scroll" />
+              <ComboBox ItemsSource="{Binding AvailableVisibility}"
+                        SelectedItem="{Binding VerticalScrollVisibility}" />
+            </StackPanel>
+          </StackPanel>
+
+          <ScrollViewer x:Name="ScrollViewer"
+                        Grid.Column="1"
+                        Width="400"
+                        Height="400"
+                        IsScrollInertiaEnabled="{Binding EnableInertia}"
+                        AllowAutoHide="{Binding AllowAutoHide}"
+                        HorizontalScrollBarVisibility="{Binding HorizontalScrollVisibility}"
+                        VerticalScrollBarVisibility="{Binding VerticalScrollVisibility}">
+            <Image Width="800"
+                   Height="800"
+                   Stretch="UniformToFill"
+                   Source="/Assets/delicate-arch-896885_640.jpg" />
+          </ScrollViewer>
+        </Grid>
       </StackPanel>
+    </TabItem>
+    <TabItem Header="Snapping">
+      <StackPanel Orientation="Vertical"
+                  Spacing="4">
+        <TextBlock TextWrapping="Wrap"
+                   Classes="h2">Scrollviewer can snap supported content both vertically and horizontally. Snapping occurs from scrolling with touch or pen.</TextBlock>
 
-      <ScrollViewer x:Name="ScrollViewer"
-                    Grid.Column="1"
-                    Width="400" Height="400"
-                    IsScrollInertiaEnabled="{Binding EnableInertia}"
-                    AllowAutoHide="{Binding AllowAutoHide}"
-                    HorizontalScrollBarVisibility="{Binding HorizontalScrollVisibility}"
-                    VerticalScrollBarVisibility="{Binding VerticalScrollVisibility}">
-        <Image Width="800" Height="800" Stretch="UniformToFill"
-               Source="/Assets/delicate-arch-896885_640.jpg" />
-      </ScrollViewer>
-    </Grid>
-  </StackPanel>
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto">
+          <StackPanel Orientation="Horizontal"
+                      Spacing="4">
+            <StackPanel Orientation="Vertical"
+                        Spacing="4">
+              <TextBlock Text="Snap Point Type" />
+              <ComboBox ItemsSource="{Binding AvailableSnapPointsType}"
+                        SelectedItem="{Binding SnapPointsType}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical"
+                        Spacing="4">
+              <TextBlock Text="Snap Point Alignment" />
+              <ComboBox ItemsSource="{Binding AvailableSnapPointsAlignment}"
+                        SelectedItem="{Binding SnapPointsAlignment}" />
+            </StackPanel>
+
+            <ToggleSwitch IsChecked="{Binding AreSnapPointsRegular}"
+                          OffContent="No"
+                          OnContent="Yes"
+                          Content="Are Snap Points regular?" />
+          </StackPanel>
+          <TextBlock TextWrapping="Wrap"
+                     Grid.Row="1"
+                     Margin="0,10"
+                     Classes="h2">Vertical Snapping</TextBlock>
+
+          <Border
+            BorderBrush="Green"
+            BorderThickness="1"
+            Padding="0"
+            Grid.Row="2"
+            Margin="10, 5">
+            <ScrollViewer x:Name="VerticalSnapsScrollViewer"
+                          VerticalSnapPointsType="{Binding SnapPointsType}"
+                          VerticalSnapPointsAlignment="{Binding SnapPointsAlignment}"
+                          HorizontalAlignment="Stretch"
+                          Height="350"
+                          HorizontalScrollBarVisibility="Disabled">
+              <StackPanel AreVerticalSnapPointsRegular="{Binding AreSnapPointsRegular}"
+                          Orientation="Vertical"
+                          HorizontalAlignment="Stretch">
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 1"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 2"/>
+                </Border>
+                <Border Padding="5, 20"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 3"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 4"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 5"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 6"/>
+                </Border>
+                <Border Padding="5,8"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 7"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 8"/>
+                </Border>
+                <Border Padding="5,4"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 9"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 20"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 11"/>
+                </Border>
+                <Border Padding="5, 30"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             Text="Child 12"/>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+          </Border>
+          <TextBlock TextWrapping="Wrap"
+                     Grid.Row="3"
+                     Margin="0,10"
+                     Classes="h2">Horizontal Snapping</TextBlock>
+          <Border
+            BorderBrush="Green"
+            BorderThickness="1"
+            Padding="0"
+            Grid.Row="4"
+            Margin="10, 10">
+            <ScrollViewer x:Name="HorizontalSnapsScrollViewer"
+                          HorizontalSnapPointsType="{Binding SnapPointsType}"
+                          HorizontalSnapPointsAlignment="{Binding SnapPointsAlignment}"
+                          HorizontalAlignment="Stretch"
+                          Height="350"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+              <StackPanel AreHorizontalSnapPointsRegular="{Binding AreSnapPointsRegular}"
+                          Orientation="Horizontal"
+                          HorizontalAlignment="Stretch">
+                <Border Padding="5, 30"
+                        Width="300"
+                        BorderBrush="Red"
+                        HorizontalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             VerticalAlignment="Center"
+                             Text="Child 1"/>
+                </Border>
+                <Border Padding="5, 30"
+                        Width="300"
+                        BorderBrush="Red"
+                        VerticalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             VerticalAlignment="Center"
+                             Text="Child 2"/>
+                </Border>
+                <Border Padding="5, 20"
+                        Width="300"
+                        BorderBrush="Red"
+                        VerticalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             VerticalAlignment="Center"
+                             Text="Child 3"/>
+                </Border>
+                <Border Padding="5, 30"
+                        Width="300"
+                        BorderBrush="Red"
+                        VerticalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             VerticalAlignment="Center"
+                             Text="Child 4"/>
+                </Border>
+                <Border Padding="5, 30"
+                        Width="300"
+                        BorderBrush="Red"
+                        VerticalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             VerticalAlignment="Center"
+                             Text="Child 5"/>
+                </Border>
+                <Border Padding="5, 30"
+                        Width="300"
+                        BorderBrush="Red"
+                        VerticalAlignment="Stretch"
+                        BorderThickness="1">
+                  <TextBlock FontWeight="Bold"
+                             VerticalAlignment="Center"
+                             Text="Child 6"/>
+                </Border>
+
+              </StackPanel>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </StackPanel>
+    </TabItem>
+  </TabControl>  
 </UserControl>

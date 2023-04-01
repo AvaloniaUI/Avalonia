@@ -259,6 +259,27 @@ namespace Avalonia.PropertyStore
         {
             if (_effectiveValues.TryGetValue(property, out var v))
                 v.CoerceValue(this, property);
+            else
+                property.RouteCoerceDefaultValue(Owner);
+        }
+
+        public void CoerceDefaultValue<T>(StyledProperty<T> property)
+        {
+            var metadata = property.GetMetadata(Owner.GetType());
+
+            if (metadata.CoerceValue is null)
+                return;
+
+            var coercedDefaultValue = metadata.CoerceValue(Owner, metadata.DefaultValue);
+
+            if (EqualityComparer<T>.Default.Equals(metadata.DefaultValue, coercedDefaultValue))
+                return;
+
+            // We have a situation where the default value isn't valid according to the coerce
+            // function. In this case, we need to create an EffectiveValue entry.
+            var effectiveValue = CreateEffectiveValue(property);
+            AddEffectiveValue(property, effectiveValue);
+            effectiveValue.SetCoercedDefaultValueAndRaise(this, property, coercedDefaultValue);
         }
 
         public Optional<T> GetBaseValue<T>(StyledProperty<T> property)
@@ -840,20 +861,25 @@ namespace Avalonia.PropertyStore
                         goto restart;
                 }
 
-                if (current?.Priority == BindingPriority.Unset)
+                if (current is not null)
                 {
-                    if (current.BasePriority == BindingPriority.Unset)
-                    {
-                        RemoveEffectiveValue(property);
-                        current.DisposeAndRaiseUnset(this, property);
-                    }
-                    else
-                    {
-                        current.RemoveAnimationAndRaise(this, property);
-                    }
-                }
+                    current.EndReevaluation(this, property);
 
-                current?.EndReevaluation();
+                    if (current.CanRemove())
+                    {
+                        if (current.BasePriority == BindingPriority.Unset)
+                        {
+                            RemoveEffectiveValue(property);
+                            current.DisposeAndRaiseUnset(this, property);
+                        }
+                        else
+                        {
+                            current.RemoveAnimationAndRaise(this, property);
+                        }
+                    }
+
+                    current.UnsubscribeIfNecessary();
+                }
             }
             finally
             {
@@ -925,7 +951,9 @@ namespace Avalonia.PropertyStore
                 {
                     _effectiveValues.GetKeyValue(i, out var key, out var e);
 
-                    if (e.Priority == BindingPriority.Unset && !e.IsOverridenCurrentValue)
+                    e.EndReevaluation(this, key);
+
+                    if (e.CanRemove())
                     {
                         RemoveEffectiveValue(key, i);
                         e.DisposeAndRaiseUnset(this, key);
@@ -934,7 +962,7 @@ namespace Avalonia.PropertyStore
                             break;
                     }
 
-                    e.EndReevaluation();
+                    e.UnsubscribeIfNecessary();
                 }
             }
             finally

@@ -51,7 +51,7 @@
                     Text="From DataTemplate">
                 </TextBlock>
                 <TabControl
-                    Items="{Binding Tabs}"
+                    ItemsSource="{Binding Tabs}"
                     Margin="0 16"
                     DisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
                     TabStripPlacement="{Binding TabPlacement}">
