@@ -85,6 +85,14 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.Left, KeyModifiers.Alt)
             };
+            PageLeft = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageUp, KeyModifiers.Shift)
+            };
+            PageRight = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageDown, KeyModifiers.Shift)
+            };
             PageUp = new List<KeyGesture>
             {
                 new KeyGesture(Key.PageUp)
@@ -116,5 +124,7 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> Back { get; set; }
         public List<KeyGesture> PageUp { get; set; }
         public List<KeyGesture> PageDown { get; set; }
+        public List<KeyGesture> PageRight { get; set; }
+        public List<KeyGesture> PageLeft { get; set; }
     }
 }
