@@ -9,10 +9,4 @@ namespace Avalonia.Platform
         IWindowImpl CreateOverlay(IntPtr parentWindow, string parentView);
     }
 
-    public interface IOverlayUmbilical
-    {
-        void LogFirstResponser(string firstResponder);
-
-        bool ShouldPassThrough(Point point);
-    }
 }
