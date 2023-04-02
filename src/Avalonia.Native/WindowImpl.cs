@@ -12,7 +12,7 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    internal class WindowImpl : WindowBaseImpl, IWindowImpl
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl, IOverlayWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly AvaloniaNativeGlPlatformGraphics _glFeature;

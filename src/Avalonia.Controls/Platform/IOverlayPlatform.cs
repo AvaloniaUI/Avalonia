@@ -1,5 +1,5 @@
-using Avalonia.Metadata;
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
@@ -8,4 +8,5 @@ namespace Avalonia.Platform
     {
         IWindowImpl CreateOverlay(IntPtr parentWindow, string parentView);
     }
+
 }
