@@ -161,6 +161,8 @@ namespace Avalonia.Native
         public Action<Rect> Paint { get; set; }
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action Closed { get; set; }
+        public Action<string> FirstResponderChanged { get; set; }
+        public Func<Point, bool> ShouldPassThrough { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
@@ -282,7 +284,18 @@ namespace Avalonia.Native
 
             int IAvnWindowBaseEvents.HitTest(AvnPoint p)
             {
-                var result = _parent._inputRoot.InputHitTest(p.ToAvaloniaPoint()) != null;
+                Point point = p.ToAvaloniaPoint();
+
+                bool result;
+                if (_parent.ShouldPassThrough is not null)
+                {
+                    result = _parent.ShouldPassThrough(point);
+                }
+                else
+                {
+                    result = _parent._inputRoot.InputHitTest(point) is not null;
+                }
+
                 Console.WriteLine($"HitTest {result} {p.X} {p.Y}");
                 return result.AsComBool();
             }
@@ -290,6 +303,8 @@ namespace Avalonia.Native
             void IAvnWindowBaseEvents.LogFirstResponder(string responder)
             {
                 Console.WriteLine($"Got first responder: {responder}");
+                _parent.FirstResponderChanged?.Invoke(responder);
+
             }
         }
        
