@@ -1,5 +1,5 @@
-using Avalonia.Metadata;
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
@@ -7,5 +7,12 @@ namespace Avalonia.Platform
     public interface IOverlayPlatform
     {
         IWindowImpl CreateOverlay(IntPtr parentWindow, string parentView);
+    }
+
+    public interface IOverlayUmbilical
+    {
+        void LogFirstResponser(string firstResponder);
+
+        bool ShouldPassThrough(Point point);
     }
 }
