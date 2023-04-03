@@ -679,7 +679,7 @@ namespace Avalonia.Controls
             var oldViewportStart = vertical ? _viewport.Top : _viewport.Left;
             var oldViewportEnd = vertical ? _viewport.Bottom : _viewport.Right;
 
-            _viewport = e.EffectiveViewport;
+            _viewport = e.EffectiveViewport.Intersect(new(Bounds.Size));
             _isWaitingForViewportUpdate = false;
 
             var newViewportStart = vertical ? _viewport.Top : _viewport.Left;
