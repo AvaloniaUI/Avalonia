@@ -12,5 +12,8 @@
     <TabItem Header="Chat" >
       <views:ChatPageView DataContext="{Binding Chat}"/>
     </TabItem>
+    <TabItem Header="Expanders">
+      <views:ExpanderPageView DataContext="{Binding Expanders}"/>
+    </TabItem>
   </controls:HamburgerMenu>
 </Window>
