@@ -344,6 +344,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Focusing_Another_Element_Recycles_Original_Focus_Element()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            var originalFocused = target.GetRealizedElements().First()!;
+            originalFocused.Focus();
+
+            scroll.Offset = new Vector(0, 500);
+            Layout(target);
+
+            var newFocused = target.GetRealizedElements().First()!;
+            newFocused.Focus();
+
+            Assert.False(originalFocused.IsVisible);
+        }
+
+        [Fact]
         public void Removing_Range_When_Scrolled_To_End_Updates_Viewport()
         {
             using var app = App();

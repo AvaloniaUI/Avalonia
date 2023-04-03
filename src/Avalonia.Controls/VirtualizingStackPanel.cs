@@ -601,13 +601,15 @@ namespace Avalonia.Controls
             var generator = ItemContainerGenerator!;
             var item = items[index];
 
-            if (_unrealizedFocusedIndex == index)
+            if (_unrealizedFocusedIndex == index && _unrealizedFocusedElement is not null)
             {
                 var element = _unrealizedFocusedElement;
+                _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
                 _unrealizedFocusedElement = null;
                 _unrealizedFocusedIndex = -1;
                 return element;
             }
+
             if (_recyclePool?.Count > 0)
             {
                 var recycled = _recyclePool.Pop();
@@ -649,6 +651,7 @@ namespace Avalonia.Controls
             {
                 _unrealizedFocusedElement = element;
                 _unrealizedFocusedIndex = index;
+                _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
             }
             else
             {
@@ -733,6 +736,17 @@ namespace Avalonia.Controls
 
             if (HasInvalidations(c))
                 Invalidate(c);
+        }
+
+        private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
+        {
+            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+                return;
+
+            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
+            _unrealizedFocusedElement = null;
+            _unrealizedFocusedIndex = -1;
         }
 
         /// <inheritdoc/>
