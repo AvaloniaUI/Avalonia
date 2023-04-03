@@ -130,6 +130,16 @@ namespace Avalonia.Controls
             set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the index of the first realized element, or -1 if no elements are realized.
+        /// </summary>
+        public int FirstRealizedIndex => _realizedElements?.FirstIndex ?? -1;
+
+        /// <summary>
+        /// Gets the index of the last realized element, or -1 if no elements are realized.
+        /// </summary>
+        public int LastRealizedIndex => _realizedElements?.LastIndex ?? -1;
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (!IsEffectivelyVisible)
