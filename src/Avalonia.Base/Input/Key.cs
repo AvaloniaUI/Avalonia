@@ -400,10 +400,22 @@ namespace Avalonia.Input
         LWin = 70,
 
         /// <summary>
+        /// The left Mac-OS Command key.
+        /// </summary>
+        /// <remarks>This key is the same as <see cref="LWin"/> key.</remarks>
+        OsxLeftCommand = LWin,
+        
+        /// <summary>
         /// The right Windows key.
         /// </summary>
         RWin = 71,
 
+        /// <summary>
+        /// The right Mac-OS Command key.
+        /// </summary>
+        /// <remarks>This key is the same as <see cref="RWin"/> key.</remarks>
+        OsxRightCommand = RWin,
+        
         /// <summary>
         /// The Application key.
         /// </summary>
