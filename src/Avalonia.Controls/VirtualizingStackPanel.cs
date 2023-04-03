@@ -166,6 +166,10 @@ namespace Avalonia.Controls
                 // - Vertical layouts: U = vertical, V = horizontal
                 var viewport = CalculateMeasureViewport(items);
 
+                // If the viewport is disjunct then we can recycle everything.
+                if (viewport.viewportIsDisjunct)
+                    _realizedElements.RecycleAllElements(_recycleElement);
+
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
                 RealizeElements(items, availableSize, ref viewport);
@@ -409,6 +413,7 @@ namespace Avalonia.Controls
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
+            // Get or estimate the anchor element from which to start realization.
             var itemCount = items?.Count ?? 0;
             var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
                 viewportStart,
@@ -416,12 +421,17 @@ namespace Avalonia.Controls
                 itemCount,
                 ref _lastEstimatedElementSizeU);
 
+            // Check if the anchor element is not within the currently realized elements.
+            var disjunct = anchorIndex < _realizedElements.FirstIndex || 
+                anchorIndex > _realizedElements.LastIndex;
+
             return new MeasureViewport
             {
                 anchorIndex = anchorIndex,
                 anchorU = anchorU,
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
+                viewportIsDisjunct = disjunct,
             };
         }
 
@@ -895,6 +905,7 @@ namespace Avalonia.Controls
             public double measuredV;
             public double realizedEndU;
             public int lastIndex;
+            public bool viewportIsDisjunct;
         }
     }
 }

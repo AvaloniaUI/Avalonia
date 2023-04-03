@@ -83,7 +83,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Scrolls_To_Index()
+        public void Scrolls_Down_To_Index()
         {
             using var app = App();
             var (target, scroll, itemsControl) = CreateTarget();
@@ -91,6 +91,35 @@ namespace Avalonia.Controls.UnitTests
             target.ScrollIntoView(20);
 
             AssertRealizedItems(target, itemsControl, 11, 10);
+        }
+
+        [Fact]
+        public void Scrolls_Up_To_Index()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            scroll.ScrollToEnd();
+            Layout(target);
+
+            Assert.Equal(90, target.FirstRealizedIndex);
+
+            target.ScrollIntoView(20);
+
+            AssertRealizedItems(target, itemsControl, 20, 10);
+        }
+
+        [Fact]
+        public void Scrolling_Up_To_Index_Does_Not_Create_A_Page_Of_Unrealized_Elements()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            scroll.ScrollToEnd();
+            Layout(target);
+            target.ScrollIntoView(20);
+
+            Assert.Equal(11, target.Children.Count);
         }
 
         [Fact]
