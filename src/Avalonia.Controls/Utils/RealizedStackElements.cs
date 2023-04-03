@@ -100,52 +100,26 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Gets the index and start U position of the element at the specified U position.
+        /// Gets or estimates the index and start U position of the anchor element for the
+        /// specified viewport.
         /// </summary>
-        /// <param name="u">The U position.</param>
-        /// <returns>
-        /// A tuple containing:
-        /// - The index of the item at the specified U position, or -1 if the item could not be
-        ///   determined
-        /// - The U position of the start of the item, if determined
-        /// </returns>
-        public (int index, double position) GetIndexAt(double u)
-        {
-            if (_elements is null || _sizes is null || _startU > u || _startUUnstable)
-                return (-1, 0);
-
-            var index = 0;
-            var position = _startU;
-
-            while (index < _elements.Count)
-            {
-                var size = _sizes[index];
-                if (double.IsNaN(size))
-                    break;
-                if (u >= position && u < position + size)
-                    return (index + FirstIndex, position);
-                position += size;
-                ++index;
-            }
-
-            return (-1, 0);
-        }
-
-        /// <summary>
-        /// Gets or estimates the index and start U position of the element at the specified U
-        /// position.
-        /// </summary>
-        /// <param name="u">The U position.</param>
+        /// <param name="viewportStartU">The U position of the start of the viewport.</param>
+        /// <param name="viewportEndU">The U position of the end of the viewport.</param>
         /// <param name="itemCount">The number of items in the list.</param>
         /// <param name="estimatedElementSizeU">The current estimated element size.</param>
         /// <returns>
         /// A tuple containing:
-        /// - The index of the item at the specified U position, or -1 if the item could not be
-        ///   determined
-        /// - The U position of the start of the item, if determined
+        /// - The index of the anchor element, or -1 if an anchor could not be determined
+        /// - The U position of the start of the anchor element, if determined
         /// </returns>
-        public (int index, double position) GetOrEstimateIndexAt(
-            double u,
+        /// <remarks>
+        /// This method tries to find an existing element in the specified viewport from which
+        /// element realization can start. Failing that it estimates the first element in the
+        /// viewport.
+        /// </remarks>
+        public (int index, double position) GetOrEstimateAnchorElementForViewport(
+            double viewportStartU,
+            double viewportEndU,
             int itemCount,
             ref double estimatedElementSizeU)
         {
@@ -153,15 +127,29 @@ namespace Avalonia.Controls.Utils
             if (itemCount <= 0)
                 return (-1, 0);
 
-            // If the position is 0 we know the first element's going to be there.
-            if (MathUtilities.IsZero(u))
-                return (0, 0);
+            if (_sizes is not null && !_startUUnstable)
+            {
+                var u = _startU;
 
-            // Try to get an already realized element at the specified position.
-            if (GetIndexAt(u) is { index: >= 0 } found)
-                return found;
+                for (var i = 0; i < _sizes.Count; ++i)
+                {
+                    var size = _sizes[i];
 
-            // Estimate the element size, using defaultElementSizeU if we don't have any realized
+                    if (double.IsNaN(size))
+                        break;
+
+                    var endU = u + size;
+
+                    if (endU > viewportStartU && u < viewportEndU)
+                        return (FirstIndex + i, u);
+
+                    u = endU;
+                }
+            }
+
+            // We don't have any realized elements in the requested viewport, or can't rely on
+            // StartU being valid. Estimate the index using only the estimated size. First,
+            // estimate the element size, using defaultElementSizeU if we don't have any realized
             // elements.
             var estimatedSize = EstimateElementSizeU() switch
             {
@@ -172,65 +160,9 @@ namespace Avalonia.Controls.Utils
             // Store the estimated size for the next layout pass.
             estimatedElementSizeU = estimatedSize;
 
-            if (FirstIndex == -1 || _startUUnstable)
-            {
-                // We don't have any realized elements or can't rely on StartU being valid.
-                // Estimate the index using only the estimated size.
-                var index = Math.Min((int)(u / estimatedSize), itemCount - 1);
-                return (index, index * estimatedSize);
-            }
-            else if (u < _startU)
-            {
-                // The position is before the realized elements, estimate the index using the first
-                // realized element.
-                var distance = _startU - u;
-                var index = MathUtilities.Clamp(
-                    _firstIndex - (int)Math.Ceiling(distance / estimatedSize), 
-                    0,
-                    itemCount - 1);
-
-                if (index == 0)
-                    return (0, 0);
-                else
-                    return (index, _startU - ((_firstIndex - index) * estimatedSize));
-            }
-            else
-            {
-                // The position is after the realized elements, estimate the index using the last
-                // realized element.
-                var (lastIndex, endU) = GetLastElementU();
-                var distance = u - endU;
-                var index = Math.Min(lastIndex + (int)(distance / estimatedSize), itemCount - 1);
-                return (index, endU + ((index - lastIndex) * estimatedSize));
-            }
-        }
-
-        /// <summary>
-        /// Gets the element at the specified position on the primary axis, if realized.
-        /// </summary>
-        /// <param name="position">The position.</param>
-        /// <returns>
-        /// A tuple containing the index of the element (or -1 if not found) and the position of the element on the
-        /// primary axis.
-        /// </returns>
-        public (int index, double position) GetElementAt(double position)
-        {
-            if (_sizes is null || position < StartU)
-                return (-1, 0);
-
-            var u = StartU;
-            var i = FirstIndex;
-
-            foreach (var size in _sizes)
-            {
-                var endU = u + size;
-                if (position < endU)
-                    return (i, u);
-                u += size;
-                ++i;
-            }
-
-            return (-1, 0);
+            // Estimate the element at the start of the viewport.
+            var index = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
+            return (index, index * estimatedSize);
         }
 
         /// <summary>
@@ -278,35 +210,6 @@ namespace Avalonia.Controls.Utils
 
             // TODO: Use _startU to work this out.
             return index * estimatedSize;
-        }
-
-        /// <summary>
-        /// Gets the position the last realized element on the primary axis.
-        /// </summary>
-        /// <returns>
-        /// A tuple containing the index of the element (or -1 if none available) and the position
-        /// of the element on the primary axis.
-        /// </returns>
-        public (int index, double position) GetLastElementU()
-        {
-            if (_sizes is null || _sizes.Count == 0)
-                return (-1, 0);
-
-            var index = FirstIndex;
-            var u = StartU;
-            var count = _sizes.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                var size = _sizes[i];
-
-                if (double.IsNaN(size))
-                    return (index, u);
-                ++index;
-                u += size;
-            }
-
-            return (index, u);
         }
 
         /// <summary>

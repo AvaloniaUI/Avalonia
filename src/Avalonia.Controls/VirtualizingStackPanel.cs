@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -141,41 +142,35 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!IsEffectivelyVisible)
+            var items = Items;
+
+            if (items.Count == 0)
                 return default;
+
+            // If we're bringing an item into view, ignore any layout passes until we receive a new
+            // effective viewport.
+            if (_isWaitingForViewportUpdate)
+                return DesiredSize;
 
             _isInLayout = true;
 
             try
             {
-                var items = Items;
                 var orientation = Orientation;
 
                 _realizedElements ??= new();
                 _measureElements ??= new();
-
-                // If we're bringing an item into view, ignore any layout passes until we receive a new
-                // effective viewport.
-                if (_isWaitingForViewportUpdate)
-                    return DesiredSize;
 
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
                 var viewport = CalculateMeasureViewport(items);
 
-                // Recycle elements outside of the expected range.
-                _realizedElements.RecycleElementsBefore(viewport.firstIndex, _recycleElement);
-                _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElement);
-
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
-                GenerateElements(availableSize, ref viewport);
+                RealizeElements(items, availableSize, ref viewport);
 
-                // Now we know what definitely fits, recycle anything left over.
-                _realizedElements.RecycleElementsAfter(_measureElements.LastIndex, _recycleElement);
-
-                // And swap the measureElements and realizedElements collection.
+                // Now swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
 
@@ -415,22 +410,18 @@ namespace Avalonia.Controls
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
             var itemCount = items?.Count ?? 0;
-            var (firstIndex, firstIndexU) = _realizedElements.GetOrEstimateIndexAt(
+            var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
                 viewportStart,
-                itemCount,
-                ref _lastEstimatedElementSizeU);
-            var (lastIndex, _) = _realizedElements.GetOrEstimateIndexAt(
                 viewportEnd,
                 itemCount,
                 ref _lastEstimatedElementSizeU);
 
             return new MeasureViewport
             {
-                firstIndex = firstIndex,
-                lastIndex = lastIndex,
+                anchorIndex = anchorIndex,
+                anchorU = anchorU,
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
-                startU = firstIndexU,
             };
         }
 
@@ -442,7 +433,7 @@ namespace Avalonia.Controls
             if (viewport.lastIndex >= 0)
             {
                 var remaining = itemCount - viewport.lastIndex - 1;
-                sizeU = viewport.endU + (remaining * _lastEstimatedElementSizeU);
+                sizeU = viewport.realizedEndU + (remaining * _lastEstimatedElementSizeU);
             }
 
             return orientation == Orientation.Horizontal ? new(sizeU, sizeV) : new(sizeV, sizeU);
@@ -486,27 +477,25 @@ namespace Avalonia.Controls
             return viewport;
         }
 
-        private void GenerateElements(Size availableSize, ref MeasureViewport viewport)
+        private void RealizeElements(
+            IReadOnlyList<object?> items,
+            Size availableSize,
+            ref MeasureViewport viewport)
         {
             Debug.Assert(_measureElements is not null);
+            Debug.Assert(_realizedElements is not null);
+            Debug.Assert(items.Count > 0);
 
-            var items = Items;
+            var index = viewport.anchorIndex;
             var horizontal = Orientation == Orientation.Horizontal;
-            var index = viewport.firstIndex;
-            var u = viewport.startU;
+            var u = viewport.anchorU;
 
-            // Nothing to do here.
-            if (items.Count == 0)
-            {
-                viewport.endU = 0;
-                return;
-            }
+            // If the anchor element is at the beginning of, or before, the start of the viewport
+            // then we can recycle all elements before it.
+            if (u <= viewport.anchorU)
+                _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
 
-            // The layout is likely invalid. Don't create any elements and instead rely on our previous
-            // element size estimates to calculate a new desired size and trigger a new layout pass.
-            if (index < 0 || index >= items.Count)
-                return;
-
+            // Start at the anchor element and move forwards, realizing elements.
             do
             {
                 var e = GetOrCreateElement(items, index);
@@ -522,8 +511,33 @@ namespace Avalonia.Controls
                 ++index;
             } while (u < viewport.viewportUEnd && index < items.Count);
 
-            viewport.endU = u;
+            // Store the last index and end U position for the desired size calculation.
             viewport.lastIndex = index - 1;
+            viewport.realizedEndU = u;
+
+            // We can now recycle elements after the last element.
+            _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElement);
+
+            // Next move backwards from the anchor element, realizing elements.
+            index = viewport.anchorIndex - 1;
+            u = viewport.anchorU;
+
+            while (u > viewport.viewportUStart && index >= 0)
+            {
+                var e = GetOrCreateElement(items, index);
+                e.Measure(availableSize);
+
+                var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
+                var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+                u -= sizeU;
+
+                _measureElements!.Add(index, e, u, sizeU);
+                viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
+                --index;
+            }
+
+            // We can now recycle elements before the first element.
+            _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
         }
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
@@ -874,13 +888,13 @@ namespace Avalonia.Controls
 
         private struct MeasureViewport
         {
-            public int firstIndex;
-            public int lastIndex;
+            public int anchorIndex;
+            public double anchorU;
             public double viewportUStart;
             public double viewportUEnd;
             public double measuredV;
-            public double startU;
-            public double endU;
+            public double realizedEndU;
+            public int lastIndex;
         }
     }
 }

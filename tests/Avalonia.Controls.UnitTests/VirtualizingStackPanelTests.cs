@@ -574,7 +574,7 @@ namespace Avalonia.Controls.UnitTests
             // Scroll up to the top.
             while (scroll.Offset.Y > 0)
             {
-                scroll.Offset = scroll.Offset - new Vector(0, -5);
+                scroll.Offset = scroll.Offset + new Vector(0, -5);
                 Layout(target);
 
                 Assert.True(
