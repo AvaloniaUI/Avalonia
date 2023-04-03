@@ -16,7 +16,7 @@ public class ChatFile
         };
 
         using var s = File.OpenRead(path);
-        return JsonSerializer.Deserialize<ChatFile>(s, options);
+        return JsonSerializer.Deserialize<ChatFile>(s, options)!;
     }
 }
 

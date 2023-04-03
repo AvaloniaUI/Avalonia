@@ -5,14 +5,15 @@
         xmlns:views="using:VirtualizationDemo.Views"
         x:Class="VirtualizationDemo.MainWindow"
         Title="AvaloniaUI Virtualization Demo"
-        Width="800"
-        Height="600"
         x:DataType="vm:MainWindowViewModel">
   <controls:HamburgerMenu>
-    <TabItem Header="Chat" >
+    <TabItem Header="Playground" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+      <views:PlaygroundPageView DataContext="{Binding Playground}"/>
+    </TabItem>
+    <TabItem Header="Chat" ScrollViewer.VerticalScrollBarVisibility="Disabled">
       <views:ChatPageView DataContext="{Binding Chat}"/>
     </TabItem>
-    <TabItem Header="Expanders">
+    <TabItem Header="Expanders" ScrollViewer.VerticalScrollBarVisibility="Disabled">
       <views:ExpanderPageView DataContext="{Binding Expanders}"/>
     </TabItem>
   </controls:HamburgerMenu>
