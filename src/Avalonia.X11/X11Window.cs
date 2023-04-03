@@ -998,11 +998,16 @@ namespace Avalonia.X11
         {
             get
             {
-                var extents = GetFrameExtents();
-
-                if(extents == null || _position == null)
+                if(_position == null)
                 {
                     return default;
+                }
+
+                var extents = GetFrameExtents();
+
+                if(extents == null)
+                {
+                    extents = default(Thickness);
                 }
 
                 return new PixelPoint(_position.Value.X - (int)extents.Value.Left, _position.Value.Y - (int)extents.Value.Top);
