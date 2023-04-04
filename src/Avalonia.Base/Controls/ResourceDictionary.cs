@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class ResourceDictionary : IResourceDictionary
     {
-        private DeferredItem? s_lastDeferredItem;
+        private object? lastDeferredItemKey;
         private Dictionary<object, object?>? _inner;
         private IResourceHost? _owner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
@@ -243,7 +243,7 @@ namespace Avalonia.Controls
                 if (value is DeferredItem deffered)
                 {
                     // Avoid simple reentrancy, which could commonly occur on redefining the resource.
-                    if (s_lastDeferredItem == deffered)
+                    if (lastDeferredItemKey == key)
                     {
                         value = null;
                         return false;
@@ -251,7 +251,7 @@ namespace Avalonia.Controls
 
                     try
                     {
-                        s_lastDeferredItem = deffered;
+                        lastDeferredItemKey = key;
                         _inner[key] = value = deffered.Factory(null) switch
                         {
                             ITemplateResult t => t.Result,
@@ -261,7 +261,7 @@ namespace Avalonia.Controls
                     }
                     finally
                     {
-                        s_lastDeferredItem = null;
+                        lastDeferredItemKey = null;
                     }
                 }
                 return true;
