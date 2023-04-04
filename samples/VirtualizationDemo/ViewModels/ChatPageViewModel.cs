@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using VirtualizationDemo.Models;
 
@@ -9,7 +10,7 @@ public class ChatPageViewModel
     public ChatPageViewModel()
     {
         var chat = ChatFile.Load(Path.Combine("Assets", "chat.json"));
-        Messages = new(chat.Chat);
+        Messages = new(chat.Chat ?? Array.Empty<ChatMessage>());
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }

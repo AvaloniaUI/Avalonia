@@ -6,7 +6,7 @@ namespace VirtualizationDemo.Models;
 
 public class ChatFile
 {
-    public ChatMessage[] Chat { get; set; }
+    public ChatMessage[]? Chat { get; set; }
 
     public static ChatFile Load(string path)
     {
