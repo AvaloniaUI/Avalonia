@@ -266,7 +266,6 @@ namespace Avalonia.IntegrationTests.Appium
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var foo = _session.PageSource;
                     maximizeButton = secondaryWindow.FindElementByXPath("//Button[@Name='Maximise']");
                 }
                 else
