@@ -50,7 +50,7 @@ namespace Avalonia.Direct2D1.UnitTests.Media
 
                 var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
 
-                var defaultName = FontManager.Current.DefaultFontFamilyName;
+                var defaultName = FontManager.Current.DefaultFontFamily.Name;
 
                 Assert.Equal(defaultName, glyphTypeface.FamilyName);
             }
