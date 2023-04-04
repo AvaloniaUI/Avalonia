@@ -6,11 +6,13 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -786,6 +788,46 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void Handles_Recycling_Control_Items_Inside_Containers()
+        {
+            // Issue #10825
+            using var app = Start();
+
+            // The items must be controls but not of the container type.
+            var items = Enumerable.Range(0, 100).Select(x => new TextBlock 
+            { 
+                Text = $"Item {x}",
+                Width = 100,
+                Height = 100,
+            }).ToList();
+
+            // Virtualization is required
+            var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+
+            // Create an ItemsControl which uses containers, and provide a scroll viewer.
+            var target = CreateTarget<ItemsControlWithContainer>(
+                items: items,
+                itemsPanel: itemsPanel,
+                scrollViewer: true);
+            var scroll = target.FindAncestorOfType<ScrollViewer>();
+
+            Assert.NotNull(scroll);
+            Assert.Equal(10, target.GetRealizedContainers().Count());
+
+            // Scroll so that half a container is visible: an extra container is generated.
+            scroll.Offset = new(0, 2050);
+            Layout(target);
+
+            // Scroll so that the extra container is no longer needed and recycled.
+            scroll.Offset = new(0, 2100);
+            Layout(target);
+
+            // Scroll back: issue #10825 triggered.
+            scroll.Offset = new(0, 2000);
+            Layout(target);
+        }
+
         private static ItemsControl CreateTarget(
             object? dataContext = null,
             IBinding? displayMemberBinding = null,
@@ -796,13 +838,37 @@ namespace Avalonia.Controls.UnitTests
             IEnumerable<IDataTemplate>? dataTemplates = null,
             bool performLayout = true)
         {
-            var target = new ItemsControl
+            return CreateTarget<ItemsControl>(
+                dataContext: dataContext,
+                displayMemberBinding: displayMemberBinding,
+                items: items,
+                itemsSource: itemsSource,
+                itemContainerTheme: itemContainerTheme,
+                itemTemplate: itemTemplate,
+                dataTemplates: dataTemplates,
+                performLayout: performLayout);
+        }
+
+        private static T CreateTarget<T>(
+            object? dataContext = null,
+            IBinding? displayMemberBinding = null,
+            IList? items = null,
+            IList? itemsSource = null,
+            ControlTheme? itemContainerTheme = null,
+            IDataTemplate? itemTemplate = null,
+            ITemplate<Panel?>? itemsPanel = null,
+            IEnumerable<IDataTemplate>? dataTemplates = null,
+            bool performLayout = true,
+            bool scrollViewer = false)
+                where T : ItemsControl, new()
+        {
+            var target = new T
             {
                 DataContext = dataContext,
                 DisplayMemberBinding = displayMemberBinding,
                 ItemContainerTheme = itemContainerTheme,
-                ItemsSource = itemsSource,
                 ItemTemplate = itemTemplate,
+                ItemsSource = itemsSource,
             };
 
             if (items is not null)
@@ -811,7 +877,11 @@ namespace Avalonia.Controls.UnitTests
                     target.Items.Add(item);
             }
 
-            var root = CreateRoot(target);
+            if (itemsPanel is not null)
+                target.ItemsPanel = itemsPanel;
+
+            var scroll = scrollViewer ? new ScrollViewer { Content = target } : null;
+            var root = CreateRoot(scroll ?? (Control)target);
 
             if (dataTemplates is not null)
             {
@@ -831,10 +901,34 @@ namespace Avalonia.Controls.UnitTests
             {
                 Resources =
                 {
+                    { typeof(ContentControl), CreateContentControlTheme() },
                     { typeof(ItemsControl), CreateItemsControlTheme() },
+                    { typeof(ScrollViewer), CreateScrollViewerTheme() },
                 },
                 Child = child,
             };
+        }
+
+        private static ControlTheme CreateContentControlTheme()
+        {
+            return new ControlTheme(typeof(ContentControl))
+            {
+                Setters =
+                {
+                    new Setter(TreeView.TemplateProperty, CreateContentControlTemplate()),
+                },
+            };
+        }
+
+        private static FuncControlTemplate CreateContentControlTemplate()
+        {
+            return new FuncControlTemplate<ContentControl>((parent, scope) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
+                    [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
+                }.RegisterInNameScope(scope));
         }
 
         private static ControlTheme CreateItemsControlTheme()
@@ -858,9 +952,48 @@ namespace Avalonia.Controls.UnitTests
                     Child = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
+                        [~ItemsPresenter.ItemsPanelProperty] = parent[~ItemsControl.ItemsPanelProperty],
                     }.RegisterInNameScope(scope)
                 };
             });
+        }
+
+        private static ControlTheme CreateScrollViewerTheme()
+        {
+            return new ControlTheme(typeof(ScrollViewer))
+            {
+                Setters =
+                {
+                    new Setter(TreeView.TemplateProperty, CreateScrollViewerTemplate()),
+                },
+            };
+        }
+
+        private static FuncControlTemplate CreateScrollViewerTemplate()
+        {
+            return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
+                new Panel
+                {
+                    Children =
+                    {
+                        new ScrollContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
+                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
+                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
+                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
+                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
+                        }.RegisterInNameScope(scope),
+                        new ScrollBar
+                        {
+                            Name = "verticalScrollBar",
+                            [~ScrollBar.MaximumProperty] = parent[~ScrollViewer.VerticalScrollBarMaximumProperty],
+                            [~~ScrollBar.ValueProperty] = parent[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        }
+                    }
+                });
         }
 
         private static void Layout(Control c)
@@ -889,6 +1022,26 @@ namespace Avalonia.Controls.UnitTests
                     inputManager: new InputManager(),
                     renderInterface: new MockPlatformRenderInterface(),
                     textShaperImpl: new MockTextShaperImpl()));
+        }
+
+        private class ItemsControlWithContainer : ItemsControl, IStyleable
+        {
+            Type IStyleable.StyleKey => typeof(ItemsControl);
+
+            protected internal override Control CreateContainerForItemOverride()
+            {
+                return new ContainerControl();
+            }
+
+            protected internal override bool IsItemItsOwnContainerOverride(Control item)
+            {
+                return item is ContainerControl;
+            }
+        }
+
+        private class ContainerControl : ContentControl, IStyleable
+        {
+            Type IStyleable.StyleKey => typeof(ContentControl);
         }
 
         private record Item(string Caption, string? Value = null);

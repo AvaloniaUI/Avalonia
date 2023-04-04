@@ -441,6 +441,34 @@ namespace Avalonia.Controls
         /// <param name="container">The container element.</param>
         protected internal virtual void ClearContainerForItemOverride(Control container)
         {
+            if (container is HeaderedContentControl hcc)
+            {
+                if (hcc.Content is Control)
+                    hcc.Content = null;
+                if (hcc.Header is Control)
+                    hcc.Header = null;
+            }
+            else if (container is ContentControl cc)
+            {
+                if (cc.Content is Control)
+                    cc.Content = null;
+            }
+            else if (container is ContentPresenter p)
+            {
+                if (p.Content is Control)
+                    p.Content = null;
+            }
+            else if (container is HeaderedItemsControl hic)
+            {
+                if (hic.Header is Control)
+                    hic.Header = null;
+            }
+            else if (container is HeaderedSelectingItemsControl hsic)
+            {
+                if (hsic.Header is Control)
+                    hsic.Header = null;
+            }
+
             // Feels like we should be clearing the HeaderedItemsControl.Items binding here, but looking at
             // the WPF source it seems that this isn't done there.
         }
