@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media;
 using Avalonia.Metadata;
 
 #nullable enable
@@ -22,7 +23,12 @@ namespace Avalonia.Controls.Platform
         /// Gets the current safe area padding.
         /// </summary>
         Thickness SafeAreaPadding { get; }
-        
+
+        /// <summary>
+        /// Gets or sets the color of the platform's system bars
+        /// </summary>
+        Color? SystemBarColor { get; set; }
+
         /// <summary>
         /// Occurs when safe area for the current window changes.
         /// </summary>

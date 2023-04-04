@@ -12,6 +12,18 @@ namespace Avalonia.Controls.Converters
     public class ColorToHexConverter : IValueConverter
     {
         /// <summary>
+        /// Gets or sets a value indicating whether the alpha component is visible in the Hex formatted text.
+        /// </summary>
+        /// <remarks>
+        /// When hidden the existing alpha component value is maintained. Also when hidden the user is still
+        /// able to input an 8-digit number with alpha. Alpha will be processed but then removed when displayed.
+        ///
+        /// Because this property only controls whether alpha is displayed (and it is still processed regardless)
+        /// it is termed 'Visible' instead of 'Enabled'.
+        /// </remarks>
+        public bool IsAlphaVisible { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the position of a color's alpha component relative to all other components.
         /// </summary>
         public AlphaComponentPosition AlphaPosition { get; set; } = AlphaComponentPosition.Leading;
@@ -48,7 +60,7 @@ namespace Avalonia.Controls.Converters
                 return AvaloniaProperty.UnsetValue;
             }
 
-            return ToHexString(color, AlphaPosition, includeSymbol);
+            return ToHexString(color, AlphaPosition, IsAlphaVisible, includeSymbol);
         }
 
         /// <inheritdoc/>
@@ -67,25 +79,39 @@ namespace Avalonia.Controls.Converters
         /// </summary>
         /// <param name="color">The color to represent as a hex value string.</param>
         /// <param name="alphaPosition">The output position of the alpha component.</param>
+        /// <param name="includeAlpha">Whether the alpha component will be included in the hex string.</param>
         /// <param name="includeSymbol">Whether the hex symbol '#' will be added.</param>
         /// <returns>The input color converted to its hex value string.</returns>
         public static string ToHexString(
             Color color,
             AlphaComponentPosition alphaPosition,
+            bool includeAlpha = true,
             bool includeSymbol = false)
         {
             uint intColor;
-            if (alphaPosition == AlphaComponentPosition.Trailing)
+            string hexColor;
+
+            if (includeAlpha)
             {
-                intColor = ((uint)color.R << 24) | ((uint)color.G << 16) | ((uint)color.B << 8) | (uint)color.A;
+                if (alphaPosition == AlphaComponentPosition.Trailing)
+                {
+                    intColor = ((uint)color.R << 24) | ((uint)color.G << 16) | ((uint)color.B << 8) | (uint)color.A;
+                }
+                else
+                {
+                    // Default is Leading alpha (same as XAML)
+                    intColor = ((uint)color.A << 24) | ((uint)color.R << 16) | ((uint)color.G << 8) | (uint)color.B;
+                }
+
+                hexColor = intColor.ToString("x8", CultureInfo.InvariantCulture).ToUpperInvariant();
             }
             else
             {
-                // Default is Leading alpha
-                intColor = ((uint)color.A << 24) | ((uint)color.R << 16) | ((uint)color.G << 8) | (uint)color.B;
+                // In this case the alpha position no longer matters
+                // Both cases are calculated the same
+                intColor = ((uint)color.R << 16) | ((uint)color.G << 8) | (uint)color.B;
+                hexColor = intColor.ToString("x6", CultureInfo.InvariantCulture).ToUpperInvariant();
             }
-
-            string hexColor = intColor.ToString("x8", CultureInfo.InvariantCulture).ToUpperInvariant();
 
             if (includeSymbol)
             {

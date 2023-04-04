@@ -106,19 +106,6 @@ namespace Avalonia.Controls
             }
         }
 
-        internal IList? GetItemsPropertyValue()
-        {
-            if (_mode == Mode.ObsoleteItemsSetter)
-                return Source == s_uninitialized ? null : Source;
-            return this;
-        }
-
-        internal void SetItems(IList? items)
-        {
-            _mode = Mode.ObsoleteItemsSetter;
-            SetSource(items ?? s_uninitialized);
-        }
-
         internal void SetItemsSource(IEnumerable? value)
         {
             if (_mode != Mode.ItemsSource && Count > 0)
@@ -159,7 +146,6 @@ namespace Avalonia.Controls
         {
             Items,
             ItemsSource,
-            ObsoleteItemsSetter,
         }
     }
 }

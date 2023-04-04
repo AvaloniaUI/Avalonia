@@ -87,7 +87,15 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
-        
+
+        /// <summary>
+        /// Defines the SystemBarColor attached property.
+        /// </summary>
+        public static readonly AttachedProperty<SolidColorBrush?> SystemBarColorProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, Control, SolidColorBrush?>(
+                "SystemBarColor",
+                inherits: true);
+
         /// <summary>
         /// Defines the <see cref="BackRequested"/> event.
         /// </summary>
@@ -124,6 +132,22 @@ namespace Avalonia.Controls
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
+
+            SystemBarColorProperty.Changed.AddClassHandler<Control>((view, e) =>
+            {
+                if (e.NewValue is SolidColorBrush colorBrush)
+                {
+                    if (view.Parent is TopLevel tl && tl.InsetsManager is { } insetsManager)
+                    {
+                        insetsManager.SystemBarColor = colorBrush.Color;
+                    }
+
+                    if (view is TopLevel topLevel && topLevel.InsetsManager is { } insets)
+                    {
+                        insets.SystemBarColor = colorBrush.Color;
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -377,6 +401,26 @@ namespace Avalonia.Controls
         {
             get { return GetValue(AccessText.ShowAccessKeyProperty); }
             set { SetValue(AccessText.ShowAccessKeyProperty, value); }
+        }
+
+        /// <summary>
+        /// Helper for setting the color of the platform's system bars
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel</param>
+        /// <param name="color">The color to set</param>
+        public static void SetSystemBarColor(Control control, SolidColorBrush? color)
+        {
+            control.SetValue(SystemBarColorProperty, color);
+        }
+
+        /// <summary>
+        /// Helper for getting the color of the platform's system bars
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel</param>
+        /// <returns>The current color of the platform's system bars</returns>
+        public static SolidColorBrush? GetSystemBarColor(Control control)
+        {
+            return control.GetValue(SystemBarColorProperty);
         }
 
         /// <inheritdoc/>

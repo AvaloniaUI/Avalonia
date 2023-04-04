@@ -2,12 +2,14 @@
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 
+#nullable enable
+
 namespace Avalonia.Native
 {
     internal class AvaloniaNativeTextInputMethod : ITextInputMethodImpl, IDisposable
     {
-        private ITextInputMethodClient _client;
-        private IAvnTextInputMethodClient _nativeClient;
+        private ITextInputMethodClient? _client;
+        private IAvnTextInputMethodClient? _nativeClient;
         private readonly IAvnTextInputMethod _inputMethod;
         
         public AvaloniaNativeTextInputMethod(IAvnWindowBase nativeWindow)
@@ -26,7 +28,7 @@ namespace Avalonia.Native
             _inputMethod.Reset();
         }
 
-        public void SetClient(ITextInputMethodClient client)
+        public void SetClient(ITextInputMethodClient? client)
         {
             if (_client is { SupportsSurroundingText: true })
             {
@@ -39,9 +41,9 @@ namespace Avalonia.Native
             _nativeClient = null;
             _client = client;
             
-            if (client != null)
+            if (_client != null)
             {
-                _nativeClient = new AvnTextInputMethodClient(client);
+                _nativeClient = new AvnTextInputMethodClient(_client);
 
                 OnSurroundingTextChanged(this, EventArgs.Empty);
                 OnCursorRectangleChanged(this, EventArgs.Empty);
@@ -53,16 +55,28 @@ namespace Avalonia.Native
             _inputMethod.SetClient(_nativeClient);
         }
 
-        private void OnCursorRectangleChanged(object sender, EventArgs e)
+        private void OnCursorRectangleChanged(object? sender, EventArgs e)
         {
             if (_client == null)
             {
                 return;
             }
 
-            var visualRoot = _client.TextViewVisual.VisualRoot;
+            var textViewVisual = _client.TextViewVisual;
 
-            var transform = _client.TextViewVisual.TransformToVisual((Visual)visualRoot);
+            if(textViewVisual is null )
+            {
+                return;
+            }
+
+            var visualRoot = textViewVisual.VisualRoot;
+
+            if(visualRoot is null)
+            {
+                return;
+            }
+
+            var transform = textViewVisual.TransformToVisual((Visual)visualRoot);
 
             if (transform == null)
             {
@@ -74,7 +88,7 @@ namespace Avalonia.Native
             _inputMethod.SetCursorRect(rect.ToAvnRect());
         }
 
-        private void OnSurroundingTextChanged(object sender, EventArgs e)
+        private void OnSurroundingTextChanged(object? sender, EventArgs e)
         {
             if (_client == null)
             {

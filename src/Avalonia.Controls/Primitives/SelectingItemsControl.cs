@@ -235,7 +235,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? SelectedValueBinding
         {
             get => GetValue(SelectedValueBindingProperty);
