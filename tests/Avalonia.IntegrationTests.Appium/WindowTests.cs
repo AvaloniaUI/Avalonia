@@ -1,18 +1,14 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
-using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 using Xunit.Sdk;
-using OpenQA.Selenium.Appium.Interfaces;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -266,7 +262,9 @@ namespace Avalonia.IntegrationTests.Appium
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    maximizeButton = secondaryWindow.FindElementByXPath("//Button[@Name='Maximise']");
+                    maximizeButton = extendClientArea ?
+                        secondaryWindow.FindElementByXPath("//Button[@Name='Maximise']") :
+                        secondaryWindow.FindElementByXPath("//TitleBar/Button[2]");
                 }
                 else
                 {
