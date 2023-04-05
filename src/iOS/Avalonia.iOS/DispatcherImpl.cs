@@ -16,7 +16,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     // CFRunLoopTimerSetNextFireDate docs recommend to "create a repeating timer with an initial
     // firing time in the distant future (or the initial firing time) and a very large repeat
     // interval—on the order of decades or more"
-    private const double DistantFutureInterval = (double)50*365*24*3600;
+    private const double DistantFutureInterval = (double)50 * 365 * 24 * 3600;
     internal static readonly DispatcherImpl Instance = new();
 
     private readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -54,7 +54,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     public event Action? Signaled;
     public event Action? Timer;
     public event Action? ReadyForBackgroundProcessing;
-    
+
     public bool CurrentThreadIsLoopThread
     {
         get
@@ -70,8 +70,9 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
 
     public void Signal()
     {
-        lock (this) {
-            if(_signaled)
+        lock (this)
+        {
+            if (_signaled)
                 return;
             _signaled = true;
 
@@ -89,10 +90,10 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     }
 
     public long Now => _clock.ElapsedMilliseconds;
-    
+
     public void RequestBackgroundProcessing()
     {
-        if(_backgroundProcessingRequested)
+        if (_backgroundProcessingRequested)
             return;
         _backgroundProcessingRequested = true;
         DispatchQueue.MainQueue.DispatchAsync(_wakeUpLoopAction);
