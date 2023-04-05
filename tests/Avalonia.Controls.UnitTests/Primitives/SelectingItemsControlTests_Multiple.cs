@@ -10,28 +10,24 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
-using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Moq;
+using Avalonia.VisualTree;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
     public class SelectingItemsControlTests_Multiple
     {
-        private MouseTestHelper _helper = new MouseTestHelper();
-
         [Fact]
         public void Setting_SelectedIndex_Should_Add_To_SelectedItems()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.SelectedIndex = 1;
 
             Assert.Equal(new[] { "bar" }, target.SelectedItems.Cast<object>().ToList());
@@ -40,13 +36,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_SelectedItems_Should_Set_SelectedIndex()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.SelectedItems.Add("bar");
 
             Assert.Equal(1, target.SelectedIndex);
@@ -55,14 +47,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Single_SelectedItems_Should_Set_SelectedIndex()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
-            ((Control)target.Presenter).ApplyTemplate();
             target.SelectedItems = new AvaloniaList<object>("bar");
 
             Assert.Equal(1, target.SelectedIndex);
@@ -73,14 +60,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Multiple_SelectedItems_Should_Set_SelectedIndex()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
             target.SelectedItems = new AvaloniaList<string>("foo", "bar", "baz");
 
             Assert.Equal(0, target.SelectedIndex);
@@ -92,15 +74,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         public void Selected_Items_Should_Be_Marked_When_Panel_Created_After_SelectedItems_Is_Set()
         {
             // Issue #2565.
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" }, performLayout: false);
 
-            target.ApplyTemplate();
+            Assert.Null(target.ItemsPanelRoot);
             target.SelectedItems = new AvaloniaList<string>("foo", "bar", "baz");
-            target.Presenter.ApplyTemplate();
+
+            var root = Assert.IsType<TestRoot>(target.GetVisualRoot());
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal(new[] { "foo", "bar", "baz" }, target.SelectedItems);
@@ -110,13 +91,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Reassigning_SelectedItems_Should_Clear_Selection()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.SelectedItems.Add("bar");
             target.SelectedItems = new AvaloniaList<object>();
 
@@ -127,25 +104,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_First_SelectedItem_Should_Raise_SelectedIndex_SelectedItem_Changed()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
+            var indexRaised = false;
+            var itemRaised = false;
 
-            bool indexRaised = false;
-            bool itemRaised = false;
             target.PropertyChanged += (s, e) =>
             {
                 indexRaised |= e.Property.Name == "SelectedIndex" &&
-                    (int)e.OldValue == -1 &&
-                    (int)e.NewValue == 1;
+                    (int)e.OldValue! == -1 &&
+                    (int)e.NewValue! == 1;
                 itemRaised |= e.Property.Name == "SelectedItem" &&
-                    (string)e.OldValue == null &&
-                    (string)e.NewValue == "bar";
+                    (string?)e.OldValue == null &&
+                    (string?)e.NewValue == "bar";
             };
 
-            target.ApplyTemplate();
             target.SelectedItems.Add("bar");
 
             Assert.True(indexRaised);
@@ -155,13 +128,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_Subsequent_SelectedItems_Should_Not_Raise_SelectedIndex_SelectedItem_Changed()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.SelectedItems.Add("foo");
 
             bool raised = false;
@@ -177,20 +146,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_Last_SelectedItem_Should_Raise_SelectedIndex_Changed()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.SelectedItems.Add("foo");
 
             bool raised = false;
             target.PropertyChanged += (s, e) => 
                 raised |= e.Property.Name == "SelectedIndex" && 
-                          (int)e.OldValue == 0 && 
-                          (int)e.NewValue == -1;
+                          (int)e.OldValue! == 0 && 
+                          (int)e.NewValue! == -1;
 
             target.SelectedItems.RemoveAt(0);
 
@@ -200,23 +165,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_SelectedItems_Should_Set_Item_IsSelected()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                Items = 
-                {
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                },
-                Template = Template(),
+                new ListBoxItem(),
+                new ListBoxItem(),
+                new ListBoxItem(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            var target = CreateTarget(items: items);
+
             target.SelectedItems.Add(target.Items[0]);
             target.SelectedItems.Add(target.Items[1]);
 
-            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.True(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
             Assert.False(items[2].IsSelected);
@@ -225,22 +186,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_SelectedItems_Should_Set_Item_IsSelected()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                Items =
-                {
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                },
-                Template = Template(),
+                new ListBoxItem(),
+                new ListBoxItem(),
+                new ListBoxItem(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-            target.SelectedItems = new AvaloniaList<object> { target.Items[0], target.Items[1] };
+            var target = CreateTarget(items: items);
 
-            var items = target.Items.Cast<ListBoxItem>().ToList();
+            target.SelectedItems = new AvaloniaList<object> { items[0], items[1] };
+
             Assert.True(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
             Assert.False(items[2].IsSelected);
@@ -249,64 +206,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_SelectedItems_Should_Clear_Item_IsSelected()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                Items =
-                {
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                },
-                Template = Template(),
+                new ListBoxItem(),
+                new ListBoxItem(),
+                new ListBoxItem(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-            target.SelectedItems.Add(target.Items[0]);
-            target.SelectedItems.Add(target.Items[1]);
-            target.SelectedItems.Remove(target.Items[1]);
+            var target = CreateTarget(items: items);
 
-            var items = target.Items.Cast<ListBoxItem>().ToList();
+            target.SelectedItems.Add(items[0]);
+            target.SelectedItems.Add(items[1]);
+            target.SelectedItems.Remove(items[1]);
+
             Assert.True(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
         }
 
         [Fact]
-        public void Reassigning_SelectedItems_Should_Clear_Item_IsSelected()
+        public void Reassigning_SelectedItems_Should_Not_Clear_Item_IsSelected()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                Items = 
-                {
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                },
-                Template = Template(),
+                new ListBoxItem(),
+                new ListBoxItem(),
+                new ListBoxItem(),
             };
 
-            target.ApplyTemplate();
+            var target = CreateTarget(items: items);
+
             target.SelectedItems.Add(target.Items[0]);
             target.SelectedItems.Add(target.Items[1]);
+            target.SelectedItems = new AvaloniaList<object> { items[0], items[1] };
 
-            target.SelectedItems = new AvaloniaList<object> { target.Items[0], target.Items[1] };
-
-            var items = target.Items.Cast<ListBoxItem>().ToList();
-            Assert.False(items[0].IsSelected);
-            Assert.False(items[1].IsSelected);
+            Assert.True(items[0].IsSelected);
+            Assert.True(items[1].IsSelected);
+            Assert.False(items[2].IsSelected);
         }
 
         [Fact]
         public void Setting_SelectedIndex_Should_Unmark_Previously_Selected_Containers()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
             target.SelectedItems.Add("foo");
             target.SelectedItems.Add("bar");
@@ -321,21 +265,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Range_Select_Should_Select_Range()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                ItemsSource = new[]
-                {
-                    "foo",
-                    "bar",
-                    "baz",
-                    "qux",
-                    "qiz",
-                    "lol",
-                },
-                Template = Template(),
+                "foo",
+                "bar",
+                "baz",
+                "qux",
+                "qiz",
+                "lol",
             };
 
-            target.ApplyTemplate();
+            var target = CreateTarget(items: items);
+
             target.SelectedIndex = 1;
             target.SelectRange(3);
 
@@ -345,22 +287,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Range_Select_Backwards_Should_Select_Range()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                ItemsSource = new[]
-                {
-                    "foo",
-                    "bar",
-                    "baz",
-                    "qux",
-                    "qiz",
-                    "lol",
-                },
-                SelectionMode = SelectionMode.Multiple,
-                Template = Template(),
+                "foo",
+                "bar",
+                "baz",
+                "qux",
+                "qiz",
+                "lol",
             };
 
-            target.ApplyTemplate();
+            var target = CreateTarget(items: items);
+
             target.SelectedIndex = 3;
             target.SelectRange(1);
 
@@ -370,22 +309,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Second_Range_Select_Backwards_Should_Select_From_Original_Selection()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                ItemsSource = new[]
-                {
-                    "foo",
-                    "bar",
-                    "baz",
-                    "qux",
-                    "qiz",
-                    "lol",
-                },
-                SelectionMode = SelectionMode.Multiple,
-                Template = Template(),
+                "foo",
+                "bar",
+                "baz",
+                "qux",
+                "qiz",
+                "lol",
             };
 
-            target.ApplyTemplate();
+            var target = CreateTarget(items: items);
+
             target.SelectedIndex = 2;
             target.SelectRange(5);
             target.SelectRange(4);
@@ -396,16 +332,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedIndex_After_Range_Should_Unmark_Previously_Selected_Containers()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz", "qux" },
-                Template = Template(),
-                SelectedIndex = 0,
-                SelectionMode = SelectionMode.Multiple,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz", "qux" });
 
             target.SelectRange(2);
 
@@ -419,16 +347,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Toggling_Selection_After_Range_Should_Work()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz", "foo", "bar", "baz" },
-                Template = Template(),
-                SelectedIndex = 0,
-                SelectionMode = SelectionMode.Multiple,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz", "foo", "bar", "baz" });
 
             target.SelectRange(3);
 
@@ -442,13 +362,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Suprious_SelectedIndex_Changes_Should_Not_Be_Triggered()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
             var selectedIndexes = new List<int>();
             target.GetObservable(TestSelector.SelectedIndexProperty).Subscribe(x => selectedIndexes.Add(x));
@@ -463,14 +378,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Can_Set_SelectedIndex_To_Another_Selected_Item()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
             target.SelectedItems.Add("foo");
             target.SelectedItems.Add("bar");
 
@@ -515,8 +425,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Not_Write_SelectedItems_To_Old_DataContext()
         {
+            using var app = Start();
             var vm = new OldDataContextViewModel();
-            var target = new TestSelector();
+            var target = CreateTarget();
 
             var itemsBinding = new Binding
             {
@@ -555,8 +466,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Not_Write_SelectionModel_To_Old_DataContext()
         {
+            using var app = Start();
             var vm = new OldDataContextViewModel();
-            var target = new TestSelector();
+            var target = CreateTarget();
 
             var itemsBinding = new Binding
             {
@@ -592,17 +504,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Unbound_SelectedItems_Should_Be_Cleared_When_DataContext_Cleared()
         {
+            using var app = Start();
             var data = new
             {
                 Items = new[] { "foo", "bar", "baz" },
             };
 
-            var target = new TestSelector
-            {
-                DataContext = data,
-                Template = Template(),
-            };
-
+            var target = CreateTarget(dataContext: data);
             var itemsBinding = new Binding { Path = "Items" };
             target.Bind(TestSelector.ItemsSourceProperty, itemsBinding);
 
@@ -617,15 +525,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Adding_To_SelectedItems_Should_Raise_SelectionChanged()
         {
-            var items = new[] { "foo", "bar", "baz" };
-
-            var target = new TestSelector
-            {
-                DataContext = items,
-                Template = Template(),
-                ItemsSource = items,
-            };
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
             var called = false;
 
             target.SelectionChanged += (s, e) =>
@@ -643,17 +544,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_From_SelectedItems_Should_Raise_SelectionChanged()
         {
-            var items = new[] { "foo", "bar", "baz" };
-
-            var target = new TestSelector
-            {
-                ItemsSource = items,
-                Template = Template(),
-                SelectedItem = "bar",
-            };
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
             var called = false;
 
+            target.SelectedItem = "bar";
             target.SelectionChanged += (s, e) =>
             {
                 Assert.Equal(new[] { "bar" }, e.RemovedItems.Cast<object>().ToList());
@@ -669,14 +564,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_SelectedItems_Should_Raise_SelectionChanged()
         {
-            var items = new[] { "foo", "bar", "baz" };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
-            var target = new TestSelector
-            {
-                ItemsSource = items,
-                Template = Template(),
-                SelectedItem = "bar",
-            };
+            target.SelectedItem = "bar";
 
             var called = false;
 
@@ -687,366 +578,30 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 called = true;
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
             target.SelectedItems = new AvaloniaList<object>("foo", "baz");
 
             Assert.True(called);
-        }
-        
-        [Fact]
-        public void Shift_Selecting_From_No_Selection_Selects_From_Start()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
-
-                Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
-                Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
-            }
-        }
-
-        [Fact]
-        public void Ctrl_Selecting_Raises_SelectionChanged_Events()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-
-                SelectionChangedEventArgs receivedArgs = null;
-
-                target.SelectionChanged += (_, args) => receivedArgs = args;
-
-                void VerifyAdded(string selection)
-                {
-                    Assert.NotNull(receivedArgs);
-                    Assert.Equal(new[] { selection }, receivedArgs.AddedItems);
-                    Assert.Empty(receivedArgs.RemovedItems);
-                }
-
-                void VerifyRemoved(string selection)
-                {
-                    Assert.NotNull(receivedArgs);
-                    Assert.Equal(new[] { selection }, receivedArgs.RemovedItems);
-                    Assert.Empty(receivedArgs.AddedItems);
-                }
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
-
-                VerifyAdded("Bar");
-
-                receivedArgs = null;
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
-
-                VerifyAdded("Baz");
-
-                receivedArgs = null;
-                _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
-
-                VerifyAdded("Qux");
-
-                receivedArgs = null;
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
-
-                VerifyRemoved("Bar");
-            }
-        }
-
-        [Fact]
-        public void Ctrl_Selecting_SelectedItem_With_Multiple_Selection_Active_Sets_SelectedItem_To_Next_Selection()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(1, target.SelectedIndex);
-                Assert.Equal("Bar", target.SelectedItem);
-                Assert.Equal(new[] { "Bar", "Baz", "Qux" }, target.SelectedItems);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(2, target.SelectedIndex);
-                Assert.Equal("Baz", target.SelectedItem);
-                Assert.Equal(new[] { "Baz", "Qux" }, target.SelectedItems);
-            }
-        }
-
-        [Fact]
-        public void Ctrl_Selecting_Non_SelectedItem_With_Multiple_Selection_Active_Leaves_SelectedItem_The_Same()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(1, target.SelectedIndex);
-                Assert.Equal("Bar", target.SelectedItem);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(1, target.SelectedIndex);
-                Assert.Equal("Bar", target.SelectedItem);
-            }
-        }
-
-        [Fact]
-        public void Should_Ctrl_Select_Correct_Item_When_Duplicate_Items_Are_Present()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[3]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
-
-                var panel = target.Presenter.Panel;
-
-                Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
-                Assert.Equal(new[] { 3, 4 }, SelectedContainers(target));
-            }
-        }
-
-        [Fact]
-        public void Should_Shift_Select_Correct_Item_When_Duplicates_Are_Present()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[3]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
-
-                var panel = target.Presenter.Panel;
-
-                Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
-                Assert.Equal(new[] { 3, 4, 5 }, SelectedContainers(target));
-            }
-        }
-
-        [Fact]
-        public void Can_Shift_Select_All_Items_When_Duplicates_Are_Present()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
-
-                var panel = target.Presenter.Panel;
-
-                Assert.Equal(new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" }, target.SelectedItems);
-                Assert.Equal(new[] { 0, 1, 2, 3, 4, 5 }, SelectedContainers(target));
-            }
-        }
-
-        [Fact]
-        public void Shift_Selecting_Raises_SelectionChanged_Events()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-
-                SelectionChangedEventArgs receivedArgs = null;
-
-                target.SelectionChanged += (_, args) => receivedArgs = args;
-
-                void VerifyAdded(params string[] selection)
-                {
-                    Assert.NotNull(receivedArgs);
-                    Assert.Equal(selection, receivedArgs.AddedItems);
-                    Assert.Empty(receivedArgs.RemovedItems);
-                }
-
-                void VerifyRemoved(string selection)
-                {
-                    Assert.NotNull(receivedArgs);
-                    Assert.Equal(new[] { selection }, receivedArgs.RemovedItems);
-                    Assert.Empty(receivedArgs.AddedItems);
-                }
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
-
-                VerifyAdded("Bar");
-
-                receivedArgs = null;
-                _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Shift);
-
-                VerifyAdded("Baz", "Qux");
-
-                receivedArgs = null;
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
-
-                VerifyRemoved("Qux");
-            }
-        }
-
-        [Fact]
-        public void Duplicate_Items_Are_Added_To_SelectedItems_In_Order()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-
-                Assert.Equal(new[] { "Foo" }, target.SelectedItems);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(new[] { "Foo", "Bar", "Foo" }, target.SelectedItems);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
-
-                Assert.Equal(new[] { "Foo", "Bar", "Foo", "Bar" }, target.SelectedItems);
-            }
         }
 
         [Fact]
         public void SelectAll_Sets_SelectedIndex_And_SelectedItem()
         {
-            var target = new TestSelector
-            {
-                Template = Template(),
-                ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                SelectionMode = SelectionMode.Multiple,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
             target.SelectAll();
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.Equal("Foo", target.SelectedItem);
+            Assert.Equal("foo", target.SelectedItem);
         }
 
         [Fact]
         public void SelectAll_Raises_SelectionChanged_Event()
         {
-            var target = new TestSelector
-            {
-                Template = Template(),
-                ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                SelectionMode = SelectionMode.Multiple,
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            SelectionChangedEventArgs receivedArgs = null;
+            SelectionChangedEventArgs? receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -1060,17 +615,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void UnselectAll_Clears_SelectedIndex_And_SelectedItem()
         {
-            var target = new TestSelector
-            {
-                Template = Template(),
-                ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                SelectionMode = SelectionMode.Multiple,
-                SelectedIndex = 0,
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
+            target.SelectedIndex = 0;
             target.UnselectAll();
 
             Assert.Equal(-1, target.SelectedIndex);
@@ -1080,248 +628,92 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void SelectAll_Handles_Duplicate_Items()
         {
-            var target = new TestSelector
-            {
-                Template = Template(),
-                ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-                SelectionMode = SelectionMode.Multiple,
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz", "foo", "bar", "baz" });
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
             target.SelectAll();
 
-            Assert.Equal(new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "foo", "bar", "baz", "foo", "bar", "baz" }, target.SelectedItems);
         }
 
         [Fact]
         public void Adding_Item_Before_SelectedItems_Should_Update_Selection()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "Baz"
-            };
-
-            var target = new ListBox
-            {
-                Template = Template(),
-                ItemsSource = items,
-                SelectionMode = SelectionMode.Multiple,
-                Width = 100,
-                Height = 100,
-            };
-
-            var root = new TestRoot(target);
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            using var app = Start();
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = CreateTarget(itemsSource: items);
 
             target.SelectAll();
-            items.Insert(0, "Qux");
-            root.LayoutManager.ExecuteLayoutPass();
+            items.Insert(0, "qux");
+            Layout(target);
 
             Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal("Foo", target.SelectedItem);
-            Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(new[] { "foo", "bar", "baz" }, target.SelectedItems);
             Assert.Equal(new[] { 1, 2, 3 }, SelectedContainers(target));
         }
 
         [Fact]
         public void Removing_Item_Before_SelectedItem_Should_Update_Selection()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "Baz"
-            };
-
-            var target = new TestSelector
-            {
-                Template = Template(),
-                ItemsSource = items,
-                SelectionMode = SelectionMode.Multiple,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            using var app = Start();
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = CreateTarget(itemsSource: items);
 
             target.SelectedIndex = 1;
             target.SelectRange(2);
 
-            Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
 
             items.RemoveAt(0);
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.Equal("Bar", target.SelectedItem);
-            Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
         }
 
         [Fact]
         public void Removing_SelectedItem_With_Multiple_Selection_Active_Should_Update_Selection()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "Baz"
-            };
-
-            var target = new ListBox
-            {
-                Template = Template(),
-                ItemsSource = items,
-                SelectionMode = SelectionMode.Multiple,
-                Width = 100,
-                Height = 100,
-            };
-
-            var root = new TestRoot(target);
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            using var app = Start();
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = CreateTarget(itemsSource: items);
 
             target.SelectAll();
             items.RemoveAt(0);
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.Equal("Bar", target.SelectedItem);
-            Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
         }
 
         [Fact]
         public void Replacing_Selected_Item_Should_Update_SelectedItems()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "Baz"
-            };
-
-            var target = new ListBox
-            {
-                Template = Template(),
-                ItemsSource = items,
-                SelectionMode = SelectionMode.Multiple,
-                Width = 100,
-                Height = 100,
-            };
-
-            var root = new TestRoot(target);
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            using var app = Start();
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = CreateTarget(itemsSource: items);
 
             target.SelectAll();
-            items[1] = "Qux";
+            items[1] = "qux";
 
-            Assert.Equal(new[] { "Foo", "Baz" }, target.SelectedItems);
-        }
-
-        [Fact]
-        public void Left_Click_On_SelectedItem_Should_Clear_Existing_Selection()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                target.SelectAll();
-
-                Assert.Equal(3, target.SelectedItems.Count);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-
-                Assert.Equal(1, target.SelectedItems.Count);
-                Assert.Equal(new[] { "Foo", }, target.SelectedItems);
-                Assert.Equal(new[] { 0 }, SelectedContainers(target));
-            }
-        }
-
-        [Fact]
-        public void Right_Click_On_SelectedItem_Should_Not_Clear_Existing_Selection()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                target.SelectAll();
-
-                Assert.Equal(3, target.SelectedItems.Count);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
-
-                Assert.Equal(3, target.SelectedItems.Count);
-            }
-        }
-
-        [Fact]
-        public void Right_Click_On_UnselectedItem_Should_Clear_Existing_Selection()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Shift);
-
-                Assert.Equal(2, target.SelectedItems.Count);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right);
-
-                Assert.Equal(1, target.SelectedItems.Count);
-            }
+            Assert.Equal(new[] { "foo", "baz" }, target.SelectedItems);
         }
 
         [Fact]
         public void Adding_Selected_ItemContainers_Should_Update_Selection()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                Items =
-                {
-                    new ItemContainer(),
-                    new ItemContainer(),
-                },
-                SelectionMode = SelectionMode.Multiple,
-                Template = Template(),
+                new ItemContainer(),
+                new ItemContainer(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            var target = CreateTarget(items: items);
+
             target.Items.Add(new ItemContainer { IsSelected = true });
             target.Items.Add(new ItemContainer { IsSelected = true });
 
@@ -1331,69 +723,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Shift_Right_Click_Should_Not_Select_Multiple()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Shift);
-
-                Assert.Equal(1, target.SelectedItems.Count);
-            }
-        }
-
-        [Fact]
-        public void Ctrl_Right_Click_Should_Not_Select_Multiple()
-        {
-            using (UnitTestApplication.Start())
-            {
-                var target = new ListBox
-                {
-                    Template = Template(),
-                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
-                    SelectionMode = SelectionMode.Multiple,
-                    Width = 100,
-                    Height = 100,
-                };
-
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-
-                _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Control);
-
-                Assert.Equal(1, target.SelectedItems.Count);
-            }
-        }
-
-        [Fact]
         public void Adding_To_Selection_Should_Set_SelectedIndex()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.SelectedItems.Add("bar");
 
             Assert.Equal(1, target.SelectedIndex);
@@ -1402,15 +736,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Null_To_Selection_Should_Create_New_SelectionModel()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
             var oldSelection = target.Selection;
 
-            target.Selection = null;
+            target.Selection = null!;
 
             Assert.NotNull(target.Selection);
             Assert.NotSame(oldSelection, target.Selection);
@@ -1419,26 +749,20 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_SelectionModel_With_Different_Source_To_Selection_Should_Fail()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
             var selection = new SelectionModel<string> { Source = new[] { "baz" } };
+
             Assert.Throws<ArgumentException>(() => target.Selection = selection);
         }
 
         [Fact]
         public void Assigning_SelectionModel_With_Null_Source_To_Selection_Should_Set_Source()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
             var selection = new SelectionModel<string>();
+
             target.Selection = selection;
 
             Assert.Same(target.ItemsSource, selection.Source);
@@ -1447,16 +771,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Single_Selected_Item_To_Selection_Should_Set_SelectedIndex()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
             var selection = new SelectionModel<string> { SingleSelect = false };
+
             selection.Select(1);
             target.Selection = selection;
 
@@ -1468,16 +786,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Multiple_Selected_Items_To_Selection_Should_Set_SelectedIndex()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar", "baz" });
             var selection = new SelectionModel<string> { SingleSelect = false };
+
             selection.SelectRange(0, 2);
             target.Selection = selection;
 
@@ -1489,13 +801,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Reassigning_Selection_Should_Clear_Selection()
         {
-            var target = new TestSelector
-            {
-                ItemsSource = new[] { "foo", "bar" },
-                Template = Template(),
-            };
+            using var app = Start();
+            var target = CreateTarget(itemsSource: new[] { "foo", "bar" });
 
-            target.ApplyTemplate();
             target.Selection.Select(1);
             target.Selection = new SelectionModel<string>();
 
@@ -1506,25 +814,20 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Selection_Should_Set_Item_IsSelected()
         {
-            var target = new TestSelector
+            using var app = Start();
+            var items = new[]
             {
-                Items =
-                {
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                    new ListBoxItem(),
-                },
-                Template = Template(),
+                new ListBoxItem(),
+                new ListBoxItem(),
+                new ListBoxItem(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
+            var target = CreateTarget(items: items);
             var selection = new SelectionModel<object> { SingleSelect = false };
+
             selection.SelectRange(0, 1);
             target.Selection = selection;
 
-            var items = target.Items.Cast<ListBoxItem>().ToList();
             Assert.True(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
             Assert.False(items[2].IsSelected);
@@ -1533,16 +836,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Assigning_Selection_Should_Raise_SelectionChanged()
         {
+            using var app = Start();
             var items = new[] { "foo", "bar", "baz" };
-
-            var target = new TestSelector
-            {
-                ItemsSource = items,
-                Template = Template(),
-                SelectedItem = "bar",
-            };
-
+            var target = CreateTarget(itemsSource: items);
             var raised = 0;
+
+            target.SelectedItem = "bar";
 
             target.SelectionChanged += (s, e) =>
             {
@@ -1560,9 +859,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 ++raised;
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
             var selection = new SelectionModel<string> { Source = items, SingleSelect = false };
             selection.Select(0);
             selection.Select(2);
@@ -1570,26 +866,150 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(2, raised);
         }
+
         private static IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
-            return target.Presenter.Panel.Children
+            Assert.NotNull(target.ItemsPanel);
+
+            return target.ItemsPanelRoot!.Children
                 .Select(x => x.Classes.Contains(":selected") ? target.IndexFromContainer(x) : -1)
                 .Where(x => x != -1);
         }
 
-        private static FuncControlTemplate Template()
+        private static TestSelector CreateTarget(
+            object? dataContext = null,
+            IList? items = null,
+            IList? itemsSource = null,
+            ControlTheme? itemContainerTheme = null,
+            IDataTemplate? itemTemplate = null,
+            bool performLayout = true)
         {
-            return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
-                new ItemsPresenter
+            var target = new TestSelector
+            {
+                DataContext = dataContext,
+                ItemContainerTheme = itemContainerTheme,
+                ItemTemplate = itemTemplate,
+                ItemsSource = itemsSource,
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            if (items is not null)
+            {
+                foreach (var item in items)
+                    target.Items.Add(item);
+            }
+
+            var root = CreateRoot(target);
+
+            if (performLayout)
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+            return target;
+        }
+
+        private static TestRoot CreateRoot(Control child)
+        {
+            return new TestRoot
+            {
+                Resources =
                 {
-                    Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                }.RegisterInNameScope(scope));
+                    { typeof(TestSelector), CreateTestSelectorControlTheme() },
+                    { typeof(ScrollViewer), CreateScrollViewerTheme() },
+                },
+                Child = child,
+            };
+        }
+
+        private static ControlTheme CreateTestSelectorControlTheme()
+        {
+            return new ControlTheme(typeof(TestSelector))
+            {
+                Setters =
+                {
+                    new Setter(TreeView.TemplateProperty, CreateTestSelectorTemplate()),
+                },
+            };
+        }
+
+        private static FuncControlTemplate CreateTestSelectorTemplate()
+        {
+            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
+            {
+                return new Border
+                {
+                    Background = new Media.SolidColorBrush(0xffffffff),
+                    Child = new ScrollViewer
+                    {
+                        Name = "PART_ScrollViewer",
+                        Content = new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                            [~ItemsPresenter.ItemsPanelProperty] = parent[~ItemsControl.ItemsPanelProperty],
+                        }.RegisterInNameScope(scope)
+                    }.RegisterInNameScope(scope)
+                };
+            });
+        }
+
+        private static ControlTheme CreateScrollViewerTheme()
+        {
+            return new ControlTheme(typeof(ScrollViewer))
+            {
+                Setters =
+                {
+                    new Setter(TreeView.TemplateProperty, CreateScrollViewerTemplate()),
+                },
+            };
+        }
+
+        private static FuncControlTemplate CreateScrollViewerTemplate()
+        {
+            return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
+                new Panel
+                {
+                    Children =
+                    {
+                        new ScrollContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
+                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
+                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
+                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
+                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
+                        }.RegisterInNameScope(scope),
+                        new ScrollBar
+                        {
+                            Name = "verticalScrollBar",
+                            [~ScrollBar.MaximumProperty] = parent[~ScrollViewer.VerticalScrollBarMaximumProperty],
+                            [~~ScrollBar.ValueProperty] = parent[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        }
+                    }
+                });
+        }
+
+        private static void Layout(Control c)
+        {
+            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+        }
+
+        public static IDisposable Start()
+        {
+            return UnitTestApplication.Start(
+                TestServices.MockThreadingInterface.With(
+                    focusManager: new FocusManager(),
+                    fontManagerImpl: new MockFontManagerImpl(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    keyboardNavigation: new KeyboardNavigationHandler(),
+                    inputManager: new InputManager(),
+                    renderInterface: new MockPlatformRenderInterface(),
+                    textShaperImpl: new MockTextShaperImpl()));
         }
 
         private class TestSelector : SelectingItemsControl
         {
-            public static readonly new AvaloniaProperty<IList> SelectedItemsProperty = 
+            public static readonly new AvaloniaProperty<IList?> SelectedItemsProperty = 
                 SelectingItemsControl.SelectedItemsProperty;
             public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
                 SelectingItemsControl.SelectionProperty;
@@ -1601,7 +1021,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public new IList SelectedItems
             {
-                get { return base.SelectedItems; }
+                get { return base.SelectedItems!; }
                 set { base.SelectedItems = value; }
             }
 
@@ -1639,7 +1059,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class ItemContainer : Control, ISelectable
         {
-            public string Value { get; set; }
+            public string? Value { get; set; }
             public bool IsSelected { get; set; }
         }
     }
