@@ -150,6 +150,8 @@ namespace Avalonia.Input
             if (e.Type == RawPointerEventType.NonClientLeftButtonDown) return;
 
             _position = e.Root.PointToScreen(e.Position);
+            (e.Root as ILastPointerPosition)?.SetLastPointerPosition(_position.Value);
+
             var props = CreateProperties(e);
             var keyModifiers = KeyModifiersUtils.ConvertToKey(e.InputModifiers);
             switch (e.Type)
