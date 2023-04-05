@@ -36,7 +36,8 @@ namespace Avalonia.Controls
         IStyleHost,
         ILogicalRoot,
         ITextInputMethodRoot,
-        IWeakEventSubscriber<ResourcesChangedEventArgs>
+        IWeakEventSubscriber<ResourcesChangedEventArgs>,
+        ILastPointerPosition
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -92,6 +93,7 @@ namespace Avalonia.Controls
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
+        private PixelPoint? _lastPointerPosition;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -315,6 +317,8 @@ namespace Avalonia.Controls
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
+        PixelPoint? ILastPointerPosition.LastPointerPosition => _lastPointerPosition;
+
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
         {
@@ -340,7 +344,9 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default;
         }
-        
+
+        void ILastPointerPosition.SetLastPointerPosition(PixelPoint point) => _lastPointerPosition = point;
+
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>

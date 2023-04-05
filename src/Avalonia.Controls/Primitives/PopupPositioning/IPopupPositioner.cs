@@ -45,6 +45,7 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives.PopupPositioning
@@ -446,13 +447,16 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             PopupAnchor anchor, PopupGravity gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect)
         {
-            // We need a better way for tracking the last pointer position
-            var pointer = topLevel.PointToClient(topLevel.PlatformImpl.MouseDevice.Position);
-            
+           
             positionerParameters.Offset = offset;
             positionerParameters.ConstraintAdjustment = constraintAdjustment;
             if (placement == PlacementMode.Pointer)
             {
+                // We need a better way for tracking the last pointer position
+                var pointer = topLevel.PointToClient(
+                    (topLevel as ILastPointerPosition)?.LastPointerPosition ??
+                    topLevel.PlatformImpl.MouseDevice.Position);
+
                 positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
                 positionerParameters.Gravity = PopupGravity.BottomRight;

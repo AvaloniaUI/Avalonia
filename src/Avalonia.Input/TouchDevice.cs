@@ -110,7 +110,7 @@ namespace Avalonia.Input
                     GetKeyModifiers(args.InputModifiers), args.IntermediatePoints));
             }
 
-
+            (ev.Root as ILastPointerPosition)?.SetLastPointerPosition(ev.Root.PointToScreen(args.Position));
         }
 
         public void Dispose()
