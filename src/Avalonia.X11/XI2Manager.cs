@@ -217,6 +217,8 @@ namespace Avalonia.X11
 
         private void OnDeviceEvent(IXI2Client client, ParsedDeviceEvent ev)
         {
+            if (!client.IsEnabled)
+                return;
             if (ev.Type == XiEventType.XI_TouchBegin 
                 || ev.Type == XiEventType.XI_TouchUpdate 
                 || ev.Type == XiEventType.XI_TouchEnd)
@@ -370,6 +372,7 @@ namespace Avalonia.X11
 
     internal interface IXI2Client
     {
+        bool IsEnabled { get; }
         IInputRoot InputRoot { get; }
         void ScheduleXI2Input(RawInputEventArgs args);
         IMouseDevice MouseDevice { get; }

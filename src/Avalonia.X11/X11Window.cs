@@ -24,6 +24,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
+using System.Runtime.InteropServices;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -772,7 +773,7 @@ namespace Avalonia.X11
 
         private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
-            if (_inputRoot is null)
+            if (_inputRoot is null || _disabled)
                 return;
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
@@ -1201,6 +1202,27 @@ namespace Avalonia.X11
         public void SetEnabled(bool enable)
         {
             _disabled = !enable;
+
+            var wmHintsPtr = XGetWMHints(_x11.Display, _handle);
+
+            XWMHints hints = default;
+
+            if (wmHintsPtr != IntPtr.Zero)
+            {
+                hints = Marshal.PtrToStructure<XWMHints>(wmHintsPtr);
+            }
+
+            var flags = hints.flags.ToInt64();
+            flags |= (long)XWMHintsFlags.InputHint;
+            hints.flags = (IntPtr)flags;
+            hints.input = enable ? 1 : 0;
+
+            XSetWMHints(_x11.Display, _handle, ref hints);
+
+            if (wmHintsPtr != IntPtr.Zero)
+            {
+                XFree(wmHintsPtr);
+            }
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
@@ -1289,6 +1311,8 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
+
+        public bool IsEnabled => !_disabled;
 
         public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
         {
