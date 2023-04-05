@@ -105,6 +105,14 @@ namespace Avalonia.Controls.Primitives
                 nameof(SelectionMode));
 
         /// <summary>
+        /// Defines the IsSelected attached property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsSelectedProperty =
+            AvaloniaProperty.RegisterAttached<SelectingItemsControl, Control, bool>(
+                "IsSelected",
+                defaultBindingMode: BindingMode.TwoWay);
+
+        /// <summary>
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
@@ -419,6 +427,21 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="item">The item.</param>
         public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
+
+        /// <summary>
+        /// Gets the value of the <see cref="IsSelectedProperty"/> on the specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The value of the attached property.</returns>
+        public static bool GetIsSelected(Control control) => control.GetValue(IsSelectedProperty);
+
+        /// <summary>
+        /// Gets the value of the <see cref="IsSelectedProperty"/> on the specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value of the property.</param>
+        /// <returns>The value of the attached property.</returns>
+        public static void SetIsSelected(Control control, bool value) => control.SetValue(IsSelectedProperty, value);
 
         /// <summary>
         /// Tries to get the container that was the source of an event.

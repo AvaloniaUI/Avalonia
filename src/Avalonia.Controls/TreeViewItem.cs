@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         /// <summary>
         /// Defines the <see cref="Level"/> property.
