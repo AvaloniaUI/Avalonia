@@ -565,12 +565,6 @@ namespace Avalonia.Controls.UnitTests
                 new ScrollContentPresenter
                 {
                     Name = "PART_ContentPresenter",
-                    [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
-                    [~~ScrollContentPresenter.ExtentProperty] = x[~~ScrollViewer.ExtentProperty],
-                    [~~ScrollContentPresenter.OffsetProperty] = x[~~ScrollViewer.OffsetProperty],
-                    [~~ScrollContentPresenter.ViewportProperty] = x[~~ScrollViewer.ViewportProperty],
-                    [~ScrollContentPresenter.CanHorizontallyScrollProperty] = x[~ScrollViewer.CanHorizontallyScrollProperty],
-                    [~ScrollContentPresenter.CanVerticallyScrollProperty] = x[~ScrollViewer.CanVerticallyScrollProperty],
                 }.RegisterInNameScope(ns));
         }
 

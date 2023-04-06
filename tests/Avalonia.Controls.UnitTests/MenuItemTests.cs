@@ -250,13 +250,13 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
-                Assert.Equal(2, canExecuteCallCount);
+                Assert.Equal(1, canExecuteCallCount);
 
                 command.RaiseCanExecuteChanged();
-                Assert.Equal(3, canExecuteCallCount);
+                Assert.Equal(2, canExecuteCallCount);
 
                 target.CommandParameter = true;
-                Assert.Equal(4, canExecuteCallCount);
+                Assert.Equal(3, canExecuteCallCount);
             }
         }
         

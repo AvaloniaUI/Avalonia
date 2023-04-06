@@ -891,7 +891,7 @@ namespace Avalonia
 
             for (var i = 0; i < logicalChildrenCount; i++)
             {
-                if (logicalChildren[i] is StyledElement child)
+                if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToLogicalTreeCore(e);
                 }
