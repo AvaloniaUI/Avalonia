@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -102,9 +103,31 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerExited(object? sender, PointerEventArgs e)
+        private async void ControlPointerExited(object? sender, PointerEventArgs e)
         {
             var control = (Control)sender!;
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            
+            // wait for the tooltip to activate
+            await Task.Delay(100).ConfigureAwait(true);
+            
+            if (control.IsPointerOver) return;
+            if (toolTip?.IsPointerOver == true)
+            {
+                void ToolTipOnPointerExited(object? _, PointerEventArgs __)
+                {
+                    toolTip.PointerExited -= ToolTipOnPointerExited;
+
+                    if (!control.IsPointerOver)
+                    {
+                        Close(control);
+                    }
+                }
+                
+                toolTip.PointerExited += ToolTipOnPointerExited;
+                return;
+            }
+            
             Close(control);
         }
 
