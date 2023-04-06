@@ -34,21 +34,16 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
             // This is needed to wakeup the loop if we are called from inside of BeforeWait hook
         };
 
-        var observerBlock = new BlockLiteral();
-        observerBlock.SetupBlock((Interop.CFRunLoopObserverCallback)ObserverCallback, null);
-        var observer = Interop.CFRunLoopObserverCreateWithHandler(IntPtr.Zero,
+        var observer = Interop.CFRunLoopObserverCreate(IntPtr.Zero,
             Interop.CFOptionFlags.kCFRunLoopAfterWaiting | Interop.CFOptionFlags.kCFRunLoopBeforeSources |
             Interop.CFOptionFlags.kCFRunLoopBeforeWaiting,
-            true,
-            0,
-            ref observerBlock);
-        Interop.CFRunLoopAddObserver(CFRunLoop.Main.Handle, observer, Interop.kCFRunLoopCommonModes);
+            true, 0, ObserverCallback, IntPtr.Zero);
+        Interop.CFRunLoopAddObserver(Interop.CFRunLoopGetMain(), observer, Interop.kCFRunLoopCommonModes);
 
-        var timerBlock = new BlockLiteral();
-        timerBlock.SetupBlock((Interop.CFRunLoopTimerCallback)TimerCallback, null);
-        _timer = Interop.CFRunLoopTimerCreateWithHandler(IntPtr.Zero,
+        _timer = Interop.CFRunLoopTimerCreate(IntPtr.Zero,
             Interop.CFAbsoluteTimeGetCurrent() + DistantFutureInterval,
-            DistantFutureInterval, 0, 0, ref timerBlock);
+            DistantFutureInterval, 0, 0, TimerCallback, IntPtr.Zero);
+        Interop.CFRunLoopAddTimer(Interop.CFRunLoopGetMain(), _timer, Interop.kCFRunLoopCommonModes);
     }
 
     public event Action? Signaled;
@@ -115,7 +110,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     }
 
     [MonoPInvokeCallback(typeof(Interop.CFRunLoopObserverCallback))]
-    private static void ObserverCallback(IntPtr observer, Interop.CFOptionFlags activity)
+    private static void ObserverCallback(IntPtr observer, Interop.CFOptionFlags activity, IntPtr info)
     {
         if (activity == Interop.CFOptionFlags.kCFRunLoopBeforeWaiting)
         {
@@ -133,7 +128,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     }
 
     [MonoPInvokeCallback(typeof(Interop.CFRunLoopTimerCallback))]
-    private static void TimerCallback(IntPtr timer)
+    private static void TimerCallback(IntPtr timer, IntPtr info)
     {
         Instance.Timer?.Invoke();
     }
