@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -134,7 +135,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems.Add("foo");
 
             bool raised = false;
-            target.PropertyChanged += (s, e) => 
+            target.PropertyChanged += (s, e) =>
                 raised |= e.Property.Name == "SelectedIndex" ||
                           e.Property.Name == "SelectedItem";
 
@@ -152,9 +153,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems.Add("foo");
 
             bool raised = false;
-            target.PropertyChanged += (s, e) => 
-                raised |= e.Property.Name == "SelectedIndex" && 
-                          (int)e.OldValue! == 0 && 
+            target.PropertyChanged += (s, e) =>
+                raised |= e.Property.Name == "SelectedIndex" &&
+                          (int)e.OldValue! == 0 &&
                           (int)e.NewValue! == -1;
 
             target.SelectedItems.RemoveAt(0);
@@ -708,14 +709,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using var app = Start();
             var items = new[]
             {
-                new ItemContainer(),
-                new ItemContainer(),
+                new TestContainer(),
+                new TestContainer(),
             };
 
             var target = CreateTarget(items: items);
 
-            target.Items.Add(new ItemContainer { IsSelected = true });
-            target.Items.Add(new ItemContainer { IsSelected = true });
+            target.Items.Add(new TestContainer { IsSelected = true });
+            target.Items.Add(new TestContainer { IsSelected = true });
 
             Assert.Equal(2, target.SelectedIndex);
             Assert.Equal(target.Items[2], target.SelectedItem);
@@ -867,12 +868,169 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(2, raised);
         }
 
+        [Fact]
+        public void Can_Bind_Initial_Selected_State_Via_ItemContainerTheme()
+        {
+            using var app = Start();
+            var items = new ItemViewModel[] { new("Item 0", true), new("Item 1", false), new("Item 2", true) };
+            var itemTheme = new ControlTheme(typeof(ContentPresenter))
+            {
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(itemsSource: items, itemContainerTheme: itemTheme);
+
+            Assert.Equal(new[] { 0, 2 }, SelectedContainers(target));
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(new[] { 0, 2 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[0], items[2] }, target.Selection.SelectedItems);
+        }
+
+        [Fact]
+        public void Can_Bind_Initial_Selected_State_Via_Style()
+        {
+            using var app = Start();
+            var items = new ItemViewModel[] { new("Item 0", true), new("Item 1", false), new("Item 2", true) };
+            var style = new Style(x => x.OfType<ContentPresenter>())
+            {
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(itemsSource: items, styles: new[] { style });
+
+            Assert.Equal(new[] { 0, 2 }, SelectedContainers(target));
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(new[] { 0, 2 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[0], items[2] }, target.Selection.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Updated_Via_IsSelected_Binding()
+        {
+            using var app = Start();
+            var items = new ItemViewModel[] { new("Item 0", true), new("Item 1", false), new("Item 2", true) };
+            var itemTheme = new ControlTheme(typeof(TestContainer))
+            {
+                BasedOn = CreateTestContainerTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            // For the container selection state to be communicated back to the SelectingItemsControl
+            // we need a container which raises the SelectingItemsControl.IsSelectedChangedEvent when
+            // the IsSelected property changes.
+            var target = CreateTarget<TestSelectorWithContainers>(
+                itemsSource: items,
+                itemContainerTheme: itemTheme);
+
+            items[1].IsSelected = true;
+
+            Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(new[] { 0, 1, 2 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[0], items[1], items[2] }, target.Selection.SelectedItems);
+
+            items[0].IsSelected = false;
+
+            Assert.Equal(new[] { 1, 2 }, SelectedContainers(target));
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(new[] { 1, 2 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[1], items[2] }, target.Selection.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Written_Back_To_Item_Via_IsSelected_Binding()
+        {
+            using var app = Start();
+            var items = new ItemViewModel[] { new("Item 0", true), new("Item 1", false), new("Item 2", true) };
+            var itemTheme = new ControlTheme(typeof(ContentPresenter))
+            {
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(itemsSource: items, itemContainerTheme: itemTheme);
+            var container0 = Assert.IsAssignableFrom<Control>(target.ContainerFromIndex(0));
+            var container1 = Assert.IsAssignableFrom<Control>(target.ContainerFromIndex(1));
+
+            SelectingItemsControl.SetIsSelected(container1, true);
+
+            Assert.True(items[1].IsSelected);
+
+            SelectingItemsControl.SetIsSelected(container0, false);
+
+            Assert.False(items[0].IsSelected);
+        }
+
+        [Fact]
+        public void Selection_State_Change_On_Unrealized_Item_Is_Respected_With_IsSelected_Binding()
+        {
+            using var app = Start();
+            var items = Enumerable.Range(0, 100).Select(x => new ItemViewModel($"Item {x}", false)).ToList();
+            var itemTheme = new ControlTheme(typeof(ContentPresenter))
+            {
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(Control.HeightProperty, 100.0),
+                }
+            };
+
+            // Create a SelectingItemsControl with a virtualizing stack panel.
+            var target = CreateTarget(itemsSource: items, itemContainerTheme: itemTheme, virtualizing: true);
+            var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
+            var scroll = panel.FindAncestorOfType<ScrollViewer>()!;
+
+            // Scroll item 1 out of view.
+            scroll.Offset = new(0, 1000);
+            Layout(target);
+
+            Assert.Equal(10, panel.FirstRealizedIndex);
+            Assert.Equal(19, panel.LastRealizedIndex);
+
+            // Select item 1 now it's unrealized.
+            items[1].IsSelected = true;
+
+            // The SelectingItemsControl does not yet know anything about the selection change.
+            Assert.Empty(SelectedContainers(target));
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.Selection.SelectedIndexes);
+            Assert.Empty(target.Selection.SelectedItems);
+
+            // Scroll item 1 back into view.
+            scroll.Offset = new(0, 0);
+            Layout(target);
+
+            // The item and container should be marked as selected.
+            Assert.True(items[1].IsSelected);
+            Assert.Equal(new[] { 1 }, SelectedContainers(target));
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(new[] { 1 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[1] }, target.Selection.SelectedItems);
+        }
+
         private static IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             Assert.NotNull(target.ItemsPanel);
 
             return target.ItemsPanelRoot!.Children
-                .Select(x => x.Classes.Contains(":selected") ? target.IndexFromContainer(x) : -1)
+                .Select(x => SelectingItemsControl.GetIsSelected(x) ? target.IndexFromContainer(x) : -1)
                 .Where(x => x != -1);
         }
 
@@ -882,9 +1040,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
             IDataTemplate? itemTemplate = null,
-            bool performLayout = true)
+            IEnumerable<Style>? styles = null,
+            bool performLayout = true,
+            bool virtualizing = false)
         {
-            var target = new TestSelector
+            return CreateTarget<TestSelector>(
+                dataContext:  dataContext,
+                items: items,
+                itemsSource: itemsSource,
+                itemContainerTheme: itemContainerTheme,
+                itemTemplate: itemTemplate,
+                styles: styles,
+                performLayout: performLayout,
+                virtualizing: virtualizing);
+        }
+
+        private static T CreateTarget<T>(
+            object? dataContext = null,
+            IList? items = null,
+            IList? itemsSource = null,
+            ControlTheme? itemContainerTheme = null,
+            IDataTemplate? itemTemplate = null,
+            IEnumerable<Style>? styles = null,
+            bool performLayout = true,
+            bool virtualizing = false)
+                where T : TestSelector, new()
+        {
+            var target = new T
             {
                 DataContext = dataContext,
                 ItemContainerTheme = itemContainerTheme,
@@ -899,7 +1081,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     target.Items.Add(item);
             }
 
+            if (virtualizing)
+                target.ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+
             var root = CreateRoot(target);
+
+            if (styles is not null)
+            {
+                foreach (var style in styles)
+                    root.Styles.Add(style);
+            }
 
             if (performLayout)
                 root.LayoutManager.ExecuteInitialLayoutPass();
@@ -914,6 +1105,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Resources =
                 {
                     { typeof(TestSelector), CreateTestSelectorControlTheme() },
+                    { typeof(TestContainer), CreateTestContainerTheme() },
                     { typeof(ScrollViewer), CreateScrollViewerTheme() },
                 },
                 Child = child,
@@ -949,6 +1141,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     }.RegisterInNameScope(scope)
                 };
             });
+        }
+
+        private static ControlTheme CreateTestContainerTheme()
+        {
+            return new ControlTheme(typeof(TestContainer))
+            {
+                Setters =
+                {
+                    new Setter(TreeView.TemplateProperty, CreateTestContainerTemplate()),
+                },
+            };
+        }
+
+        private static FuncControlTemplate CreateTestContainerTemplate()
+        {
+            return new FuncControlTemplate<TestContainer>((parent, scope) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = parent[!TestContainer.ContentProperty],
+                    [!ContentPresenter.ContentTemplateProperty] = parent[!TestContainer.ContentTemplateProperty],
+                }.RegisterInNameScope(scope));
         }
 
         private static ControlTheme CreateScrollViewerTheme()
@@ -1009,7 +1223,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
-            public static readonly new AvaloniaProperty<IList?> SelectedItemsProperty = 
+            public static readonly new AvaloniaProperty<IList?> SelectedItemsProperty =
                 SelectingItemsControl.SelectedItemsProperty;
             public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
                 SelectingItemsControl.SelectionProperty;
@@ -1043,6 +1257,66 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public void Toggle(int index) => UpdateSelection(index, true, false, true);
         }
 
+        private class TestSelectorWithContainers : TestSelector, IStyleable
+        {
+            Type IStyleable.StyleKey => typeof(TestSelector);
+
+            protected internal override bool IsItemItsOwnContainerOverride(Control item)
+            {
+                return item is TestContainer;
+            }
+
+            protected internal override Control CreateContainerForItemOverride()
+            {
+                return new TestContainer();
+            }
+        }
+
+        private class TestContainer : ContentControl, ISelectable
+        {
+            public static readonly StyledProperty<bool> IsSelectedProperty =
+                SelectingItemsControl.IsSelectedProperty.AddOwner<TestContainer>();
+
+            static TestContainer()
+            {
+                SelectableMixin.Attach<TestContainer>(SelectingItemsControl.IsSelectedProperty);
+            }
+
+            public bool IsSelected
+            {
+                get => GetValue(IsSelectedProperty);
+                set => SetValue(IsSelectedProperty, value);
+            }
+        }
+
+        private class ItemViewModel : NotifyingBase
+        {
+            private bool _isSelected;
+
+            public ItemViewModel(string value, bool isSelected = false)
+            {
+                Value = value;
+                _isSelected = isSelected;
+            }
+
+            public string Value { get; set; }
+
+            public bool IsSelected
+            {
+                get => _isSelected;
+                set
+                {
+                    if (_isSelected != value)
+                    {
+                        _isSelected = value;
+                        RaisePropertyChanged();
+                    }
+                }
+            }
+
+            public override string ToString() => Value;
+        }
+
         private class OldDataContextViewModel
         {
             public OldDataContextViewModel()
@@ -1052,15 +1326,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Selection = new SelectionModel<string>();
             }
 
-            public List<string> Items { get; } 
+            public List<string> Items { get; }
             public List<string> SelectedItems { get; }
             public SelectionModel<string> Selection { get; }
-        }
-
-        private class ItemContainer : Control, ISelectable
-        {
-            public string? Value { get; set; }
-            public bool IsSelected { get; set; }
         }
     }
 }
