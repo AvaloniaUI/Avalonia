@@ -494,27 +494,18 @@ namespace Avalonia.Controls
 
             // Once the container has been full prepared and added to the tree, any bindings from
             // styles or item container themes are guaranteed to be applied. 
-            if (!container.IsSet(SelectingItemsControl.IsSelectedProperty))
-            {
-                // The IsSelected property is not set on the container: update the container
-                // selection based on the current selection as understood by this control.
-                MarkContainerSelected(container, SelectedItems.Contains(item));
-            }
-            else
+            if (container.IsSet(SelectingItemsControl.IsSelectedProperty))
             {
                 // The IsSelected property is set on the container: there is a style or item
                 // container theme which has bound the IsSelected property. Update our selection
                 // based on the selection state of the container.
                 var containerIsSelected = SelectingItemsControl.GetIsSelected(container);
-
-                if (containerIsSelected != SelectedItems.Contains(item))
-                {
-                    if (containerIsSelected)
-                        SelectedItems.Add(item);
-                    else
-                        SelectedItems.Remove(item);
-                }
+                UpdateSelectionFromContainer(container, select: containerIsSelected, toggleModifier: true);
             }
+
+            // The IsSelected property is not set on the container: update the container
+            // selection based on the current selection as understood by this control.
+            MarkContainerSelected(container, SelectedItems.Contains(item));
         }
 
         /// <inheritdoc/>
@@ -681,7 +672,11 @@ namespace Avalonia.Controls
             var multi = mode.HasAllFlags(SelectionMode.Multiple);
             var range = multi && rangeModifier && selectedContainer != null;
 
-            if (rightButton)
+            if (!select)
+            {
+                SelectedItems.Remove(item);
+            }
+            else if (rightButton)
             {
                 if (!SelectedItems.Contains(item))
                 {

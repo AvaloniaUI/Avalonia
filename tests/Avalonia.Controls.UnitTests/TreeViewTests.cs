@@ -1279,7 +1279,7 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
-            var target = CreateTarget(data: data, itemContainerTheme: itemTheme);
+            var target = CreateTarget(data: data, itemContainerTheme: itemTheme, multiSelect: true);
 
             AssertDataSelection(data, selected);
             AssertContainerSelection(target, selected);
@@ -1305,7 +1305,7 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
-            var target = CreateTarget(data: data, styles: new[] { style });
+            var target = CreateTarget(data: data, multiSelect: true, styles: new[] { style });
 
             AssertDataSelection(data, selected);
             AssertContainerSelection(target, selected);
@@ -1331,10 +1331,97 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
-            var target = CreateTarget(data: data, itemContainerTheme: itemTheme);
+            var target = CreateTarget(data: data, itemContainerTheme: itemTheme, multiSelect: true);
 
             selected[1].IsSelected = true;
 
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Updated_Via_IsSelected_Binding_On_Expand()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            foreach (var node in selected)
+                node.IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(TreeViewItem))
+            {
+                BasedOn = CreateTreeViewItemControlTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(
+                data: data,
+                expandAll: false,
+                itemContainerTheme: itemTheme, 
+                multiSelect: true);
+
+            var rootContainer = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
+
+            // Root TreeViewItem isn't expanded so selection for child won't have been picked
+            // up by IsSelected binding yet.
+            AssertContainerSelection(target, new[] { selected[0] });
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(new[] { selected[0] }, target.SelectedItems);
+
+            rootContainer.IsExpanded = true;
+            Layout(target);
+
+            // Root is expanded so now all expected items will be selected.
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Updated_Via_IsSelected_Binding_On_Expand_Single_Select()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            foreach (var node in selected)
+                node.IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(TreeViewItem))
+            {
+                BasedOn = CreateTreeViewItemControlTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(
+                data: data,
+                expandAll: false,
+                itemContainerTheme: itemTheme);
+
+            var rootContainer = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
+
+            // Root TreeViewItem isn't expanded so selection for child won't have been picked
+            // up by IsSelected binding yet.
+            AssertContainerSelection(target, new[] { selected[0] });
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(new[] { selected[0] }, target.SelectedItems);
+
+            rootContainer.IsExpanded = true;
+            Layout(target);
+
+            // Root is expanded and newly revealed selected node will replace current selection
+            // given that we're in SelectionMode == Single.
+            selected = new[] { selected[1] };
             AssertDataSelection(data, selected);
             AssertContainerSelection(target, selected);
             Assert.Equal(selected[0], target.SelectedItem);

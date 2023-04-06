@@ -977,6 +977,54 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Selection_Is_Updated_On_Container_Realization_With_IsSelected_Binding()
+        {
+            using var app = Start();
+            var items = Enumerable.Range(0, 100).Select(x => new ItemViewModel($"Item {x}", false)).ToList();
+            items[0].IsSelected = true;
+            items[15].IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(ContentPresenter))
+            {
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(Control.HeightProperty, 100.0),
+                }
+            };
+
+            // Create a SelectingItemsControl with a virtualizing stack panel.
+            var target = CreateTarget(itemsSource: items, itemContainerTheme: itemTheme, virtualizing: true);
+            var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
+            var scroll = panel.FindAncestorOfType<ScrollViewer>()!;
+
+            // The SelectingItemsControl does not yet know anything about item 15's selection state.
+            Assert.Equal(new[] { 0 }, SelectedContainers(target));
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(new[] { 0 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[0] }, target.Selection.SelectedItems);
+
+            // Scroll item 15 into view.
+            scroll.Offset = new(0, 1000);
+            Layout(target);
+
+            Assert.Equal(10, panel.FirstRealizedIndex);
+            Assert.Equal(19, panel.LastRealizedIndex);
+
+            // The final selection should be in place.
+            Assert.True(items[0].IsSelected);
+            Assert.True(items[15].IsSelected);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(new[] { 0, 15 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[0], items[15] }, target.Selection.SelectedItems);
+
+            // Although item 0 is selected, it's not realized.
+            Assert.Equal(new[] { 15 }, SelectedContainers(target));
+        }
+
+        [Fact]
         public void Selection_State_Change_On_Unrealized_Item_Is_Respected_With_IsSelected_Binding()
         {
             using var app = Start();

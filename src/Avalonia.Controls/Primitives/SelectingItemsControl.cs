@@ -309,20 +309,9 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                if (_updateState?.Selection.HasValue == true)
-                {
-                    return _updateState.Selection.Value;
-                }
-                else
-                {
-                    if (_selection is null)
-                    {
-                        _selection = CreateDefaultSelectionModel();
-                        InitializeSelectionModel(_selection);
-                    }
-
-                    return _selection;
-                }
+                return _updateState?.Selection.HasValue == true ?
+                    _updateState.Selection.Value :
+                    GetOrCreateSelectionModel();
             }
             set
             {
@@ -495,6 +484,17 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
+        {
+            // Ensure that the selection model is created at this point so that accessing it in 
+            // ContainerForItemPreparedOverride doesn't cause it to be initialized (which can
+            // make containers become deselected when they're synced with the empty selection
+            // mode).
+            GetOrCreateSelectionModel();
+
+            base.PrepareContainerForItemOverride(container, item, index);
+        }
+
         protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
         {
             base.ContainerForItemPreparedOverride(container, item, index);
@@ -513,14 +513,7 @@ namespace Avalonia.Controls.Primitives
                 // container theme which has bound the IsSelected property. Update our selection
                 // based on the selection state of the container.
                 var containerIsSelected = GetIsSelected(container);
-
-                if (containerIsSelected != Selection.IsSelected(index))
-                {
-                    if (containerIsSelected)
-                        Selection.Select(index);
-                    else
-                        Selection.Deselect(index);
-                }
+                UpdateSelection(index, containerIsSelected, toggleModifier: true);
             }
         }
 
@@ -905,6 +898,17 @@ namespace Avalonia.Controls.Primitives
             }
 
             return false;
+        }
+
+        private ISelectionModel GetOrCreateSelectionModel()
+        {
+            if (_selection is null)
+            {
+                _selection = CreateDefaultSelectionModel();
+                InitializeSelectionModel(_selection);
+            }
+
+            return _selection;
         }
 
         private void OnItemsViewSourceChanged(object? sender, EventArgs e)
