@@ -105,6 +105,11 @@ namespace Avalonia.Controls
             EnsureTreeView().PrepareContainerForItemOverride(container, item, index);
         }
 
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().ContainerForItemPreparedOverride(container, item, index);
+        }
+
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
