@@ -217,8 +217,6 @@ namespace Avalonia.X11
 
         private void OnDeviceEvent(IXI2Client client, ParsedDeviceEvent ev)
         {
-            if (!client.IsEnabled)
-                return;
             if (ev.Type == XiEventType.XI_TouchBegin 
                 || ev.Type == XiEventType.XI_TouchUpdate 
                 || ev.Type == XiEventType.XI_TouchEnd)
@@ -233,7 +231,7 @@ namespace Avalonia.X11
                 return;
             }
 
-            if (_multitouch && ev.Emulated)
+            if (!client.IsEnabled || (_multitouch && ev.Emulated))
                 return;
             
             if (ev.Type == XiEventType.XI_Motion)

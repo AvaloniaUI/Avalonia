@@ -736,6 +736,10 @@ namespace Avalonia.X11
         {
             if (_inputRoot is null)
                 return;
+
+            if (_disabled && args is RawPointerEventArgs pargs && pargs.Type == RawPointerEventType.Move)
+                return;
+
             Input?.Invoke(args);
             if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
@@ -773,7 +777,7 @@ namespace Avalonia.X11
 
         private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
-            if (_inputRoot is null || _disabled)
+            if (_inputRoot is null)
                 return;
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
@@ -1203,6 +1207,11 @@ namespace Avalonia.X11
         {
             _disabled = !enable;
 
+            UpdateWMHints();
+        }
+
+        private void UpdateWMHints()
+        {
             var wmHintsPtr = XGetWMHints(_x11.Display, _handle);
 
             XWMHints hints = default;
@@ -1215,7 +1224,7 @@ namespace Avalonia.X11
             var flags = hints.flags.ToInt64();
             flags |= (long)XWMHintsFlags.InputHint;
             hints.flags = (IntPtr)flags;
-            hints.input = enable ? 1 : 0;
+            hints.input = !_disabled ? 1 : 0;
 
             XSetWMHints(_x11.Display, _handle, ref hints);
 
