@@ -110,7 +110,7 @@ namespace Avalonia.Controls
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
                 RoutingStrategies.Bubble);
 
-            ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
+            ValueProperty.OverrideMetadata<Slider>(new(enableDataValidation: true));
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
         }
 
@@ -246,11 +246,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Home:
-                    Value = Minimum;
+                    SetCurrentValue(ValueProperty, Minimum);
                     break;
 
                 case Key.End:
-                    Value = Maximum;
+                    SetCurrentValue(ValueProperty, Maximum);
                     break;
 
                 default:
@@ -313,7 +313,7 @@ namespace Avalonia.Controls
             // Update if we've found a better value
             if (Math.Abs(next - value) > Tolerance)
             {
-                Value = next;
+                SetCurrentValue(ValueProperty, next);
             }
         }
 
@@ -366,7 +366,7 @@ namespace Avalonia.Controls
             var range = Maximum - Minimum;
             var finalValue = calcVal * range + Minimum;
 
-            Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
+            SetCurrentValue(ValueProperty, IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue);
         }
 
         /// <inheritdoc />
