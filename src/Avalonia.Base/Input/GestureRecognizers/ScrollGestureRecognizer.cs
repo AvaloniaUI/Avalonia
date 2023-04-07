@@ -4,13 +4,16 @@ using Avalonia.Threading;
 
 namespace Avalonia.Input.GestureRecognizers
 {
-    public class ScrollGestureRecognizer 
-        : StyledElement, // It's not an "element" in any way, shape or form, but TemplateBinding refuse to work otherwise
-            IGestureRecognizer
+    public class ScrollGestureRecognizer : AvaloniaObject, IGestureRecognizer
     {
         // Pixels per second speed that is considered to be the stop of inertial scroll
         internal const double InertialScrollSpeedEnd = 5;
         public const double InertialResistance = 0.15;
+
+        private bool _canHorizontallyScroll;
+        private bool _canVerticallyScroll;
+        private bool _isScrollInertiaEnabled;
+        private int _scrollStartDistance = 30;
 
         private bool _scrolling;
         private Point _trackedRootPoint;
@@ -28,34 +31,39 @@ namespace Avalonia.Input.GestureRecognizers
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> CanHorizontallyScrollProperty =
-            AvaloniaProperty.Register<ScrollGestureRecognizer, bool>(nameof(CanHorizontallyScroll));
+        public static readonly DirectProperty<ScrollGestureRecognizer, bool> CanHorizontallyScrollProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, bool>(nameof(CanHorizontallyScroll), 
+                o => o.CanHorizontallyScroll, (o, v) => o.CanHorizontallyScroll = v);
 
         /// <summary>
         /// Defines the <see cref="CanVerticallyScroll"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> CanVerticallyScrollProperty =
-            AvaloniaProperty.Register<ScrollGestureRecognizer, bool>(nameof(CanVerticallyScroll));
+        public static readonly DirectProperty<ScrollGestureRecognizer, bool> CanVerticallyScrollProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, bool>(nameof(CanVerticallyScroll),
+                o => o.CanVerticallyScroll, (o, v) => o.CanVerticallyScroll = v);
 
         /// <summary>
         /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsScrollInertiaEnabledProperty =
-            AvaloniaProperty.Register<ScrollGestureRecognizer, bool>(nameof(IsScrollInertiaEnabled));
+        public static readonly DirectProperty<ScrollGestureRecognizer, bool> IsScrollInertiaEnabledProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, bool>(nameof(IsScrollInertiaEnabled),
+                o => o.IsScrollInertiaEnabled, (o,v) => o.IsScrollInertiaEnabled = v);
 
         /// <summary>
         /// Defines the <see cref="ScrollStartDistance"/> property.
         /// </summary>
-        public static readonly StyledProperty<int> ScrollStartDistanceProperty =
-            AvaloniaProperty.Register<ScrollGestureRecognizer, int>(nameof(ScrollStartDistance), 30);
-        
+        public static readonly DirectProperty<ScrollGestureRecognizer, int> ScrollStartDistanceProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, int>(nameof(ScrollStartDistance),
+                o => o.ScrollStartDistance, (o, v) => o.ScrollStartDistance = v,
+                unsetValue: 30);
+
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
         /// </summary>
         public bool CanHorizontallyScroll
         {
-            get => GetValue(CanHorizontallyScrollProperty);
-            set => SetValue(CanHorizontallyScrollProperty, value);
+            get => _canHorizontallyScroll;
+            set => SetAndRaise(CanHorizontallyScrollProperty, ref _canHorizontallyScroll, value);
         }
 
         /// <summary>
@@ -63,17 +71,17 @@ namespace Avalonia.Input.GestureRecognizers
         /// </summary>
         public bool CanVerticallyScroll
         {
-            get => GetValue(CanVerticallyScrollProperty);
-            set => SetValue(CanVerticallyScrollProperty, value);
+            get => _canVerticallyScroll;
+            set => SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value);
         }
-        
+
         /// <summary>
         /// Gets or sets whether the gesture should include inertia in it's behavior.
         /// </summary>
         public bool IsScrollInertiaEnabled
         {
-            get => GetValue(IsScrollInertiaEnabledProperty);
-            set => SetValue(IsScrollInertiaEnabledProperty, value);
+            get => _isScrollInertiaEnabled;
+            set => SetAndRaise(IsScrollInertiaEnabledProperty, ref _isScrollInertiaEnabled, value);
         }
 
         /// <summary>
@@ -81,10 +89,9 @@ namespace Avalonia.Input.GestureRecognizers
         /// </summary>
         public int ScrollStartDistance
         {
-            get => GetValue(ScrollStartDistanceProperty);
-            set => SetValue(ScrollStartDistanceProperty, value);
-        }
-        
+            get => _scrollStartDistance;
+            set => SetAndRaise(ScrollStartDistanceProperty, ref _scrollStartDistance, value);
+        }        
 
         public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
         {
