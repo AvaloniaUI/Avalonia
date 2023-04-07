@@ -425,6 +425,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when a container has been fully prepared to display an item.
+        /// </summary>
+        /// <param name="container">The container control.</param>
+        /// <param name="item">The item being displayed.</param>
+        /// <param name="index">The index of the item being displayed.</param>
+        /// <remarks>
+        /// This method will be called when a container has been fully prepared and added to the
+        /// logical and visual trees, but may be called before a layout pass has completed. It is
+        /// called immediately before the <see cref="ContainerPrepared"/> event is raised.
+        /// </remarks>
+        protected internal virtual void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+        }
+
+        /// <summary>
         /// Called when the index for a container changes due to an insertion or removal in the
         /// items collection.
         /// </summary>
@@ -654,6 +669,7 @@ namespace Avalonia.Controls
 
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
+            ContainerForItemPreparedOverride(container, item, index);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
             ContainerPrepared?.Invoke(this, new(container, index));
         }
