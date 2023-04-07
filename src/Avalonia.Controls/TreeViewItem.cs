@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         /// <summary>
         /// Defines the <see cref="Level"/> property.
@@ -103,6 +103,11 @@ namespace Avalonia.Controls
         protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
         {
             EnsureTreeView().PrepareContainerForItemOverride(container, item, index);
+        }
+
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().ContainerForItemPreparedOverride(container, item, index);
         }
 
         /// <inheritdoc/>
