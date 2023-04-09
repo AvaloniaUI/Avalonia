@@ -624,15 +624,6 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            (_gl as IDisposable)?.Dispose();
-
-            if (_dropTarget != null)
-            {
-                OleContext.Current?.UnregisterDragDrop(Handle);
-                _dropTarget.Dispose();
-                _dropTarget = null;
-            }
-
             if (_hwnd != IntPtr.Zero)
             {
                 // Detect if we are being closed programmatically - this would mean that WM_CLOSE was not called
@@ -645,8 +636,6 @@ namespace Avalonia.Win32
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
-
-            _framebuffer.Dispose();
         }
 
         public void Invalidate(Rect rect)
