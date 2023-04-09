@@ -527,6 +527,13 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            Renderer.SceneInvalidated -= SceneInvalidated;
+            // We need to wait for the renderer to complete any in-flight operations
+            Renderer.Dispose();
+            
+            // The PlatformImpl is completely invalid at this point
+            PlatformImpl = null;
+            
             if (_globalStyles is object)
             {
                 _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
@@ -536,18 +543,13 @@ namespace Avalonia.Controls
             {
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
-
-            Renderer.SceneInvalidated -= SceneInvalidated;
-            Renderer.Dispose();
-
+            
             _layoutDiagnosticBridge?.Dispose();
             _layoutDiagnosticBridge = null;
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
             _backGestureSubscription?.Dispose();
-
-            PlatformImpl = null;
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);

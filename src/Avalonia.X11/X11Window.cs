@@ -48,6 +48,7 @@ namespace Avalonia.X11
         private readonly X11NativeControlHost _nativeControlHost;
         private PixelPoint? _position;
         private PixelSize _realSize;
+        private bool _cleaningUp;
         private IntPtr _handle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
@@ -522,7 +523,7 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.DestroyNotify 
                      && ev.DestroyWindowEvent.window == _handle)
             {
-                Cleanup();
+                Cleanup(true);
             }
             else if (ev.type == XEventName.ClientMessage)
             {
@@ -816,7 +817,7 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
-            Cleanup();            
+            Cleanup(false);            
         }
 
         public virtual object? TryGetFeature(Type featureType)
@@ -849,8 +850,17 @@ namespace Avalonia.X11
             return null;
         }
 
-        private void Cleanup()
+        private void Cleanup(bool fromDestroyNotification)
         {
+            // Prevent reentrancy
+            if(_cleaningUp)
+                return;
+            _cleaningUp = true;
+            
+            // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
+            if (_handle != IntPtr.Zero)
+                Closed?.Invoke();
+            
             if (_rawEventGrouper != null)
             {
                 _rawEventGrouper.Dispose();
@@ -891,7 +901,8 @@ namespace Avalonia.X11
                 Closed?.Invoke();
                 _mouse.Dispose();
                 _touch.Dispose();
-                XDestroyWindow(_x11.Display, handle);
+                if (!fromDestroyNotification)
+                    XDestroyWindow(_x11.Display, handle);
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
