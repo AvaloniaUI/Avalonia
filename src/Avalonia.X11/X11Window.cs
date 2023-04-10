@@ -898,7 +898,6 @@ namespace Avalonia.X11
                 _platform.XI2?.OnWindowDestroyed(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
-                Closed?.Invoke();
                 _mouse.Dispose();
                 _touch.Dispose();
                 if (!fromDestroyNotification)
