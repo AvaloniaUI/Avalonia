@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
@@ -219,7 +220,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(fromContainer.IsSelected);
 
             ClickContainer(toContainer, KeyModifiers.Shift);
-            AssertChildrenSelected(target, rootNode);
+            AssertAllChildContainersSelected(target, rootNode);
         }
 
         [Fact]
@@ -238,7 +239,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(fromContainer.IsSelected);
 
             ClickContainer(toContainer, KeyModifiers.Shift);
-            AssertChildrenSelected(target, rootNode);
+            AssertAllChildContainersSelected(target, rootNode);
         }
 
         [Fact]
@@ -255,7 +256,7 @@ namespace Avalonia.Controls.UnitTests
 
             ClickContainer(fromContainer, KeyModifiers.None);
             ClickContainer(toContainer, KeyModifiers.Shift);
-            AssertChildrenSelected(target, rootNode);
+            AssertAllChildContainersSelected(target, rootNode);
 
             ClickContainer(fromContainer, KeyModifiers.None);
             Assert.True(fromContainer.IsSelected);
@@ -975,7 +976,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.RaiseEvent(keyEvent);
 
-            AssertChildrenSelected(target, rootNode);
+            AssertAllChildContainersSelected(target, rootNode);
         }
 
         [Fact]
@@ -1005,7 +1006,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.RaiseEvent(keyEvent);
 
-            AssertChildrenSelected(target, rootNode);
+            AssertAllChildContainersSelected(target, rootNode);
         }
 
         [Fact]
@@ -1035,7 +1036,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.RaiseEvent(keyEvent);
 
-            AssertChildrenSelected(target, rootNode);
+            AssertAllChildContainersSelected(target, rootNode);
         }
 
         [Fact]
@@ -1047,7 +1048,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectAll();
 
-            AssertChildrenSelected(target, data[0]);
+            AssertAllChildContainersSelected(target, data[0]);
             Assert.Equal(5, target.SelectedItems.Count);
 
             _mouse.Click(target.Presenter!.Panel!.Children[0], MouseButton.Right);
@@ -1259,6 +1260,174 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Can_Bind_Initial_Selected_State_Via_ItemContainerTheme()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            foreach (var node in selected)
+                node.IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(TreeViewItem))
+            {
+                BasedOn = CreateTreeViewItemControlTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(data: data, itemContainerTheme: itemTheme, multiSelect: true);
+
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Can_Bind_Initial_Selected_State_Via_Style()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            foreach (var node in selected)
+                node.IsSelected = true;
+
+            var style = new Style(x => x.OfType<TreeViewItem>())
+            {
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(data: data, multiSelect: true, styles: new[] { style });
+
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Updated_Via_IsSelected_Binding()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            selected[0].IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(TreeViewItem))
+            {
+                BasedOn = CreateTreeViewItemControlTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(data: data, itemContainerTheme: itemTheme, multiSelect: true);
+
+            selected[1].IsSelected = true;
+
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Updated_Via_IsSelected_Binding_On_Expand()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            foreach (var node in selected)
+                node.IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(TreeViewItem))
+            {
+                BasedOn = CreateTreeViewItemControlTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(
+                data: data,
+                expandAll: false,
+                itemContainerTheme: itemTheme, 
+                multiSelect: true);
+
+            var rootContainer = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
+
+            // Root TreeViewItem isn't expanded so selection for child won't have been picked
+            // up by IsSelected binding yet.
+            AssertContainerSelection(target, new[] { selected[0] });
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(new[] { selected[0] }, target.SelectedItems);
+
+            rootContainer.IsExpanded = true;
+            Layout(target);
+
+            // Root is expanded so now all expected items will be selected.
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_State_Is_Updated_Via_IsSelected_Binding_On_Expand_Single_Select()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var selected = new[] { data[0], data[0].Children[1] };
+
+            foreach (var node in selected)
+                node.IsSelected = true;
+
+            var itemTheme = new ControlTheme(typeof(TreeViewItem))
+            {
+                BasedOn = CreateTreeViewItemControlTheme(),
+                Setters =
+                {
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                }
+            };
+
+            var target = CreateTarget(
+                data: data,
+                expandAll: false,
+                itemContainerTheme: itemTheme);
+
+            var rootContainer = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
+
+            // Root TreeViewItem isn't expanded so selection for child won't have been picked
+            // up by IsSelected binding yet.
+            AssertContainerSelection(target, new[] { selected[0] });
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(new[] { selected[0] }, target.SelectedItems);
+
+            rootContainer.IsExpanded = true;
+            Layout(target);
+
+            // Root is expanded and newly revealed selected node will replace current selection
+            // given that we're in SelectionMode == Single.
+            selected = new[] { selected[1] };
+            AssertDataSelection(data, selected);
+            AssertContainerSelection(target, selected);
+            Assert.Equal(selected[0], target.SelectedItem);
+            Assert.Equal(selected, target.SelectedItems);
+        }
+
         private static TreeView CreateTarget(Optional<IList<Node>?> data = default,
             bool expandAll = true,
             ControlTheme? itemContainerTheme = null,
@@ -1465,15 +1634,59 @@ namespace Avalonia.Controls.UnitTests
             _mouse.Click(container, modifiers: modifiers);
         }
 
-        private void AssertChildrenSelected(TreeView treeView, Node rootNode)
+        private void AssertContainerSelection(TreeView treeView, params Node[] expected)
         {
-            Assert.NotNull(rootNode.Children);
+            static void Evaluate(Control container, HashSet<Node> remaining)
+            {
+                var treeViewItem = Assert.IsType<TreeViewItem>(container);
+                var node = (Node)container.DataContext!;
 
-            foreach (var child in rootNode.Children)
+                Assert.Equal(remaining.Contains(node), treeViewItem.IsSelected);
+                remaining.Remove(node);
+
+                foreach (var child in treeViewItem.GetRealizedContainers())
+                {
+                    Evaluate(child, remaining);
+                }
+            }
+
+            var remaining = expected.ToHashSet();
+            foreach (var container in treeView.GetRealizedContainers())
+                Evaluate(container, remaining);
+            Assert.Empty(remaining);
+        }
+
+        private void AssertAllChildContainersSelected(TreeView treeView, Node node)
+        {
+            Assert.NotNull(node.Children);
+
+            foreach (var child in node.Children)
             {
                 var container = Assert.IsType<TreeViewItem>(treeView.TreeContainerFromItem(child));
                 Assert.True(container.IsSelected);
             }
+        }
+
+        private void AssertDataSelection(IEnumerable<Node> data, params Node[] expected)
+        {
+            static void Evaluate(Node rootNode, HashSet<Node> remaining)
+            {
+                Assert.Equal(remaining.Contains(rootNode), rootNode.IsSelected);
+                remaining.Remove(rootNode);
+
+                if (rootNode.Children is null)
+                    return;
+
+                foreach (var child in rootNode.Children)
+                {
+                    Evaluate(child, remaining);
+                }
+            }
+
+            var remaining = expected.ToHashSet();
+            foreach (var node in data)
+                Evaluate(node, remaining);
+            Assert.Empty(remaining);
         }
 
         private IDisposable Start()
@@ -1492,6 +1705,7 @@ namespace Avalonia.Controls.UnitTests
         private class Node : NotifyingBase
         {
             private IAvaloniaList<Node> _children = new AvaloniaList<Node>();
+            private bool _isSelected;
 
             public string? Value { get; set; }
 
@@ -1504,6 +1718,21 @@ namespace Avalonia.Controls.UnitTests
                     RaisePropertyChanged(nameof(Children));
                 }
             }
+
+            public bool IsSelected
+            {
+                get => _isSelected;
+                set
+                {
+                    if (_isSelected != value)
+                    {
+                        _isSelected = value;
+                        RaisePropertyChanged();
+                    }
+                }
+            }
+
+            public override string ToString() => Value ?? string.Empty;
         }
 
         private class TestTreeDataTemplate : ITreeDataTemplate
