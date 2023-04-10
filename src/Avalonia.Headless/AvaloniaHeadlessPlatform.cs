@@ -43,6 +43,8 @@ namespace Avalonia.Headless
                 _framesPerSecond = framesPerSecond;
             }
 
+            public override bool RunsInBackground => false;
+
             public void ForceTick() => _forceTick?.Invoke();
         }
 

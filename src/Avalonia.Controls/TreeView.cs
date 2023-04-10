@@ -10,6 +10,7 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -60,7 +61,8 @@ namespace Avalonia.Controls
         /// </summary>
         static TreeView()
         {
-            // HACK: Needed or SelectedItem property will not be found in Release build.
+            SelectingItemsControl.IsSelectedChangedEvent.AddClassHandler<TreeView>((x, e) =>
+                x.ContainerSelectionChanged(e));
         }
 
         /// <summary>
@@ -430,9 +432,8 @@ namespace Avalonia.Controls
 
         private void MarkItemSelected(object item, bool selected)
         {
-            var container = TreeContainerFromItem(item)!;
-
-            MarkContainerSelected(container, selected);
+            if (TreeContainerFromItem(item) is Control container)
+                MarkContainerSelected(container, selected);
         }
 
         private void SelectedItemsAdded(IList items)
@@ -487,16 +488,24 @@ namespace Avalonia.Controls
         protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
         protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
 
-        protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
         {
-            base.PrepareContainerForItemOverride(container, item, index);
+            base.ContainerForItemPreparedOverride(container, item, index);
 
-            if (item == SelectedItem)
+            // Once the container has been full prepared and added to the tree, any bindings from
+            // styles or item container themes are guaranteed to be applied. 
+            if (container.IsSet(SelectingItemsControl.IsSelectedProperty))
             {
-                MarkContainerSelected(container, true);
-                if (AutoScrollToSelectedItem)
-                    Dispatcher.UIThread.Post(container.BringIntoView);
+                // The IsSelected property is set on the container: there is a style or item
+                // container theme which has bound the IsSelected property. Update our selection
+                // based on the selection state of the container.
+                var containerIsSelected = SelectingItemsControl.GetIsSelected(container);
+                UpdateSelectionFromContainer(container, select: containerIsSelected, toggleModifier: true);
             }
+
+            // The IsSelected property is not set on the container: update the container
+            // selection based on the current selection as understood by this control.
+            MarkContainerSelected(container, SelectedItems.Contains(item));
         }
 
         /// <inheritdoc/>
@@ -663,7 +672,11 @@ namespace Avalonia.Controls
             var multi = mode.HasAllFlags(SelectionMode.Multiple);
             var range = multi && rangeModifier && selectedContainer != null;
 
-            if (rightButton)
+            if (!select)
+            {
+                SelectedItems.Remove(item);
+            }
+            else if (rightButton)
             {
                 if (!SelectedItems.Contains(item))
                 {
@@ -863,25 +876,42 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when a container raises the 
+        /// <see cref="SelectingItemsControl.IsSelectedChangedEvent"/>.
+        /// </summary>
+        /// <param name="e">The event.</param>
+        private void ContainerSelectionChanged(RoutedEventArgs e)
+        {
+            if (e.Source is TreeViewItem container &&
+                container.TreeViewOwner == this &&
+                TreeItemFromContainer(container) is object item)
+            {
+                var containerIsSelected = SelectingItemsControl.GetIsSelected(container);
+                var ourIsSelected = SelectedItems.Contains(item);
+
+                if (containerIsSelected != ourIsSelected)
+                {
+                    if (containerIsSelected)
+                        SelectedItems.Add(item);
+                    else
+                        SelectedItems.Remove(item);
+                }
+            }
+
+            if (e.Source != this)
+            {
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
         /// Sets a container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private void MarkContainerSelected(Control? container, bool selected)
+        private void MarkContainerSelected(Control container, bool selected)
         {
-            if (container == null)
-            {
-                return;
-            }
-
-            if (container is ISelectable selectable)
-            {
-                selectable.IsSelected = selected;
-            }
-            else
-            {
-                ((IPseudoClasses)container.Classes).Set(":selected", selected);
-            }
+            container.SetCurrentValue(SelectingItemsControl.IsSelectedProperty, selected);
         }
 
         /// <summary>
