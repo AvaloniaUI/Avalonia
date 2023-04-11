@@ -115,7 +115,6 @@ namespace Avalonia.Win32
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
                         s_instances.Remove(this);
-                        Closed?.Invoke();
 
                         _mouseDevice.Dispose();
                         _touchDevice.Dispose();
