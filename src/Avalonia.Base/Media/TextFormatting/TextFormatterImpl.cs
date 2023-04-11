@@ -834,6 +834,12 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
+                //We don't want to surpass the measuredLength with trailing whitespace when we are in a right to left setting.
+                if(currentPosition > measuredLength && resolvedFlowDirection == FlowDirection.RightToLeft)
+                {
+                    break;
+                }
+
                 measuredLength = currentPosition;
 
                 break;
