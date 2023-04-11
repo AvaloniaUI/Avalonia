@@ -132,7 +132,7 @@ namespace Avalonia.Media
             double radiusX = 0, double radiusY = 0,
             BoxShadows boxShadows = default)
         {
-            if (brush == null && !PenIsVisible(pen))
+            if (brush == null && !PenIsVisible(pen) && boxShadows.Count == 0)
                 return;
             if (!MathUtilities.IsZero(radiusX))
             {
@@ -160,7 +160,7 @@ namespace Avalonia.Media
         /// </remarks>
         public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rrect, BoxShadows boxShadows = default)
         {
-            if (brush == null && !PenIsVisible(pen))
+            if (brush == null && !PenIsVisible(pen) && boxShadows.Count == 0)
                 return;
             DrawRectangleCore(brush, pen, rrect, boxShadows);
         }

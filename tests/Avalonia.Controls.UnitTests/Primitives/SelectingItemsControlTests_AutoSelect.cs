@@ -116,7 +116,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("bar", target.SelectedItem);
-            Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[0].Classes);
         }
 
         private static FuncControlTemplate Template()

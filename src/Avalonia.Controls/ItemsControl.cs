@@ -94,7 +94,6 @@ namespace Avalonia.Controls
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
-        private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
 
         /// <summary>
@@ -426,6 +425,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when a container has been fully prepared to display an item.
+        /// </summary>
+        /// <param name="container">The container control.</param>
+        /// <param name="item">The item being displayed.</param>
+        /// <param name="index">The index of the item being displayed.</param>
+        /// <remarks>
+        /// This method will be called when a container has been fully prepared and added to the
+        /// logical and visual trees, but may be called before a layout pass has completed. It is
+        /// called immediately before the <see cref="ContainerPrepared"/> event is raised.
+        /// </remarks>
+        protected internal virtual void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+        }
+
+        /// <summary>
         /// Called when the index for a container changes due to an insertion or removal in the
         /// items collection.
         /// </summary>
@@ -442,6 +456,34 @@ namespace Avalonia.Controls
         /// <param name="container">The container element.</param>
         protected internal virtual void ClearContainerForItemOverride(Control container)
         {
+            if (container is HeaderedContentControl hcc)
+            {
+                if (hcc.Content is Control)
+                    hcc.Content = null;
+                if (hcc.Header is Control)
+                    hcc.Header = null;
+            }
+            else if (container is ContentControl cc)
+            {
+                if (cc.Content is Control)
+                    cc.Content = null;
+            }
+            else if (container is ContentPresenter p)
+            {
+                if (p.Content is Control)
+                    p.Content = null;
+            }
+            else if (container is HeaderedItemsControl hic)
+            {
+                if (hic.Header is Control)
+                    hic.Header = null;
+            }
+            else if (container is HeaderedSelectingItemsControl hsic)
+            {
+                if (hsic.Header is Control)
+                    hsic.Header = null;
+            }
+
             // Feels like we should be clearing the HeaderedItemsControl.Items binding here, but looking at
             // the WPF source it seems that this isn't done there.
         }
@@ -457,7 +499,6 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         }
 
@@ -628,8 +669,8 @@ namespace Avalonia.Controls
 
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
+            ContainerForItemPreparedOverride(container, item, index);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
-            _scrollViewer?.RegisterAnchorCandidate(container);
             ContainerPrepared?.Invoke(this, new(container, index));
         }
 
@@ -642,7 +683,6 @@ namespace Avalonia.Controls
 
         internal void ClearItemContainer(Control container)
         {
-            _scrollViewer?.UnregisterAnchorCandidate(container);
             ClearContainerForItemOverride(container);
             ContainerClearing?.Invoke(this, new(container));
         }
