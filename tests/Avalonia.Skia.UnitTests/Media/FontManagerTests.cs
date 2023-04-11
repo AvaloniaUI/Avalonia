@@ -17,7 +17,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var fontManager = FontManager.Current;
 
-                var glyphTypeface = new Typeface(new FontFamily("A, B, " + fontManager.DefaultFontFamilyName)).GlyphTypeface;
+                var glyphTypeface = new Typeface(new FontFamily("A, B, " + FontFamily.DefaultFontFamilyName)).GlyphTypeface;
 
                 Assert.Equal(SKTypeface.Default.FamilyName, glyphTypeface.FamilyName);
             }
@@ -41,7 +41,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var glyphTypeface = new Typeface(new FontFamily("Unknown")).GlyphTypeface;
 
-                Assert.Equal(FontManager.Current.DefaultFontFamilyName, glyphTypeface.FamilyName);
+                Assert.Equal(FontManager.Current.DefaultFontFamily.Name, glyphTypeface.FamilyName);
             }
         }
 
@@ -88,6 +88,24 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
+        public void Should_Only_Try_To_Create_GlyphTypeface_Once()
+        {
+            var fontManagerImpl = new MockFontManagerImpl();
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
+            {
+                Assert.True(FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _));
+
+                for (int i = 0;i < 10; i++)
+                {
+                    FontManager.Current.TryGetGlyphTypeface(new Typeface("Unknown"), out _);
+                }
+
+                Assert.Equal(fontManagerImpl.TryCreateGlyphTypefaceCount, 2);
+            }
+        }
+
+        [Fact]
         public void Should_Load_Embedded_DefaultFontFamily()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
@@ -96,7 +114,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 {
                     AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = s_fontUri });
 
-                    var result = FontManager.Current.TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName), out var glyphTypeface);
+                    var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out var glyphTypeface);
 
                     Assert.True(result);
 
