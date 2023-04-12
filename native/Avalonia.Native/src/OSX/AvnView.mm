@@ -242,7 +242,6 @@
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
-    NSLog(@"AVNVIEW mouseEvent: %f, %f", point.X, point.Y);
     AvnVector delta = { 0, 0};
 
     if(type == Wheel)
@@ -791,6 +790,7 @@
 
 - (NSView *)hitTest:(NSPoint)inputPoint {
     NSView *result = [super hitTest:inputPoint];
+
     // Send the view name to c# for the focus manager
     // We will mainly be treating these scenarios:
     // Grunt area -> AvnView
