@@ -18,7 +18,7 @@ namespace Avalonia.Native
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
-        
+        private bool _canResize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativePlatformOpenGlInterface? glFeature) : base(opts, glFeature)
@@ -73,6 +73,7 @@ namespace Avalonia.Native
 
         public void CanResize(bool value)
         {
+            _canResize = value;
             _native.SetCanResize(value.AsComBool());
         }
 
@@ -134,14 +135,10 @@ namespace Avalonia.Native
                     {
                         if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
                         {
-                            // TOGGLE WINDOW STATE.
-                            if (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen)
+                            if (_canResize)
                             {
-                                WindowState = WindowState.Normal;
-                            }
-                            else
-                            {
-                                WindowState = WindowState.Maximized;
+                                WindowState = WindowState is WindowState.Maximized or WindowState.FullScreen ?
+                                    WindowState.Normal : WindowState.Maximized;
                             }
                         }
                         else

@@ -17,7 +17,8 @@ namespace Avalonia.Controls.Chrome
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class CaptionButtons : TemplatedControl
     {
-        private CompositeDisposable? _disposables;
+        private Panel? _restoreButton;
+        private IDisposable? _disposables;
 
         /// <summary>
         /// Currently attached window.
@@ -32,14 +33,20 @@ namespace Avalonia.Controls.Chrome
 
                 _disposables = new CompositeDisposable
                 {
+                    HostWindow.GetObservable(Window.CanResizeProperty)
+                        .Subscribe(x =>
+                        {
+                            if (_restoreButton is not null)
+                                _restoreButton.IsEnabled = x;
+                        }),
                     HostWindow.GetObservable(Window.WindowStateProperty)
-                    .Subscribe(x =>
-                    {
-                        PseudoClasses.Set(":minimized", x == WindowState.Minimized);
-                        PseudoClasses.Set(":normal", x == WindowState.Normal);
-                        PseudoClasses.Set(":maximized", x == WindowState.Maximized);
-                        PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
-                    })
+                        .Subscribe(x =>
+                        {
+                            PseudoClasses.Set(":minimized", x == WindowState.Minimized);
+                            PseudoClasses.Set(":normal", x == WindowState.Normal);
+                            PseudoClasses.Set(":maximized", x == WindowState.Maximized);
+                            PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
+                        }),
                 };
             }
         }
@@ -101,7 +108,8 @@ namespace Avalonia.Controls.Chrome
 
             minimiseButton.PointerReleased += (sender, e) => OnMinimize();
 
-            fullScreenButton.PointerReleased += (sender, e) => OnToggleFullScreen();
+            restoreButton.IsEnabled = HostWindow?.CanResize ?? true;
+            _restoreButton = restoreButton;
         }
     }
 }

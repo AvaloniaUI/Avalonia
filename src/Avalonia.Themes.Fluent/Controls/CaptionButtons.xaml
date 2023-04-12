@@ -69,4 +69,7 @@
   <Style Selector="CaptionButtons:fullscreen Panel#PART_RestoreButton, CaptionButtons:fullscreen Panel#PART_MinimiseButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
- </Styles>
+  <Style Selector="CaptionButtons Panel#PART_RestoreButton:disabled">
+    <Setter Property="Opacity" Value="0.2"/>
+  </Style>
+</Styles>
