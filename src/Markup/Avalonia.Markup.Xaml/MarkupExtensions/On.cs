@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;

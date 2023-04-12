@@ -6066,8 +6066,9 @@ namespace Avalonia.Controls
             var numberOfItem = clipboardRowContent.Count;
             for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
             {
-                var cellContent = clipboardRowContent[cellIndex];
-                text.Append(cellContent.Content);
+                var cellContent = clipboardRowContent[cellIndex].Content?.ToString();
+                cellContent = cellContent?.Replace("\"", "\"\"");
+                text.Append($"\"{cellContent}\"");
                 if (cellIndex < numberOfItem - 1)
                 {
                     text.Append('\t');
@@ -6132,8 +6133,10 @@ namespace Avalonia.Controls
 
         private async void CopyToClipboard(string text)
         {
-            var clipboard = ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
-            await clipboard.SetTextAsync(text);
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+            if (clipboard != null)
+                await clipboard.SetTextAsync(text);
         }
 
         /// <summary>

@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     foreach (var child in this.GetTemplateChildren())
                     {
-                        child.SetValue(TemplatedParentProperty, null);
+                        child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
                     }
 
@@ -286,14 +286,17 @@ namespace Avalonia.Controls.Primitives
                 {
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(this, "Creating control template");
 
-                    var (child, nameScope) = template.Build(this);
-                    ApplyTemplatedParent(child, this);
-                    ((ISetLogicalParent)child).SetParent(this);
-                    VisualChildren.Add(child);
+                    if (template.Build(this) is { } templateResult)
+                    {
+                        var (child, nameScope) = templateResult;
+                        ApplyTemplatedParent(child, this);
+                        ((ISetLogicalParent)child).SetParent(this);
+                        VisualChildren.Add(child);
 
-                    var e = new TemplateAppliedEventArgs(nameScope);
-                    OnApplyTemplate(e);
-                    RaiseEvent(e);
+                        var e = new TemplateAppliedEventArgs(nameScope);
+                        OnApplyTemplate(e);
+                        RaiseEvent(e);
+                    }
                 }
 
                 _appliedTemplate = template;
@@ -377,7 +380,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="templatedParent">The templated parent to apply.</param>
         internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
-            control.SetValue(TemplatedParentProperty, templatedParent);
+            control.TemplatedParent = templatedParent;
 
             var children = control.LogicalChildren;
             var count = children.Count;
@@ -400,23 +403,6 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren[i] is StyledElement child &&
                     child.TemplatedParent == this)
-                {
-                    child.OnTemplatedParentControlThemeChanged();
-                }
-            }
-        }
-
-        internal override void OnTemplatedParentControlThemeChanged()
-        {
-            base.OnTemplatedParentControlThemeChanged();
-
-            var count = VisualChildren.Count;
-            var templatedParent = TemplatedParent;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (VisualChildren[i] is TemplatedControl child &&
-                    child.TemplatedParent == templatedParent)
                 {
                     child.OnTemplatedParentControlThemeChanged();
                 }

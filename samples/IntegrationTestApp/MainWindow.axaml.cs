@@ -1,19 +1,17 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using Microsoft.CodeAnalysis;
-using Avalonia.Controls.Primitives;
-using Avalonia.Threading;
-using Avalonia.Controls.Primitives.PopupPositioning;
 
 namespace IntegrationTestApp
 {
@@ -25,6 +23,10 @@ namespace IntegrationTestApp
             InitializeViewMenu();
             InitializeGesturesTab();
             this.AttachDevTools();
+
+            var overlayPopups = this.Get<TextBlock>("AppOverlayPopups");
+            overlayPopups.Text = Program.OverlayPopups ? "Overlay Popups" : "Native Popups";
+
             AddHandler(Button.ClickEvent, OnButtonClick);
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
             DataContext = this;
@@ -66,6 +68,8 @@ namespace IntegrationTestApp
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
             var stateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
+            var systemDecorations = this.GetControl<ComboBox>("ShowWindowSystemDecorations");
+            var extendClientArea = this.GetControl<CheckBox>("ShowWindowExtendClientAreaToDecorationsHint");
             var canResizeCheckBox = this.GetControl<CheckBox>("ShowWindowCanResize");
             var owner = (Window)this.GetVisualRoot()!;
 
@@ -93,6 +97,8 @@ namespace IntegrationTestApp
             }
 
             sizeTextBox.Text = string.Empty;
+            window.ExtendClientAreaToDecorationsHint = extendClientArea.IsChecked ?? false;
+            window.SystemDecorations = (SystemDecorations)systemDecorations.SelectedIndex;
             window.WindowState = (WindowState)stateComboBox.SelectedIndex;
 
             switch (modeComboBox.SelectedIndex)
@@ -156,7 +162,7 @@ namespace IntegrationTestApp
             var popup = new Popup
             {
                 WindowManagerAddShadowHint = false,
-                PlacementMode = PlacementMode.AnchorAndGravity,
+                Placement = PlacementMode.AnchorAndGravity,
                 PlacementAnchor = PopupAnchor.Top,
                 PlacementGravity = PopupGravity.Bottom,
                 Width= 200,

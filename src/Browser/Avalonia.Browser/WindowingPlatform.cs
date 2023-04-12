@@ -36,7 +36,6 @@ namespace Avalonia.Browser
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IRuntimePlatform>().ToSingleton<BrowserRuntimePlatform>()
-                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
@@ -47,11 +46,6 @@ namespace Avalonia.Browser
                 .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-        }
-
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
         }
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)

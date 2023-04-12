@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         /// <summary>
         /// Defines the <see cref="Level"/> property.
@@ -40,8 +40,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
 
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
         private TreeView? _treeView;
         private Control? _header;
@@ -90,8 +90,25 @@ namespace Avalonia.Controls
 
         internal TreeView? TreeViewOwner => _treeView;
 
-        protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
+        protected internal override Control CreateContainerForItemOverride()
+        {
+            return EnsureTreeView().CreateContainerForItemOverride();
+        }
+
+        protected internal override bool IsItemItsOwnContainerOverride(Control item)
+        {
+            return EnsureTreeView().IsItemItsOwnContainerOverride(item);
+        }
+
+        protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().PrepareContainerForItemOverride(container, item, index);
+        }
+
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().ContainerForItemPreparedOverride(container, item, index);
+        }
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -104,12 +121,12 @@ namespace Avalonia.Controls
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
-                ItemTemplate = _treeView.ItemTemplate;
+                SetCurrentValue(ItemTemplateProperty, _treeView.ItemTemplate);
             }
 
             if (ItemContainerTheme == null && _treeView?.ItemContainerTheme != null)
             {
-                ItemContainerTheme = _treeView.ItemContainerTheme;
+                SetCurrentValue(ItemContainerThemeProperty, _treeView.ItemContainerTheme);
             }
         }
 
@@ -282,6 +299,9 @@ namespace Avalonia.Controls
 
             return logical != null ? result : @default;
         }
+
+        private TreeView EnsureTreeView() => _treeView ??
+            throw new InvalidOperationException("The TreeViewItem is not part of a TreeView.");
 
         private void HeaderDoubleTapped(object? sender, TappedEventArgs e)
         {

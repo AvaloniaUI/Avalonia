@@ -6,10 +6,7 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
-using Avalonia.Styling;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Global
@@ -27,9 +24,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            var resourceNodes = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents
+            var resourceNodes = provider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>().Parents
                 .OfType<IResourceNode>().ToList();
-            var rootObject = provider.GetService<IRootObjectProvider>().RootObject;
+            var rootObject = provider.GetRequiredService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
             return sp =>
             {
@@ -44,17 +41,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             };
         }
 
-        class DeferredParentServiceProvider :
+        private class DeferredParentServiceProvider :
             IAvaloniaXamlIlParentStackProvider,
             IServiceProvider,
             IRootObjectProvider,
             IAvaloniaXamlIlControlTemplateProvider
         {
-            private readonly IServiceProvider _parentProvider;
-            private readonly List<IResourceNode> _parentResourceNodes;
+            private readonly IServiceProvider? _parentProvider;
+            private readonly List<IResourceNode>? _parentResourceNodes;
             private readonly INameScope _nameScope;
 
-            public DeferredParentServiceProvider(IServiceProvider parentProvider, List<IResourceNode> parentResourceNodes,
+            public DeferredParentServiceProvider(IServiceProvider? parentProvider, List<IResourceNode>? parentResourceNodes,
                 object rootObject, INameScope nameScope)
             {
                 _parentProvider = parentProvider;
@@ -73,7 +70,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     yield return p;
             }
 
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 if (serviceType == typeof(INameScope))
                     return _nameScope;
@@ -115,25 +112,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static IServiceProvider CreateInnerServiceProviderV1(IServiceProvider compiled)
             => new InnerServiceProvider(compiled);
 
-        class InnerServiceProvider : IServiceProvider
+        private class InnerServiceProvider : IServiceProvider
         {
             private readonly IServiceProvider _compiledProvider;
-            private XamlTypeResolver _resolver;
+            private XamlTypeResolver? _resolver;
 
             public InnerServiceProvider(IServiceProvider compiledProvider)
             {
                 _compiledProvider = compiledProvider;
             }
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 if (serviceType == typeof(IXamlTypeResolver))
-                    return _resolver ?? (_resolver = new XamlTypeResolver(
-                               _compiledProvider.GetService<IAvaloniaXamlIlXmlNamespaceInfoProvider>()));
+                    return _resolver ??= new XamlTypeResolver(
+                        _compiledProvider.GetRequiredService<IAvaloniaXamlIlXmlNamespaceInfoProvider>());
                 return null;
             }
         }
 
-        class XamlTypeResolver : IXamlTypeResolver
+        private class XamlTypeResolver : IXamlTypeResolver
         {
             private readonly IAvaloniaXamlIlXmlNamespaceInfoProvider _nsInfo;
 
@@ -148,7 +145,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var sp = qualifiedTypeName.Split(new[] {':'}, 2);
                 var (ns, name) = sp.Length == 1 ? ("", qualifiedTypeName) : (sp[0], sp[1]);
                 var namespaces = _nsInfo.XmlNamespaces;
-                var dic = (Dictionary<string, IReadOnlyList<AvaloniaXamlIlXmlNamespaceInfo>>)namespaces;
                 if (!namespaces.TryGetValue(ns, out var lst))
                     throw new ArgumentException("Unable to resolve namespace for type " + qualifiedTypeName);
                 foreach (var entry in lst)
@@ -177,20 +173,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         }
         #line default
 
-        class RootServiceProvider : IServiceProvider
+        private class RootServiceProvider : IServiceProvider
         {
             private readonly INameScope _nameScope;
-            private readonly IServiceProvider _parentServiceProvider;
-            private readonly IRuntimePlatform _runtimePlatform;
+            private readonly IServiceProvider? _parentServiceProvider;
+            private readonly IRuntimePlatform? _runtimePlatform;
 
-            public RootServiceProvider(INameScope nameScope, IServiceProvider parentServiceProvider)
+            public RootServiceProvider(INameScope nameScope, IServiceProvider? parentServiceProvider)
             {
                 _nameScope = nameScope;
                 _parentServiceProvider = parentServiceProvider;
                 _runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 if (serviceType == typeof(INameScope))
                     return _nameScope;

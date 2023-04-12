@@ -888,7 +888,8 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object?>();
             var called = false;
-            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: expected {ExpectedType}, got {Value} ({ValueType})";
+            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
+            var message = "Unable to convert object 'foo' of type 'System.String' to type 'System.Double'.";
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
@@ -898,9 +899,7 @@ namespace Avalonia.Base.UnitTests
                     src == target &&
                     pv[0].GetType() == typeof(Class1) &&
                     (AvaloniaProperty)pv[1] == Class1.QuxProperty &&
-                    (Type)pv[2] == typeof(double) &&
-                    (string)pv[3] == "foo" &&
-                    (Type)pv[4] == typeof(string))
+                    (string)pv[2] == message)
                 {
                     called = true;
                 }
@@ -963,12 +962,12 @@ namespace Avalonia.Base.UnitTests
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
 
-                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
-                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                var dispatcherMock = new Mock<IDispatcherImpl>();
+                dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                     .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
                 var services = new TestServices(
-                    threadingInterface: threadingInterfaceMock.Object);
+                    dispatcherImpl: dispatcherMock.Object);
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -1001,12 +1000,12 @@ namespace Avalonia.Base.UnitTests
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
 
-                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
-                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                var dispatcherMock = new Mock<IDispatcherImpl>();
+                dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                     .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
                 var services = new TestServices(
-                    threadingInterface: threadingInterfaceMock.Object);
+                    dispatcherImpl: dispatcherMock.Object);
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -1039,12 +1038,12 @@ namespace Avalonia.Base.UnitTests
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
 
-                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+                var threadingInterfaceMock = new Mock<IDispatcherImpl>();
                 threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                     .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
                 var services = new TestServices(
-                    threadingInterface: threadingInterfaceMock.Object);
+                    dispatcherImpl: threadingInterfaceMock.Object);
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -1072,12 +1071,12 @@ namespace Avalonia.Base.UnitTests
             var source = new Subject<double>();
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;
 
-            var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+            var threadingInterfaceMock = new Mock<IDispatcherImpl>();
             threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                 .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
             var services = new TestServices(
-                threadingInterface: threadingInterfaceMock.Object);
+                dispatcherImpl: threadingInterfaceMock.Object);
 
             using (UnitTestApplication.Start(services))
             {

@@ -33,10 +33,10 @@ namespace ControlCatalog.Pages
         {
             new ContextMenu()
             {
-                Items = new List<MenuItem>
-            {
-                new MenuItem() { Header = "Test" }, new MenuItem() { Header = "Test" }
-            }
+                Items =
+                {
+                    new MenuItem() { Header = "Test" }, new MenuItem() { Header = "Test" }
+                }
             }.Open((Control)sender);
         }
 

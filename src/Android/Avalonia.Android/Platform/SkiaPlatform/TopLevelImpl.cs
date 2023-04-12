@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
+using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -15,6 +17,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
@@ -24,11 +27,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using Math = System.Math;
-using AndroidRect = Android.Graphics.Rect;
-using Window = Android.Views.Window;
-using Android.Graphics.Drawables;
-using Java.Util;
+using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -43,6 +42,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly AndroidInsetsManager _insetsManager;
+        private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -53,11 +54,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
+            _clipboard = new ClipboardImpl(avaloniaView.Context?.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
 
             RenderScaling = _view.Scaling;
 
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
+
+            if (avaloniaView.Context is AvaloniaMainActivity mainActivity)
+            {
+                _insetsManager = new AndroidInsetsManager(mainActivity, this);
+            }
 
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
@@ -70,21 +77,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                AndroidRect rect = new AndroidRect();
-                AndroidRect intersection = new AndroidRect();
-
-                _view.GetWindowVisibleDisplayFrame(intersection);
-                _view.GetGlobalVisibleRect(rect);
-
-                intersection.Intersect(rect);
-
-                return new PixelSize(intersection.Right - intersection.Left, intersection.Bottom - intersection.Top).ToSize(RenderScaling);
-            }
-        }
+        public virtual Size ClientSize => _view.Size.ToSize(RenderScaling);
 
         public Size? FrameSize => null;
 
@@ -285,7 +278,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
-            // TODO adjust status bar depending on full screen mode.
+            if(_insetsManager != null)
+            {
+                _insetsManager.SystemBarTheme = themeVariant switch
+                {
+                    PlatformThemeVariant.Light => SystemBarTheme.Light,
+                    PlatformThemeVariant.Dark => SystemBarTheme.Dark,
+                    _ => null,
+                };
+            }
+
+            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
@@ -401,6 +404,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
+            }
+
+            if(featureType == typeof(IClipboard))
+            {
+                return _clipboard;
             }
 
             return null;

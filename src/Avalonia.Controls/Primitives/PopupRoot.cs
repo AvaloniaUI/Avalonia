@@ -90,12 +90,11 @@ namespace Avalonia.Controls.Primitives
         public void Dispose()
         {
             PlatformImpl?.Dispose();
-            HandleClosed();
         }
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner.Update(_positionerParameters);
+            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
         }
 
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,

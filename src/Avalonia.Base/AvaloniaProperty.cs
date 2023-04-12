@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -20,11 +19,19 @@ namespace Avalonia
         public static readonly object UnsetValue = new UnsetValueType();
 
         private static int s_nextId;
+
+        /// <summary>
+        /// Provides a metadata object for types which have no metadata of their own.
+        /// </summary>
         private readonly AvaloniaPropertyMetadata _defaultMetadata;
+
+        /// <summary>
+        /// Provides a fast path when the property has no metadata overrides.
+        /// </summary>
+        private KeyValuePair<Type, AvaloniaPropertyMetadata>? _singleMetadata;
+
         private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata;
         private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new Dictionary<Type, AvaloniaPropertyMetadata>();
-
-        private bool _hasMetadataOverrides;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
@@ -57,7 +64,8 @@ namespace Avalonia
             Id = s_nextId++;
 
             _metadata.Add(ownerType, metadata ?? throw new ArgumentNullException(nameof(metadata)));
-            _defaultMetadata = metadata;
+            _defaultMetadata = metadata.GenerateTypeSafeMetadata();
+            _singleMetadata = new(ownerType, metadata);
         }
 
         /// <summary>
@@ -79,9 +87,6 @@ namespace Avalonia
             Notifying = source.Notifying;
             Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
-
-            // Properties that have different owner can't use fast path for metadata.
-            _hasMetadataOverrides = true;
 
             if (metadata != null)
             {
@@ -227,6 +232,7 @@ namespace Avalonia
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A value validation callback.</param>
         /// <param name="coerce">A value coercion callback.</param>
+        /// <param name="enableDataValidation">Whether the property is interested in data validation.</param>
         /// <returns>A <see cref="StyledProperty{TValue}"/></returns>
         public static StyledProperty<TValue> Register<TOwner, TValue>(
             string name,
@@ -234,7 +240,8 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<AvaloniaObject, TValue, TValue>? coerce = null)
+            Func<AvaloniaObject, TValue, TValue>? coerce = null,
+            bool enableDataValidation = false)
                 where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -242,7 +249,8 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 defaultBindingMode: defaultBindingMode,
-                coerce: coerce);
+                coerce: coerce,
+                enableDataValidation: enableDataValidation);
 
             var result = new StyledProperty<TValue>(
                 name,
@@ -253,8 +261,19 @@ namespace Avalonia
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
-        
-        /// <inheritdoc cref="Register{TOwner, TValue}" />
+
+        /// <summary>
+        /// Registers an attached <see cref="AvaloniaProperty"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the class that is registering the property.</typeparam>
+        /// <typeparam name="TValue">The type of the property's value.</typeparam>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="defaultValue">The default value of the property.</param>
+        /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
+        /// <param name="enableDataValidation">if is set to true enable data validation.</param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
@@ -267,6 +286,7 @@ namespace Avalonia
             BindingMode defaultBindingMode,
             Func<TValue, bool>? validate,
             Func<AvaloniaObject, TValue, TValue>? coerce,
+            bool enableDataValidation,
             Action<AvaloniaObject, bool>? notifying)
                 where TOwner : AvaloniaObject
         {
@@ -275,7 +295,8 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 defaultBindingMode: defaultBindingMode,
-                coerce: coerce);
+                coerce: coerce,
+                enableDataValidation: enableDataValidation);
 
             var result = new StyledProperty<TValue>(
                 name,
@@ -437,33 +458,14 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the property metadata for the specified type.
+        /// Gets the <see cref="AvaloniaPropertyMetadata"/> which applies to this property when it is used with the specified type.
         /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <returns>
-        /// The property metadata.
-        /// </returns>
-        public AvaloniaPropertyMetadata GetMetadata<T>() where T : AvaloniaObject
-        {
-            return GetMetadata(typeof(T));
-        }
+        /// <typeparam name="T">The type for which to retrieve metadata.</typeparam>
+        public AvaloniaPropertyMetadata GetMetadata<T>() where T : AvaloniaObject => GetMetadata(typeof(T));
 
-        /// <summary>
-        /// Gets the property metadata for the specified type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>
-        /// The property metadata.
-        /// </returns>
-        public AvaloniaPropertyMetadata GetMetadata(Type type)
-        {
-            if (!_hasMetadataOverrides)
-            {
-                return _defaultMetadata;
-            }
-
-            return GetMetadataWithOverrides(type);
-        }
+        /// <inheritdoc cref="GetMetadata{T}"/>
+        /// <param name="type">The type for which to retrieve metadata.</param>
+        public AvaloniaPropertyMetadata GetMetadata(Type type) => GetMetadataWithOverrides(type);
 
         /// <summary>
         /// Checks whether the <paramref name="value"/> is valid for the property.
@@ -496,6 +498,12 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object instance.</param>
         internal abstract void RouteClearValue(AvaloniaObject o);
+
+        /// <summary>
+        /// Routes an untyped CoerceValue call on a property with its default value to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        internal abstract void RouteCoerceDefaultValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped GetValue call to a typed call.
@@ -562,7 +570,7 @@ namespace Avalonia
             _metadata.Add(type, metadata);
             _metadataCache.Clear();
 
-            _hasMetadataOverrides = true;
+            _singleMetadata = null;
         }
 
         protected abstract IObservable<AvaloniaPropertyChangedEventArgs> GetChanged();
@@ -579,7 +587,12 @@ namespace Avalonia
                 return result;
             }
 
-            Type? currentType = type;
+            if (_singleMetadata is { } singleMetadata)
+            {
+                return _metadataCache[type] = singleMetadata.Key.IsAssignableFrom(type) ? singleMetadata.Value : _defaultMetadata;
+            }
+
+            var currentType = type;
 
             while (currentType != null)
             {
@@ -593,13 +606,11 @@ namespace Avalonia
                 currentType = currentType.BaseType;
             }
 
-            _metadataCache[type] = _defaultMetadata;
-
-            return _defaultMetadata;
+            return _metadataCache[type] = _defaultMetadata;
         }
 
         bool IPropertyInfo.CanGet => true;
-        bool IPropertyInfo.CanSet => true;
+        bool IPropertyInfo.CanSet => !IsReadOnly;
         object? IPropertyInfo.Get(object target) => ((AvaloniaObject)target).GetValue(this);
         void IPropertyInfo.Set(object target, object? value) => ((AvaloniaObject)target).SetValue(this, value);
     }

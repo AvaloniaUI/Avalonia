@@ -84,6 +84,14 @@ namespace Avalonia.Headless
 
         public FontSimulations FontSimulations { get; }
 
+        public string FamilyName => "Arial";
+
+        public FontWeight Weight => FontWeight.Normal;
+
+        public FontStyle Style => FontStyle.Normal;
+
+        public FontStretch Stretch => FontStretch.Normal;
+
         public void Dispose()
         {
         }
@@ -147,23 +155,31 @@ namespace Avalonia.Headless
 
     class HeadlessFontManagerStub : IFontManagerImpl
     {
-        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
-        {
-            return new HeadlessGlyphTypefaceImpl();
-        }
-
         public string GetDefaultFontFamilyName()
         {
             return "Arial";
         }
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
-            return new List<string> { "Arial" };
+            return new string[] { "Arial" };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
-            FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, out IGlyphTypeface glyphTypeface)
+        {
+            glyphTypeface= new HeadlessGlyphTypefaceImpl();
+
+            return true;
+        }
+
+        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        {
+             glyphTypeface = new HeadlessGlyphTypefaceImpl();
+
+            return true;
+        }
+
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo culture, out Typeface typeface)
         {
             typeface = new Typeface("Arial", fontStyle, fontWeight, fontStretch);
             return true;

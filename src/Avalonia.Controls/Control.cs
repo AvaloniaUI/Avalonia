@@ -403,7 +403,7 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = GetValue(FocusAdornerProperty);
+                        var template = GetValue(FocusAdornerProperty) ?? adornerLayer.DefaultFocusAdorner;
 
                         if (template != null)
                         {
@@ -526,6 +526,14 @@ namespace Avalonia.Controls
                     RaiseEvent(sizeChangedEventArgs);
                 }
             }
+        }
+
+        // Since we are resetting the dispatcher instance, the callback might never arrive
+        internal static void ResetLoadedQueueForUnitTests()
+        {
+            _loadedQueue.Clear();
+            _loadedProcessingQueue.Clear();
+            _isLoadedProcessing = false;
         }
     }
 }

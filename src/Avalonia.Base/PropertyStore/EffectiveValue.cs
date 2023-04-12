@@ -11,9 +11,6 @@ namespace Avalonia.PropertyStore
     /// </remarks>
     internal abstract class EffectiveValue
     {
-        private IValueEntry? _valueEntry;
-        private IValueEntry? _baseValueEntry;
-
         /// <summary>
         /// Gets the current effective value as a boxed value.
         /// </summary>
@@ -30,10 +27,31 @@ namespace Avalonia.PropertyStore
         public BindingPriority BasePriority { get; protected set; }
 
         /// <summary>
+        /// Gets the active value entry for the current effective value.
+        /// </summary>
+        public IValueEntry? ValueEntry { get; private set; }
+
+        /// <summary>
+        /// Gets the active value entry for the current base value.
+        /// </summary>
+        public IValueEntry? BaseValueEntry { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the property has a coercion function.
+        /// </summary>
+        public bool HasCoercion { get; protected set; }
+
+        /// <summary>
         /// Gets a value indicating whether the <see cref="Value"/> was overridden by a call to 
         /// <see cref="AvaloniaObject.SetCurrentValue{T}"/>.
         /// </summary>
         public bool IsOverridenCurrentValue { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Value"/> is the result of the 
+        /// 
+        /// </summary>
+        public bool IsCoercedDefaultValue { get; set; }
 
         /// <summary>
         /// Begins a reevaluation pass on the effective value.
@@ -47,30 +65,53 @@ namespace Avalonia.PropertyStore
         /// </remarks>
         public void BeginReevaluation(bool clearLocalValue = false)
         {
-            if (clearLocalValue || Priority != BindingPriority.LocalValue)
+            if (clearLocalValue || (Priority != BindingPriority.LocalValue && !IsOverridenCurrentValue))
                 Priority = BindingPriority.Unset;
-            if (clearLocalValue || BasePriority != BindingPriority.LocalValue)
+            if (clearLocalValue || (BasePriority != BindingPriority.LocalValue && !IsOverridenCurrentValue))
                 BasePriority = BindingPriority.Unset;
         }
 
         /// <summary>
         /// Ends a reevaluation pass on the effective value.
         /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being reevaluated.</param>
         /// <remarks>
-        /// This method unsubscribes from any unused value entries.
+        /// Handles coercing the default value if necessary.
         /// </remarks>
-        public void EndReevaluation()
+        public void EndReevaluation(ValueStore owner, AvaloniaProperty property)
+        {
+            if (Priority == BindingPriority.Unset && HasCoercion)
+                CoerceDefaultValueAndRaise(owner, property);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the effective value represents the default value of the
+        /// property and can be removed.
+        /// </summary>
+        /// <returns>True if the effective value van be removed; otherwise false.</returns>
+        public bool CanRemove()
+        {
+            return Priority == BindingPriority.Unset &&
+                !IsOverridenCurrentValue &&
+                !IsCoercedDefaultValue;
+        }
+
+        /// <summary>
+        /// Unsubscribes from any unused value entries.
+        /// </summary>
+        public void UnsubscribeIfNecessary()
         {
             if (Priority == BindingPriority.Unset)
             {
-                _valueEntry?.Unsubscribe();
-                _valueEntry = null;
+                ValueEntry?.Unsubscribe();
+                ValueEntry = null;
             }
 
             if (BasePriority == BindingPriority.Unset)
             {
-                _baseValueEntry?.Unsubscribe();
-                _baseValueEntry = null;
+                BaseValueEntry?.Unsubscribe();
+                BaseValueEntry = null;
             }
         }
 
@@ -123,6 +164,17 @@ namespace Avalonia.PropertyStore
         /// <param name="property">The property being cleared.</param>
         public abstract void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property);
 
+        /// <summary>
+        /// Coerces the default value, raising <see cref="AvaloniaObject.PropertyChanged"/>
+        /// where necessary.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being coerced.</param>
+        protected abstract void CoerceDefaultValueAndRaise(ValueStore owner, AvaloniaProperty property);
+
+        /// <summary>
+        /// Gets the current effective value as a boxed value.
+        /// </summary>
         protected abstract object? GetBoxedValue();
 
         protected void UpdateValueEntry(IValueEntry? entry, BindingPriority priority)
@@ -135,40 +187,34 @@ namespace Avalonia.PropertyStore
                 // value, then the current entry becomes our base entry.
                 if (Priority > BindingPriority.LocalValue && Priority < BindingPriority.Inherited)
                 {
-                    Debug.Assert(_valueEntry is not null);
-                    _baseValueEntry = _valueEntry;
-                    _valueEntry = null;
+                    Debug.Assert(ValueEntry is not null);
+                    BaseValueEntry = ValueEntry;
+                    ValueEntry = null;
                 }
 
-                if (_valueEntry != entry)
+                if (ValueEntry != entry)
                 {
-                    _valueEntry?.Unsubscribe();
-                    _valueEntry = entry;
+                    ValueEntry?.Unsubscribe();
+                    ValueEntry = entry;
                 }
             }
             else if (Priority <= BindingPriority.Animation)
             {
                 // We've received a non-animation value and have an active animation value, so the
                 // new entry becomes our base entry.
-                if (_baseValueEntry != entry)
+                if (BaseValueEntry != entry)
                 {
-                    _baseValueEntry?.Unsubscribe();
-                    _baseValueEntry = entry;
+                    BaseValueEntry?.Unsubscribe();
+                    BaseValueEntry = entry;
                 }
             }
-            else if (_valueEntry != entry)
+            else if (ValueEntry != entry)
             {
                 // Both the current value and the new value are non-animation values, so the new
                 // entry replaces the existing entry.
-                _valueEntry?.Unsubscribe();
-                _valueEntry = entry;
+                ValueEntry?.Unsubscribe();
+                ValueEntry = entry;
             }
-        }
-
-        protected void UnsubscribeValueEntries()
-        {
-            _valueEntry?.Unsubscribe();
-            _baseValueEntry?.Unsubscribe();
         }
     }
 }

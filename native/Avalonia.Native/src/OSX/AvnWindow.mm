@@ -394,7 +394,7 @@
 
 - (BOOL)windowShouldZoom:(NSWindow *_Nonnull)window toFrame:(NSRect)newFrame
 {
-    return true;
+    return _parent->CanZoom();
 }
 
 -(void)windowDidResignKey:(NSNotification *)notification

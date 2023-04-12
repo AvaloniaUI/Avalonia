@@ -516,7 +516,9 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}">
-            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,*,Auto,Auto">
+            <Grid ColumnDefinitions="Auto,*,Auto" 
+                  RowDefinitions="Auto,*,Auto,Auto"
+                  ClipToBounds="True">
               <DataGridColumnHeader Name="PART_TopLeftCornerHeader"
                                     Theme="{StaticResource DataGridTopLeftColumnHeader}" />
               <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"

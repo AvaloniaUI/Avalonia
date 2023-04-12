@@ -58,14 +58,14 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
-        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children)
         {
             return new GeometryGroupImpl(fillRule, children);
         }
 
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2)
         {
-            return new CombinedGeometryImpl(combineMode, g1, g2);
+            return CombinedGeometryImpl.ForceCreate(combineMode, g1, g2);
         }
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
@@ -104,7 +104,7 @@ namespace Avalonia.Skia
 
             SKFontCache.Shared.Return(skFont);
 
-            return new StreamGeometryImpl(path);
+            return new StreamGeometryImpl(path, path);
         }
 
         /// <inheritdoc />

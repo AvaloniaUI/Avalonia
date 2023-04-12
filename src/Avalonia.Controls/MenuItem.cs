@@ -4,7 +4,6 @@ using System.Linq;
 using Avalonia.Reactive;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -13,6 +12,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -26,11 +26,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<MenuItem, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>(
-                menuItem => menuItem.Command,
-                (menuItem, command) => menuItem.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<MenuItem>(new(enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -60,7 +57,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<MenuItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="IsSubMenuOpen"/> property.
@@ -85,16 +82,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PointerEnteredItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnteredItemEvent =
-            RoutedEvent.Register<MenuItem, PointerEventArgs>(
+        public static readonly RoutedEvent<RoutedEventArgs> PointerEnteredItemEvent =
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>(
                 nameof(PointerEnteredItem),
                 RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerExitedItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerExitedItemEvent =
-            RoutedEvent.Register<MenuItem, PointerEventArgs>(
+        public static readonly RoutedEvent<RoutedEventArgs> PointerExitedItemEvent =
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>(
                 nameof(PointerExitedItem),
                 RoutingStrategies.Bubble);
 
@@ -109,10 +106,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
-        private ICommand? _command;
         private bool _commandCanExecute = true;
         private bool _commandBindingError;
         private Popup? _popup;
@@ -184,7 +180,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// A bubbling version of the <see cref="InputElement.PointerEntered"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerEnteredItem
+        public event EventHandler<RoutedEventArgs>? PointerEnteredItem
         {
             add { AddHandler(PointerEnteredItemEvent, value); }
             remove { RemoveHandler(PointerEnteredItemEvent, value); }
@@ -196,7 +192,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// A bubbling version of the <see cref="InputElement.PointerExited"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerExitedItem
+        public event EventHandler<RoutedEventArgs>? PointerExitedItem
         {
             add { AddHandler(PointerExitedItemEvent, value); }
             remove { RemoveHandler(PointerExitedItemEvent, value); }
@@ -216,8 +212,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand? Command
         {
-            get { return _command; }
-            set { SetAndRaise(CommandProperty, ref _command, value); }
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -336,7 +332,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This has the same effect as setting <see cref="IsSubMenuOpen"/> to true.
         /// </remarks>
-        public void Open() => IsSubMenuOpen = true;
+        public void Open() => SetCurrentValue(IsSubMenuOpenProperty, true);
 
         /// <summary>
         /// Closes the submenu.
@@ -344,7 +340,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This has the same effect as setting <see cref="IsSubMenuOpen"/> to false.
         /// </remarks>
-        public void Close() => IsSubMenuOpen = false;
+        public void Close() => SetCurrentValue(IsSubMenuOpenProperty, false);
 
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
@@ -368,7 +364,7 @@ namespace Avalonia.Controls
         {
             if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
             {
-                HotKey = _hotkey;
+                SetCurrentValue(HotKeyProperty, _hotkey);
             }
             
             base.OnAttachedToLogicalTree(e);
@@ -396,7 +392,7 @@ namespace Avalonia.Controls
             if (HotKey != null)
             {
                 _hotkey = HotKey;
-                HotKey = null;
+                SetCurrentValue(HotKeyProperty, null);
             }
 
             base.OnDetachedFromLogicalTree(e);
@@ -437,20 +433,14 @@ namespace Avalonia.Controls
         protected override void OnPointerEntered(PointerEventArgs e)
         {
             base.OnPointerEntered(e);
-
-            var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.KeyModifiers));
+            RaiseEvent(new RoutedEventArgs(PointerEnteredItemEvent));
         }
 
         /// <inheritdoc/>
         protected override void OnPointerExited(PointerEventArgs e)
         {
             base.OnPointerExited(e);
-
-            var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.KeyModifiers));
+            RaiseEvent(new RoutedEventArgs(PointerExitedItemEvent));
         }
 
         /// <summary>
@@ -668,7 +658,7 @@ namespace Avalonia.Controls
                 }
 
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
-                IsSelected = true;
+                SetCurrentValue(IsSelectedProperty, true);
                 PseudoClasses.Add(":open");
             }
             else
@@ -686,6 +676,12 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void PopupOpened(object? sender, EventArgs e)
         {
+            // If we're using overlay popups, there's a chance we need to do a layout pass before
+            // the child items are added to the visual tree. If we don't do this here, then
+            // selection breaks.
+            if (Presenter?.IsAttachedToVisualTree == false)
+                UpdateLayout();
+
             var selected = SelectedIndex;
 
             if (selected != -1)
@@ -703,6 +699,11 @@ namespace Avalonia.Controls
         private void PopupClosed(object? sender, EventArgs e)
         {
             SelectedItem = null;
+        }
+
+        private void UpdateLayout()
+        {
+            (VisualRoot as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);

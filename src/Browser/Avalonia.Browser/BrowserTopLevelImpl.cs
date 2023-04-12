@@ -8,6 +8,7 @@ using Avalonia.Browser.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
@@ -31,6 +32,8 @@ namespace Avalonia.Browser
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly ClipboardImpl _clipboard;
+        private readonly IInsetsManager? _insetsManager;
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView)
         {
@@ -40,9 +43,12 @@ namespace Avalonia.Browser
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
+
+            _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = _avaloniaView.GetNativeControlHostImpl();
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
+            _clipboard = new ClipboardImpl();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -69,6 +75,8 @@ namespace Avalonia.Browser
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);
+
+                (_insetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
         }
 
@@ -269,6 +277,16 @@ namespace Avalonia.Browser
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return _clipboard;
             }
 
             return null;

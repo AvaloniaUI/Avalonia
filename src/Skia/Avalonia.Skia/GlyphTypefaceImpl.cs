@@ -51,6 +51,12 @@ namespace Avalonia.Skia
             GlyphCount = Typeface.GlyphCount;
 
             FontSimulations = fontSimulations;
+
+            Weight = (FontWeight)Typeface.FontWeight;
+
+            Style = Typeface.FontSlant.ToAvalonia();
+
+            Stretch = (FontStretch)Typeface.FontStyle.Width;
         }
 
         public Face Face { get; }
@@ -66,6 +72,14 @@ namespace Avalonia.Skia
         public FontMetrics Metrics { get; }
 
         public int GlyphCount { get; }
+
+        public string FamilyName => Typeface.FamilyName;
+
+        public FontWeight Weight { get; }
+
+        public FontStyle Style { get; }
+
+        public FontStretch Stretch { get; }
 
         public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
         {

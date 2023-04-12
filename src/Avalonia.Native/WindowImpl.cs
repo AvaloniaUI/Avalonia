@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -19,6 +20,8 @@ namespace Avalonia.Native
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
+        private readonly AvaloniaNativeTextInputMethod _inputMethod;
+        private bool _canResize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
@@ -33,6 +36,8 @@ namespace Avalonia.Native
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
+            
+            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -67,10 +72,11 @@ namespace Avalonia.Native
             }
         }
 
-        public IAvnWindow Native => _native;
+        public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
         {
+            _canResize = value;
             _native.SetCanResize(value.AsComBool());
         }
 
@@ -133,14 +139,10 @@ namespace Avalonia.Native
                     {
                         if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
                         {
-                            // TOGGLE WINDOW STATE.
-                            if (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen)
+                            if (_canResize)
                             {
-                                WindowState = WindowState.Normal;
-                            }
-                            else
-                            {
-                                WindowState = WindowState.Maximized;
+                                WindowState = WindowState is WindowState.Maximized or WindowState.FullScreen ?
+                                    WindowState.Normal : WindowState.Maximized;
                             }
                         }
                         else
@@ -229,6 +231,11 @@ namespace Avalonia.Native
 
         public override object TryGetFeature(Type featureType)
         {
+            if(featureType == typeof(ITextInputMethodImpl))
+            {
+                return _inputMethod;
+            } 
+            
             if (featureType == typeof(ITopLevelNativeMenuExporter))
             {
                 return _nativeMenuExporter;

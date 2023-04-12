@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// Gets or sets a collection of filters which determine the types of files displayed in an
         /// <see cref="OpenFileDialog"/> or an <see cref="SaveFileDialog"/>.
         /// </summary>
-        public List<FileDialogFilter>? Filters { get; set; } = new List<FileDialogFilter>();
+        public List<FileDialogFilter> Filters { get; set; } = new List<FileDialogFilter>();
 
         /// <summary>
         /// Gets or sets initial file name that is displayed when the dialog is opened.

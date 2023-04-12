@@ -26,8 +26,8 @@ namespace Avalonia.Skia
             using (var buffer = new Buffer())
             {
                 // HarfBuzz needs the surrounding characters to correctly shape the text
-                var containingText = GetContainingMemory(text, out var start, out var length);
-                buffer.AddUtf16(containingText.Span, start, length);
+                var containingText = GetContainingMemory(text, out var start, out var length).Span;
+                buffer.AddUtf16(containingText, start, length);
 
                 MergeBreakPair(buffer);
 
@@ -56,8 +56,6 @@ namespace Avalonia.Skia
 
                 var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
-                var targetInfos = shapedBuffer.GlyphInfos;
-
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
@@ -74,7 +72,7 @@ namespace Avalonia.Skia
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (textSpan[i] == '\t')
+                    if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 
@@ -83,7 +81,7 @@ namespace Avalonia.Skia
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
-                    targetInfos[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+                    shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;

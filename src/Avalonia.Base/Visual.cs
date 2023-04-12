@@ -50,7 +50,7 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, Geometry?>(nameof(Clip));
 
         /// <summary>
-        /// Defines the <see cref="IsVisibleProperty"/> property.
+        /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
             AvaloniaProperty.Register<Visual, bool>(nameof(IsVisible), true);
@@ -487,7 +487,7 @@ namespace Avalonia
 
             for (var i = 0; i < visualChildrenCount; i++)
             {
-                if (visualChildren[i] is { } child)
+                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
@@ -729,6 +729,23 @@ namespace Avalonia
                 var visual = (Visual) children[i]!;
                 
                 visual.SetVisualParent(parent);
+            }
+        }
+
+        internal override void OnTemplatedParentControlThemeChanged()
+        {
+            base.OnTemplatedParentControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            var templatedParent = TemplatedParent;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == templatedParent)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
+                }
             }
         }
 

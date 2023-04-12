@@ -95,7 +95,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+                    var runClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster);
 
                     clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
@@ -142,7 +142,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+                    var runClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster);
 
                     clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
@@ -249,7 +249,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var clusters = textLine.TextRuns
                     .Cast<ShapedTextRun>()
-                    .SelectMany(x => x.ShapedBuffer.GlyphInfos, (_, glyph) => glyph.GlyphCluster)
+                    .SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster)
                     .ToArray();
 
                 var previousCharacterHit = new CharacterHit(text.Length);
@@ -623,6 +623,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Get_TextBounds_For_LineBreak()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(Environment.NewLine, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var textBounds = textLine.GetTextBounds(0, Environment.NewLine.Length);
+
+                Assert.Equal(1, textBounds.Count);
+
+                Assert.Equal(1, textBounds[0].TextRunBounds.Count);
+
+                Assert.Equal(Environment.NewLine.Length, textBounds[0].TextRunBounds[0].Length);
+            }
+        }
+
+        [Fact]
         public void Should_GetTextRange()
         {
             var text = "שדגככעיחדגכAישדגשדגחייטYDASYWIWחיחלדשSAטויליHUHIUHUIDWKLאא'ק'קחליק/'וקןגגגלךשף'/קפוכדגכשדגשיח'/קטאגשד";
@@ -752,7 +776,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                var currentClusters = shapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster).ToList();
+                var currentClusters = shapedBuffer.Select(glyph => glyph.GlyphCluster).ToList();
 
                 foreach (var currentCluster in currentClusters)
                 {
@@ -785,11 +809,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                for (var index = 0; index < shapedBuffer.GlyphInfos.Length; index++)
+                for (var index = 0; index < shapedBuffer.Length; index++)
                 {
-                    var currentCluster = shapedBuffer.GlyphInfos[index].GlyphCluster;
+                    var currentCluster = shapedBuffer[index].GlyphCluster;
 
-                    var advance = shapedBuffer.GlyphInfos[index].GlyphAdvance;
+                    var advance = shapedBuffer[index].GlyphAdvance;
 
                     if (lastCluster != currentCluster)
                     {
@@ -967,6 +991,33 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(7, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width), 2);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_With_EndOfParagraph_RightToLeft()
+        {
+            var text = "لوحة المفاتيح العربية";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var textBounds = textLine.GetTextBounds(0, 1);
+
+                Assert.Equal(1, textBounds.Count);
+
+                var firstBounds = textBounds.First();
+
+                Assert.True(firstBounds.TextRunBounds.Count > 0);
             }
         }
 

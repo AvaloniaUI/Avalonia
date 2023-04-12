@@ -88,10 +88,10 @@ namespace Avalonia.Automation.Peers
 
             if (string.IsNullOrWhiteSpace(result) && GetLabeledBy() is AutomationPeer labeledBy)
             {
-                return labeledBy.GetName();
+                result = labeledBy.GetName();
             }
 
-            return null;
+            return result;
         }
 
         protected override AutomationPeer? GetParentCore()

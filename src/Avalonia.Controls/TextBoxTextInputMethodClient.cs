@@ -1,11 +1,11 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls
 {
@@ -77,7 +77,7 @@ namespace Avalonia.Controls
         {
             get => _textEditable; set
             {
-                if(_textEditable != null)
+                if (_textEditable != null)
                 {
                     _textEditable.TextChanged -= TextEditable_TextChanged;
                     _textEditable.SelectionChanged -= TextEditable_SelectionChanged;
@@ -86,7 +86,7 @@ namespace Avalonia.Controls
 
                 _textEditable = value;
 
-                if(_textEditable != null)
+                if (_textEditable != null)
                 {
                     _textEditable.TextChanged += TextEditable_TextChanged;
                     _textEditable.SelectionChanged += TextEditable_SelectionChanged;
@@ -106,13 +106,13 @@ namespace Avalonia.Controls
         {
             if (_presenter != null && _textEditable != null)
             {
-                _presenter.CompositionRegion = new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd);
+                _presenter.SetCurrentValue(TextPresenter.CompositionRegionProperty, new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd));
             }
         }
 
         private void TextEditable_SelectionChanged(object? sender, EventArgs e)
         {
-            if(_parent != null && _textEditable != null)
+            if (_parent != null && _textEditable != null)
             {
                 _parent.SelectionStart = _textEditable.SelectionStart;
                 _parent.SelectionEnd = _textEditable.SelectionEnd;
@@ -159,14 +159,54 @@ namespace Avalonia.Controls
 
         public event EventHandler? SurroundingTextChanged;
 
-        public void SetPreeditText(string? text)
+        private string? _presenterText;
+        private int _compositionStart;
+
+        public void SetPreeditText(string? preeditText)
         {
-            if (_presenter == null)
+            if (_presenter == null || _parent == null)
             {
                 return;
             }
 
-            _presenter.PreeditText = text;
+            if (_presenterText is null)
+            {
+                _presenterText = _parent.Text ?? "";
+                _compositionStart = _parent.CaretIndex;
+            }
+
+            var text = GetText(preeditText);
+
+            _presenter.SetCurrentValue(TextPresenter.TextProperty, text);
+
+            _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
+
+            _presenter.UpdateCaret(new CharacterHit(_compositionStart + (preeditText != null ? preeditText.Length : 0)), false);
+
+            if (string.IsNullOrEmpty(preeditText))
+            {
+                _presenterText = null;
+            }
+        }
+
+        private string? GetText(string? preeditText)
+        {
+            if (string.IsNullOrEmpty(preeditText))
+            {
+                return _presenterText;
+            }
+
+            if (string.IsNullOrEmpty(_presenterText))
+            {
+                return preeditText;
+            }
+
+            var sb = StringBuilderCache.Acquire(_presenterText.Length + preeditText.Length);
+
+            sb.Append(_presenterText);
+            sb.Insert(_compositionStart, preeditText);
+
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
         public void SetComposingRegion(TextRange? region)
@@ -175,7 +215,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            _presenter.CompositionRegion = region;
+
+            _presenter.SetCurrentValue(TextPresenter.CompositionRegionProperty, region);
         }
 
         public void SelectInSurroundingText(int start, int end)
@@ -214,9 +255,9 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
-                _presenter.PreeditText = null;
+                _presenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                _presenter.CompositionRegion = null;
+                _presenter.ClearValue(TextPresenter.CompositionRegionProperty);
 
                 _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
             }
@@ -256,9 +297,9 @@ namespace Avalonia.Controls
                 }
             }
 
-            if(e.Property == TextBox.TextProperty)
+            if (e.Property == TextBox.TextProperty)
             {
-                if(_textEditable != null)
+                if (_textEditable != null)
                 {
                     _textEditable.Text = (string?)e.NewValue;
                 }

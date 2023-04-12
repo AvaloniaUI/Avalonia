@@ -8,13 +8,15 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+ using Avalonia.Threading;
 
-namespace Avalonia.LinuxFramebuffer
+ namespace Avalonia.LinuxFramebuffer
 {
     class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
+        private readonly RawEventGrouper _inputQueue;
 
         public IInputRoot InputRoot { get; private set; }
 
@@ -22,9 +24,12 @@ namespace Avalonia.LinuxFramebuffer
         {
             _outputBackend = outputBackend;
             _inputBackend = inputBackend;
+            _inputQueue = new RawEventGrouper(groupedInput => Input?.Invoke(groupedInput),
+                LinuxFramebufferPlatform.EventGrouperDispatchQueue);
 
             Surfaces = new object[] { _outputBackend };
-            _inputBackend.Initialize(this, e => Input?.Invoke(e));
+            _inputBackend.Initialize(this, e =>
+                Dispatcher.UIThread.Post(() => _inputQueue.HandleEvent(e), DispatcherPriority.Send ));
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)

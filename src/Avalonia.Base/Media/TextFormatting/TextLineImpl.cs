@@ -423,7 +423,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         if (currentGlyphRun != null)
                         {
-                            currentDistance -= currentGlyphRun.Size.Width;
+                            currentDistance -= currentGlyphRun.Bounds.Width;
                         }
 
                         return currentDistance + distance;
@@ -477,7 +477,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (currentGlyphRun.IsLeftToRight || flowDirection == FlowDirection.RightToLeft)
                             {
-                                distance = currentGlyphRun.Size.Width;
+                                distance = currentGlyphRun.Bounds.Width;
                             }
 
                             return true;
@@ -697,13 +697,25 @@ namespace Avalonia.Media.TextFormatting
 
                     i = lastRunIndex;
 
+                    //Possible overlap at runs of different direction
                     if (directionalWidth == 0)
                     {
-                        continue;
+                        //In case a run only contains a linebreak we don't want to skip it.
+                        if (currentRun is ShapedTextRun shaped)
+                        {
+                            if(currentRun.Length - shaped.GlyphRun.Metrics.NewLineLength > 0)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
 
-                    var coveredLength = 0;
-                    TextBounds? textBounds = null;
+                    int coveredLength;
+                    TextBounds? textBounds;
 
                     switch (currentDirection)
                     {
@@ -831,14 +843,25 @@ namespace Avalonia.Media.TextFormatting
 
                     i = firstRunIndex;
 
+                    //Possible overlap at runs of different direction
                     if (directionalWidth == 0)
                     {
-                        continue;
+                        //In case a run only contains a linebreak we don't want to skip it.
+                        if (currentRun is ShapedTextRun shaped)
+                        {
+                            if (currentRun.Length - shaped.GlyphRun.Metrics.NewLineLength > 0)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
 
-                    var coveredLength = 0;
-
                     TextBounds? textBounds = null;
+                    int coveredLength;
 
                     switch (currentDirection)
                     {
@@ -1483,7 +1506,7 @@ namespace Avalonia.Media.TextFormatting
 
                     trailingWhitespaceLength += glyphRunMetrics.TrailingWhitespaceLength;
 
-                    var whitespaceWidth = glyphRun.Size.Width - glyphRunMetrics.Width;
+                    var whitespaceWidth = glyphRun.Bounds.Width - glyphRunMetrics.Width;
 
                     width -= whitespaceWidth;
                 }

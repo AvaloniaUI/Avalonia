@@ -46,6 +46,7 @@ namespace Avalonia
                 defaultBindingMode: BindingMode.OneWay,
                 validate: null,
                 coerce: null,
+                enableDataValidation: false,
                 notifying: DataContextNotifying);
 
         /// <summary>
@@ -66,8 +67,7 @@ namespace Avalonia
         public static readonly DirectProperty<StyledElement, AvaloniaObject?> TemplatedParentProperty =
             AvaloniaProperty.RegisterDirect<StyledElement, AvaloniaObject?>(
                 nameof(TemplatedParent),
-                o => o.TemplatedParent,
-                (o ,v) => o.TemplatedParent = v);
+                o => o.TemplatedParent);
         
         /// <summary>
         /// Defines the <see cref="Theme"/> property.
@@ -802,8 +802,11 @@ namespace Avalonia
 
             if (theme.HasChildren)
             {
-                foreach (var child in theme.Children)
-                    ApplyStyle(child, null, type);
+                var children = theme.Children;
+                for (var i = 0; i < children.Count; i++)
+                {
+                    ApplyStyle(children[i], null, type);
+                }
             }
         }
 
@@ -815,8 +818,11 @@ namespace Avalonia
             
             if (host.IsStylesInitialized)
             {
-                foreach (var style in host.Styles)
-                    ApplyStyle(style, host, FrameType.Style);
+                var styles = host.Styles;
+                for (var i = 0; i < styles.Count; ++i)
+                {
+                    ApplyStyle(styles[i], host, FrameType.Style);
+                }
             }
         }
 
@@ -825,8 +831,11 @@ namespace Avalonia
             if (style is Style s)
                 s.TryAttach(this, host, type);
 
-            foreach (var child in style.Children)
-                ApplyStyle(child, host, type);
+            var children = style.Children;
+            for (var i = 0; i < children.Count; i++)
+            {
+                ApplyStyle(children[i], host, type);
+            }
         }
 
         private void ReevaluateImplicitTheme()
@@ -882,7 +891,7 @@ namespace Avalonia
 
             for (var i = 0; i < logicalChildrenCount; i++)
             {
-                if (logicalChildren[i] is StyledElement child)
+                if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToLogicalTreeCore(e);
                 }

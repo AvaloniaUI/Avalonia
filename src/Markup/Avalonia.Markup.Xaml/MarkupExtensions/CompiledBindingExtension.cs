@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             };
         }
 
-        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
+        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
         {
             if (Source != null)
             {
@@ -61,8 +61,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
             else
             {
+                var styledElement = target as StyledElement
+                    ?? anchor as StyledElement
+                    ?? throw new ArgumentException($"Cannot find a valid {nameof(StyledElement)} to use as the binding source.");
+
                 return CreateSourceObserver(
-                    (target as StyledElement) ?? (anchor as StyledElement),
+                    styledElement,
                     Path.BuildExpression(enableDataValidation));
             }
         }
@@ -70,8 +74,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         [ConstructorArgument("path")]
         public CompiledBindingPath Path { get; set; }
 
-        public object Source { get; set; }
+        public object? Source { get; set; }
 
-        public Type DataType { get; set; }
+        public Type? DataType { get; set; }
     }
 }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 using Avalonia.Collections;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform;
@@ -191,7 +193,7 @@ namespace Avalonia.Controls.UnitTests
                     return true;
                 });
                 var target = new MenuItem();
-                var contextMenu = new ContextMenu { Items = new AvaloniaList<MenuItem> { target } };
+                var contextMenu = new ContextMenu { Items = { target } };
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyStyling();
                 window.ApplyTemplate();
@@ -248,13 +250,13 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
-                Assert.Equal(2, canExecuteCallCount);
+                Assert.Equal(1, canExecuteCallCount);
 
                 command.RaiseCanExecuteChanged();
-                Assert.Equal(3, canExecuteCallCount);
+                Assert.Equal(2, canExecuteCallCount);
 
                 target.CommandParameter = true;
-                Assert.Equal(4, canExecuteCallCount);
+                Assert.Equal(3, canExecuteCallCount);
             }
         }
         
@@ -270,8 +272,8 @@ namespace Avalonia.Controls.UnitTests
                     return true;
                 });
                 var target = new MenuItem();
-                var parentMenuItem = new MenuItem { Items = new AvaloniaList<MenuItem> { target } };
-                var contextMenu = new ContextMenu { Items = new AvaloniaList<MenuItem> { parentMenuItem } };
+                var parentMenuItem = new MenuItem { Items = { target } };
+                var contextMenu = new ContextMenu { Items = { parentMenuItem } };
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyStyling();
                 window.ApplyTemplate();
@@ -317,12 +319,12 @@ namespace Avalonia.Controls.UnitTests
                 MenuItem childMenu2;
                 var menu = new Menu
                 {
-                    Items = new[]
+                    Items =
                     {
                         (topLevelMenu = new MenuItem
                         {
                             Header = "Foo",
-                            Items = new[]
+                            Items =
                             {
                                 (childMenu1 = new MenuItem { Header = "Bar" }),
                                 (childMenu2 = new MenuItem { Header = "Baz" }),
@@ -332,6 +334,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = menu };
+                window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass();
 
                 topLevelMenu.IsSubMenuOpen = true;
@@ -345,6 +348,48 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Null(childMenu1.TemplatedParent);
                 Assert.Null(childMenu2.TemplatedParent);
+            }
+        }
+
+        [Fact]
+        public void Menu_ItemTemplate_Should_Be_Applied_To_TopLevel_MenuItem_Header()
+        {
+            using var app = Application();
+
+            var items = new[]
+            {
+                new MenuViewModel("Foo"),
+                new MenuViewModel("Bar"),
+            };
+
+            var itemTemplate = new FuncDataTemplate<MenuViewModel>((x, _) =>
+                new TextBlock { Text = x.Header });
+
+            var menu = new Menu
+            {
+                ItemTemplate = itemTemplate,
+                ItemsSource = items,
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
+            Assert.Equal(2, panel.Children.Count);
+
+            for (var i = 0; i <  panel.Children.Count; i++)
+            {
+                var menuItem = Assert.IsType<MenuItem>(panel.Children[i]);
+
+                Assert.Equal(items[i], menuItem.Header);
+                Assert.Same(itemTemplate, menuItem.HeaderTemplate);
+
+                var headerPresenter = Assert.IsType<ContentPresenter>(menuItem.HeaderPresenter);
+                Assert.Same(itemTemplate, headerPresenter.ContentTemplate);
+
+                var headerControl = Assert.IsType<TextBlock>(headerPresenter.Child);
+                Assert.Equal(items[i].Header, headerControl.Text);
             }
         }
 
@@ -401,5 +446,7 @@ namespace Avalonia.Controls.UnitTests
 
             public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
+
+        private record MenuViewModel(string Header);
     }
 }

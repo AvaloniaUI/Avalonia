@@ -13,13 +13,10 @@ namespace Avalonia.Controls
     public sealed class TrayIcons : AvaloniaList<TrayIcon>
     {
     }
-    
-    
 
     public class TrayIcon : AvaloniaObject, INativeMenuExporterProvider, IDisposable
     {
         private readonly ITrayIconImpl? _impl;
-        private ICommand? _command;
 
         private TrayIcon(ITrayIconImpl? impl)
         {
@@ -85,17 +82,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<TrayIcon, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<TrayIcon>(
-                trayIcon => trayIcon.Command,
-                (trayIcon, command) => trayIcon.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<TrayIcon>(new(enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> CommandParameterProperty =
-            Button.CommandParameterProperty.AddOwner<MenuItem>();
+            Button.CommandParameterProperty.AddOwner<TrayIcon>();
 
         /// <summary>
         /// Defines the <see cref="TrayIcons"/> attached property.
@@ -136,8 +130,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand? Command
         {
-            get => _command;
-            set => SetAndRaise(CommandProperty, ref _command, value);
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>

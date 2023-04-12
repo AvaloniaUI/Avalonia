@@ -42,6 +42,24 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Doesnt_Measure_And_Arrange_InvalidateMeasured_Control_When_Ancestor_Is_Not_Visible()
+        {
+            var control = new LayoutTestControl();
+            var parent = new Decorator { Child = control };
+            var root = new LayoutTestRoot { Child = parent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            control.Measured = control.Arranged = false;
+
+            parent.IsVisible = false;
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.False(control.Measured);
+            Assert.False(control.Arranged);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();

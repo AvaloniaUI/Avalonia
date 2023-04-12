@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting;
@@ -13,6 +14,7 @@ namespace Avalonia.UnitTests
 {
     internal class HarfBuzzTextShaperImpl : ITextShaperImpl
     {
+        private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
@@ -24,8 +26,8 @@ namespace Avalonia.UnitTests
             using (var buffer = new Buffer())
             {
                 // HarfBuzz needs the surrounding characters to correctly shape the text
-                var containingText = GetContainingMemory(text, out var start, out var length);
-                buffer.AddUtf16(containingText.Span, start, length);
+                var containingText = GetContainingMemory(text, out var start, out var length).Span;
+                buffer.AddUtf16(containingText, start, length);
 
                 MergeBreakPair(buffer);
 
@@ -33,7 +35,9 @@ namespace Avalonia.UnitTests
 
                 buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
+                var usedCulture = culture ?? CultureInfo.CurrentCulture;
+
+                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
 
                 var font = ((HarfBuzzGlyphTypefaceImpl)typeface).Font;
 
@@ -52,8 +56,6 @@ namespace Avalonia.UnitTests
 
                 var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
-                var targetInfos = shapedBuffer.GlyphInfos;
-
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
@@ -70,7 +72,7 @@ namespace Avalonia.UnitTests
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (textSpan[i] == '\t')
+                    if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 
@@ -79,7 +81,7 @@ namespace Avalonia.UnitTests
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
-                    targetInfos[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+                    shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;

@@ -54,6 +54,11 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
 
         WindowBaseImpl::Show(activate, isDialog);
         GetWindowState(&_actualWindowState);
+
+        if(IsZoomed()) {
+            _lastWindowState = _actualWindowState;
+        }
+
         return SetWindowState(_lastWindowState);
     }
 }
@@ -276,9 +281,12 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
 
             case SystemDecorationsFull:
                 [Window setHasShadow:YES];
-                [Window setTitleVisibility:NSWindowTitleVisible];
-                [Window setTitlebarAppearsTransparent:NO];
                 [Window setTitle:_lastTitle];
+
+                if (!_isClientAreaExtended) {
+                    [Window setTitleVisibility:NSWindowTitleVisible];
+                    [Window setTitlebarAppearsTransparent:NO];
+                }
 
                 if (currentWindowState == Maximized) {
                     auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
@@ -606,7 +614,8 @@ void WindowImpl::UpdateStyle() {
     }
 
     bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
+    bool hasTrafficLights = (_decorations == SystemDecorationsFull) &&
+        (_isClientAreaExtended ? wantsChrome : true);
     
     NSButton* closeButton = [Window standardWindowButton:NSWindowCloseButton];
     NSButton* miniaturizeButton = [Window standardWindowButton:NSWindowMiniaturizeButton];
@@ -617,5 +626,5 @@ void WindowImpl::UpdateStyle() {
     [miniaturizeButton setHidden:!hasTrafficLights];
     [miniaturizeButton setEnabled:_isEnabled];
     [zoomButton setHidden:!hasTrafficLights];
-    [zoomButton setEnabled:_isEnabled && _canResize];
+    [zoomButton setEnabled:CanZoom()];
 }

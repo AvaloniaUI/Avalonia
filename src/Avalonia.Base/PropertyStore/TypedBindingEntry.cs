@@ -10,18 +10,20 @@ namespace Avalonia.PropertyStore
     internal sealed class TypedBindingEntry<T> : BindingEntryBase<T, T>
     {
         public TypedBindingEntry(
+            AvaloniaObject target,
             ValueFrame frame, 
             StyledProperty<T> property,
             IObservable<T> source)
-                : base(frame, property, source)
+                : base(target, frame, property, source)
         {
         }
 
         public TypedBindingEntry(
+            AvaloniaObject target,
             ValueFrame frame,
             StyledProperty<T> property,
             IObservable<BindingValue<T>> source)
-                : base(frame, property, source)
+                : base(target, frame, property, source)
         {
         }
 

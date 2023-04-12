@@ -21,7 +21,7 @@
                       Margin="5">
       <ListBox HorizontalAlignment="Stretch"
                VerticalAlignment="Top"
-               Items="{Binding Items}"/>
+               ItemsSource="{Binding Items}"/>
     </RefreshContainer>
   </DockPanel>
 </UserControl>

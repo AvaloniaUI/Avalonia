@@ -1,13 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Selection;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
-using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -29,17 +26,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<ComboBox, bool> IsDropDownOpenProperty =
-            AvaloniaProperty.RegisterDirect<ComboBox, bool>(
-                nameof(IsDropDownOpen),
-                o => o.IsDropDownOpen,
-                (o, v) => o.IsDropDownOpen = v);
+        public static readonly StyledProperty<bool> IsDropDownOpenProperty =
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsDropDownOpen));
 
         /// <summary>
         /// Defines the <see cref="MaxDropDownHeight"/> property.
@@ -77,7 +71,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
-        private bool _isDropDownOpen;
         private Popup? _popup;
         private object? _selectionBoxItem;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
@@ -107,8 +100,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsDropDownOpen
         {
-            get => _isDropDownOpen;
-            set => SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value);
+            get => GetValue(IsDropDownOpenProperty);
+            set => SetValue(IsDropDownOpenProperty, value);
         }
 
         /// <summary>
@@ -123,10 +116,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the item to display as the control's content.
         /// </summary>
-        protected object? SelectionBoxItem
+        public object? SelectionBoxItem
         {
             get => _selectionBoxItem;
-            set => SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value);
+            protected set => SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value);
         }
 
         /// <summary>
@@ -191,23 +184,23 @@ namespace Avalonia.Controls
             if ((e.Key == Key.F4 && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == false) ||
                 ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)))
             {
-                IsDropDownOpen = !IsDropDownOpen;
+                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                 e.Handled = true;
             }
             else if (IsDropDownOpen && e.Key == Key.Escape)
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
             else if (!IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
             {
-                IsDropDownOpen = true;
+                SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
             }
             else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
             {
                 SelectFocusedItem();
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
             else if (!IsDropDownOpen)
@@ -291,7 +284,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    IsDropDownOpen = !IsDropDownOpen;
+                    SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
                 }
             }
@@ -390,7 +383,7 @@ namespace Avalonia.Controls
         {
             if (!isVisible && IsDropDownOpen)
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
             }
         }
 
