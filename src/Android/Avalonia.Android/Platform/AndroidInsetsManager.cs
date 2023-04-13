@@ -81,7 +81,7 @@ namespace Avalonia.Android.Platform
                     var renderScaling = _topLevel.RenderScaling;
 
                     var inset = insets.GetInsets(
-                        (DisplayEdgeToEdge ?
+                        (_displayEdgeToEdge ?
                             WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() |
                             WindowInsetsCompat.Type.DisplayCutout() :
                             0) | WindowInsetsCompat.Type.Ime());
@@ -91,8 +91,8 @@ namespace Avalonia.Android.Platform
                     return new Thickness(inset.Left / renderScaling,
                         inset.Top / renderScaling,
                         inset.Right / renderScaling,
-                        (imeInset.Bottom > 0 && ((_usesLegacyLayouts && !DisplayEdgeToEdge) || !_usesLegacyLayouts) ?
-                            imeInset.Bottom - navBarInset.Bottom :
+                        (imeInset.Bottom > 0 && ((_usesLegacyLayouts && !_displayEdgeToEdge) || !_usesLegacyLayouts) ?
+                            imeInset.Bottom - (_displayEdgeToEdge ? 0 : navBarInset.Bottom) :
                             inset.Bottom) / renderScaling);
                 }
 
