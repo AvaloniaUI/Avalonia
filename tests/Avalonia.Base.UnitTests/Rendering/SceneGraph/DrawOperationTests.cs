@@ -82,7 +82,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             }
 
-            public override bool HitTest(Point p) => false;
+            public override bool HitTestTransformed(Point p) => false;
 
             public override void Render(IDrawingContextImpl context) { }
         }
