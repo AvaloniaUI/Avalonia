@@ -289,7 +289,7 @@ namespace Avalonia.Native
                 bool result;
                 if (_parent.ShouldPassThrough is not null)
                 {
-                    result = _parent.ShouldPassThrough(point);
+                    result = !_parent.ShouldPassThrough(point);
                 }
                 else
                 {
