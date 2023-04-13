@@ -66,7 +66,7 @@ namespace Avalonia.Rendering.SceneGraph
             context.DrawLine(Pen, P1, P2);
         }
 
-        public override bool HitTest(Point p)
+        public override bool HitTestTransformed(Point p)
         {
             var halfThickness = Pen.Thickness / 2;
             var minX = Math.Min(P1.X, P2.X) - halfThickness;
