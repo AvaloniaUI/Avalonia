@@ -788,8 +788,8 @@
     return [[self accessibilityChild] accessibilityFocusedUIElement];
 }
 
-- (NSView *)hitTest:(NSPoint)point {
-    NSView *result = [super hitTest:point];
+- (NSView *)hitTest:(NSPoint)inputPoint {
+    NSView *result = [super hitTest:inputPoint];
 
     // Send the view name to c# for the focus manager
     // We will mainly be treating these scenarios:
@@ -802,11 +802,16 @@
         _parent->BaseEvents->LogFirstResponder([firstResponderName UTF8String]);
     });
 
-    auto avnPoint = [AvnView toAvnPoint:point];
-    auto localPoint = [self translateLocalPoint:avnPoint];
+    // We need to do a minor adjust here because the input coordinates are based on the parent view, not the view itself
+    // https://developer.apple.com/documentation/appkit/nsview/1483364-hittest?language=objc
+    inputPoint.y += -[self frame].origin.y;
+    
+    auto localPoint = [self convertPoint:inputPoint toView:self];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
+    auto point = [self translateLocalPoint:avnPoint];
 
     // Check if we hit any avalonia controls
-    if (result == self && _parent->BaseEvents->HitTest(localPoint) == false) {
+    if (result == self && _parent->BaseEvents->HitTest(point) == false) {
         result = nil;
     }
 
