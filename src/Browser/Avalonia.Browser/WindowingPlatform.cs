@@ -14,11 +14,11 @@ namespace Avalonia.Browser
         private bool _signaled;
         private static KeyboardDevice? s_keyboard;
 
-        public IWindowImpl CreateWindow() => throw new NotSupportedException();
+        public IWindowImpl CreateWindow() => throw new NotSupportedException("Browser doesn't support windowing platform. In order to display a single-view content, set ISingleViewApplicationLifetime.MainView.");
 
         IWindowImpl IWindowingPlatform.CreateEmbeddableWindow()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Browser doesn't support embeddable windowing platform.");
         }
 
         public ITrayIconImpl? CreateTrayIcon()
