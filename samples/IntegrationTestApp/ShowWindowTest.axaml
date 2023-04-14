@@ -6,7 +6,7 @@
         x:DataType="Window"
         Title="Show Window Test">
   <integrationTestApp:MeasureBorder Name="MyBorder">
-    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
       <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
       <TextBox Name="CurrentClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"
                Text="{Binding ClientSize, Mode=OneWay}" />
@@ -35,13 +35,25 @@
         <ComboBoxItem Name="WindowStateFullScreen">FullScreen</ComboBoxItem>
       </ComboBox>
 
-      <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>
-      <TextBox Name="CurrentOrder" Grid.Column="1" Grid.Row="8" IsReadOnly="True" />
-      
-      <Label Grid.Row="9" Content="MeasuredWith:" />
-      <TextBlock Grid.Column="1" Grid.Row="9" Name="CurrentMeasuredWithText" Text="{Binding #MyBorder.MeasuredWith}" />
+      <Label Grid.Column="0" Grid.Row="8">SystemDecorations</Label>
+      <ComboBox Name="CurrentSystemDecorations" Grid.Column="1" Grid.Row="8"  SelectedIndex="{Binding SystemDecorations}">
+        <ComboBoxItem Name="SystemDecorationsNone">None</ComboBoxItem>
+        <ComboBoxItem Name="SystemDecorationsBorderOnly">BorderOnly</ComboBoxItem>
+        <ComboBoxItem Name="SystemDecorationsFull">Full</ComboBoxItem>
+      </ComboBox>
 
-      <Button Name="HideButton" Grid.Row="10" Command="{Binding $parent[Window].Hide}">Hide</Button>
+      <CheckBox Name="CurrentExtendClientAreaToDecorationsHint" Grid.ColumnSpan="2" Grid.Row="9"
+                IsChecked="{Binding ExtendClientAreaToDecorationsHint}">
+        ExtendClientAreaToDecorationsHint
+      </CheckBox>
+
+      <Label Grid.Column="0" Grid.Row="10">Order (mac)</Label>
+      <TextBox Name="CurrentOrder" Grid.Column="1" Grid.Row="10" IsReadOnly="True" />
+      
+      <Label Grid.Row="11" Content="MeasuredWith:" />
+      <TextBlock Grid.Column="1" Grid.Row="11" Name="CurrentMeasuredWithText" Text="{Binding #MyBorder.MeasuredWith}" />
+
+      <Button Name="HideButton" Grid.Row="12" Command="{Binding $parent[Window].Hide}">Hide</Button>
       
     </Grid>
   </integrationTestApp:MeasureBorder>

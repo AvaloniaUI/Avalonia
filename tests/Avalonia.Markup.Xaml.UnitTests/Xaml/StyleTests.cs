@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
@@ -377,7 +378,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ListBox>("list");
-                list.Items = collection;
+                list.ItemsSource = collection;
 
                 window.Show();
 

@@ -50,7 +50,7 @@
       <DataTemplate>
         <ItemsControl x:DataType="DataValidationErrors"
                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
-                      Items="{Binding}">
+                      ItemsSource="{Binding}">
           <ItemsControl.Styles>
             <Style Selector="TextBlock">
               <Setter Property="TextWrapping" Value="Wrap" />
@@ -98,7 +98,7 @@
             </Style>
           </Panel.Styles>
           <ToolTip.Tip>
-            <ItemsControl Items="{Binding}" x:DataType="collections:IEnumerable" />
+            <ItemsControl ItemsSource="{Binding}" x:DataType="collections:IEnumerable" />
           </ToolTip.Tip>
           <Path Width="14"
                 Height="14"

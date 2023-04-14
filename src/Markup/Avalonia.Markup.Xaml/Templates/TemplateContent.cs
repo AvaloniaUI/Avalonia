@@ -3,14 +3,13 @@ using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    
     public static class TemplateContent
     {
-        public static ControlTemplateResult Load(object templateContent)
+        public static ControlTemplateResult? Load(object? templateContent)
         {
-            if (templateContent is Func<IServiceProvider, object> direct)
+            if (templateContent is Func<IServiceProvider?, object?> direct)
             {
-                return (ControlTemplateResult)direct(null);
+                return (ControlTemplateResult?)direct(null);
             }
 
             if (templateContent is null)
@@ -18,18 +17,18 @@ namespace Avalonia.Markup.Xaml.Templates
                 return null;
             }
 
-            throw new ArgumentException(nameof(templateContent));
+            throw new ArgumentException($"Unexpected content {templateContent.GetType()}", nameof(templateContent));
         }
 
-        public static TemplateResult<T> Load<T>(object templateContent)
+        public static TemplateResult<T>? Load<T>(object? templateContent)
         {
-            if (templateContent is Func<IServiceProvider, object> direct)
-                return (TemplateResult<T>)direct(null);
+            if (templateContent is Func<IServiceProvider?, object?> direct)
+                return (TemplateResult<T>?)direct(null);
 
             if (templateContent is null)
                 return null;
 
-            throw new ArgumentException(nameof(templateContent));
+            throw new ArgumentException($"Unexpected content {templateContent.GetType()}", nameof(templateContent));
         }
     }
 }

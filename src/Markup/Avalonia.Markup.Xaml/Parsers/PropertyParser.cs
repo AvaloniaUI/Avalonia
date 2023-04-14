@@ -5,7 +5,7 @@ namespace Avalonia.Markup.Xaml.Parsers
 {
     internal class PropertyParser
     {
-        public static (string ns, string owner, string name) Parse(CharacterReader r)
+        public static (string? ns, string? owner, string name) Parse(CharacterReader r)
         {
             if (r.End)
             {
@@ -14,9 +14,9 @@ namespace Avalonia.Markup.Xaml.Parsers
 
             var openParens = r.TakeIf('(');
             bool closeParens = false;
-            string ns = null;
-            string owner = null;
-            string name = null;
+            string? ns = null;
+            string? owner = null;
+            string? name = null;
 
             do
             {

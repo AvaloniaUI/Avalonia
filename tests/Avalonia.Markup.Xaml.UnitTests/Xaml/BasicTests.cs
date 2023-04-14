@@ -1,24 +1,20 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Data;
-using Avalonia.Data.Converters;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.Templates;
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml;
-using Xunit;
+using Avalonia.Collections;
+using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
-using Avalonia.Themes.Simple;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -505,7 +501,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ItemsControl Name='itemsControl' Items='{Binding}'>
+    <ItemsControl Name='itemsControl' ItemsSource='{Binding}'>
     </ItemsControl>
 </Window>
 ";
@@ -522,7 +518,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 target.DataContext = items;
 
-                Assert.Equal(items, itemsControl.Items);
+                Assert.Equal(items, itemsControl.ItemsSource);
             }
         }
 
@@ -760,7 +756,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
+    <ListBox ItemsSource='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
 </Window>";
 
                 var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
@@ -773,7 +769,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.DataContext = vm;
 
-                Assert.Equal(vm.Items, listBox.Items);
+                Assert.Equal(vm.Items, listBox.ItemsSource);
 
                 Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
             }
@@ -910,7 +906,49 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("World", target.Test2);
             Assert.Equal("Hello", target.Test1);
         }
-        
+
+        [Fact]
+        public void Can_Specify_Button_Classes()
+        {
+            var xaml = "<Button xmlns='https://github.com/avaloniaui' Classes='foo bar'/>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Button_Classes_Longform()
+        {
+            var xaml = @"
+<Button xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Button.Classes>
+    <x:String>foo</x:String>
+    <x:String>bar</x:String>
+  </Button.Classes>
+</Button>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Flyout_FlyoutPresenterClasses()
+        {
+            var xaml = "<Flyout xmlns='https://github.com/avaloniaui' FlyoutPresenterClasses='foo bar'/>";
+            var target = (Flyout)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.FlyoutPresenterClasses);
+        }
+
+        [Fact]
+        public void Trying_To_Bind_ItemsControl_Items_Throws()
+        {
+            var xaml = "<ItemsControl xmlns='https://github.com/avaloniaui' Items='{Binding}'/>";
+
+            Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }

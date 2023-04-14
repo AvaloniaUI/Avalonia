@@ -3962,6 +3962,7 @@ namespace Avalonia.Controls
                 bool focusLeftDataGrid = true;
                 bool dataGridWillReceiveRoutedEvent = true;
                 Visual focusedObject = FocusManager.Instance.Current as Visual;
+                DataGridColumn editingColumn = null;
 
                 while (focusedObject != null)
                 {
@@ -3974,22 +3975,29 @@ namespace Avalonia.Controls
                     // Walk up the visual tree.  If we hit the root, try using the framework element's
                     // parent.  We do this because Popups behave differently with respect to the visual tree,
                     // and it could have a parent even if the VisualTreeHelper doesn't find it.
-                    Visual parent = focusedObject.GetVisualParent();
+                    var parent = focusedObject.Parent as Visual;
                     if (parent == null)
                     {
-                        if (focusedObject is Control element)
-                        {
-                            parent = element.VisualParent;
-                            if (parent != null)
-                            {
-                                dataGridWillReceiveRoutedEvent = false;
-                            }
-                        }
+                        parent = focusedObject.GetVisualParent();
+                    }
+                    else
+                    {
+                        dataGridWillReceiveRoutedEvent = false;
                     }
                     focusedObject = parent;
                 }
 
-                if (focusLeftDataGrid)
+                if (EditingRow != null && EditingColumnIndex != -1)
+                {
+                    editingColumn = ColumnsItemsInternal[EditingColumnIndex];
+
+                    if (focusLeftDataGrid && editingColumn is DataGridTemplateColumn)
+                    {
+                        dataGridWillReceiveRoutedEvent = false;
+                    }
+                }
+
+                if (focusLeftDataGrid && !(editingColumn is DataGridTemplateColumn))
                 {
                     ContainsFocus = false;
                     if (EditingRow != null)
@@ -6066,8 +6074,9 @@ namespace Avalonia.Controls
             var numberOfItem = clipboardRowContent.Count;
             for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
             {
-                var cellContent = clipboardRowContent[cellIndex];
-                text.Append(cellContent.Content);
+                var cellContent = clipboardRowContent[cellIndex].Content?.ToString();
+                cellContent = cellContent?.Replace("\"", "\"\"");
+                text.Append($"\"{cellContent}\"");
                 if (cellIndex < numberOfItem - 1)
                 {
                     text.Append('\t');
@@ -6132,8 +6141,10 @@ namespace Avalonia.Controls
 
         private async void CopyToClipboard(string text)
         {
-            var clipboard = ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
-            await clipboard.SetTextAsync(text);
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+            if (clipboard != null)
+                await clipboard.SetTextAsync(text);
         }
 
         /// <summary>

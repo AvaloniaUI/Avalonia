@@ -204,6 +204,69 @@ namespace Avalonia.VisualTree
             }
         }
 
+        public static TransformedBounds? GetTransformedBounds(this Visual visual)
+        {
+            Rect clip = default;
+            var transform = Matrix.Identity;
+
+            bool Visit(Visual visual)
+            {
+                if (!visual.IsVisible)
+                    return false;
+
+                // The visual's bounds in local coordinates.
+                var bounds = new Rect(visual.Bounds.Size);
+
+                // If the visual has no parent, we've reached the root. We start the clip
+                // rectangle with these bounds.
+                if (visual.GetVisualParent() is not { } parent)
+                {
+                    clip = bounds;
+                    return true;
+                }
+
+                // Otherwise recurse until the root visual is found, exiting early if one of the
+                // ancestors is invisible.
+                if (!Visit(parent))
+                    return false;
+
+                // Calculate the transform for this control from its offset and render transform.
+                var renderTransform = Matrix.Identity;
+
+                if (visual.HasMirrorTransform)
+                {
+                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
+                    renderTransform *= mirrorMatrix;
+                }
+
+                if (visual.RenderTransform != null)
+                {
+                    var origin = visual.RenderTransformOrigin.ToPixels(bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    var finalTransform = (-offset) * visual.RenderTransform.Value * offset;
+                    renderTransform *= finalTransform;
+                }
+
+                transform = renderTransform *
+                    Matrix.CreateTranslation(visual.Bounds.Position) *
+                    transform;
+
+                // If the visual is clipped, update the clip bounds.
+                if (visual.ClipToBounds)
+                {
+                    var globalBounds = bounds.TransformToAABB(transform);
+                    var clipBounds = visual.ClipToBounds ?
+                        globalBounds.Intersect(clip) :
+                        clip;
+                    clip = clip.Intersect(clipBounds);
+                }
+
+                return true;
+            }
+
+            return Visit(visual) ? new(new(visual.Bounds.Size), clip, transform) : null;
+        }
+
         /// <summary>
         /// Gets the first visual in the visual tree whose bounds contain a point.
         /// </summary>

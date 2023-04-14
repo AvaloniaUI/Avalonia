@@ -8,6 +8,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -17,17 +18,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class SelectableTextBlock : TextBlock, IInlineHost
     {
-        public static readonly DirectProperty<SelectableTextBlock, int> SelectionStartProperty =
-            AvaloniaProperty.RegisterDirect<SelectableTextBlock, int>(
-                nameof(SelectionStart),
-                o => o.SelectionStart,
-                (o, v) => o.SelectionStart = v);
+        public static readonly StyledProperty<int> SelectionStartProperty =
+            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>();
 
-        public static readonly DirectProperty<SelectableTextBlock, int> SelectionEndProperty =
-            AvaloniaProperty.RegisterDirect<SelectableTextBlock, int>(
-                nameof(SelectionEnd),
-                o => o.SelectionEnd,
-                (o, v) => o.SelectionEnd = v);
+        public static readonly StyledProperty<int> SelectionEndProperty =
+            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>();
 
         public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
             AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
@@ -35,21 +30,16 @@ namespace Avalonia.Controls
                 o => o.SelectedText);
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<SelectableTextBlock, IBrush?>(nameof(SelectionBrush), Brushes.Blue);
-
+            TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>(new(new Data.Optional<IBrush?>(Brushes.Blue)));
 
         public static readonly DirectProperty<SelectableTextBlock, bool> CanCopyProperty =
-            AvaloniaProperty.RegisterDirect<SelectableTextBlock, bool>(
-                nameof(CanCopy),
-                o => o.CanCopy);
+            TextBox.CanCopyProperty.AddOwner<SelectableTextBlock>(o => o.CanCopy);
 
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<SelectableTextBlock, RoutedEventArgs>(
                 nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         private bool _canCopy;
-        private int _selectionStart;
-        private int _selectionEnd;
         private int _wordSelectionStart = -1;
 
         static SelectableTextBlock()
@@ -78,16 +68,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int SelectionStart
         {
-            get => _selectionStart;
-            set
-            {
-                if (SetAndRaise(SelectionStartProperty, ref _selectionStart, value))
-                {
-                    RaisePropertyChanged(SelectedTextProperty, "", "");
-
-                    UpdateCommandStates();
-                }
-            }
+            get => GetValue(SelectionStartProperty);
+            set => SetValue(SelectionStartProperty, value);
         }
 
         /// <summary>
@@ -95,16 +77,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int SelectionEnd
         {
-            get => _selectionEnd;
-            set
-            {
-                if (SetAndRaise(SelectionEndProperty, ref _selectionEnd, value))
-                {
-                    RaisePropertyChanged(SelectedTextProperty, "", "");
-
-                    UpdateCommandStates();
-                }
-            }
+            get => GetValue(SelectionEndProperty);
+            set => SetValue(SelectionEndProperty, value);
         }
 
         /// <summary>
@@ -147,10 +121,12 @@ namespace Avalonia.Controls
 
             if (!eventArgs.Handled)
             {
-                await ((IClipboard)AvaloniaLocator.Current.GetRequiredService(typeof(IClipboard)))
-                    .SetTextAsync(text);
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+                if (clipboard != null)
+                    await clipboard.SetTextAsync(text);
             }
-        }        
+        }
 
         /// <summary>
         /// Select all text in the TextBox
@@ -159,8 +135,8 @@ namespace Avalonia.Controls
         {
             var text = Text;
 
-            SelectionStart = 0;
-            SelectionEnd = text?.Length ?? 0;
+            SetCurrentValue(SelectionStartProperty, 0);
+            SetCurrentValue(SelectionEndProperty, text?.Length ?? 0);
         }
 
         /// <summary>
@@ -168,7 +144,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void ClearSelection()
         {
-            SelectionEnd = SelectionStart;
+            SetCurrentValue(SelectionEndProperty, SelectionStart);
         }
 
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -204,7 +180,7 @@ namespace Avalonia.Controls
 
                 var rects = TextLayout.HitTestTextRange(start, length);
 
-                using (context.PushPostTransform(Matrix.CreateTranslation(origin)))
+                using (context.PushTransform(Matrix.CreateTranslation(origin)))
                 {
                     foreach (var rect in rects)
                     {
@@ -240,11 +216,22 @@ namespace Avalonia.Controls
             e.Handled = handled;
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
+            {
+                RaisePropertyChanged(SelectedTextProperty, "", "");
+                UpdateCommandStates();
+            }
+        }
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
 
-            var text = Text;
+            var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
 
             if (text != null && clickInfo.Properties.IsLeftButtonPressed)
@@ -271,25 +258,26 @@ namespace Avalonia.Controls
 
                                 if (index > _wordSelectionStart)
                                 {
-                                    SelectionEnd = StringUtils.NextWord(text, index);
+                                    SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, index));
                                 }
 
                                 if (index < _wordSelectionStart || previousWord == _wordSelectionStart)
                                 {
-                                    SelectionStart = previousWord;
+                                    SetCurrentValue(SelectionStartProperty, previousWord);
                                 }
                             }
                             else
                             {
-                                SelectionStart = Math.Min(oldIndex, index);
-                                SelectionEnd = Math.Max(oldIndex, index);
+                                SetCurrentValue(SelectionStartProperty, Math.Min(oldIndex, index));
+                                SetCurrentValue(SelectionEndProperty, Math.Max(oldIndex, index));
                             }
                         }
                         else
                         {
                             if (_wordSelectionStart == -1 || index < SelectionStart || index > SelectionEnd)
                             {
-                                SelectionStart = SelectionEnd = index;
+                                SetCurrentValue(SelectionStartProperty, index);
+                                SetCurrentValue(SelectionEndProperty, index);
 
                                 _wordSelectionStart = -1;
                             }
@@ -299,16 +287,16 @@ namespace Avalonia.Controls
                     case 2:
                         if (!StringUtils.IsStartOfWord(text, index))
                         {
-                            SelectionStart = StringUtils.PreviousWord(text, index);
+                            SetCurrentValue(SelectionStartProperty, StringUtils.PreviousWord(text, index));
                         }
 
                         _wordSelectionStart = SelectionStart;
 
                         if (!StringUtils.IsEndOfWord(text, index))
                         {
-                            SelectionEnd = StringUtils.NextWord(text, index);
+                            SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, index));
                         }
-                        
+
                         break;
                     case 3:
                         _wordSelectionStart = -1;
@@ -329,7 +317,7 @@ namespace Avalonia.Controls
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                var text = Text;
+                var text = HasComplexContent ? Inlines?.Text : Text;
                 var padding = Padding;
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
@@ -347,22 +335,22 @@ namespace Avalonia.Controls
 
                     if (distance <= 0)
                     {
-                        SelectionStart = StringUtils.PreviousWord(text, textPosition);
+                        SetCurrentValue(SelectionStartProperty, StringUtils.PreviousWord(text, textPosition));
                     }
 
                     if (distance >= 0)
                     {
                         if (SelectionStart != _wordSelectionStart)
                         {
-                            SelectionStart = _wordSelectionStart;
+                            SetCurrentValue(SelectionStartProperty, _wordSelectionStart);
                         }
 
-                        SelectionEnd = StringUtils.NextWord(text, textPosition);
+                        SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, textPosition));
                     }
                 }
                 else
                 {
-                    SelectionEnd = textPosition;
+                    SetCurrentValue(SelectionEndProperty, textPosition);
                 }
 
             }
@@ -395,7 +383,8 @@ namespace Avalonia.Controls
                                           caretIndex >= firstSelection && caretIndex <= lastSelection;
                 if (!didClickInSelection)
                 {
-                    SelectionStart = SelectionEnd = caretIndex;
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
             }
 
@@ -411,9 +400,11 @@ namespace Avalonia.Controls
 
         private string GetSelection()
         {
-            var text = GetText();
+            var text = HasComplexContent ? Inlines?.Text : Text;
 
-            if (string.IsNullOrEmpty(text))
+            var textLength = text?.Length ?? 0;
+
+            if (textLength == 0)
             {
                 return "";
             }
@@ -423,14 +414,14 @@ namespace Avalonia.Controls
             var start = Math.Min(selectionStart, selectionEnd);
             var end = Math.Max(selectionStart, selectionEnd);
 
-            if (start == end || text.Length < end)
+            if (start == end || textLength < end)
             {
                 return "";
             }
 
             var length = Math.Max(0, end - start);
 
-            var selectedText = text.Substring(start, length);
+            var selectedText = text!.Substring(start, length);
 
             return selectedText;
         }

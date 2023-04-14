@@ -14,9 +14,9 @@ namespace Avalonia.Controls.Primitives
 {
     public abstract class PopupFlyoutBase : FlyoutBase, IPopupHostProvider
     {
-        /// <inheritdoc cref="Popup.PlacementModeProperty"/>
+        /// <inheritdoc cref="Popup.PlacementProperty"/>
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
-            Popup.PlacementModeProperty.AddOwner<PopupFlyoutBase>();
+            Popup.PlacementProperty.AddOwner<PopupFlyoutBase>();
 
         /// <inheritdoc cref="Popup.HorizontalOffsetProperty"/>
         public static readonly StyledProperty<double> HorizontalOffsetProperty =
@@ -64,15 +64,13 @@ namespace Avalonia.Controls.Primitives
 
         protected Popup Popup => _popupLazy.Value;
 
-        /// <summary>
-        /// Gets or sets the desired placement.
-        /// </summary>
+        /// <inheritdoc cref="Popup.Placement"/>
         public PlacementMode Placement
         {
             get => GetValue(PlacementProperty);
             set => SetValue(PlacementProperty, value);
         }
-        
+
         /// <inheritdoc cref="Popup.PlacementGravity"/>
         public PopupGravity PlacementGravity
         {
@@ -407,7 +405,7 @@ namespace Avalonia.Controls.Primitives
         {
             Size sz;
             // Popup.Child can't be null here, it was set in ShowAtCore.
-            if (Popup.Child!.DesiredSize.IsDefault)
+            if (Popup.Child!.DesiredSize == default)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
@@ -423,11 +421,11 @@ namespace Avalonia.Controls.Primitives
             Popup.PlacementGravity = PlacementGravity;
             if (showAtPointer)
             {
-                Popup.PlacementMode = PlacementMode.Pointer;
+                Popup.Placement = PlacementMode.Pointer;
             }
             else
             {
-                Popup.PlacementMode = Placement;
+                Popup.Placement = Placement;
                 Popup.PlacementConstraintAdjustment =
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideX |
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;

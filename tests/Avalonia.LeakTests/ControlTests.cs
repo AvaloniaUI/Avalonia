@@ -353,7 +353,7 @@ namespace Avalonia.LeakTests
                                     (x, _) => new TextBlock { Text = x.Name },
                                     x => x.Children)
                             },
-                            Items = nodes
+                            ItemsSource = nodes
                         }
                     };
 
@@ -428,7 +428,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = new TabControl
                         {
-                            Items = new[] { new TabItem() }
+                            ItemsSource = new[] { new TabItem() }
                         }
                     };
 
@@ -440,7 +440,7 @@ namespace Avalonia.LeakTests
                     Assert.IsType<TabItem>(tabControl.Presenter.Panel.Children[0]);
 
                     // Clear the items and ensure the TabItem is removed.
-                    tabControl.Items = null;
+                    tabControl.ItemsSource = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Empty(tabControl.Presenter.Panel.Children);
 
@@ -545,7 +545,7 @@ namespace Avalonia.LeakTests
                 {
                     var contextMenu = new ContextMenu
                     {
-                        Items = new[]
+                        Items =
                         {
                             new MenuItem { Header = "Foo" },
                             new MenuItem { Header = "Foo" },
@@ -594,7 +594,7 @@ namespace Avalonia.LeakTests
                 {
                     var contextMenu = new ContextMenu
                     {
-                        Items = new[]
+                        Items =
                         {
                             new MenuItem { Header = "Foo" },
                             new MenuItem { Header = "Foo" },
@@ -740,7 +740,7 @@ namespace Avalonia.LeakTests
                             }),
                             (lb = new ListBox
                             {
-                                Items = items,
+                                ItemsSource = items,
                                 ItemTemplate = new FuncDataTemplate<int>((_, _) =>
                                     new Canvas
                                     {
@@ -858,7 +858,7 @@ namespace Avalonia.LeakTests
                     // Add the listbox and render it
                     tl.Content = listBox;
                     lm.ExecuteInitialLayoutPass();
-                    listBox.Items = keyGestures;
+                    listBox.ItemsSource = keyGestures;
                     lm.ExecuteLayoutPass();
 
                     // Let the button detach when clearing the source items
