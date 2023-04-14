@@ -44,7 +44,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver(),
                 new AvaloniaXamlIlReorderClassesPropertiesTransformer(),
-                new AvaloniaXAmlIlClassesTransformer()
+                new AvaloniaXamlIlClassesTransformer()
             );
 
             InsertBefore<ContentConvertTransformer>(

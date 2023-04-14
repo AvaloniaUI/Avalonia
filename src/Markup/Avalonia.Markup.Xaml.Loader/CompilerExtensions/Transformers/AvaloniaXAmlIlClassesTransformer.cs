@@ -18,7 +18,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     ///     </StyledElement.Classes>
     /// </code>
     /// </remarks>
-    class AvaloniaXAmlIlClassesTransformer : IXamlAstTransformer
+    class AvaloniaXamlIlClassesTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
