@@ -521,9 +521,17 @@
 
 - (void)keyDown:(NSEvent *)event
 {
-    [self keyboardEvent:event withType:KeyDown];
-    _lastKeyHandled = [[self inputContext] handleEvent:event];
-    [super keyDown:event];
+    _lastKeyHandled = false;
+        
+    [[self inputContext] handleEvent:event];
+    
+    if(!_lastKeyHandled){
+        [self keyboardEvent:event withType:KeyDown];
+    }
+}
+
+- (void) doCommandBySelector:(SEL)selector{
+    
 }
 
 - (void)keyUp:(NSEvent *)event
@@ -578,6 +586,8 @@
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
+    _lastKeyHandled = true;
+    
     if([string isKindOfClass:[NSAttributedString class]])
     {
         _markedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
@@ -619,11 +629,15 @@
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
+    _lastKeyHandled = true;
+    
     [self unmarkText];
 
     if(_parent != nullptr)
     {
-        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+        uint32_t timestamp = static_cast<uint32_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        
+        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [string UTF8String]);
     }
     
     [[self inputContext] invalidateCharacterCoordinates];
@@ -746,9 +760,9 @@
 }
 
 - (void) setText:(NSString *)text{
-    [_text setString:text];
+    [self unmarkText];
     
-    [[self inputContext] discardMarkedText];
+    [_text setString:text];
 }
 
 - (void) setSelection:(int)start :(int)end{
