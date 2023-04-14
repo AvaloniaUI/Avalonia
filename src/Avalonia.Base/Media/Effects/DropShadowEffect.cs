@@ -18,7 +18,7 @@ public abstract class DropShadowEffectBase : Effect
     }
 
     public static readonly StyledProperty<Color> ColorProperty = AvaloniaProperty.Register<DropShadowEffectBase, Color>(
-        nameof(Color));
+        nameof(Color), Colors.Black);
 
     public Color Color
     {
