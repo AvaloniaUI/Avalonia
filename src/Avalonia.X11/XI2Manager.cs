@@ -231,7 +231,7 @@ namespace Avalonia.X11
                 return;
             }
 
-            if (_multitouch && ev.Emulated)
+            if (!client.IsEnabled || (_multitouch && ev.Emulated))
                 return;
             
             if (ev.Type == XiEventType.XI_Motion)
@@ -370,6 +370,7 @@ namespace Avalonia.X11
 
     internal interface IXI2Client
     {
+        bool IsEnabled { get; }
         IInputRoot InputRoot { get; }
         void ScheduleXI2Input(RawInputEventArgs args);
         IMouseDevice MouseDevice { get; }

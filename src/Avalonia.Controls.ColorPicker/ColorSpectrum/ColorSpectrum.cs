@@ -13,9 +13,9 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -48,6 +48,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isPointerPressed = false;
         private bool _shouldShowLargeSelection = false;
         private List<Hsv> _hsvValues = new List<Hsv>();
+        private ColorComponent _thirdComponent = ColorComponent.Component3; // HsvComponent.Value
 
         private IDisposable? _layoutRootDisposable;
         private IDisposable? _selectionEllipsePanelDisposable;
@@ -403,7 +404,7 @@ namespace Avalonia.Controls.Primitives
 
                     _updatingHsvColor = true;
                     Hsv newHsv = (new Rgb(color)).ToHsv();
-                    HsvColor = newHsv.ToHsvColor(color.A / 255.0);
+                    SetCurrentValue(HsvColorProperty, newHsv.ToHsvColor(color.A / 255.0));
                     _updatingHsvColor = false;
 
                     UpdateEllipse();
@@ -534,7 +535,7 @@ namespace Avalonia.Controls.Primitives
             _updatingColor = true;
             Rgb newRgb = (new Hsv(hsvColor)).ToRgb();
 
-            Color = newRgb.ToColor(hsvColor.A);
+            SetCurrentValue(ColorProperty, newRgb.ToColor(hsvColor.A));
 
             _updatingColor = false;
 
@@ -608,8 +609,8 @@ namespace Avalonia.Controls.Primitives
             Rgb newRgb = newHsv.ToRgb();
             double alpha = HsvColor.A;
 
-            Color = newRgb.ToColor(alpha);
-            HsvColor = newHsv.ToHsvColor(alpha);
+            SetCurrentValue(ColorProperty, newRgb.ToColor(alpha));
+            SetCurrentValue(HsvColorProperty, newHsv.ToHsvColor(alpha));
 
             UpdateEllipse();
             UpdatePseudoClasses();

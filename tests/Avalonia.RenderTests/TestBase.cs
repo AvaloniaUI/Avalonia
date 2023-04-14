@@ -17,6 +17,8 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
 #if AVALONIA_SKIA
@@ -40,8 +42,8 @@ namespace Avalonia.Direct2D1.RenderTests
 #endif
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-        private static readonly TestThreadingInterface threadingInterface =
-            new TestThreadingInterface();
+        private static readonly TestDispatcherImpl threadingInterface =
+            new TestDispatcherImpl();
 
         private static readonly IAssetLoader assetLoader = new AssetLoader();
         
@@ -53,7 +55,7 @@ namespace Avalonia.Direct2D1.RenderTests
             Direct2D1Platform.Initialize();
 #endif
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>()
+                .Bind<IDispatcherImpl>()
                 .ToConstant(threadingInterface);
 
             AvaloniaLocator.CurrentMutable
@@ -122,7 +124,8 @@ namespace Avalonia.Direct2D1.RenderTests
 
                 // Free pools
                 for (var c = 0; c < 11; c++)
-                    TestThreadingInterface.RunTimers();
+                    foreach (var dp in Dispatcher.SnapshotTimersForUnitTests())
+                        dp.ForceFire();
                 writableBitmap.Save(compositedPath);
             }
         }
@@ -241,45 +244,27 @@ namespace Avalonia.Direct2D1.RenderTests
             return path;
         }
 
-        private class TestThreadingInterface : IPlatformThreadingInterface
+        private class TestDispatcherImpl : IDispatcherImpl
         {
             public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
 
             public Thread MainThread { get; set; }
 
 #pragma warning disable 67
-            public event Action<DispatcherPriority?> Signaled;
+            public event Action Signaled;
+            public event Action Timer;
 #pragma warning restore 67
 
-            public void RunLoop(CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Signal(DispatcherPriority prio)
+            public void Signal()
             {
                 // No-op
             }
 
-            private static List<Action> s_timers = new();
-            
-            public static void RunTimers()
-            {
-                lock (s_timers)
-                {
-                    foreach(var t in s_timers.ToList())
-                        t.Invoke();
-                }
-            }
+            public long Now => 0;
 
-            public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
+            public void UpdateTimer(long? dueTimeInMs)
             {
-                var act = () => tick();
-                lock (s_timers) s_timers.Add(act);
-                return Disposable.Create(() =>
-                {
-                    lock (s_timers) s_timers.Remove(act);
-                });
+                // No-op
             }
         }
 

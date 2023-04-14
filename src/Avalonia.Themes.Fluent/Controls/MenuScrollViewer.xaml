@@ -75,17 +75,10 @@
                     Height="20" />
             </Viewbox>
           </RepeatButton>
-          <ScrollContentPresenter Name="PART_ContentPresenter"
-                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
-                                  Content="{TemplateBinding Content}"
-                                  Extent="{TemplateBinding Extent, Mode=TwoWay}"
-                                  Margin="{TemplateBinding Padding}"
-                                  Offset="{TemplateBinding Offset, Mode=TwoWay}"
-                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}">
+          <ScrollContentPresenter Name="PART_ContentPresenter">
             <ScrollContentPresenter.GestureRecognizers>
-              <ScrollGestureRecognizer CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                       CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
+              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}" />
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
         </DockPanel>

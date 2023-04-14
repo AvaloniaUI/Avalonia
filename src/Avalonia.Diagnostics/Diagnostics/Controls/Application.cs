@@ -77,12 +77,6 @@ namespace Avalonia.Diagnostics.Controls
             _application.InputManager;
 
         /// <summary>
-        /// Gets the application clipboard.
-        /// </summary>
-        public Input.Platform.IClipboard? Clipboard =>
-            _application.Clipboard;
-
-        /// <summary>
         /// Gets the application's global resource dictionary.
         /// </summary>
         public IResourceDictionary Resources =>

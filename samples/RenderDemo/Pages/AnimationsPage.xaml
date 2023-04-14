@@ -308,6 +308,41 @@
           </Animation>
         </Style.Animations>
       </Style>
+      <Style Selector="Border.Blur">
+        <Style.Animations>
+          <Animation Duration="0:0:3"
+                     IterationCount="Infinite"
+                     PlaybackDirection="Alternate">
+            <KeyFrame Cue="0%">
+              <Setter Property="Effect" Value="blur(0)"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Effect" Value="blur(10)"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+        <Setter Property="Child" Value="{StaticResource Acorn}"/>
+      </Style>
+      <Style Selector="Border.DropShadow">
+        <Style.Animations>
+          <Animation Duration="0:0:3"
+                     IterationCount="Infinite"
+                     PlaybackDirection="Alternate">
+            <KeyFrame Cue="0%">
+              <Setter Property="Effect" Value="drop-shadow(0 0 0)"/>
+            </KeyFrame>
+            <KeyFrame Cue="35%">
+              <Setter Property="Effect" Value="drop-shadow(5 5 0 Green)"/>
+            </KeyFrame>
+            <KeyFrame Cue="70%">
+              <Setter Property="Effect" Value="drop-shadow(5 5 5 Red)"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Effect" Value="drop-shadow(20 -5 5 Blue)"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
     </Styles>
   </UserControl.Styles>
   <Grid>
@@ -332,6 +367,11 @@
         <Border Classes="Test Rect8" Child="{x:Null}" />
         <Border Classes="Test Rect9" Child="{x:Null}" />
         <Border Classes="Test Rect10" Child="{x:Null}" />
+        <Border Classes="Test Blur" Background="#ffa0a0a0" BorderThickness="4" BorderBrush="Yellow" Padding="10"/>
+        <Border Classes="Test DropShadow" Background="Transparent" BorderThickness="4" BorderBrush="Yellow">
+          <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">Drop
+            Shadow</TextBlock>
+        </Border>
       </WrapPanel>
     </StackPanel>
   </Grid>

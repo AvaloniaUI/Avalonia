@@ -1,13 +1,10 @@
 using System.Collections;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -20,8 +17,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="Scroll"/> property.

@@ -180,6 +180,12 @@ namespace Avalonia.Platform
         object? GetFeature(Type t);
     }
 
+    public interface IDrawingContextImplWithEffects
+    {
+        void PushEffect(IEffect effect);
+        void PopEffect();
+    }
+
     public static class DrawingContextImplExtensions
     {
         /// <summary>
