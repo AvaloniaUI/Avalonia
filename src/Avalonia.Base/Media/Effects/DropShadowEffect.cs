@@ -97,8 +97,8 @@ public class DropShadowDirectionEffect : DropShadowEffectBase, IDirectionDropSha
         set => SetValue(DirectionProperty, value);
     }
     
-    public double OffsetX => Math.Cos(Direction) * ShadowDepth;
-    public double OffsetY => Math.Sin(Direction) * ShadowDepth;
+    public double OffsetX => Math.Cos(Direction * Math.PI / 180) * ShadowDepth;
+    public double OffsetY => Math.Sin(Direction * Math.PI / 180) * ShadowDepth;
     
     public IImmutableEffect ToImmutable() => new ImmutableDropShadowDirectionEffect(OffsetX, OffsetY, BlurRadius, Color, Opacity);
 }
