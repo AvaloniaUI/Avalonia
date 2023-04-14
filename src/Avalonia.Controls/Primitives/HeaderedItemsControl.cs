@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Primitives
     public class HeaderedItemsControl : ItemsControl, IContentPresenterHost
     {
         private IDisposable? _itemsBinding;
-        private bool _prepareItemContainerOnAttach;
+        private ItemsControl? _prepareItemContainerOnAttach;
 
         /// <summary>
         /// Defines the <see cref="Header"/> property.
@@ -69,10 +69,10 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToLogicalTree(e);
 
-            if (_prepareItemContainerOnAttach)
+            if (_prepareItemContainerOnAttach is not null)
             {
-                PrepareItemContainer();
-                _prepareItemContainerOnAttach = false;
+                PrepareItemContainer(_prepareItemContainerOnAttach);
+                _prepareItemContainerOnAttach = null;
             }
         }
 
@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
 
-        internal void PrepareItemContainer()
+        internal void PrepareItemContainer(ItemsControl parent)
         {
             _itemsBinding?.Dispose();
             _itemsBinding = null;
@@ -106,18 +106,18 @@ namespace Avalonia.Controls.Primitives
 
             if (item is null)
             {
-                _prepareItemContainerOnAttach = false;
+                _prepareItemContainerOnAttach = null;
                 return;
             }
 
-            var headerTemplate = HeaderTemplate;
+            var headerTemplate = HeaderTemplate ?? parent.ItemTemplate;
 
             if (headerTemplate is null)
             {
                 if (((ILogical)this).IsAttachedToLogicalTree)
                     headerTemplate = this.FindDataTemplate(item);
                 else
-                    _prepareItemContainerOnAttach = true;
+                    _prepareItemContainerOnAttach = parent;
             }
 
             if (headerTemplate is ITreeDataTemplate treeTemplate &&

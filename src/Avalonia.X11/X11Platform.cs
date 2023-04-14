@@ -50,9 +50,8 @@ namespace Avalonia.X11
                     useXim = true;
             }
 
-            // XIM doesn't work at all otherwise
-            if (useXim)
-                setlocale(0, "");
+            // We have problems with text input otherwise
+            setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);

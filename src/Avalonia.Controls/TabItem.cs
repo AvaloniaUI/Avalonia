@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TabItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TabItem>();
 
         /// <summary>
         /// Initializes static members of the <see cref="TabItem"/> class.

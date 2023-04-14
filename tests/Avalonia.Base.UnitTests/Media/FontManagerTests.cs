@@ -43,7 +43,7 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
-                Assert.Equal("MyFont", FontManager.Current.DefaultFontFamilyName);
+                Assert.Equal("MyFont", FontManager.Current.DefaultFontFamily.Name);
             }
         }
 

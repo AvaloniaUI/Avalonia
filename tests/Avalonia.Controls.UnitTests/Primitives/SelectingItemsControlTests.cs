@@ -2170,7 +2170,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private class Item : Control, ISelectable
         {
             public string Value { get; set; }
-            public bool IsSelected { get; set; }
+
+            public bool IsSelected 
+            {
+                get => SelectingItemsControl.GetIsSelected(this);
+                set => SelectingItemsControl.SetIsSelected(this, value);
+            }
         }
 
         private class MasterViewModel : NotifyingBase

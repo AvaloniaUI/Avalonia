@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                         on.Children[c] = new XamlAstXamlPropertyValueNode(d,
                             new XamlAstNamePropertyReference(d, on.Type, "Name", on.Type),
-                            d.Values);
+                            d.Values, true);
                 }
             }
 

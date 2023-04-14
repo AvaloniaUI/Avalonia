@@ -43,7 +43,7 @@
                               Margin="{TemplateBinding Padding}"
                               VerticalAlignment="Center"
                               Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding ItemTemplate}">
+                              ContentTemplate="{TemplateBinding HeaderTemplate}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
                   <AccessText Text="{Binding}" />
