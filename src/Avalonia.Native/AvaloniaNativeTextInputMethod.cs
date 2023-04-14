@@ -98,7 +98,7 @@ namespace Avalonia.Native
             var surroundingText = _client.SurroundingText;
 
             _inputMethod.SetSurroundingText(
-                surroundingText.Text,
+                surroundingText.Text ?? "",
                 surroundingText.AnchorOffset,
                 surroundingText.CursorOffset
             );

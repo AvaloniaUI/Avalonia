@@ -19,7 +19,9 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
+    internal partial class DrawingContextImpl : IDrawingContextImpl,
+        IDrawingContextWithAcrylicLikeSupport,
+        IDrawingContextImplWithEffects
     {
         private IDisposable?[]? _disposables;
         private readonly Vector _dpi;
@@ -249,6 +251,12 @@ namespace Avalonia.Skia
             }
         }
 
+        private static float SkBlurRadiusToSigma(double radius) {
+            if (radius <= 0)
+                return 0.0f;
+            return 0.288675f * (float)radius + 0.5f;
+        }
+        
         private struct BoxShadowFilter : IDisposable
         {
             public readonly SKPaint Paint;
@@ -260,12 +268,6 @@ namespace Avalonia.Skia
                 Paint = paint;
                 _filter = filter;
                 ClipOperation = clipOperation;
-            }
-
-            private static float SkBlurRadiusToSigma(double radius) {
-                if (radius <= 0)
-                    return 0.0f;
-                return 0.288675f * (float)radius + 0.5f;
             }
 
             public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity)

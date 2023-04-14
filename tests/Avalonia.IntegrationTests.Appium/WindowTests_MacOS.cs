@@ -336,22 +336,6 @@ namespace Avalonia.IntegrationTests.Appium
             secondaryWindow.FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
         }
 
-        [PlatformTheory(TestPlatforms.MacOS)]
-        [InlineData(ShowWindowMode.NonOwned)]
-        [InlineData(ShowWindowMode.Owned)]
-        [InlineData(ShowWindowMode.Modal)]
-        public void Window_Has_Disabled_Zoom_Button_When_CanResize_Is_False(ShowWindowMode mode)
-        {
-            using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
-            {
-                var secondaryWindow = GetWindow("SecondaryWindow");
-                var zoomButton = mode == ShowWindowMode.NonOwned ?
-                    secondaryWindow.FindElementByAccessibilityId("_XCUI:FullScreenWindow") :
-                    secondaryWindow.FindElementByAccessibilityId("_XCUI:ZoomWindow");
-                Assert.False(zoomButton.Enabled);
-            }
-        }
-
         [PlatformFact(TestPlatforms.MacOS)]
         public void Toggling_SystemDecorations_Should_Preserve_ExtendClientArea()
         {

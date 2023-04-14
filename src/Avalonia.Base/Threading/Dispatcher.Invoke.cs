@@ -557,10 +557,10 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    public Task InvokeTaskAsync(Func<Task> callback, DispatcherPriority priority = default)
+    public Task InvokeAsync(Func<Task> callback, DispatcherPriority priority = default)
     {
         _ = callback ?? throw new ArgumentNullException(nameof(callback));
-        return InvokeAsync(callback, priority).GetTask().Unwrap();
+        return InvokeAsync<Task>(callback, priority).GetTask().Unwrap();
     }
     
     /// <summary>
@@ -578,10 +578,10 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    public Task<TResult> InvokeTaskAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
+    public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
-        return InvokeAsync(action, priority).GetTask().Unwrap();
+        return InvokeAsync<Task<TResult>>(action, priority).GetTask().Unwrap();
     }
 
     /// <summary>

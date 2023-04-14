@@ -731,36 +731,25 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_COMPOSITION:
                     {
-                        var previousComposition = Imm32InputMethod.Current.Composition;
-
                         var flags = (GCS)ToInt32(lParam);
 
-                        var currentComposition = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_COMPSTR);
-
-                        Imm32InputMethod.Current.CompositionChanged(currentComposition);
-
-                        switch (flags)
+                        if ((flags & GCS.GCS_COMPSTR) != 0)
                         {
-                            case GCS.GCS_RESULTSTR:                          
-                                {
-                                    if(!string.IsNullOrEmpty(previousComposition) && ToInt32(wParam) >= 32)
-                                    {
-                                        Imm32InputMethod.Current.Composition = previousComposition;
+                            var currentComposition = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_COMPSTR);
 
-                                        _ignoreWmChar = true;
-                                    }
-                                    break;
-                                }
-                            case GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
-                                {
-                                    // Chinese IME sends WM_CHAR after composition has finished.
-                                    break;
-                                }
-                            case GCS.GCS_RESULTREADSTR | GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTSTR | GCS.GCS_RESULTCLAUSE:
-                                {
-                                    // Japanese IME sends WM_CHAR after composition has finished.
-                                    break;
-                                }
+                            Imm32InputMethod.Current.CompositionChanged(currentComposition);
+                        }
+
+                        if ((flags & GCS.GCS_RESULTSTR) != 0)
+                        {
+                            var result = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_RESULTSTR);
+
+                            if (!string.IsNullOrEmpty(result))
+                            {
+                                Imm32InputMethod.Current.Composition = result;
+
+                                _ignoreWmChar = true;
+                            }
                         }
 
                         break;
