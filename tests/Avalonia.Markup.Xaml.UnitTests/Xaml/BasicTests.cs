@@ -1,24 +1,20 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Data;
-using Avalonia.Data.Converters;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.Templates;
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml;
-using Xunit;
+using Avalonia.Collections;
+using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
-using Avalonia.Themes.Simple;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -915,6 +911,22 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public void Can_Specify_Button_Classes()
         {
             var xaml = "<Button xmlns='https://github.com/avaloniaui' Classes='foo bar'/>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Button_Classes_Longform()
+        {
+            var xaml = @"
+<Button xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Button.Classes>
+    <x:String>foo</x:String>
+    <x:String>bar</x:String>
+  </Button.Classes>
+</Button>";
             var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
 
             Assert.Equal(new[] { "foo", "bar" }, target.Classes);
