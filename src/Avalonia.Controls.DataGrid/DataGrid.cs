@@ -152,8 +152,6 @@ namespace Avalonia.Controls
         private double _verticalOffset;
         private byte _verticalScrollChangesIgnored;
 
-        private IEnumerable _items;
-
         public event EventHandler<ScrollEventArgs> HorizontalScroll;
         public event EventHandler<ScrollEventArgs> VerticalScroll;
 
@@ -652,21 +650,18 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Identifies the ItemsSource dependency property.
+        /// Identifies the ItemsSource property.
         /// </summary>
-        public static readonly DirectProperty<DataGrid, IEnumerable> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<DataGrid, IEnumerable>(
-                nameof(Items),
-                o => o.Items,
-                (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable> ItemsSourceProperty =
+            AvaloniaProperty.Register<DataGrid, IEnumerable>(nameof(ItemsSource));
 
         /// <summary>
         /// Gets or sets a collection that is used to generate the content of the control.
         /// </summary>
-        public IEnumerable Items
+        public IEnumerable ItemsSource
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         public static readonly StyledProperty<bool> AreRowDetailsFrozenProperty =
@@ -713,7 +708,7 @@ namespace Avalonia.Controls
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
 
-            ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
+            ItemsSourceProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsSourcePropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
             ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnColumnWidthChanged(e));
             FrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnFrozenColumnCountChanged(e));
@@ -816,10 +811,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// ItemsProperty property changed handler.
+        /// ItemsSourceProperty property changed handler.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
             {
@@ -830,7 +825,7 @@ namespace Avalonia.Controls
 
                 if (LoadingOrUnloadingRow)
                 {
-                    SetValueNoCallback(ItemsProperty, oldValue);
+                    SetValueNoCallback(ItemsSourceProperty, oldValue);
                     throw DataGridError.DataGrid.CannotChangeItemsWhenLoadingRows();
                 }
 
@@ -1855,7 +1850,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (CurrentSlot == -1 || Items == null || RowGroupHeadersTable.Contains(CurrentSlot))
+                if (CurrentSlot == -1 || ItemsSource == null || RowGroupHeadersTable.Contains(CurrentSlot))
                 {
                     return null;
                 }
