@@ -78,7 +78,7 @@ namespace Avalonia
         private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
         private string? _name;
-        private readonly Classes _classes = new Classes();
+        private Classes? _classes;
         private ILogicalRoot? _logicalRoot;
         private IAvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
@@ -183,21 +183,7 @@ namespace Avalonia
         /// collection.
         /// </para>
         /// </remarks>
-        public Classes Classes
-        {
-            get
-            {
-                return _classes;
-            }
-
-            set
-            {
-                if (_classes != value)
-                {
-                    _classes.Replace(value);
-                }
-            }
-        }
+        public Classes Classes => _classes ??= new();
 
         /// <summary>
         /// Gets or sets the control's data context.
