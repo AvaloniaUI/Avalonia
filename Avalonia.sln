@@ -244,13 +244,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepeater.UnitTests", "tests\Avalonia.Controls.ItemsRepeater.UnitTests\Avalonia.Controls.ItemsRepeater.UnitTests.csproj", "{F4E36AA8-814E-4704-BC07-291F70F45193}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Generators", "src\tools\Avalonia.Generators\Avalonia.Generators.csproj", "{DDA28789-C21A-4654-86CE-D01E81F095C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Generators", "src\tools\Avalonia.Generators\Avalonia.Generators.csproj", "{DDA28789-C21A-4654-86CE-D01E81F095C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Generators.Tests", "tests\Avalonia.Generators.Tests\Avalonia.Generators.Tests.csproj", "{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Generators.Tests", "tests\Avalonia.Generators.Tests\Avalonia.Generators.Tests.csproj", "{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Fonts.Inter", "src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj", "{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Fonts.Inter", "src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj", "{13F1135D-BA1A-435C-9C5B-A368D1D63DE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generators.Sandbox", "samples\Generators.Sandbox\Generators.Sandbox.csproj", "{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generators.Sandbox", "samples\Generators.Sandbox\Generators.Sandbox.csproj", "{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeAreaDemo", "samples\SafeAreaDemo\SafeAreaDemo.csproj", "{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeAreaDemo.Android", "samples\SafeAreaDemo.Android\SafeAreaDemo.Android.csproj", "{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeAreaDemo.Desktop", "samples\SafeAreaDemo.Desktop\SafeAreaDemo.Desktop.csproj", "{4CDAD037-34A2-4CCF-A03A-C6C7B988A572}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeAreaDemo.iOS", "samples\SafeAreaDemo.iOS\SafeAreaDemo.iOS.csproj", "{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -595,6 +603,26 @@ Global
 		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4CDAD037-34A2-4CCF-A03A-C6C7B988A572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CDAD037-34A2-4CCF-A03A-C6C7B988A572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CDAD037-34A2-4CCF-A03A-C6C7B988A572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CDAD037-34A2-4CCF-A03A-C6C7B988A572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -661,10 +689,14 @@ Global
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C810060E-3809-4B74-A125-F11533AF9C1B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C692FE73-43DB-49CE-87FC-F03ED61F25C9} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{F4E36AA8-814E-4704-BC07-291F70F45193} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{DDA28789-C21A-4654-86CE-D01E81F095C5} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{2D7C812B-7E73-4252-8EFD-BC8A4D5CCB9F} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{F4E36AA8-814E-4704-BC07-291F70F45193} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{A82AD1BC-EBE6-4FC3-A13B-D52A50297533} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{4CDAD037-34A2-4CCF-A03A-C6C7B988A572} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{FC956F9A-4C3A-4A1A-ACDD-BB54DCB661DD} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

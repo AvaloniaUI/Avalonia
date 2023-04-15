@@ -29,6 +29,8 @@ namespace Avalonia.Rendering.Composition.Expressions
             }
         }
 
+        public bool NextIsWhitespace() => _s.Length > 0 && char.IsWhiteSpace(_s[0]);
+
         static bool IsAlphaNumeric(char ch) => (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') ||
                                                (ch >= 'A' && ch <= 'Z');
 
@@ -238,6 +240,12 @@ namespace Avalonia.Rendering.Composition.Expressions
                     len = c + 1;
                     dotCount++;
                 }
+                else if (ch == '-')
+                {
+                    if (len != 0)
+                        return false;
+                    len = c + 1;
+                }
                 else
                     break;
             }
@@ -254,7 +262,55 @@ namespace Avalonia.Rendering.Composition.Expressions
             Advance(len);
             return true;
         }
+        
+        public bool TryParseDouble(out double res)
+        {
+            res = 0;
+            SkipWhitespace();
+            if (_s.Length == 0)
+                return false;
+            
+            var len = 0;
+            var dotCount = 0;
+            for (var c = 0; c < _s.Length; c++)
+            {
+                var ch = _s[c];
+                if (ch >= '0' && ch <= '9')
+                    len = c + 1;
+                else if (ch == '.' && dotCount == 0)
+                {
+                    len = c + 1;
+                    dotCount++;
+                }
+                else if (ch == '-')
+                {
+                    if (len != 0)
+                        return false;
+                    len = c + 1;
+                }
+                else
+                    break;
+            }
 
+            var span = _s.Slice(0, len);
+
+#if NETSTANDARD2_0
+            if (!double.TryParse(span.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out res))
+                return false;
+#else
+            if (!double.TryParse(span, NumberStyles.Number, CultureInfo.InvariantCulture, out res))
+                return false;
+#endif
+            Advance(len);
+            return true;
+        }
+
+        public bool IsEofWithWhitespace()
+        {
+            SkipWhitespace();
+            return Length == 0;
+        }
+        
         public override string ToString() => _s.ToString();
 
     }
