@@ -910,7 +910,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("World", target.Test2);
             Assert.Equal("Hello", target.Test1);
         }
-        
+
+        [Fact]
+        public void Can_Specify_Button_Classes()
+        {
+            var xaml = "<Button xmlns='https://github.com/avaloniaui' Classes='foo bar'/>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Flyout_FlyoutPresenterClasses()
+        {
+            var xaml = "<Flyout xmlns='https://github.com/avaloniaui' FlyoutPresenterClasses='foo bar'/>";
+            var target = (Flyout)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.FlyoutPresenterClasses);
+        }
+
+        [Fact]
+        public void Trying_To_Bind_ItemsControl_Items_Throws()
+        {
+            var xaml = "<ItemsControl xmlns='https://github.com/avaloniaui' Items='{Binding}'/>";
+
+            Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }

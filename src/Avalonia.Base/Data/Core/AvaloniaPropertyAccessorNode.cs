@@ -40,7 +40,7 @@ namespace Avalonia.Data.Core
         {
             if (reference.TryGetTarget(out var target) && target is AvaloniaObject obj)
             {
-                _subscription = new AvaloniaPropertyObservable<object?>(obj, _property).Subscribe(ValueChanged);
+                _subscription = new AvaloniaPropertyObservable<object?,object?>(obj, _property).Subscribe(ValueChanged);
             }
             else
             {

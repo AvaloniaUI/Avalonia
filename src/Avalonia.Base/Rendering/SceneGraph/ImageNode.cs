@@ -94,7 +94,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => DestRect.ContainsExclusive(p);
+        public override bool HitTestTransformed(Point p) => DestRect.ContainsExclusive(p);
 
         public override void Dispose()
         {

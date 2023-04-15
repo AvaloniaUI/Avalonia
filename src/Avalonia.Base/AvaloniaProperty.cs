@@ -500,6 +500,12 @@ namespace Avalonia
         internal abstract void RouteClearValue(AvaloniaObject o);
 
         /// <summary>
+        /// Routes an untyped CoerceValue call on a property with its default value to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        internal abstract void RouteCoerceDefaultValue(AvaloniaObject o);
+
+        /// <summary>
         /// Routes an untyped GetValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>

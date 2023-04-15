@@ -15,14 +15,14 @@ namespace Avalonia.Controls.Primitives
     [PseudoClasses(":vertical", ":horizontal")]
     public class Track : Control
     {
-        public static readonly DirectProperty<Track, double> MinimumProperty =
-            RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o, v) => o.Minimum = v);
+        public static readonly StyledProperty<double> MinimumProperty =
+            RangeBase.MinimumProperty.AddOwner<Track>();
 
-        public static readonly DirectProperty<Track, double> MaximumProperty =
-            RangeBase.MaximumProperty.AddOwner<Track>(o => o.Maximum, (o, v) => o.Maximum = v);
+        public static readonly StyledProperty<double> MaximumProperty =
+            RangeBase.MaximumProperty.AddOwner<Track>();
 
-        public static readonly DirectProperty<Track, double> ValueProperty =
-            RangeBase.ValueProperty.AddOwner<Track>(o => o.Value, (o, v) => o.Value = v);
+        public static readonly StyledProperty<double> ValueProperty =
+            RangeBase.ValueProperty.AddOwner<Track>();
 
         public static readonly StyledProperty<double> ViewportSizeProperty =
             ScrollBar.ViewportSizeProperty.AddOwner<Track>();
@@ -45,10 +45,6 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IgnoreThumbDrag));
 
-        private double _minimum;
-        private double _maximum = 100.0;
-        private double _value;
-
         static Track()
         {
             ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
@@ -64,20 +60,20 @@ namespace Avalonia.Controls.Primitives
 
         public double Minimum
         {
-            get { return _minimum; }
-            set { SetAndRaise(MinimumProperty, ref _minimum, value); }
+            get => GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
         }
 
         public double Maximum
         {
-            get { return _maximum; }
-            set { SetAndRaise(MaximumProperty, ref _maximum, value); }
+            get => GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
         }
 
         public double Value
         {
-            get { return _value; }
-            set { SetAndRaise(ValueProperty, ref _value, value); }
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         public double ViewportSize
@@ -443,11 +439,11 @@ namespace Avalonia.Controls.Primitives
         {
             if (IgnoreThumbDrag)
                 return;
-                
-            Value = MathUtilities.Clamp(
+
+            SetCurrentValue(ValueProperty, MathUtilities.Clamp(
                 Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
                 Minimum,
-                Maximum);
+                Maximum));
         }
 
         private void ShowChildren(bool visible)

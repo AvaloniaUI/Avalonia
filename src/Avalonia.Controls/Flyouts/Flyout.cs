@@ -13,12 +13,22 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object> ContentProperty =
             AvaloniaProperty.Register<Flyout, object>(nameof(Content));
 
+        private Classes? _classes;
+
         /// <summary>
         /// Gets the Classes collection to apply to the FlyoutPresenter this Flyout is hosting
         /// </summary>
-        public Classes FlyoutPresenterClasses => _classes ??= new Classes();
-
-        private Classes? _classes;
+        public Classes FlyoutPresenterClasses
+        {
+            get => _classes ??= new Classes();
+            set
+            {
+                if (_classes is null)
+                    _classes = value;
+                else if (_classes != value)
+                    _classes.Replace(value);
+            }
+        }
 
         /// <summary>
         /// Defines the <see cref="FlyoutPresenterTheme"/> property.

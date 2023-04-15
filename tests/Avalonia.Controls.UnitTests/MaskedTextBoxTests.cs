@@ -109,7 +109,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 MaskedTextBox textBox = new MaskedTextBox
                 {
@@ -226,7 +226,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Delete_Should_Remove_The_Word_After_The_Caret_If_There_Is_No_Selection()
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var textBox = new MaskedTextBox
                 {
@@ -812,7 +812,7 @@ namespace Avalonia.Controls.UnitTests
             bool fromClipboard,
             string expected)
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -898,6 +898,7 @@ namespace Avalonia.Controls.UnitTests
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
+            renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),     
             textShaperImpl: new MockTextShaperImpl(), 
             fontManagerImpl: new MockFontManagerImpl());
