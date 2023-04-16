@@ -36,13 +36,13 @@ namespace Avalonia.Controls
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsRepeater>();
 
         /// <summary>
-        /// Defines the <see cref="Items"/> property.
+        /// Defines the <see cref="ItemsSource"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsRepeater, IEnumerable?> ItemsProperty =
+        public static readonly DirectProperty<ItemsRepeater, IEnumerable?> ItemsSourceProperty =
             AvaloniaProperty.RegisterDirect<ItemsRepeater, IEnumerable?>(
-                nameof(Items),
-                o => o.Items,
-                (o, v) => o.Items = v);
+                nameof(ItemsSource),
+                o => o.ItemsSource,
+                (o, v) => o.ItemsSource = v);
 
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
@@ -65,7 +65,7 @@ namespace Avalonia.Controls
         private readonly ViewManager _viewManager;
         private readonly ViewportManager _viewportManager;
         private readonly TargetWeakEventSubscriber<ItemsRepeater, EventArgs> _layoutWeakSubscriber;
-        private IEnumerable? _items;
+        private IEnumerable? _itemsSource;
         private RepeaterLayoutContext? _layoutContext;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private bool _isLayoutInProgress;
@@ -116,16 +116,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets an object source used to generate the content of the ItemsRepeater.
         /// </summary>
-        public IEnumerable? Items
+        public IEnumerable? ItemsSource
         {
-            get => _items;
-            set => SetAndRaise(ItemsProperty, ref _items, value);
+            get => _itemsSource;
+            set => SetAndRaise(ItemsSourceProperty, ref _itemsSource, value);
         }
 
         /// <summary>
         /// Gets or sets the template used to display each item.
         /// </summary>
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty);
@@ -415,7 +415,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (change.Property == ItemsProperty)
+            if (change.Property == ItemsSourceProperty)
             {
                 var (oldEnumerable, newEnumerable) = change.GetOldAndNewValue<IEnumerable?>();
 
