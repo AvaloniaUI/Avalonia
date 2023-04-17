@@ -22,7 +22,7 @@
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
-    NSMutableString* _text;
+    NSMutableAttributedString* _text;
     NSRange _selection;
 }
 
@@ -59,6 +59,11 @@
     [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
 
     _modifierState = AvnInputModifiersNone;
+    
+    _text = [[NSMutableAttributedString alloc] initWithString:@""];
+    _markedText = [[NSMutableAttributedString alloc] initWithString:@""];
+    _selection = NSMakeRange(NSNotFound, 0);
+    
     return self;
 }
 
@@ -530,10 +535,6 @@
     }
 }
 
-- (void) doCommandBySelector:(SEL)selector{
-    
-}
-
 - (void)keyUp:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyUp];
@@ -575,7 +576,7 @@
 - (NSRange)markedRange
 {
     if([_markedText length] > 0)
-        return NSMakeRange(0, [_markedText length] - 1);
+        return NSMakeRange(_selection.location, [_markedText length]);
     return NSMakeRange(NSNotFound, 0);
 }
 
@@ -608,8 +609,11 @@
 {
     [[_markedText mutableString] setString:@""];
     
-    [[self inputContext] discardMarkedText];
-    
+    if([self inputContext]) {
+        [[self inputContext] discardMarkedText];
+        [[self inputContext] invalidateCharacterCoordinates];
+    }
+
     if(!_parent->InputMethod->IsActive()){
         return;
     }
@@ -631,8 +635,6 @@
 {
     _lastKeyHandled = true;
     
-    [self unmarkText];
-
     if(_parent != nullptr)
     {
         uint32_t timestamp = static_cast<uint32_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
@@ -640,7 +642,7 @@
         _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [string UTF8String]);
     }
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    //[self unmarkText];
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -762,13 +764,15 @@
 - (void) setText:(NSString *)text{
     [self unmarkText];
     
-    [_text setString:text];
+    [[_text mutableString] setString:text];
 }
 
 - (void) setSelection:(int)start :(int)end{
     _selection = NSMakeRange(start, end - start);
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    if([self inputContext]) {
+        [[self inputContext] invalidateCharacterCoordinates];
+    }
 }
 
 - (void) setCursorRect:(AvnRect)rect{
@@ -780,7 +784,9 @@
     
     _cursorRect = windowRectOnScreen;
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    if([self inputContext]) {
+        [[self inputContext] invalidateCharacterCoordinates];
+    }
 }
 
 @end
