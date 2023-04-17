@@ -14,12 +14,10 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
         private int _epoll;
         private Action<RawInputEventArgs> _onInput;
         private IInputRoot _inputRoot;
-        private RawEventGroupingThreadingHelper _inputQueue;
 
         public EvDevBackend(EvDevDeviceDescription[] devices)
         {
             _deviceDescriptions = devices;
-            _inputQueue = new RawEventGroupingThreadingHelper(e => _onInput?.Invoke(e));
         }
         
         unsafe void InputThread()
@@ -45,12 +43,9 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
             }
         }
 
-        private void OnRawEvent(RawInputEventArgs obj)
-        {
-            _inputQueue.OnEvent(obj);
-        }
-        
-        
+        private void OnRawEvent(RawInputEventArgs obj) => _onInput?.Invoke(obj);
+
+
         public void Initialize(IScreenInfoProvider info, Action<RawInputEventArgs> onInput)
         {
             _onInput = onInput;

@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Styling;
-
-#nullable enable
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -25,7 +22,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public object? ResourceKey { get; set; }
 
-        public object ProvideValue(IServiceProvider serviceProvider)
+        public object? ProvideValue(IServiceProvider serviceProvider)
         {
             if (ResourceKey is not { } resourceKey)
             {
@@ -34,32 +31,37 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             var stack = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>();
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
-            var themeVariant = (provideTarget.TargetObject as IThemeVariantHost)?.ActualThemeVariant;
+            var targetObject = provideTarget?.TargetObject;
+            var targetProperty = provideTarget?.TargetProperty;
+            var themeVariant = (targetObject as IThemeVariantHost)?.ActualThemeVariant;
 
-            var targetType = provideTarget.TargetProperty switch
+            var targetType = targetProperty switch
             {
                 AvaloniaProperty ap => ap.PropertyType,
                 PropertyInfo pi => pi.PropertyType,
-                _ => null,
+                _ => null
             };
 
-            if (provideTarget.TargetObject is Setter { Property: not null } setter)
+            if (targetObject is Setter { Property: { } setterProperty })
             {
-                targetType = setter.Property?.PropertyType;
+                targetType = setterProperty.PropertyType;
             }
-            
+
             // Look upwards though the ambient context for IResourceNodes
             // which might be able to give us the resource.
-            foreach (var parent in stack.Parents)
+            if (stack is not null)
             {
-                if (parent is IResourceNode node && node.TryGetResource(resourceKey, themeVariant, out var value))
+                foreach (var parent in stack.Parents)
                 {
-                    return ColorToBrushConverter.Convert(value, targetType);
+                    if (parent is IResourceNode node && node.TryGetResource(resourceKey, themeVariant, out var value))
+                    {
+                        return ColorToBrushConverter.Convert(value, targetType);
+                    }
                 }
             }
 
-            if (provideTarget.TargetObject is Control target &&
-                provideTarget.TargetProperty is PropertyInfo property)
+            if (targetObject is Control target &&
+                targetProperty is PropertyInfo property)
             {
                 // This is stored locally to avoid allocating closure in the outer scope.
                 var localTargetType = targetType;
@@ -72,7 +74,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new KeyNotFoundException($"Static resource '{resourceKey}' not found.");
         }
 
-        private object GetValue(StyledElement control, Type? targetType)
+        private object? GetValue(StyledElement control, Type? targetType)
         {
             return ColorToBrushConverter.Convert(control.FindResource(ResourceKey!), targetType);
         }

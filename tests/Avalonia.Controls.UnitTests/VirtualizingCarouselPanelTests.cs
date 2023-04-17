@@ -163,13 +163,13 @@ namespace Avalonia.Controls.UnitTests
                         true,
                         It.IsAny<CancellationToken>()))
                     .Returns(() => transitionTask.Task);
-                
+
                 carousel.SelectedIndex = 1;
                 Layout(target);
 
                 Assert.Equal(items, target.Children);
                 Assert.All(items, x => Assert.True(x.IsVisible));
-                
+
                 transitionTask.SetResult();
                 sync.ExecutePostedCallbacks();
 
@@ -255,12 +255,6 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
-                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
-                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
-                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
-                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(scope),
                     }
                 });

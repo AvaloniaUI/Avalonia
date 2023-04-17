@@ -184,6 +184,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _cts?.Cancel();
                 _cts = null;
                 _isShuttingDown = false;
+                Dispatcher.UIThread.InvokeShutdown();
             }
 
             return true;

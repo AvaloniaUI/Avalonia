@@ -1116,6 +1116,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private static Window PreparedWindow(object content = null)
         {
             var w = new Window { Content = content };
+            w.Show();
             w.ApplyStyling();
             w.ApplyTemplate();
             return w;

@@ -8,13 +8,13 @@ namespace Avalonia.Markup.Xaml.Templates
     public class DataTemplate : IRecyclingDataTemplate, ITypedDataTemplate
     {
         [DataType]
-        public Type DataType { get; set; }
+        public Type? DataType { get; set; }
 
         [Content]
         [TemplateContent]
-        public object Content { get; set; }
+        public object? Content { get; set; }
 
-        public bool Match(object data)
+        public bool Match(object? data)
         {
             if (DataType == null)
             {
@@ -26,9 +26,9 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public Control Build(object data) => Build(data, null);
+        public Control? Build(object? data) => Build(data, null);
 
-        public Control Build(object data, Control existing)
+        public Control? Build(object? data, Control? existing)
         {
             return existing ?? TemplateContent.Load(Content)?.Control;
         }

@@ -13,16 +13,16 @@ namespace Avalonia.Markup.Xaml.Templates
     public class TreeDataTemplate : ITreeDataTemplate, ITypedDataTemplate
     {
         [DataType]
-        public Type DataType { get; set; }
+        public Type? DataType { get; set; }
 
         [Content]
         [TemplateContent]
-        public object Content { get; set; }
+        public object? Content { get; set; }
 
         [AssignBinding]
-        public BindingBase ItemsSource { get; set; }
+        public BindingBase? ItemsSource { get; set; }
 
-        public bool Match(object data)
+        public bool Match(object? data)
         {
             if (DataType == null)
             {
@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.Templates
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "If ItemsSource is a CompiledBinding, then path members will be preserver")]
-        public InstancedBinding ItemsSelector(object item)
+        public InstancedBinding? ItemsSelector(object item)
         {
             if (ItemsSource != null)
             {
@@ -52,7 +52,7 @@ namespace Avalonia.Markup.Xaml.Templates
             return null;
         }
 
-        public Control Build(object data)
+        public Control? Build(object? data)
         {
             var visualTreeForItem = TemplateContent.Load(Content)?.Control;
             if (visualTreeForItem != null)

@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
-
-#nullable enable
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     internal class MethodAccessorPlugin : IPropertyAccessorPlugin
     {
-        private MethodInfo _method;
+        private readonly MethodInfo _method;
         private readonly Type _delegateType;
 
         public MethodAccessorPlugin(MethodInfo method, Type delegateType)

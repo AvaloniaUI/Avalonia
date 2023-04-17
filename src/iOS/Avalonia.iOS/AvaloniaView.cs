@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.iOS.Storage;
@@ -87,6 +88,8 @@ namespace Avalonia.iOS
             private readonly INativeControlHostImpl _nativeControlHost;
             private readonly IStorageProvider _storageProvider;
             internal readonly InsetsManager _insetsManager;
+            private readonly ClipboardImpl _clipboard;
+
             public AvaloniaView View => _view;
 
             public TopLevelImpl(AvaloniaView view)
@@ -99,6 +102,7 @@ namespace Avalonia.iOS
                 {
                     view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
                 };
+                _clipboard = new ClipboardImpl();
             }
 
             public void Dispose()
@@ -194,6 +198,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(IInsetsManager))
                 {
                     return _insetsManager;
+                }
+
+                if (featureType == typeof(IClipboard))
+                {
+                    return _clipboard;
                 }
 
                 return null;

@@ -23,7 +23,7 @@ namespace Avalonia.Benchmarks.Styling
                 renderInterface: new MockPlatformRenderInterface(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
                 theme: () => CreateTheme(),
-                threadingInterface: new NullThreadingPlatform(),
+                dispatcherImpl: new NullThreadingPlatform(),
                 fontManagerImpl: new MockFontManagerImpl(),
                 textShaperImpl: new MockTextShaperImpl(),
                 windowingPlatform: new MockWindowingPlatform());

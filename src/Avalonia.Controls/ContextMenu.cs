@@ -4,7 +4,6 @@ using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using System.Linq;
 using Avalonia.Controls.Diagnostics;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -84,8 +83,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Vertical });
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
