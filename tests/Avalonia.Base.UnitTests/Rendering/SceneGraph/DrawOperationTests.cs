@@ -90,6 +90,23 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             Assert.True(actual);
         }
 
+        [Fact]
+        public void HitTest_GlyphRunNode_With_Transform_Hits()
+        {
+            var glyphRun = new Mock<IRef<IGlyphRunImpl>>();
+            glyphRun.Setup(x => x.Clone()).Returns(() => glyphRun.Object);
+            glyphRun.Setup(x => x.Item.Bounds).Returns(new Rect(0,0,10,10));
+
+            var node = new GlyphRunNode(
+                Matrix.CreateTranslation(20, 20),
+                Brushes.Black,
+                glyphRun.Object);
+
+            var actual = node.HitTest(new Point(25, 25));
+
+            Assert.True(actual);
+        }
+
         private class TestRectangleDrawOperation : RectangleNode
         {
             public TestRectangleDrawOperation(Rect bounds, Matrix transform, Pen pen) 
