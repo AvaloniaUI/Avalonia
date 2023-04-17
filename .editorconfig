@@ -186,6 +186,23 @@ csharp_wrap_before_ternary_opsigns = false
 # Avalonia DevAnalyzer preferences
 dotnet_diagnostic.AVADEV2001.severity = error
 
+# Avalonia PublicAnalyzer preferences
+dotnet_diagnostic.AVP1000.severity = error
+dotnet_diagnostic.AVP1001.severity = error
+dotnet_diagnostic.AVP1002.severity = error
+dotnet_diagnostic.AVP1010.severity = error
+dotnet_diagnostic.AVP1011.severity = error
+dotnet_diagnostic.AVP1012.severity = error
+dotnet_diagnostic.AVP1013.severity = error
+dotnet_diagnostic.AVP1020.severity = error
+dotnet_diagnostic.AVP1021.severity = error
+dotnet_diagnostic.AVP1022.severity = error
+dotnet_diagnostic.AVP1030.severity = error
+dotnet_diagnostic.AVP1031.severity = error
+dotnet_diagnostic.AVP1032.severity = error
+dotnet_diagnostic.AVP1040.severity = error
+dotnet_diagnostic.AVA2001.severity = error
+
 # Xaml files
 [*.{xaml,axaml}]
 indent_size = 2
