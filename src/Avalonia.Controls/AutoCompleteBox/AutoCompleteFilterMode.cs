@@ -9,7 +9,7 @@ namespace Avalonia.Controls
 {
     /// <summary>
     /// Specifies how text in the text box portion of the <see cref="AutoCompleteBox" />
-    /// control is used to filter items specified by the <see cref="AutoCompleteBox.Items" />
+    /// control is used to filter items specified by the <see cref="AutoCompleteBox.ItemsSource" />
     /// property for display in the drop-down.
     /// </summary>
     public enum AutoCompleteFilterMode
