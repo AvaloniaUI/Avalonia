@@ -554,6 +554,36 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
         }
 
+        [Fact]
+        public void Content_Can_Be_Bound_In_ItemContainerTheme()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[] { new ItemViewModel("Foo"), new ItemViewModel("Bar") };
+                var theme = new ControlTheme(typeof(ListBoxItem))
+                {
+                    Setters =
+                    {
+                        new Setter(ListBoxItem.ContentProperty, new Binding("Caption")),
+                    }
+                };
+
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    ItemsSource = items,
+                    ItemContainerTheme = theme,
+                };
+
+                Prepare(target);
+
+                var containers = target.GetRealizedContainers().Cast<ListBoxItem>().ToList();
+                Assert.Equal(2, containers.Count);
+                Assert.Equal("Foo", containers[0].Content);
+                Assert.Equal("Bar", containers[1].Content);
+            }
+        }
+
         private static FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
@@ -917,6 +947,8 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, raised);
         }
+
+        private record ItemViewModel(string Caption);
 
         private class ResettingCollection : List<string>, INotifyCollectionChanged
         {
