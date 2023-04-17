@@ -14,7 +14,6 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Avalonia.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-[SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
 public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 {
     private const string Category = "AvaloniaProperty";

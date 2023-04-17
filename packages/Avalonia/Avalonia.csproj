@@ -15,6 +15,10 @@
                         ReferenceOutputAssembly="false"
                         PrivateAssets="all"
                         OutputItemType="Analyzer" />
+      <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers\Avalonia.Analyzers.csproj"
+                        ReferenceOutputAssembly="false"
+                        PrivateAssets="all"
+                        OutputItemType="Analyzer" />
   </ItemGroup>
 
   <PropertyGroup>
