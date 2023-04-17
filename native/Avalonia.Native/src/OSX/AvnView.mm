@@ -763,11 +763,6 @@
     // Slide area -> PPTView or TIDTextInputDriver
     // Other area -> anything else?
 
-    // Going parallel where possible to return control quickly to powerpoint
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSString *firstResponderName = NSStringFromClass([[[self window] firstResponder] class]);
-        _parent->BaseEvents->LogFirstResponder([firstResponderName UTF8String]);
-    });
 
     // We need to do a minor adjust here because the input coordinates are based on the parent view, not the view itself
     // https://developer.apple.com/documentation/appkit/nsview/1483364-hittest?language=objc
@@ -776,11 +771,36 @@
     auto localPoint = [self convertPoint:inputPoint toView:self];
     auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
+    bool hitTestResult = false;
 
     // Check if we hit any avalonia controls
-    if (result == self && _parent->BaseEvents->HitTest(point) == false) {
-        result = nil;
+    if (result == self)
+    {
+        hitTestResult = _parent->BaseEvents->HitTest(point);
+        if (!hitTestResult)
+        {
+            result = nil;
+        }
     }
+
+    // Going with dispatch async on global queue in order to return control to powerpoint quickly and avoid UI hangs
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString* firstResponderName;
+        if (hitTestResult)
+        {
+            firstResponderName = @"AvnView";
+        }
+        else
+        {
+            NSView* nextResponder = [[self window] firstResponder];
+            while (nextResponder == self)
+            {
+                nextResponder = [nextResponder nextResponder];
+            }
+            firstResponderName = NSStringFromClass([nextResponder class]);
+        }
+        _parent->BaseEvents->LogFirstResponder([firstResponderName UTF8String]);
+    });
 
     return result;
 }
