@@ -71,6 +71,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a value that indicates the refresh state of the visualizer.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "False positive")]
         protected RefreshVisualizerState RefreshVisualizerState
         {
             get

@@ -29,6 +29,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031",
+            Justification = "A hack to make ChromeOverlayLayer lazily creatable. It is expected that GetValue(ChromeOverlayLayerProperty) alone won't work.")]
         public ChromeOverlayLayer ChromeOverlayLayer
         {
             get

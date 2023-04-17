@@ -56,6 +56,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Placement"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep PlacementModeProperty for backward compatibility.")]
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
             Popup.PlacementProperty.AddOwner<ContextMenu>();
 

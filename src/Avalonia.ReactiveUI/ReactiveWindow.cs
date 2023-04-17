@@ -17,6 +17,7 @@ namespace Avalonia.ReactiveUI
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>
     public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TViewModel : class
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1002", Justification = "Generic avalonia property is expected here.")]
         public static readonly StyledProperty<TViewModel?> ViewModelProperty = AvaloniaProperty
             .Register<ReactiveWindow<TViewModel>, TViewModel?>(nameof(ViewModel));
 

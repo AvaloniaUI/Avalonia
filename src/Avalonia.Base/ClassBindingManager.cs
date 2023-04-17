@@ -17,6 +17,8 @@ namespace Avalonia
             return target.Bind(prop, source, anchor);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1001:The same AvaloniaProperty should not be registered twice",
+            Justification = "Classes.attr binding feature is implemented using intermediate avalonia properties for each class")]
         private static AvaloniaProperty RegisterClassProxyProperty(string className)
         {
             var prop = AvaloniaProperty.Register<StyledElement, bool>("__AvaloniaReserved::Classes::" + className);
