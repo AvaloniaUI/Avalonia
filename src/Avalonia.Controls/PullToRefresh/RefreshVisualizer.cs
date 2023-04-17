@@ -99,7 +99,7 @@ namespace Avalonia.Controls
             }
         }
 
-        internal PullDirection PullDirection
+        public PullDirection PullDirection
         {
             get => GetValue(PullDirectionProperty);
             set => SetValue(PullDirectionProperty, value);

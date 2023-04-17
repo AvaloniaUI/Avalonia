@@ -54,12 +54,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, KeyGesture?>(nameof(InputGesture));
 
         /// <summary>
-        /// Defines the <see cref="IsSelected"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsSelectedProperty =
-            SelectingItemsControl.IsSelectedProperty.AddOwner<MenuItem>();
-
-        /// <summary>
         /// Defines the <see cref="IsSubMenuOpen"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
