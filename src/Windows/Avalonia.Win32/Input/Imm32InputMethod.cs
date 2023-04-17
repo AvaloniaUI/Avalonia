@@ -85,16 +85,18 @@ namespace Avalonia.Win32.Input
 
             _parent = parent;
 
-            var langId= PRIMARYLANGID(LGID(HKL));
+            var langId = PRIMARYLANGID(LGID(HKL));
 
-            if(langId != _langId)
+            if (IsActive)
             {
-                DisableImm();
+                if (langId != _langId)
+                {
+                    DisableImm();
+                    EnableImm();
+                }
             }
 
             _langId = langId;
-
-            EnableImm();
         }
 
         public void ClearLanguageAndWindow()
