@@ -230,13 +230,13 @@
     return FALSE;
 }
 
-- (bool)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
+- (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
 
     if([self ignoreUserInput: triggerInputWhenDisabled])
     {
-        return false;
+        return;
     }
 
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
@@ -258,7 +258,7 @@
 
         if(delta.X == 0 && delta.Y == 0)
         {
-            return false;
+            return;
         }
     }
     else if (type == Magnify)
@@ -291,15 +291,14 @@
 
     if(_parent != nullptr)
     {
-        // Send the event to avalonia to process
-        // Then retrieve the result in order to decide on forwarding to powerpoint or not
-        return _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+        _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
     }
 
-    [super mouseMoved:event];
-
-    // If we got here then most likely we need to forward the event to powerpoint
-    return false;
+    if (_parent == nullptr || !_parent->IsOverlay())
+    {
+        // We only forward the event when not overlay, otherwise will mess powerpoint
+        [super mouseMoved:event];
+    }
 }
 
 - (BOOL) resignFirstResponder
@@ -317,13 +316,7 @@
 {
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
-    bool eventHandled = [self mouseEvent:event withType:LeftButtonDown];
-
-    if (!eventHandled) {
-        // If Avalonia didn't handle the event, then forward
-        NSLog(@"Forwarding mouseDown to powerpoint");
-        [super mouseDown:event];
-    }
+    [self mouseEvent:event withType:LeftButtonDown];
 }
 
 - (void)otherMouseDown:(NSEvent *)event
@@ -355,25 +348,13 @@
 {
     _isRightPressed = true;
     _lastMouseDownEvent = event;
-    bool eventHandled = [self mouseEvent:event withType:RightButtonDown];
-
-    if (!eventHandled) {
-        // If Avalonia didn't handle the event, then forward
-        NSLog(@"Forwarding rightMouseDown to powerpoint");
-        [super rightMouseDown:event];
-    }
+    [self mouseEvent:event withType:RightButtonDown];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     _isLeftPressed = false;
-    bool eventHandled = [self mouseEvent:event withType:LeftButtonUp];
-
-    if (!eventHandled) {
-        // If Avalonia didn't handle the event, then forward
-        NSLog(@"Forwarding mouseUp to powerpoint");
-        [super mouseUp:event];
-    }
+    [self mouseEvent:event withType:LeftButtonUp];
 }
 
 - (void)otherMouseUp:(NSEvent *)event
@@ -402,24 +383,13 @@
 - (void)rightMouseUp:(NSEvent *)event
 {
     _isRightPressed = false;
-    bool eventHandled = [self mouseEvent:event withType:RightButtonUp];
-
-    if (!eventHandled) {
-        // If Avalonia didn't handle the event, then forward
-        NSLog(@"Forwarding rightMouseUp to powerpoint");
-        [super rightMouseUp:event];
-    }
+    [self mouseEvent:event withType:RightButtonUp];
 }
 
 - (void)mouseDragged:(NSEvent *)event
 {
-    bool eventHandled = [self mouseEvent:event withType:Move];
-
-    if (!eventHandled) {
-        // If Avalonia didn't handle the event, then forward
-        NSLog(@"Forwarding mouseDragged to powerpoint");
-        [super mouseDragged:event];
-    }
+    [self mouseEvent:event withType:Move];
+    [super mouseDragged:event];
 }
 
 - (void)otherMouseDragged:(NSEvent *)event
@@ -465,12 +435,8 @@
 
 - (void)mouseExited:(NSEvent *)event
 {
-    bool eventHandled = [self mouseEvent:event withType:LeaveWindow];
-
-    if (!eventHandled) {
-        // If Avalonia didn't handle the event, then forward
-        [super mouseExited:event];
-    }
+    [self mouseEvent:event withType:LeaveWindow];
+    [super mouseExited:event];
 }
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
@@ -796,9 +762,10 @@
     // Grunt area -> AvnView
     // Slide area -> PPTView or TIDTextInputDriver
     // Other area -> anything else?
-    NSString *firstResponderName = NSStringFromClass([[[self window] firstResponder] class]);
-    // Going with dispatch async on global queue in order to return control to powerpoint quickly and avoid UI hangs
+
+    // Going parallel where possible to return control quickly to powerpoint
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *firstResponderName = NSStringFromClass([[[self window] firstResponder] class]);
         _parent->BaseEvents->LogFirstResponder([firstResponderName UTF8String]);
     });
 
