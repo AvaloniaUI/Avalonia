@@ -3,7 +3,7 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <AutoCompleteBox Width="200">
-        <AutoCompleteBox.Items>
+        <AutoCompleteBox.ItemsSource>
           Alabama
           Alaska
           Arizona
@@ -12,7 +12,7 @@
           Colorado
           Connecticut
           Delaware
-        </AutoCompleteBox.Items>
+        </AutoCompleteBox.ItemsSource>
       </AutoCompleteBox>
     </Border>
   </Design.PreviewWith>
