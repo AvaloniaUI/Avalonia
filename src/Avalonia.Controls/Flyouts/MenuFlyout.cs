@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.ComponentModel;
-using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
@@ -12,17 +11,15 @@ namespace Avalonia.Controls
     {
         public MenuFlyout()
         {
-            _items = new AvaloniaList<object>();
+            Items = new ItemCollection();
         }
 
         /// <summary>
-        /// Defines the <see cref="Items"/> property
+        /// Defines the <see cref="ItemsSource"/> property
         /// </summary>
-        public static readonly DirectProperty<MenuFlyout, IEnumerable?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<MenuFlyout, IEnumerable?>(
-                nameof(Items),
-                x => x.Items,
-                (x, v) => x.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
+            AvaloniaProperty.Register<MenuFlyout, IEnumerable?>(
+                nameof(ItemsSource));
 
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property
@@ -45,14 +42,16 @@ namespace Avalonia.Controls
         
         public Classes FlyoutPresenterClasses => _classes ??= new Classes();
 
+        [Content]
+        public ItemCollection Items { get; }
+
         /// <summary>
         /// Gets or sets the items of the MenuFlyout
         /// </summary>
-        [Content]
-        public IEnumerable? Items
+        public IEnumerable? ItemsSource
         {
-            get => _items;
-            set => SetAndRaise(ItemsProperty, ref _items, value);
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         /// <summary>
@@ -83,14 +82,13 @@ namespace Avalonia.Controls
         }
         
         private Classes? _classes;
-        private IEnumerable? _items;
         private IDataTemplate? _itemTemplate;
 
         protected override Control CreatePresenter()
         {
             return new MenuFlyoutPresenter
             {
-                [!ItemsControl.ItemsSourceProperty] = this[!ItemsProperty],
+                ItemsSource = Items,
                 [!ItemsControl.ItemTemplateProperty] = this[!ItemTemplateProperty],
                 [!ItemsControl.ItemContainerThemeProperty] = this[!ItemContainerThemeProperty],
             };
@@ -112,6 +110,14 @@ namespace Avalonia.Controls
             }
 
             base.OnOpening(args);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemsSourceProperty)
+                Items.SetItemsSource(change.GetNewValue<IEnumerable?>());
         }
     }
 }

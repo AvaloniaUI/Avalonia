@@ -24,6 +24,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
+using System.Runtime.InteropServices;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -629,6 +630,8 @@ namespace Avalonia.X11
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
+                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
+                        IntPtr.Zero);
                 }
             }
         }
@@ -735,6 +738,10 @@ namespace Avalonia.X11
         {
             if (_inputRoot is null)
                 return;
+
+            if (_disabled && args is RawPointerEventArgs pargs && pargs.Type == RawPointerEventType.Move)
+                return;
+
             Input?.Invoke(args);
             if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
@@ -1201,6 +1208,32 @@ namespace Avalonia.X11
         public void SetEnabled(bool enable)
         {
             _disabled = !enable;
+
+            UpdateWMHints();
+        }
+
+        private void UpdateWMHints()
+        {
+            var wmHintsPtr = XGetWMHints(_x11.Display, _handle);
+
+            XWMHints hints = default;
+
+            if (wmHintsPtr != IntPtr.Zero)
+            {
+                hints = Marshal.PtrToStructure<XWMHints>(wmHintsPtr);
+            }
+
+            var flags = hints.flags.ToInt64();
+            flags |= (long)XWMHintsFlags.InputHint;
+            hints.flags = (IntPtr)flags;
+            hints.input = !_disabled ? 1 : 0;
+
+            XSetWMHints(_x11.Display, _handle, ref hints);
+
+            if (wmHintsPtr != IntPtr.Zero)
+            {
+                XFree(wmHintsPtr);
+            }
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
@@ -1289,6 +1322,8 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
+
+        public bool IsEnabled => !_disabled;
 
         public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
         {

@@ -424,7 +424,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ItemsRepeater>("list");
-                list.Items = collection;
+                list.ItemsSource = collection;
 
                 window.Show();
 

@@ -122,9 +122,9 @@ namespace Avalonia.Controls
                 // We need to use the raw ItemsSource as opposed to DataSource because DataSource
                 // may be the ItemsSource wrapped in a collection view, in which case we wouldn't
                 // be able to take T to be the type if we're given IEnumerable<T>
-                if (_dataType == null && _owner.Items != null)
+                if (_dataType == null && _owner.ItemsSource != null)
                 {
-                    _dataType = _owner.Items.GetItemType();
+                    _dataType = _owner.ItemsSource.GetItemType();
                 }
                 return _dataType;
             }
