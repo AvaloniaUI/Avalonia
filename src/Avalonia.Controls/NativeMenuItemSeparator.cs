@@ -4,7 +4,7 @@
     {
         public NativeMenuItemSeparator()
         {
-            Header = "-";
+            SetCurrentValue(HeaderProperty, "-");
         }
     }
 }

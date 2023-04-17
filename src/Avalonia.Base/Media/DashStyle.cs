@@ -46,7 +46,7 @@ namespace Avalonia.Media
         /// <param name="offset">The dash sequence offset.</param>
         public DashStyle(IEnumerable<double>? dashes, double offset)
         {
-            Dashes = (dashes as AvaloniaList<double>) ?? new AvaloniaList<double>(dashes ?? Array.Empty<double>());
+            SetCurrentValue(DashesProperty, (dashes as AvaloniaList<double>) ?? new AvaloniaList<double>(dashes ?? Array.Empty<double>()));
             Offset = offset;
         }
 

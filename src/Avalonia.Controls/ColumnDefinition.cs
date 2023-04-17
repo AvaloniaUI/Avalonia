@@ -46,8 +46,8 @@ namespace Avalonia.Controls
         /// <param name="value">The width of the column.</param>
         /// <param name="type">The width unit of the column.</param>
         public ColumnDefinition(double value, GridUnitType type)
+            : this(new GridLength(value, type))
         {
-            Width = new GridLength(value, type);
         }
 
         /// <summary>

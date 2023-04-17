@@ -192,7 +192,7 @@ namespace Avalonia.Controls
                         UpdateContent();
                     };
 
-                    Content = _content;
+                    SetCurrentValue(ContentProperty, _content);
                 }
                 else
                 {

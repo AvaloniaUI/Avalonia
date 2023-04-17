@@ -46,8 +46,8 @@ namespace Avalonia.Controls
         /// <param name="value">The height of the row.</param>
         /// <param name="type">The height unit of the column.</param>
         public RowDefinition(double value, GridUnitType type)
+            : this(new GridLength(value, type))
         {
-            Height = new GridLength(value, type);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
         /// <param name="height">The height of the column.</param>
         public RowDefinition(GridLength height)
         {
-            Height = height;
+            SetCurrentValue(HeightProperty, height);
         }
 
         /// <summary>

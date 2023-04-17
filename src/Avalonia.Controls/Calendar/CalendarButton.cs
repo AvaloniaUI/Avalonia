@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Primitives
         public CalendarButton()
             : base()
         {
-            Content = DateTimeHelper.GetCurrentDateFormat().AbbreviatedMonthNames[0];
+            SetCurrentValue(ContentProperty, DateTimeHelper.GetCurrentDateFormat().AbbreviatedMonthNames[0]);
         }
 
         /// <summary>

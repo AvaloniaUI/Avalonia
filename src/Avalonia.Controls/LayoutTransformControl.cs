@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         {
             if (TransformRoot == null || LayoutTransform == null)
             {
-                LayoutTransform = RenderTransform;
+                SetCurrentValue(LayoutTransformProperty, RenderTransform);
                 return base.ArrangeOverride(finalSize);
             }
 
@@ -176,7 +176,7 @@ namespace Avalonia.Controls
                 else
                 {
                     _renderTransformChangedEvent?.Dispose();
-                    LayoutTransform = null;
+                    SetCurrentValue(LayoutTransformProperty, null);
                 }
             }
         }

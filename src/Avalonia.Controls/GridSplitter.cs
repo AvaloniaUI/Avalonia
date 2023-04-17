@@ -707,7 +707,7 @@ namespace Avalonia.Controls
                     RenderTransform = _translation
                 };
 
-                Child = _decorator;
+                SetCurrentValue(ChildProperty, _decorator);
             }
 
             /// <summary>

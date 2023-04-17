@@ -37,7 +37,7 @@ namespace Avalonia.Diagnostics.Controls
                 _ => null
             };
 
-            RequestedThemeVariant = application.RequestedThemeVariant;
+            SetCurrentValue(RequestedThemeVariantProperty, application.RequestedThemeVariant);
             _application.PropertyChanged += ApplicationOnPropertyChanged;
         }
 
@@ -131,7 +131,7 @@ namespace Avalonia.Diagnostics.Controls
         {
             if (e.Property == Avalonia.Application.RequestedThemeVariantProperty)
             {
-                RequestedThemeVariant = e.GetNewValue<ThemeVariant>();
+                SetCurrentValue(RequestedThemeVariantProperty, e.GetNewValue<ThemeVariant>());
             }
         }
 

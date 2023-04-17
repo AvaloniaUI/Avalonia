@@ -162,8 +162,8 @@ namespace Avalonia.Controls
 
             if (index == SelectedIndex && element is ContentControl container)
             {
-                SelectedContentTemplate = container.ContentTemplate;
-                SelectedContent = container.Content;
+                SetCurrentValue(SelectedContentTemplateProperty, container.ContentTemplate);
+                SetCurrentValue(SelectedContentProperty, container.Content);
             }
         }
 
@@ -187,14 +187,15 @@ namespace Avalonia.Controls
         {
             if (SelectedIndex == -1)
             {
-                SelectedContent = SelectedContentTemplate = null;
+                SetCurrentValue(SelectedContentProperty, null);
+                SetCurrentValue(SelectedContentTemplateProperty, null);
             }
             else
             {
                 var container = SelectedItem as IContentControl ??
                     ContainerFromIndex(SelectedIndex) as IContentControl;
-                SelectedContentTemplate = container?.ContentTemplate;
-                SelectedContent = container?.Content;
+                SetCurrentValue(SelectedContentTemplateProperty, container?.ContentTemplate);
+                SetCurrentValue(SelectedContentProperty, container?.Content);
             }
         }
 

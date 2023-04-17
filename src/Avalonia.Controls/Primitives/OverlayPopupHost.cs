@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc />
         public void SetChild(Control? control)
         {
-            Content = control;
+            SetCurrentValue(ContentProperty, control);
         }
 
         /// <inheritdoc />

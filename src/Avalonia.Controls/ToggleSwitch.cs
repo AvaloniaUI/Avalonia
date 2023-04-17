@@ -201,7 +201,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    IsChecked = shouldBecomeChecked;
+                    SetCurrentValue(IsCheckedProperty, shouldBecomeChecked);
                 }
             }
             else

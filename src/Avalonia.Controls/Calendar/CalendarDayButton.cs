@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Primitives
             : base()
         {
             //Focusable = false;
-            Content = DefaultContent.ToString(CultureInfo.CurrentCulture);
+            SetCurrentValue(ContentProperty, DefaultContent.ToString(CultureInfo.CurrentCulture));
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Avalonia.Media
         /// </summary>
         public PolyLineSegment()
         {
-            Points = new Points();
+            SetCurrentValue(PointsProperty, new Points());
         }
 
         /// <summary>
