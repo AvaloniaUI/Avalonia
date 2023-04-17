@@ -53,7 +53,10 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTestTransformed(Point p) => Bounds.ContainsExclusive(p);
+        public override bool HitTestTransformed(Point p)
+        {
+            return GlyphRun.Item.Bounds.ContainsExclusive(p);
+        }
 
         public override void Dispose()
         {
