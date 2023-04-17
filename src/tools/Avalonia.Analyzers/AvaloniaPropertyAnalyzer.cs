@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis;
@@ -67,7 +66,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Type mismatch: AvaloniaProperty owner is {0}, which is not the containing type",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "The owner of an AvaloniaProperty should generally be the containing type. This ensures that the property can be used as expected in XAML.",
         TypeMismatchTag);
 
@@ -77,7 +76,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Unexpected property use: {0} is neither owned by nor attached to {1}",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "It is possible to use any AvaloniaProperty with any AvaloniaObject. However, each AvaloniaProperty an object uses on itself should be either owned by that object, or attached to that object.",
         InappropriateReadWriteTag);
 
@@ -87,7 +86,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Inappropriate assignment: An AvaloniaObject should use SetCurrentValue when setting its own StyledProperty or AttachedProperty values",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "The standard means of setting an AvaloniaProperty is to call the SetValue method (often via a CLR property setter). This will forcibly overwrite values from sources like styles and templates, " +
         "which is something that should only be done by consumers of the control, not the control itself. Controls which want to set their own values should instead call the SetCurrentValue method, or " +
         "refactor the property into a DirectProperty. An assignment is exempt from this diagnostic in two scenarios: when it is forwarding a constructor parameter, and when the target object is derived " +
@@ -100,7 +99,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Superfluous owner: {0} is already an owner of {1} via {2}",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "Ownership of an AvaloniaProperty is inherited along the type hierarchy. There is no need for a derived type to assert ownership over a base type's properties. This diagnostic can be a symptom of an incorrect property owner elsewhere.",
         InappropriateReadWriteTag);
 
@@ -110,7 +109,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Name collision: {0} has the same name as {1}",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "Querying for an AvaloniaProperty by name requires that each property associated with a type have a unique name.",
         NameCollisionTag);
 
@@ -120,7 +119,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Name collision: {0} owns multiple Avalonia properties with the name '{1}' {2}",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "It is unclear which AvaloniaProperty this CLR property refers to. Ensure that each AvaloniaProperty associated with a type has a unique name. If you need to change behaviour of a base property in your class, call its OverrideMetadata or OverrideDefaultValue methods.",
         NameCollisionTag);
 
@@ -170,7 +169,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Type mismatch: CLR property type differs from the value type of {0} {1}",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. A CLR property changing the value type (even when an implicit cast is possible) is ineffective and can lead to InvalidCastException to be thrown.",
         TypeMismatchTag, AssociatedClrPropertyTag);
 
