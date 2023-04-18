@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -64,7 +65,6 @@ namespace Avalonia.Layout
             }
 
             _toMeasure.Enqueue(control);
-            _toArrange.Enqueue(control);
             QueueLayoutPass();
         }
 
@@ -297,6 +297,8 @@ namespace Avalonia.Layout
                 {
                     control.Measure(control.PreviousMeasure.Value);
                 }
+
+                _toArrange.Enqueue(control);
             }
 
             return true;
@@ -313,7 +315,10 @@ namespace Avalonia.Layout
                     return false;
             }
 
-            if (control.IsMeasureValid && !control.IsArrangeValid)
+            if (!control.IsMeasureValid)
+                return false;
+
+            if (!control.IsArrangeValid)
             {
                 if (control is IEmbeddedLayoutRoot embeddedRoot)
                     control.Arrange(new Rect(embeddedRoot.AllocatedSize));
