@@ -5,7 +5,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Rendering;
 using Moq;
 
 namespace Avalonia.UnitTests
@@ -149,10 +148,9 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
-            return new MockGlyphRun(glyphInfos);
+            return new MockGlyphRun(glyphTypeface, fontRenderingEmSize, baselineOrigin, bounds);
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
@@ -160,21 +158,6 @@ namespace Avalonia.UnitTests
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             return Mock.Of<IGeometryImpl>();
-        }
-
-        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return Mock.Of<IGlyphRunBuffer>();
-        }
-
-        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return Mock.Of<IHorizontalGlyphRunBuffer>();
-        }
-
-        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return Mock.Of<IPositionedGlyphRunBuffer>();
         }
 
         public bool SupportsIndividualRoundRects { get; set; }

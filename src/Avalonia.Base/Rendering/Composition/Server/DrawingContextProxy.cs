@@ -42,15 +42,20 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         set => _impl.Transform = (_transform = value) * PostTransform;
     }
 
+    public RenderOptions RenderOptions
+    {
+        get => _impl.RenderOptions;
+        set => _impl.RenderOptions = value;
+    }
+
     public void Clear(Color color)
     {
         _impl.Clear(color);
     }
 
-    public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-        BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+    public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
     {
-        _impl.DrawBitmap(source, opacity, sourceRect, destRect, bitmapInterpolationMode);
+        _impl.DrawBitmap(source, opacity, sourceRect, destRect);
     }
 
     public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
@@ -131,16 +136,6 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     public void PopGeometryClip()
     {
         _impl.PopGeometryClip();
-    }
-
-    public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-    {
-        _impl.PushBitmapBlendMode(blendingMode);
-    }
-
-    public void PopBitmapBlendMode()
-    {
-        _impl.PopBitmapBlendMode();
     }
 
     public void Custom(ICustomDrawOperation custom)

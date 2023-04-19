@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Collections;
-using Avalonia.Collections.Pooled;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Platform;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -218,7 +214,7 @@ namespace Avalonia.Media
             {
                 var offsetY = glyphRun.BaselineOrigin.Y - origin.Y;
 
-                var intersections = glyphRun.PlatformImpl.Item.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
+                var intersections = glyphRun.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
 
                 if (intersections.Count > 0)
                 {

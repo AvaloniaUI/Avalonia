@@ -25,6 +25,12 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
         _ownsImpl = ownsImpl;
     }
 
+    public RenderOptions RenderOptions
+    {
+        get => _impl.RenderOptions;
+        set => _impl.RenderOptions = value;
+    }
+
     protected override void DrawLineCore(IPen pen, Point p1, Point p2) =>
         _impl.DrawLine(pen, p1, p2);
 
@@ -37,9 +43,8 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
 
     protected override void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect) => _impl.DrawEllipse(brush, pen, rect);
 
-    internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-        BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default) =>
-        _impl.DrawBitmap(source, opacity, sourceRect, destRect, bitmapInterpolationMode);
+    internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect) =>
+        _impl.DrawBitmap(source, opacity, sourceRect, destRect);
 
     public override void Custom(ICustomDrawOperation custom) =>
         custom.Render(_impl);
@@ -65,9 +70,6 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
     protected override void PushOpacityMaskCore(IBrush mask, Rect bounds) =>
         _impl.PushOpacityMask(mask, bounds);
 
-    protected override void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode) =>
-        _impl.PushBitmapBlendMode(blendingMode);
-
     protected override void PushTransformCore(Matrix matrix)
     {
         _transforms ??= TransformStackPool.Get();
@@ -83,8 +85,6 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
     protected override void PopOpacityCore() => _impl.PopOpacity();
 
     protected override void PopOpacityMaskCore() => _impl.PopOpacityMask();
-
-    protected override void PopBitmapBlendModeCore() => _impl.PopBitmapBlendMode();
 
     protected override void PopTransformCore() =>
         _impl.Transform =

@@ -97,7 +97,18 @@ namespace Avalonia.Rendering
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default)
                 using (context.PushTransform(Matrix.Identity))
                 {
-                    visual.Render(context);
+                    var currentRenderOptions = default(RenderOptions);
+
+                    var platformContext = context as PlatformDrawingContext;
+
+                    if(platformContext != null)
+                    {
+                        currentRenderOptions = platformContext.RenderOptions;
+
+                        platformContext.RenderOptions = visual.RenderOptions.MergeWith(platformContext.RenderOptions);
+                    }
+
+                    visual.Render(context);                   
                     
                     var childrenEnumerable = visual.HasNonUniformZIndexChildren
                         ? visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
@@ -114,6 +125,11 @@ namespace Avalonia.Rendering
                                 : clipRect;
                             Render(context, child, childClipRect);
                         }
+                    }
+
+                    if(platformContext != null)
+                    {
+                        platformContext.RenderOptions = currentRenderOptions;
                     }
                 }
             }

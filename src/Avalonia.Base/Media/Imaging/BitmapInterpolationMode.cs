@@ -3,12 +3,14 @@
     /// <summary>
     /// Controls the performance and quality of bitmap scaling.
     /// </summary>
-    public enum BitmapInterpolationMode
+    public enum BitmapInterpolationMode : byte
     {
+        Unspecified,
+
         /// <summary>
-        /// Uses the default behavior of the underling render backend.
+        /// Disable interpolation.
         /// </summary>
-        Default,
+        None,
 
         /// <summary>
         /// The best performance but worst image quality.
@@ -18,7 +20,7 @@
         /// <summary>
         /// Good performance and decent image quality.
         /// </summary>
-        MediumQuality,      
+        MediumQuality,
 
         /// <summary>
         /// Highest quality but worst performance.

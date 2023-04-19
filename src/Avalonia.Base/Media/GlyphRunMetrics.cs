@@ -2,23 +2,20 @@
 {
     public readonly record struct GlyphRunMetrics
     {
-        public GlyphRunMetrics(double width, int trailingWhitespaceLength, int newLineLength, int firstCluster, int lastCluster)
-        {
-            Width = width;
-            TrailingWhitespaceLength = trailingWhitespaceLength;
-            NewLineLength = newLineLength;
-            FirstCluster = firstCluster;
-            LastCluster = lastCluster;
-        }
+        public double Baseline { get; init; }
 
-        public double Width { get; }
+        public double Width { get; init; }
 
-        public int TrailingWhitespaceLength { get; }
+        public double WidthIncludingTrailingWhitespace { get; init; }
 
-        public int NewLineLength { get; }
+        public double Height { get; init; }
 
-        public int FirstCluster { get; }
+        public int TrailingWhitespaceLength { get; init; }
 
-        public int LastCluster { get; }
+        public int NewLineLength { get; init; }
+
+        public int FirstCluster { get; init; }
+
+        public int LastCluster { get; init; }
     }
 }
