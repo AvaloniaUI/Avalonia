@@ -1,15 +1,16 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
     public static class TemplateContent
     {
-        public static ControlTemplateResult? Load(object? templateContent)
+        public static TemplateResult<Control>? Load(object? templateContent)
         {
             if (templateContent is Func<IServiceProvider?, object?> direct)
             {
-                return (ControlTemplateResult?)direct(null);
+                return (TemplateResult<Control>?)direct(null);
             }
 
             if (templateContent is null)
