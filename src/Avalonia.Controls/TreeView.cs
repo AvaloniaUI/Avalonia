@@ -485,8 +485,17 @@ namespace Avalonia.Controls
             return (false, null);
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new TreeViewItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is TreeViewItem ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
         {

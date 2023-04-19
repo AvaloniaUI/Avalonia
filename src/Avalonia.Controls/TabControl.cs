@@ -10,6 +10,8 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using System;
+using Avalonia.Controls.Generators;
 
 namespace Avalonia.Controls
 {
@@ -146,8 +148,17 @@ namespace Avalonia.Controls
             return RegisterContentPresenter(presenter);
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new TabItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TabItem;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new TabItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is TabItem ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {

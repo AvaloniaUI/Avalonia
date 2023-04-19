@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -53,8 +54,8 @@ namespace Avalonia.Controls
                 nameof(VerticalSnapPointsChanged),
                 RoutingStrategies.Bubble);
 
-        private static readonly AttachedProperty<bool> ItemIsOwnContainerProperty =
-            AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, bool>("ItemIsOwnContainer");
+        private static readonly AttachedProperty<ItemContainerType?> ItemContainerTypeProperty =
+            AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, ItemContainerType?>("ItemContainerType");
 
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<Control, int> _recycleElement;
@@ -69,7 +70,7 @@ namespace Avalonia.Controls
         private RealizedStackElements? _realizedElements;
         private ScrollViewer? _scrollViewer;
         private Rect _viewport = s_invalidViewport;
-        private Stack<Control>? _recyclePool;
+        private Dictionary<ItemContainerType, Stack<Control>>? _recyclePool;
         private Control? _unrealizedFocusedElement;
         private int _unrealizedFocusedIndex = -1;
 
@@ -552,10 +553,23 @@ namespace Avalonia.Controls
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
-            var e = GetRealizedElement(index) ??
-                GetItemIsOwnContainer(items, index) ??
-                GetRecycledElement(items, index) ??
-                CreateElement(items, index);
+            Debug.Assert(ItemContainerGenerator is not null);
+
+            var e = GetRealizedElement(index);
+
+            if (e is null)
+            {
+                var item = items[index];
+                var generator = ItemContainerGenerator!;
+                var containerType = generator.GetContainerTypeForItem(item);
+
+                if (containerType == ItemContainerType.ItemIsOwnContainer)
+                    e = GetItemAsOwnContainer(containerType, item, index);
+                else
+                    e = GetRecycledElement(containerType, item, index) ??
+                        CreateElement(containerType, item, index);
+            }
+
             InvalidateHack(e);
             return e;
         }
@@ -567,39 +581,30 @@ namespace Avalonia.Controls
             return _realizedElements?.GetElement(index);
         }
 
-        private Control? GetItemIsOwnContainer(IReadOnlyList<object?> items, int index)
+        private Control GetItemAsOwnContainer(ItemContainerType containerType, object? item, int index)
         {
-            var item = items[index];
+            Debug.Assert(ItemContainerGenerator is not null);
 
-            if (item is Control controlItem)
+            var controlItem = (Control)item!;
+            var generator = ItemContainerGenerator!;
+
+            if (!controlItem.IsSet(ItemContainerTypeProperty))
             {
-                var generator = ItemContainerGenerator!;
-
-                if (controlItem.IsSet(ItemIsOwnContainerProperty))
-                {
-                    controlItem.IsVisible = true;
-                    generator.ItemContainerPrepared(controlItem, item, index);
-                    return controlItem;
-                }
-                else if (generator.IsItemItsOwnContainer(controlItem))
-                {
-                    generator.PrepareItemContainer(controlItem, controlItem, index);
-                    AddInternalChild(controlItem);
-                    controlItem.SetValue(ItemIsOwnContainerProperty, true);
-                    generator.ItemContainerPrepared(controlItem, item, index);
-                    return controlItem;
-                }
+                generator.PrepareItemContainer(controlItem, controlItem, index);
+                AddInternalChild(controlItem);
+                controlItem.SetValue(ItemContainerTypeProperty, containerType);
             }
 
-            return null;
+            controlItem.IsVisible = true;
+            generator.ItemContainerPrepared(controlItem, item, index);
+            return controlItem;
         }
 
-        private Control? GetRecycledElement(IReadOnlyList<object?> items, int index)
+        private Control? GetRecycledElement(ItemContainerType containerType, object? item, int index)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
             var generator = ItemContainerGenerator!;
-            var item = items[index];
 
             if (_unrealizedFocusedIndex == index && _unrealizedFocusedElement is not null)
             {
@@ -610,9 +615,9 @@ namespace Avalonia.Controls
                 return element;
             }
 
-            if (_recyclePool?.Count > 0)
+            if (_recyclePool?.TryGetValue(containerType, out var recyclePool) == true && recyclePool.Count > 0)
             {
-                var recycled = _recyclePool.Pop();
+                var recycled = recyclePool.Pop();
                 recycled.IsVisible = true;
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
@@ -622,16 +627,16 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control CreateElement(IReadOnlyList<object?> items, int index)
+        private Control CreateElement(ItemContainerType containerType, object? item, int index)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
             var generator = ItemContainerGenerator!;
-            var item = items[index];
-            var container = generator.CreateContainer();
+            var container = generator.CreateContainer(containerType);
 
             generator.PrepareItemContainer(container, item, index);
             AddInternalChild(container);
+            container.SetValue(ItemContainerTypeProperty, containerType);
             generator.ItemContainerPrepared(container, item, index);
 
             return container;
@@ -643,7 +648,11 @@ namespace Avalonia.Controls
             
             _scrollViewer?.UnregisterAnchorCandidate(element);
 
-            if (element.IsSet(ItemIsOwnContainerProperty))
+            var containerType = element.GetValue(ItemContainerTypeProperty);
+
+            Debug.Assert(containerType is not null);
+
+            if (containerType == ItemContainerType.ItemIsOwnContainer)
             {
                 element.IsVisible = false;
             }
@@ -656,8 +665,7 @@ namespace Avalonia.Controls
             else
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
-                _recyclePool ??= new();
-                _recyclePool.Push(element);
+                PushToRecyclePool(containerType, element);
                 element.IsVisible = false;
             }
         }
@@ -666,17 +674,33 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
-            if (element.IsSet(ItemIsOwnContainerProperty))
+            var containerType = element.GetValue(ItemContainerTypeProperty);
+
+            Debug.Assert(containerType is not null);
+
+            if (containerType == ItemContainerType.ItemIsOwnContainer)
             {
                 RemoveInternalChild(element);
             }
             else
             {
                 ItemContainerGenerator!.ClearItemContainer(element);
-                _recyclePool ??= new();
-                _recyclePool.Push(element);
+                PushToRecyclePool(containerType, element);
                 element.IsVisible = false;
             }
+        }
+
+        private void PushToRecyclePool(ItemContainerType containerType, Control element)
+        {
+            _recyclePool ??= new();
+
+            if (!_recyclePool.TryGetValue(containerType, out var pool))
+            {
+                pool = new();
+                _recyclePool.Add(containerType, pool);
+            }
+
+            pool.Push(element);
         }
 
         private void UpdateElementIndex(Control element, int oldIndex, int newIndex)

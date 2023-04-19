@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Layout;
+using Avalonia.Controls.Generators;
 
 namespace Avalonia.Controls
 {
@@ -345,8 +346,17 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new MenuItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is MenuItem or Separator ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {

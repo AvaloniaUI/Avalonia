@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -1021,14 +1022,14 @@ namespace Avalonia.Controls.UnitTests
         {
             Type IStyleable.StyleKey => typeof(ItemsControl);
 
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
             {
                 return new ContainerControl();
             }
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
+            protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
             {
-                return item is ContainerControl;
+                return item is ContainerControl ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
             }
         }
 

@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -100,8 +102,17 @@ namespace Avalonia.Controls
         /// </summary>
         public void UnselectAll() => Selection.Clear();
 
-        protected internal override Control CreateContainerForItemOverride() => new ListBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ListBoxItem;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new ListBoxItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is ListBoxItem ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)

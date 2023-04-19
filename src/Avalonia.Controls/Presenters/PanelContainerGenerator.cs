@@ -108,16 +108,17 @@ namespace Avalonia.Controls.Presenters
             int index)
         {
             var generator = itemsControl.ItemContainerGenerator;
+            var containerType = generator.GetContainerTypeForItem(item);
             Control container;
             
-            if (item is Control c && generator.IsItemItsOwnContainer(c))
+            if (containerType == Generators.ItemContainerType.ItemIsOwnContainer)
             {
-                container = c;
+                container = (Control)item!;
                 container.SetValue(ItemIsOwnContainerProperty, true);
             }
             else
             {
-                container = generator.CreateContainer();
+                container = generator.CreateContainer(containerType);
             }
 
             generator.PrepareItemContainer(container, item, index);

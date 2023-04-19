@@ -361,7 +361,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates or a container that can be used to display an item.
         /// </summary>
-        protected internal virtual Control CreateContainerForItemOverride() => new ContentPresenter();
+        /// <param name="type">
+        /// An <see cref="ItemContainerType"/> representing the type of container to be created.
+        /// </param>
+        protected internal virtual Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new ContentPresenter();
+        }
 
         /// <summary>
         /// Prepares the specified element to display the specified item.
@@ -494,11 +502,33 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Determines whether the specified item is (or is eligible to be) its own container.
+        /// Determines the container type for the specified item.
         /// </summary>
-        /// <param name="item">The item to check.</param>
-        /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
-        protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
+        /// <param name="item">The item.</param>
+        /// <returns>
+        /// An <see cref="ItemContainerType"/>.
+        /// </returns>
+        /// <remarks>
+        /// The returned <see cref="ItemContainerType"/> will be passed to 
+        /// <see cref="CreateContainerForItemOverride(ItemContainerType)"/> when creating a new container, or
+        /// can be used by the items panel as a recycle key when recycling an existing container.
+        /// 
+        /// The base implementation of this method checks if <paramref name="item"/> is a control and if so
+        /// returns <see cref="ItemContainerType.ItemIsOwnContainer"/>; otherwise it returns
+        /// <see cref="ItemContainerType.Default"/>.
+        /// 
+        /// Derived implementations of this method should check if <paramref name="item"/> is of
+        /// the control's desired container type and return <see cref="ItemContainerType.ItemIsOwnContainer"/>;
+        /// otherwise they will usually return <see cref="ItemContainerType.Default"/>.
+        /// 
+        /// If a derived ItemsControl needs to support multiple container types, they may want to return a 
+        /// custom instance of <see cref="ItemContainerType"/> in order to customize the type of container
+        /// control returned from <see cref="CreateContainerForItemOverride(ItemContainerType)"/>.
+        /// </remarks>
+        protected internal virtual ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is Control ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -653,6 +683,13 @@ namespace Avalonia.Controls
         {
             Presenter = presenter;
             _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
+        }
+
+        internal Control CreateContainerForItem(ItemContainerType type)
+        {
+            if (type == ItemContainerType.ItemIsOwnContainer)
+                throw new InvalidOperationException("Cannot create container: item is its own container.");
+            return CreateContainerForItemOverride(type);
         }
 
         internal void PrepareItemContainer(Control container, object? item, int index)

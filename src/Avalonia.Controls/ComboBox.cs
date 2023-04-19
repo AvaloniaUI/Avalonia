@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -170,8 +171,17 @@ namespace Avalonia.Controls
             UpdateFlowDirection();
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new ComboBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ComboBoxItem;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new ComboBoxItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is ComboBoxItem ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)

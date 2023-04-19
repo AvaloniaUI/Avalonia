@@ -133,8 +133,17 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
-        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new MenuItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is MenuItem or Separator ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)

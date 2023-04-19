@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -1761,7 +1762,10 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeViewWithDerivedTreeViewItems : TreeView
         {
-            protected internal override Control CreateContainerForItemOverride() => new DerivedTreeViewItem();
+            protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+            {
+                return new DerivedTreeViewItem();
+            }
         }
 
         private class DerivedTreeViewItem : TreeViewItem

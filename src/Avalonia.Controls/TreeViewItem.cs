@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -90,14 +91,14 @@ namespace Avalonia.Controls
 
         internal TreeView? TreeViewOwner => _treeView;
 
-        protected internal override Control CreateContainerForItemOverride()
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
         {
-            return EnsureTreeView().CreateContainerForItemOverride();
+            return EnsureTreeView().CreateContainerForItemOverride(type);
         }
 
-        protected internal override bool IsItemItsOwnContainerOverride(Control item)
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
         {
-            return EnsureTreeView().IsItemItsOwnContainerOverride(item);
+            return EnsureTreeView().GetContainerTypeForItemOverride(item);
         }
 
         protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)

@@ -1,3 +1,5 @@
+using System;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -16,8 +18,17 @@ namespace Avalonia.Controls.Primitives
             ItemsPanelProperty.OverrideDefaultValue<TabStrip>(DefaultPanel);
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new TabStripItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TabStripItem;
+        protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
+        {
+            if (type != ItemContainerType.Default)
+                throw new InvalidOperationException("Unsupported ItemContainerType.");
+            return new TabStripItem();
+        }
+
+        protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+        {
+            return item is TabStripItem ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
+        }
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -1302,14 +1303,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             Type IStyleable.StyleKey => typeof(TestSelector);
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
-            {
-                return item is TestContainer;
-            }
-
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(ItemContainerType type)
             {
                 return new TestContainer();
+            }
+
+            protected internal override ItemContainerType GetContainerTypeForItemOverride(object? item)
+            {
+                return item is TestContainer ? ItemContainerType.ItemIsOwnContainer : ItemContainerType.Default;
             }
         }
 
