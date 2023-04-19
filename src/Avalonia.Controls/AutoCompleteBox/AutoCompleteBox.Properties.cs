@@ -143,12 +143,12 @@ namespace Avalonia.Controls
                 nameof(TextSelector));
 
         /// <summary>
-        /// Identifies the <see cref="Items" /> property.
+        /// Identifies the <see cref="ItemsSource" /> property.
         /// </summary>
-        /// <value>The identifier for the <see cref="Items" /> property.</value>
-        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
+        /// <value>The identifier for the <see cref="ItemsSource" /> property.</value>
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
             AvaloniaProperty.Register<AutoCompleteBox, IEnumerable?>(
-                nameof(Items));
+                nameof(ItemsSource));
 
         /// <summary>
         /// Identifies the <see cref="AsyncPopulator" /> property.
@@ -311,10 +311,10 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the text that is used to filter items in the
-        /// <see cref="Items" /> item collection.
+        /// <see cref="ItemsSource" /> item collection.
         /// </summary>
         /// <value>The text that is used to filter items in the
-        /// <see cref="Items" /> item collection.</value>
+        /// <see cref="ItemsSource" /> item collection.</value>
         /// <remarks>
         /// The SearchText value is typically the same as the
         /// Text property, but is set after the TextChanged event occurs
@@ -339,7 +339,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets how the text in the text box is used to filter items
-        /// specified by the <see cref="Items" />
+        /// specified by the <see cref="ItemsSource" />
         /// property for display in the drop-down.
         /// </summary>
         /// <value>One of the <see cref="AutoCompleteFilterMode" />
@@ -366,11 +366,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that uses user-entered text to filter
-        /// the items specified by the <see cref="Items" />
+        /// the items specified by the <see cref="ItemsSource" />
         /// property for display in the drop-down.
         /// </summary>
         /// <value>The custom method that uses the user-entered text to filter
-        /// the items specified by the <see cref="Items" />
+        /// the items specified by the <see cref="ItemsSource" />
         /// property. The default is null.</value>
         /// <remarks>
         /// The filter mode is automatically set to Custom if you set the
@@ -384,11 +384,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that uses the user-entered text to
-        /// filter items specified by the <see cref="Items" />
+        /// filter items specified by the <see cref="ItemsSource" />
         /// property in a text-based way for display in the drop-down.
         /// </summary>
         /// <value>The custom method that uses the user-entered text to filter
-        /// items specified by the <see cref="Items" />
+        /// items specified by the <see cref="ItemsSource" />
         /// property in a text-based way for display in the drop-down.</value>
         /// <remarks>
         /// The search mode is automatically set to Custom if you set the
@@ -402,11 +402,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that combines the user-entered
-        /// text and one of the items specified by the <see cref="Items" />.
+        /// text and one of the items specified by the <see cref="ItemsSource" />.
         /// </summary>
         /// <value>
         /// The custom method that combines the user-entered
-        /// text and one of the items specified by the <see cref="Items" />.
+        /// text and one of the items specified by the <see cref="ItemsSource" />.
         /// </value>
         public AutoCompleteSelector<object>? ItemSelector
         {
@@ -417,11 +417,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the custom method that combines the user-entered
         /// text and one of the items specified by the
-        /// <see cref="Items" /> in a text-based way.
+        /// <see cref="ItemsSource" /> in a text-based way.
         /// </summary>
         /// <value>
         /// The custom method that combines the user-entered
-        /// text and one of the items specified by the <see cref="Items" />
+        /// text and one of the items specified by the <see cref="ItemsSource" />
         /// in a text-based way.
         /// </value>
         public AutoCompleteSelector<string?>? TextSelector
@@ -442,10 +442,10 @@ namespace Avalonia.Controls
         /// </summary>
         /// <value>The collection that is used to generate the items of the
         /// drop-down portion of the <see cref="AutoCompleteBox" /> control.</value>
-        public IEnumerable? Items
+        public IEnumerable? ItemsSource
         {
-            get => GetValue(ItemsProperty);
-            set => SetValue(ItemsProperty, value);
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
     }
 }

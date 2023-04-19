@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 scope.Complete();
 
                 if(typeof(T) == typeof(Control))
-                    return new ControlTemplateResult((Control)obj, scope);
+                    return new TemplateResult<Control>((Control)obj, scope);
 
                 return new TemplateResult<T>((T)obj, scope);
             };

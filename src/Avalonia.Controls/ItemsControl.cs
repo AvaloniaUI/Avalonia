@@ -378,48 +378,48 @@ namespace Avalonia.Controls
 
             if (container is HeaderedContentControl hcc)
             {
-                hcc.Content = item;
+                SetIfUnset(hcc, HeaderedContentControl.ContentProperty, item);
 
                 if (item is IHeadered headered)
-                    hcc.Header = headered.Header;
+                    SetIfUnset(hcc, HeaderedContentControl.HeaderProperty, headered.Header);
                 else if (item is not Visual)
-                    hcc.Header = item;
+                    SetIfUnset(hcc, HeaderedContentControl.HeaderProperty, item);
 
                 if (itemTemplate is not null)
-                    hcc.HeaderTemplate = itemTemplate;
+                    SetIfUnset(hcc, HeaderedContentControl.HeaderTemplateProperty, itemTemplate);
             }
             else if (container is ContentControl cc)
             {
-                cc.Content = item;
+                SetIfUnset(cc, ContentControl.ContentProperty, item);
                 if (itemTemplate is not null)
-                    cc.ContentTemplate = itemTemplate;
+                    SetIfUnset(cc, ContentControl.ContentTemplateProperty, itemTemplate);
             }
             else if (container is ContentPresenter p)
             {
-                p.Content = item;
+                SetIfUnset(p, ContentPresenter.ContentProperty, item);
                 if (itemTemplate is not null)
-                    p.ContentTemplate = itemTemplate;
+                    SetIfUnset(p, ContentPresenter.ContentTemplateProperty, itemTemplate);
             }
             else if (container is ItemsControl ic)
             {
                 if (itemTemplate is not null)
-                    ic.ItemTemplate = itemTemplate;
-                if (ItemContainerTheme is { } ict && !ict.IsSet(ItemContainerThemeProperty))
-                    ic.ItemContainerTheme = ict;
+                    SetIfUnset(ic, ItemTemplateProperty, itemTemplate);
+                if (ItemContainerTheme is { } ict)
+                    SetIfUnset(ic, ItemContainerThemeProperty, ict);
             }
 
             // These conditions are separate because HeaderedItemsControl and
             // HeaderedSelectingItemsControl also need to run the ItemsControl preparation.
             if (container is HeaderedItemsControl hic)
             {
-                hic.Header = item;
-                hic.HeaderTemplate = itemTemplate;
+                SetIfUnset(hic, HeaderedItemsControl.HeaderProperty, item);
+                SetIfUnset(hic, HeaderedItemsControl.HeaderTemplateProperty, itemTemplate);
                 hic.PrepareItemContainer(this);
             }
             else if (container is HeaderedSelectingItemsControl hsic)
             {
-                hsic.Header = item;
-                hsic.HeaderTemplate = itemTemplate;
+                SetIfUnset(hsic, HeaderedSelectingItemsControl.HeaderProperty, item);
+                SetIfUnset(hsic, HeaderedSelectingItemsControl.HeaderTemplateProperty, itemTemplate);
                 hsic.PrepareItemContainer(this);
             }
         }
@@ -458,30 +458,35 @@ namespace Avalonia.Controls
         {
             if (container is HeaderedContentControl hcc)
             {
-                if (hcc.Content is Control)
-                    hcc.Content = null;
-                if (hcc.Header is Control)
-                    hcc.Header = null;
+                hcc.ClearValue(HeaderedContentControl.ContentProperty);
+                hcc.ClearValue(HeaderedContentControl.HeaderProperty);
+                hcc.ClearValue(HeaderedContentControl.HeaderTemplateProperty);
             }
             else if (container is ContentControl cc)
             {
-                if (cc.Content is Control)
-                    cc.Content = null;
+                cc.ClearValue(ContentControl.ContentProperty);
+                cc.ClearValue(ContentControl.ContentTemplateProperty);
             }
             else if (container is ContentPresenter p)
             {
-                if (p.Content is Control)
-                    p.Content = null;
+                p.ClearValue(ContentPresenter.ContentProperty);
+                p.ClearValue(ContentPresenter.ContentTemplateProperty);
             }
-            else if (container is HeaderedItemsControl hic)
+            else if (container is ItemsControl ic)
             {
-                if (hic.Header is Control)
-                    hic.Header = null;
+                ic.ClearValue(ItemTemplateProperty);
+                ic.ClearValue(ItemContainerThemeProperty);
+            }
+            
+            if (container is HeaderedItemsControl hic)
+            {
+                hic.ClearValue(HeaderedItemsControl.HeaderProperty);
+                hic.ClearValue(HeaderedItemsControl.HeaderTemplateProperty);
             }
             else if (container is HeaderedSelectingItemsControl hsic)
             {
-                if (hsic.Header is Control)
-                    hsic.Header = null;
+                hsic.ClearValue(HeaderedSelectingItemsControl.HeaderProperty);
+                hsic.ClearValue(HeaderedSelectingItemsControl.HeaderTemplateProperty);
             }
 
             // Feels like we should be clearing the HeaderedItemsControl.Items binding here, but looking at
@@ -705,6 +710,12 @@ namespace Avalonia.Controls
 
             if (toAdd is not null)
                 LogicalChildren.AddRange(toAdd);
+        }
+
+        private void SetIfUnset<T>(AvaloniaObject target, StyledProperty<T> property, T value)
+        {
+            if (!target.IsSet(property))
+                target.SetCurrentValue(property, value);
         }
 
         private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)

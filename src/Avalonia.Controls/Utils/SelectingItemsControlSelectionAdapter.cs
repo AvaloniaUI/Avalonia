@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <value>The collection used to generate content for the selection
         /// adapter.</value>
-        public IEnumerable? Items
+        public IEnumerable? ItemsSource
         {
             get
             {

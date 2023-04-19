@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234",
                     ContextFlyout = new MenuFlyout
                     {
-                        Items = new List<MenuItem>
+                        Items =
                         {
                             new MenuItem { Header = "Item 1" },
                             new MenuItem {Header = "Item 2" },

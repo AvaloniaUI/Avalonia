@@ -67,7 +67,7 @@
           </Style>
         </Border.Styles>
         <Border.ContextFlyout>
-          <MenuFlyout Items="{Binding MenuItems}" />
+          <MenuFlyout ItemsSource="{Binding MenuItems}" />
         </Border.ContextFlyout>
         <TextBlock Text="Dynamically Generated"/>
       </Border>

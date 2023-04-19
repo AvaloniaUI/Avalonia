@@ -45,7 +45,7 @@
     </Expander>
 
     <AutoCompleteBox x:Name="CurrentFolderBox" Watermark="Write full path/uri or well known folder name">
-      <AutoCompleteBox.Items>
+      <AutoCompleteBox.ItemsSource>
         <generic:List x:TypeArguments="storage:WellKnownFolder">
           <storage:WellKnownFolder>Desktop</storage:WellKnownFolder>
           <storage:WellKnownFolder>Documents</storage:WellKnownFolder>
@@ -54,7 +54,7 @@
           <storage:WellKnownFolder>Videos</storage:WellKnownFolder>
           <storage:WellKnownFolder>Music</storage:WellKnownFolder>
         </generic:List>
-      </AutoCompleteBox.Items>
+      </AutoCompleteBox.ItemsSource>
     </AutoCompleteBox>
     
     <TextBlock x:Name="PickerLastResultsVisible"

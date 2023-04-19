@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <value>The collection that is used to generate content for the
         /// selection adapter.</value>
-        IEnumerable? Items { get; set; }
+        IEnumerable? ItemsSource { get; set; }
 
         /// <summary>
         /// Occurs when a selected item is not cancelled and is committed as the
