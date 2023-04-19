@@ -18,7 +18,6 @@
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
-    <PackageReference Include="dnlib" Version="3.6.0" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
