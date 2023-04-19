@@ -698,7 +698,7 @@ namespace Avalonia.Media.TextFormatting
                     i = lastRunIndex;
 
                     //Possible overlap at runs of different direction
-                    if (directionalWidth == 0)
+                    if (directionalWidth == 0 && i < _textRuns.Length - 1)
                     {
                         //In case a run only contains a linebreak we don't want to skip it.
                         if (currentRun is ShapedTextRun shaped)
@@ -844,7 +844,7 @@ namespace Avalonia.Media.TextFormatting
                     i = firstRunIndex;
 
                     //Possible overlap at runs of different direction
-                    if (directionalWidth == 0)
+                    if (directionalWidth == 0 && i > 0)
                     {
                         //In case a run only contains a linebreak we don't want to skip it.
                         if (currentRun is ShapedTextRun shaped)
@@ -860,8 +860,8 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-                    TextBounds? textBounds = null;
                     int coveredLength;
+                    TextBounds? textBounds;
 
                     switch (currentDirection)
                     {
@@ -942,6 +942,13 @@ namespace Avalonia.Media.TextFormatting
                           new TextRunBounds(
                               new Rect(startX, 0, drawableTextRun.Size.Width, Height), currentPosition, currentRun.Length, currentRun));
                     }
+                    else
+                    {
+                        //Add potential TextEndOfParagraph
+                        textRunBounds.Add(
+                           new TextRunBounds(
+                               new Rect(endX, 0, 0, Height), currentPosition, currentRun.Length, currentRun));
+                    }
 
                     currentPosition += currentRun.Length;
 
@@ -1006,6 +1013,13 @@ namespace Avalonia.Media.TextFormatting
                                 new Rect(endX, 0, drawableTextRun.Size.Width, Height), currentPosition, currentRun.Length, currentRun));
 
                         endX += drawableTextRun.Size.Width;
+                    }
+                    else
+                    {
+                        //Add potential TextEndOfParagraph
+                        textRunBounds.Add(
+                           new TextRunBounds(
+                               new Rect(endX, 0, 0, Height), currentPosition, currentRun.Length, currentRun));
                     }
 
                     currentPosition += currentRun.Length;
