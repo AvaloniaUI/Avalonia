@@ -457,5 +457,39 @@ namespace Avalonia.Base.UnitTests.Layout
             
             Assert.Equal(1, layoutCount);
         }
+
+        [Fact]
+        public void Child_Can_Invalidate_Parent_Measure_During_Arrange()
+        {
+            // Issue #11015.
+            //
+            // - Child invalidates parent measure in arrange pass
+            // - Parent is added to measure & arrange queues
+            // - Arrange pass dequeues parent
+            // - Measure is not valid so parent is not arranged
+            // - Parent is measured
+            // - Parent has been dequeued from arrange queue so no arrange is performed
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var root = new LayoutTestRoot { Child = parent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            child.DoArrangeOverride = (_, s) =>
+            {
+                parent.InvalidateMeasure();
+                return s;
+            };
+
+            child.InvalidateMeasure();
+            parent.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+        }
     }
 }
