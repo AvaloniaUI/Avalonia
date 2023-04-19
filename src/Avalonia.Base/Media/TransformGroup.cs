@@ -13,16 +13,15 @@ namespace Avalonia.Media
 
         public TransformGroup()
         {
-            var children = new Transforms();
-            children.ResetBehavior = ResetBehavior.Remove;
-            children.CollectionChanged += delegate
+            Children = new Transforms();
+            Children.ResetBehavior = ResetBehavior.Remove;
+            Children.CollectionChanged += delegate
             {
-                children.ForEachItem(
+                Children.ForEachItem(
                     (tr) => tr.Changed += ChildTransform_Changed,
                     (tr) => tr.Changed -= ChildTransform_Changed,
                     () => { });
             };
-            SetCurrentValue(ChildrenProperty, children);
         }
 
         private void ChildTransform_Changed(object? sender, System.EventArgs e)

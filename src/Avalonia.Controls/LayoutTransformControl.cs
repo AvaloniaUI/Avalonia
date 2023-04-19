@@ -176,7 +176,7 @@ namespace Avalonia.Controls
                 else
                 {
                     _renderTransformChangedEvent?.Dispose();
-                    SetCurrentValue(LayoutTransformProperty, null);
+                    ClearValue(LayoutTransformProperty);
                 }
             }
         }

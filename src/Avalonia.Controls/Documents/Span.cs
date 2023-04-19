@@ -20,10 +20,10 @@ namespace Avalonia.Controls.Documents
 
         public Span()
         {
-            SetCurrentValue(InlinesProperty, new InlineCollection
+            Inlines = new InlineCollection
             {
                 LogicalChildren = LogicalChildren
-            });
+            };
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace Avalonia.Media
         /// </summary>
         public GradientBrush()
         {
-            SetCurrentValue(GradientStopsProperty, new GradientStops());
+            this.GradientStops = new GradientStops();
         }
 
         /// <inheritdoc/>

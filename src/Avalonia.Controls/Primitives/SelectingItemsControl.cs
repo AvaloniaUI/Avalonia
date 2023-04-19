@@ -701,7 +701,7 @@ namespace Avalonia.Controls.Primitives
                 if (value is null)
                 {
                     // Clearing SelectedValueBinding makes the SelectedValue the item itself
-                    SetCurrentValue(SelectedValueProperty, SelectedItem);
+                    SelectedValue = SelectedItem;
                     return;
                 }
 
@@ -721,7 +721,7 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     // Re-evaluate SelectedValue with the new binding
-                    SetCurrentValue(SelectedValueProperty, _bindingHelper.Evaluate(selectedItem));
+                    SelectedValue = _bindingHelper.Evaluate(selectedItem);
                 }
                 finally
                 {
@@ -1092,7 +1092,7 @@ namespace Avalonia.Controls.Primitives
                 try
                 {
                     _isSelectionChangeActive = true;
-                    SetCurrentValue(SelectedValueProperty, item);
+                    SelectedValue = item;
                 }
                 finally
                 {
@@ -1106,7 +1106,7 @@ namespace Avalonia.Controls.Primitives
             try
             {
                 _isSelectionChangeActive = true;
-                SetCurrentValue(SelectedValueProperty, _bindingHelper.Evaluate(item));
+                SelectedValue = _bindingHelper.Evaluate(item);
             }
             finally
             {
