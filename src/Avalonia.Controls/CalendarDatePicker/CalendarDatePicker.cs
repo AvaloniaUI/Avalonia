@@ -875,10 +875,11 @@ namespace Avalonia.Controls
         {
             if (_textBox != null)
             {
+                SetCurrentValue(TextProperty, String.Empty);
+                
                 if (string.IsNullOrEmpty(Watermark) && !UseFloatingWatermark)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
-                    SetCurrentValue(TextProperty, string.Empty);
                     _defaultText = string.Empty;
                     var watermarkFormat = "<{0}>";
                     string watermarkText;
