@@ -31,18 +31,11 @@
     <!-- Common build related files -->
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" />
-  </ItemGroup>
-
-  	<ItemGroup>
-		<EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe"></EmbeddedResource>
-	</ItemGroup>
-    
-  <ItemGroup>
+	<EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe"></EmbeddedResource>
+	<EmbeddedResource Include="../build/avalonia.snk"></EmbeddedResource>
     <Compile Remove="il-repack\ILRepack\Application.cs" />
   </ItemGroup>
     
-  <ItemGroup>
-    <Folder Include="Numerge\Numerge.Console\" />
-  </ItemGroup>
+    
 
 </Project>
