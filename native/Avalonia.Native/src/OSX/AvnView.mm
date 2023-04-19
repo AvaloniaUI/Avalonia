@@ -12,7 +12,6 @@
 {
     ComPtr<WindowBaseImpl> _parent;
     NSTrackingArea* _area;
-    NSMutableAttributedString* _markedText;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
@@ -23,7 +22,8 @@
     AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
     NSMutableAttributedString* _text;
-    NSRange _selection;
+    NSRange _selectedRange;
+    NSRange _markedRange;
 }
 
 - (void)onClosed
@@ -61,8 +61,8 @@
     _modifierState = AvnInputModifiersNone;
     
     _text = [[NSMutableAttributedString alloc] initWithString:@""];
-    _markedText = [[NSMutableAttributedString alloc] initWithString:@""];
-    _selection = NSMakeRange(NSNotFound, 0);
+    _markedRange = NSMakeRange(0, 0);
+    _selectedRange = NSMakeRange(0, 0);
     
     return self;
 }
@@ -541,6 +541,10 @@
     [super keyUp:event];
 }
 
+- (void) doCommandBySelector:(SEL)selector{
+    
+}
+
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
 {
     unsigned int rv = 0;
@@ -570,55 +574,52 @@
 
 - (BOOL)hasMarkedText
 {
-    return [_markedText length] > 0;
+    return _markedRange.length > 0;
 }
 
 - (NSRange)markedRange
 {
-    if([_markedText length] > 0)
-        return NSMakeRange(_selection.location, [_markedText length]);
-    return NSMakeRange(NSNotFound, 0);
+    return _markedRange;
 }
 
 - (NSRange)selectedRange
 {
-    return _selection;
+    return _selectedRange;
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
     _lastKeyHandled = true;
     
+    NSString* markedText;
+        
     if([string isKindOfClass:[NSAttributedString class]])
     {
-        _markedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
+        markedText = [string string];
     }
     else
     {
-        _markedText = [[NSMutableAttributedString alloc] initWithString:string];
+        markedText = (NSString*) string;
     }
     
-    if(!_parent->InputMethod->IsActive()){
-        return;
+    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
+        
+    if(_parent->InputMethod->IsActive()){
+        _parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
-    
-    _parent->InputMethod->Client->SetPreeditText((char*)[_markedText.string UTF8String]);
 }
 
 - (void)unmarkText
 {
-    [[_markedText mutableString] setString:@""];
+    if(_parent->InputMethod->IsActive()){
+        _parent->InputMethod->Client->SetPreeditText(nullptr);
+    }
+    
+    _markedRange = NSMakeRange(_selectedRange.location, 0);
     
     if([self inputContext]) {
         [[self inputContext] discardMarkedText];
-        [[self inputContext] invalidateCharacterCoordinates];
     }
-
-    if(!_parent->InputMethod->IsActive()){
-        return;
-    }
-    
-    _parent->InputMethod->Client->SetPreeditText(nullptr);
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -628,21 +629,38 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    return nullptr;
+    if(actualRange){
+        range = *actualRange;
+    }
+    
+    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
+    
+    return subString;
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    _lastKeyHandled = true;
-    
-    if(_parent != nullptr)
-    {
-        uint32_t timestamp = static_cast<uint32_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
-        
-        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [string UTF8String]);
+    if(_parent == nullptr){
+        return;
     }
     
-    //[self unmarkText];
+    NSString* text;
+        
+    if([string isKindOfClass:[NSAttributedString class]])
+    {
+        text = [string string];
+    }
+    else
+    {
+        text = (NSString*) string;
+    }
+    
+    [self unmarkText];
+        
+    uint32_t timestamp = static_cast<uint32_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        
+    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
+    
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -762,17 +780,11 @@
 }
 
 - (void) setText:(NSString *)text{
-    [self unmarkText];
-    
     [[_text mutableString] setString:text];
 }
 
 - (void) setSelection:(int)start :(int)end{
-    _selection = NSMakeRange(start, end - start);
-    
-    if([self inputContext]) {
-        [[self inputContext] invalidateCharacterCoordinates];
-    }
+    _selectedRange = NSMakeRange(start, end - start);
 }
 
 - (void) setCursorRect:(AvnRect)rect{
