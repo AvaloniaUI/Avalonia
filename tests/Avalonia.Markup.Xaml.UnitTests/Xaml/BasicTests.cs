@@ -605,7 +605,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var control = new ContentControl();
 
-            var result = (ContentPresenter)template.Build(control).Control;
+            var result = (ContentPresenter)template.Build(control).Result;
 
             Assert.NotNull(result);
         }
