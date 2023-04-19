@@ -111,9 +111,9 @@ public class RefAssemblyGenerator
 
     static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, bool force)
     {
-        if (!force
-            || def.HasCustomAttributes == false
-            || def.CustomAttributes.All(a => a.AttributeType.FullName != "Avalonia.Metadata.UnstableAttribute"))
+        if (!force && (
+            def.HasCustomAttributes == false
+            || def.CustomAttributes.All(a => a.AttributeType.FullName != "Avalonia.Metadata.UnstableAttribute")))
             return;
 
         if (def.CustomAttributes.Any(a => a.AttributeType.FullName == "System.ObsoleteAttribute"))
