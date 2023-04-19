@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public Control? Build(object? data, Control? existing)
         {
-            return existing ?? TemplateContent.Load(Content)?.Control;
+            return existing ?? TemplateContent.Load(Content)?.Result;
         }
     }
 }
