@@ -39,10 +39,13 @@ public class RefAssemblyGenerator
             ProcessType(nested, obsoleteCtor);
         if (type.IsInterface)
         {
-            var hideMethods = type.Name.EndsWith("Impl");
+            var hideMethods = type.Name.EndsWith("Impl")
+                              || (type.HasCustomAttributes && type.CustomAttributes.Any(a =>
+                                  a.AttributeType.FullName == "Avalonia.Metadata.PrivateApiAttribute"));
+
             var injectMethod = hideMethods
                                || type.CustomAttributes.Any(a =>
-                                   a.AttributeType.FullName.EndsWith("NotClientImplementableAttribute"));
+                                   a.AttributeType.FullName == "Avalonia.Metadata.NotClientImplementableAttribute");
             
             if (hideMethods)
             {
@@ -65,7 +68,7 @@ public class RefAssemblyGenerator
             }
 
             var forceUnstable = type.CustomAttributes.Any(a =>
-                a.AttributeType.FullName.EndsWith("UnstableAttribute"));
+                a.AttributeType.FullName == "Avalonia.Metadata.UnstableAttribute");
             
             foreach (var m in type.Methods)
                 MarkAsUnstable(m, obsoleteCtor, forceUnstable);
@@ -81,11 +84,10 @@ public class RefAssemblyGenerator
     {
         if (!force
             || def.HasCustomAttributes == false
-            || !def.CustomAttributes.Any(a =>
-                a.AttributeType.FullName.EndsWith("UnstableAttribute")))
+            || def.CustomAttributes.All(a => a.AttributeType.FullName != "Avalonia.Metadata.UnstableAttribute"))
             return;
-        
-        if (def.CustomAttributes.Any(a => a.TypeFullName.EndsWith("ObsoleteAttribute")))
+
+        if (def.CustomAttributes.Any(a => a.TypeFullName == "System.ObsoleteAttribute"))
             return;
 
         def.CustomAttributes.Add(new CustomAttribute(obsoleteCtor, new CAArgument[]
