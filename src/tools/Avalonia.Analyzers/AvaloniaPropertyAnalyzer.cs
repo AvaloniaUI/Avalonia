@@ -129,7 +129,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Bad name: An AvaloniaProperty named '{0}' is being assigned to {1}. These names do not relate.",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "An AvaloniaProperty should be stored in a field or property which contains its name. For example, a property named \"Brush\" should be assigned to a field called \"BrushProperty\".\nPrivate symbols are exempt from this diagnostic.",
         NameCollisionTag);
 
@@ -139,7 +139,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Side effects: '{0}' is an AvaloniaProperty which can be {1} without the use of this CLR property. This {2} accessor should do nothing except call {3}.",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call any user CLR properties. To execute code before or after the property is set, consider: 1) adding a Coercion method, b) adding a static observer with AvaloniaProperty.Changed.AddClassHandler, and/or c) overriding the AvaloniaObject.OnPropertyChanged method.",
         AssociatedClrPropertyTag);
 
@@ -149,7 +149,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Missing accessor: {0} is {1}, but this CLR property lacks a {2} accessor",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. Not providing both CLR property accessors is ineffective.",
         AssociatedClrPropertyTag);
 
@@ -159,7 +159,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "Inconsistent accessibility: CLR {0} accessibility does not match accessibility of {1}",
         Category,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
+        isEnabledByDefault: false, // TODO: autogenerate property metadata preserved in ref assembly
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. Defining a CLR property with different accessibility from its associated AvaloniaProperty is ineffective.",
         AssociatedClrPropertyTag);
 
