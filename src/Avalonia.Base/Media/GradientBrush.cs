@@ -38,6 +38,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientBrush"/> class.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public GradientBrush()
         {
             this.GradientStops = new GradientStops();

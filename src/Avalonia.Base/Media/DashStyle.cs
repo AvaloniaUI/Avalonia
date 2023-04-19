@@ -44,6 +44,8 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="dashes">The dashes collection.</param>
         /// <param name="offset">The dash sequence offset.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public DashStyle(IEnumerable<double>? dashes, double offset)
         {
             Dashes = (dashes as AvaloniaList<double>) ?? new AvaloniaList<double>(dashes ?? Array.Empty<double>());
