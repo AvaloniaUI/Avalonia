@@ -273,6 +273,8 @@ partial class Build : NukeBuild
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
+            RefAssemblyGenerator.GenerateRefAsmsInPackage(Parameters.NugetRoot / "Avalonia." +
+                                                          Parameters.Version + ".nupkg");
         });
 
     Target RunTests => _ => _
