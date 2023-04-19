@@ -18,7 +18,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
-        public void View_Menu_Select_Button_Tab()
+        public void MacOS_View_Menu_Select_Button_Tab()
         {
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
             var buttonTab = tabs.FindElementByName("Button");
@@ -27,6 +27,22 @@ namespace Avalonia.IntegrationTests.Appium
             
             Assert.False(buttonTab.Selected);
             
+            viewMenu.Click();
+            var buttonMenu = viewMenu.FindElementByName("Button");
+            buttonMenu.Click();
+
+            Assert.True(buttonTab.Selected);
+        }
+
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Win32_View_Menu_Select_Button_Tab()
+        {
+            var tabs = _session.FindElementByAccessibilityId("MainTabs");
+            var buttonTab = tabs.FindElementByName("Button");
+            var viewMenu = _session.FindElementByXPath("//MenuItem[@Name='View']");
+
+            Assert.False(buttonTab.Selected);
+
             viewMenu.Click();
             var buttonMenu = viewMenu.FindElementByName("Button");
             buttonMenu.Click();
