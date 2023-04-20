@@ -8,8 +8,8 @@
 
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
   <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
-  <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-  <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+  <Thickness x:Key="TextControlBorderThemeThickness">0,0,0,1</Thickness>
+  <Thickness x:Key="TextControlBorderThemeThicknessFocused">0,0,0,2</Thickness>
   <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
   <sys:Double x:Key="IconElementThemeHeight">20</sys:Double>
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
@@ -33,9 +33,10 @@
       <!-- System Control Colors -->
       <Color x:Key="SystemAltHighColor">#FFFFFFFF</Color>
       <Color x:Key="SystemAltLowColor">#33FFFFFF</Color>
-      <Color x:Key="SystemAltMediumColor">#99FFFFFF</Color>
-      <Color x:Key="SystemAltMediumHighColor">#CCFFFFFF</Color>
-      <Color x:Key="SystemAltMediumLowColor">#66FFFFFF</Color>
+      <Color x:Key="SystemAltMediumColor">#FFE6E6E6</Color>
+      <Color x:Key="SystemAltMediumGrayColor">#FF767676</Color>
+      <Color x:Key="SystemAltMediumHighColor">#FFCCCCCC</Color>
+      <Color x:Key="SystemAltMediumLowColor">#FFF2F2F2</Color>
       <Color x:Key="SystemBaseHighColor">#FF000000</Color>
       <Color x:Key="SystemBaseLowColor">#33000000</Color>
       <Color x:Key="SystemBaseMediumColor">#99000000</Color>
@@ -259,9 +260,10 @@
       <!-- System Control Colors -->
       <Color x:Key="SystemAltHighColor">#FF000000</Color>
       <Color x:Key="SystemAltLowColor">#33000000</Color>
-      <Color x:Key="SystemAltMediumColor">#99000000</Color>
-      <Color x:Key="SystemAltMediumHighColor">#CC000000</Color>
-      <Color x:Key="SystemAltMediumLowColor">#66000000</Color>
+      <Color x:Key="SystemAltMediumColor">#191919</Color>
+      <Color x:Key="SystemAltMediumGrayColor">#898989</Color>
+      <Color x:Key="SystemAltMediumHighColor">#333333</Color>
+      <Color x:Key="SystemAltMediumLowColor">#0d0d0d</Color>
       <Color x:Key="SystemBaseHighColor">#FFFFFFFF</Color>
       <Color x:Key="SystemBaseLowColor">#33FFFFFF</Color>
       <Color x:Key="SystemBaseMediumColor">#99FFFFFF</Color>
