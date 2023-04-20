@@ -210,9 +210,10 @@
       <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
-      <StaticResource x:Key="TextControlBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
-      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemControlBackgroundAltMediumBrush" />
-      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <StaticResource x:Key="TextControlBackground" ResourceKey="SystemAltMediumLowColor" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemAltMediumHighColor" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemAltMediumColor" />
+      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemAltMediumGrayColor" />
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -230,7 +231,6 @@
       <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlButtonForegroundPressed"
                       ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
       <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
       <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
       <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
@@ -976,16 +976,16 @@
       <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
       <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
       <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
-      <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
-
+      <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness> 
+      
       <!-- Resources for TextBox.xaml -->
-      <!-- Copied from FluentBaseDark.xaml -->
       <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
-      <StaticResource x:Key="TextControlBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
-      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemControlBackgroundAltMediumBrush" />
-      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <StaticResource x:Key="TextControlBackground" ResourceKey="SystemAltMediumLowColor" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemAltMediumHighColor" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemAltMediumColor" />
+      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemAltMediumGrayColor" />
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -1003,14 +1003,12 @@
       <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlButtonForegroundPressed"
                       ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
       <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
       <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
       <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
       <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundFocused"
                       ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-
 
       <!-- Resources for AutoCompleteBox.xaml -->
       <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground"

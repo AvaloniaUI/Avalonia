@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="20">
@@ -27,13 +27,13 @@
   </MenuFlyout>
 
   <ControlTheme x:Key="FluentTextBoxButton" TargetType="Button">
-    <Setter Property="Background" Value="{DynamicResource TextControlButtonBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrush}" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="Focusable" Value="False"/>
     <Setter Property="MinWidth" Value="34" />
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="Width" Value="{Binding $self.Bounds.Height}"/>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TextControlButtonForeground}"/>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TextControlForeground}"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
@@ -49,17 +49,22 @@
     </Setter>
 
     <Style Selector="^:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPointerOver}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrushPointerOver}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextControlButtonForegroundPointerOver}" />
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPressed}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrushPressed}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextControlButtonForegroundPressed}" />
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPressed}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPressed}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPressed}" />
     </Style>
 
+    
+    <Style Selector="^:focused /template/ ContentPresenter">
+      <Setter Property="Background" Value="Red" /> 
+    </Style>
+    
     <Style Selector="^:disabled /template/ ContentPresenter">
       <Setter Property="Opacity" Value="0" />
     </Style>
@@ -175,10 +180,10 @@
 
     <!-- Disabled State -->
     <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
       <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundDisabled}" />
 
       <Style Selector="^ /template/ Border#PART_BorderElement">
-        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
         <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
       </Style>
 
@@ -189,10 +194,10 @@
 
     <!-- PointerOver State-->
     <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
 
       <Style Selector="^ /template/ Border#PART_BorderElement">
-        <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}"/>
         <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
       </Style>
 
@@ -203,6 +208,8 @@
 
     <!-- Focused State -->
     <Style Selector="^:focus">
+      
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}" />
       <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundFocused}" />
 
       <Style Selector="^ /template/ TextBlock#PART_Watermark">
@@ -210,7 +217,6 @@
       </Style>
 
       <Style Selector="^ /template/ Border#PART_BorderElement">
-        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
         <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
       </Style>
