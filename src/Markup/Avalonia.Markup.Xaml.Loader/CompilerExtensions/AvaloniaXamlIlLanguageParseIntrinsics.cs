@@ -313,33 +313,51 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             if (itemType is not null
                 && types.AvaloniaList.MakeGenericType(itemType).IsAssignableFrom(type))
             {
-                const StringSplitOptions trimOption = (StringSplitOptions)2; // StringSplitOptions.TrimEntries
-                var separators = new[] { "," };
-                var splitOptions = StringSplitOptions.RemoveEmptyEntries | trimOption;
-
-                var attribute = type.CustomAttributes.FirstOrDefault(a => a.Type == types.AvaloniaListAttribute);
-                if (attribute is not null)
+                string[] items;
+                // Normalize special case of Points collection. 
+                if (itemType == types.Point)
                 {
-                    if (attribute.Properties.TryGetValue("Separators", out var separatorsArray))
+                    var pointParts = text.Split(new[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
+                    if (pointParts.Length % 2 == 0)
                     {
-                        separators = ((Array)separatorsArray)?.OfType<string>().ToArray();
+                        items = new string[pointParts.Length / 2];
+                        for (int i = 0; i < pointParts.Length; i += 2)
+                        { 
+                            items[i / 2] = string.Format(CultureInfo.InvariantCulture, "{0} {1}", pointParts[i],
+                                pointParts[i + 1]);
+                        }
                     }
-                    if (attribute.Properties.TryGetValue("SplitOptions", out var splitOptionsObj))
+                    else
                     {
-                        splitOptions = (StringSplitOptions)splitOptionsObj;
+                        throw new XamlX.XamlLoadException($"Invalid PointsList.", node);
                     }
                 }
-                
-                var items = text.Split(separators, splitOptions ^ trimOption);
-                // Compiler targets netstandard, so we need to emulate StringSplitOptions.TrimEntries, if it was requested.
-                if (splitOptions.HasFlag(trimOption))
+                else
                 {
-                    items = items.Select(i => i.Trim()).ToArray();
-                }
+                    const StringSplitOptions trimOption = (StringSplitOptions)2; // StringSplitOptions.TrimEntries
+                    var separators = new[] { "," };
+                    var splitOptions = StringSplitOptions.RemoveEmptyEntries | trimOption;
 
-                if (itemType is null)
-                {
-                    throw new XamlX.XamlLoadException($"Type '{type.Name}' is not a collection type.", node);
+                    var attribute = type.CustomAttributes.FirstOrDefault(a => a.Type == types.AvaloniaListAttribute);
+                    if (attribute is not null)
+                    {
+                        if (attribute.Properties.TryGetValue("Separators", out var separatorsArray))
+                        {
+                            separators = ((Array)separatorsArray)?.OfType<string>().ToArray();
+                        }
+
+                        if (attribute.Properties.TryGetValue("SplitOptions", out var splitOptionsObj))
+                        {
+                            splitOptions = (StringSplitOptions)splitOptionsObj;
+                        }
+                    }
+
+                    items = text.Split(separators, splitOptions ^ trimOption);
+                    // Compiler targets netstandard, so we need to emulate StringSplitOptions.TrimEntries, if it was requested.
+                    if (splitOptions.HasFlag(trimOption))
+                    {
+                        items = items.Select(i => i.Trim()).ToArray();
+                    }
                 }
 
                 var nodes = new IXamlAstValueNode[items.Length];
