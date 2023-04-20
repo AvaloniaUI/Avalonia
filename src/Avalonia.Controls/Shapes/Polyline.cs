@@ -5,8 +5,8 @@ namespace Avalonia.Controls.Shapes
 {
     public class Polyline: Shape
     {
-        public static readonly StyledProperty<Points> PointsProperty =
-            AvaloniaProperty.Register<Polyline, Points>("Points");
+        public static readonly StyledProperty<Points?> PointsProperty =
+            AvaloniaProperty.Register<Polyline, Points?>("Points");
 
         static Polyline()
         {
@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Shapes
             AffectsGeometry<Polyline>(PointsProperty);
         }
 
-        public Points Points
+        public Points? Points
         {
             get { return GetValue(PointsProperty); }
             set { SetValue(PointsProperty, value); }
