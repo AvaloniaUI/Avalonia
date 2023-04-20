@@ -338,20 +338,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     var separators = new[] { "," };
                     var splitOptions = StringSplitOptions.RemoveEmptyEntries | trimOption;
 
-                    var attribute = type.CustomAttributes.FirstOrDefault(a => a.Type == types.AvaloniaListAttribute);
-                    if (attribute is not null)
-                    {
-                        if (attribute.Properties.TryGetValue("Separators", out var separatorsArray))
-                        {
-                            separators = ((Array)separatorsArray)?.OfType<string>().ToArray();
-                        }
-
-                        if (attribute.Properties.TryGetValue("SplitOptions", out var splitOptionsObj))
-                        {
-                            splitOptions = (StringSplitOptions)splitOptionsObj;
-                        }
-                    }
-
                     items = text.Split(separators, splitOptions ^ trimOption);
                     // Compiler targets netstandard, so we need to emulate StringSplitOptions.TrimEntries, if it was requested.
                     if (splitOptions.HasFlag(trimOption))
