@@ -95,6 +95,12 @@ namespace Avalonia.Diagnostics
             };
 
             // If single static toplevel is already visible in another devtools window, focus it.
+            if (s_open.TryGetValue(topLevelGroup, out var mainWindow))
+            {
+                mainWindow.Activate();
+                mainWindow.SelectedControl(focussedControl);
+                return Disposable.Empty;
+            }
             if (topLevelGroup.Items.Count == 1 && topLevelGroup.Items is not INotifyCollectionChanged)
             {
                 var singleTopLevel = topLevelGroup.Items.First();
