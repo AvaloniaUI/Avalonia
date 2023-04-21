@@ -309,13 +309,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             // Keep it in the end, so more specific parsers can be applied.
-            var itemType = GetElementType(type, context.Configuration.WellKnownTypes);
-            if (itemType is not null
-                && types.AvaloniaList.MakeGenericType(itemType).IsAssignableFrom(type))
+            var elementType = GetElementType(type, context.Configuration.WellKnownTypes);
+            if (elementType is not null)
             {
                 string[] items;
                 // Normalize special case of Points collection. 
-                if (itemType == types.Point)
+                if (elementType == types.Point)
                 {
                     var pointParts = text.Split(new[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
                     if (pointParts.Length % 2 == 0)
@@ -352,7 +351,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     var success = XamlTransformHelpers.TryGetCorrectlyTypedValue(
                         context,
                         new XamlAstTextNode(node, items[index], true, context.Configuration.WellKnownTypes.String),
-                        itemType, out var itemNode);
+                        elementType, out var itemNode);
                     if (!success)
                     {
                         result = null;
@@ -361,9 +360,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                     nodes[index] = itemNode;
                 }
-                
-                result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, itemType, nodes);
-                return true;
+
+                if (types.AvaloniaList.MakeGenericType(elementType).IsAssignableFrom(type))
+                {
+                    result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, elementType, nodes);
+                    return true;
+                }
+                else if (type.IsArray)
+                {
+                    result = new AvaloniaXamlIlArrayConstantAstNode(node, elementType.MakeArrayType(1), elementType, nodes);
+                    return true;
+                }
+                else if (type == context.Configuration.WellKnownTypes.IListOfT.MakeGenericType(elementType))
+                {
+                    var listType = context.Configuration.WellKnownTypes.IListOfT.MakeGenericType(elementType);
+                    result = new AvaloniaXamlIlArrayConstantAstNode(node, listType, elementType, nodes);
+                    return true;
+                }
+
+                result = null;
+                return false;
             }
             
             result = null;
