@@ -74,7 +74,7 @@ namespace Avalonia.Browser
                     surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
                 }
 
-                Resized?.Invoke(newSize, PlatformResizeReason.User);
+                Resized?.Invoke(newSize, WindowResizeReason.User);
 
                 (_insetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
@@ -241,7 +241,7 @@ namespace Avalonia.Browser
         public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
         public Action? Closed { get; set; }

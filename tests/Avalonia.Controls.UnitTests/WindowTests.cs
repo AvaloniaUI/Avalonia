@@ -704,8 +704,8 @@ namespace Avalonia.Controls.UnitTests
                     var clientSize = new Size(200, 200);
                     var maxClientSize = new Size(480, 480);
 
-                    windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
-                        .Callback<Size, PlatformResizeReason>((size, reason) =>
+                    windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<WindowResizeReason>()))
+                        .Callback<Size, WindowResizeReason>((size, reason) =>
                     {
                         clientSize = size.Constrain(maxClientSize);
                         windowImpl.Object.Resized?.Invoke(clientSize, reason);
@@ -853,7 +853,7 @@ namespace Avalonia.Controls.UnitTests
                     target.PlatformImpl.ScalingChanged(1.5);
                     target.PlatformImpl.Resized(
                         new Size(210.66666666666666, 118.66666666666667),
-                        PlatformResizeReason.DpiChange);
+                        WindowResizeReason.DpiChange);
 
                     Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
                 }
@@ -911,7 +911,7 @@ namespace Avalonia.Controls.UnitTests
                     target.LayoutManager.ExecuteLayoutPass();
 
                     var windowImpl = Mock.Get(target.PlatformImpl);
-                    windowImpl.Verify(x => x.Resize(new Size(410, 800), PlatformResizeReason.Application));
+                    windowImpl.Verify(x => x.Resize(new Size(410, 800), WindowResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }
             }
@@ -936,7 +936,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 800), PlatformResizeReason.User);
+                    target.PlatformImpl.Resized(new Size(410, 800), WindowResizeReason.User);
 
                     Assert.Equal(410, target.Width);
                     Assert.Equal(800, target.Height);
@@ -963,7 +963,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(400, 810), PlatformResizeReason.User);
+                    target.PlatformImpl.Resized(new Size(400, 810), WindowResizeReason.User);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(810, target.Height);
@@ -991,7 +991,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 810), PlatformResizeReason.Unspecified);
+                    target.PlatformImpl.Resized(new Size(410, 810), WindowResizeReason.Unspecified);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);

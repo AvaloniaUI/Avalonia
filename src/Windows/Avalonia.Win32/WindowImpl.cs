@@ -59,7 +59,7 @@ namespace Avalonia.Win32
         private double _extendTitleBarHint = -1;
         private readonly bool _isUsingComposition;
         private readonly IBlurHost? _blurHost;
-        private PlatformResizeReason _resizeReason;
+        private WindowResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
 
 #if USE_MANAGED_DRAG
@@ -200,7 +200,7 @@ namespace Avalonia.Win32
 
         public Action<Rect>? Paint { get; set; }
 
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
 
         public Action<double>? ScalingChanged { get; set; }
 
@@ -588,7 +588,7 @@ namespace Avalonia.Win32
         public IRenderer CreateRenderer(IRenderRoot root) =>
             new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
 
-        public void Resize(Size value, PlatformResizeReason reason)
+        public void Resize(Size value, WindowResizeReason reason)
         {
             if (WindowState != WindowState.Normal)
                 return;
@@ -1053,7 +1053,7 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
 
-                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
+                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), WindowResizeReason.Layout);
 
                 unsafe
                 {
@@ -1462,7 +1462,7 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
 
-        private ResizeReasonScope SetResizeReason(PlatformResizeReason reason)
+        private ResizeReasonScope SetResizeReason(WindowResizeReason reason)
         {
             var old = _resizeReason;
             _resizeReason = reason;
@@ -1487,9 +1487,9 @@ namespace Avalonia.Win32
         private struct ResizeReasonScope : IDisposable
         {
             private readonly WindowImpl _owner;
-            private readonly PlatformResizeReason _restore;
+            private readonly WindowResizeReason _restore;
 
-            public ResizeReasonScope(WindowImpl owner, PlatformResizeReason restore)
+            public ResizeReasonScope(WindowImpl owner, WindowResizeReason restore)
             {
                 _owner = owner;
                 _restore = restore;
