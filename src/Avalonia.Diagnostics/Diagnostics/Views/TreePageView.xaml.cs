@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls;
@@ -36,6 +37,16 @@ namespace Avalonia.Diagnostics.Views
                 },
             };
             AdornerLayer.SetIsClipEnabled(_adorner, false);
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            ((TreePageViewModel)DataContext!).ClipboardCopyRequested += (sender, s) =>
+            {
+                TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(s);
+            };
         }
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
