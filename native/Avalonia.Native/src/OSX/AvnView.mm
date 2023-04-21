@@ -275,7 +275,7 @@
         delta.Y = [event deltaY];
     }
 
-    uint32 timestamp = static_cast<uint32>([event timestamp] * 1000);
+    uint64 timestamp = static_cast<uint64>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
     if(type != Move ||
