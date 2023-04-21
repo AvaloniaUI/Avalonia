@@ -9,15 +9,13 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Browser.Storage;
 
-internal record FilePickerAcceptType(string Description, IReadOnlyDictionary<string, IReadOnlyList<string>> Accept);
-
 internal class BrowserStorageProvider : IStorageProvider
 {
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
 
     public bool CanOpen => true;
-    public bool CanSave => StorageHelper.HasNativeFilePicker();
+    public bool CanSave => true;
     public bool CanPickFolder => true;
 
     private bool PreferPolyfill =>

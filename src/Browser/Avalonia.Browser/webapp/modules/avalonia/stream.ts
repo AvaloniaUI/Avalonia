@@ -18,12 +18,7 @@ export class StreamHelper {
         const array = new Uint8Array(span.byteLength);
         span.copyTo(array);
 
-        const data = {
-            type: "write",
-            data: array
-        };
-
-        return await stream.write(data);
+        return await stream.write(array);
     }
 
     public static byteLength(stream: Blob) {
