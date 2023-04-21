@@ -232,14 +232,16 @@ namespace Avalonia.Controls
         {
             FrameSize = PlatformImpl?.FrameSize;
 
-            if (ClientSize != clientSize)
+            var clientSizeChanged = ClientSize != clientSize;
+
+            ClientSize = clientSize;
+            OnResized(new WindowResizedEventArgs(clientSize, reason));
+
+            if (clientSizeChanged)
             {
-                ClientSize = clientSize;
                 LayoutManager.ExecuteLayoutPass();
                 Renderer.Resized(clientSize);
             }
-
-            OnResized(new WindowResizedEventArgs(clientSize, reason));
         }
 
         /// <summary>
