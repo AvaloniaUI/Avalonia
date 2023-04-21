@@ -13,10 +13,15 @@ namespace Avalonia.Controls.Shapes
             AffectsGeometry<Polygon>(PointsProperty);
         }
 
+        public Polygon()
+        {
+            Points = new Points();
+        }
+        
         public IList<Point> Points
         {
-            get { return GetValue(PointsProperty); }
-            set { SetValue(PointsProperty, value); }
+            get => GetValue(PointsProperty);
+            set => SetValue(PointsProperty, value);
         }
 
         protected override Geometry CreateDefiningGeometry()
