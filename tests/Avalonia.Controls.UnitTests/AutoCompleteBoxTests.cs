@@ -89,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
                 bool closeEvent = false;
                 control.DropDownOpened += (s, e) => openEvent = true;
                 control.DropDownClosed += (s, e) => closeEvent = true;
-                control.Items = CreateSimpleStringArray();
+                control.ItemsSource = CreateSimpleStringArray();
 
                 textbox.Text = "a";
                 Dispatcher.UIThread.RunJobs();
@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
                 control.FilterMode = AutoCompleteFilterMode.None;
                 control.Populating += (s, e) =>
                 {
-                    control.Items = new string[] { custom };
+                    control.ItemsSource = new string[] { custom };
                     Assert.Equal(search, e.Parameter);
                 };
                 control.Populated += (s, e) =>
@@ -380,7 +380,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
-                object selectedItem = control.Items.Cast<object>().First();
+                object selectedItem = control.ItemsSource.Cast<object>().First();
                 string input = "42";
 
                 control.TextSelector = (text, item) => text + item;
@@ -397,7 +397,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
-                object selectedItem = control.Items.Cast<object>().First();
+                object selectedItem = control.ItemsSource.Cast<object>().First();
                 string input = "42";
 
                 control.ItemSelector = (text, item) => text + item;
@@ -1053,7 +1053,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 AutoCompleteBox control = CreateControl();
-                control.Items = CreateSimpleStringArray();
+                control.ItemsSource = CreateSimpleStringArray();
                 TextBox textBox = GetTextBox(control);
                 var window = new Window {Content = control};
                 window.ApplyStyling();

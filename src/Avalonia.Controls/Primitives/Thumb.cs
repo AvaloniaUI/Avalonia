@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -44,6 +46,8 @@ namespace Avalonia.Controls.Primitives
             add { AddHandler(DragCompletedEvent, value); }
             remove { RemoveHandler(DragCompletedEvent, value); }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new ThumbAutomationPeer(this);
 
         protected virtual void OnDragStarted(VectorEventArgs e)
         {

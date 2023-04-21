@@ -262,7 +262,7 @@ namespace Avalonia.Controls
 
             _source = source switch
             {
-                ItemsSourceView => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
+                ItemsSourceView isv => isv.Source,
                 IList list => list,
                 INotifyCollectionChanged => throw new ArgumentException(
                     "Collection implements INotifyCollectionChanged but not IList.",

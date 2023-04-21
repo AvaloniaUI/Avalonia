@@ -419,9 +419,9 @@ namespace Avalonia.Controls
         /// ItemsSourceProperty property changed handler.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            OnItemsChanged((IEnumerable?)e.NewValue);
+            OnItemsSourceChanged((IEnumerable?)e.NewValue);
         }
 
         private void OnItemTemplatePropertyChanged(AvaloniaPropertyChangedEventArgs e)
@@ -461,7 +461,7 @@ namespace Avalonia.Controls
             SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSearchTextPropertyChanged(e));
             FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
             ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
-            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
+            ItemsSourceProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsSourcePropertyChanged(e));
             ItemTemplateProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemTemplatePropertyChanged(e));
             IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
@@ -559,7 +559,7 @@ namespace Avalonia.Controls
                     _adapter.Commit -= OnAdapterSelectionComplete;
                     _adapter.Cancel -= OnAdapterSelectionCanceled;
                     _adapter.Cancel -= OnAdapterSelectionComplete;
-                    _adapter.Items = null;
+                    _adapter.ItemsSource = null;
                 }
 
                 _adapter = value;
@@ -570,7 +570,7 @@ namespace Avalonia.Controls
                     _adapter.Commit += OnAdapterSelectionComplete;
                     _adapter.Cancel += OnAdapterSelectionCanceled;
                     _adapter.Cancel += OnAdapterSelectionComplete;
-                    _adapter.Items = _view;
+                    _adapter.ItemsSource = _view;
                 }
             }
         }
@@ -1128,7 +1128,7 @@ namespace Avalonia.Controls
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        SetCurrentValue(ItemsProperty, resultList);
+                        SetCurrentValue(ItemsSourceProperty, resultList);
                         PopulateComplete();
                     }
                 });
@@ -1475,7 +1475,7 @@ namespace Avalonia.Controls
         /// adapter's ItemsSource to the view if appropriate.
         /// </summary>
         /// <param name="newValue">The new enumerable reference.</param>
-        private void OnItemsChanged(IEnumerable? newValue)
+        private void OnItemsSourceChanged(IEnumerable? newValue)
         {
             // Remove handler for oldValue.CollectionChanged (if present)
             _collectionChangeSubscription?.Dispose();
@@ -1492,9 +1492,9 @@ namespace Avalonia.Controls
 
             // Clear and set the view on the selection adapter
             ClearView();
-            if (SelectionAdapter != null && SelectionAdapter.Items != _view)
+            if (SelectionAdapter != null && SelectionAdapter.ItemsSource != _view)
             {
-                SelectionAdapter.Items = _view;
+                SelectionAdapter.ItemsSource = _view;
             }
             if (IsDropDownOpen)
             {
@@ -1545,9 +1545,9 @@ namespace Avalonia.Controls
             {
                 // Significant changes to the underlying data.
                 ClearView();
-                if (Items != null)
+                if (ItemsSource != null)
                 {
-                    _items = new List<object>(Items.Cast<object>());
+                    _items = new List<object>(ItemsSource.Cast<object>());
                 }
             }
 
@@ -1582,9 +1582,9 @@ namespace Avalonia.Controls
             PopulatedEventArgs populated = new PopulatedEventArgs(new ReadOnlyCollection<object>(_view!));
             OnPopulated(populated);
 
-            if (SelectionAdapter != null && SelectionAdapter.Items != _view)
+            if (SelectionAdapter != null && SelectionAdapter.ItemsSource != _view)
             {
-                SelectionAdapter.Items = _view;
+                SelectionAdapter.ItemsSource = _view;
             }
 
             bool isDropDownOpen = _userCalledPopulate && (_view!.Count > 0);
