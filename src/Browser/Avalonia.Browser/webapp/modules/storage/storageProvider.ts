@@ -1,6 +1,6 @@
 import { avaloniaDb, fileBookmarksStore } from "./indexedDb";
 import { StorageItem, StorageItems } from "./storageItem";
-import { showOpenFilePicker, showDirectoryPicker, FileSystemFileHandle } from "native-file-system-adapter";
+import { showOpenFilePicker, showDirectoryPicker, showSaveFilePicker, FileSystemFileHandle } from "native-file-system-adapter";
 
 declare global {
     type WellKnownDirectory = "desktop" | "documents" | "downloads" | "music" | "pictures" | "videos";
@@ -46,8 +46,7 @@ export class StorageProvider {
             types: (types ?? undefined)
         };
 
-        // Always prefer native save file picker, as polyfill solutions are not reliable.
-        const handle = await (globalThis as any).showSaveFilePicker(options);
+        const handle = await showSaveFilePicker(options);
         return StorageItem.createFromHandle(handle);
     }
 
