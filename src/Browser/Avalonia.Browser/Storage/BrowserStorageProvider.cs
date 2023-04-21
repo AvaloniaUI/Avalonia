@@ -20,6 +20,9 @@ internal class BrowserStorageProvider : IStorageProvider
     public bool CanSave => StorageHelper.HasNativeFilePicker();
     public bool CanPickFolder => true;
 
+    private bool PreferPolyfill =>
+        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferFileDialogPolyfill ?? false;
+    
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
         await AvaloniaModule.ImportStorage();
@@ -29,7 +32,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll);
+            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll, PreferPolyfill);
             if (items is null)
             {
                 return Array.Empty<IStorageFile>();
@@ -63,7 +66,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll);
+            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll, PreferPolyfill);
             return item is not null ? new JSStorageFile(item) : null;
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -89,7 +92,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            var item = await StorageHelper.SelectFolderDialog(startIn);
+            var item = await StorageHelper.SelectFolderDialog(startIn, PreferPolyfill);
             return item is not null ? new[] { new JSStorageFolder(item) } : Array.Empty<IStorageFolder>();
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))

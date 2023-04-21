@@ -11,6 +11,13 @@ public class BrowserPlatformOptions
     /// If null, default path resolved depending on the backend (browser or blazor) is used.
     /// </summary>
     public Func<string, string>? FrameworkAssetPathResolver { get; set; }
+    
+    /// <summary>
+    /// Avalonia uses "native-file-system-adapter" polyfill for the file dialogs.
+    /// If native implementation is available, by default it is used.
+    /// This property forces polyfill to be always used.
+    /// </summary>
+    public bool PreferFileDialogPolyfill { get; set; }
 }
 
 public static class BrowserAppBuilder
