@@ -5,7 +5,7 @@ using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Diagnostics.Controls
 {
-    class Application : AvaloniaObject
+    internal class Application : TopLevelGroup
        , Input.ICloseable, IDisposable
 
     {
@@ -16,7 +16,8 @@ namespace Avalonia.Diagnostics.Controls
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
         
-        public Application(Avalonia.Application application)
+        public Application(ClassicDesktopStyleApplicationLifetimeTopLevelGroup group, Avalonia.Application application)
+            : base(group)
         {
             _application = application;
 

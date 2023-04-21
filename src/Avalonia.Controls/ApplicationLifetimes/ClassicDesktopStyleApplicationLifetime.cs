@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
@@ -16,7 +17,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private int _exitCode;
         private CancellationTokenSource? _cts;
         private bool _isShuttingDown;
-        private readonly HashSet<Window> _windows = new();
+        private readonly AvaloniaList<Window> _windows = new();
 
         private static ClassicDesktopStyleApplicationLifetime? s_activeLifetime;
 
@@ -67,7 +68,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         public Window? MainWindow { get; set; }
 
         /// <inheritdoc />
-        public IReadOnlyList<Window> Windows => _windows.ToArray();
+        public IReadOnlyList<Window> Windows => _windows;
 
         private void HandleWindowClosed(Window? window)
         {
