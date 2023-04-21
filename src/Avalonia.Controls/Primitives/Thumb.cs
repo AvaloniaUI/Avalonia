@@ -85,7 +85,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
-                var point = e.GetPosition((Visual?)this.GetVisualRoot());
+                var point = e.GetPosition(null);
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragDeltaEvent,
@@ -100,7 +100,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             e.Handled = true;
-            _lastPoint = e.GetPosition((Visual?)this.GetVisualRoot());
+            _lastPoint = e.GetPosition(null);
 
             var ev = new VectorEventArgs
             {
@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Primitives
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragCompletedEvent,
-                    Vector = (Vector)e.GetPosition((Visual?)this.GetVisualRoot()),
+                    Vector = (Vector)e.GetPosition(null),
                 };
 
                 RaiseEvent(ev);
