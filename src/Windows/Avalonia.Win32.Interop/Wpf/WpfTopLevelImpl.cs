@@ -108,7 +108,7 @@ namespace Avalonia.Win32.Interop.Wpf
             if (_finalSize == _previousSize)
                 return finalSize;
             _previousSize = _finalSize;
-            _ttl.Resized?.Invoke(finalSize.ToAvaloniaSize(), PlatformResizeReason.Unspecified);
+            _ttl.Resized?.Invoke(finalSize.ToAvaloniaSize(), WindowResizeReason.Unspecified);
             return base.ArrangeOverride(finalSize);
         }
 
@@ -229,7 +229,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         Action<RawInputEventArgs> ITopLevelImpl.Input { get; set; } //TODO
         Action<Rect> ITopLevelImpl.Paint { get; set; }
-        Action<Size, PlatformResizeReason> ITopLevelImpl.Resized { get; set; }
+        Action<Size, WindowResizeReason> ITopLevelImpl.Resized { get; set; }
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
 
         Action<WindowTransparencyLevel> ITopLevelImpl.TransparencyLevelChanged { get; set; }
