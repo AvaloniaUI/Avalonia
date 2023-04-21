@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Browser.Storage;
 
@@ -64,7 +65,9 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll, PreferPolyfill);
+            var suggestedName =
+                StorageProviderHelpers.NameWithExtension(options.SuggestedFileName, options.DefaultExtension, null);
+            var item = await StorageHelper.SaveFileDialog(startIn, suggestedName, types, excludeAll, PreferPolyfill);
             return item is not null ? new JSStorageFile(item) : null;
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
