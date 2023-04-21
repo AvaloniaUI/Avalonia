@@ -7,6 +7,7 @@
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\Avalonia.Generators.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\build\AvaloniaVersion.props" />
 
   <!-- Allow loading the AvaloniaVS extension when referencing the Avalonia nuget package -->
   <ItemGroup>
