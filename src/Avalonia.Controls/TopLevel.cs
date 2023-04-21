@@ -569,7 +569,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
         /// <param name="reason">The reason for the resize.</param>
-        protected virtual void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal virtual void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             ClientSize = clientSize;
             FrameSize = PlatformImpl!.FrameSize;

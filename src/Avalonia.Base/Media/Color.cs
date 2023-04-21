@@ -9,8 +9,8 @@ using System;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
-using static Avalonia.Utilities.SpanHelpers;
 #endif
+using static Avalonia.Utilities.SpanHelpers;
 
 namespace Avalonia.Media
 {

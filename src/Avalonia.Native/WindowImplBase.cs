@@ -95,7 +95,7 @@ namespace Avalonia.Native
             var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
         }
 
         public IAvnWindowBase Native => _native;
@@ -160,7 +160,7 @@ namespace Avalonia.Native
         public Action LostFocus { get; set; }
         
         public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
@@ -211,7 +211,7 @@ namespace Avalonia.Native
                 {
                     var s = new Size(size->Width, size->Height);
                     _parent._savedLogicalSize = s;
-                    _parent.Resized?.Invoke(s, (PlatformResizeReason)reason);
+                    _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
                 }
             }
 
@@ -360,7 +360,7 @@ namespace Avalonia.Native
             }
         }
 
-        public void Resize(Size clientSize, PlatformResizeReason reason)
+        public void Resize(Size clientSize, WindowResizeReason reason)
         {
             _native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }

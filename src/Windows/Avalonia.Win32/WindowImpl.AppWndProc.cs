@@ -133,7 +133,7 @@ namespace Avalonia.Win32
                         _scaling = dpi / 96.0;
                         ScalingChanged?.Invoke(_scaling);
 
-                        using (SetResizeReason(PlatformResizeReason.DpiChange))
+                        using (SetResizeReason(WindowResizeReason.DpiChange))
                         {
                             SetWindowPos(hWnd,
                                 IntPtr.Zero,
@@ -611,7 +611,7 @@ namespace Avalonia.Win32
 
 
                 case WindowsMessage.WM_ENTERSIZEMOVE:
-                    _resizeReason = PlatformResizeReason.User;
+                    _resizeReason = WindowResizeReason.User;
                     break;
 
                 case WindowsMessage.WM_SIZE:
@@ -658,7 +658,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_EXITSIZEMOVE:
-                    _resizeReason = PlatformResizeReason.Unspecified;
+                    _resizeReason = WindowResizeReason.Unspecified;
                     break;
 
                 case WindowsMessage.WM_MOVE:
