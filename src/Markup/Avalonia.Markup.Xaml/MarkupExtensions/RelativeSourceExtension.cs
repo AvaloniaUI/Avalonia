@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         [ConstructorArgument("mode")]
         public RelativeSourceMode Mode { get; set; } = RelativeSourceMode.FindAncestor;
 
-        public Type AncestorType { get; set; }
+        public Type? AncestorType { get; set; }
 
         public TreeType Tree { get; set; }
 

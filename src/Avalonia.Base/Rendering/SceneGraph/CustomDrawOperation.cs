@@ -13,7 +13,7 @@ namespace Avalonia.Rendering.SceneGraph
             Custom = custom;
         }
 
-        public override bool HitTest(Point p) => Custom.HitTest(p);
+        public override bool HitTestTransformed(Point p) => Custom.HitTest(p);
 
         public override void Render(IDrawingContextImpl context)
         {

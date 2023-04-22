@@ -47,9 +47,8 @@ namespace Avalonia.Base.UnitTests.Rendering
         {
             var dispatcher = new Mock<IDispatcher>();
             dispatcher.Setup(
-                d => d.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
-                .Callback((Action a, DispatcherPriority _) => a())
-                .Returns(Task.CompletedTask);
+                    d => d.Post(It.IsAny<Action>(), DispatcherPriority.Render))
+                .Callback((Action a, DispatcherPriority _) => a());
 
             var timer = new Mock<IRenderTimer>();
             var loop = new RenderLoop(timer.Object, dispatcher.Object);

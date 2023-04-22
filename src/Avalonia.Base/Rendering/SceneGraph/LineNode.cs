@@ -17,7 +17,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The start point of the line.</param>
         /// <param name="p2">The end point of the line.</param>
-        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public LineNode(
             Matrix transform,
             IPen pen,
@@ -67,7 +66,7 @@ namespace Avalonia.Rendering.SceneGraph
             context.DrawLine(Pen, P1, P2);
         }
 
-        public override bool HitTest(Point p)
+        public override bool HitTestTransformed(Point p)
         {
             var halfThickness = Pen.Thickness / 2;
             var minX = Math.Min(P1.X, P2.X) - halfThickness;

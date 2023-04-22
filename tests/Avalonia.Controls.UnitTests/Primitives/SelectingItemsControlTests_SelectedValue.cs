@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new SelectingItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 SelectedValueBinding = new Binding("Name"),
                 Template = Template()
             };
@@ -37,7 +37,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new SelectingItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 SelectedValueBinding = new Binding("Name"),
                 Template = Template()
             };
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new ListBox
             {
-                Items = items,
+                ItemsSource = items,
                 SelectedValueBinding = new Binding("Name"),
                 Template = Template()
             };
@@ -78,7 +78,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var items = TestClass.GetItems();
                 var sic = new SelectingItemsControl
                 {
-                    Items = items,
+                    ItemsSource = items,
                     SelectedValueBinding = new Binding("Name"),
                     Template = Template()
                 };
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var items = TestClass.GetItems();
                 var sic = new SelectingItemsControl
                 {
-                    Items = items,
+                    ItemsSource = items,
                     SelectedValueBinding = new Binding("Name"),
                     Template = Template()
                 };
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var items = TestClass.GetItems();
                 var sic = new SelectingItemsControl
                 {
-                    Items = items,
+                    ItemsSource = items,
                     SelectedValueBinding = new Binding("Name"),
                     Template = Template()
                 };
@@ -143,7 +143,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new SelectingItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template()
             };
 
@@ -158,7 +158,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new SelectingItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
                 SelectedValueBinding = new Binding("Name"),
                 SelectedValue = "Item2"
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new SelectingItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
                 SelectedValueBinding = new Binding("Name"),
                 SelectedValue = "Item2"
@@ -197,7 +197,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var items = TestClass.GetItems();
                 var sic = new SelectingItemsControl
                 {
-                    Items = items,
+                    ItemsSource = items,
                     Template = Template(),
                     SelectedValueBinding = new Binding("Name"),
                     SelectedValue = "Item2"
@@ -205,7 +205,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Prepare(sic);
 
-                sic.Items = new List<TestClass>
+                sic.ItemsSource = new List<TestClass>
                 {
                     new TestClass("NewItem", string.Empty)
                 };
@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var items = TestClass.GetItems();
                 var sic = new SelectingItemsControl
                 {
-                    Items = items,
+                    ItemsSource = items,
                     Template = Template(),
                     SelectedValueBinding = new Binding("Name"),
                 };
@@ -250,7 +250,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = TestClass.GetItems();
             var sic = new SelectingItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
                 SelectedValueBinding = new Binding("Name"),
                 SelectedValue = "Item2"

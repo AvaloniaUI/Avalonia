@@ -124,7 +124,7 @@ namespace Avalonia.Controls.Primitives
             if (accentStep != 0)
             {
                 // ColorChanged will be invoked in OnPropertyChanged if the value is different
-                HsvColor = AccentColorConverter.GetAccent(hsvColor, accentStep);
+                SetCurrentValue(HsvColorProperty, AccentColorConverter.GetAccent(hsvColor, accentStep));
             }
         }
     }

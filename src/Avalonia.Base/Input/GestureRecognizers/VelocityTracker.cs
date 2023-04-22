@@ -180,7 +180,7 @@ namespace Avalonia.Input.GestureRecognizers
         internal Velocity GetVelocity()
         {
             var estimate = GetVelocityEstimate();
-            if (estimate == null || estimate.PixelsPerSecond.IsDefault)
+            if (estimate == null || estimate.PixelsPerSecond == default(Vector))
             {
                 return new Velocity(Vector.Zero);
             }

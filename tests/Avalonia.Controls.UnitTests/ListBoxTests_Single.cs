@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
             };
 
             ApplyTemplate(target);
@@ -45,7 +45,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
             };
 
             ApplyTemplate(target);
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
             };
 
             ApplyTemplate(target);
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
                 ApplyTemplate(target);
@@ -116,7 +116,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
                 ApplyTemplate(target);
@@ -134,7 +134,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
                 ApplyTemplate(target);
@@ -154,7 +154,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
@@ -174,7 +174,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Toggle,
                 };
 
@@ -196,7 +196,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
@@ -217,7 +217,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ListBox
                 {
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
-                    Items = new[] { "Foo", "Bar", "Baz " },
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
@@ -236,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ListBox
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
+                ItemsSource = new[] { "Foo", "Bar", "Baz " },
             };
 
             ApplyTemplate(target);
@@ -259,7 +259,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = new FuncControlTemplate(CreateListBoxTemplate),
                 DataContext = viewModel,
-                Items = viewModel.Items
+                ItemsSource = viewModel.Items
             };
 
             target.Bind(ListBox.SelectedItemProperty,

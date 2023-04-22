@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -218,14 +220,17 @@ namespace Avalonia.FreeDesktop
         {
             Connection = connection;
             BackingProperties.Menu = dbusMenuPath;
-            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
-            BackingProperties.IconName = string.Empty;
+            BackingProperties.Category = string.Empty;
+            BackingProperties.Status = string.Empty;
+            BackingProperties.Id = string.Empty;
+            BackingProperties.Title = string.Empty;
+            BackingProperties.IconPixmap = Array.Empty<(int, int, byte[])>();
             BackingProperties.AttentionIconName = string.Empty;
-            BackingProperties.AttentionIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
+            BackingProperties.AttentionIconPixmap = Array.Empty<(int, int, byte[])>();
             BackingProperties.AttentionMovieName = string.Empty;
-            BackingProperties.IconThemePath = string.Empty;
             BackingProperties.OverlayIconName = string.Empty;
-            BackingProperties.OverlayIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
+            BackingProperties.OverlayIconPixmap = Array.Empty<(int, int, byte[])>();
+            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
             InvalidateAll();
         }
 
@@ -235,13 +240,17 @@ namespace Avalonia.FreeDesktop
 
         public event Action? ActivationDelegate;
 
-        protected override void OnContextMenu(int x, int y) { }
+        protected override ValueTask OnContextMenuAsync(int x, int y) => new();
 
-        protected override void OnActivate(int x, int y) => ActivationDelegate?.Invoke();
+        protected override ValueTask OnActivateAsync(int x, int y)
+        {
+            ActivationDelegate?.Invoke();
+            return new ValueTask();
+        }
 
-        protected override void OnSecondaryActivate(int x, int y) { }
+        protected override ValueTask OnSecondaryActivateAsync(int x, int y) => new();
 
-        protected override void OnScroll(int delta, string orientation) { }
+        protected override ValueTask OnScrollAsync(int delta, string orientation) => new();
 
         public void InvalidateAll()
         {
@@ -268,7 +277,6 @@ namespace Avalonia.FreeDesktop
             BackingProperties.Category = "ApplicationStatus";
             BackingProperties.Status = text;
             BackingProperties.Title = text;
-            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), text, string.Empty);
             InvalidateAll();
         }
     }

@@ -101,7 +101,7 @@
           <ComboBox Margin="0,5,0,0"
                     DockPanel.Dock="Bottom"
                     IsVisible="{Binding ShowFilters}"
-                    Items="{Binding Filters}"
+                    ItemsSource="{Binding Filters}"
                     SelectedItem="{Binding SelectedFilter}" />
 
           <TextBox DockPanel.Dock="Bottom"
@@ -114,7 +114,7 @@
                    BorderBrush="Transparent"
                    DockPanel.Dock="Left"
                    Focusable="False"
-                   Items="{Binding QuickLinks}"
+                   ItemsSource="{Binding QuickLinks}"
                    SelectedIndex="{Binding QuickLinksSelectedIndex}">
             <ListBox.ItemTemplate>
               <DataTemplate>
@@ -160,7 +160,7 @@
             </Grid>
             <ListBox x:Name="PART_Files"
                      Margin="0,5"
-                     Items="{Binding Items}"
+                     ItemsSource="{Binding Items}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      SelectedItems="{Binding SelectedItems}"
                      SelectionMode="{Binding SelectionMode}">

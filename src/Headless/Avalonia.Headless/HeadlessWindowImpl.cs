@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Avalonia.Automation.Peers;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -51,7 +50,7 @@ namespace Avalonia.Headless
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
@@ -112,7 +111,7 @@ namespace Avalonia.Headless
         public Action? Activated { get; set; }
         public IPlatformHandle Handle { get; } = new PlatformHandle(IntPtr.Zero, "STUB");
         public Size MaxClientSize { get; } = new Size(1920, 1280);
-        public void Resize(Size clientSize, PlatformResizeReason reason)
+        public void Resize(Size clientSize, WindowResizeReason reason)
         {
             // Emulate X11 behavior here
             if (IsPopup)
@@ -130,7 +129,7 @@ namespace Avalonia.Headless
             if (ClientSize != clientSize)
             {
                 ClientSize = clientSize;
-                Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
+                Resized?.Invoke(clientSize, WindowResizeReason.Unspecified);
             }
         }
 
@@ -258,6 +257,11 @@ namespace Avalonia.Headless
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object? TryGetFeature(Type featureType)
         {
+        	if(featureType == typeof(IClipboard))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
             return null;
         }
 

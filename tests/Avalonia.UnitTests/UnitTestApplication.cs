@@ -8,6 +8,7 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
+using System.Threading;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
 using Avalonia.Media;
@@ -42,12 +43,19 @@ namespace Avalonia.UnitTests
         public static IDisposable Start(TestServices services = null)
         {
             var scope = AvaloniaLocator.EnterScope();
-            var app = new UnitTestApplication(services);
-            Dispatcher.UIThread.UpdateServices();
+            var oldContext = SynchronizationContext.Current;
+            _ = new UnitTestApplication(services);
+            Dispatcher.ResetForUnitTests();
             return Disposable.Create(() =>
             {
+                if (Dispatcher.UIThread.CheckAccess())
+                {
+                    Dispatcher.UIThread.RunJobs();
+                }
+
                 scope.Dispose();
-                Dispatcher.UIThread.UpdateServices();
+                Dispatcher.ResetForUnitTests();
+                SynchronizationContext.SetSynchronizationContext(oldContext);
             });
         }
 
@@ -66,7 +74,7 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
-                .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
+                .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();

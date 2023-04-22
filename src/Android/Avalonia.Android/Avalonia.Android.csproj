@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.3.1.3" />
+    <PackageReference Include="Xamarin.AndroidX.DocumentFile" Version="1.0.1.16" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.3.1.3" />
   </ItemGroup>
   <ItemGroup>

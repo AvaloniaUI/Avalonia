@@ -1,13 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Selection;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
-using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -29,8 +26,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.

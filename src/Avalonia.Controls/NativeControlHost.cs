@@ -141,7 +141,7 @@ namespace Avalonia.Controls
 
             if (IsEffectivelyVisible && bounds.HasValue)
             {
-                if (bounds.Value.IsDefault)
+                if (bounds.Value.Width == 0 && bounds.Value.Height == 0)
                     return false;
                 _attachment?.ShowInBounds(bounds.Value);
             }

@@ -114,7 +114,7 @@ namespace ControlCatalog.Pages
 
             foreach (AutoCompleteBox box in GetAllAutoCompleteBox().Where(x => x.Name != "CustomAutocompleteBox"))
             {
-                box.Items = States;
+                box.ItemsSource = States;
             }
 
             var converter = new FuncMultiValueConverter<string, string>(parts =>
@@ -132,7 +132,7 @@ namespace ControlCatalog.Pages
             asyncBox.AsyncPopulator = PopulateAsync;
 
             var customAutocompleteBox = this.Get<AutoCompleteBox>("CustomAutocompleteBox");
-            customAutocompleteBox.Items = Sentences.SelectMany(x => x);
+            customAutocompleteBox.ItemsSource = Sentences.SelectMany(x => x);
             customAutocompleteBox.TextFilter = LastWordContains;
             customAutocompleteBox.TextSelector = AppendWord;
         }

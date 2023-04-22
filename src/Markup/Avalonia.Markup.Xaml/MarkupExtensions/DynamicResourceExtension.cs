@@ -4,8 +4,6 @@ using Avalonia.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 
-#nullable enable
-
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class DynamicResourceExtension : IBinding
@@ -31,7 +29,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
-            if (!(provideTarget.TargetObject is StyledElement))
+            if (provideTarget?.TargetObject is not StyledElement)
             {
                 _anchor = serviceProvider.GetFirstParent<StyledElement>() ??
                     serviceProvider.GetFirstParent<IResourceProvider>() ??

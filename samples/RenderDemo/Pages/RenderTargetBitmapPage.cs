@@ -29,7 +29,7 @@ namespace RenderDemo.Pages
         public override void Render(DrawingContext context)
         {
             using (var ctx = _bitmap.CreateDrawingContext())
-            using (ctx.PushPostTransform(Matrix.CreateTranslation(-100, -100)
+            using (ctx.PushTransform(Matrix.CreateTranslation(-100, -100)
                                          * Matrix.CreateRotation(_st.Elapsed.TotalSeconds)
                                          * Matrix.CreateTranslation(100, 100)))
             {

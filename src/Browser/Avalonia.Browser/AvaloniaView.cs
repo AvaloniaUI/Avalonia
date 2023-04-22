@@ -90,6 +90,8 @@ namespace Avalonia.Browser
 
             _topLevel.Renderer.Start();
 
+            InputHelper.InitializeBackgroundHandlers();
+
             InputHelper.SubscribeKeyEvents(
                 _containerElement,
                 OnKeyDown,

@@ -38,7 +38,7 @@ namespace Avalonia.FreeDesktop
             private bool _resetQueued;
             private int _nextId = 1;
 
-            public DBusMenuExporterImpl(Connection connection, IntPtr xid)
+            public DBusMenuExporterImpl(Connection connection, IntPtr xid) : this()
             {
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
@@ -47,7 +47,7 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
-            public DBusMenuExporterImpl(Connection connection, string path)
+            public DBusMenuExporterImpl(Connection connection, string path) : this()
             {
                 Connection = connection;
                 _appMenu = false;
@@ -56,42 +56,53 @@ namespace Avalonia.FreeDesktop
                 _ = InitializeAsync();
             }
 
+            private DBusMenuExporterImpl()
+            {
+                BackingProperties.Status = string.Empty;
+                BackingProperties.TextDirection = string.Empty;
+                BackingProperties.IconThemePath = Array.Empty<string>();
+            }
+
             protected override Connection Connection { get; }
 
             public override string Path { get; }
 
-            protected override (uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout) OnGetLayout(int parentId, int recursionDepth, string[] propertyNames)
+            protected override ValueTask<(uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout)> OnGetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
             {
                 var menu = GetMenu(parentId);
                 var layout = GetLayout(menu.item, menu.menu, recursionDepth, propertyNames);
                 if (!IsNativeMenuExported)
                 {
                     IsNativeMenuExported = true;
-                    Dispatcher.UIThread.Post(() => OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty));
+                    OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty);
                 }
 
-                return (_revision, layout);
+                return new ValueTask<(uint, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]))>((_revision, layout));
             }
 
-            protected override (int, Dictionary<string, DBusVariantItem>)[] OnGetGroupProperties(int[] ids, string[] propertyNames) =>
-                ids.Select(id => (id, GetProperties(GetMenu(id), propertyNames))).ToArray();
+            protected override ValueTask<(int, Dictionary<string, DBusVariantItem>)[]> OnGetGroupPropertiesAsync(int[] ids, string[] propertyNames)
+                => new(ids.Select(id => (id, GetProperties(GetMenu(id), propertyNames))).ToArray());
 
-            protected override DBusVariantItem OnGetProperty(int id, string name) => GetProperty(GetMenu(id), name) ?? new DBusVariantItem("i", new DBusInt32Item(0));
+            protected override ValueTask<DBusVariantItem> OnGetPropertyAsync(int id, string name) =>
+                new(GetProperty(GetMenu(id), name) ?? new DBusVariantItem("i", new DBusInt32Item(0)));
 
-            protected override void OnEvent(int id, string eventId, DBusVariantItem data, uint timestamp) =>
-                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId));
+            protected override ValueTask OnEventAsync(int id, string eventId, DBusVariantItem data, uint timestamp)
+            {
+                HandleEvent(id, eventId);
+                return new ValueTask();
+            }
 
-            protected override int[] OnEventGroup((int, string, DBusVariantItem, uint)[] events)
+            protected override ValueTask<int[]> OnEventGroupAsync((int, string, DBusVariantItem, uint)[] events)
             {
                 foreach (var e in events)
-                    Dispatcher.UIThread.Post(() => HandleEvent(e.Item1, e.Item2));
-                return Array.Empty<int>();
+                    HandleEvent(e.Item1, e.Item2);
+                return new ValueTask<int[]>(Array.Empty<int>());
             }
 
-            protected override bool OnAboutToShow(int id) => false;
+            protected override ValueTask<bool> OnAboutToShowAsync(int id) => new(false);
 
-            protected override (int[] updatesNeeded, int[] idErrors) OnAboutToShowGroup(int[] ids) =>
-                (Array.Empty<int>(), Array.Empty<int>());
+            protected override ValueTask<(int[] updatesNeeded, int[] idErrors)> OnAboutToShowGroupAsync(int[] ids) =>
+                new((Array.Empty<int>(), Array.Empty<int>()));
 
             private async Task InitializeAsync()
             {
@@ -198,15 +209,9 @@ namespace Avalonia.FreeDesktop
                 return id;
             }
 
-            private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                QueueReset();
-            }
+            private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => QueueReset();
 
-            private void OnItemPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-            {
-                QueueReset();
-            }
+            private void OnItemPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => QueueReset();
 
             private static readonly string[] s_allProperties = {
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"

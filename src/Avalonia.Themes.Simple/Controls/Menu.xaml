@@ -17,7 +17,8 @@
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Margin="{TemplateBinding Padding}"
-                              Content="{TemplateBinding Header}">
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
                   <AccessText Text="{Binding}" />
@@ -26,8 +27,8 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    IsLightDismissEnabled="True"
-                   IsOpen="{TemplateBinding IsSubMenuOpen,
-                                            Mode=TwoWay}"
+                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                   Placement="BottomEdgeAlignedLeft"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
               <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"

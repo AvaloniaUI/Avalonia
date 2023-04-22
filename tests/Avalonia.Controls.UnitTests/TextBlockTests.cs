@@ -192,7 +192,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Inlines.Add(new Run("Hello World"));
 
-                Assert.Equal("Hello World", target.Text);
+                Assert.Equal(null, target.Text);
 
                 Assert.Equal(1, target.Inlines.Count);
 

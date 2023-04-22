@@ -263,7 +263,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             };
             var rootMenu = new Menu();
 
-            rootMenu.Items = new[] { menuitem };
+            rootMenu.Items.Add(menuitem);
 
             root.Content = rootMenu;
             return menuitem;
@@ -288,7 +288,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             };
             var rootMenu = new Menu();
 
-            rootMenu.Items = new[] { menuitem };
+            rootMenu.Items.Add(menuitem);
 
             root.Content = rootMenu;
             return menuitem;

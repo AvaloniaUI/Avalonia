@@ -255,7 +255,7 @@ namespace Avalonia.Controls
 
             _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
 
-            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.Placement = PlacementMode.AnchorAndGravity;
             _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
             _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
             _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;

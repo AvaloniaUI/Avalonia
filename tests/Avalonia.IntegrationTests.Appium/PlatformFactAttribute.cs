@@ -17,6 +17,7 @@ namespace Avalonia
     internal class PlatformFactAttribute : FactAttribute
     {
         private readonly string? _reason;
+        private string? _skip;
 
         public PlatformFactAttribute(TestPlatforms platforms, string? reason = null)
         {
@@ -28,8 +29,16 @@ namespace Avalonia
 
         public override string? Skip
         {
-            get => IsSupported() ? null : $"Ignored on {RuntimeInformation.OSDescription}" + (_reason is not null ? $" reason: \"{_reason}\"" : "");
-            set => throw new NotSupportedException();
+            get
+            {
+                if (_skip is not null)
+                    return _skip;
+                if (!IsSupported())
+                    return $"Ignored on {RuntimeInformation.OSDescription}" +
+                           (_reason is not null ? $" reason: '{_reason}'" : "");
+                return null;
+            }
+            set => _skip = value;
         }
 
         private bool IsSupported()

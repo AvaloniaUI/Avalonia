@@ -27,7 +27,7 @@
       </Grid>
       <Grid Grid.Row="0" Grid.Column="1" Margin="8" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
-        <ComboBox Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+        <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
                   VerticalAlignment="Center" Margin="2">
           <ComboBox.ItemTemplate>
             <DataTemplate>
@@ -41,11 +41,11 @@
         </ComboBox>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="2">ButtonSpinnerLocation:</TextBlock>
-        <ComboBox Grid.Row="1" Grid.Column="1" Items="{Binding SpinnerLocations}" SelectedItem="{Binding #upDown.ButtonSpinnerLocation}"
+        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SpinnerLocations}" SelectedItem="{Binding #upDown.ButtonSpinnerLocation}"
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">CultureInfo:</TextBlock>
-        <ComboBox x:Name="CultureSelector" Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}"
+        <ComboBox x:Name="CultureSelector" Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Cultures}"
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Watermark:</TextBlock>

@@ -19,14 +19,68 @@ enum RawInputModifiers {
     PenBarrelButton = 2048
 }
 
+/*
+* This is a hack to handle Mozilla clipboard events in a more convinient way for framework users.
+* In the browser, events go in order KeyDown -> Paste -> KeyUp.
+* On KeyDown we trigger Avalonia handlers, which might execute readClipboardText.
+* When readClipboardText was executed, we mark ClipboardState as Pending and setup clipboard promise,
+* which will un-handle KeyDown event, basically allowing browser to pass a Paste event properly.
+* On actual Paste event we execute promise callbacks, resuming async operation, and returning pasted text to the app.
+* Note #1, on every KeyUp event we will reset all the state and reject pending promises if any, as this event it expected to come after Paste.
+* Note #2, whole this code will be executed only on legacy browsers like Mozilla, where clipboard.readText is not available.
+* Note #3, with all of these hacks Clipboard.ReadText will still work only on actual "paste" gesture initiated by user.
+* */
+enum ClipboardState {
+    None,
+    Ready,
+    Pending
+}
+
 export class InputHelper {
+    static clipboardState: ClipboardState = ClipboardState.None;
+    static resolveClipboard?: any;
+    static rejectClipboard?: any;
+
+    public static initializeBackgroundHandlers() {
+        if (this.clipboardState !== ClipboardState.None) {
+            return;
+        }
+
+        globalThis.addEventListener("paste", (args: any) => {
+            if (this.clipboardState === ClipboardState.Pending) {
+                this.resolveClipboard(args.clipboardData.getData("text"));
+            }
+        });
+        this.clipboardState = ClipboardState.Ready;
+    }
+
+    public static async readClipboardText(): Promise<string> {
+        if (globalThis.navigator.clipboard.readText) {
+            return await globalThis.navigator.clipboard.readText();
+        } else {
+            try {
+                return await new Promise<any>((resolve, reject) => {
+                    this.clipboardState = ClipboardState.Pending;
+                    this.resolveClipboard = resolve;
+                    this.rejectClipboard = reject;
+                });
+            } finally {
+                this.clipboardState = ClipboardState.Ready;
+                this.resolveClipboard = null;
+                this.rejectClipboard = null;
+            }
+        }
+    }
+
     public static subscribeKeyEvents(
         element: HTMLInputElement,
         keyDownCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
         keyUpCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean) {
         const keyDownHandler = (args: KeyboardEvent) => {
             if (keyDownCallback(args.code, args.key, this.getModifiers(args))) {
-                args.preventDefault();
+                if (this.clipboardState !== ClipboardState.Pending) {
+                    args.preventDefault();
+                }
             }
         };
         element.addEventListener("keydown", keyDownHandler);
@@ -34,6 +88,9 @@ export class InputHelper {
         const keyUpHandler = (args: KeyboardEvent) => {
             if (keyUpCallback(args.code, args.key, this.getModifiers(args))) {
                 args.preventDefault();
+            }
+            if (this.rejectClipboard) {
+                this.rejectClipboard();
             }
         };
 

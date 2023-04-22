@@ -1,6 +1,4 @@
-#nullable enable
 using System;
-
 using Avalonia.Metadata;
 using Avalonia.Platform;
 
@@ -20,7 +18,7 @@ public sealed class OnFormFactorExtension : OnFormFactorExtensionBase<object, On
 
     public static bool ShouldProvideOption(IServiceProvider serviceProvider, FormFactorType option)
     {
-        return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().FormFactor == option;
+        return serviceProvider.GetService<IRuntimePlatform>()?.GetRuntimeInfo().FormFactor == option;
     }
 }
 
@@ -38,7 +36,7 @@ public sealed class OnFormFactorExtension<TReturn> : OnFormFactorExtensionBase<T
 
     public static bool ShouldProvideOption(IServiceProvider serviceProvider, FormFactorType option)
     {
-        return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().FormFactor == option;
+        return serviceProvider.GetService<IRuntimePlatform>()?.GetRuntimeInfo().FormFactor == option;
     }
 }
 

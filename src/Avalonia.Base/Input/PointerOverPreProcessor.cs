@@ -6,7 +6,8 @@ namespace Avalonia.Input
     internal class PointerOverPreProcessor : IObserver<RawInputEventArgs>
     {
         private IPointerDevice? _lastActivePointerDevice;
-        private (IPointer pointer, PixelPoint position)? _lastPointer;
+        private (IPointer pointer, PixelPoint position)? _currentPointer;
+        private PixelPoint? _lastKnownPosition;
 
         private readonly IInputRoot _inputRoot;
 
@@ -15,7 +16,7 @@ namespace Avalonia.Input
             _inputRoot = inputRoot ?? throw new ArgumentNullException(nameof(inputRoot));
         }
 
-        public PixelPoint? LastPosition => _lastPointer?.position;
+        public PixelPoint? LastPosition => _lastKnownPosition;
         
         public void OnCompleted()
         {
@@ -41,14 +42,14 @@ namespace Avalonia.Input
                 }
 
                 if (args.Type is RawPointerEventType.LeaveWindow or RawPointerEventType.NonClientLeftButtonDown
-                    && _lastPointer is (var lastPointer, var lastPosition))
+                    && _currentPointer is var (lastPointer, lastPosition))
                 {
-                    _lastPointer = null;
+                    _currentPointer = null;
                     ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
                         args.InputModifiers.ToKeyModifiers());
                 }
-                else if (pointerDevice.TryGetPointer(args) is IPointer pointer
+                else if (pointerDevice.TryGetPointer(args) is { } pointer
                     && pointer.Type != PointerType.Touch)
                 {
                     var element = pointer.Captured ?? args.InputHitTestResult;
@@ -62,7 +63,7 @@ namespace Avalonia.Input
 
         public void SceneInvalidated(Rect dirtyRect)
         {
-            if (_lastPointer is (var pointer, var position))
+            if (_currentPointer is (var pointer, var position))
             {
                 var clientPoint = PointToClient(_inputRoot, position);
 
@@ -80,12 +81,12 @@ namespace Avalonia.Input
 
         private void ClearPointerOver()
         {
-            if (_lastPointer is (var pointer, var position))
+            if (_currentPointer is (var pointer, var position))
             {
                 var clientPoint = PointToClient(_inputRoot, position);
                 ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
             }
-            _lastPointer = null;
+            _currentPointer = null;
             _lastActivePointerDevice = null;
         }
 
@@ -100,9 +101,11 @@ namespace Avalonia.Input
 
             // Do not pass rootVisual, when we have unknown position,
             // so GetPosition won't return invalid values.
+#pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
                 position.HasValue ? root as Visual : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
+#pragma warning restore CS0618
 
             if (element is Visual v && !v.IsAttachedToVisualTree)
             {
@@ -122,18 +125,18 @@ namespace Avalonia.Input
 
             root.PointerOverElement = null;
             _lastActivePointerDevice = null;
-            _lastPointer = null;
+            _currentPointer = null;
         }
 
         private void ClearChildrenPointerOver(PointerEventArgs e, IInputElement element, bool clearRoot)
         {
             if (element is Visual v)
             {
-                foreach (IInputElement el in v.VisualChildren)
+                foreach (var el in v.VisualChildren)
                 {
-                    if (el.IsPointerOver)
+                    if (el is IInputElement { IsPointerOver: true } child)
                     {
-                        ClearChildrenPointerOver(e, el, true);
+                        ClearChildrenPointerOver(e, child, true);
                         break;
                     }
                 }
@@ -151,6 +154,8 @@ namespace Avalonia.Input
             ulong timestamp, Point position, PointerPointProperties properties, KeyModifiers inputModifiers)
         {
             var pointerOverElement = root.PointerOverElement;
+            var screenPosition = ((Visual)root).PointToScreen(position);
+            _lastKnownPosition = screenPosition;
 
             if (element != pointerOverElement)
             {
@@ -164,7 +169,7 @@ namespace Avalonia.Input
                 }
             }
 
-            _lastPointer = (pointer, ((Visual)root).PointToScreen(position));
+            _currentPointer = (pointer, screenPosition);
         }
 
         private void SetPointerOverToElement(IPointer pointer, IInputRoot root, IInputElement element,
@@ -186,8 +191,10 @@ namespace Avalonia.Input
 
             el = root.PointerOverElement;
 
+#pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, (Visual)root, position,
                 timestamp, properties, inputModifiers);
+#pragma warning restore CS0618
             if (el is Visual v && branch != null && !v.IsAttachedToVisualTree)
             {
                 ClearChildrenPointerOver(e, branch, false);

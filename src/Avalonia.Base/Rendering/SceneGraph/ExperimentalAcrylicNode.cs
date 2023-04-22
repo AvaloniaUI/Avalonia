@@ -65,6 +65,6 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Rect.Rect.ContainsExclusive(p);
+        public override bool HitTestTransformed(Point p) => Rect.Rect.ContainsExclusive(p);
     }
 }

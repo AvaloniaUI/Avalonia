@@ -133,17 +133,17 @@ namespace ControlCatalog.Pages
 
             // 0,0 refers to the top-left of the control now. It is not prime time to draw gui stuff because it'll be under the world 
 
-            var translateModifier = context.PushPreTransform(Avalonia.Matrix.CreateTranslation(new Avalonia.Vector(halfWidth, halfHeight)));
+            var translateModifier = context.PushTransform(Avalonia.Matrix.CreateTranslation(new Avalonia.Vector(halfWidth, halfHeight)));
 
             // now 0,0 refers to the ViewportCenter(X,Y). 
             var rotationMatrix = Avalonia.Matrix.CreateRotation(Rotation);
-            var rotationModifier = context.PushPreTransform(rotationMatrix);
+            var rotationModifier = context.PushTransform(rotationMatrix);
 
             // everything is rotated but not scaled 
 
-            var scaleModifier = context.PushPreTransform(Avalonia.Matrix.CreateScale(Scale, -Scale));
+            var scaleModifier = context.PushTransform(Avalonia.Matrix.CreateScale(Scale, -Scale));
 
-            var mapPositionModifier = context.PushPreTransform(Matrix.CreateTranslation(new Vector(-ViewportCenterX, -ViewportCenterY)));
+            var mapPositionModifier = context.PushTransform(Matrix.CreateTranslation(new Vector(-ViewportCenterX, -ViewportCenterY)));
 
             // now everything is rotated and scaled, and at the right position, now we're drawing strictly in world coordinates
 

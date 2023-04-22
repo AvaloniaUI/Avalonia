@@ -22,7 +22,7 @@ namespace Avalonia.X11.Glx
         {
             _x11 = x11;
             _probeProfiles = probeProfiles.ToArray();
-            _displayExtensions = Glx.GetExtensions(_x11.Display);
+            _displayExtensions = Glx.GetExtensions(_x11.DeferredDisplay);
 
             var baseAttribs = new[]
             {
@@ -46,12 +46,12 @@ namespace Avalonia.X11.Glx
                 baseAttribs,
             })
             {
-                var ptr = Glx.ChooseFBConfig(_x11.Display, x11.DefaultScreen,
+                var ptr = Glx.ChooseFBConfig(_x11.DeferredDisplay, x11.DefaultScreen,
                     attribs, out var count);
                 for (var c = 0 ; c < count; c++)
                 {
                     
-                    var visual = Glx.GetVisualFromFBConfig(_x11.Display, ptr[c]);
+                    var visual = Glx.GetVisualFromFBConfig(_x11.DeferredDisplay, ptr[c]);
                     // We prefer 32 bit visuals
                     if (_fbconfig == IntPtr.Zero || visual->depth == 32)
                     {
@@ -71,17 +71,17 @@ namespace Avalonia.X11.Glx
             
             if (_visual == null)
                 throw new OpenGlException("Unable to get visual info from FBConfig");
-            if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_SAMPLES, out var samples) == 0)
+            if (Glx.GetFBConfigAttrib(_x11.DeferredDisplay, _fbconfig, GLX_SAMPLES, out var samples) == 0)
                 sampleCount = samples;
-            if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_STENCIL_SIZE, out var stencil) == 0)
+            if (Glx.GetFBConfigAttrib(_x11.DeferredDisplay, _fbconfig, GLX_STENCIL_SIZE, out var stencil) == 0)
                 stencilSize = stencil;
 
             var attributes = new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 };
             
-            Glx.CreatePbuffer(_x11.Display, _fbconfig, attributes);
-            Glx.CreatePbuffer(_x11.Display, _fbconfig, attributes);
+            Glx.CreatePbuffer(_x11.DeferredDisplay, _fbconfig, attributes);
+            Glx.CreatePbuffer(_x11.DeferredDisplay, _fbconfig, attributes);
             
-            XLib.XFlush(_x11.Display);
+            XLib.XFlush(_x11.DeferredDisplay);
 
             DeferredContext = CreateContext(CreatePBuffer(), null,
                 sampleCount, stencilSize, true);
@@ -108,7 +108,7 @@ namespace Avalonia.X11.Glx
 
         private IntPtr CreatePBuffer()
         {
-            return Glx.CreatePbuffer(_x11.Display, _fbconfig, new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 });
+            return Glx.CreatePbuffer(_x11.DeferredDisplay, _fbconfig, new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 });
         }
 
         public GlxContext CreateContext() => CreateContext(CreatePBuffer(), null, DeferredContext.SampleCount,
@@ -139,7 +139,7 @@ namespace Avalonia.X11.Glx
                 
                 try
                 {
-                    handle = Glx.CreateContextAttribsARB(_x11.Display, _fbconfig, sharelist, true, attrs);
+                    handle = Glx.CreateContextAttribsARB(_x11.DeferredDisplay, _fbconfig, sharelist, true, attrs);
                     if (handle != IntPtr.Zero)
                     {
                         _version = profile;
@@ -181,6 +181,6 @@ namespace Avalonia.X11.Glx
             throw new OpenGlException("Unable to create direct GLX context");
         }
 
-        public void SwapBuffers(IntPtr xid) => Glx.SwapBuffers(_x11.Display, xid);
+        public void SwapBuffers(IntPtr xid) => Glx.SwapBuffers(_x11.DeferredDisplay, xid);
     }
 }

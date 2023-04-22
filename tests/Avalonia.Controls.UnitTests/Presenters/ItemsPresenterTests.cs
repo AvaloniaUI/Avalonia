@@ -114,7 +114,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var panel = Assert.IsType<StackPanel>(target.Panel);
 
                 var newItems = new[] { "qux", "quux", "corge" };
-                itemsControl.Items = newItems;
+                itemsControl.ItemsSource = newItems;
                 root.LayoutManager.ExecuteLayoutPass();
 
                 AssertContainers(panel, newItems);
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var itemsControl = new ItemsControl
             {
-                Items = items,
+                ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => result)
             };
 

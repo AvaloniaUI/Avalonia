@@ -391,7 +391,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
   </ItemsControl>
 </Window>
 ", typeof(XamlIlBugTestsEventHandlerCodeBehind).Assembly, this);
-            ((ItemsControl)Content).Items = new[] {"123"};
+            ((ItemsControl)Content).ItemsSource = new[] {"123"};
         }
     }
     

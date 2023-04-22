@@ -57,14 +57,16 @@ internal class BclStorageFolder : IStorageBookmarkFolder
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
-         var items = DirectoryInfo.GetDirectories()
+        var items = DirectoryInfo.EnumerateDirectories()
             .Select(d => (IStorageItem)new BclStorageFolder(d))
-            .Concat(DirectoryInfo.GetFiles().Select(f => new BclStorageFile(f)))
-            .ToArray();
+            .Concat(DirectoryInfo.EnumerateFiles().Select(f => new BclStorageFile(f)));
 
-         return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
+        foreach (var item in items)
+        {
+            yield return item;
+        }
     }
 
     public virtual Task<string?> SaveBookmarkAsync()
@@ -91,5 +93,40 @@ internal class BclStorageFolder : IStorageBookmarkFolder
     {
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    public async Task DeleteAsync()
+    {
+        DirectoryInfo.Delete(true);
+    }
+
+    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    {
+        if (destination is BclStorageFolder storageFolder)
+        {
+            var newPath = System.IO.Path.Combine(storageFolder.DirectoryInfo.FullName, DirectoryInfo.Name);
+            DirectoryInfo.MoveTo(newPath);
+
+            return new BclStorageFolder(new DirectoryInfo(newPath));
+        }
+
+        return null;
+    }
+
+    public async Task<IStorageFile?> CreateFileAsync(string name)
+    {
+        var fileName = System.IO.Path.Combine(DirectoryInfo.FullName, name);
+        var newFile = new FileInfo(fileName);
+        
+        using var stream = newFile.Create();
+
+        return new BclStorageFile(newFile);
+    }
+
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
+    {
+        var newFolder = DirectoryInfo.CreateSubdirectory(name);
+
+        return new BclStorageFolder(newFolder);
     }
 }

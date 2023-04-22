@@ -1,0 +1,11 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:custom="clr-namespace:Avalonia.ReactiveUI;assembly=Avalonia.ReactiveUI"
+        xmlns:controls="clr-namespace:Controls"
+        x:Class="Sample.App.CustomControls"
+        xmlns:rxui="http://reactiveui.net">
+    <custom:RoutedViewHost Name="ClrNamespaceRoutedViewHost" />
+    <rxui:RoutedViewHost Name="UriRoutedViewHost" />
+    <controls:CustomTextBox Name="UserNameTextBox" />
+    <controls:EvilControl Name="EvilName" />
+</Window>

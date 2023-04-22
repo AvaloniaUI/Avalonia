@@ -81,7 +81,10 @@ internal static partial class InputHelper
     [JSImport("InputHelper.setBounds", AvaloniaModule.MainModuleName)]
     public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 
-    [JSImport("globalThis.navigator.clipboard.readText")]
+    [JSImport("InputHelper.initializeBackgroundHandlers", AvaloniaModule.MainModuleName)]
+    public static partial void InitializeBackgroundHandlers();
+
+    [JSImport("InputHelper.readClipboardText", AvaloniaModule.MainModuleName)]
     public static partial Task<string> ReadClipboardTextAsync();
 
     [JSImport("globalThis.navigator.clipboard.writeText")]

@@ -527,5 +527,13 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        // Since we are resetting the dispatcher instance, the callback might never arrive
+        internal static void ResetLoadedQueueForUnitTests()
+        {
+            _loadedQueue.Clear();
+            _loadedProcessingQueue.Clear();
+            _isLoadedProcessing = false;
+        }
     }
 }

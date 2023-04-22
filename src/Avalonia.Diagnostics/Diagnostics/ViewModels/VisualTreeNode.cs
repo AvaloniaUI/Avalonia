@@ -82,7 +82,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     Popup p => GetPopupHostObservable(p),
                     Control c => Observable.CombineLatest(
-                            new IObservable<IPopupHostProvider?>[]
+                            new IObservable<object?>[]
                             {
                                 c.GetObservable(Control.ContextFlyoutProperty),
                                 c.GetObservable(Control.ContextMenuProperty),
@@ -93,11 +93,11 @@ namespace Avalonia.Diagnostics.ViewModels
                         .Select(
                             items =>
                             {
-                                var contextFlyout = items[0];
-                                var contextMenu = (ContextMenu?)items[1];
-                                var attachedFlyout = items[2];
-                                var toolTip = items[3];
-                                var buttonFlyout = items[4];
+                                var contextFlyout = items[0] as IPopupHostProvider;
+                                var contextMenu = items[1] as ContextMenu;
+                                var attachedFlyout = items[2] as IPopupHostProvider;
+                                var toolTip = items[3] as IPopupHostProvider;
+                                var buttonFlyout = items[4] as IPopupHostProvider;
 
                                 if (contextMenu != null)
                                     //Note: ContextMenus are special since all the items are added as visual children.

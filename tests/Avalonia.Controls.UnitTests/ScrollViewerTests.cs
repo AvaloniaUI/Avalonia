@@ -21,45 +21,20 @@ namespace Avalonia.Controls.UnitTests
                 Content = "Foo",
             };
 
-            target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            InitializeScrollViewer(target);
 
             Assert.IsType<TextBlock>(target.Presenter.Child);
         }
 
         [Fact]
-        public void CanHorizontallyScroll_Should_Track_HorizontalScrollBarVisibility()
-        {
-            var target = new ScrollViewer();
-            var values = new List<bool>();
-
-            target.GetObservable(ScrollViewer.CanHorizontallyScrollProperty).Subscribe(x => values.Add(x));
-            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            Assert.Equal(new[] { false, true }, values);
-        }
-
-        [Fact]
-        public void CanVerticallyScroll_Should_Track_VerticalScrollBarVisibility()
-        {
-            var target = new ScrollViewer();
-            var values = new List<bool>();
-
-            target.GetObservable(ScrollViewer.CanVerticallyScrollProperty).Subscribe(x => values.Add(x));
-            target.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            target.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            Assert.Equal(new[] { true, false, true }, values);
-        }
-
-        [Fact]
         public void Offset_Should_Be_Coerced_To_Viewport()
         {
-            var target = new ScrollViewer();
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(20, 20));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(12, 12);
+            var target = new ScrollViewer
+            {
+                Extent = new Size(20, 20),
+                Viewport = new Size(10, 10),
+                Offset = new Vector(12, 12)
+            };
 
             Assert.Equal(new Vector(10, 10), target.Offset);
         }
@@ -67,10 +42,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Test_ScrollToHome()
         {
-            var target = new ScrollViewer();
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(25, 25);
+            var target = new ScrollViewer
+            {
+                Extent = new Size(50, 50),
+                Viewport = new Size(10, 10),
+                Offset = new Vector(25, 25)
+            };
             target.ScrollToHome();
 
             Assert.Equal(new Vector(0, 0), target.Offset);
@@ -79,10 +56,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Test_ScrollToEnd()
         {
-            var target = new ScrollViewer();
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
-            target.Offset = new Vector(25, 25);
+            var target = new ScrollViewer
+            {
+                Extent = new Size(50, 50),
+                Viewport = new Size(10, 10),
+                Offset = new Vector(25, 25)
+            };
             target.ScrollToEnd();
 
             Assert.Equal(new Vector(0, 40), target.Offset);
@@ -99,9 +78,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LargeChange_Should_Be_Viewport()
         {
-            var target = new ScrollViewer();
-
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(104, 143));
+            var target = new ScrollViewer
+            {
+                Viewport = new Size(104, 143)
+            };
             Assert.Equal(new Size(104, 143), target.LargeChange);
         }
 
@@ -120,8 +100,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = child.Object,
             };
 
-            target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            InitializeScrollViewer(target);
 
             Assert.Equal(new Size(12, 43), target.SmallChange);
         }
@@ -141,8 +120,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = child.Object,
             };
 
-            target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            InitializeScrollViewer(target);
 
             Assert.Equal(new Size(45, 67), target.LargeChange);
         }
@@ -154,8 +132,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new Size(100, 100);
+            target.Viewport = new Size(50, 50);
             target.Offset = new Vector(10, 10);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -168,7 +146,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(111, 112));
+            target.Extent = new Size(111, 112);
 
             Assert.Equal(0, raised);
 
@@ -184,8 +162,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new Size(100, 100);
+            target.Viewport = new Size(50, 50);
             target.Offset = new Vector(10, 10);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -214,8 +192,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new Size(100, 100);
+            target.Viewport = new Size(50, 50);
             target.Offset = new Vector(10, 10);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -228,7 +206,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(56, 58));
+            target.Viewport = new Size(56, 58);
 
             Assert.Equal(0, raised);
 
@@ -247,8 +225,8 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             var raised = 0;
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
-            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Extent = new (100, 100);
+            target.Viewport = new(50, 50);
             target.Offset = new Vector(50, 50);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -261,7 +239,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SetValue(ScrollViewer.ExtentProperty, new Size(70, 70));
+            target.Extent = new(70, 70);
 
             Assert.Equal(0, raised);
 
@@ -290,34 +268,32 @@ namespace Avalonia.Controls.UnitTests
                     new ScrollContentPresenter
                     {
                         Name = "PART_ContentPresenter",
-                        [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-                        [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
-                        [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
-                        [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
-                        [~ScrollContentPresenter.CanHorizontallyScrollProperty] = control[~ScrollViewer.CanHorizontallyScrollProperty],
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
-                        Name = "horizontalScrollBar",
+                        Name = "PART_HorizontalScrollBar",
                         Orientation = Orientation.Horizontal,
-                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.HorizontalScrollBarMaximumProperty],
-                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.HorizontalScrollBarValueProperty],
-                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
-                        Name = "verticalScrollBar",
+                        Name = "PART_VerticalScrollBar",
                         Orientation = Orientation.Vertical,
-                        [~RangeBase.MaximumProperty] = control[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                        [~~RangeBase.ValueProperty] = control[~~ScrollViewer.VerticalScrollBarValueProperty],
-                        [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
                     }.RegisterInNameScope(scope),
                 },
             };
+        }
+
+        private static void InitializeScrollViewer(ScrollViewer target)
+        {
+            target.ApplyTemplate();
+
+            var presenter = (ScrollContentPresenter)target.Presenter;
+            presenter.AttachToScrollViewer();
+            presenter.UpdateChild();
         }
     }
 }

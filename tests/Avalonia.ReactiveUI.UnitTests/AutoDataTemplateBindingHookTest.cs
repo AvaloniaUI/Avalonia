@@ -41,7 +41,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 
                 Content = List;
                 ViewModel = new ExampleViewModel();
-                this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
+                this.OneWayBind(ViewModel, x => x.Items, x => x.List.ItemsSource);
             }
         }
 

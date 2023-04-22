@@ -20,7 +20,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
         /// <param name="boxShadows">The box shadow parameters</param>
-        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public RectangleNode(
             Matrix transform,
             IImmutableBrush? brush,
@@ -75,7 +74,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context) => context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p)
+        public override bool HitTestTransformed(Point p)
         {
             if (Brush != null)
             {

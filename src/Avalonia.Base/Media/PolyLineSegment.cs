@@ -10,8 +10,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Points"/> property.
         /// </summary>
-        public static readonly StyledProperty<Points> PointsProperty
-            = AvaloniaProperty.Register<PolyLineSegment, Points>(nameof(Points));
+        public static readonly StyledProperty<IList<Point>> PointsProperty
+            = AvaloniaProperty.Register<PolyLineSegment, IList<Point>>(nameof(Points));
 
         /// <summary>
         /// Gets or sets the points.
@@ -19,7 +19,7 @@ namespace Avalonia.Media
         /// <value>
         /// The points.
         /// </value>
-        public Points Points
+        public IList<Point> Points
         {
             get => GetValue(PointsProperty);
             set => SetValue(PointsProperty, value);
@@ -37,9 +37,9 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="PolyLineSegment"/> class.
         /// </summary>
         /// <param name="points">The points.</param>
-        public PolyLineSegment(IEnumerable<Point> points) : this()
+        public PolyLineSegment(IEnumerable<Point> points)
         {
-            Points.AddRange(points);
+            Points = new Points(points);
         }
 
         protected internal override void ApplyTo(StreamGeometryContext ctx)

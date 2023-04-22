@@ -62,13 +62,24 @@ public class CompositionAnimationTests
             }
         }
     }
+
+    class DummyDispatcher : IDispatcher
+    {
+        public bool CheckAccess() => true;
+
+        public void VerifyAccess()
+        {
+        }
+
+        public void Post(Action action, DispatcherPriority priority = default) => throw new NotSupportedException();
+    }
     
     [AnimationDataProvider]
     [Theory]
     public void GenericCheck(AnimationData data)
     {
         var compositor =
-            new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer(), new Dispatcher(null)), null);
+            new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer(), new DummyDispatcher()), null);
         var target = compositor.CreateSolidColorVisual();
         var ani = new ScalarKeyFrameAnimation(null);
         foreach (var frame in data.Frames)

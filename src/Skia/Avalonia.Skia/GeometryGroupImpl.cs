@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -9,7 +10,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal class GeometryGroupImpl : GeometryImpl
     {
-        public GeometryGroupImpl(FillRule fillRule, IReadOnlyList<Geometry> children)
+        public GeometryGroupImpl(FillRule fillRule, IReadOnlyList<IGeometryImpl> children)
         {
             var fillType = fillRule == FillRule.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
             var count = children.Count;
@@ -22,7 +23,7 @@ namespace Avalonia.Skia
             bool requiresFillPass = false;
             for (var i = 0; i < count; ++i)
             {
-                if (children[i].PlatformImpl is GeometryImpl geo)
+                if (children[i] is GeometryImpl geo)
                 {
                     if (geo.StrokePath != null)
                         stroke.AddPath(geo.StrokePath);
@@ -42,7 +43,7 @@ namespace Avalonia.Skia
 
                 for (var i = 0; i < count; ++i)
                 {
-                    if (children[i].PlatformImpl is GeometryImpl { FillPath: { } fillPath })
+                    if (children[i] is GeometryImpl { FillPath: { } fillPath })
                         fill.AddPath(fillPath);
                 }
 

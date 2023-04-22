@@ -150,7 +150,7 @@ namespace Avalonia.Win32
                 TransparencyLevelHint = WindowTransparencyLevel.Transparent,
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
-                    Items = menuItems
+                    ItemsSource = menuItems
                 }
             };
 
@@ -212,7 +212,7 @@ namespace Avalonia.Win32
                 if (PlatformImpl is { } platformImpl)
                 {
                     platformImpl.Move(position);
-                    platformImpl.Resize(size, PlatformResizeReason.Layout);
+                    platformImpl.Resize(size, WindowResizeReason.Layout);
                 }
             }
 

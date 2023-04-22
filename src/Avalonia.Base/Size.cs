@@ -28,12 +28,6 @@ namespace Avalonia
         public static readonly Size Infinity = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
         /// <summary>
-        /// A size representing zero.
-        /// </summary>
-        [Obsolete("Use the default keyword instead.")]
-        public static readonly Size Empty = new Size(0, 0);
-
-        /// <summary>
         /// The width.
         /// </summary>
         private readonly double _width;
@@ -306,10 +300,5 @@ namespace Avalonia
             width = this._width;
             height = this._height;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the Width and Height values are zero.
-        /// </summary>
-        public bool IsDefault => (_width == 0) && (_height == 0);
     }
 }

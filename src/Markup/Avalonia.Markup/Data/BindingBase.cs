@@ -7,7 +7,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
-
 namespace Avalonia.Data
 {
     public abstract class BindingBase : IBinding
@@ -68,7 +67,7 @@ namespace Avalonia.Data
 
         public WeakReference? DefaultAnchor { get; set; }
 
-        public WeakReference<INameScope>? NameScope { get; set; }
+        public WeakReference<INameScope?>? NameScope { get; set; }
 
         private protected abstract ExpressionObserver CreateExpressionObserver(
             AvaloniaObject target,
@@ -169,7 +168,7 @@ namespace Avalonia.Data
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            if (NameScope is null || !NameScope.TryGetTarget(out var scope) || scope is null)
+            if (NameScope is null || !NameScope.TryGetTarget(out var scope))
                 throw new InvalidOperationException("Name scope is null or was already collected");
             var result = new ExpressionObserver(
                 NameScopeLocator.Track(scope, elementName),

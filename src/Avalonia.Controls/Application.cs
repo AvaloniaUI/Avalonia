@@ -36,8 +36,6 @@ namespace Avalonia
         /// </summary>
         private DataTemplates? _dataTemplates;
 
-        private readonly Lazy<IClipboard?> _clipboard =
-            new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private Styles? _styles;
         private IResourceDictionary? _resources;
         private bool _notifyingResourcesChanged;
@@ -140,11 +138,6 @@ namespace Avalonia
             get;
             private set;
         }
-
-        /// <summary>
-        /// Gets the application clipboard.
-        /// </summary>
-        public IClipboard? Clipboard => _clipboard.Value;
 
         /// <summary>
         /// Gets the application's global resource dictionary.

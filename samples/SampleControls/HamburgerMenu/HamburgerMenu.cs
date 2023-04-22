@@ -57,7 +57,7 @@ namespace ControlSamples
             {
                 if (_splitView is not null && _splitView.DisplayMode == SplitViewDisplayMode.Overlay)
                 {
-                    _splitView.SetValue(SplitView.IsPaneOpenProperty, false, Avalonia.Data.BindingPriority.Animation);
+                    _splitView.SetCurrentValue(SplitView.IsPaneOpenProperty, false);
                 }
             }
         }

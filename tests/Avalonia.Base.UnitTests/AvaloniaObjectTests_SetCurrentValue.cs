@@ -1,4 +1,6 @@
 using System;
+using System.Reactive.Concurrency;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
@@ -351,6 +353,134 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("inheriteddefault", target.Inherited);
         }
 
+        [Fact]
+        public void SetCurrent_Value_Persists_When_Toggling_Style_3()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.BarProperty, "bar"),
+                            new Setter(Class1.InheritedProperty, "inherited"),
+                        },
+                    }
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SetValue(Class1.FooProperty, "not current", BindingPriority.Template);
+            target.SetCurrentValue(Class1.FooProperty, "current");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+            Assert.Equal("inheriteddefault", target.Inherited);
+
+            target.Classes.Add("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bar", target.Bar);
+            Assert.Equal("inherited", target.Inherited);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal("current", target.Foo);
+            Assert.Equal("bardefault", target.Bar);
+            Assert.Equal("inheriteddefault", target.Inherited);
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        [InlineData(BindingPriority.Animation)]
+        public void CurrentValue_Is_Replaced_By_Binding_Value(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<string>("initial");
+
+            target.Bind(Class1.FooProperty, source, priority);
+            target.SetCurrentValue(Class1.FooProperty, "current");
+            source.OnNext("new");
+            
+            Assert.Equal("new", target.Foo);
+        }
+
+        [Fact]
+        public void CurrentValue_Is_Replaced_By_New_Style_Activation_1()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "initial"),
+                            new Setter(Class1.BarProperty, "bar"),
+                        },
+                    },
+                    new Style(x => x.OfType<Class1>().Class("bar"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "new"),
+                            new Setter(Class1.BarProperty, "baz"),
+                        },
+                    },                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.Classes.Add("foo");
+            Assert.Equal("initial", target.Foo);
+
+            target.SetCurrentValue(Class1.FooProperty, "current");
+            target.Classes.Add("bar");
+
+            Assert.Equal("new", target.Foo);
+        }
+
+        [Fact]
+        public void CurrentValue_Is_Replaced_By_New_Style_Activation_2()
+        {
+            var target = new Class1();
+            var root = new TestRoot(target)
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "foo"),
+                        },
+                    },
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.BarProperty, "bar"),
+                        },
+                    },
+                }
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SetValue(Class1.FooProperty, "template", BindingPriority.Template);
+            target.SetCurrentValue(Class1.FooProperty, "current");
+
+            target.Classes.Add("foo");
+            Assert.Equal("foo", target.Foo);
+        }
+
         private BindingPriority GetPriority(AvaloniaObject target, AvaloniaProperty property)
         {
             return target.GetDiagnostic(property).Priority;
@@ -381,6 +511,24 @@ namespace Avalonia.Base.UnitTests
             private static double Coerce(AvaloniaObject sender, double value)
             {
                 return Math.Min(value, ((Class1)sender).CoerceMax);
+            }
+        }
+
+        private class ViewModel : NotifyingBase
+        {
+            private string _value;
+
+            public string Value
+            {
+                get => _value;
+                set
+                {
+                    if (_value != value)
+                    {
+                        _value = value;
+                        RaisePropertyChanged();
+                    }
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ using Avalonia.Browser.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
@@ -31,6 +32,7 @@ namespace Avalonia.Browser
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly ClipboardImpl _clipboard;
         private readonly IInsetsManager? _insetsManager;
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView)
@@ -46,7 +48,7 @@ namespace Avalonia.Browser
             _nativeControlHost = _avaloniaView.GetNativeControlHostImpl();
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
-
+            _clipboard = new ClipboardImpl();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -72,7 +74,7 @@ namespace Avalonia.Browser
                     surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
                 }
 
-                Resized?.Invoke(newSize, PlatformResizeReason.User);
+                Resized?.Invoke(newSize, WindowResizeReason.User);
 
                 (_insetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
@@ -239,7 +241,7 @@ namespace Avalonia.Browser
         public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
         public Action? Closed { get; set; }
@@ -280,6 +282,11 @@ namespace Avalonia.Browser
             if (featureType == typeof(IInsetsManager))
             {
                 return _insetsManager;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return _clipboard;
             }
 
             return null;

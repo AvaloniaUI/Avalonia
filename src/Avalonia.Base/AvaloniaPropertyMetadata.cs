@@ -5,7 +5,7 @@ namespace Avalonia
     /// <summary>
     /// Base class for avalonia property metadata.
     /// </summary>
-    public class AvaloniaPropertyMetadata
+    public abstract class AvaloniaPropertyMetadata
     {
         private BindingMode _defaultBindingMode;
 
@@ -61,5 +61,13 @@ namespace Avalonia
 
             EnableDataValidation ??= baseMetadata.EnableDataValidation;
         }
+
+        /// <summary>
+        /// Gets a copy of this object configured for use with any owner type.
+        /// </summary>
+        /// <remarks>
+        /// For example, delegates which receive the owner object should be removed.
+        /// </remarks>
+        public abstract AvaloniaPropertyMetadata GenerateTypeSafeMetadata();
     }
 }

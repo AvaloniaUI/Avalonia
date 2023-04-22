@@ -6,7 +6,7 @@
   <Grid ColumnDefinitions="0.35*,4,0.65*">
     <TreeView Name="tree"
               BorderThickness="0"
-              Items="{Binding Nodes}"
+              ItemsSource="{Binding Nodes}"
               SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"

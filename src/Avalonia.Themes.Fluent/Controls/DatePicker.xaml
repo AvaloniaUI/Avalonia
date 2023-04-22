@@ -127,7 +127,7 @@
 
             <Popup Name="PART_Popup" WindowManagerAddShadowHint="False"
                    IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}"
-                   PlacementMode="Bottom">
+                   Placement="Bottom">
               <DatePickerPresenter Name="PART_PickerPresenter" />
             </Popup>
 

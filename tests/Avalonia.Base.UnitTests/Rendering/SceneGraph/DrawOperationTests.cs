@@ -74,6 +74,22 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             geometryNode.HitTest(new Point());
         }
 
+        [Fact]
+        public void HitTest_RectangleNode_With_Transform_Hits()
+        {
+            var geometry = Mock.Of<IGeometryImpl>();
+            var geometryNode = new RectangleNode(
+                Matrix.CreateTranslation(20,20),
+                Brushes.Black,
+                null,
+                new RoundedRect(new Rect(0,0,10,10)),
+                default);
+
+            var actual = geometryNode.HitTest(new Point(25,25));
+
+            Assert.True(actual);
+        }
+
         private class TestRectangleDrawOperation : RectangleNode
         {
             public TestRectangleDrawOperation(Rect bounds, Matrix transform, Pen pen) 
@@ -82,7 +98,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             }
 
-            public override bool HitTest(Point p) => false;
+            public override bool HitTestTransformed(Point p) => false;
 
             public override void Render(IDrawingContextImpl context) { }
         }

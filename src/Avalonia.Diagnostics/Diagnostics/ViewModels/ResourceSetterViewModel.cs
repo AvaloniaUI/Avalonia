@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Input.Platform;
+using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -10,7 +11,7 @@ namespace Avalonia.Diagnostics.ViewModels
         
         public string ValueTypeTooltip { get; }
 
-        public ResourceSetterViewModel(AvaloniaProperty property, object resourceKey, object? resourceValue, bool isDynamic) : base(property, resourceValue)
+        public ResourceSetterViewModel(AvaloniaProperty property, object resourceKey, object? resourceValue, bool isDynamic, IClipboard? clipboard) : base(property, resourceValue, clipboard)
         {
             Key = resourceKey;
             Tint = isDynamic ? Brushes.Orange : Brushes.Brown;

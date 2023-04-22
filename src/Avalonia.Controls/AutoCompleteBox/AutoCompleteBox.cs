@@ -94,8 +94,6 @@ namespace Avalonia.Controls
         /// </summary>
         private const string ElementTextBox = "PART_TextBox";
 
-        private IEnumerable? _itemsEnumerable;
-
         /// <summary>
         /// Gets or sets a local cached copy of the items data.
         /// </summary>
@@ -188,24 +186,14 @@ namespace Avalonia.Controls
         /// </summary>
         private IDisposable? _collectionChangeSubscription;
 
-        private Func<string?, CancellationToken, Task<IEnumerable<object>>>? _asyncPopulator;
         private CancellationTokenSource? _populationCancellationTokenSource;
 
         private bool _itemTemplateIsFromValueMemberBinding = true;
         private bool _settingItemTemplateFromValueMemberBinding;
 
-        private object? _selectedItem;
-        private bool _isDropDownOpen;
         private bool _isFocused = false;
 
-        private string? _text = string.Empty;
         private string? _searchText = string.Empty;
-
-        private AutoCompleteFilterPredicate<object?>? _itemFilter;
-        private AutoCompleteFilterPredicate<string?>? _textFilter = AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith);
-
-        private AutoCompleteSelector<object>? _itemSelector;
-        private AutoCompleteSelector<string?>? _textSelector;
 
         private readonly EventHandler _populateDropDownHandler;
 
@@ -265,7 +253,7 @@ namespace Avalonia.Controls
             bool isEnabled = (bool)e.NewValue!;
             if (!isEnabled)
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
             }
         }
 
@@ -389,7 +377,7 @@ namespace Avalonia.Controls
             {
                 // Reset the old value before it was incorrectly written
                 _ignorePropertyChange = true;
-                SetValue(e.Property, e.OldValue);
+                SetCurrentValue(e.Property, e.OldValue);
 
                 throw new InvalidOperationException("Cannot set read-only property SearchText.");
             }
@@ -404,7 +392,7 @@ namespace Avalonia.Controls
             AutoCompleteFilterMode mode = (AutoCompleteFilterMode)e.NewValue!;
 
             // Sets the filter predicate for the new value
-            TextFilter = AutoCompleteSearch.GetFilter(mode);
+            SetCurrentValue(TextFilterProperty, AutoCompleteSearch.GetFilter(mode));
         }
 
         /// <summary>
@@ -418,12 +406,12 @@ namespace Avalonia.Controls
             // If null, revert to the "None" predicate
             if (value == null)
             {
-                FilterMode = AutoCompleteFilterMode.None;
+                SetCurrentValue(FilterModeProperty, AutoCompleteFilterMode.None);
             }
             else
             {
-                FilterMode = AutoCompleteFilterMode.Custom;
-                TextFilter = null;
+                SetCurrentValue(FilterModeProperty, AutoCompleteFilterMode.Custom);
+                SetCurrentValue(TextFilterProperty, null);
             }
         }
 
@@ -431,9 +419,9 @@ namespace Avalonia.Controls
         /// ItemsSourceProperty property changed handler.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            OnItemsChanged((IEnumerable?)e.NewValue);
+            OnItemsSourceChanged((IEnumerable?)e.NewValue);
         }
 
         private void OnItemTemplatePropertyChanged(AvaloniaPropertyChangedEventArgs e)
@@ -443,7 +431,7 @@ namespace Avalonia.Controls
         }
         private void OnValueMemberBindingChanged(IBinding? value)
         {
-            if(_itemTemplateIsFromValueMemberBinding)
+            if (_itemTemplateIsFromValueMemberBinding)
             {
                 var template =
                     new FuncDataTemplate(
@@ -457,7 +445,7 @@ namespace Avalonia.Controls
                         });
 
                 _settingItemTemplateFromValueMemberBinding = true;
-                ItemTemplate = template;
+                SetCurrentValue(ItemTemplateProperty, template);
                 _settingItemTemplateFromValueMemberBinding = false;
             }
         }
@@ -473,7 +461,7 @@ namespace Avalonia.Controls
             SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSearchTextPropertyChanged(e));
             FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
             ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
-            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
+            ItemsSourceProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsSourcePropertyChanged(e));
             ItemTemplateProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemTemplatePropertyChanged(e));
             IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
@@ -571,7 +559,7 @@ namespace Avalonia.Controls
                     _adapter.Commit -= OnAdapterSelectionComplete;
                     _adapter.Cancel -= OnAdapterSelectionCanceled;
                     _adapter.Cancel -= OnAdapterSelectionComplete;
-                    _adapter.Items = null;
+                    _adapter.ItemsSource = null;
                 }
 
                 _adapter = value;
@@ -582,7 +570,7 @@ namespace Avalonia.Controls
                     _adapter.Commit += OnAdapterSelectionComplete;
                     _adapter.Cancel += OnAdapterSelectionCanceled;
                     _adapter.Cancel += OnAdapterSelectionComplete;
-                    _adapter.Items = _view;
+                    _adapter.ItemsSource = _view;
                 }
             }
         }
@@ -714,7 +702,7 @@ namespace Avalonia.Controls
                 // The drop down is not open, the Down key will toggle it open.
                 if (e.Key == Key.Down)
                 {
-                    IsDropDownOpen = true;
+                    SetCurrentValue(IsDropDownOpenProperty, true);
                     e.Handled = true;
                 }
             }
@@ -723,7 +711,7 @@ namespace Avalonia.Controls
             switch (e.Key)
             {
                 case Key.F4:
-                    IsDropDownOpen = !IsDropDownOpen;
+                    SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
                     break;
 
@@ -828,7 +816,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
                 _userCalledPopulate = false;
                 ClearTextBoxSelection();
             }
@@ -1022,7 +1010,7 @@ namespace Avalonia.Controls
             if (args.Cancel)
             {
                 _ignorePropertyChange = true;
-                SetValue(IsDropDownOpenProperty, oldValue);
+                SetCurrentValue(IsDropDownOpenProperty, oldValue);
             }
             else
             {
@@ -1047,7 +1035,7 @@ namespace Avalonia.Controls
             if (args.Cancel)
             {
                 _ignorePropertyChange = true;
-                SetValue(IsDropDownOpenProperty, oldValue);
+                SetCurrentValue(IsDropDownOpenProperty, oldValue);
             }
             else
             {
@@ -1067,7 +1055,7 @@ namespace Avalonia.Controls
             // Force the drop down dependency property to be false.
             if (IsDropDownOpen)
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
             }
 
             // Fire the DropDownClosed event
@@ -1089,7 +1077,7 @@ namespace Avalonia.Controls
             // Update the prefix/search text.
             SearchText = Text;
 
-            if(TryPopulateAsync(SearchText))
+            if (TryPopulateAsync(SearchText))
             {
                 return;
             }
@@ -1111,7 +1099,7 @@ namespace Avalonia.Controls
             _populationCancellationTokenSource?.Dispose();
             _populationCancellationTokenSource = null;
 
-            if(_asyncPopulator == null)
+            if (AsyncPopulator == null)
             {
                 return false;
             }
@@ -1128,7 +1116,7 @@ namespace Avalonia.Controls
 
             try
             {
-                IEnumerable<object> result = await _asyncPopulator!.Invoke(searchText, cancellationToken);
+                IEnumerable<object> result = await AsyncPopulator!.Invoke(searchText, cancellationToken);
                 var resultList = result.ToList();
 
                 if (cancellationToken.IsCancellationRequested)
@@ -1140,7 +1128,7 @@ namespace Avalonia.Controls
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        Items = resultList;
+                        SetCurrentValue(ItemsSourceProperty, resultList);
                         PopulateComplete();
                     }
                 });
@@ -1200,7 +1188,7 @@ namespace Avalonia.Controls
         private string? FormatValue(object? value, bool clearDataContext)
         {
             string? result = FormatValue(value);
-            if(clearDataContext && _valueBindingEvaluator != null)
+            if (clearDataContext && _valueBindingEvaluator != null)
             {
                 _valueBindingEvaluator.ClearDataContext();
             }
@@ -1275,7 +1263,7 @@ namespace Avalonia.Controls
             if ((userInitiated ?? true) && Text != value)
             {
                 _ignoreTextPropertyChange++;
-                Text = value;
+                SetCurrentValue(TextProperty, value);
                 callTextChanged = true;
             }
 
@@ -1333,7 +1321,7 @@ namespace Avalonia.Controls
             // 1. Minimum prefix length
             // 2. If a delay timer is in use, use it
             bool populateReady = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
-            if(populateReady && MinimumPrefixLength == 0 && String.IsNullOrEmpty(newText) && String.IsNullOrEmpty(SearchText))
+            if (populateReady && MinimumPrefixLength == 0 && String.IsNullOrEmpty(newText) && String.IsNullOrEmpty(SearchText))
             {
                 populateReady = false;
             }
@@ -1362,10 +1350,12 @@ namespace Avalonia.Controls
                 {
                     _skipSelectedItemTextUpdate = true;
                 }
-                SelectedItem = null;
+
+                SetCurrentValue(SelectedItemProperty, null);
+
                 if (IsDropDownOpen)
                 {
-                    IsDropDownOpen = false;
+                    SetCurrentValue(IsDropDownOpenProperty, false);
                 }
             }
         }
@@ -1485,7 +1475,7 @@ namespace Avalonia.Controls
         /// adapter's ItemsSource to the view if appropriate.
         /// </summary>
         /// <param name="newValue">The new enumerable reference.</param>
-        private void OnItemsChanged(IEnumerable? newValue)
+        private void OnItemsSourceChanged(IEnumerable? newValue)
         {
             // Remove handler for oldValue.CollectionChanged (if present)
             _collectionChangeSubscription?.Dispose();
@@ -1502,9 +1492,9 @@ namespace Avalonia.Controls
 
             // Clear and set the view on the selection adapter
             ClearView();
-            if (SelectionAdapter != null && SelectionAdapter.Items != _view)
+            if (SelectionAdapter != null && SelectionAdapter.ItemsSource != _view)
             {
-                SelectionAdapter.Items = _view;
+                SelectionAdapter.ItemsSource = _view;
             }
             if (IsDropDownOpen)
             {
@@ -1555,9 +1545,9 @@ namespace Avalonia.Controls
             {
                 // Significant changes to the underlying data.
                 ClearView();
-                if (Items != null)
+                if (ItemsSource != null)
                 {
-                    _items = new List<object>(Items.Cast<object>());
+                    _items = new List<object>(ItemsSource.Cast<object>());
                 }
             }
 
@@ -1592,16 +1582,16 @@ namespace Avalonia.Controls
             PopulatedEventArgs populated = new PopulatedEventArgs(new ReadOnlyCollection<object>(_view!));
             OnPopulated(populated);
 
-            if (SelectionAdapter != null && SelectionAdapter.Items != _view)
+            if (SelectionAdapter != null && SelectionAdapter.ItemsSource != _view)
             {
-                SelectionAdapter.Items = _view;
+                SelectionAdapter.ItemsSource = _view;
             }
 
             bool isDropDownOpen = _userCalledPopulate && (_view!.Count > 0);
             if (isDropDownOpen != IsDropDownOpen)
             {
                 _ignorePropertyChange = true;
-                IsDropDownOpen = isDropDownOpen;
+                SetCurrentValue(IsDropDownOpenProperty, isDropDownOpen);
             }
             if (IsDropDownOpen)
             {
@@ -1689,7 +1679,7 @@ namespace Avalonia.Controls
             {
                 _skipSelectedItemTextUpdate = true;
             }
-            SelectedItem = newSelectedItem;
+            SetCurrentValue(SelectedItemProperty, newSelectedItem);
 
             // Restore updates for TextSelection
             if (_ignoreTextSelectionChange)
@@ -1785,7 +1775,7 @@ namespace Avalonia.Controls
         /// <param name="e">The selection changed event data.</param>
         private void OnAdapterSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            SelectedItem = _adapter!.SelectedItem;
+            SetCurrentValue(SelectedItemProperty, _adapter!.SelectedItem);
         }
 
         //TODO Check UpdateTextCompletion
@@ -1796,7 +1786,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event data.</param>
         private void OnAdapterSelectionComplete(object? sender, RoutedEventArgs e)
         {
-            IsDropDownOpen = false;
+            SetCurrentValue(IsDropDownOpenProperty, false);
 
             // Completion will update the selected value
             //UpdateTextCompletion(false);

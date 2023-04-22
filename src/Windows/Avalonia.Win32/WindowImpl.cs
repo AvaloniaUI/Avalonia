@@ -24,6 +24,7 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT.Composition;
 using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Input.Platform;
 
 namespace Avalonia.Win32
 {
@@ -58,7 +59,7 @@ namespace Avalonia.Win32
         private double _extendTitleBarHint = -1;
         private readonly bool _isUsingComposition;
         private readonly IBlurHost? _blurHost;
-        private PlatformResizeReason _resizeReason;
+        private WindowResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
 
 #if USE_MANAGED_DRAG
@@ -149,7 +150,12 @@ namespace Avalonia.Win32
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            UpdateInputMethod(GetKeyboardLayout(0));
+            
+            if (this is not PopupImpl)
+            {
+                UpdateInputMethod(GetKeyboardLayout(0));
+            }
+            
             if (glPlatform != null)
             {
                 if (_isUsingComposition)
@@ -194,7 +200,7 @@ namespace Avalonia.Win32
 
         public Action<Rect>? Paint { get; set; }
 
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
 
         public Action<double>? ScalingChanged { get; set; }
 
@@ -330,6 +336,11 @@ namespace Avalonia.Win32
             if (featureType == typeof(IStorageProvider))
             {
                 return _storageProvider;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
             return null;
@@ -577,7 +588,7 @@ namespace Avalonia.Win32
         public IRenderer CreateRenderer(IRenderRoot root) =>
             new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
 
-        public void Resize(Size value, PlatformResizeReason reason)
+        public void Resize(Size value, WindowResizeReason reason)
         {
             if (WindowState != WindowState.Normal)
                 return;
@@ -613,15 +624,6 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            (_gl as IDisposable)?.Dispose();
-
-            if (_dropTarget != null)
-            {
-                OleContext.Current?.UnregisterDragDrop(Handle);
-                _dropTarget.Dispose();
-                _dropTarget = null;
-            }
-
             if (_hwnd != IntPtr.Zero)
             {
                 // Detect if we are being closed programmatically - this would mean that WM_CLOSE was not called
@@ -634,8 +636,6 @@ namespace Avalonia.Win32
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
-
-            _framebuffer.Dispose();
         }
 
         public void Invalidate(Rect rect)
@@ -1053,7 +1053,7 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
 
-                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
+                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), WindowResizeReason.Layout);
 
                 unsafe
                 {
@@ -1462,7 +1462,7 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
 
-        private ResizeReasonScope SetResizeReason(PlatformResizeReason reason)
+        private ResizeReasonScope SetResizeReason(WindowResizeReason reason)
         {
             var old = _resizeReason;
             _resizeReason = reason;
@@ -1487,9 +1487,9 @@ namespace Avalonia.Win32
         private struct ResizeReasonScope : IDisposable
         {
             private readonly WindowImpl _owner;
-            private readonly PlatformResizeReason _restore;
+            private readonly WindowResizeReason _restore;
 
-            public ResizeReasonScope(WindowImpl owner, PlatformResizeReason restore)
+            public ResizeReasonScope(WindowImpl owner, WindowResizeReason restore)
             {
                 _owner = owner;
                 _restore = restore;

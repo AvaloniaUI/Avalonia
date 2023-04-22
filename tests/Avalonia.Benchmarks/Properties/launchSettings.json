@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Avalonia.Benchmarks": {
+      "commandName": "Project"
+    },
+    "Avalonia.Benchmarks (in-process)": {
+      "commandName": "Project",
+      "commandLineArgs": "--inprocess"
+    },
+    "Avalonia.Benchmarks (debug)": {
+      "commandName": "Project",
+      "commandLineArgs": "--debug"
+    }
+  }
+}

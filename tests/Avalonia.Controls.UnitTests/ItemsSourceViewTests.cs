@@ -38,6 +38,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.Throws<ArgumentException>(() => ItemsSourceView.GetOrCreate(source));
         }
 
+        [Fact]
+        public void Reassigning_Source_Unsubscribes_From_Previous_Source()
+        {
+            var source = new AvaloniaList<string>();
+            var target = new ReassignableItemsSourceView(source);
+            var debug = (INotifyCollectionChangedDebug)source;
+
+            target.CollectionChanged += (s, e) => { };
+
+            Assert.Equal(1, debug.GetCollectionChangedSubscribers().Length);
+
+            target.SetSource(new string[0]);
+
+            Assert.Null(debug.GetCollectionChangedSubscribers());
+        }
+
+        [Fact]
+        public void Reassigning_Source_Subscribes_To_New_Source()
+        {
+            var source = new AvaloniaList<string>();
+            var target = new ReassignableItemsSourceView(new string[0]);
+            var debug = (INotifyCollectionChangedDebug)source;
+
+            target.CollectionChanged += (s, e) => { };
+            target.SetSource(source);
+
+            Assert.Equal(1, debug.GetCollectionChangedSubscribers().Length);
+        }
+
         private class InvalidCollection : INotifyCollectionChanged, IEnumerable<string>
         {
             public event NotifyCollectionChangedEventHandler CollectionChanged { add { } remove { } }
@@ -51,6 +80,16 @@ namespace Avalonia.Controls.UnitTests
             {
                 yield break;
             }
+        }
+
+        private class ReassignableItemsSourceView : ItemsSourceView
+        {
+            public ReassignableItemsSourceView(IEnumerable source)
+                : base(source)
+            {
+            }
+
+            public new void SetSource(IEnumerable source) => base.SetSource(source);
         }
     }
 }

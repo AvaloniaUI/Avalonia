@@ -89,16 +89,55 @@ export class StorageItem {
         }
     }
 
-    public static async getItems(item: StorageItem): Promise<StorageItems> {
+    public static getItemsIterator(item: StorageItem): any | null {
         if (item.kind !== "directory" || !item.handle) {
-            return new StorageItems([]);
+            return null;
         }
 
-        const items: StorageItem[] = [];
-        for await (const [, value] of (item.handle as any).entries()) {
-            items.push(new StorageItem(value));
+        return (item.handle as any).entries();
+    }
+
+    public static async createFile(item: StorageItem, name: string): Promise<any | null> {
+        if (item.kind !== "directory" || !item.handle) {
+            throw new TypeError("Unable to create item in the requested directory");
         }
-        return new StorageItems(items);
+
+        await item.verityPermissions("readwrite");
+
+        return await ((item.handle as any).getFileHandle(name, { create: true }) as Promise<any>);
+    }
+
+    public static async createFolder(item: StorageItem, name: string): Promise<any | null> {
+        if (item.kind !== "directory" || !item.handle) {
+            throw new TypeError("Unable to create item in the requested directory");
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await ((item.handle as any).getDirectoryHandle(name, { create: true }) as Promise<any>);
+    }
+
+    public static async deleteAsync(item: StorageItem): Promise<any | null> {
+        if (!item.handle) {
+            return null;
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await ((item.handle as any).remove({ recursive: true }) as Promise<any>);
+    }
+
+    public static async moveAsync(item: StorageItem, destination: StorageItem): Promise<any | null> {
+        if (!item.handle) {
+            return null;
+        }
+        if (destination.kind !== "directory" || !destination.handle) {
+            throw new TypeError("Unable to move item to the requested directory");
+        }
+
+        await item.verityPermissions("readwrite");
+
+        return await ((item.handle as any).move(destination /*, newName */) as Promise<any>);
     }
 
     private async verityPermissions(mode: "read" | "readwrite"): Promise<void | never> {

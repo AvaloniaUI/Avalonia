@@ -18,7 +18,7 @@
         <Separator Margin="0 16"/>
 
         <TextBlock Classes="h1">Dynamically generated</TextBlock>
-        <TabStrip Items="{Binding Tabs}">
+        <TabStrip ItemsSource="{Binding Tabs}">
             <TabStrip.Styles>
                 <Style Selector="TabStripItem" x:DataType="viewModels:TabControlPageViewModelItem">
                     <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>

@@ -92,4 +92,22 @@ internal class BclStorageFile : IStorageBookmarkFile
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+
+    public async Task DeleteAsync()
+    {
+        FileInfo.Delete();
+    }
+
+    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    {
+        if (destination is BclStorageFolder storageFolder)
+        {
+            var newPath = System.IO.Path.Combine(storageFolder.DirectoryInfo.FullName, FileInfo.Name);
+            FileInfo.MoveTo(newPath);
+
+            return new BclStorageFile(new FileInfo(newPath));
+        }
+
+        return null;
+    }
 }

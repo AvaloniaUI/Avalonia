@@ -47,7 +47,7 @@ namespace Avalonia.Benchmarks.Themes
                 renderInterface: new MockPlatformRenderInterface(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
                 theme: () => LoadFluentTheme(),
-                threadingInterface: new NullThreadingPlatform(),
+                dispatcherImpl: new NullThreadingPlatform(),
                 fontManagerImpl: new MockFontManagerImpl(),
                 textShaperImpl: new MockTextShaperImpl(),
                 windowingPlatform: new MockWindowingPlatform());

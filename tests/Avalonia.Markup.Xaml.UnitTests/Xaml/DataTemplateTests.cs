@@ -74,7 +74,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:sys='clr-namespace:System;assembly=mscorlib'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <ItemsControl Name='itemsControl' Items='{Binding}'>
+    <ItemsControl Name='itemsControl' ItemsSource='{Binding}'>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <UserControl Name='foo'/>

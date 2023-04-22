@@ -45,7 +45,7 @@
                               UseWholeWordFilter="{Binding UseWholeWordFilter}"
                               UseRegexFilter="{Binding UseRegexFilter}" />
 
-      <TreeView Grid.Row="1" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}" >
+      <TreeView Grid.Row="1" ItemsSource="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}" >
         <TreeView.DataTemplates>
           <TreeDataTemplate DataType="vm:EventTreeNodeBase"
                             ItemsSource="{Binding Children}">
@@ -71,7 +71,7 @@
 
     <Grid RowDefinitions="*,4,2*,Auto" Grid.Column="2">
 
-      <ListBox Name="EventsList" Items="{Binding RecordedEvents}"
+      <ListBox Name="EventsList" ItemsSource="{Binding RecordedEvents}"
                SelectedItem="{Binding SelectedEvent, Mode=TwoWay}">
 
         <ListBox.ItemTemplate>
@@ -108,7 +108,7 @@
       <DockPanel Grid.Row="2" LastChildFill="True">
         <TextBlock DockPanel.Dock="Top" FontSize="16" Text="Event chain:" />
 
-        <ListBox Items="{Binding SelectedEvent.EventChain}">
+        <ListBox ItemsSource="{Binding SelectedEvent.EventChain}">
           <ListBox.ItemTemplate>
             <DataTemplate>
               <ListBoxItem Classes.handled="{Binding Handled}">

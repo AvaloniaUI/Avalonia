@@ -72,51 +72,51 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Can_Set_Direct_Property_In_Style_Without_Activator()
         {
-            var control = new TextBlock();
+            var control = new DirectPropertyClass();
             var target = new Setter();
-            var style = new Style(x => x.Is<TextBlock>())
+            var style = new Style(x => x.Is<DirectPropertyClass>())
             {
                 Setters =
                 {
-                    new Setter(TextBlock.TextProperty, "foo"),
+                    new Setter(DirectPropertyClass.FooProperty, "foo"),
                 }
             };
 
             Apply(style, control);
 
-            Assert.Equal("foo", control.Text);
+            Assert.Equal("foo", control.Foo);
         }
 
         [Fact]
         public void Can_Set_Direct_Property_Binding_In_Style_Without_Activator()
         {
-            var control = new TextBlock();
+            var control = new DirectPropertyClass();
             var target = new Setter();
             var source = new BehaviorSubject<object?>("foo");
-            var style = new Style(x => x.Is<TextBlock>())
+            var style = new Style(x => x.Is<DirectPropertyClass>())
             {
                 Setters =
                 {
-                    new Setter(TextBlock.TextProperty, source.ToBinding()),
+                    new Setter(DirectPropertyClass.FooProperty, source.ToBinding()),
                 }
             };
 
             Apply(style, control);
 
-            Assert.Equal("foo", control.Text);
+            Assert.Equal("foo", control.Foo);
         }
 
         [Fact]
         public void Cannot_Set_Direct_Property_Binding_In_Style_With_Activator()
         {
-            var control = new TextBlock();
+            var control = new DirectPropertyClass();
             var target = new Setter();
             var source = new BehaviorSubject<object?>("foo");
-            var style = new Style(x => x.Is<TextBlock>().Class("foo"))
+            var style = new Style(x => x.Is<DirectPropertyClass>().Class("foo"))
             {
                 Setters =
                 {
-                    new Setter(TextBlock.TextProperty, source.ToBinding()),
+                    new Setter(DirectPropertyClass.FooProperty, source.ToBinding()),
                 }
             };
 
@@ -126,13 +126,13 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Cannot_Set_Direct_Property_In_Style_With_Activator()
         {
-            var control = new TextBlock();
+            var control = new DirectPropertyClass();
             var target = new Setter();
-            var style = new Style(x => x.Is<TextBlock>().Class("foo"))
+            var style = new Style(x => x.Is<DirectPropertyClass>().Class("foo"))
             {
                 Setters =
                 {
-                    new Setter(TextBlock.TextProperty, "foo"),
+                    new Setter(DirectPropertyClass.FooProperty, "foo"),
                 }
             };
 
@@ -288,18 +288,18 @@ namespace Avalonia.Base.UnitTests.Styling
         {
             using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
             var data = new Data { Foo = "foo" };
-            var control = new TextBox
+            var control = new DirectPropertyClass
             {
                 DataContext = data,
             };
 
-            var style = new Style(x => x.OfType<TextBox>())
+            var style = new Style(x => x.OfType<DirectPropertyClass>())
             {
                 Setters =
                 {
                     new Setter
                     {
-                        Property = TextBox.TextProperty,
+                        Property = DirectPropertyClass.FooProperty,
                         Value = new Binding
                         {
                             Path = "Foo",
@@ -310,9 +310,9 @@ namespace Avalonia.Base.UnitTests.Styling
             };
 
             Apply(style, control);
-            Assert.Equal("foo", control.Text);
+            Assert.Equal("foo", control.Foo);
 
-            control.Text = "bar";
+            control.Foo = "bar";
             Assert.Equal("bar", data.Foo);
         }
 
@@ -502,9 +502,9 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Equal(Brushes.Blue, data.Bar);
         }
 
-        private void Apply(Style style, Control control)
+        private void Apply(Style style, StyledElement element)
         {
-            StyleHelpers.TryAttach(style, control);
+            StyleHelpers.TryAttach(style, element);
         }
 
         private void Apply(Setter setter, Control control)
@@ -533,6 +533,19 @@ namespace Avalonia.Base.UnitTests.Styling
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class DirectPropertyClass : StyledElement
+        {
+            public static readonly DirectProperty<DirectPropertyClass, string?> FooProperty = AvaloniaProperty.RegisterDirect<DirectPropertyClass, string?>(nameof(Foo),
+                x => x.Foo, (x, v) => x.Foo = v);
+            
+            private string? _foo;
+            public string? Foo
+            {
+                get => _foo;
+                set => SetAndRaise(FooProperty, ref _foo, value);
             }
         }
     }

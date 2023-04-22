@@ -136,7 +136,7 @@
             x:DataType="internal:ManagedFileChooserViewModel">
       <ControlTemplate>
         <DockPanel>
-          <ListBox x:Name="PART_QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
+          <ListBox x:Name="PART_QuickLinks" DockPanel.Dock="Left" ItemsSource="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
@@ -173,7 +173,7 @@
               <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
                 <ComboBox DockPanel.Dock="Right"
                     IsVisible="{Binding ShowFilters}"
-                    Items="{Binding Filters}"
+                    ItemsSource="{Binding Filters}"
                     SelectedItem="{Binding SelectedFilter}" />
                 <TextBox Text="{Binding FileName}" Watermark="File name" IsVisible="{Binding !SelectingFolder}" />
               </DockPanel>
@@ -220,7 +220,7 @@
               <TextBlock Grid.Column="8" Text="Size" />
             </Grid>
             <ListBox x:Name="PART_Files"
-                Items="{Binding Items}"
+                ItemsSource="{Binding Items}"
                 Margin="0 5"
                 SelectionMode="{Binding SelectionMode}"
                 SelectedItems="{Binding SelectedItems}"

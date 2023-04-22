@@ -16,6 +16,8 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
+
 #nullable enable
 
 namespace Avalonia.LinuxFramebuffer
@@ -23,9 +25,7 @@ namespace Avalonia.LinuxFramebuffer
     class LinuxFramebufferPlatform
     {
         IOutputBackend _fb;
-        private static readonly Stopwatch St = Stopwatch.StartNew();
-        internal static uint Timestamp => (uint)St.ElapsedTicks;
-        public static InternalPlatformThreadingInterface? Threading;
+        public static ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue = new();
 
         internal static Compositor Compositor { get; private set; } = null!;
         
@@ -34,18 +34,16 @@ namespace Avalonia.LinuxFramebuffer
         {
             _fb = backend;
         }
-
-
+        
         void Initialize()
         {
-            Threading = new InternalPlatformThreadingInterface();
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl.PlatformGraphics);
 
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
+                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()

@@ -1,6 +1,6 @@
 using System;
-using Avalonia.Reactive;
 using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia
 {
@@ -34,8 +34,8 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<object?> GetObservable(this AvaloniaObject o, AvaloniaProperty property)
         {
-            return new AvaloniaPropertyObservable<object?>(
-                o ?? throw new ArgumentNullException(nameof(o)), 
+            return new AvaloniaPropertyObservable<object?, object?>(
+                o ?? throw new ArgumentNullException(nameof(o)),
                 property ?? throw new ArgumentNullException(nameof(property)));
         }
 
@@ -54,9 +54,21 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<T> GetObservable<T>(this AvaloniaObject o, AvaloniaProperty<T> property)
         {
-            return new AvaloniaPropertyObservable<T>(
+            return new AvaloniaPropertyObservable<T, T>(
                 o ?? throw new ArgumentNullException(nameof(o)),
                 property ?? throw new ArgumentNullException(nameof(property)));
+        }
+
+        /// <inheritdoc cref="GetObservable{T}(AvaloniaObject, AvaloniaProperty{T})"/>
+        /// <param name="o"/>
+        /// <param name="property"/>
+        /// <param name="converter">A method which is executed to convert each property value to <typeparamref name="TResult"/>.</param>
+        public static IObservable<TResult> GetObservable<TSource, TResult>(this AvaloniaObject o, AvaloniaProperty<TSource> property, Func<TSource, TResult> converter)
+        {
+            return new AvaloniaPropertyObservable<TSource, TResult>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)),
+                converter ?? throw new ArgumentNullException(nameof(converter)));
         }
 
         /// <summary>
@@ -75,7 +87,7 @@ namespace Avalonia
             this AvaloniaObject o,
             AvaloniaProperty property)
         {
-            return new AvaloniaPropertyBindingObservable<object?>(
+            return new AvaloniaPropertyBindingObservable<object?, object?>(
                 o ?? throw new ArgumentNullException(nameof(o)),
                 property ?? throw new ArgumentNullException(nameof(property)));
         }
@@ -97,10 +109,25 @@ namespace Avalonia
             this AvaloniaObject o,
             AvaloniaProperty<T> property)
         {
-            return new AvaloniaPropertyBindingObservable<T>(
+            return new AvaloniaPropertyBindingObservable<T, T>(
                 o ?? throw new ArgumentNullException(nameof(o)),
                 property ?? throw new ArgumentNullException(nameof(property)));
 
+        }
+
+        /// <inheritdoc cref="GetBindingObservable{T}(AvaloniaObject, AvaloniaProperty{T})"/>
+        /// <param name="o"/>
+        /// <param name="property"/>
+        /// <param name="converter">A method which is executed to convert each property value to <typeparamref name="TResult"/>.</param>
+        public static IObservable<BindingValue<TResult>> GetBindingObservable<TSource, TResult>(
+            this AvaloniaObject o,
+            AvaloniaProperty<TSource> property,
+            Func<TSource, TResult> converter)
+        {
+            return new AvaloniaPropertyBindingObservable<TSource, TResult>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)),
+                converter ?? throw new ArgumentNullException(nameof(converter)));
         }
 
         /// <summary>
@@ -338,7 +365,7 @@ namespace Avalonia
                 return InstancedBinding.OneWay(_source);
             }
         }
-        
+
         private class ClassHandlerObserver<TTarget, TValue> : IObserver<AvaloniaPropertyChangedEventArgs<TValue>>
         {
             private readonly Action<TTarget, AvaloniaPropertyChangedEventArgs<TValue>> _action;

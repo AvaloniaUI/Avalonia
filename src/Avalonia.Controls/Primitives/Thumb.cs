@@ -1,7 +1,10 @@
 using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -44,6 +47,8 @@ namespace Avalonia.Controls.Primitives
             remove { RemoveHandler(DragCompletedEvent, value); }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new ThumbAutomationPeer(this);
+
         protected virtual void OnDragStarted(VectorEventArgs e)
         {
         }
@@ -80,20 +85,22 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
+                var point = e.GetPosition(null);
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragDeltaEvent,
-                    Vector = e.GetPosition(this) - _lastPoint.Value,
+                    Vector = point - _lastPoint.Value,
                 };
 
                 RaiseEvent(ev);
+                _lastPoint = point;
             }
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             e.Handled = true;
-            _lastPoint = e.GetPosition(this);
+            _lastPoint = e.GetPosition(null);
 
             var ev = new VectorEventArgs
             {
@@ -116,7 +123,7 @@ namespace Avalonia.Controls.Primitives
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragCompletedEvent,
-                    Vector = (Vector)e.GetPosition(this),
+                    Vector = (Vector)e.GetPosition(null),
                 };
 
                 RaiseEvent(ev);

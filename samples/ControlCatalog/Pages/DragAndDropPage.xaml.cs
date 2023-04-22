@@ -104,8 +104,12 @@ namespace ControlCatalog.Pages
                         }
                         else if (item is IStorageFolder folder)
                         {
-                            var items = await folder.GetItemsAsync();
-                            contentStr += $"Folder {item.Name}: items {items.Count}{Environment.NewLine}{Environment.NewLine}";
+                            var childrenCount = 0;
+                            await foreach (var _ in folder.GetItemsAsync())
+                            {
+                                childrenCount++;
+                            }
+                            contentStr += $"Folder {item.Name}: items {childrenCount}{Environment.NewLine}{Environment.NewLine}";
                         }
                     }
 

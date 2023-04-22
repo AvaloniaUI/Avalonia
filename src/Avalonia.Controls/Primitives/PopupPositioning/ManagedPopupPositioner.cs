@@ -112,7 +112,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(parentGeometry))
                                    ?? screens.FirstOrDefault();
 
-                if (targetScreen != null && targetScreen.WorkingArea.IsDefault)
+                if (targetScreen != null &&
+                    (targetScreen.WorkingArea.Width == 0 && targetScreen.WorkingArea.Height == 0))
                 {
                     return targetScreen.Bounds;
                 }

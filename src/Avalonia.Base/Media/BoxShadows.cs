@@ -21,7 +21,7 @@ namespace Avalonia.Media
         {
             _first = shadow;
             _list = null;
-            Count = _first.IsDefault ? 0 : 1;
+            Count = _first == default ? 0 : 1;
         }
 
         public BoxShadows(BoxShadow first, BoxShadow[] rest)
@@ -120,7 +120,7 @@ namespace Avalonia.Media
             get
             {
                 foreach(var boxShadow in this)
-                    if (!boxShadow.IsDefault && boxShadow.IsInset)
+                    if (boxShadow != default && boxShadow.IsInset)
                         return true;
                 return false;
             }

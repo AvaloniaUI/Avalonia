@@ -7,14 +7,21 @@ namespace Avalonia.IntegrationTests.Appium
 {
     internal class PlatformTheoryAttribute : TheoryAttribute
     {
+        private string? _skip;
+
         public PlatformTheoryAttribute(TestPlatforms platforms = TestPlatforms.All) => Platforms = platforms;
 
         public TestPlatforms Platforms { get; }
 
         public override string? Skip
         {
-            get => IsSupported() ? null : $"Ignored on {RuntimeInformation.OSDescription}";
-            set => throw new NotSupportedException();
+            get
+            {
+                if (_skip is not null)
+                    return _skip;
+                return !IsSupported() ? $"Ignored on {RuntimeInformation.OSDescription}" : null;
+            }
+            set => _skip = value;
         }
 
         private bool IsSupported()

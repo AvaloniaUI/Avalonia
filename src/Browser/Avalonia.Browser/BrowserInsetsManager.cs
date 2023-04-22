@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Controls.Platform;
+using Avalonia.Media;
 using static Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.Browser
@@ -36,6 +37,8 @@ namespace Avalonia.Browser
                 return new Thickness(padding[0], padding[1], padding[2], padding[3]);
             }
         }
+
+        public Color? SystemBarColor { get; set; }
 
         public void NotifySafeAreaPaddingChanged()
         {

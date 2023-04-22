@@ -24,6 +24,7 @@ jobs:
       fi
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
+      pkill testmanagerd
       appium > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative

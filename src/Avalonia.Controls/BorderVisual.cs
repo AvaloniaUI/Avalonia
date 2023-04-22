@@ -50,7 +50,7 @@ class CompositionBorderVisual : CompositionDrawListVisual
             if (ClipToBounds)
             {
                 var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
-                if (_cornerRadius.IsDefault)
+                if (_cornerRadius == default)
                     canvas.PushClip(clipRect);
                 else
                     canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));

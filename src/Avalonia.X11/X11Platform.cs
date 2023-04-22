@@ -14,6 +14,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
@@ -34,6 +35,7 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
         [DllImport("libc")]
         private static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
@@ -48,9 +50,8 @@ namespace Avalonia.X11
                     useXim = true;
             }
 
-            // XIM doesn't work at all otherwise
-            if (useXim)
-                setlocale(0, "");
+            // We have problems with text input otherwise
+            setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
@@ -72,7 +73,7 @@ namespace Avalonia.X11
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
+                .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))

@@ -1393,10 +1393,11 @@ namespace Avalonia.Media
                 }
             }
 
-            if (accumulatedBounds?.PlatformImpl == null || accumulatedBounds.PlatformImpl.Bounds.IsDefault)
+            if (accumulatedBounds?.PlatformImpl == null ||
+                (accumulatedBounds.PlatformImpl.Bounds.Width == 0 && accumulatedBounds.PlatformImpl.Bounds.Height == 0))
             {
                 return null;
-            }            
+            }
 
             return accumulatedBounds;
         }

@@ -106,7 +106,7 @@ namespace ControlCatalog.Pages
                     Directory = initialDirectory,
                     InitialFileName = initialFileName
                 }.ShowAsync(GetWindow());
-                results.Items = result;
+                results.ItemsSource = result;
                 resultsVisible.IsVisible = result?.Any() == true;
             };
             this.Get<Button>("OpenMultipleFiles").Click += async delegate
@@ -118,7 +118,7 @@ namespace ControlCatalog.Pages
                     Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
                     AllowMultiple = true
                 }.ShowAsync(GetWindow());
-                results.Items = result;
+                results.ItemsSource = result;
                 resultsVisible.IsVisible = result?.Any() == true;
             };
             this.Get<Button>("SaveFile").Click += async delegate
@@ -132,7 +132,7 @@ namespace ControlCatalog.Pages
                     DefaultExtension = filters?.Any() == true ? "txt" : null,
                     InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
-                results.Items = new[] { result };
+                results.ItemsSource = new[] { result };
                 resultsVisible.IsVisible = result != null;
             };
             this.Get<Button>("SelectFolder").Click += async delegate
@@ -149,7 +149,7 @@ namespace ControlCatalog.Pages
                 else
                 {
                     SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
-                    results.Items = new[] { result };
+                    results.ItemsSource = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
             };
@@ -164,7 +164,7 @@ namespace ControlCatalog.Pages
                 {
                     AllowDirectorySelection = true
                 });
-                results.Items = result;
+                results.ItemsSource = result;
                 resultsVisible.IsVisible = result?.Any() == true;
             };
             this.Get<Button>("DecoratedWindow").Click += delegate
@@ -324,15 +324,15 @@ namespace ControlCatalog.Pages
                         mappedResults.Add("+> " + FullPathOrName(selectedItem));
                         if (selectedItem is IStorageFolder folder)
                         {
-                            foreach (var innerItems in await folder.GetItemsAsync())
+                            await foreach (var innerItem in folder.GetItemsAsync())
                             {
-                                mappedResults.Add("++> " + FullPathOrName(innerItems));
+                                mappedResults.Add("++> " + FullPathOrName(innerItem));
                             }
                         }
                     }
                 }
 
-                results.Items = mappedResults;
+                results.ItemsSource = mappedResults;
                 resultsVisible.IsVisible = mappedResults.Any();
             }
         }

@@ -10,7 +10,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// The OR style selector.
     /// </summary>
-    internal class OrSelector : Selector
+    internal sealed class OrSelector : Selector
     {
         private readonly IReadOnlyList<Selector> _selectors;
         private string? _selectorString;
@@ -42,18 +42,7 @@ namespace Avalonia.Styling
         public override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override Type? TargetType
-        {
-            get
-            {
-                if (_targetType == null)
-                {
-                    _targetType = EvaluateTargetType();
-                }
-
-                return _targetType;
-            }
-        }
+        public override Type? TargetType => _targetType ??= EvaluateTargetType();
 
         /// <inheritdoc/>
         public override string ToString(Style? owner)
@@ -71,7 +60,9 @@ namespace Avalonia.Styling
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
 
-            for (var i = 0; i < _selectors.Count; i++)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
                 var match = _selectors[i].Match(control, parent, subscribe);
 
@@ -108,7 +99,9 @@ namespace Avalonia.Styling
 
         internal override void ValidateNestingSelector(bool inControlTheme)
         {
-            for (var i = 0; i < _selectors.Count; i++)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
                 _selectors[i].ValidateNestingSelector(inControlTheme);
             }
@@ -118,7 +111,9 @@ namespace Avalonia.Styling
         {
             Type? result = null;
 
-            for (var i = 0; i < _selectors.Count; i++)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
                 var selector = _selectors[i];
                 if (selector.TargetType == null)

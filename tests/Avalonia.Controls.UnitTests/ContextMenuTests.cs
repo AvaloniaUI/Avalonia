@@ -303,7 +303,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 var c = new ContextMenu();
-                c.PlacementMode = PlacementMode.Bottom;
+                c.Placement = PlacementMode.Bottom;
                 c.Open(button);
 
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);

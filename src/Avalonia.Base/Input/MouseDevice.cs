@@ -4,6 +4,7 @@ using Avalonia.Reactive;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+#pragma warning disable CS0618
 
 namespace Avalonia.Input
 {

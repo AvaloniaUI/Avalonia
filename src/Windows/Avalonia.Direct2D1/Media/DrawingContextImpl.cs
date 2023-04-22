@@ -29,7 +29,6 @@ namespace Avalonia.Direct2D1.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
         /// </summary>
-        /// <param name="visualBrushRenderer">The visual brush renderer.</param>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="layerFactory">
         /// An object to use to create layers. May be null, in which case a

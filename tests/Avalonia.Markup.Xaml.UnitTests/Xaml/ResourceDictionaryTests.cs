@@ -307,6 +307,60 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.True(buttonResources.ContainsDeferredKey("Red"));
             }
         }
+        
+        [Fact]
+        public void Should_Be_Possible_To_Redefine_Referenced_Resource_ControlTheme()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <ControlTheme x:Key='{x:Type Button}' TargetType='Button' />
+    </Window.Resources>
+    <UserControl>
+        <UserControl.Resources>
+            <ControlTheme x:Key='{x:Type Button}' TargetType='Button' BasedOn='{StaticResource {x:Type Button}}' />
+        </UserControl.Resources>
+    </UserControl>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var windowResources = (ResourceDictionary)window.Resources;
+                var innerResources = (ResourceDictionary)((UserControl)window.Content!).Resources;
+
+                var winButtonTheme = Assert.IsType<ControlTheme>(windowResources[typeof(Button)]);
+                var innerButtonTheme = Assert.IsType<ControlTheme>(innerResources[typeof(Button)]);
+                Assert.Equal(winButtonTheme, innerButtonTheme.BasedOn);
+            }
+        }
+        
+        [Fact]
+        public void Should_Be_Possible_To_Redefine_Referenced_Resource()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <Color x:Key='SystemAccentColor'>#aaa</Color>
+    </Window.Resources>
+    <UserControl>
+        <UserControl.Resources>
+            <StaticResource x:Key='SystemAccentColor' ResourceKey='SystemAccentColor' />
+        </UserControl.Resources>
+    </UserControl>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var windowResources = (ResourceDictionary)window.Resources;
+                var innerResources = (ResourceDictionary)((UserControl)window.Content!).Resources;
+
+                var winButtonTheme = Assert.IsType<Color>(windowResources["SystemAccentColor"]);
+                var innerButtonTheme = Assert.IsType<Color>(innerResources["SystemAccentColor"]);
+                Assert.Equal(winButtonTheme, innerButtonTheme);
+            }
+        }
 
         [Fact]
         public void Dynamically_Changing_Referenced_Resources_Works_With_DynamicResource()

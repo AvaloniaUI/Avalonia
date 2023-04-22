@@ -152,8 +152,6 @@ namespace Avalonia.Controls
         private double _verticalOffset;
         private byte _verticalScrollChangesIgnored;
 
-        private IEnumerable _items;
-
         public event EventHandler<ScrollEventArgs> HorizontalScroll;
         public event EventHandler<ScrollEventArgs> VerticalScroll;
 
@@ -652,21 +650,18 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Identifies the ItemsSource dependency property.
+        /// Identifies the ItemsSource property.
         /// </summary>
-        public static readonly DirectProperty<DataGrid, IEnumerable> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<DataGrid, IEnumerable>(
-                nameof(Items),
-                o => o.Items,
-                (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable> ItemsSourceProperty =
+            AvaloniaProperty.Register<DataGrid, IEnumerable>(nameof(ItemsSource));
 
         /// <summary>
         /// Gets or sets a collection that is used to generate the content of the control.
         /// </summary>
-        public IEnumerable Items
+        public IEnumerable ItemsSource
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         public static readonly StyledProperty<bool> AreRowDetailsFrozenProperty =
@@ -713,7 +708,7 @@ namespace Avalonia.Controls
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
 
-            ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
+            ItemsSourceProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsSourcePropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
             ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnColumnWidthChanged(e));
             FrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnFrozenColumnCountChanged(e));
@@ -816,10 +811,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// ItemsProperty property changed handler.
+        /// ItemsSourceProperty property changed handler.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
             {
@@ -830,7 +825,7 @@ namespace Avalonia.Controls
 
                 if (LoadingOrUnloadingRow)
                 {
-                    SetValueNoCallback(ItemsProperty, oldValue);
+                    SetValueNoCallback(ItemsSourceProperty, oldValue);
                     throw DataGridError.DataGrid.CannotChangeItemsWhenLoadingRows();
                 }
 
@@ -1855,7 +1850,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (CurrentSlot == -1 || Items == null || RowGroupHeadersTable.Contains(CurrentSlot))
+                if (CurrentSlot == -1 || ItemsSource == null || RowGroupHeadersTable.Contains(CurrentSlot))
                 {
                     return null;
                 }
@@ -3962,6 +3957,7 @@ namespace Avalonia.Controls
                 bool focusLeftDataGrid = true;
                 bool dataGridWillReceiveRoutedEvent = true;
                 Visual focusedObject = FocusManager.Instance.Current as Visual;
+                DataGridColumn editingColumn = null;
 
                 while (focusedObject != null)
                 {
@@ -3974,22 +3970,29 @@ namespace Avalonia.Controls
                     // Walk up the visual tree.  If we hit the root, try using the framework element's
                     // parent.  We do this because Popups behave differently with respect to the visual tree,
                     // and it could have a parent even if the VisualTreeHelper doesn't find it.
-                    Visual parent = focusedObject.GetVisualParent();
+                    var parent = focusedObject.Parent as Visual;
                     if (parent == null)
                     {
-                        if (focusedObject is Control element)
-                        {
-                            parent = element.VisualParent;
-                            if (parent != null)
-                            {
-                                dataGridWillReceiveRoutedEvent = false;
-                            }
-                        }
+                        parent = focusedObject.GetVisualParent();
+                    }
+                    else
+                    {
+                        dataGridWillReceiveRoutedEvent = false;
                     }
                     focusedObject = parent;
                 }
 
-                if (focusLeftDataGrid)
+                if (EditingRow != null && EditingColumnIndex != -1)
+                {
+                    editingColumn = ColumnsItemsInternal[EditingColumnIndex];
+
+                    if (focusLeftDataGrid && editingColumn is DataGridTemplateColumn)
+                    {
+                        dataGridWillReceiveRoutedEvent = false;
+                    }
+                }
+
+                if (focusLeftDataGrid && !(editingColumn is DataGridTemplateColumn))
                 {
                     ContainsFocus = false;
                     if (EditingRow != null)
@@ -6066,8 +6069,9 @@ namespace Avalonia.Controls
             var numberOfItem = clipboardRowContent.Count;
             for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
             {
-                var cellContent = clipboardRowContent[cellIndex];
-                text.Append(cellContent.Content);
+                var cellContent = clipboardRowContent[cellIndex].Content?.ToString();
+                cellContent = cellContent?.Replace("\"", "\"\"");
+                text.Append($"\"{cellContent}\"");
                 if (cellIndex < numberOfItem - 1)
                 {
                     text.Append('\t');
@@ -6132,8 +6136,10 @@ namespace Avalonia.Controls
 
         private async void CopyToClipboard(string text)
         {
-            var clipboard = ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
-            await clipboard.SetTextAsync(text);
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+            if (clipboard != null)
+                await clipboard.SetTextAsync(text);
         }
 
         /// <summary>

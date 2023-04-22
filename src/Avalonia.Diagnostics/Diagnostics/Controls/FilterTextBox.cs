@@ -7,22 +7,17 @@ namespace Avalonia.Diagnostics.Controls
 {
     internal class FilterTextBox : TextBox, IStyleable
     {
-        public static readonly DirectProperty<FilterTextBox, bool> UseRegexFilterProperty =
-            AvaloniaProperty.RegisterDirect<FilterTextBox, bool>(nameof(UseRegexFilter),
-                o => o.UseRegexFilter, (o, v) => o.UseRegexFilter = v,
+        public static readonly StyledProperty<bool> UseRegexFilterProperty =
+            AvaloniaProperty.Register<FilterTextBox, bool>(nameof(UseRegexFilter),
                 defaultBindingMode: BindingMode.TwoWay);
 
-        public static readonly DirectProperty<FilterTextBox, bool> UseCaseSensitiveFilterProperty =
-            AvaloniaProperty.RegisterDirect<FilterTextBox, bool>(nameof(UseCaseSensitiveFilter),
-                o => o.UseCaseSensitiveFilter, (o, v) => o.UseCaseSensitiveFilter = v,
+        public static readonly StyledProperty<bool> UseCaseSensitiveFilterProperty =
+            AvaloniaProperty.Register<FilterTextBox, bool>(nameof(UseCaseSensitiveFilter),
                 defaultBindingMode: BindingMode.TwoWay);
 
-        public static readonly DirectProperty<FilterTextBox, bool> UseWholeWordFilterProperty =
-            AvaloniaProperty.RegisterDirect<FilterTextBox, bool>(nameof(UseWholeWordFilter),
-                o => o.UseWholeWordFilter, (o, v) => o.UseWholeWordFilter = v,
+        public static readonly StyledProperty<bool> UseWholeWordFilterProperty =
+            AvaloniaProperty.Register<FilterTextBox, bool>(nameof(UseWholeWordFilter),
                 defaultBindingMode: BindingMode.TwoWay);
-
-        private bool _useRegexFilter, _useCaseSensitiveFilter, _useWholeWordFilter;
 
         public FilterTextBox()
         {
@@ -31,20 +26,20 @@ namespace Avalonia.Diagnostics.Controls
 
         public bool UseRegexFilter
         {
-            get => _useRegexFilter;
-            set => SetAndRaise(UseRegexFilterProperty, ref _useRegexFilter, value);
+            get => GetValue(UseRegexFilterProperty);
+            set => SetValue(UseRegexFilterProperty, value);
         }
 
         public bool UseCaseSensitiveFilter
         {
-            get => _useCaseSensitiveFilter;
-            set => SetAndRaise(UseCaseSensitiveFilterProperty, ref _useCaseSensitiveFilter, value);
+            get => GetValue(UseCaseSensitiveFilterProperty);
+            set => SetValue(UseCaseSensitiveFilterProperty,value);
         }
 
         public bool UseWholeWordFilter
         {
-            get => _useWholeWordFilter;
-            set => SetAndRaise(UseWholeWordFilterProperty, ref _useWholeWordFilter, value);
+            get => GetValue(UseWholeWordFilterProperty);
+            set => SetValue(UseWholeWordFilterProperty, value);
         }
 
         Type IStyleable.StyleKey => typeof(TextBox);

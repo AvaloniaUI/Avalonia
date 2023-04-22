@@ -17,7 +17,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public GeometryNode(Matrix transform,
             IImmutableBrush? brush,
             IPen? pen,
@@ -65,7 +64,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p)
+        public override bool HitTestTransformed(Point p)
         {
             return (Brush != null && Geometry.FillContains(p)) ||
                    (Pen != null && Geometry.StrokeContains(Pen, p));

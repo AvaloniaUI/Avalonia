@@ -18,7 +18,7 @@ namespace ControlCatalog.Pages
         {
             AvaloniaXamlLoader.Load(this);
             var fontComboBox = this.Get<ComboBox>("fontComboBox");
-            fontComboBox.Items = FontManager.Current.SystemFonts;
+            fontComboBox.ItemsSource = FontManager.Current.SystemFonts;
             fontComboBox.SelectedIndex = 0;
         }
     }

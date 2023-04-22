@@ -30,7 +30,7 @@
       <Button Command="{Binding RemoveItemCommand}">Remove</Button>
       <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
     </StackPanel>
-    <ListBox Items="{Binding Items}"
+    <ListBox ItemsSource="{Binding Items}"
              Selection="{Binding Selection}"
              DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"

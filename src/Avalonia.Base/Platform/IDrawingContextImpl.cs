@@ -128,6 +128,7 @@ namespace Avalonia.Platform
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">where to apply the opacity.</param>
         void PushOpacity(double opacity, Rect bounds);
 
         /// <summary>
@@ -177,6 +178,12 @@ namespace Avalonia.Platform
         /// Attempts to get an optional feature from the drawing context implementation
         /// </summary>
         object? GetFeature(Type t);
+    }
+
+    public interface IDrawingContextImplWithEffects
+    {
+        void PushEffect(IEffect effect);
+        void PopEffect();
     }
 
     public static class DrawingContextImplExtensions
