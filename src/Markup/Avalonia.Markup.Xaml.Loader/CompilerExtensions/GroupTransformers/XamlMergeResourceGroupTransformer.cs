@@ -24,7 +24,6 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
 
         var mergeResourceIncludeType = context.GetAvaloniaTypes().MergeResourceInclude;
         var mergeSourceNodes = new List<XamlPropertyAssignmentNode>();
-        var hasAnyNonMergedResource = false;
         foreach (var manipulationNode in resourceDictionaryManipulation.Children.ToArray())
         {
             void ProcessXamlPropertyAssignmentNode(XamlManipulationGroupNode parent, XamlPropertyAssignmentNode assignmentNode)
@@ -46,17 +45,6 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                                 "Invalid MergeResourceInclude node found. Make sure that Source property is set.",
                                 valueNode);
                         }
-                    }
-                    else
-                    {
-                        hasAnyNonMergedResource = true;
-                    }
-
-                    if (hasAnyNonMergedResource && mergeSourceNodes.Any())
-                    {
-                        throw new XamlDocumentParseException(context.CurrentDocument,
-                            "Mix of MergeResourceInclude and other dictionaries inside of the ResourceDictionary.MergedDictionaries is not allowed",
-                            valueNode);
                     }
                 }
             }

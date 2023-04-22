@@ -4,9 +4,9 @@
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <MergeResourceInclude Source="/Accents/AccentColors.xaml" />
         <MergeResourceInclude Source="/Accents/Base.xaml" />
         <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
+        <ResourceInclude Source="/Accents/BaseColorsPalette.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
