@@ -62,11 +62,6 @@ namespace Avalonia.FreeDesktop
             switch (valueTuple)
             {
                 case ("org.freedesktop.appearance", "color-scheme", { } colorScheme):
-                    /*
-                    <member>0: No preference</member>
-                    <member>1: Prefer dark appearance</member>
-                    <member>2: Prefer light appearance</member>
-                    */
                     _themeVariant = ReadAsColorScheme(colorScheme);
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
@@ -92,6 +87,11 @@ namespace Avalonia.FreeDesktop
 
         private static PlatformThemeVariant ReadAsColorScheme(DBusVariantItem value)
         {
+            /*
+            <member>0: No preference</member>
+            <member>1: Prefer dark appearance</member>
+            <member>2: Prefer light appearance</member>
+            */
             var isDark = ((value.Value as DBusVariantItem)!.Value as DBusUInt32Item)!.Value == 1;
             return isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
         }
