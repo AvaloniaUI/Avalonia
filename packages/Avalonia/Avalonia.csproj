@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Avalonia.BuildServices" Version="0.0.2" />
+      <PackageReference Include="Avalonia.BuildServices" Version="0.0.3" />
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj">
         <PrivateAssets>all</PrivateAssets>
@@ -62,35 +62,10 @@
   <Import Project="..\..\build\CoreLibraries.props" />
   <Import Project="..\..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
 
-  <UsingTask TaskName="WriteCurrentPackageVersionPropsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Filename ParameterType="System.String" Required="true" />
-      <Version ParameterType="System.String" Required="true" />
-      <IsLocalCache ParameterType="System.Boolean" Required="false" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.IO" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-                File.WriteAllText(Filename, "<Project><PropertyGroup>" + 
-                "<AvaloniaMainPackageVersion>" + Version + "</AvaloniaMainPackageVersion>" +
-                "</PropertyGroup></Project>");
-]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
   <Target Name="WriteCurrentPackageVersionProps" BeforeTargets="_GetPackageFiles">
-    <PropertyGroup>
-      <PackageVersionPropsPath>$(IntermediateOutputPath)/AvaloniaVersion.props</PackageVersionPropsPath>
-    </PropertyGroup>
-    <WriteCurrentPackageVersionPropsTask Filename="$(PackageVersionPropsPath)" Version="$(PackageVersion)" />
-    <ItemGroup>
-      <Content Include="$(PackageVersionPropsPath)">
-        <Pack>true</Pack>
-        <PackagePath>build</PackagePath>
-      </Content>
-    </ItemGroup>
+    <WriteLinesToFile
+      File="$(PackageVersionPropsPath)"
+      Overwrite="true"
+      Lines="&lt;Project&gt;&lt;PropertyGroup&gt;&lt;AvaloniaMainPackageVersion&gt;$(PackageVersion)&lt;/AvaloniaMainPackageVersion&gt;&lt;/PropertyGroup&gt;&lt;/Project&gt;" />
   </Target>
 </Project>
