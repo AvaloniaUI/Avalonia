@@ -70,5 +70,11 @@
       File="$(PackageVersionPropsPath)"
       Overwrite="true"
       Lines="&lt;Project&gt;&lt;PropertyGroup&gt;&lt;AvaloniaMainPackageVersion&gt;$(PackageVersion)&lt;/AvaloniaMainPackageVersion&gt;&lt;/PropertyGroup&gt;&lt;/Project&gt;" />
+    <ItemGroup>
+      <Content Include="$(PackageVersionPropsPath)">
+        <Pack>true</Pack>
+        <PackagePath>build</PackagePath>
+      </Content>
+    </ItemGroup>
   </Target>
 </Project>
