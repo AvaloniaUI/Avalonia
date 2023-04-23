@@ -150,4 +150,9 @@ public partial class ColorPaletteResources
     /// Gets or sets the ListMedium color value.
     /// </summary>
     public Color ListMedium { get => GetColor("SystemListMediumColor"); set => SetColor("SystemListMediumColor", value); }
+    
+    /// <summary>
+    /// Gets or sets the RegionColor color value.
+    /// </summary>
+    public Color RegionColor { get => GetColor("SystemRegionColor"); set => SetColor("SystemRegionColor", value); }
 }

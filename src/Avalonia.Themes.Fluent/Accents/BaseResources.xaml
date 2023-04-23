@@ -212,7 +212,7 @@
       <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
       <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
 
-      <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+      <SolidColorBrush x:Key="SystemRegionBrush" Color="{StaticResource SystemRegionColor}" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
@@ -372,7 +372,7 @@
       <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
       <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
 
-      <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+      <SolidColorBrush x:Key="SystemRegionBrush" Color="{StaticResource SystemRegionColor}" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
