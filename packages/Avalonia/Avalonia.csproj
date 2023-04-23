@@ -63,6 +63,9 @@
   <Import Project="..\..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
 
   <Target Name="WriteCurrentPackageVersionProps" BeforeTargets="_GetPackageFiles">
+    <PropertyGroup>
+      <PackageVersionPropsPath>$(IntermediateOutputPath)/AvaloniaVersion.props</PackageVersionPropsPath>
+    </PropertyGroup>
     <WriteLinesToFile
       File="$(PackageVersionPropsPath)"
       Overwrite="true"
