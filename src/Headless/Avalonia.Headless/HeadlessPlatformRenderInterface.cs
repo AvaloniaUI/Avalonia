@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -18,12 +19,13 @@ namespace Avalonia.Headless
         public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface());
+                .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
         }
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
-        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext) => this;
 
         public bool SupportsIndividualRoundRects => false;
 
@@ -52,7 +54,7 @@ namespace Avalonia.Headless
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
         public bool IsLost => false;
-        public object TryGetFeature(Type featureType) => null;
+        public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -130,7 +132,7 @@ namespace Avalonia.Headless
             return new HeadlessGlyphRunStub();
         }
 
-        class HeadlessGlyphRunStub : IGlyphRunImpl
+        private class HeadlessGlyphRunStub : IGlyphRunImpl
         {
             public Rect Bounds => new Rect(new Size(8, 12));
 
@@ -144,7 +146,7 @@ namespace Avalonia.Headless
                 => Array.Empty<float>();
         }
 
-        class HeadlessGeometryStub : IGeometryImpl
+        private class HeadlessGeometryStub : IGeometryImpl
         {
             public HeadlessGeometryStub(Rect bounds)
             {
@@ -157,7 +159,7 @@ namespace Avalonia.Headless
             
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
-            public Rect GetRenderBounds(IPen pen)
+            public Rect GetRenderBounds(IPen? pen)
             {
                 if(pen is null)
                 {
@@ -167,7 +169,7 @@ namespace Avalonia.Headless
                 return Bounds.Inflate(pen.Thickness / 2);
             }
 
-            public bool StrokeContains(IPen pen, Point point)
+            public bool StrokeContains(IPen? pen, Point point)
             {
                 return false;
             }
@@ -191,21 +193,21 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+            public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, [NotNullWhen(true)] out IGeometryImpl? segmentGeometry)
             {
                 segmentGeometry = null;
                 return false;
             }
         }
 
-        class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl
+        private class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl
         {
             public HeadlessTransformedGeometryStub(IGeometryImpl b, Matrix transform) : this(Fix(b, transform))
             {
 
             }
 
-            static (IGeometryImpl, Matrix, Rect) Fix(IGeometryImpl b, Matrix transform)
+            private static (IGeometryImpl, Matrix, Rect) Fix(IGeometryImpl b, Matrix transform)
             {
                 if (b is HeadlessTransformedGeometryStub transformed)
                 {
@@ -227,7 +229,7 @@ namespace Avalonia.Headless
             public Matrix Transform { get; }
         }
 
-        class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
+        private class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
         {
             public HeadlessStreamingGeometryStub() : base(default)
             {
@@ -243,7 +245,7 @@ namespace Avalonia.Headless
                 return new HeadlessStreamingGeometryContextStub(this);
             }
 
-            class HeadlessStreamingGeometryContextStub : IStreamGeometryContextImpl
+            private class HeadlessStreamingGeometryContextStub : IStreamGeometryContextImpl
             {
                 private readonly HeadlessStreamingGeometryStub _parent;
                 private double _x1, _y1, _x2, _y2;
@@ -252,7 +254,7 @@ namespace Avalonia.Headless
                     _parent = parent;
                 }
 
-                void Track(Point pt)
+                private void Track(Point pt)
                 {
                     if (_x1 > pt.X)
                         _x1 = pt.X;
@@ -301,7 +303,7 @@ namespace Avalonia.Headless
             }
         }
 
-        class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl
+        private class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl
         {
             public Size Size { get; }
 
@@ -363,7 +365,7 @@ namespace Avalonia.Headless
             }
         }
 
-        class HeadlessDrawingContextStub : IDrawingContextImpl
+        private class HeadlessDrawingContextStub : IDrawingContextImpl
         {
             public void Dispose()
             {
@@ -437,16 +439,16 @@ namespace Avalonia.Headless
 
             }
 
-            public object GetFeature(Type t)
+            public object? GetFeature(Type t)
             {
                 return null;
             }
 
-            public void DrawLine(IPen pen, Point p1, Point p2)
+            public void DrawLine(IPen? pen, Point p1, Point p2)
             {
             }
 
-            public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+            public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
             {
             }
 
@@ -464,16 +466,16 @@ namespace Avalonia.Headless
                 
             }
 
-            public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadow = default)
+            public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect, BoxShadows boxShadow = default)
             {
                 
             }
 
-            public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+            public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
             {
             }
 
-            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
+            public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 
             }
@@ -484,7 +486,7 @@ namespace Avalonia.Headless
             }
         }
 
-        class HeadlessRenderTarget : IRenderTarget
+        private class HeadlessRenderTarget : IRenderTarget
         {
             public void Dispose()
             {
