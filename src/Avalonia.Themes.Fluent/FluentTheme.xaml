@@ -6,15 +6,15 @@
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
+        <!-- Keep custom palettes higher priority than default BaseColorsPalette and SystemAccentColors
+             As that's an only place for user to redefine palette in a good way -->
+        <ResourceInclude Source="/Accents/BaseColorsPalette.xaml" />
+        <accents:SystemAccentColors />
+        <fluent:ColorPaletteResourcesCollection />
+
         <!-- Resources and brushes will be merged into current dictionary for slightly better performance and possible optimizations -->
         <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
         <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
-
-        <!-- Keep custom palettes higher priority than default BaseColorsPalette and SystemAccentColors
-             As that's an only place for user to redefine palette in a good way -->
-        <fluent:ColorPaletteResourcesCollection />
-        <accents:SystemAccentColors />
-        <ResourceInclude Source="/Accents/BaseColorsPalette.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
