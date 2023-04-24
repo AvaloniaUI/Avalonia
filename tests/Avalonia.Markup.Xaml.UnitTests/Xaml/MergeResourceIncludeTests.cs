@@ -84,6 +84,34 @@ public class MergeResourceIncludeTests
     }
     
     [Fact]
+    public void MergeResourceInclude_Is_Allowed_After_ResourceInclude()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources1.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <SolidColorBrush x:Key='brush1'>Red</SolidColorBrush>
+</ResourceDictionary>"),
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resources2.xaml"), @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <SolidColorBrush x:Key='brush2'>Blue</SolidColorBrush>
+</ResourceDictionary>"),
+            new RuntimeXamlLoaderDocument(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source='avares://Tests/Resources2.xaml'/>
+        <MergeResourceInclude Source='avares://Tests/Resources1.xaml'/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>")
+        };
+        
+        AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+    }
+    
+    [Fact]
     public void MergeResourceInclude_Works_With_Multiple_Resources()
     {
         var documents = new[]
