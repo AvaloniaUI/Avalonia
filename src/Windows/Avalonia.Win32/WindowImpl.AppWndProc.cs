@@ -792,7 +792,7 @@ namespace Avalonia.Win32
                         break;
                     }
                 case WindowsMessage.WM_GETOBJECT:
-                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
+                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control && control.Parent is null)
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);

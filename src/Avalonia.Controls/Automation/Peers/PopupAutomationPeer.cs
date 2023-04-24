@@ -22,7 +22,9 @@ namespace Avalonia.Automation.Peers
         }
 
         protected override bool IsContentElementCore() => false;
-        protected override bool IsControlElementCore() => false;
+        protected override bool IsControlElementCore() => true;
+
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Pane;
 
         private void PopupOpenedClosed(object? sender, EventArgs e)
         {
