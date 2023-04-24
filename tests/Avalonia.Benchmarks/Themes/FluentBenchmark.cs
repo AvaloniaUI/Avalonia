@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 using Moq;
@@ -30,27 +32,23 @@ namespace Avalonia.Benchmarks.Themes
             _app.Dispose();
         }
 
-        [Benchmark]
-        public void RepeatButton()
+        [Benchmark()]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void CreateButton()
         {
-            var button = new RepeatButton();
+            var button = new Button();
             _root.Child = button;
             _root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
         }
 
         private static IDisposable CreateApp()
         {
             var services = new TestServices(
-                assetLoader: new AssetLoader(),
-                globalClock: new MockGlobalClock(),
-                platform: new AppBuilder().RuntimePlatform,
-                renderInterface: new MockPlatformRenderInterface(),
-                standardCursorFactory: Mock.Of<ICursorFactory>(),
-                theme: () => LoadFluentTheme(),
+                renderInterface: new NullRenderingPlatform(),
                 dispatcherImpl: new NullThreadingPlatform(),
-                fontManagerImpl: new MockFontManagerImpl(),
-                textShaperImpl: new MockTextShaperImpl(),
-                windowingPlatform: new MockWindowingPlatform());
+                standardCursorFactory: new NullCursorFactory(),
+                theme: () => LoadFluentTheme());
 
             return UnitTestApplication.Start(services);
         }

@@ -2,7 +2,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IWindowingPlatform
     {
         IWindowImpl CreateWindow();

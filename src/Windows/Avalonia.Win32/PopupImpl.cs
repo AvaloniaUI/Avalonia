@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
@@ -135,7 +136,7 @@ namespace Avalonia.Win32
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
-            Resize(size, PlatformResizeReason.Layout);
+            Resize(size, WindowResizeReason.Layout);
             //TODO: We ignore the scaling override for now
         }
 

@@ -198,6 +198,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a grid length", node);
                 }
             }
+            
+            if (type.Equals(types.ColumnDefinition) || type.Equals(types.RowDefinition))
+            {
+                try
+                {
+                    var gridLength = GridLength.Parse(text);
+
+                    result = new AvaloniaXamlIlGridLengthAstNode(node, types, gridLength);
+
+                    var definitionConstructorGridLength = type.GetConstructor(new List<IXamlType> {types.GridLength});
+                    var lengthNode = new AvaloniaXamlIlGridLengthAstNode(node, types, gridLength);
+                    var definitionTypeRef = new XamlAstClrTypeReference(node, type, false);
+
+                    result = new XamlAstNewClrObjectNode(node, definitionTypeRef,
+                        definitionConstructorGridLength, new List<IXamlAstValueNode> {lengthNode});
+    
+                    return true;
+                }
+                catch
+                {
+                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a grid length", node);
+                }
+            }
 
             if (type.Equals(types.Cursor))
             {
@@ -209,16 +232,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                     return true;
                 }
-            }
-
-            if (type.Equals(types.ColumnDefinitions))
-            {
-                return ConvertDefinitionList(node, text, types, types.ColumnDefinitions, types.ColumnDefinition, "column definitions", out result);
-            }
-
-            if (type.Equals(types.RowDefinitions))
-            {
-                return ConvertDefinitionList(node, text, types, types.RowDefinitions, types.RowDefinition, "row definitions", out result);
             }
 
             if (types.IBrush.IsAssignableFrom(type))
@@ -295,46 +308,89 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            // Keep it in the end, so more specific parsers can be applied.
+            var elementType = GetElementType(type, context.Configuration.WellKnownTypes);
+            if (elementType is not null)
+            {
+                string[] items;
+                // Normalize special case of Points collection. 
+                if (elementType == types.Point)
+                {
+                    var pointParts = text.Split(new[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
+                    if (pointParts.Length % 2 == 0)
+                    {
+                        items = new string[pointParts.Length / 2];
+                        for (int i = 0; i < pointParts.Length; i += 2)
+                        { 
+                            items[i / 2] = string.Format(CultureInfo.InvariantCulture, "{0} {1}", pointParts[i],
+                                pointParts[i + 1]);
+                        }
+                    }
+                    else
+                    {
+                        throw new XamlX.XamlLoadException($"Invalid PointsList.", node);
+                    }
+                }
+                else
+                {
+                    const StringSplitOptions trimOption = (StringSplitOptions)2; // StringSplitOptions.TrimEntries
+                    var separators = new[] { "," };
+                    var splitOptions = StringSplitOptions.RemoveEmptyEntries | trimOption;
+
+                    items = text.Split(separators, splitOptions ^ trimOption);
+                    // Compiler targets netstandard, so we need to emulate StringSplitOptions.TrimEntries, if it was requested.
+                    if (splitOptions.HasFlag(trimOption))
+                    {
+                        items = items.Select(i => i.Trim()).ToArray();
+                    }
+                }
+
+                var nodes = new IXamlAstValueNode[items.Length];
+                for (var index = 0; index < items.Length; index++)
+                {
+                    var success = XamlTransformHelpers.TryGetCorrectlyTypedValue(
+                        context,
+                        new XamlAstTextNode(node, items[index], true, context.Configuration.WellKnownTypes.String),
+                        elementType, out var itemNode);
+                    if (!success)
+                    {
+                        result = null;
+                        return false;
+                    }
+
+                    nodes[index] = itemNode;
+                }
+
+                if (types.AvaloniaList.MakeGenericType(elementType).IsAssignableFrom(type))
+                {
+                    result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, elementType, nodes);
+                    return true;
+                }
+                else if (type.IsArray)
+                {
+                    result = new AvaloniaXamlIlArrayConstantAstNode(node, elementType.MakeArrayType(1), elementType, nodes);
+                    return true;
+                }
+                else if (type == context.Configuration.WellKnownTypes.IListOfT.MakeGenericType(elementType))
+                {
+                    var listType = context.Configuration.WellKnownTypes.IListOfT.MakeGenericType(elementType);
+                    result = new AvaloniaXamlIlArrayConstantAstNode(node, listType, elementType, nodes);
+                    return true;
+                }
+
+                result = null;
+                return false;
+            }
+            
             result = null;
             return false;
         }
 
-        private static bool ConvertDefinitionList(
-            IXamlAstValueNode node,
-            string text,
-            AvaloniaXamlIlWellKnownTypes types,
-            IXamlType listType,
-            IXamlType elementType,
-            string errorDisplayName,
-            out IXamlAstValueNode result)
+        private static IXamlType GetElementType(IXamlType type, XamlTypeWellKnownTypes types)
         {
-            try
-            {
-                var lengths = GridLength.ParseLengths(text);
-
-                var definitionTypeRef = new XamlAstClrTypeReference(node, elementType, false);
-
-                var definitionConstructorGridLength = elementType.GetConstructor(new List<IXamlType> {types.GridLength});
-
-                IXamlAstValueNode CreateDefinitionNode(GridLength length)
-                {
-                    var lengthNode = new AvaloniaXamlIlGridLengthAstNode(node, types, length);
-
-                    return new XamlAstNewClrObjectNode(node, definitionTypeRef,
-                        definitionConstructorGridLength, new List<IXamlAstValueNode> {lengthNode});
-                }
-
-                var definitionNodes =
-                    new List<IXamlAstValueNode>(lengths.Select(CreateDefinitionNode));
-
-                result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, listType, elementType, definitionNodes);
-
-                return true;
-            }
-            catch
-            {
-                throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a {errorDisplayName}", node);
-            }
+            return type.GetAllInterfaces().FirstOrDefault(i =>
+                    i.FullName.StartsWith(types.IEnumerableT.FullName))?
+                .GenericArguments[0];
         }
     }
 }

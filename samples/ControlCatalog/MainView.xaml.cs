@@ -19,13 +19,9 @@ namespace ControlCatalog
 {
     public class MainView : UserControl
     {
-        private readonly IPlatformSettings _platformSettings;
-
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
-            _platformSettings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
-            PlatformSettingsOnColorValuesChanged(_platformSettings, _platformSettings.GetColorValues());
             
             var sideBar = this.Get<TabControl>("Sidebar");
 
@@ -140,50 +136,6 @@ namespace ControlCatalog
                     ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
-            }
-
-            _platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
-            PlatformSettingsOnColorValuesChanged(_platformSettings, _platformSettings.GetColorValues());
-        }
-
-        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromLogicalTree(e);
-            
-            _platformSettings.ColorValuesChanged -= PlatformSettingsOnColorValuesChanged;
-        }
-
-        private void PlatformSettingsOnColorValuesChanged(object? sender, PlatformColorValues e)
-        {
-            Application.Current!.Resources["SystemAccentColor"] = e.AccentColor1;
-            Application.Current.Resources["SystemAccentColorDark1"] = ChangeColorLuminosity(e.AccentColor1, -0.3);
-            Application.Current.Resources["SystemAccentColorDark2"] = ChangeColorLuminosity(e.AccentColor1, -0.5);
-            Application.Current.Resources["SystemAccentColorDark3"] = ChangeColorLuminosity(e.AccentColor1, -0.7);
-            Application.Current.Resources["SystemAccentColorLight1"] = ChangeColorLuminosity(e.AccentColor1, 0.3);
-            Application.Current.Resources["SystemAccentColorLight2"] = ChangeColorLuminosity(e.AccentColor1, 0.5);
-            Application.Current.Resources["SystemAccentColorLight3"] = ChangeColorLuminosity(e.AccentColor1, 0.7);
-
-            static Color ChangeColorLuminosity(Color color, double luminosityFactor)
-            {
-                var red = (double)color.R;
-                var green = (double)color.G;
-                var blue = (double)color.B;
-
-                if (luminosityFactor < 0)
-                {
-                    luminosityFactor = 1 + luminosityFactor;
-                    red *= luminosityFactor;
-                    green *= luminosityFactor;
-                    blue *= luminosityFactor;
-                }
-                else if (luminosityFactor >= 0)
-                {
-                    red = (255 - red) * luminosityFactor + red;
-                    green = (255 - green) * luminosityFactor + green;
-                    blue = (255 - blue) * luminosityFactor + blue;
-                }
-
-                return new Color(color.A, (byte)red, (byte)green, (byte)blue);
             }
         }
     }

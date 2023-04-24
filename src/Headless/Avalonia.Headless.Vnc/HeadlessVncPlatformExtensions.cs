@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Sockets;
 using Avalonia.Controls;
@@ -25,7 +26,7 @@ namespace Avalonia
                 })
                 .AfterSetup(_ =>
                 {
-                    var lt = ((IClassicDesktopStyleApplicationLifetime)builder.Instance.ApplicationLifetime);
+                    var lt = ((IClassicDesktopStyleApplicationLifetime)builder.Instance!.ApplicationLifetime!);
                     lt.Startup += async delegate
                     {
                         while (true)
@@ -38,7 +39,7 @@ namespace Avalonia
                             var session = new VncServerSession();
                             
                             session.SetFramebufferSource(new HeadlessVncFramebufferSource(
-                                session, lt.MainWindow));
+                                session, lt.MainWindow ?? throw new InvalidOperationException("MainWindow wasn't initialized")));
                             session.Connect(client.GetStream(), options);
                         }
                         

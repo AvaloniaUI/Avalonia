@@ -13,7 +13,7 @@ namespace Avalonia.IntegrationTests.Appium
             _session = fixture.Session;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("ScrollBarTab");
+            var tab = tabs.FindElementByName("ScrollBar");
             tab.Click();
         }
 
