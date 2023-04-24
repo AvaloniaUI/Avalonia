@@ -150,7 +150,7 @@ namespace Avalonia.iOS
             public IEnumerable<object> Surfaces { get; set; }
             public Action<RawInputEventArgs> Input { get; set; }
             public Action<Rect> Paint { get; set; }
-            public Action<Size, PlatformResizeReason> Resized { get; set; }
+            public Action<Size, WindowResizeReason> Resized { get; set; }
             public Action<double> ScalingChanged { get; set; }
             public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
             public Action Closed { get; set; }
@@ -225,7 +225,7 @@ namespace Avalonia.iOS
 
         public override void LayoutSubviews()
         {
-            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, PlatformResizeReason.Layout);
+            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
             base.LayoutSubviews();
         }
 

@@ -77,14 +77,14 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the pointer position relative to a control.
         /// </summary>
-        /// <param name="relativeTo">The control.</param>
+        /// <param name="relativeTo">The visual whose coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns>The pointer position in the control's coordinates.</returns>
         public Point GetPosition(Visual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
 
         /// <summary>
         /// Returns the PointerPoint associated with the current event
         /// </summary>
-        /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
+        /// <param name="relativeTo">The visual whose coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns></returns>
         public PointerPoint GetCurrentPoint(Visual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
