@@ -117,6 +117,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the scaling factor for Window positioning and sizing.
+        /// </summary>
+        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        
+        /// <summary>
         /// Activates the window.
         /// </summary>
         public void Activate()
