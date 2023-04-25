@@ -12,7 +12,6 @@
 {
     ComPtr<WindowBaseImpl> _parent;
     NSTrackingArea* _area;
-    NSMutableAttributedString* _markedText;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
@@ -22,8 +21,9 @@
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
-    NSMutableString* _text;
-    NSRange _selection;
+    NSMutableAttributedString* _text;
+    NSRange _selectedRange;
+    NSRange _markedRange;
 }
 
 - (void)onClosed
@@ -59,6 +59,11 @@
     [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
 
     _modifierState = AvnInputModifiersNone;
+    
+    _text = [[NSMutableAttributedString alloc] initWithString:@""];
+    _markedRange = NSMakeRange(0, 0);
+    _selectedRange = NSMakeRange(0, 0);
+    
     return self;
 }
 
@@ -521,15 +526,23 @@
 
 - (void)keyDown:(NSEvent *)event
 {
-    [self keyboardEvent:event withType:KeyDown];
-    _lastKeyHandled = [[self inputContext] handleEvent:event];
-    [super keyDown:event];
+    _lastKeyHandled = false;
+        
+    [[self inputContext] handleEvent:event];
+    
+    if(!_lastKeyHandled){
+        [self keyboardEvent:event withType:KeyDown];
+    }
 }
 
 - (void)keyUp:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyUp];
     [super keyUp:event];
+}
+
+- (void) doCommandBySelector:(SEL)selector{
+    
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -561,50 +574,52 @@
 
 - (BOOL)hasMarkedText
 {
-    return [_markedText length] > 0;
+    return _markedRange.length > 0;
 }
 
 - (NSRange)markedRange
 {
-    if([_markedText length] > 0)
-        return NSMakeRange(0, [_markedText length] - 1);
-    return NSMakeRange(NSNotFound, 0);
+    return _markedRange;
 }
 
 - (NSRange)selectedRange
 {
-    return _selection;
+    return _selectedRange;
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
+    _lastKeyHandled = true;
+    
+    NSString* markedText;
+        
     if([string isKindOfClass:[NSAttributedString class]])
     {
-        _markedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
+        markedText = [string string];
     }
     else
     {
-        _markedText = [[NSMutableAttributedString alloc] initWithString:string];
+        markedText = (NSString*) string;
     }
     
-    if(!_parent->InputMethod->IsActive()){
-        return;
+    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
+        
+    if(_parent->InputMethod->IsActive()){
+        _parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
-    
-    _parent->InputMethod->Client->SetPreeditText((char*)[_markedText.string UTF8String]);
 }
 
 - (void)unmarkText
 {
-    [[_markedText mutableString] setString:@""];
-    
-    [[self inputContext] discardMarkedText];
-    
-    if(!_parent->InputMethod->IsActive()){
-        return;
+    if(_parent->InputMethod->IsActive()){
+        _parent->InputMethod->Client->SetPreeditText(nullptr);
     }
     
-    _parent->InputMethod->Client->SetPreeditText(nullptr);
+    _markedRange = NSMakeRange(_selectedRange.location, 0);
+    
+    if([self inputContext]) {
+        [[self inputContext] discardMarkedText];
+    }
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -614,19 +629,38 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    return nullptr;
+    if(actualRange){
+        range = *actualRange;
+    }
+    
+    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
+    
+    return subString;
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    [self unmarkText];
-
-    if(_parent != nullptr)
-    {
-        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+    if(_parent == nullptr){
+        return;
     }
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    NSString* text;
+        
+    if([string isKindOfClass:[NSAttributedString class]])
+    {
+        text = [string string];
+    }
+    else
+    {
+        text = (NSString*) string;
+    }
+    
+    [self unmarkText];
+        
+    uint32_t timestamp = static_cast<uint32_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        
+    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
+    
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -746,15 +780,11 @@
 }
 
 - (void) setText:(NSString *)text{
-    [_text setString:text];
-    
-    [[self inputContext] discardMarkedText];
+    [[_text mutableString] setString:text];
 }
 
 - (void) setSelection:(int)start :(int)end{
-    _selection = NSMakeRange(start, end - start);
-    
-    [[self inputContext] invalidateCharacterCoordinates];
+    _selectedRange = NSMakeRange(start, end - start);
 }
 
 - (void) setCursorRect:(AvnRect)rect{
@@ -766,7 +796,9 @@
     
     _cursorRect = windowRectOnScreen;
     
-    [[self inputContext] invalidateCharacterCoordinates];
+    if([self inputContext]) {
+        [[self inputContext] invalidateCharacterCoordinates];
+    }
 }
 
 @end

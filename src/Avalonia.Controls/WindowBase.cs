@@ -80,6 +80,11 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<PixelPointEventArgs>? PositionChanged;
 
+        /// <summary>
+        /// Occurs when the window is resized.
+        /// </summary>
+        public event EventHandler<WindowResizedEventArgs>? Resized;
+
         public new IWindowBaseImpl? PlatformImpl => (IWindowBaseImpl?) base.PlatformImpl;
 
         /// <summary>
@@ -156,6 +161,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Trys to get the platform handle for the window.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
+        /// could not be retrieved.
+        /// </returns>
+        public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
+
+        /// <summary>
         /// Ensures that the window is initialized.
         /// </summary>
         protected void EnsureInitialized()
@@ -188,6 +202,12 @@ namespace Avalonia.Controls
             base.OnOpened(e);
         }
 
+        /// <summary>
+        /// Raises the <see cref="Resized"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
+        protected virtual void OnResized(WindowResizedEventArgs e) => Resized?.Invoke(this, e);
+
         protected override void HandleClosed()
         {
             using (FreezeVisibilityChangeHandling())
@@ -208,7 +228,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
         /// <param name="reason">The reason for the resize.</param>
-        protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             FrameSize = PlatformImpl?.FrameSize;
 
@@ -218,6 +238,8 @@ namespace Avalonia.Controls
                 LayoutManager.ExecuteLayoutPass();
                 Renderer.Resized(clientSize);
             }
+
+            OnResized(new WindowResizedEventArgs(clientSize, reason));
         }
 
         /// <summary>

@@ -4,7 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Utilities
 {
-    public static class SpanHelpers
+#if !BUILDTASK
+    public
+#endif
+    static class SpanHelpers
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryParseUInt(this ReadOnlySpan<char> span, NumberStyles style, IFormatProvider provider, out uint value)

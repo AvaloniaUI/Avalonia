@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
@@ -29,6 +29,7 @@ namespace Avalonia.Benchmarks.Themes
         }
 
         [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public bool InitFluentTheme()
         {
             UnitTestApplication.Current.Styles[0] = new FluentTheme();
@@ -36,6 +37,7 @@ namespace Avalonia.Benchmarks.Themes
         }
 
         [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public bool InitSimpleTheme()
         {
             UnitTestApplication.Current.Styles[0] = new SimpleTheme();

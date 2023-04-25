@@ -91,7 +91,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<Rect> Paint { get; set; }
 
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
 
@@ -156,12 +156,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         protected virtual void OnResized(Size size)
         {
-            Resized?.Invoke(size, PlatformResizeReason.Unspecified);
+            Resized?.Invoke(size, WindowResizeReason.Unspecified);
         }
 
         internal void Resize(Size size)
         {
-            Resized?.Invoke(size, PlatformResizeReason.Layout);
+            Resized?.Invoke(size, WindowResizeReason.Layout);
         }
 
         class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo

@@ -227,7 +227,7 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
@@ -700,7 +700,7 @@ namespace Avalonia.Controls
 
                 if (initialSize != ClientSize)
                 {
-                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
                 LayoutManager.ExecuteInitialLayoutPass();
@@ -778,7 +778,7 @@ namespace Avalonia.Controls
 
                 if (initialSize != ClientSize)
                 {
-                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
                 LayoutManager.ExecuteInitialLayoutPass();
@@ -975,7 +975,7 @@ namespace Avalonia.Controls
 
         protected sealed override Size ArrangeSetBounds(Size size)
         {
-            PlatformImpl?.Resize(size, PlatformResizeReason.Layout);
+            PlatformImpl?.Resize(size, WindowResizeReason.Layout);
             return ClientSize;
         }
 
@@ -994,7 +994,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
             {
@@ -1005,8 +1005,8 @@ namespace Avalonia.Controls
                 // to the requested size.
                 if (sizeToContent != SizeToContent.Manual &&
                     CanResize &&
-                    reason == PlatformResizeReason.Unspecified ||
-                    reason == PlatformResizeReason.User)
+                    reason == WindowResizeReason.Unspecified ||
+                    reason == WindowResizeReason.User)
                 {
                     if (clientSize.Width != ClientSize.Width)
                         sizeToContent &= ~SizeToContent.Width;

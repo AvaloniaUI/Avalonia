@@ -33,7 +33,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
             var targetObject = provideTarget?.TargetObject;
             var targetProperty = provideTarget?.TargetProperty;
-            var themeVariant = (targetObject as IThemeVariantHost)?.ActualThemeVariant;
+            var themeVariant = (targetObject as IThemeVariantHost)?.ActualThemeVariant
+                ?? GetDictionaryVariant(serviceProvider);
 
             var targetType = targetProperty switch
             {
@@ -77,6 +78,25 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         private object? GetValue(StyledElement control, Type? targetType)
         {
             return ColorToBrushConverter.Convert(control.FindResource(ResourceKey!), targetType);
+        }
+
+        internal static ThemeVariant? GetDictionaryVariant(IServiceProvider serviceProvider)
+        {
+            var parents = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>()?.Parents;
+            if (parents is null)
+            {
+                return null;
+            }
+
+            foreach (var parent in parents)
+            {
+                if (parent is IThemeVariantProvider { Key: { } setKey })
+                {
+                    return setKey;
+                }
+            }
+
+            return null;
         }
     }
 }

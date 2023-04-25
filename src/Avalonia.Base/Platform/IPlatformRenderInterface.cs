@@ -11,7 +11,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the main platform-specific interface for the rendering subsystem.
     /// </summary>
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterface
     {
         /// <summary>
@@ -201,7 +201,7 @@ namespace Avalonia.Platform
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
     }
 
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterfaceContext : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>

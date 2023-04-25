@@ -830,7 +830,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         }
                     };
                 }
-                window.PlatformImpl?.Resize(new Size(700D, 500D), PlatformResizeReason.Unspecified);
+                window.PlatformImpl?.Resize(new Size(700D, 500D), WindowResizeReason.Unspecified);
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                 Assert.True(raised);
             }
@@ -886,7 +886,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         }
                     };
                 }
-                window.PlatformImpl?.Resize(new Size(700D, 500D), PlatformResizeReason.Unspecified);
+                window.PlatformImpl?.Resize(new Size(700D, 500D), WindowResizeReason.Unspecified);
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                 Assert.False(raised);
             }
