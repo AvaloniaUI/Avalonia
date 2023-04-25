@@ -119,7 +119,19 @@ namespace Avalonia.Controls
             resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            return new FloatingResourceObservable(resourceProvider, key, converter);
+            return new FloatingResourceObservable(resourceProvider, key, null, converter);
+        }
+
+        public static IObservable<object?> GetResourceObservable(
+            this IResourceProvider resourceProvider,
+            object key,
+            ThemeVariant? defaultThemeVariant,
+            Func<object?, object?>? converter = null)
+        {
+            resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
+            key = key ?? throw new ArgumentNullException(nameof(key));
+
+            return new FloatingResourceObservable(resourceProvider, key, defaultThemeVariant, converter);
         }
 
         private class ResourceObservable : LightweightObservableBase<object?>
@@ -128,7 +140,10 @@ namespace Avalonia.Controls
             private readonly object _key;
             private readonly Func<object?, object?>? _converter;
 
-            public ResourceObservable(IResourceHost target, object key, Func<object?, object?>? converter)
+            public ResourceObservable(
+                IResourceHost target,
+                object key,
+                Func<object?, object?>? converter)
             {
                 _target = target;
                 _key = key;
@@ -170,11 +185,8 @@ namespace Avalonia.Controls
 
             private object? GetValue()
             {
-                if (_target is not IThemeVariantHost themeVariantHost
-                    || !_target.TryFindResource(_key, themeVariantHost.ActualThemeVariant, out var value))
-                {
-                    value = _target.FindResource(_key) ?? AvaloniaProperty.UnsetValue;
-                }
+                var theme = (_target as IThemeVariantHost)?.ActualThemeVariant; 
+                var value = _target.FindResource(theme, _key) ?? AvaloniaProperty.UnsetValue;
 
                 return _converter?.Invoke(value) ?? value;
             }
@@ -183,14 +195,20 @@ namespace Avalonia.Controls
         private class FloatingResourceObservable : LightweightObservableBase<object?>
         {
             private readonly IResourceProvider _target;
+            private readonly ThemeVariant? _overrideThemeVariant;
             private readonly object _key;
             private readonly Func<object?, object?>? _converter;
             private IResourceHost? _owner;
 
-            public FloatingResourceObservable(IResourceProvider target, object key, Func<object?, object?>? converter)
+            public FloatingResourceObservable(
+                IResourceProvider target,
+                object key,
+                ThemeVariant? overrideThemeVariant,
+                Func<object?, object?>? converter)
             {
                 _target = target;
                 _key = key;
+                _overrideThemeVariant = overrideThemeVariant;
                 _converter = converter;
             }
 
@@ -233,7 +251,7 @@ namespace Avalonia.Controls
                 {
                     _owner.ResourcesChanged -= ResourcesChanged;
                 }
-                if (_owner is IThemeVariantHost themeVariantHost)
+                if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
                 {
                     themeVariantHost.ActualThemeVariantChanged += ActualThemeVariantChanged;
                 }
@@ -244,11 +262,10 @@ namespace Avalonia.Controls
                 {
                     _owner.ResourcesChanged += ResourcesChanged;
                 }
-                if (_owner is IThemeVariantHost themeVariantHost2)
+                if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost2)
                 {
                     themeVariantHost2.ActualThemeVariantChanged -= ActualThemeVariantChanged;
                 }
-
 
                 PublishNext();
             }
@@ -265,11 +282,8 @@ namespace Avalonia.Controls
 
             private object? GetValue()
             {
-                if (!(_target.Owner is IThemeVariantHost themeVariantHost)
-                    || !_target.Owner.TryFindResource(_key, themeVariantHost.ActualThemeVariant, out var value))
-                {
-                    value = _target.Owner?.FindResource(_key) ?? AvaloniaProperty.UnsetValue;
-                }
+                var theme = _overrideThemeVariant ?? (_target.Owner as IThemeVariantHost)?.ActualThemeVariant; 
+                var value = _target.Owner?.FindResource(theme, _key) ?? AvaloniaProperty.UnsetValue;
 
                 return _converter?.Invoke(value) ?? value;
             }

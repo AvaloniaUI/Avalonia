@@ -212,6 +212,7 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
+            RunCoreTest("Avalonia.Headless.UnitTests");
         });
 
     Target RunRenderTests => _ => _

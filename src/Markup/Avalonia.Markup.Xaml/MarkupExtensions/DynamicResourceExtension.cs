@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -10,6 +11,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
     {
         private object? _anchor;
         private BindingPriority _priority;
+        private ThemeVariant? _currentThemeVariant;
 
         public DynamicResourceExtension()
         {
@@ -36,6 +38,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                     (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
 
+            _currentThemeVariant = StaticResourceExtension.GetDictionaryVariant(serviceProvider);
+
             return this;
         }
 
@@ -59,7 +63,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
             else if (_anchor is IResourceProvider resourceProvider)
             {
-                var source = resourceProvider.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
+                var source = resourceProvider.GetResourceObservable(ResourceKey, _currentThemeVariant, GetConverter(targetProperty));
                 return InstancedBinding.OneWay(source, _priority);
             }
 
