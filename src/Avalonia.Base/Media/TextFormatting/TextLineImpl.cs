@@ -83,7 +83,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point lineOrigin)
         {
-            var (currentX, currentY) = lineOrigin;
+            var (currentX, currentY) = lineOrigin + new Point(Start, 0);
 
             foreach (var textRun in _textRuns)
             {
@@ -1423,8 +1423,6 @@ namespace Avalonia.Media.TextFormatting
             var fontMetrics = _paragraphProperties.DefaultTextRunProperties.CachedGlyphTypeface.Metrics;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
             var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
-
-            var width = 0d;
             var widthIncludingWhitespace = 0d;
             var trailingWhitespaceLength = 0;
             var newLineLength = 0;
@@ -1435,13 +1433,6 @@ namespace Avalonia.Media.TextFormatting
             var height = descent - ascent + lineGap;
 
             var lineHeight = _paragraphProperties.LineHeight;
-
-            var lastRunIndex = _textRuns.Length - 1;
-
-            if (lastRunIndex > 0 && _textRuns[lastRunIndex] is TextEndOfLine)
-            {
-                lastRunIndex--;
-            }
 
             for (var index = 0; index < _textRuns.Length; index++)
             {
@@ -1500,7 +1491,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            width = widthIncludingWhitespace;
+            var width = widthIncludingWhitespace;
 
             for (var i = _textRuns.Length - 1; i >= 0; i--)
             {
