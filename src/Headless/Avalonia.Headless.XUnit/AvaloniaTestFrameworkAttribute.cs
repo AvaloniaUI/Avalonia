@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -19,7 +21,9 @@ public sealed class AvaloniaTestFrameworkAttribute : Attribute, ITestFrameworkAt
     /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
     /// </param>
     public AvaloniaTestFrameworkAttribute(
+#if NET6_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
         Type appBuilderEntryPointType) { }
 }
 
