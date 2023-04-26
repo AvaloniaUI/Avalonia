@@ -168,7 +168,13 @@ namespace Avalonia.Controls
 
         protected internal override Control? ContainerFromIndex(int index)
         {
-            return index == _realizedIndex ? _realized : null;
+            if (index < 0 || index >= Items.Count)
+                return null;
+            if (index == _realizedIndex)
+                return _realized;
+            if (Items[index] is Control c && c.GetValue(ItemIsOwnContainerProperty))
+                return c;
+            return null;
         }
 
         protected internal override IEnumerable<Control>? GetRealizedContainers()
@@ -264,7 +270,6 @@ namespace Avalonia.Controls
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
                     controlItem.IsVisible = true;
-                    generator.ItemContainerPrepared(controlItem, item, index);
                     return controlItem;
                 }
                 else if (generator.IsItemItsOwnContainer(controlItem))
