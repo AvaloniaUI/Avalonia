@@ -7,8 +7,8 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     /// <remarks>
     /// When creating a container for an item from a <see cref="VirtualizingPanel"/>, the following
-    /// method order should be followed:
-    /// 
+    /// process should be followed:
+    ///
     /// - <see cref="IsItemItsOwnContainer(Control)"/> should first be called if the item is
     ///   derived from the <see cref="Control"/> class. If this method returns true then the
     ///   item itself should be used as the container.
@@ -19,9 +19,29 @@ namespace Avalonia.Controls.Generators
     /// - The container should then be added to the panel using 
     ///   <see cref="VirtualizingPanel.AddInternalChild(Control)"/>
     /// - Finally, <see cref="ItemContainerPrepared(Control, object?, int)"/> should be called.
-    /// - When the item is ready to be recycled, <see cref="ClearItemContainer(Control)"/> should
-    ///   be called if <see cref="IsItemItsOwnContainer(Control)"/> returned false.
     /// 
+    /// NOTE: If <see cref="IsItemItsOwnContainer(Control)"/> in the first step above returns true
+    /// then the above steps should be carried out a single time; the first time the item is 
+    /// displayed. Otherwise the steps should be carried out each time a new container is realized
+    /// for an item.
+    ///
+    /// When unrealizing a container, the following process should be followed:
+    /// 
+    /// - If <see cref="IsItemItsOwnContainer(Control)"/> for the item returned true then the item
+    ///   cannot be unrealized or recycled.
+    /// - Otherwise, <see cref="ClearItemContainer(Control)"/> should be called for the container
+    /// - If recycling is supported then the container should be added to a recycle pool.
+    /// - It is assumed that recyclable containers will not be removed from the panel but instead
+    ///   hidden from view using e.g. `container.IsVisible = false`.
+    ///
+    /// When recycling an unrealized container, the following process should be followed:
+    /// 
+    /// - An element should be taken from the recycle pool.
+    /// - The container should be made visible.
+    /// - <see cref="PrepareItemContainer(Control, object?, int)"/> method should be called for the
+    ///   container.
+    /// - <see cref="ItemContainerPrepared(Control, object?, int)"/> should be called.
+    ///
     /// NOTE: Although this class is similar to that found in WPF/UWP, in Avalonia this class only
     /// concerns itself with generating and clearing item containers; it does not maintain a
     /// record of the currently realized containers, that responsibility is delegated to the
