@@ -828,6 +828,19 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
         }
 
+        [Fact]
+        public void ItemIsOwnContainer_Content_Should_Not_Be_Cleared_When_Removed()
+        {
+            // Issue #11128.
+            using var app = Start();
+            var item = new ContentPresenter { Content = "foo" };
+            var target = CreateTarget(items: new[] { item });
+
+            target.Items.RemoveAt(0);
+
+            Assert.Equal("foo", item.Content);
+        }
+
         private static ItemsControl CreateTarget(
             object? dataContext = null,
             IBinding? displayMemberBinding = null,
