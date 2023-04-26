@@ -39,16 +39,6 @@ namespace Avalonia.Diagnostics.Views
             AdornerLayer.SetIsClipEnabled(_adorner, false);
         }
 
-        protected override void OnDataContextChanged(EventArgs e)
-        {
-            base.OnDataContextChanged(e);
-
-            ((TreePageViewModel)DataContext!).ClipboardCopyRequested += (sender, s) =>
-            {
-                TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(s);
-            };
-        }
-
         protected void AddAdorner(object? sender, PointerEventArgs e)
         {
             var node = (TreeNode?)((Control)sender!).DataContext;
@@ -108,9 +98,27 @@ namespace Avalonia.Diagnostics.Views
             _currentLayer = null;
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == DataContextProperty)
+            {
+                if (change.GetOldValue<object?>() is TreePageViewModel oldViewModel)
+                    oldViewModel.ClipboardCopyRequested -= OnClipboardCopyRequested;
+                if (change.GetNewValue<object?>() is TreePageViewModel newViewModel)
+                    newViewModel.ClipboardCopyRequested += OnClipboardCopyRequested;
+            }
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void OnClipboardCopyRequested(object? sender, string e)
+        {
+            TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(e);
         }
     }
 }
