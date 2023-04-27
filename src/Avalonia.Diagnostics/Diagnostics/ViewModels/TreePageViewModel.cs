@@ -1,5 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
+using Avalonia.Metadata;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -21,6 +27,8 @@ namespace Avalonia.Diagnostics.ViewModels
             SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();
         }
 
+        public event EventHandler<string>? ClipboardCopyRequested;
+        
         public MainViewModel MainView { get; }
 
         public FilterViewModel PropertiesFilter { get; }
@@ -105,6 +113,105 @@ namespace Avalonia.Diagnostics.ViewModels
                 ExpandNode(node.Parent);
             }
         }
+
+        public void CopySelector()
+        {
+            var currentVisual = SelectedNode?.Visual as Visual;
+            if (currentVisual is not null)
+            {
+                var selector = GetVisualSelector(currentVisual);
+                
+                ClipboardCopyRequested?.Invoke(this, selector);
+            }
+        }
+        
+        public void CopySelectorFromTemplateParent()
+        {
+            var parts = new List<string>();
+
+            var currentVisual = SelectedNode?.Visual as Visual;
+            while (currentVisual is not null)
+            {
+                parts.Add(GetVisualSelector(currentVisual));
+                
+                currentVisual = currentVisual.TemplatedParent as Visual;
+            }
+
+            if (parts.Any())
+            {
+                parts.Reverse();
+                var selector = string.Join(" /template/ ", parts);
+
+                ClipboardCopyRequested?.Invoke(this, selector);
+            }
+        }
+
+        public void ExpandRecursively()
+        {
+            if (SelectedNode is { } selectedNode)
+            {
+                ExpandNode(selectedNode);
+                
+                var stack = new Stack<TreeNode>();
+                stack.Push(selectedNode);
+
+                while (stack.Count > 0)
+                {
+                    var item = stack.Pop();
+                    item.IsExpanded = true;
+                    foreach (var child in item.Children)
+                    {
+                        stack.Push(child);
+                    }
+                }
+            }
+        }
+
+        public void CollapseChildren()
+        {
+            if (SelectedNode is { } selectedNode)
+            {
+                var stack = new Stack<TreeNode>();
+                stack.Push(selectedNode);
+
+                while (stack.Count > 0)
+                {
+                    var item = stack.Pop();
+                    item.IsExpanded = false;
+                    foreach (var child in item.Children)
+                    {
+                        stack.Push(child);
+                    }
+                }
+            }
+        }
+
+        public void CaptureNodeScreenshot()
+        {
+            MainView.Shot(null);
+        }
+
+        public void BringIntoView()
+        {
+            (SelectedNode?.Visual as Control)?.BringIntoView();
+        }
+        
+        
+        public void Focus()
+        {
+            (SelectedNode?.Visual as Control)?.Focus();
+        }
+
+        private static string GetVisualSelector(Visual visual)
+        {
+            var name = string.IsNullOrEmpty(visual.Name) ? "" : $"#{visual.Name}";
+            var classes = string.Concat(visual.Classes
+                .Where(c => !c.StartsWith(":"))
+                .Select(c => '.' + c));
+            var typeName = ((IStyleable)visual).StyleKey.Name;
+
+            return $"{typeName}{name}{classes}";
+        } 
 
         private void ExpandNode(TreeNode? node)
         {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -326,7 +325,17 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements.Where(x => x is not null)!;
         }
 
-        protected internal override Control? ContainerFromIndex(int index) => _realizedElements?.GetElement(index);
+        protected internal override Control? ContainerFromIndex(int index)
+        {
+            if (index < 0 || index >= Items.Count)
+                return null;
+            if (_realizedElements?.GetElement(index) is { } realized)
+                return realized;
+            if (Items[index] is Control c && c.GetValue(ItemIsOwnContainerProperty))
+                return c;
+            return null;
+        }
+
         protected internal override int IndexFromContainer(Control container) => _realizedElements?.GetIndex(container) ?? -1;
 
         protected internal override Control? ScrollIntoView(int index)
@@ -577,7 +586,6 @@ namespace Avalonia.Controls
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
                     controlItem.IsVisible = true;
-                    generator.ItemContainerPrepared(controlItem, item, index);
                     return controlItem;
                 }
                 else if (generator.IsItemItsOwnContainer(controlItem))
