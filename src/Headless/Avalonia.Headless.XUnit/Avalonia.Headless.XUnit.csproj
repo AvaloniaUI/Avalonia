@@ -4,7 +4,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.core" Version="2.4.2" />
+    <!-- Use lower minor version, as it is supposed to be compatible  -->
+    <PackageReference Include="xunit.core" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
