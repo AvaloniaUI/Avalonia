@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Headless.NUnit;
 using Avalonia.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -34,16 +35,15 @@ internal class AvaloniaTestCase : XunitTestCase
     {
         var session = HeadlessUnitTestSession.GetOrStartForAssembly(Method.ToRuntimeMethod().DeclaringType?.Assembly);
 
-        var task = session.Dispatcher.InvokeAsync<Task<RunSummary>>(async () =>
+        // We need to block the XUnit thread to ensure its concurrency throttle is effective.
+        // See https://github.com/AArnott/Xunit.StaFact/pull/55#issuecomment-826187354 for details.
+        var runSummary = session.Dispatcher.InvokeOnQueue(async () =>
         {
             var runner = new XunitTestCaseRunner(this, DisplayName, SkipReason, constructorArguments,
                 TestMethodArguments, messageBus, aggregator, cancellationTokenSource);
             return await runner.RunAsync();
-        }, default, cancellationTokenSource.Token).GetTask().Unwrap();
+        }, cancellationTokenSource.Token);
 
-        // We need to block the XUnit thread to ensure its concurrency throttle is effective.
-        // See https://github.com/AArnott/Xunit.StaFact/pull/55#issuecomment-826187354 for details.
-        var runSummary = task.GetAwaiter().GetResult();
         return Task.FromResult(runSummary);
     }
 }

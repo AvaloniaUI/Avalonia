@@ -12,6 +12,12 @@
     <ProjectReference Include="..\Avalonia.Headless\Avalonia.Headless.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Avalonia.Headless.NUnit\ExecutionQueue.cs">
+      <Link>ExecutionQueue.cs</Link>
+    </Compile>
+  </ItemGroup>
+
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
