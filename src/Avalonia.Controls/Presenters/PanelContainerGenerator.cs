@@ -67,9 +67,12 @@ namespace Avalonia.Controls.Presenters
                 for (var i = 0; i < count; ++i)
                 {
                     var c = children[index + i];
+
                     if (!c.IsSet(ItemIsOwnContainerProperty))
+                    {
                         itemsControl.RemoveLogicalChild(children[i + index]);
-                    generator.ClearItemContainer(c);
+                        generator.ClearItemContainer(c);
+                    }
                 }
 
                 children.RemoveRange(index, count);
