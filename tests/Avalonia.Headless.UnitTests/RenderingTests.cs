@@ -2,13 +2,12 @@
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Xunit;
 
 namespace Avalonia.Headless.UnitTests;
 
 public class RenderingTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void Should_Render_Last_Frame_To_Bitmap()
     {
         var window = new Window

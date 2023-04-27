@@ -2,13 +2,12 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
-using Xunit;
 
 namespace Avalonia.Headless.UnitTests;
 
 public class InputTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void Should_Click_Button_On_Window()
     {
         var buttonClicked = false;
