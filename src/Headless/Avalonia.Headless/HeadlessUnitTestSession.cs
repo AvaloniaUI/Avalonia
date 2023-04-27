@@ -134,7 +134,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
             }
 
 
-            s_session = appBuilderEntryPointType is not null ? StartNew(appBuilderEntryPointType).Result : StartNew(typeof(Application)).Result;
+            s_session = appBuilderEntryPointType is not null ? StartNew(appBuilderEntryPointType) : StartNew(typeof(Application));
 
             return s_session;
         }
