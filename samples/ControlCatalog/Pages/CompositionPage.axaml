@@ -17,7 +17,7 @@
                 <Border 
                   pages:CompositionPage.EnableAnimations="True"
                   Padding="10" BorderBrush="Gray" BorderThickness="2"
-                  Background="{Binding ColorBrush}" Width="100" Height="100" Margin="10">
+                   Background="{OnFormFactor Blue, Desktop=Red}" Width="100" Height="100" Margin="10">
                     <TextBlock Text="{Binding ColorHexValue}"/>
                 </Border>
               </DataTemplate>
