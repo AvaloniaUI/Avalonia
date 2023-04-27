@@ -59,7 +59,7 @@ internal static class ExecutionQueue
         return dispatcher
             .InvokeAsync(() => ExecuteOnQueue(dispatcher, cb), DispatcherPriority.Normal, cancellationToken)
             .GetTask().Unwrap()
-            .Result;
+            .GetAwaiter().GetResult();
     }
     
     public static Task<TResult> InvokeOnQueueAsync<TResult>(this Dispatcher dispatcher, Func<Task<TResult>> cb, CancellationToken cancellationToken = default)
