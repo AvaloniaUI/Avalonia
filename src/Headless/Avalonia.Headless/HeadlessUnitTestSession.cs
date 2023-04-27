@@ -55,7 +55,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// Parameter from which <see cref="AppBuilder"/> should be created.
     /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
     /// </typeparam>
-    public static Task<HeadlessUnitTestSession> StartNew<
+    public static HeadlessUnitTestSession StartNew<
         [DynamicallyAccessedMembers(DynamicallyAccessed)] TEntryPointType>()
     {
         return StartNew(typeof(TEntryPointType));
@@ -68,7 +68,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// Parameter from which <see cref="AppBuilder"/> should be created.
     /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
     /// </param>
-    public static Task<HeadlessUnitTestSession> StartNew(
+    public static HeadlessUnitTestSession StartNew(
         [DynamicallyAccessedMembers(DynamicallyAccessed)] Type entryPointType)
     {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
@@ -96,13 +96,14 @@ public sealed class HeadlessUnitTestSession : IDisposable
             catch (Exception e)
             {
                 tcs.SetException(e);
+                return;
             }
 
             Dispatcher.UIThread.MainLoop(cancellationTokenSource.Token);
         }) { IsBackground = true };
         thread.Start();
 
-        return tcs.Task;
+        return tcs.Task.GetAwaiter().GetResult();
     }
     
     /// <summary>
