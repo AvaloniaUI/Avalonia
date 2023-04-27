@@ -50,6 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             private readonly IServiceProvider? _parentProvider;
             private readonly List<IResourceNode>? _parentResourceNodes;
             private readonly INameScope _nameScope;
+            private readonly IRuntimePlatform? _runtimePlatform;
 
             public DeferredParentServiceProvider(IServiceProvider? parentProvider, List<IResourceNode>? parentResourceNodes,
                 object rootObject, INameScope nameScope)
@@ -58,6 +59,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 _parentResourceNodes = parentResourceNodes;
                 _nameScope = nameScope;
                 RootObject = rootObject;
+                _runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
             public IEnumerable<object> Parents => GetParents();
@@ -80,6 +82,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return this;
                 if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
                     return this;
+                if (serviceType == typeof(IRuntimePlatform))
+                    return _runtimePlatform;
                 return _parentProvider?.GetService(serviceType);
             }
 
