@@ -20,7 +20,6 @@
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\SourceGenerators.props" />
   <ItemGroup>
-    <Compile Remove="..\..\Shared\ModuleInitializer.cs" />
     <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
   </ItemGroup>
   <Import Project="..\..\..\build\TrimmingEnable.props" />
