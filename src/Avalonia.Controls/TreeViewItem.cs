@@ -45,6 +45,7 @@ namespace Avalonia.Controls
 
         private TreeView? _treeView;
         private Control? _header;
+        private Control? _headerPresenter;
         private int _level;
         private bool _templateApplied;
         private bool _deferredBringIntoViewFlag;
@@ -255,15 +256,16 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if (_header is InputElement previousInputMethod)
+            if (_headerPresenter is InputElement previousInputMethod)
             {
                 previousInputMethod.DoubleTapped -= HeaderDoubleTapped;
             }
 
             _header = e.NameScope.Find<Control>("PART_Header");
+            _headerPresenter = e.NameScope.Find<Control>("PART_HeaderPresenter");
             _templateApplied = true;
 
-            if (_header is InputElement im)
+            if (_headerPresenter is InputElement im)
             {
                 im.DoubleTapped += HeaderDoubleTapped;
             }
