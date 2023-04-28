@@ -514,5 +514,38 @@ namespace Avalonia.Base.UnitTests.Layout
             Assert.True(parent.IsMeasureValid);
             Assert.True(parent.IsArrangeValid);
         }
+
+        [Fact]
+        public void Grandparent_Can_Invalidate_Root_Measure_During_Arrange()
+        {
+            // Issue #11161.
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var grandparent = new LayoutTestControl { Child = parent };
+            var root = new LayoutTestRoot { Child = grandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.DoArrangeOverride = (_, s) =>
+            {
+                root.InvalidateMeasure();
+                return s;
+            };
+            grandparent.CallBaseArrange = true;
+
+            child.InvalidateMeasure();
+            grandparent.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+            Assert.True(grandparent.IsMeasureValid);
+            Assert.True(grandparent.IsArrangeValid);
+            Assert.True(root.IsMeasureValid);
+            Assert.True(root.IsArrangeValid);
+        }
     }
 }
