@@ -402,6 +402,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Style_Can_Use_NthChild_Selector_With_ItemsRepeater()
         {
+            GC.KeepAlive(typeof(ItemsRepeater));
+            
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = @"
