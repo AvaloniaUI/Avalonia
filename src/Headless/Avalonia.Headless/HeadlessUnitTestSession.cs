@@ -89,6 +89,11 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
                 appBuilder.SetupWithoutStarting();
 
+                if (!Dispatcher.UIThread.SupportsRunLoops)
+                {
+                    throw new InvalidOperationException("Avalonia Headless platform has failed to initialize.");
+                }
+                
                 // ReSharper disable once AccessToModifiedClosure
                 tcs.SetResult(new HeadlessUnitTestSession(entryPointType, Application.Current!,
                     SynchronizationContext.Current!, Dispatcher.UIThread, cancellationTokenSource));
