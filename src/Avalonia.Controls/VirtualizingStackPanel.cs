@@ -565,7 +565,6 @@ namespace Avalonia.Controls
                 GetItemIsOwnContainer(items, index) ??
                 GetRecycledElement(items, index) ??
                 CreateElement(items, index);
-            InvalidateHack(e);
             return e;
         }
 
@@ -711,39 +710,6 @@ namespace Avalonia.Controls
             {
                 InvalidateMeasure();
             }
-        }
-
-        private static void InvalidateHack(Control c)
-        {
-            bool HasInvalidations(Control c)
-            {
-                if (!c.IsMeasureValid)
-                    return true;
-
-                for (var i = 0; i < c.VisualChildren.Count; ++i)
-                {
-                    if (c.VisualChildren[i] is Control child)
-                    {
-                        if (!child.IsMeasureValid || HasInvalidations(child))
-                            return true;
-                    }
-                }
-
-                return false;
-            }
-
-            void Invalidate(Control c)
-            {
-                c.InvalidateMeasure();
-                for (var i = 0; i < c.VisualChildren.Count; ++i)
-                {
-                    if (c.VisualChildren[i] is Control child)
-                        Invalidate(child);
-                }
-            }
-
-            if (HasInvalidations(c))
-                Invalidate(c);
         }
 
         private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)

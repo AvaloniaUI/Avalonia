@@ -776,10 +776,24 @@ namespace Avalonia.Layout
                 // All changes to visibility cause the parent element to be notified.
                 this.GetVisualParent<Layoutable>()?.ChildDesiredSizeChanged(this);
 
-                // We only invalidate outselves when visibility is changed to true.
                 if (change.GetNewValue<bool>())
                 {
+                    // We only invalidate ourselves when visibility is changed to true.
                     InvalidateMeasure();
+
+                    // If any descendant had its measure/arrange invalidated while we were hidden,
+                    // they will need to to be registered with the layout manager now that they
+                    // are again effectively visible. If IsEffectivelyVisible becomes an observable
+                    // property then we can piggy-pack on that; for the moment we do this manually.
+                    if (VisualRoot is ILayoutRoot layoutRoot)
+                    {
+                        var count = VisualChildren.Count;
+
+                        for (var i = 0; i < count; ++i)
+                        {
+                            (VisualChildren[i] as Layoutable)?.AncestorBecameVisible(layoutRoot.LayoutManager);
+                        }
+                    }
                 }
             }
         }
@@ -802,6 +816,30 @@ namespace Avalonia.Layout
         {
             base.OnTemplatedParentControlThemeChanged();
             InvalidateMeasure();
+        }
+
+        private void AncestorBecameVisible(ILayoutManager layoutManager)
+        {
+            if (!IsVisible)
+                return;
+
+            if (!IsMeasureValid)
+            {
+                layoutManager.InvalidateMeasure(this);
+                InvalidateVisual();
+            }
+            else if (!IsArrangeValid)
+            {
+                layoutManager.InvalidateArrange(this);
+                InvalidateVisual();
+            }
+
+            var count = VisualChildren.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                (VisualChildren[i] as Layoutable)?.AncestorBecameVisible(layoutManager);
+            }
         }
 
         /// <summary>

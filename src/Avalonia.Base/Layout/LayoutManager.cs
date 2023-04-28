@@ -17,7 +17,7 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager, IDisposable
     {
-        private const int MaxPasses = 3;
+        private const int MaxPasses = 10;
         private readonly Layoutable _owner;
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
