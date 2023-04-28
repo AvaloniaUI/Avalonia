@@ -1,5 +1,5 @@
 using System;
-
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -442,7 +442,7 @@ namespace Avalonia.Controls.Presenters
             var contentTemplate = ContentTemplate;
             var oldChild = Child;
             var newChild = CreateChild(content, oldChild, contentTemplate);
-            var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
+            var logicalChildren = GetEffectiveLogicalChildren();
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
@@ -487,6 +487,9 @@ namespace Avalonia.Controls.Presenters
             _createdChild = true;
 
         }
+
+        private IAvaloniaList<ILogical> GetEffectiveLogicalChildren()
+            => Host?.LogicalChildren ?? LogicalChildren;
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -692,7 +695,7 @@ namespace Avalonia.Controls.Presenters
             else if (Child != null)
             {
                 VisualChildren.Remove(Child);
-                LogicalChildren.Remove(Child);
+                GetEffectiveLogicalChildren().Remove(Child);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _recyclingDataTemplate = null;
