@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -18,34 +20,84 @@ namespace Avalonia.Headless;
 /// </remarks>
 public sealed class HeadlessUnitTestSession : IDisposable
 {
-    private readonly CancellationTokenSource _cancellationToken;
+    private readonly CancellationTokenSource _cancellationTokenSource;
     private static HeadlessUnitTestSession? s_session;
     private static object s_lock = new();
+    private readonly BlockingCollection<Action> _queue;
+    private readonly Task _dispatchTask;
 
     internal const DynamicallyAccessedMemberTypes DynamicallyAccessed =
         DynamicallyAccessedMemberTypes.PublicMethods |
         DynamicallyAccessedMemberTypes.NonPublicMethods |
         DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
     
-    private HeadlessUnitTestSession(Type entryPointType, Application application,
-        SynchronizationContext synchronizationContext,
-        Dispatcher dispatcher, CancellationTokenSource cancellationToken)
+    private HeadlessUnitTestSession(Type entryPointType, CancellationTokenSource cancellationTokenSource, BlockingCollection<Action> queue, Task _dispatchTask)
     {
-        _cancellationToken = cancellationToken;
+        _cancellationTokenSource = cancellationTokenSource;
+        _queue = queue;
+        this._dispatchTask = _dispatchTask;
         EntryPointType = entryPointType;
-        Dispatcher = dispatcher;
-        Application = application;
-        SynchronizationContext = synchronizationContext;
     }
-    
-    public Application Application { get; }
-    public SynchronizationContext SynchronizationContext { get; }
-    public Dispatcher Dispatcher { get; }
+
     internal Type EntryPointType { get; }
 
+    public Task Dispatch(Action action, CancellationToken cancellationToken)
+    {
+        return Dispatch(() => { action(); return Task.FromResult(0); }, cancellationToken);
+    }
+    
+    public Task<TResult> Dispatch<TResult>(Func<TResult> action, CancellationToken cancellationToken)
+    {
+        return Dispatch(() => Task.FromResult(action()), cancellationToken);
+    }
+
+    public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
+    {
+        if (_cancellationTokenSource.IsCancellationRequested)
+        {
+            throw new ObjectDisposedException("Session was already disposed.");
+        }
+
+        var token = _cancellationTokenSource.Token;
+
+        var tcs = new TaskCompletionSource<TResult>();
+        _queue.Add(() =>
+        {
+            var cts = new CancellationTokenSource();
+            using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts);
+            using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts);
+
+            try
+            {
+                var task = action();
+                task.ContinueWith((_, s) => ((CancellationTokenSource)s!).Cancel(), cts);
+
+                if (cts.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var frame = new DispatcherFrame();
+                using var innerCts = cts.Token.Register(() => frame.Continue = false);
+                Dispatcher.UIThread.PushFrame(frame);
+
+                var result = task.GetAwaiter().GetResult();
+                tcs.TrySetResult(result);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+        });
+        return tcs.Task;
+    }
+    
     public void Dispose()
     {
-        _cancellationToken.Cancel();
+        _cancellationTokenSource.Cancel();
+        _queue.CompleteAdding();
+        _dispatchTask.Wait();
+        _cancellationTokenSource.Dispose();
     }
 
     /// <summary>
@@ -73,9 +125,10 @@ public sealed class HeadlessUnitTestSession : IDisposable
     {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
         var cancellationTokenSource = new CancellationTokenSource();
+        var queue = new BlockingCollection<Action>();
 
-        Thread? thread = null;
-        thread = new Thread(() =>
+        Task? task = null;
+        task = Task.Run(() =>
         {
             try
             {
@@ -93,10 +146,9 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 {
                     throw new InvalidOperationException("Avalonia Headless platform has failed to initialize.");
                 }
-                
+
                 // ReSharper disable once AccessToModifiedClosure
-                tcs.SetResult(new HeadlessUnitTestSession(entryPointType, Application.Current!,
-                    SynchronizationContext.Current!, Dispatcher.UIThread, cancellationTokenSource));
+                tcs.SetResult(new HeadlessUnitTestSession(entryPointType, cancellationTokenSource, queue, task!));
             }
             catch (Exception e)
             {
@@ -104,13 +156,23 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 return;
             }
 
-            Dispatcher.UIThread.MainLoop(cancellationTokenSource.Token);
-        }) { IsBackground = true };
-        thread.Start();
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    var action = queue.Take(cancellationTokenSource.Token);
+                    action();
+                }
+                catch (OperationCanceledException)
+                {
+
+                }
+            }
+        });
 
         return tcs.Task.GetAwaiter().GetResult();
     }
-    
+
     /// <summary>
     /// Creates a session from AvaloniaTestApplicationAttribute attribute or reuses any existing.
     /// If AvaloniaTestApplicationAttribute doesn't exist, empty application is used. 
@@ -128,7 +190,8 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
             if (s_session is not null)
             {
-                if (appBuilderEntryPointType != s_session.EntryPointType)
+                var hasNoAttribute = appBuilderEntryPointType == null && s_session.EntryPointType == typeof(Application);
+                if (!hasNoAttribute && appBuilderEntryPointType != s_session.EntryPointType)
                 {
                     // Avalonia doesn't support multiple Application instances. At least at the moment.
                     throw new System.InvalidOperationException(

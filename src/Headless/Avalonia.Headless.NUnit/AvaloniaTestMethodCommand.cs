@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using NUnit.Framework.Internal.Commands;
@@ -30,12 +31,12 @@ internal class AvaloniaTestMethodCommand : DelegatingTestCommand
         {
             if (s_beforeTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> beforeTest)
             {
-                Action<TestExecutionContext> beforeAction = c => session.Dispatcher.Invoke(() => beforeTest(c));
+                Action<TestExecutionContext> beforeAction = c => session.Dispatch(() => beforeTest(c), default);
                 s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
             }
             if (s_afterTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> afterTest)
             {
-                Action<TestExecutionContext> afterAction = c => session.Dispatcher.Invoke(() => afterTest(c));
+                Action<TestExecutionContext> afterAction = c => session.Dispatch(() => afterTest(c), default);
                 s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
             }
         }
@@ -52,10 +53,10 @@ internal class AvaloniaTestMethodCommand : DelegatingTestCommand
 
         return command;
     }
-    
+
     public override TestResult Execute(TestExecutionContext context)
     {
-        return _session.Dispatcher.InvokeOnQueue(() => ExecuteTestMethod(context));
+        return _session.Dispatch(() => ExecuteTestMethod(context), default).GetAwaiter().GetResult();
     }
 
     // Unfortunately, NUnit has issues with custom synchronization contexts, which means we need to add some hacks to make it work.

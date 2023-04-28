@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Headless.NUnit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -25,11 +24,8 @@ internal class AvaloniaTheoryTestCase : XunitTheoryTestCase
     {
         var session = HeadlessUnitTestSession.GetOrStartForAssembly(Method.ToRuntimeMethod().DeclaringType?.Assembly);
 
-        return session.Dispatcher.InvokeOnQueueAsync(async () =>
-        {
-            var runner = new XunitTestCaseRunner(this, DisplayName, SkipReason, constructorArguments,
+        return AvaloniaTestCaseRunner
+            .RunTest(session, this, DisplayName, SkipReason, constructorArguments,
                 TestMethodArguments, messageBus, aggregator, cancellationTokenSource);
-            return await runner.RunAsync();
-        }, cancellationTokenSource.Token);
     }
 }

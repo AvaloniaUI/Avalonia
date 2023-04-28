@@ -13,6 +13,13 @@ public class ThreadingTests
         Dispatcher.UIThread.VerifyAccess();
     }
     
+    // This test should always fail, uncomment to test if it fails.
+    // [AvaloniaFact]
+    // public void Should_Fail_Test_On_Delayed_Post_When_FlushDispatcher()
+    // {
+    //     Dispatcher.UIThread.Post(() => throw new InvalidOperationException(), DispatcherPriority.Default);
+    // }
+
     [AvaloniaTheory]
     [InlineData(1)]
     [InlineData(10)]
