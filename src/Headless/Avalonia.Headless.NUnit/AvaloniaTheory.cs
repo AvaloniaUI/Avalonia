@@ -19,6 +19,6 @@ public sealed class AvaloniaTheoryAttribute : TheoryAttribute, IWrapSetUpTearDow
     {
         var session = HeadlessUnitTestSession.GetOrStartForAssembly(command.Test.Method?.MethodInfo.DeclaringType?.Assembly);
 
-        return new AvaloniaTestCommand(session, command);
+        return AvaloniaTestMethodCommand.ProcessCommand(session, command);
     }
 }

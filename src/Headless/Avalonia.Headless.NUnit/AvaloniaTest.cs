@@ -20,6 +20,6 @@ public sealed class AvaloniaTestAttribute : TestCaseAttribute, IWrapSetUpTearDow
         var session =
             HeadlessUnitTestSession.GetOrStartForAssembly(command.Test.Method?.MethodInfo.DeclaringType?.Assembly);
 
-        return new AvaloniaTestCommand(session, command);
+        return AvaloniaTestMethodCommand.ProcessCommand(session, command);
     }
 }

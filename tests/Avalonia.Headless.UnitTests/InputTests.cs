@@ -46,7 +46,7 @@ public class InputTests
 
         _window.MouseDown(new Point(50, 50), MouseButton.Left);
         _window.MouseUp(new Point(50, 50), MouseButton.Left);
-
+        
         Assert.True(buttonClicked);
     }
 
