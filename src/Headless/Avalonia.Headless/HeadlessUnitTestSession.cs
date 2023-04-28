@@ -128,7 +128,8 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
             if (s_session is not null)
             {
-                if (appBuilderEntryPointType != s_session.EntryPointType)
+                var hasNoAttribute = appBuilderEntryPointType == null && s_session.EntryPointType == typeof(Application);
+                if (!hasNoAttribute && appBuilderEntryPointType != s_session.EntryPointType)
                 {
                     // Avalonia doesn't support multiple Application instances. At least at the moment.
                     throw new System.InvalidOperationException(
