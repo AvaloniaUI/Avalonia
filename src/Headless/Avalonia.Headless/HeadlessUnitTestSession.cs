@@ -31,22 +31,14 @@ public sealed class HeadlessUnitTestSession : IDisposable
         DynamicallyAccessedMemberTypes.NonPublicMethods |
         DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
     
-    private HeadlessUnitTestSession(Type entryPointType, Application application,
-        SynchronizationContext synchronizationContext,
-        Dispatcher dispatcher, CancellationTokenSource cancellationTokenSource, BlockingCollection<Action> queue, Task _dispatchTask)
+    private HeadlessUnitTestSession(Type entryPointType, CancellationTokenSource cancellationTokenSource, BlockingCollection<Action> queue, Task _dispatchTask)
     {
         _cancellationTokenSource = cancellationTokenSource;
         _queue = queue;
         this._dispatchTask = _dispatchTask;
         EntryPointType = entryPointType;
-        Dispatcher = dispatcher;
-        Application = application;
-        SynchronizationContext = synchronizationContext;
     }
-    
-    public Application Application { get; }
-    public SynchronizationContext SynchronizationContext { get; }
-    public Dispatcher Dispatcher { get; }
+
     internal Type EntryPointType { get; }
 
     public Task Dispatch(Action action, CancellationToken cancellationToken)
@@ -87,7 +79,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
                 var frame = new DispatcherFrame();
                 using var innerCts = cts.Token.Register(() => frame.Continue = false);
-                Dispatcher.PushFrame(frame);
+                Dispatcher.UIThread.PushFrame(frame);
 
                 var result = task.GetAwaiter().GetResult();
                 tcs.TrySetResult(result);
@@ -156,8 +148,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 }
 
                 // ReSharper disable once AccessToModifiedClosure
-                tcs.SetResult(new HeadlessUnitTestSession(entryPointType, Application.Current!,
-                    SynchronizationContext.Current!, Dispatcher.UIThread, cancellationTokenSource, queue, task!));
+                tcs.SetResult(new HeadlessUnitTestSession(entryPointType, cancellationTokenSource, queue, task!));
             }
             catch (Exception e)
             {
