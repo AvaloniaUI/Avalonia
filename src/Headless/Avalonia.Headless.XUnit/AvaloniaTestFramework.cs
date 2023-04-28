@@ -27,7 +27,7 @@ internal class AvaloniaTestFramework : XunitTestFramework
             IMessageSink executionMessageSink,
             ITestFrameworkExecutionOptions executionOptions)
         {
-            using (var assemblyRunner = new AvaloniaTestRunner(
+            using (var assemblyRunner = new AvaloniaTestAssemblyRunner(
                        TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink,
                        executionOptions)) await assemblyRunner.RunAsync();
         }
