@@ -359,16 +359,21 @@ namespace Avalonia.Controls.UnitTests
             target.Presenter.ApplyTemplate();
 
             Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
+            Assert.Equal(new[] { target.Presenter.Child }, target.LogicalChildren);
 
             root.Child = null;
 
             Assert.Null(target.Template);
 
             target.Content = null;
+
+            Assert.Empty(target.LogicalChildren);
+
             root.Child = target;
             target.Content = "Bar";
 
             Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
+            Assert.Equal(new[] { target.Presenter.Child }, target.LogicalChildren);
         }
 
         private static FuncControlTemplate GetTemplate()
