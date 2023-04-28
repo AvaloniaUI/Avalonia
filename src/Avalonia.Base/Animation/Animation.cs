@@ -200,7 +200,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="setter">The animation setter.</param>
         /// <param name="value">The property animator value.</param>
-        public static void SetAnimator(IAnimationSetter setter, 
+        public static void SetAnimator(IAnimationSetter setter,
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicMethods)]
             Type value)
         {
@@ -319,7 +319,7 @@ namespace Avalonia.Animation
             if (animators.Count == 1)
             {
                 var subscription = animators[0].Apply(this, control, clock, match, onComplete);
-                
+
                 if (subscription is not null)
                 {
                     subscriptions.Add(subscription);
@@ -348,9 +348,11 @@ namespace Avalonia.Animation
 
                 if (onComplete != null)
                 {
-                    Task.WhenAll(completionTasks!).ContinueWith(
-                        (_, state) => ((Action)state!).Invoke(),
-                        onComplete);
+                    Task.WhenAll(completionTasks!)
+                        .ContinueWith((_, state) => ((Action)state!).Invoke()
+                            , onComplete
+                            , TaskScheduler.FromCurrentSynchronizationContext()
+                            );
                 }
             }
             return new CompositeDisposable(subscriptions);
