@@ -60,6 +60,29 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Lays_Out_Descendents_That_Were_Invalidated_While_Ancestor_Was_Not_Visible()
+        {
+            // Issue #11076
+            var control = new LayoutTestControl();
+            var parent = new Decorator { Child = control };
+            var grandparent = new Decorator { Child = parent };
+            var root = new LayoutTestRoot { Child = grandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.IsVisible = false;
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.IsVisible = true;
+
+            root.LayoutManager.ExecuteLayoutPass();
+            
+            Assert.True(control.IsMeasureValid);
+            Assert.True(control.IsArrangeValid);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();
