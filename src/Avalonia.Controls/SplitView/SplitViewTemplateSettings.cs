@@ -17,12 +17,14 @@
             AvaloniaProperty.Register<SplitViewTemplateSettings, GridLength>(
                 nameof(PaneColumnGridLength));
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "This property is supposed to be a styled readonly property.")]
         public double ClosedPaneWidth
         {
             get => GetValue(ClosedPaneWidthProperty);
             internal set => SetValue(ClosedPaneWidthProperty, value);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "This property is supposed to be a styled readonly property.")]
         public GridLength PaneColumnGridLength
         {
             get => GetValue(PaneColumnGridLengthProperty);

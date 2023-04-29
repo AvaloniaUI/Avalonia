@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
         /// </summary>
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
-            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>();
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
         
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;

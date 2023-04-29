@@ -329,6 +329,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's parent visual.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "GetVisualParent extension method is supposed to be used instead.")]
         internal Visual? VisualParent => _visualParent;
 
         /// <summary>

@@ -115,6 +115,7 @@ namespace Avalonia.Controls
         /// <value>
         /// The content of the selected tab.
         /// </value>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "This property is supposed to be a styled readonly property.")]
         public object? SelectedContent
         {
             get { return GetValue(SelectedContentProperty); }
@@ -127,6 +128,7 @@ namespace Avalonia.Controls
         /// <value>
         /// The content template of the selected tab.
         /// </value>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "This property is supposed to be a styled readonly property.")]
         public IDataTemplate? SelectedContentTemplate
         {
             get { return GetValue(SelectedContentTemplateProperty); }
