@@ -17,7 +17,7 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager, IDisposable
     {
-        private const int MaxPasses = 3;
+        private const int MaxPasses = 10;
         private readonly Layoutable _owner;
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
@@ -249,10 +249,12 @@ namespace Avalonia.Layout
             {
                 var control = _toMeasure.Dequeue();
 
-                if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+                if (!control.IsMeasureValid)
                 {
                     Measure(control);
                 }
+
+                _toArrange.Enqueue(control);
             }
         }
 
@@ -262,7 +264,7 @@ namespace Avalonia.Layout
             {
                 var control = _toArrange.Dequeue();
 
-                if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+                if (!control.IsArrangeValid)
                 {
                     Arrange(control);
                 }
@@ -297,8 +299,6 @@ namespace Avalonia.Layout
                 {
                     control.Measure(control.PreviousMeasure.Value);
                 }
-
-                _toArrange.Enqueue(control);
             }
 
             return true;
