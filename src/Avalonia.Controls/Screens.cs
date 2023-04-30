@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
@@ -37,11 +37,22 @@ namespace Avalonia.Controls
             _iScreenImpl = iScreenImpl;
         }
 
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the rectangle.
+        /// </summary>
+        /// <param name="bounds">Bounds that specifies the area for which to retrieve the display.</param>
+        /// <returns>The <see cref="Screen"/>.</returns>
         public Screen? ScreenFromBounds(PixelRect bounds)
         {
             return _iScreenImpl.ScreenFromRect(bounds);
         }
 
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the specified <see cref="WindowBase"/>.
+        /// </summary>
+        /// <param name="window">The window for which to retrieve the Screen.</param>
+        /// <exception cref="ObjectDisposedException">Window platform implementation was already disposed.</exception>
+        /// <returns>The <see cref="Screen"/>.</returns>
         public Screen? ScreenFromWindow(WindowBase window)
         {
             if (window.PlatformImpl is null)
@@ -52,17 +63,32 @@ namespace Avalonia.Controls
             return _iScreenImpl.ScreenFromWindow(window.PlatformImpl);
         }
 
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the specified <see cref="IWindowBaseImpl"/>.
+        /// </summary>
+        /// <param name="window">The window impl for which to retrieve the Screen.</param>
+        /// <returns>The <see cref="Screen"/>.</returns>
         [Obsolete("Use ScreenFromWindow(WindowBase) overload.")]
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             return _iScreenImpl.ScreenFromWindow(window);
         }
 
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the specified point.
+        /// </summary>
+        /// <param name="point">A Point that specifies the location for which to retrieve a Screen.</param>
+        /// <returns>The <see cref="Screen"/>.</returns>
         public Screen? ScreenFromPoint(PixelPoint point)
         {
             return _iScreenImpl.ScreenFromPoint(point);
         }
 
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the specified <see cref="Visual"/>.
+        /// </summary>
+        /// <param name="visual">A Visual for which to retrieve a Screen.</param>
+        /// <returns>The <see cref="Screen"/>.</returns>
         public Screen? ScreenFromVisual(Visual visual)
         {
             var tl = visual.PointToScreen(visual.Bounds.TopLeft);
