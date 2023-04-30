@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests;
 
-public class AssetLoaderTests : IDisposable
+public class AssetLoaderTests
 {
+    private IAssemblyDescriptorResolver _resolver;
+
     public class MockAssembly : Assembly { }
 
     private const string AssemblyNameWithWhitespace = "Awesome Library";
@@ -17,22 +19,20 @@ public class AssetLoaderTests : IDisposable
 
     public AssetLoaderTests()
     {
-        var resolver = Mock.Of<IAssemblyDescriptorResolver>();
+        _resolver = Mock.Of<IAssemblyDescriptorResolver>();
 
         var descriptor = CreateAssemblyDescriptor(AssemblyNameWithWhitespace);
-        Mock.Get(resolver).Setup(x => x.GetAssembly(AssemblyNameWithWhitespace)).Returns(descriptor);
+        Mock.Get(_resolver).Setup(x => x.GetAssembly(AssemblyNameWithWhitespace)).Returns(descriptor);
 
         descriptor = CreateAssemblyDescriptor(AssemblyNameWithNonAscii);
-        Mock.Get(resolver).Setup(x => x.GetAssembly(AssemblyNameWithNonAscii)).Returns(descriptor);
-
-        AssetLoader.SetAssemblyDescriptorResolver(resolver);
+        Mock.Get(_resolver).Setup(x => x.GetAssembly(AssemblyNameWithNonAscii)).Returns(descriptor);
     }
 
     [Fact]
     public void AssemblyName_With_Whitespace_Should_Load_Resm()
     {
         var uri = new Uri($"resm:Avalonia.Base.UnitTests.Assets.something?assembly={AssemblyNameWithWhitespace}");
-        var loader = new AssetLoader();
+        var loader = new StandardAssetLoader(_resolver);
 
         var assemblyActual = loader.GetAssembly(uri, null);
 
@@ -43,7 +43,7 @@ public class AssetLoaderTests : IDisposable
     public void AssemblyName_With_Non_ASCII_Should_Load_Avares()
     {
         var uri = new Uri($"avares://{AssemblyNameWithNonAscii}/Assets/something");
-        var loader = new AssetLoader();
+        var loader = new StandardAssetLoader(_resolver);
 
         var assemblyActual = loader.GetAssembly(uri, null);
 
@@ -54,7 +54,7 @@ public class AssetLoaderTests : IDisposable
     public void Invalid_AssemblyName_Should_Yield_Empty_Enumerable()
     {
         var uri = new Uri($"avares://InvalidAssembly");
-        var loader = new AssetLoader();
+        var loader = new StandardAssetLoader(_resolver);
 
         var assemblyActual = loader.GetAssets(uri, null);
 
@@ -70,10 +70,5 @@ public class AssetLoaderTests : IDisposable
         var descriptor = Mock.Of<IAssemblyDescriptor>();
         Mock.Get(descriptor).Setup(x => x.Assembly).Returns(assembly);
         return descriptor;
-    }
-
-    public void Dispose()
-    {
-        AssetLoader.SetAssemblyDescriptorResolver(new AssemblyDescriptorResolver());
     }
 }
