@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;

@@ -5,12 +5,9 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
-using Avalonia.Skia.Helpers;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
 
@@ -665,12 +662,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
             _currentBlendingMode = _blendingModeStack.Pop();
-        }
-
-        public void Custom(ICustomDrawOperation custom)
-        {
-            CheckLease();
-            custom.Render(this);
         }
 
         /// <inheritdoc />
