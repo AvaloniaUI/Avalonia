@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -43,6 +42,17 @@ namespace Avalonia.Controls
             return _iScreenImpl.ScreenFromRect(bounds);
         }
 
+        public Screen? ScreenFromWindow(WindowBase window)
+        {
+            if (window.PlatformImpl is null)
+            {
+                throw new ObjectDisposedException("Window platform implementation was already disposed.");
+            }
+
+            return _iScreenImpl.ScreenFromWindow(window.PlatformImpl);
+        }
+
+        [Obsolete("Use ScreenFromWindow(WindowBase) overload.")]
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             return _iScreenImpl.ScreenFromWindow(window);
