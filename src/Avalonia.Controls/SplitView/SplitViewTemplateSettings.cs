@@ -2,8 +2,10 @@
 {
     /// <summary>
     /// Provides calculated values for use with the <see cref="SplitView"/>'s control theme or template.
-    /// This class is NOT intended for general use.
     /// </summary>
+    /// <remarks>
+    /// This class is NOT intended for general use outside of control templates.
+    /// </remarks>
     public class SplitViewTemplateSettings : AvaloniaObject
     {
         internal SplitViewTemplateSettings() { }
