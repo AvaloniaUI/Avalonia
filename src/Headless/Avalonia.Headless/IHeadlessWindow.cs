@@ -8,7 +8,7 @@ namespace Avalonia.Headless
 {
     internal interface IHeadlessWindow
     {
-        Bitmap? GetLastRenderedFrame();
+        WriteableBitmap? GetLastRenderedFrame();
         void KeyPress(Key key, RawInputModifiers modifiers);
         void KeyRelease(Key key, RawInputModifiers modifiers);
         void MouseDown(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
