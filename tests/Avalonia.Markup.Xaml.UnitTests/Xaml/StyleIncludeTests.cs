@@ -282,7 +282,7 @@ public class StyleIncludeTests
     public void StyleInclude_From_CodeBehind_Resolves_Compiled()
     {
         using var locatorScope = AvaloniaLocator.EnterScope();
-        AvaloniaLocator.CurrentMutable.BindToSelf<IAssetLoader>(new AssetLoader(GetType().Assembly));
+        AvaloniaLocator.CurrentMutable.BindToSelf<IAssetLoader>(new StandardAssetLoader(GetType().Assembly));
         
         var sp = new TestServiceProvider();
         var styleInclude = new StyleInclude(sp)
