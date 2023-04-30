@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var border = window.FindControl<Border>("border");
 
                 var brush = (SolidColorBrush)border.Background;
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -120,7 +120,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.Show();
 
                 var brush = (SolidColorBrush)border.Background;
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -202,7 +202,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var button = window.FindControl<Button>("button");
                 var brush = (ISolidColorBrush)button.Background;
 
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -231,7 +231,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var button = window.FindControl<Button>("button");
                 var brush = (ISolidColorBrush)button.Background;
 
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -268,7 +268,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var border = window.FindControl<Border>("border");
                 var brush = (ISolidColorBrush)border.Background;
 
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -290,7 +290,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (SolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -308,7 +308,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var styles = (Styles)AvaloniaRuntimeXamlLoader.Load(xaml);
             var brush = (SolidColorBrush)styles.Resources["brush"];
 
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -352,7 +352,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var border = (Border)button.GetVisualChildren().Single();
                 var brush = (ISolidColorBrush)border.Background;
                 
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -491,12 +491,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
 
             userControl.Content = null;
 
             brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
         [Fact]
@@ -516,7 +516,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
         
         [Fact]
@@ -542,7 +542,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var button = window.FindControl<Button>("button");
                 var brush = (ISolidColorBrush)button.Background;
 
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
