@@ -25,8 +25,7 @@ namespace Avalonia.Input
             return _target.TranslatePoint(_targetLocation, relativeTo) ?? new Point(0, 0);
         }
 
-        [Unstable]
-        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
+        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
         public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
             : base(routedEvent)
         {
