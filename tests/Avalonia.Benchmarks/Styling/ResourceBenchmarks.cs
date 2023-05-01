@@ -18,7 +18,7 @@ namespace Avalonia.Benchmarks.Styling
         private static IDisposable CreateApp()
         {
             var services = new TestServices(
-                assetLoader: new AssetLoader(),
+                assetLoader: new StandardAssetLoader(),
                 globalClock: new MockGlobalClock(),
                 platform: new AppBuilder().RuntimePlatform,
                 standardCursorFactory: Mock.Of<ICursorFactory>(),

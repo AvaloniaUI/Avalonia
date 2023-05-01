@@ -713,7 +713,7 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner?.AddChild(this, false);
 
-                SetWindowStartupLocation(owner?.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, false);
                 Renderer.Start();
@@ -789,7 +789,7 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner.AddChild(this, true);
 
-                SetWindowStartupLocation(owner.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, true);
 
@@ -870,7 +870,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(IWindowBaseImpl? owner = null)
+        private void SetWindowStartupLocation(Window? owner = null)
         {
             var startupLocation = WindowStartupLocation;
 

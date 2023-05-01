@@ -155,7 +155,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 result = new XamlStaticOrTargetedReturnMethodCallNode(node,
                     type.GetMethod(
                         new FindMethodMethodSignature("FromUInt32", type, types.UInt) { IsStatic = true }),
-                    new[] { new XamlConstantNode(node, types.UInt, color.ToUint32()) });
+                    new[] { new XamlConstantNode(node, types.UInt, color.ToUInt32()) });
 
                 return true;
             }
@@ -242,7 +242,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                     result = new XamlAstNewClrObjectNode(node, brushTypeRef,
                         types.ImmutableSolidColorBrushConstructorColor,
-                        new List<IXamlAstValueNode> { new XamlConstantNode(node, types.UInt, color.ToUint32()) });
+                        new List<IXamlAstValueNode> { new XamlConstantNode(node, types.UInt, color.ToUInt32()) });
 
                     return true;
                 }

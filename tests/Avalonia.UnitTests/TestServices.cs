@@ -21,7 +21,7 @@ namespace Avalonia.UnitTests
     public class TestServices
     {
         public static readonly TestServices StyledWindow = new TestServices(
-            assetLoader: new AssetLoader(),
+            assetLoader: new StandardAssetLoader(),
             platform: new StandardRuntimePlatform(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
@@ -32,7 +32,7 @@ namespace Avalonia.UnitTests
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
-            assetLoader: new AssetLoader(),
+            assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
             textShaperImpl: new HeadlessTextShaperStub());
@@ -51,13 +51,13 @@ namespace Avalonia.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            assetLoader: new AssetLoader(),
+            assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
             textShaperImpl: new HeadlessTextShaperStub());
 
         public static readonly TestServices TextServices = new TestServices(
-            assetLoader: new AssetLoader(),
+            assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HarfBuzzFontManagerImpl(),
             textShaperImpl: new HarfBuzzTextShaperImpl());

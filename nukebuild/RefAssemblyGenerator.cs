@@ -96,7 +96,7 @@ public class RefAssemblyGenerator
                     | MethodAttributes.HideBySig, type.Module.TypeSystem.Void));
             }
 
-            var forceUnstable = type.CustomAttributes.Any(a =>
+            var forceUnstable = type.CustomAttributes.FirstOrDefault(a =>
                 a.AttributeType.FullName == "Avalonia.Metadata.UnstableAttribute");
             
             foreach (var m in type.Methods)
@@ -109,22 +109,28 @@ public class RefAssemblyGenerator
         }
     }
 
-    static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, bool force)
+    static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, ICustomAttribute unstableAttribute)
     {
-        if (!force && (
-            def.HasCustomAttributes == false
-            || def.CustomAttributes.All(a => a.AttributeType.FullName != "Avalonia.Metadata.UnstableAttribute")))
-            return;
-
         if (def.CustomAttributes.Any(a => a.AttributeType.FullName == "System.ObsoleteAttribute"))
             return;
 
+        unstableAttribute = def.CustomAttributes.FirstOrDefault(a =>
+            a.AttributeType.FullName == "Avalonia.Metadata.UnstableAttribute") ?? unstableAttribute;
+
+        if (unstableAttribute is null)
+            return;
+
+        var message = unstableAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
+        if (string.IsNullOrEmpty(message))
+        {
+            message = "This is a part of unstable API and can be changed in minor releases. Consider replacing it with alternatives or reach out developers on GitHub.";
+        }
+        
         def.CustomAttributes.Add(new CustomAttribute(obsoleteCtor)
         {
             ConstructorArguments =
             {
-                new CustomAttributeArgument(obsoleteCtor.Module.TypeSystem.String,
-                    "This is a part of unstable API and can be changed in minor releases. You have been warned")
+                new CustomAttributeArgument(obsoleteCtor.Module.TypeSystem.String, message)
             }
         });
     }

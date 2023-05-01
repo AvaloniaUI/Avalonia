@@ -83,11 +83,11 @@ namespace Avalonia.Controls
 
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<TopLevel>();
         
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<TopLevel>();
 
         /// <summary>
         /// Defines the SystemBarColor attached property.

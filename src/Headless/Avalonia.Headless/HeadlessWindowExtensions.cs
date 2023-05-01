@@ -17,7 +17,7 @@ public static class HeadlessWindowExtensions
     /// Triggers a renderer timer tick and captures last rendered frame.
     /// </summary>
     /// <returns>Bitmap with last rendered frame. Null, if nothing was rendered.</returns>
-    public static Bitmap? CaptureRenderedFrame(this TopLevel topLevel)
+    public static WriteableBitmap? CaptureRenderedFrame(this TopLevel topLevel)
     {
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -29,7 +29,7 @@ public static class HeadlessWindowExtensions
     /// Note, in order to trigger rendering timer, call <see cref="AvaloniaHeadlessPlatform.ForceRenderTimerTick"/> method.  
     /// </summary>
     /// <returns>Bitmap with last rendered frame. Null, if nothing was rendered.</returns>
-    public static Bitmap? GetLastRenderedFrame(this TopLevel topLevel)
+    public static WriteableBitmap? GetLastRenderedFrame(this TopLevel topLevel)
     {
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() is HeadlessPlatformRenderInterface)
         {

@@ -9,7 +9,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
-    [Unstable]
+    [Unstable("IAssetLoader interface and AvaloniaLocator usage is considered unstable. Please use AssetLoader static class instead.")]
     public interface IAssetLoader
     {
         /// <summary>

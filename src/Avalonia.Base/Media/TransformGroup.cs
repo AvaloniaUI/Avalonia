@@ -11,6 +11,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
             Children = new Transforms();
