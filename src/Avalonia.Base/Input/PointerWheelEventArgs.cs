@@ -9,8 +9,7 @@ namespace Avalonia.Input
     {
         public Vector Delta { get; }
 
-        [Unstable]
-        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow.MouseWheel.")]
+        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow.MouseWheel.")]
         public PointerWheelEventArgs(object source, IPointer pointer, Visual rootVisual,
             Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers, Vector delta)

@@ -217,8 +217,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets whether WinUI equivalent LightDismissOverlayMode is enabled
         /// <para>When enabled, and the pane is open in Overlay or CompactOverlay mode,
-        /// the contents of the splitview are darkened to visually separate the open pane
-        /// and the rest of the SplitView</para>
+        /// the contents of the <see cref="SplitView"/> are darkened to visually separate the open pane
+        /// and the rest of the <see cref="SplitView"/>.</para>
         /// </summary>
         public bool UseLightDismissOverlayMode
         {
@@ -227,7 +227,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the TemplateSettings for the SplitView
+        /// Gets or sets the TemplateSettings for the <see cref="SplitView"/>.
         /// </summary>
         public SplitViewTemplateSettings TemplateSettings
         {

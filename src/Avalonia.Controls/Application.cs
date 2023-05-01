@@ -94,6 +94,8 @@ namespace Avalonia
         }
         
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031", Justification = "This property is supposed to be a styled readonly property.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030", Justification = "False positive.")]
         public ThemeVariant ActualThemeVariant => GetValue(ActualThemeVariantProperty);
 
         /// <summary>

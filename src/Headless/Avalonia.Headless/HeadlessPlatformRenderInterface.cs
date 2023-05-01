@@ -434,12 +434,7 @@ namespace Avalonia.Headless
             {
                 
             }
-
-            public void Custom(ICustomDrawOperation custom)
-            {
-
-            }
-
+            
             public object? GetFeature(Type t)
             {
                 return null;

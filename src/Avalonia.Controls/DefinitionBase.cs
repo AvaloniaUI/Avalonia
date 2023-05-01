@@ -37,7 +37,7 @@ namespace Avalonia.Controls
             {
                 //  start with getting SharedSizeGroup value. 
                 //  this property is NOT inherited which should result in better overall perf.
-                if (SharedSizeGroup is { } sharedSizeGroupId && PrivateSharedSizeScope is { } privateSharedSizeScope)
+                if (SharedSizeGroup is { } sharedSizeGroupId && GetValue(PrivateSharedSizeScopeProperty) is { } privateSharedSizeScope)
                 {
                     _sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroupId);
                     _sharedState.AddMember(this);
@@ -333,7 +333,7 @@ namespace Avalonia.Controls
 
                 if (definition._sharedState == null
                     && sharedSizeGroupId != null
-                    && definition.PrivateSharedSizeScope is { } privateSharedSizeScope)
+                    && definition.GetValue(PrivateSharedSizeScopeProperty) is { } privateSharedSizeScope)
                 {
                     //  if definition is not registered and both: shared size group id AND private shared scope
                     //  are available, then register definition.
@@ -410,14 +410,6 @@ namespace Avalonia.Controls
                     definition._sharedState.AddMember(definition);
                 }
             }
-        }
-
-        /// <summary>
-        /// Private getter of shared state collection dynamic property.
-        /// </summary>
-        private SharedSizeScope? PrivateSharedSizeScope
-        {
-            get { return GetValue(PrivateSharedSizeScopeProperty); }
         }
 
         /// <summary>
