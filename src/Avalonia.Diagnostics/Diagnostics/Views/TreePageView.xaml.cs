@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls;
@@ -97,9 +98,27 @@ namespace Avalonia.Diagnostics.Views
             _currentLayer = null;
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == DataContextProperty)
+            {
+                if (change.GetOldValue<object?>() is TreePageViewModel oldViewModel)
+                    oldViewModel.ClipboardCopyRequested -= OnClipboardCopyRequested;
+                if (change.GetNewValue<object?>() is TreePageViewModel newViewModel)
+                    newViewModel.ClipboardCopyRequested += OnClipboardCopyRequested;
+            }
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void OnClipboardCopyRequested(object? sender, string e)
+        {
+            TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(e);
         }
     }
 }

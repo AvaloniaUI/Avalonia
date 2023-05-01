@@ -45,7 +45,7 @@ namespace Avalonia.Direct2D1.RenderTests
         private static readonly TestDispatcherImpl threadingInterface =
             new TestDispatcherImpl();
 
-        private static readonly IAssetLoader assetLoader = new AssetLoader();
+        private static readonly IAssetLoader assetLoader = new StandardAssetLoader();
         
         static TestBase()
         {

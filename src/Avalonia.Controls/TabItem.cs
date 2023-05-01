@@ -42,6 +42,8 @@ namespace Avalonia.Controls
         /// <value>
         /// The tab strip placement.
         /// </value>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031",
+            Justification = "This property is supposed to be inherited only and settable on parent TabControl.")]
         public Dock TabStripPlacement
         {
             get { return GetValue(TabStripPlacementProperty); }
@@ -83,7 +85,7 @@ namespace Avalonia.Controls
                 {
                     Header = obj.NewValue;
                 }
-            }          
+            }
         }
     }
 }

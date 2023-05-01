@@ -35,7 +35,7 @@ namespace Avalonia.Collections
         /// Indicates if a weak subscription should be used to track changes to the collection.
         /// </param>
         /// <returns>A disposable used to terminate the subscription.</returns>
-        internal static IDisposable ForEachItem<TKey, TValue>(
+        public static IDisposable ForEachItem<TKey, TValue>(
             this IAvaloniaReadOnlyDictionary<TKey, TValue> collection,
             Action<TKey, TValue> added,
             Action<TKey, TValue> removed,

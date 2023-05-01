@@ -353,7 +353,10 @@ namespace Avalonia.Controls.Utils
                 for (var i = start; i < end; ++i)
                 {
                     if (_elements[i] is Control element)
+                    {
+                        _elements[i] = null;
                         recycleElement(element);
+                    }
                 }
 
                 _elements.RemoveRange(start, end - start);
@@ -389,10 +392,13 @@ namespace Avalonia.Controls.Utils
             if (_elements is null || _elements.Count == 0)
                 return;
 
-            foreach (var e in _elements)
+            for (var i = 0; i < _elements.Count; i++)
             {
-                if (e is not null)
+                if (_elements[i] is Control e)
+                {
+                    _elements[i] = null;
                     recycleElement(e);
+                }
             }
 
             _startU = _firstIndex = 0;
@@ -422,7 +428,10 @@ namespace Avalonia.Controls.Utils
                 for (var i = 0; i < endIndex; ++i)
                 {
                     if (_elements[i] is Control e)
+                    {
+                        _elements[i] = null;
                         recycleElement(e, i + FirstIndex);
+                    }
                 }
 
                 _elements.RemoveRange(0, endIndex);
@@ -453,7 +462,10 @@ namespace Avalonia.Controls.Utils
                 for (var i = startIndex; i < count; ++i)
                 {
                     if (_elements[i] is Control e)
+                    {
+                        _elements[i] = null;
                         recycleElement(e, i + FirstIndex);
+                    }
                 }
 
                 _elements.RemoveRange(startIndex, _elements.Count - startIndex);
@@ -470,13 +482,13 @@ namespace Avalonia.Controls.Utils
             if (_elements is null || _elements.Count == 0)
                 return;
 
-            var i = FirstIndex;
-
-            foreach (var e in _elements)
+            for (var i = 0; i < _elements.Count; i++)
             {
-                if (e is not null)
-                    recycleElement(e, i);
-                ++i;
+                if (_elements[i] is Control e)
+                {
+                    _elements[i] = null;
+                    recycleElement(e, i + FirstIndex);
+                }
             }
 
             _startU = _firstIndex = 0;

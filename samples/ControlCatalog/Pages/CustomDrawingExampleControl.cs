@@ -19,18 +19,16 @@ namespace ControlCatalog.Pages
         public static readonly StyledProperty<double> ScaleProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Scale), 1.0d);
         public double Scale { get => GetValue(ScaleProperty); set => SetValue(ScaleProperty, value); }
 
-        public static readonly StyledProperty<double> RotationProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Rotation));
+        public static readonly StyledProperty<double> RotationProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Rotation),
+            coerce: (_, val) => val % (Math.PI * 2));
+
         /// <summary>
         /// Rotation, measured in Radians!
         /// </summary>
         public double Rotation
         {
             get => GetValue(RotationProperty);
-            set
-            {
-                double valueToUse = value % (Math.PI * 2);
-                SetValue(RotationProperty, valueToUse);
-            }
+            set => SetValue(RotationProperty, value);
         }
 
         public static readonly StyledProperty<double> ViewportCenterYProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterY), 0.0d);
@@ -213,5 +211,6 @@ namespace ControlCatalog.Pages
 
             return workingPoint;
         }
+
     }
 }
