@@ -1761,7 +1761,10 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeViewWithDerivedTreeViewItems : TreeView
         {
-            protected internal override Control CreateContainerForItemOverride() => new DerivedTreeViewItem();
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+            {
+                return new DerivedTreeViewItem();
+            }
         }
 
         private class DerivedTreeViewItem : TreeViewItem

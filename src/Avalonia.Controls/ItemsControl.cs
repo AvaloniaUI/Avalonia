@@ -307,6 +307,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets a default recycle key that can be used when an <see cref="ItemsControl"/> supports
+        /// a single container type.
+        /// </summary>
+        protected static object DefaultRecycleKey { get; } = new object();
+
+        /// <summary>
         /// Returns the container for the item at the specified index.
         /// </summary>
         /// <param name="index">The index of the item to retrieve.</param>
@@ -361,7 +367,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates or a container that can be used to display an item.
         /// </summary>
-        protected internal virtual Control CreateContainerForItemOverride() => new ContentPresenter();
+        protected internal virtual Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ContentPresenter();
+        }
 
         /// <summary>
         /// Prepares the specified element to display the specified item.
@@ -494,11 +503,52 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Determines whether the specified item is (or is eligible to be) its own container.
+        /// Determines whether the specified item can be its own container.
         /// </summary>
         /// <param name="item">The item to check.</param>
-        /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
-        protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
+        /// <param name="index">The index of the item.</param>
+        /// <param name="recycleKey">
+        /// When the method returns, contains a key that can be used to locate a previously
+        /// recycled container of the correct type, or null if the item cannot be recycled.
+        /// If the item is its own container then by definition it cannot be recycled, so
+        /// <paramref name="recycleKey"/> shoud be set to null.
+        /// </param>
+        /// <returns>
+        /// true if the item needs a container; otherwise false if the item can itself be used
+        /// as a container.
+        /// </returns>
+        protected internal virtual bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<Control>(item, out recycleKey);
+        }
+
+        /// <summary>
+        /// A default implementation of <see cref="NeedsContainerOverride(object, int, out object?)"/>
+        /// that returns true and sets the recycle key to <see cref="DefaultRecycleKey"/> if the item
+        /// is not a <typeparamref name="T"/> .
+        /// </summary>
+        /// <typeparam name="T">The container type.</typeparam>
+        /// <param name="item">The item.</param>
+        /// <param name="recycleKey">
+        /// When the method returns, contains <see cref="DefaultRecycleKey"/> if
+        /// <paramref name="item"/> is not of type <typeparamref name="T"/>; otherwise null.
+        /// </param>
+        /// <returns>
+        /// true if <paramref name="item"/> is of type <typeparamref name="T"/>; otherwise false.
+        /// </returns>
+        protected bool NeedsContainer<T>(object? item, out object? recycleKey) where T : Control
+        {
+            if (item is T)
+            {
+                recycleKey = null;
+                return false;
+            }
+            else
+            {
+                recycleKey = DefaultRecycleKey;
+                return true;
+            }
+        }
 
         /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
