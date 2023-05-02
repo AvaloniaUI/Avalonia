@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Internal;
 
-internal interface IAssemblyDescriptorResolver
+[Unstable]
+public interface IAssemblyDescriptorResolver
 {
     IAssemblyDescriptor GetAssembly(string name);
 }

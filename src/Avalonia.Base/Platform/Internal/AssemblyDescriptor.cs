@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Platform.Internal;
 
-internal interface IAssemblyDescriptor
+[Unstable]
+public interface IAssemblyDescriptor
 {
     Assembly Assembly { get; }
     Dictionary<string, IAssetDescriptor>? Resources { get; }

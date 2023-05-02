@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Internal;
 
-internal interface IAssetDescriptor
+[Unstable]
+public interface IAssetDescriptor
 {
     Stream GetStream();
     Assembly Assembly { get; }
