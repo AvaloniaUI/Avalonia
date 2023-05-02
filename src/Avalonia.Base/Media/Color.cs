@@ -6,6 +6,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -465,7 +466,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc cref="Color.ToUInt32"/>
-        [Obsolete("Use Color.ToUInt32() instead.")]
+        [Obsolete("Use Color.ToUInt32() instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public uint ToUint32()
         {
             return ToUInt32();

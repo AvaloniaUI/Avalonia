@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Platform;
 
@@ -68,7 +69,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="window">The window impl for which to retrieve the Screen.</param>
         /// <returns>The <see cref="Screen"/>.</returns>
-        [Obsolete("Use ScreenFromWindow(WindowBase) overload.")]
+        [Obsolete("Use ScreenFromWindow(WindowBase) overload."), EditorBrowsable(EditorBrowsableState.Never)]
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             return _iScreenImpl.ScreenFromWindow(window);
