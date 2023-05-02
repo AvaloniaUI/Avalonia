@@ -214,7 +214,7 @@ namespace Avalonia.Headless
             });
         }
 
-        public Bitmap? GetLastRenderedFrame()
+        public WriteableBitmap? GetLastRenderedFrame()
         {
             lock (_sync)
             {
@@ -224,7 +224,7 @@ namespace Avalonia.Headless
                 }
 
                 using var lockedFramebuffer = _lastRenderedFrame.Lock();
-                return new Bitmap(lockedFramebuffer.Format, AlphaFormat.Opaque, lockedFramebuffer.Address,
+                return new WriteableBitmap(lockedFramebuffer.Format, AlphaFormat.Opaque, lockedFramebuffer.Address,
                     lockedFramebuffer.Size, lockedFramebuffer.Dpi, lockedFramebuffer.RowBytes);
             }
         }

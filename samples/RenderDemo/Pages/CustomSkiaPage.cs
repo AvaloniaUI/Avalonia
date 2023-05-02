@@ -44,9 +44,9 @@ namespace RenderDemo.Pages
             public bool HitTest(Point p) => false;
             public bool Equals(ICustomDrawOperation other) => false;
             static Stopwatch St = Stopwatch.StartNew();
-            public void Render(IDrawingContextImpl context)
+            public void Render(ImmediateDrawingContext context)
             {
-                var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
+                var leaseFeature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
                 if (leaseFeature == null)
                     context.DrawGlyphRun(Brushes.Black, _noSkia.PlatformImpl);
                 else

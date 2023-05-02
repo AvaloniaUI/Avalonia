@@ -9,6 +9,10 @@ namespace Avalonia.Styling;
 /// Specifies a UI theme variant that should be used for the Control and Application types.
 /// </summary>
 [TypeConverter(typeof(ThemeVariantTypeConverter))]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1010:AvaloniaProperty objects should be owned by the type in which they are stored",
+    Justification = "ActualThemeVariant and RequestedThemeVariant properties are shared Avalonia.Base and Avalonia.Controls projects," +
+    "but shouldn't be visible on the StyledElement class." +
+    "Ideally we woould introduce readonly styled properties.")]
 public sealed record ThemeVariant
 {
     /// <summary>

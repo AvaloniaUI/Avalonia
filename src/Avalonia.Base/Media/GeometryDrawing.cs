@@ -10,7 +10,7 @@ namespace Avalonia.Media
     public class GeometryDrawing : Drawing
     {
         // Adding the Pen's stroke thickness here could yield wrong results due to transforms.
-        private static readonly IPen s_boundsPen = new ImmutablePen(Colors.Black.ToUint32(), 0);
+        private static readonly IPen s_boundsPen = new ImmutablePen(Colors.Black.ToUInt32(), 0);
 
         /// <summary>
         /// Defines the <see cref="Geometry"/> property.

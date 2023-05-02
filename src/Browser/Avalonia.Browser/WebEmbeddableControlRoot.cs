@@ -37,7 +37,7 @@ namespace Avalonia.Browser
                 return false;
             }
 
-            public void Render(IDrawingContextImpl context)
+            public void Render(ImmediateDrawingContext context)
             {
                 _hasRendered = true;
                 _onFirstRender();
