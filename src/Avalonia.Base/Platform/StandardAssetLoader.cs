@@ -155,6 +155,8 @@ public class StandardAssetLoader : IAssetLoader
         return Enumerable.Empty<Uri>();
     }
 
+    public static void RegisterResUriParsers() => AssetLoader.RegisterResUriParsers();
+
     private bool TryGetAsset(Uri uri, Uri? baseUri, [NotNullWhen(true)] out IAssetDescriptor? assetDescriptor)
     {
         assetDescriptor = null;
