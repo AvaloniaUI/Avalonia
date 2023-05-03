@@ -118,6 +118,8 @@ namespace Avalonia.Win32
         private IntPtr _hwnd;
         private Win32DispatcherImpl _dispatcher;
 
+        private SynchronizationContext? _synchronizationContext;
+
         public Win32Platform()
         {
             _synchronizationContext = SynchronizationContext.Current;
@@ -144,6 +146,15 @@ namespace Avalonia.Win32
 
         internal static Compositor Compositor
             => s_compositor ?? throw new InvalidOperationException($"{nameof(Win32Platform)} hasn't been initialized");
+
+        public void EnsureThreadContext()
+        {
+            if (_dispatcher.CurrentThreadIsLoopThread && SynchronizationContext.Current is null)
+            {
+                SynchronizationContext.SetSynchronizationContext(_synchronizationContext);
+                SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            }
+        }
 
         public static void Initialize()
         {
