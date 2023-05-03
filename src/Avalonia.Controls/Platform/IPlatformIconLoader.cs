@@ -3,7 +3,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformIconLoader
     {
         IWindowIconImpl LoadIcon(string fileName);

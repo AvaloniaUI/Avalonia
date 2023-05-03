@@ -20,7 +20,7 @@ internal class NameDirectiveTransformer : IXamlAstTransformer
                 objectNode.Children[index] = new XamlAstXamlPropertyValueNode(
                     directive,
                     new XamlAstNamePropertyReference(directive, objectNode.Type, "Name", objectNode.Type),
-                    directive.Values);
+                    directive.Values, true);
         }
 
         return node;

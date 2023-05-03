@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -31,6 +32,9 @@ namespace Avalonia.Themes.Fluent
 
             EnsureCompactStyles();
 
+            Palettes = Resources.MergedDictionaries.OfType<ColorPaletteResourcesCollection>().FirstOrDefault()
+                ?? throw new InvalidOperationException("FluentTheme was initialized with missing ColorPaletteResourcesCollection.");
+            
             object GetAndRemove(string key)
             {
                 var val = Resources[key]
@@ -52,6 +56,8 @@ namespace Avalonia.Themes.Fluent
             set => SetValue(DensityStyleProperty, value);
         }
         
+        public IDictionary<ThemeVariant, ColorPaletteResources> Palettes { get; }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

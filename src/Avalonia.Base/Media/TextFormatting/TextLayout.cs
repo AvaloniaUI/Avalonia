@@ -174,7 +174,7 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textLine in _textLines)
             {
-                textLine.Draw(context, new Point(currentX + textLine.Start, currentY));
+                textLine.Draw(context, new Point(currentX, currentY));
 
                 currentY += textLine.Height;
             }

@@ -3,8 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
@@ -15,7 +13,7 @@ namespace Avalonia.Markup.Xaml.Styling
     /// When used in runtime, this type might be unsafe with trimming and AOT.
     /// </remarks>
     [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
-    public class ResourceInclude : IResourceProvider
+    public class ResourceInclude : IResourceProvider, IThemeVariantProvider
     {
         private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;
@@ -67,6 +65,8 @@ namespace Avalonia.Markup.Xaml.Styling
         /// </summary>
         public Uri? Source { get; set; }
 
+        ThemeVariant? IThemeVariantProvider.Key { get; set; }
+        
         bool IResourceNode.HasResources => Loaded.HasResources;
 
         public event EventHandler? OwnerChanged

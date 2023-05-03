@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -64,7 +65,6 @@ namespace Avalonia.Layout
             }
 
             _toMeasure.Enqueue(control);
-            _toArrange.Enqueue(control);
             QueueLayoutPass();
         }
 
@@ -269,21 +269,25 @@ namespace Avalonia.Layout
             }
         }
 
-        private void Measure(Layoutable control)
+        private bool Measure(Layoutable control)
         {
+            if (!control.IsVisible || !control.IsAttachedToVisualTree)
+                return false;
+
             // Controls closest to the visual root need to be arranged first. We don't try to store
             // ordered invalidation lists, instead we traverse the tree upwards, measuring the
             // controls closest to the root first. This has been shown by benchmarks to be the
             // fastest and most memory-efficient algorithm.
             if (control.VisualParent is Layoutable parent)
             {
-                Measure(parent);
+                if (!Measure(parent))
+                    return false;
             }
 
             // If the control being measured has IsMeasureValid == true here then its measure was
             // handed by an ancestor and can be ignored. The measure may have also caused the
             // control to be removed.
-            if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+            if (!control.IsMeasureValid)
             {
                 if (control is ILayoutRoot root)
                 {
@@ -293,17 +297,28 @@ namespace Avalonia.Layout
                 {
                     control.Measure(control.PreviousMeasure.Value);
                 }
+
+                _toArrange.Enqueue(control);
             }
+
+            return true;
         }
 
-        private void Arrange(Layoutable control)
+        private bool Arrange(Layoutable control)
         {
+            if (!control.IsVisible || !control.IsAttachedToVisualTree)
+                return false;
+
             if (control.VisualParent is Layoutable parent)
             {
-                Arrange(parent);
+                if (!Arrange(parent))
+                    return false;
             }
 
-            if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+            if (!control.IsMeasureValid)
+                return false;
+
+            if (!control.IsArrangeValid)
             {
                 if (control is IEmbeddedLayoutRoot embeddedRoot)
                     control.Arrange(new Rect(embeddedRoot.AllocatedSize));
@@ -316,6 +331,8 @@ namespace Avalonia.Layout
                     control.Arrange(control.PreviousArrange.Value);
                 }
             }
+
+            return true;
         }
 
         private void QueueLayoutPass()

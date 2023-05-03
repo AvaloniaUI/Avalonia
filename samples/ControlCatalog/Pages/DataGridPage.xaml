@@ -94,7 +94,7 @@
         <Grid RowDefinitions="*,Auto">
           <!-- Example of columns inheriting the data type from the Items source -->
           <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0"
-                    Items="{Binding DataGrid3Source}">
+                    ItemsSource="{Binding DataGrid3Source}">
             <DataGrid.Columns>
               <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
               <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />

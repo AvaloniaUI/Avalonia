@@ -220,6 +220,16 @@ namespace Avalonia.FreeDesktop
         {
             Connection = connection;
             BackingProperties.Menu = dbusMenuPath;
+            BackingProperties.Category = string.Empty;
+            BackingProperties.Status = string.Empty;
+            BackingProperties.Id = string.Empty;
+            BackingProperties.Title = string.Empty;
+            BackingProperties.IconPixmap = Array.Empty<(int, int, byte[])>();
+            BackingProperties.AttentionIconName = string.Empty;
+            BackingProperties.AttentionIconPixmap = Array.Empty<(int, int, byte[])>();
+            BackingProperties.AttentionMovieName = string.Empty;
+            BackingProperties.OverlayIconName = string.Empty;
+            BackingProperties.OverlayIconPixmap = Array.Empty<(int, int, byte[])>();
             BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
             InvalidateAll();
         }
@@ -234,7 +244,7 @@ namespace Avalonia.FreeDesktop
 
         protected override ValueTask OnActivateAsync(int x, int y)
         {
-            Dispatcher.UIThread.Post(() => ActivationDelegate?.Invoke());
+            ActivationDelegate?.Invoke();
             return new ValueTask();
         }
 
@@ -267,7 +277,6 @@ namespace Avalonia.FreeDesktop
             BackingProperties.Category = "ApplicationStatus";
             BackingProperties.Status = text;
             BackingProperties.Title = text;
-            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), text, string.Empty);
             InvalidateAll();
         }
     }

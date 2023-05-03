@@ -270,6 +270,8 @@ namespace IntegrationTestApp
                 this.Get<ListBox>("BasicListBox").SelectedIndex = -1;
             if (source?.Name == "MenuClickedMenuItemReset")
                 this.Get<TextBlock>("ClickedMenuItem").Text = "None";
+            if (source?.Name == "ResetSliders")
+                this.Get<Slider>("HorizontalSlider").Value = 50;
             if (source?.Name == "ShowTransparentWindow")
                 ShowTransparentWindow();
             if (source?.Name == "ShowTransparentPopup")

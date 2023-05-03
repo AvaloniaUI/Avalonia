@@ -59,6 +59,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 var styleDiagnostics = styledElement.GetStyleDiagnostics();
 
+                var clipboard = TopLevel.GetTopLevel(_avaloniaObject as Visual)?.Clipboard;
+
                 // We need to place styles without activator first, such styles will be overwritten by ones with activators.
                 foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
                 {
@@ -91,7 +93,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                     var resourceKey = resourceInfo.Value.resourceKey;
                                     var resourceValue = styledElement.FindResource(resourceKey);
 
-                                    setterVm = new ResourceSetterViewModel(regularSetter.Property, resourceKey, resourceValue, resourceInfo.Value.isDynamic);
+                                    setterVm = new ResourceSetterViewModel(regularSetter.Property, resourceKey, resourceValue, resourceInfo.Value.isDynamic, clipboard);
                                 }
                                 else
                                 {
@@ -99,11 +101,11 @@ namespace Avalonia.Diagnostics.ViewModels
 
                                     if (isBinding)
                                     {
-                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue);
+                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue, clipboard);
                                     }
                                     else
                                     {
-                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue);
+                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue, clipboard);
                                     }
                                 }
 

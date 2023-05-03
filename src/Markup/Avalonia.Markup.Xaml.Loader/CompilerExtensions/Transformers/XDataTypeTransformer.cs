@@ -52,7 +52,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 new XamlAstNamePropertyReference(d,
                                     new XamlAstClrTypeReference(ch, declaringType, false), dataTypeProperty.Name,
                                     on.Type),
-                                d.Values);
+                                d.Values,
+                                true);
                         }
                     }
                 }

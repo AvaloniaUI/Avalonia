@@ -26,8 +26,8 @@ namespace Avalonia.Skia
             using (var buffer = new Buffer())
             {
                 // HarfBuzz needs the surrounding characters to correctly shape the text
-                var containingText = GetContainingMemory(text, out var start, out var length);
-                buffer.AddUtf16(containingText.Span, start, length);
+                var containingText = GetContainingMemory(text, out var start, out var length).Span;
+                buffer.AddUtf16(containingText, start, length);
 
                 MergeBreakPair(buffer);
 
@@ -72,7 +72,7 @@ namespace Avalonia.Skia
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (i < textSpan.Length && textSpan[i] == '\t')
+                    if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 

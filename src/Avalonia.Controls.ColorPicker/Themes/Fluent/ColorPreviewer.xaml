@@ -64,6 +64,7 @@
             <Border Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
+                    Background="Transparent"
                     BoxShadow="0 0 10 2 #BF000000"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     Margin="10">

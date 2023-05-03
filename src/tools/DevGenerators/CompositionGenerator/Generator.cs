@@ -170,21 +170,26 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                     if (manual.ServerName != null)
                         serverPropertyType = manual.ServerName + (isNullable ? "?" : "");
                 }
-                
                 if (animatedServer)
                     server = server.AddMembers(
                         DeclareField(serverPropertyType, fieldName),
                         PropertyDeclaration(ParseTypeName(serverPropertyType), prop.Name)
                             .AddModifiers(SyntaxKind.PublicKeyword)
-                            .WithExpressionBody(ArrowExpressionClause(
-                                InvocationExpression(IdentifierName("GetAnimatedValue"),
-                                    ArgumentList(SeparatedList(new[]{
-                                        Argument(IdentifierName(CompositionPropertyField(prop))),
-                                        Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName(fieldName))
-                                        }
-                                        )))))
-                            .WithSemicolonToken(Semicolon())
-                    );
+                            .AddAccessorListAccessors(
+                                AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithExpressionBody(
+                                    ArrowExpressionClause(
+                                        InvocationExpression(IdentifierName("GetAnimatedValue"),
+                                            ArgumentList(SeparatedList(new[]
+                                                {
+                                                    Argument(IdentifierName(CompositionPropertyField(prop))),
+                                                    Argument(null, Token(SyntaxKind.RefKeyword),
+                                                        IdentifierName(fieldName))
+                                                }
+                                            ))))).WithSemicolonToken(Semicolon()),
+                                AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                                    .WithExpressionBody(ArrowExpressionClause(
+                                            ParseExpression($"SetAnimatedValue({CompositionPropertyField(prop)}, out {PropertyBackingFieldName(prop)}, value)")))
+                                    .WithSemicolonToken(Semicolon())));
                 else
                 {
                     server = server
@@ -508,9 +513,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             code += $@"
     if((changed & {changedFieldsType}.{prop.Name}) == {changedFieldsType}.{prop.Name})
 ";
-            if (prop.Animated)
-                code += $"SetAnimatedValue({CompositionPropertyField(prop)}, out {PropertyBackingFieldName(prop)}, {readValueCode});";
-            else code += $"{prop.Name} =  {readValueCode};";
+            code += $"{prop.Name} =  {readValueCode};";
             return body.AddStatements(ParseStatement(code));
         }
 

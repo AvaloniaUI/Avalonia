@@ -179,6 +179,11 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
+            internal override void RouteCoerceDefaultValue(AvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
             internal override object RouteGetValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();

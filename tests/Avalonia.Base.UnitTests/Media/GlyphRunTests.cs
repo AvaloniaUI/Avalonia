@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Platform;
 using Avalonia.UnitTests;
-using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
 {
     public class GlyphRunTests : TestWithServicesBase
     {
-        public GlyphRunTests()
-        {
-            AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToSingleton<MockPlatformRenderInterface>();
-        }
-
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0)]
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 3, 30)]
         [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 1, 0, 10)]
@@ -25,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Theory]
         public void Should_Get_Distance_From_CharacterHit(double[] advances, int[] clusters, int start, int trailingLength, double expectedDistance)
         {
-            using(UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var characterHit = new CharacterHit(start, trailingLength);
@@ -44,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void Should_Get_CharacterHit_FromDistance(double[] advances, int[] clusters, double distance, int start,
             int trailingLengthExpected, bool isInsideExpected)
         {
-            using(UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var textBounds = glyphRun.GetCharacterHitFromDistance(distance, out var isInside);
@@ -189,6 +180,12 @@ namespace Avalonia.Base.UnitTests.Media
             }
 
             return new GlyphRun(new MockGlyphTypeface(), 10, new string('a', count).AsMemory(), glyphInfos, biDiLevel: bidiLevel);
+        }
+
+        private static IDisposable Start()
+        {
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(
+                renderInterface: new MockPlatformRenderInterface()));
         }
     }
 }

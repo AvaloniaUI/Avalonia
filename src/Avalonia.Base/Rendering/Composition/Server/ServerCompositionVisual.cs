@@ -54,6 +54,9 @@ namespace Avalonia.Rendering.Composition.Server
             canvas.PostTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
 
+            if (Effect != null)
+                canvas.PushEffect(Effect);
+            
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity, boundsRect);
             if (ClipToBounds && !HandlesClipToBounds)
@@ -79,6 +82,9 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopClip();
             if (Opacity != 1)
                 canvas.PopOpacity();
+            
+            if (Effect != null)
+                canvas.PopEffect();
         }
 
         protected virtual bool HandlesClipToBounds => false;
@@ -101,10 +107,18 @@ namespace Avalonia.Rendering.Composition.Server
         public Matrix4x4 CombinedTransformMatrix { get; private set; } = Matrix4x4.Identity;
         public Matrix4x4 GlobalTransformMatrix { get; private set; }
 
-        public virtual void Update(ServerCompositionTarget root)
+        public record struct UpdateResult(Rect? Bounds, bool InvalidatedOld, bool InvalidatedNew)
+        {
+            public UpdateResult() : this(null, false, false)
+            {
+                
+            }
+        }
+        
+        public virtual UpdateResult Update(ServerCompositionTarget root)
         {
             if (Parent == null && Root == null)
-                return;
+                return default;
 
             var wasVisible = IsVisibleInFrame;
 
@@ -146,6 +160,11 @@ namespace Avalonia.Rendering.Composition.Server
             GlobalTransformMatrix = newTransform;
 
             var ownBounds = OwnContentBounds;
+            
+            // Since padding is applied in the current visual's coordinate space we expand bounds before transforming them
+            if (Effect != null)
+                ownBounds = ownBounds.Inflate(Effect.GetEffectOutputPadding());
+            
             if (ownBounds != _oldOwnContentBounds || positionChanged)
             {
                 _oldOwnContentBounds = ownBounds;
@@ -168,7 +187,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             _combinedTransformedClipBounds =
                 AdornedVisual?._combinedTransformedClipBounds
-                ?? Parent?._combinedTransformedClipBounds
+                ?? (Parent?.Effect == null ? Parent?._combinedTransformedClipBounds : null)
                 ?? new Rect(Root!.Size);
 
             if (_transformedClipBounds != null)
@@ -208,9 +227,10 @@ namespace Avalonia.Rendering.Composition.Server
             readback.Matrix = GlobalTransformMatrix;
             readback.TargetId = Root.Id;
             readback.Visible = IsHitTestVisibleInFrame;
+            return new(TransformedOwnContentBounds, invalidateNewBounds, invalidateOldBounds);
         }
 
-        void AddDirtyRect(Rect rc)
+        protected void AddDirtyRect(Rect rc)
         {
             if (rc == default)
                 return;

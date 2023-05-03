@@ -143,6 +143,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
          InlineData(PixelFormatEnum.Gray4),
          InlineData(PixelFormatEnum.Gray8),
          InlineData(PixelFormatEnum.Gray16),
+         InlineData(PixelFormatEnum.Rgb24),
+         InlineData(PixelFormatEnum.Bgr24),
          InlineData(PixelFormatEnum.Gray32Float),
          InlineData(PixelFormatEnum.Rgba64),
          InlineData(PixelFormatEnum.Rgba64, AlphaFormat.Premul),

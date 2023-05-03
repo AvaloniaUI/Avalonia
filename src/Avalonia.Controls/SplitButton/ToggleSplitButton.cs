@@ -70,7 +70,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void Toggle()
         {
-            IsChecked = !IsChecked;
+            SetCurrentValue(IsCheckedProperty, !IsChecked);
         }
 
         /// <inheritdoc/>

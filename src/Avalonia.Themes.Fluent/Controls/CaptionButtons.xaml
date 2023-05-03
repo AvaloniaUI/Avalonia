@@ -48,7 +48,8 @@
             </Viewbox>
           </Button>
           <Button x:Name="PART_MinimiseButton"
-                  Theme="{StaticResource FluentCaptionButton}">
+                  Theme="{StaticResource FluentCaptionButton}"
+                  AutomationProperties.Name="Minimise">
             <Viewbox Width="11" Margin="2">
               <Path Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"
@@ -56,7 +57,8 @@
             </Viewbox>
           </Button>
           <Button x:Name="PART_RestoreButton"
-                  Theme="{StaticResource FluentCaptionButton}">
+                  Theme="{StaticResource FluentCaptionButton}"
+                  AutomationProperties.Name="Maximise">
             <Viewbox Width="11" Margin="2">
               <Viewbox.RenderTransform>
                 <RotateTransform Angle="-90" />
@@ -70,7 +72,8 @@
           <Button x:Name="PART_CloseButton"
                   Background="#ffe81123"
                   BorderBrush="#fff1707a"
-                  Theme="{StaticResource FluentCaptionButton}">
+                  Theme="{StaticResource FluentCaptionButton}"
+                  AutomationProperties.Name="Close">
             <Viewbox Width="11" Margin="2">
               <Path Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"
@@ -92,6 +95,9 @@
     </Style>
     <Style Selector="^:fullscreen /template/ Button#PART_MinimiseButton">
       <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ Button#PART_RestoreButton:disabled">
+      <Setter Property="Opacity" Value="0.2"/>
     </Style>
   </ControlTheme>
 </ResourceDictionary>

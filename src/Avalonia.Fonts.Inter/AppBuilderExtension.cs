@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Fonts.Inter
+using Avalonia.Fonts.Inter;
+
+namespace Avalonia
 {
     public static class AppBuilderExtension
     {

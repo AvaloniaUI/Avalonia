@@ -65,7 +65,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     AllowMultiple = true,
                     AllowXNull = allowNull,
-                    AllowRuntimeNull = allowNull
+                    AllowRuntimeNull = allowNull,
+                    AllowAttributeSyntax = false,
                 };
             }
 

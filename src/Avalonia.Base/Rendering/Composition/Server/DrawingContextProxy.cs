@@ -18,7 +18,8 @@ namespace Avalonia.Rendering.Composition.Server;
 /// they have information about the full render transform (they are not)
 /// 2) Keeps the draw list for the VisualBrush contents of the current drawing operation.
 /// </summary>
-internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
+internal class CompositorDrawingContextProxy : IDrawingContextImpl,
+    IDrawingContextWithAcrylicLikeSupport, IDrawingContextImplWithEffects
 {
     private IDrawingContextImpl _impl;
 
@@ -154,5 +155,17 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
     {
         if (_impl is IDrawingContextWithAcrylicLikeSupport acrylic) 
             acrylic.DrawRectangle(material, rect);
+    }
+
+    public void PushEffect(IEffect effect)
+    {
+        if (_impl is IDrawingContextImplWithEffects effects)
+            effects.PushEffect(effect);
+    }
+
+    public void PopEffect()
+    {
+        if (_impl is IDrawingContextImplWithEffects effects)
+            effects.PopEffect();
     }
 }

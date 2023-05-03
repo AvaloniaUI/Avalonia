@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls.Platform;
+using Avalonia.Media;
 using UIKit;
 
 namespace Avalonia.iOS;
@@ -80,4 +81,6 @@ internal class InsetsManager : IInsetsManager
     }
 
     public Thickness SafeAreaPadding => _controller?.SafeAreaPadding ?? default;
+
+    public Color? SystemBarColor { get; set; }
 }

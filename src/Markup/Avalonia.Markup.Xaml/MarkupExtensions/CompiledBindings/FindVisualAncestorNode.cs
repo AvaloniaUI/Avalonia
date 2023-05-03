@@ -5,13 +5,13 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
-    class FindVisualAncestorNode : ExpressionNode
+    internal class FindVisualAncestorNode : ExpressionNode
     {
         private readonly int _level;
-        private readonly Type _ancestorType;
-        private IDisposable _subscription;
+        private readonly Type? _ancestorType;
+        private IDisposable? _subscription;
 
-        public FindVisualAncestorNode(Type ancestorType, int level)
+        public FindVisualAncestorNode(Type? ancestorType, int level)
         {
             _level = level;
             _ancestorType = ancestorType;
@@ -32,9 +32,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             }
         }
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
-            if (reference.TryGetTarget(out object target) && target is Visual visual)
+            if (reference.TryGetTarget(out object? target) && target is Visual visual)
             {
                 _subscription = VisualLocator.Track(visual, _level, _ancestorType).Subscribe(ValueChanged);
             }

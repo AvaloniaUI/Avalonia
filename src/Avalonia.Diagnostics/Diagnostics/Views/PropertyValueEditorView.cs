@@ -64,11 +64,12 @@ namespace Avalonia.Diagnostics.Views
                 where TControl : Control, new()
             {
                 var control = new TControl();
+                var bindingMode = Property.IsReadonly ? BindingMode.OneWay : BindingMode.TwoWay;
 
                 init?.Invoke(control);
 
                 control.Bind(valueProperty,
-                    new Binding(nameof(Property.Value), BindingMode.TwoWay)
+                    new Binding(nameof(Property.Value), bindingMode)
                     {
                         Source = Property,
                         Converter = converter ?? new ValueConverter(),
@@ -129,7 +130,10 @@ namespace Avalonia.Diagnostics.Views
                     IsEnabled = !Property.IsReadonly
                 };
 
-                var cv = new ColorView();
+                var cv = new ColorView
+                {
+                    HexInputAlphaPosition = AlphaComponentPosition.Leading, // Always match XAML
+                };
 
                 cv.Bind(
                         ColorView.ColorProperty,

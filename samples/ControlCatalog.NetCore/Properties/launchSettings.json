@@ -6,6 +6,10 @@
     "Dxgi": {
       "commandName": "Project",
       "commandLineArgs": "--dxgi"
+    },
+    "VNC": {
+      "commandName": "Project",
+      "commandLineArgs": "--vnc"
     }
   }
 }

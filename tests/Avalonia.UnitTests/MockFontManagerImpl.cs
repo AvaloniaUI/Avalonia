@@ -15,6 +15,8 @@ namespace Avalonia.UnitTests
             _defaultFamilyName = defaultFamilyName;
         }
 
+        public int TryCreateGlyphTypefaceCount { get; private set; }
+
         public string GetDefaultFontFamilyName()
         {
             return _defaultFamilyName;
@@ -26,7 +28,7 @@ namespace Avalonia.UnitTests
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch, FontFamily fontFamily,
+            FontStretch fontStretch,
             CultureInfo culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
@@ -34,14 +36,24 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
         {
+            glyphTypeface = null;
+
+            TryCreateGlyphTypefaceCount++;
+
+            if (familyName == "Unknown")
+            {
+                return false;
+            }
+
             glyphTypeface = new MockGlyphTypeface();
 
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public virtual bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new MockGlyphTypeface();
 

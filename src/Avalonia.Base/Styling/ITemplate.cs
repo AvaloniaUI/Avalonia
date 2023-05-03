@@ -2,6 +2,6 @@
 {
     public interface ITemplate
     {
-        object Build();
+        object? Build();
     }
 }

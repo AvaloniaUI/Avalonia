@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
+        public static readonly StyledProperty<ITemplate<Panel?>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
         private PanelContainerGenerator? _generator;
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a template which creates the <see cref="Panel"/> used to display the items.
         /// </summary>
-        public ITemplate<Panel> ItemsPanel
+        public ITemplate<Panel?> ItemsPanel
         {
             get => GetValue(ItemsPanelProperty);
             set => SetValue(ItemsPanelProperty, value);
@@ -166,6 +166,12 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 Panel = ItemsPanel.Build();
+
+                if (Panel is null)
+                {
+                    return;
+                }
+
                 Panel.TemplatedParent = TemplatedParent;
                 Panel.IsItemsHost = true;
                 _scrollSnapPointsInfo = Panel as IScrollSnapPointsInfo;
@@ -183,7 +189,7 @@ namespace Avalonia.Controls.Presenters
                 else
                     CreateSimplePanelGenerator();
 
-                if(Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
                 {
                     scrollSnapPointsInfo.VerticalSnapPointsChanged += (s, e) =>
                     {

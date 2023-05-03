@@ -73,32 +73,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     // Infer data type from collection binding on a control that displays items.
                     var property = context.ParentNodes().OfType<XamlPropertyAssignmentNode>().FirstOrDefault();
                     var attributeType = context.GetAvaloniaTypes().InheritDataTypeFromItemsAttribute;
-                    var attributes = property?.Property?.GetClrProperty().CustomAttributes
-                        .Where(a => a.Type == attributeType).ToList();
-
-                    if (attributes?.Count > 0)
+                    var attribute = property?.Property?.GetClrProperty().CustomAttributes
+                        .FirstOrDefault(a => a.Type == attributeType);
+    
+                    if (attribute is not null)
                     {
-                        foreach (var attribute in attributes)
+                        var propertyName = (string)attribute.Parameters.First();
+                        XamlAstConstructableObjectNode parentObject;
+                        if (attribute.Properties.TryGetValue("AncestorType", out var type)
+                            && type is IXamlType xamlType)
                         {
-                            var propertyName = (string)attribute.Parameters.First();
-                            XamlAstConstructableObjectNode parentObject;
-                            if (attribute.Properties.TryGetValue("AncestorType", out var type)
-                                && type is IXamlType xamlType)
-                            {
-                                parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>()
-                                    .FirstOrDefault(n => n.Type.GetClrType().FullName == xamlType.FullName);
-                            }
-                            else
-                            {
-                                parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault();
-                            }
-
-                            if (parentObject != null)
-                            {
-                                inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject, propertyName);
-                                if (inferredDataContextTypeNode != null)
-                                    break;
-                            }
+                            parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>()
+                                .FirstOrDefault(n => n.Type.GetClrType().FullName == xamlType.FullName);
+                        }
+                        else
+                        {
+                            parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault();
+                        }
+                            
+                        if (parentObject != null)
+                        {
+                            inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject, propertyName);
                         }
                     }
                     

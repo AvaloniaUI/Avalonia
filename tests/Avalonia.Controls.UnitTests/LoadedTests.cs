@@ -11,6 +11,8 @@ public class LoadedTests
     [Fact]
     public void Window_Loads_And_Unloads()
     {
+        // Some other tests are populating the queue and are not resetting the dispatcher, so we need to purge it
+        Control.ResetLoadedQueueForUnitTests();
         using (UnitTestApplication.Start(TestServices.StyledWindow))
         {
             int loadedCount = 0, unloadedCount = 0;
@@ -40,6 +42,8 @@ public class LoadedTests
     [Fact]
     public void Control_Loads_And_Unloads()
     {
+        // Some other tests are populating the queue and are not resetting the dispatcher, so we need to purge it
+        Control.ResetLoadedQueueForUnitTests();
         using (UnitTestApplication.Start(TestServices.StyledWindow))
         {
             int loadedCount = 0, unloadedCount = 0;

@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Windows.Input;
-using Avalonia.Collections;
-using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -33,7 +35,6 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.False(target.Focusable);
         }
-
 
         [Fact]
         public void MenuItem_Is_Disabled_When_Command_Is_Enabled_But_IsEnabled_Is_False()
@@ -230,7 +231,7 @@ namespace Avalonia.Controls.UnitTests
                     return true;
                 });
                 var target = new MenuItem();
-                var flyout = new MenuFlyout { Items = new AvaloniaList<MenuItem> { target } };
+                var flyout = new MenuFlyout { Items = { target } };
                 var button = new Button { Flyout = flyout };
                 var window = new Window { Content = button };
                 window.ApplyStyling();
@@ -248,13 +249,13 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
-                Assert.Equal(2, canExecuteCallCount);
+                Assert.Equal(1, canExecuteCallCount);
 
                 command.RaiseCanExecuteChanged();
-                Assert.Equal(3, canExecuteCallCount);
+                Assert.Equal(2, canExecuteCallCount);
 
                 target.CommandParameter = true;
-                Assert.Equal(4, canExecuteCallCount);
+                Assert.Equal(3, canExecuteCallCount);
             }
         }
         
@@ -332,6 +333,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = menu };
+                window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass();
 
                 topLevelMenu.IsSubMenuOpen = true;
@@ -346,6 +348,129 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Null(childMenu1.TemplatedParent);
                 Assert.Null(childMenu2.TemplatedParent);
             }
+        }
+
+        [Fact]
+        public void Menu_ItemTemplate_Should_Be_Applied_To_TopLevel_MenuItem_Header()
+        {
+            using var app = Application();
+
+            var items = new[]
+            {
+                new MenuViewModel("Foo"),
+                new MenuViewModel("Bar"),
+            };
+
+            var itemTemplate = new FuncDataTemplate<MenuViewModel>((x, _) =>
+                new TextBlock { Text = x.Header });
+
+            var menu = new Menu
+            {
+                ItemTemplate = itemTemplate,
+                ItemsSource = items,
+            };
+
+            var window = new Window { Content = menu };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
+            Assert.Equal(2, panel.Children.Count);
+
+            for (var i = 0; i <  panel.Children.Count; i++)
+            {
+                var menuItem = Assert.IsType<MenuItem>(panel.Children[i]);
+
+                Assert.Equal(items[i], menuItem.Header);
+                Assert.Same(itemTemplate, menuItem.HeaderTemplate);
+
+                var headerPresenter = Assert.IsType<ContentPresenter>(menuItem.HeaderPresenter);
+                Assert.Same(itemTemplate, headerPresenter.ContentTemplate);
+
+                var headerControl = Assert.IsType<TextBlock>(headerPresenter.Child);
+                Assert.Equal(items[i].Header, headerControl.Text);
+            }
+        }
+
+        [Fact]
+        public void Header_And_ItemsSource_Can_Be_Bound_In_Style()
+        {
+            using var app = Application();
+            var items = new[]
+            {
+                new MenuViewModel("Foo")
+                {
+                    Children = new[]
+                    {
+                        new MenuViewModel("FooChild"),
+                    },
+                },
+                new MenuViewModel("Bar"),
+            };
+
+            var target = new Menu
+            {
+                ItemsSource = items,
+                Styles =
+                {
+                    new Style(x => x.OfType<MenuItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(MenuItem.HeaderProperty, new Binding("Header")),
+                            new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
+                        }
+                    }
+                }
+            };
+
+            var root = new TestRoot(true, target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var children = target.GetRealizedContainers().Cast<MenuItem>().ToList();
+            Assert.Equal(2, children.Count);
+            Assert.Equal("Foo", children[0].Header);
+            Assert.Equal("Bar", children[1].Header);
+            Assert.Same(items[0].Children, children[0].ItemsSource);
+        }
+
+        [Fact]
+        public void Header_And_ItemsSource_Can_Be_Bound_In_ItemContainerTheme()
+        {
+            using var app = Application();
+            var items = new[]
+            {
+                new MenuViewModel("Foo")
+                {
+                    Children = new[]
+                    {
+                        new MenuViewModel("FooChild"),
+                    },
+                },
+                new MenuViewModel("Bar"),
+            };
+
+            var target = new Menu
+            {
+                ItemsSource = items,
+                ItemContainerTheme = new ControlTheme(typeof(MenuItem))
+                {
+                    Setters =
+                    {
+                        new Setter(MenuItem.HeaderProperty, new Binding("Header")),
+                        new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
+                    }
+                }
+            };
+
+            var root = new TestRoot(true, target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var children = target.GetRealizedContainers().Cast<MenuItem>().ToList();
+            Assert.Equal(2, children.Count);
+            Assert.Equal("Foo", children[0].Header);
+            Assert.Equal("Bar", children[1].Header);
+            Assert.Same(items[0].Children, children[0].ItemsSource);
         }
 
         private IDisposable Application()
@@ -400,6 +525,11 @@ namespace Avalonia.Controls.UnitTests
             public void Execute(object parameter) => _execute(parameter);
 
             public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private record MenuViewModel(string Header)
+        {
+            public IList<MenuViewModel> Children { get; set;}
         }
     }
 }
