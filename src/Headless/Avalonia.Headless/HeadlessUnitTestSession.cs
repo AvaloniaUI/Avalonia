@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
+using Avalonia.Reactive;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless;
@@ -15,14 +19,12 @@ namespace Avalonia.Headless;
 /// to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
-/// <remarks>
-/// As Avalonia supports only a single Application instance created, this session must be created only once as well.
-/// </remarks>
 public sealed class HeadlessUnitTestSession : IDisposable
 {
+    private static readonly ConcurrentDictionary<Assembly, HeadlessUnitTestSession> s_session = new();
+
+    private readonly AppBuilder _appBuilder;
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private static HeadlessUnitTestSession? s_session;
-    private static object s_lock = new();
     private readonly BlockingCollection<Action> _queue;
     private readonly Task _dispatchTask;
 
@@ -30,27 +32,41 @@ public sealed class HeadlessUnitTestSession : IDisposable
         DynamicallyAccessedMemberTypes.PublicMethods |
         DynamicallyAccessedMemberTypes.NonPublicMethods |
         DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
-    
-    private HeadlessUnitTestSession(Type entryPointType, CancellationTokenSource cancellationTokenSource, BlockingCollection<Action> queue, Task _dispatchTask)
+
+    private HeadlessUnitTestSession(AppBuilder appBuilder, CancellationTokenSource cancellationTokenSource,
+        BlockingCollection<Action> queue, Task dispatchTask)
     {
+        _appBuilder = appBuilder;
         _cancellationTokenSource = cancellationTokenSource;
         _queue = queue;
-        this._dispatchTask = _dispatchTask;
-        EntryPointType = entryPointType;
+        _dispatchTask = dispatchTask;
     }
 
-    internal Type EntryPointType { get; }
-
+    /// <inheritdoc cref="Dispatch{TResult}(Func{Task{TResult}}, CancellationToken)"/>
     public Task Dispatch(Action action, CancellationToken cancellationToken)
     {
-        return Dispatch(() => { action(); return Task.FromResult(0); }, cancellationToken);
+        return Dispatch(() =>
+        {
+            action();
+            return Task.FromResult(0);
+        }, cancellationToken);
     }
-    
+
+    /// <inheritdoc cref="Dispatch{TResult}(Func{Task{TResult}}, CancellationToken)"/>
     public Task<TResult> Dispatch<TResult>(Func<TResult> action, CancellationToken cancellationToken)
     {
         return Dispatch(() => Task.FromResult(action()), cancellationToken);
     }
 
+    /// <summary>
+    /// Dispatch method queues an async operation on the dispatcher thread, creates a new application instance,
+    /// setting app avalonia services, and runs <see cref="action"/> parameter.
+    /// </summary>
+    /// <param name="action">Action to execute on the dispatcher thread with avalonia services.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel execution.</param>
+    /// <exception cref="ObjectDisposedException">
+    /// If global session was already cancelled and thread killed, it's not possible to dispatch any actions again
+    /// </exception>
     public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
     {
         if (_cancellationTokenSource.IsCancellationRequested)
@@ -63,6 +79,8 @@ public sealed class HeadlessUnitTestSession : IDisposable
         var tcs = new TaskCompletionSource<TResult>();
         _queue.Add(() =>
         {
+            using var application = EnsureApplication();
+
             var cts = new CancellationTokenSource();
             using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
             using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
@@ -92,7 +110,28 @@ public sealed class HeadlessUnitTestSession : IDisposable
         });
         return tcs.Task;
     }
-    
+
+    private IDisposable EnsureApplication()
+    {
+        var scope = AvaloniaLocator.EnterScope();
+        try
+        {
+            Dispatcher.ResetForUnitTests();
+            _appBuilder.SetupUnsafe();
+        }
+        catch
+        {
+            scope.Dispose();
+            throw;
+        }
+
+        return Disposable.Create(() =>
+        {
+            scope.Dispose();
+            Dispatcher.ResetForUnitTests();
+        });
+    }
+
     public void Dispose()
     {
         _cancellationTokenSource.Cancel();
@@ -104,25 +143,13 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// <summary>
     /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
     /// </summary>
-    /// <typeparam name="TEntryPointType">
-    /// Parameter from which <see cref="AppBuilder"/> should be created.
-    /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
-    /// </typeparam>
-    public static HeadlessUnitTestSession StartNew<
-        [DynamicallyAccessedMembers(DynamicallyAccessed)] TEntryPointType>()
-    {
-        return StartNew(typeof(TEntryPointType));
-    }
-    
-    /// <summary>
-    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
-    /// </summary>
     /// <param name="entryPointType">
     /// Parameter from which <see cref="AppBuilder"/> should be created.
     /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
     /// </param>
     public static HeadlessUnitTestSession StartNew(
-        [DynamicallyAccessedMembers(DynamicallyAccessed)] Type entryPointType)
+        [DynamicallyAccessedMembers(DynamicallyAccessed)]
+        Type entryPointType)
     {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
         var cancellationTokenSource = new CancellationTokenSource();
@@ -141,15 +168,8 @@ public sealed class HeadlessUnitTestSession : IDisposable
                     appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
                 }
 
-                appBuilder.SetupWithoutStarting();
-
-                if (!Dispatcher.UIThread.SupportsRunLoops)
-                {
-                    throw new InvalidOperationException("Avalonia Headless platform has failed to initialize.");
-                }
-
                 // ReSharper disable once AccessToModifiedClosure
-                tcs.SetResult(new HeadlessUnitTestSession(entryPointType, cancellationTokenSource, queue, task!));
+                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!));
             }
             catch (Exception e)
             {
@@ -166,7 +186,6 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 }
                 catch (OperationCanceledException)
                 {
-
                 }
             }
         });
@@ -178,34 +197,17 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// Creates a session from AvaloniaTestApplicationAttribute attribute or reuses any existing.
     /// If AvaloniaTestApplicationAttribute doesn't exist, empty application is used. 
     /// </summary>
-    /// <remarks>
-    /// Note, only single session can be crated per app execution.
-    /// </remarks>
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "AvaloniaTestApplicationAttribute attribute should preserve type information.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072",
+        Justification = "AvaloniaTestApplicationAttribute attribute should preserve type information.")]
     public static HeadlessUnitTestSession GetOrStartForAssembly(Assembly? assembly)
     {
-        lock (s_lock)
+        return s_session.GetOrAdd(assembly ?? typeof(HeadlessUnitTestSession).Assembly, a =>
         {
-            var appBuilderEntryPointType = assembly?.GetCustomAttribute<AvaloniaTestApplicationAttribute>()
+            var appBuilderEntryPointType = a.GetCustomAttribute<AvaloniaTestApplicationAttribute>()
                 ?.AppBuilderEntryPointType;
-
-            if (s_session is not null)
-            {
-                var hasNoAttribute = appBuilderEntryPointType == null && s_session.EntryPointType == typeof(Application);
-                if (!hasNoAttribute && appBuilderEntryPointType != s_session.EntryPointType)
-                {
-                    // Avalonia doesn't support multiple Application instances. At least at the moment.
-                    throw new System.InvalidOperationException(
-                        "AvaloniaTestApplicationAttribute must be defined only once per single unit tests session.");
-                }
-
-                return s_session;
-            }
-
-
-            s_session = appBuilderEntryPointType is not null ? StartNew(appBuilderEntryPointType) : StartNew(typeof(Application));
-
-            return s_session;
-        }
+            return appBuilderEntryPointType is not null ?
+                StartNew(appBuilderEntryPointType) :
+                StartNew(typeof(Application));
+        });
     }
 }
