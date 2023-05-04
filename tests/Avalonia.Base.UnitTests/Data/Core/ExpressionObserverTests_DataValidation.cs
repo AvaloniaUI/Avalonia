@@ -104,7 +104,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
                 // Exception is thrown by trying to set value to "foo".
                 new BindingNotification(
-                    new ArgumentException(errmsg),
+                    new DataValidationException(new ArgumentException(errmsg).Message),
                     BindingErrorType.DataValidationError),
 
                 // Value is set then validation is updated.

@@ -29,7 +29,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             {
                 new BindingNotification(0),
                 new BindingNotification(5),
-                new BindingNotification(new ArgumentOutOfRangeException("value"), BindingErrorType.DataValidationError),
+                new BindingNotification(new DataValidationException(new ArgumentOutOfRangeException("value").Message), BindingErrorType.DataValidationError),
                 new BindingNotification(6),
             }, result);
 
