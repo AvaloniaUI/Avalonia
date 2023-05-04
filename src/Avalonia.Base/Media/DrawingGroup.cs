@@ -196,13 +196,7 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
-            protected override void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode)
-            {
-                throw new NotImplementedException();
-            }
-
-            internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-                BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
             {
                 throw new NotImplementedException();
             }
@@ -320,8 +314,6 @@ namespace Avalonia.Media
             protected override void PopOpacityCore() => Pop();
 
             protected override void PopOpacityMaskCore() => Pop();
-
-            protected override void PopBitmapBlendModeCore() => Pop();
 
             protected override void PopTransformCore() => Pop();
 

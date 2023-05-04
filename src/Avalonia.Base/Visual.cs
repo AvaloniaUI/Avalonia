@@ -318,7 +318,9 @@ namespace Avalonia
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
         internal CompositionVisual? ChildCompositionVisual { get; set; }
-        
+
+        internal RenderOptions RenderOptions { get; set; }
+
         public bool HasNonUniformZIndexChildren { get; private set; }
 
         /// <summary>

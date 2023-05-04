@@ -1,5 +1,4 @@
 using Avalonia.Platform;
-using Avalonia.Rendering;
 
 namespace Avalonia.Skia
 {

@@ -111,6 +111,29 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+        [Win32Fact("For consistent results")]
+        public async Task Should_Render_GlyphRun_Aliased()
+        {
+            var control = new PositionedGlyphRunControl
+            {
+                [TextElement.ForegroundProperty] = new SolidColorBrush { Color = Colors.Black }
+            };
+
+            RenderOptions.SetTextRenderingMode(control, TextRenderingMode.Alias);
+
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 190,
+                Height = 120,
+                Child = control
+            };
+
+            await RenderToFile(target);
+
+            CompareImages();
+        }
+
         public class GlyphRunGeometryControl : Control
         {
             public GlyphRunGeometryControl()
