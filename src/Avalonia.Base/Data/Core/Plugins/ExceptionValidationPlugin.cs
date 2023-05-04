@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -35,11 +35,11 @@ namespace Avalonia.Data.Core.Plugins
                 }
                 catch (TargetInvocationException ex) when (ex.InnerException is not null)
                 {
-                    PublishValue(new BindingNotification(ex.InnerException, BindingErrorType.DataValidationError));
+                    PublishValue(new BindingNotification(new DataValidationException(ex.InnerException.Message), BindingErrorType.DataValidationError));
                 }
                 catch (Exception ex)
                 {
-                    PublishValue(new BindingNotification(ex, BindingErrorType.DataValidationError));
+                    PublishValue(new BindingNotification(new DataValidationException(ex.Message), BindingErrorType.DataValidationError));
                 }
 
                 return false;
