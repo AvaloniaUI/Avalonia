@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -7,7 +7,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties that report errors by throwing exceptions.
     /// </summary>
-    internal class ExceptionValidationPlugin : IDataValidationPlugin
+    public class ExceptionValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
         [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]

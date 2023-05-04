@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties on that have <see cref="ValidationAttribute"/>s.
     /// </summary>
-    internal class DataAnnotationsValidationPlugin : IDataValidationPlugin
+    public class DataAnnotationsValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
         [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
