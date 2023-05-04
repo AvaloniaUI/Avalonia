@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Avalonia.Logging;
 
 namespace Avalonia.Layout
 {
@@ -48,10 +49,21 @@ namespace Avalonia.Layout
         {
             _loopQueueInfo.TryGetValue(item, out var info);
 
-            if (!info.Active && info.Count < _maxEnqueueCountPerLoop)
+            if (!info.Active)
             {
-                _inner.Enqueue(item);
-                _loopQueueInfo[item] = new Info() { Active = true, Count = info.Count + 1 };
+                if (info.Count < _maxEnqueueCountPerLoop)
+                {
+                    _inner.Enqueue(item);
+                    _loopQueueInfo[item] = new Info() { Active = true, Count = info.Count + 1 };
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Layout)?.Log(
+                        this,
+                        "Layout cycle detected. Item {Item} was enqueued {Count} times.",
+                        item,
+                        info.Count);
+                }
             }
         }
 

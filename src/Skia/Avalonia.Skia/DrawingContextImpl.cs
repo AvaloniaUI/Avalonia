@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
@@ -650,12 +649,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Restore();
-        }
-
-        public void Custom(ICustomDrawOperation custom)
-        {
-            CheckLease();
-            custom.Render(this);
         }
 
         /// <inheritdoc />

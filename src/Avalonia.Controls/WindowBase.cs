@@ -83,6 +83,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the window is resized.
         /// </summary>
+        /// <remarks>
+        /// Although this event is similar to the <see cref="Control.SizeChanged"/> event, they are
+        /// conceptually different:
+        /// 
+        /// - <see cref="Resized"/> is a window-level event, fired when a resize notification arrives
+        ///   from the platform windowing subsystem. The event args contain details of the source of
+        ///   the resize event in the <see cref="WindowResizedEventArgs.Reason"/> property. This
+        ///   event is raised before layout has been run on the window's content.
+        /// - <see cref="Control.SizeChanged"/> is a layout-level event, fired when a layout pass
+        ///   completes on a control. <see cref="Control.SizeChanged"/> is present on all controls
+        ///   and is fired when the control's size changes for any reason, including a
+        ///   <see cref="Resized"/> event in the case of a Window.
+        /// </remarks>
         public event EventHandler<WindowResizedEventArgs>? Resized;
 
         public new IWindowBaseImpl? PlatformImpl => (IWindowBaseImpl?) base.PlatformImpl;
@@ -116,6 +129,11 @@ namespace Avalonia.Controls
             set { SetValue(TopmostProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the scaling factor for Window positioning and sizing.
+        /// </summary>
+        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        
         /// <summary>
         /// Activates the window.
         /// </summary>
@@ -232,14 +250,16 @@ namespace Avalonia.Controls
         {
             FrameSize = PlatformImpl?.FrameSize;
 
-            if (ClientSize != clientSize)
+            var clientSizeChanged = ClientSize != clientSize;
+
+            ClientSize = clientSize;
+            OnResized(new WindowResizedEventArgs(clientSize, reason));
+
+            if (clientSizeChanged)
             {
-                ClientSize = clientSize;
                 LayoutManager.ExecuteLayoutPass();
                 Renderer.Resized(clientSize);
             }
-
-            OnResized(new WindowResizedEventArgs(clientSize, reason));
         }
 
         /// <summary>

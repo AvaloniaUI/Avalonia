@@ -6,6 +6,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -449,7 +450,7 @@ namespace Avalonia.Media
         /// </returns>
         public override string ToString()
         {
-            uint rgb = ToUint32();
+            uint rgb = ToUInt32();
             return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb.ToString("x8", CultureInfo.InvariantCulture)}";
         }
 
@@ -459,9 +460,16 @@ namespace Avalonia.Media
         /// <returns>
         /// The integer representation of the color.
         /// </returns>
-        public uint ToUint32()
+        public uint ToUInt32()
         {
             return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
+        }
+
+        /// <inheritdoc cref="Color.ToUInt32"/>
+        [Obsolete("Use Color.ToUInt32() instead."), EditorBrowsable(EditorBrowsableState.Never)]
+        public uint ToUint32()
+        {
+            return ToUInt32();
         }
 
         /// <summary>

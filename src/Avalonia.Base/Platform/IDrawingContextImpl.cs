@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Media;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Metadata;
 using Avalonia.Media.Imaging;
@@ -162,10 +161,6 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
-        /// Adds a custom draw operation
-        /// </summary>
-        /// <param name="custom">Custom draw operation</param>
-        void Custom(ICustomDrawOperation custom);
 
         /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation

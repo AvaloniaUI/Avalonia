@@ -676,12 +676,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Moving_Selected_Item_Should_Clear_Selection()
         {
-            var items = new AvaloniaList<Item>
-            {
-                new Item(),
-                new Item(),
-            };
-
+            using var app = Start();
+            var items = new ObservableCollection<string> { "foo", "bar" };
             var target = new SelectingItemsControl
             {
                 ItemsSource = items,
@@ -706,7 +702,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.NotNull(receivedArgs);
             Assert.Empty(receivedArgs.AddedItems);
             Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
-            Assert.All(items, x => Assert.False(x.IsSelected));
+        }
+
+        [Fact]
+        public void Moving_Selected_Container_Should_Not_Clear_Selection()
+        {
+            var items = new AvaloniaList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            var moved = items[1];
+            items.Move(1, 0);
+
+            // Because the moved container is still marked as selected on the insert part of the
+            // move, it will remain selected.
+            Assert.Same(moved, target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Equal(2, receivedArgs.Count);
+            Assert.Equal(new[] { moved }, receivedArgs[0].RemovedItems);
+            Assert.Equal(new[] { moved }, receivedArgs[1].AddedItems);
+            Assert.True(items[0].IsSelected);
+            Assert.False(items[1].IsSelected);
         }
 
         [Fact]

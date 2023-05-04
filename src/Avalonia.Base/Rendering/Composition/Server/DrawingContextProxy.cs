@@ -138,11 +138,6 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.PopGeometryClip();
     }
 
-    public void Custom(ICustomDrawOperation custom)
-    {
-        _impl.Custom(custom);
-    }
-
     public object? GetFeature(Type t) => _impl.GetFeature(t);
     
 

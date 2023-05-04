@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
@@ -400,11 +401,11 @@ namespace Avalonia.Media
             return new PushedState(this);
         }
 
-        [Obsolete("Use PushTransform")]
+        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform")]
+        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushPostTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform")]
+        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushTransformContainer() => PushTransform(Matrix.Identity);
         
         

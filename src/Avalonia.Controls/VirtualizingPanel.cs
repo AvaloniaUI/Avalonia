@@ -76,6 +76,11 @@ namespace Avalonia.Controls
         /// The container for the item at the specified index within the item collection, if the
         /// item is realized; otherwise, null.
         /// </returns>
+        /// <remarks>
+        /// Note for implementors: if the item at the the specified index is an ItemIsOwnContainer
+        /// item that has previously been realized, then the item should be returned even if it
+        /// currently falls outside the realized viewport.
+        /// </remarks>
         protected internal abstract Control? ContainerFromIndex(int index);
 
         /// <summary>

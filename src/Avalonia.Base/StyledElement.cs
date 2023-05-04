@@ -289,6 +289,7 @@ namespace Avalonia
         public StyledElement? Parent { get; private set; }
 
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030:StyledProperty accessors should not have side effects", Justification = "False positive?")]
         public ThemeVariant ActualThemeVariant => GetValue(ThemeVariant.ActualThemeVariantProperty);
         
         /// <summary>

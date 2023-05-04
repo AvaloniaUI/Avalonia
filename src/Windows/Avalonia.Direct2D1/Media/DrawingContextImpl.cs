@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using SharpDX;
@@ -625,7 +624,6 @@ namespace Avalonia.Direct2D1.Media
             PopLayer();
         }
 
-        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
         public object GetFeature(Type t) => null;
 
         private void ApplyRenderOptions(RenderOptions renderOptions)

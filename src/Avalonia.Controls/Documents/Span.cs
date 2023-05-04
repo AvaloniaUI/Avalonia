@@ -18,6 +18,8 @@ namespace Avalonia.Controls.Documents
             AvaloniaProperty.Register<Span, InlineCollection>(
                 nameof(Inlines));
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public Span()
         {
             Inlines = new InlineCollection

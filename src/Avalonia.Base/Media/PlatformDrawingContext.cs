@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -46,8 +47,19 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
     internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect) =>
         _impl.DrawBitmap(source, opacity, sourceRect, destRect);
 
-    public override void Custom(ICustomDrawOperation custom) =>
-        custom.Render(_impl);
+    public override void Custom(ICustomDrawOperation custom)
+    {
+        using var immediateDrawingContext = new ImmediateDrawingContext(_impl, false);
+        try
+        {
+            custom.Render(immediateDrawingContext);
+        }
+        catch (Exception e)
+        {
+            Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
+                ?.Log(custom, $"Exception in {custom.GetType().Name}.{nameof(ICustomDrawOperation.Render)} {{0}}", e);
+        }
+    }
 
     public override void DrawGlyphRun(IBrush? foreground, GlyphRun glyphRun)
     {

@@ -22,6 +22,7 @@
   <Import Project="..\..\build\SourceGenerators.props" />
   <ItemGroup>
     <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="..\Shared\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
     <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
   </ItemGroup>
 

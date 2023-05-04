@@ -43,7 +43,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     var border = userControl.FindControl<Border>("border");
 
                     var brush = (ISolidColorBrush)border.Background;
-                    Assert.Equal(0xff506070, brush.Color.ToUint32());
+                    Assert.Equal(0xff506070, brush.Color.ToUInt32());
                 }
             }
 
