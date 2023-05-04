@@ -1510,4 +1510,147 @@ namespace Avalonia.Win32
             public double Scaling => _owner.RenderScaling;
         }
     }
+
+    
+    public class WindowsOverlayWindowImpl : WindowImpl, IWindowImpl, ITopLevelImpl, IDisposable
+    {
+        public const int CW_USEDEFAULT = unchecked((int)0x80000000);
+
+        public static IntPtr InitParentWindow { get; set; }
+
+        public static WindowsOverlayWindowImpl Create(IntPtr applicationWindow, IntPtr workspaceWindow)
+        {
+            // Since virtual methods is called from base ctor we hack it with static
+            InitParentWindow = workspaceWindow;
+            var result = new WindowsOverlayWindowImpl(applicationWindow, workspaceWindow);
+            InitParentWindow = IntPtr.Zero;
+
+            return result;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr CreateWindowEx(
+           int dwExStyle,
+           uint lpClassName,
+           string? lpWindowName,
+           uint dwStyle,
+           int x,
+           int y,
+           int nWidth,
+           int nHeight,
+           IntPtr hWndParent,
+           IntPtr hMenu,
+           IntPtr hInstance,
+           IntPtr lpParam);
+
+        public Action<Exception>? OnException {get;set;}
+
+        private readonly Win32Platform? _platform;
+        private IntPtr _applicationWindow;
+        private IntPtr _workspaceWindow;
+
+        public WindowsOverlayWindowImpl(IntPtr applicationWindow, IntPtr workspaceWindow)
+        {
+            _applicationWindow = applicationWindow;
+            _workspaceWindow = workspaceWindow;
+            
+            _platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() as Win32Platform;
+        }
+
+        private bool IsMouseCaptured()
+        {
+            var pointer = MouseDevice.TryGetPointer(null!);
+
+            return pointer is not null && pointer.Captured is not null;
+        }
+
+        private static PixelPoint PointFromLParam(IntPtr lParam)
+        {
+            return new PixelPoint((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr SetFocus(IntPtr hWnd);
+
+        void IWindowImpl.ShowTaskbarIcon(bool value)
+        {
+            // To avoid unwanted code paths
+        }
+
+        private static int ToInt32(IntPtr ptr)
+        {
+            if (IntPtr.Size == 4)
+                return ptr.ToInt32();
+
+            return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+
+        protected override IntPtr CreateWindowOverride(ushort atom)
+        {
+            var hwnd = CreateWindowEx(
+                (int)(WindowStyles.WS_EX_LAYERED | (WindowStyles)0x00200000),
+                atom,
+                null,
+                (int)WindowStyles.WS_CHILD | (int)WindowStyles.WS_CLIPCHILDREN | (int)WindowStyles.WS_CLIPSIBLINGS | (int)WindowStyles.WS_MAXIMIZE,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                InitParentWindow,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                IntPtr.Zero);
+
+            SetLayeredWindowAttributes(hwnd, 0, 255, LayeredWindowFlags.LWA_ALPHA);
+            
+            return hwnd;
+        }
+
+        public override void Show(bool activate, bool isDialog)
+        {
+            var hwnd = Handle.Handle;
+            
+            ShowWindow(hwnd, ShowWindowCommand.Show);
+        }
+
+        public Func<Point, bool>? ShouldPassThrough { get; set; }
+
+
+        protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            try
+            {
+                var message = (WindowsMessage)msg;
+
+                _platform?.EnsureThreadContext();
+
+                switch (message)
+                {
+                    case WindowsMessage.WM_NCHITTEST when hWnd == Handle?.Handle:
+
+                        if (ShouldPassThrough is not null)
+                        {
+                            var position = PointToClient(PointFromLParam(lParam));
+
+                            if (!IsMouseCaptured() && ShouldPassThrough(position))
+                            {
+                                return (IntPtr)(-1);
+                            }
+                        }
+
+                        break;
+                }
+
+                return base.WndProc(hWnd, msg, wParam, lParam);
+            }
+            catch (Exception ex)
+            {
+                //TODO can we have this somewhere else?
+                OnException?.Invoke(ex);
+
+                return (IntPtr)(-1);
+            }
+        }
+    }
 }
