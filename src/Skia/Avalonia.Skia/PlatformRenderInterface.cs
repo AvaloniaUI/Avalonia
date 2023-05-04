@@ -191,16 +191,7 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Height can't be less than 1", nameof(size));
             }
 
-            var createInfo = new SurfaceRenderTarget.CreateInfo
-            {
-                Width = size.Width,
-                Height = size.Height,
-                Dpi = dpi,
-                DisableTextLcdRendering = false,
-                DisableManualFbo = true,
-            };
-
-            return new SurfaceRenderTarget(createInfo);
+            return new RenderTargetBitmapImpl(size, dpi);
         }
 
         /// <inheritdoc />
