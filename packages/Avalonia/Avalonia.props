@@ -4,9 +4,11 @@
     <AvaloniaPreviewerNetFullToolPath>$(MSBuildThisFileDirectory)\..\tools\net461\designer\Avalonia.Designer.HostApp.exe</AvaloniaPreviewerNetFullToolPath>
     <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\tools\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
     <AvaloniaUseExternalMSBuild>false</AvaloniaUseExternalMSBuild>
+    <UsedAvaloniaProducts>$(UsedAvaloniaProducts);AvaloniaUI</UsedAvaloniaProducts>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\Avalonia.Generators.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\build\AvaloniaVersion.props" />
 
   <!-- Allow loading the AvaloniaVS extension when referencing the Avalonia nuget package -->
   <ItemGroup>

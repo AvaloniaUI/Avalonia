@@ -266,7 +266,7 @@ export class InputHelper {
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
-        if (kind === "pointer") {
+        if (kind === "default") {
             inputElement.style.removeProperty("cursor");
         } else {
             inputElement.style.cursor = kind;

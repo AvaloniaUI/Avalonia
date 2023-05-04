@@ -42,19 +42,21 @@ namespace Avalonia.Input
     public class Cursor : IDisposable
     {
         public static readonly Cursor Default = new Cursor(StandardCursorType.Arrow);
+        private string _name;
 
-        internal Cursor(ICursorImpl platformImpl)
+        private Cursor(ICursorImpl platformImpl, string name)
         {
             PlatformImpl = platformImpl;
+            _name = name;
         }
 
         public Cursor(StandardCursorType cursorType)
-            : this(GetCursorFactory().GetCursor(cursorType))
+            : this(GetCursorFactory().GetCursor(cursorType), cursorType.ToString())
         {
         }
 
         public Cursor(IBitmap cursor, PixelPoint hotSpot)
-            : this(GetCursorFactory().CreateCursor(cursor.PlatformImpl.Item, hotSpot))
+            : this(GetCursorFactory().CreateCursor(cursor.PlatformImpl.Item, hotSpot), "BitmapCursor")
         {
         }
 
@@ -72,6 +74,11 @@ namespace Avalonia.Input
         private static ICursorFactory GetCursorFactory()
         {
             return AvaloniaLocator.Current.GetRequiredService<ICursorFactory>();
+        }
+
+        public override string ToString()
+        {
+            return _name;
         }
     }
 }

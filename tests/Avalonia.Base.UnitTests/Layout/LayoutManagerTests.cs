@@ -60,6 +60,29 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Lays_Out_Descendents_That_Were_Invalidated_While_Ancestor_Was_Not_Visible()
+        {
+            // Issue #11076
+            var control = new LayoutTestControl();
+            var parent = new Decorator { Child = control };
+            var grandparent = new Decorator { Child = parent };
+            var root = new LayoutTestRoot { Child = grandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.IsVisible = false;
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.IsVisible = true;
+
+            root.LayoutManager.ExecuteLayoutPass();
+            
+            Assert.True(control.IsMeasureValid);
+            Assert.True(control.IsArrangeValid);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();
@@ -490,6 +513,39 @@ namespace Avalonia.Base.UnitTests.Layout
             Assert.True(child.IsArrangeValid);
             Assert.True(parent.IsMeasureValid);
             Assert.True(parent.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Grandparent_Can_Invalidate_Root_Measure_During_Arrange()
+        {
+            // Issue #11161.
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var grandparent = new LayoutTestControl { Child = parent };
+            var root = new LayoutTestRoot { Child = grandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.DoArrangeOverride = (_, s) =>
+            {
+                root.InvalidateMeasure();
+                return s;
+            };
+            grandparent.CallBaseArrange = true;
+
+            child.InvalidateMeasure();
+            grandparent.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+            Assert.True(grandparent.IsMeasureValid);
+            Assert.True(grandparent.IsArrangeValid);
+            Assert.True(root.IsMeasureValid);
+            Assert.True(root.IsArrangeValid);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Avalonia.Controls.Generators
 {
@@ -7,8 +8,8 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     /// <remarks>
     /// When creating a container for an item from a <see cref="VirtualizingPanel"/>, the following
-    /// method order should be followed:
-    /// 
+    /// process should be followed:
+    ///
     /// - <see cref="IsItemItsOwnContainer(Control)"/> should first be called if the item is
     ///   derived from the <see cref="Control"/> class. If this method returns true then the
     ///   item itself should be used as the container.
@@ -19,9 +20,29 @@ namespace Avalonia.Controls.Generators
     /// - The container should then be added to the panel using 
     ///   <see cref="VirtualizingPanel.AddInternalChild(Control)"/>
     /// - Finally, <see cref="ItemContainerPrepared(Control, object?, int)"/> should be called.
-    /// - When the item is ready to be recycled, <see cref="ClearItemContainer(Control)"/> should
-    ///   be called if <see cref="IsItemItsOwnContainer(Control)"/> returned false.
     /// 
+    /// NOTE: If <see cref="IsItemItsOwnContainer(Control)"/> in the first step above returns true
+    /// then the above steps should be carried out a single time; the first time the item is 
+    /// displayed. Otherwise the steps should be carried out each time a new container is realized
+    /// for an item.
+    ///
+    /// When unrealizing a container, the following process should be followed:
+    /// 
+    /// - If <see cref="IsItemItsOwnContainer(Control)"/> for the item returned true then the item
+    ///   cannot be unrealized or recycled.
+    /// - Otherwise, <see cref="ClearItemContainer(Control)"/> should be called for the container
+    /// - If recycling is supported then the container should be added to a recycle pool.
+    /// - It is assumed that recyclable containers will not be removed from the panel but instead
+    ///   hidden from view using e.g. `container.IsVisible = false`.
+    ///
+    /// When recycling an unrealized container, the following process should be followed:
+    /// 
+    /// - An element should be taken from the recycle pool.
+    /// - The container should be made visible.
+    /// - <see cref="PrepareItemContainer(Control, object?, int)"/> method should be called for the
+    ///   container.
+    /// - <see cref="ItemContainerPrepared(Control, object?, int)"/> should be called.
+    ///
     /// NOTE: Although this class is similar to that found in WPF/UWP, in Avalonia this class only
     /// concerns itself with generating and clearing item containers; it does not maintain a
     /// record of the currently realized containers, that responsibility is delegated to the
@@ -65,7 +86,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="index">The index of the item to display.</param>
         /// <remarks>
         /// If <see cref="IsItemItsOwnContainer(Control)"/> is true for an item, then this method
-        /// only needs to be called a single time, otherwise this method should be called after the
+        /// must only be called a single time, otherwise this method must be called after the
         /// container is created, and each subsequent time the container is recycled to display a
         /// new item.
         /// </remarks>
@@ -80,10 +101,11 @@ namespace Avalonia.Controls.Generators
         /// <param name="item">The item being displayed.</param>
         /// <param name="index">The index of the item being displayed.</param>
         /// <remarks>
-        /// This method should be called when a container has been fully prepared and added
+        /// This method must be called when a container has been fully prepared and added
         /// to the logical and visual trees, but may be called before a layout pass has completed.
-        /// It should be called regardless of the result of
-        /// <see cref="IsItemItsOwnContainer(Control)"/>.
+        /// It must be called regardless of the result of
+        /// <see cref="IsItemItsOwnContainer(Control)"/> but if that method returned true then
+        /// must be called only a single time.
         /// </remarks>
         public void ItemContainerPrepared(Control container, object? item, int index) =>
             _owner.ItemContainerPrepared(container, item, index);
@@ -102,12 +124,18 @@ namespace Avalonia.Controls.Generators
         /// Undoes the effects of the <see cref="PrepareItemContainer(Control, object, int)"/> method.
         /// </summary>
         /// <param name="container">The container control.</param>
+        /// <remarks>
+        /// This method must be called when a container is unrealized. The container must have
+        /// already have been removed from the virtualizing panel's list of realized containers before
+        /// this method is called. This method must not be called if
+        /// <see cref="IsItemItsOwnContainer"/> returned true for the item.
+        /// </remarks>
         public void ClearItemContainer(Control container) => _owner.ClearItemContainer(container);
 
-        [Obsolete("Use ItemsControl.ContainerFromIndex")]
+        [Obsolete("Use ItemsControl.ContainerFromIndex"), EditorBrowsable(EditorBrowsableState.Never)]
         public Control? ContainerFromIndex(int index) => _owner.ContainerFromIndex(index);
 
-        [Obsolete("Use ItemsControl.IndexFromContainer")]
+        [Obsolete("Use ItemsControl.IndexFromContainer"), EditorBrowsable(EditorBrowsableState.Never)]
         public int IndexFromContainer(Control container) => _owner.IndexFromContainer(container);
     }
 }

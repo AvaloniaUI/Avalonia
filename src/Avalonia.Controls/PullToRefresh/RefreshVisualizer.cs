@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PullDirection"/> property.
         /// </summary>
-        public static readonly StyledProperty<PullDirection> PullDirectionProperty =
+        internal static readonly StyledProperty<PullDirection> PullDirectionProperty =
             AvaloniaProperty.Register<RefreshVisualizer, PullDirection>(nameof(PullDirection), PullDirection.TopToBottom);
 
         /// <summary>
@@ -71,6 +71,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a value that indicates the refresh state of the visualizer.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "False positive")]
         protected RefreshVisualizerState RefreshVisualizerState
         {
             get

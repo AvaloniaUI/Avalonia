@@ -352,7 +352,7 @@ namespace Avalonia.X11
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         //TODO
         public Action<double>? ScalingChanged { get; set; }
         public Action? Deactivated { get; set; }
@@ -509,7 +509,7 @@ namespace Avalonia.X11
                         UpdateImePosition();
 
                         if (changedSize && !updatedSizeViaScaling && !_popup)
-                            Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+                            Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
 
                     }, DispatcherPriority.Layout);
                 if (_useRenderWindow)
@@ -590,7 +590,7 @@ namespace Avalonia.X11
                 UpdateImePosition();
                 SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                 if(!skipResize)
-                    Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
+                    Resize(oldScaledSize, true, WindowResizeReason.DpiChange);
                 return true;
             }
             
@@ -642,7 +642,7 @@ namespace Avalonia.X11
             {
                 // Occurs once the window has been mapped, which is the earliest the extents
                 // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
-                Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+                Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
             }
 
             if (atom == _x11.Atoms._NET_WM_STATE)
@@ -959,19 +959,19 @@ namespace Avalonia.X11
         }
 
 
-        public void Resize(Size clientSize, PlatformResizeReason reason) => Resize(clientSize, false, reason);
+        public void Resize(Size clientSize, WindowResizeReason reason) => Resize(clientSize, false, reason);
         public void Move(PixelPoint point) => Position = point;
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
             _scalingOverride = scaling;
             UpdateScaling(true);
-            Resize(size, true, PlatformResizeReason.Layout);
+            Resize(size, true, WindowResizeReason.Layout);
         }
 
         private PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
 
-        private void Resize(Size clientSize, bool force, PlatformResizeReason reason)
+        private void Resize(Size clientSize, bool force, WindowResizeReason reason)
         {
             if (!force && clientSize == ClientSize)
                 return;

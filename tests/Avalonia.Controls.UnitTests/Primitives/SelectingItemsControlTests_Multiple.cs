@@ -1025,6 +1025,90 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Can_Change_Selection_For_Containers_Outside_Of_Viewport()
+        {
+            // Issue #11119
+            using var app = Start();
+            var items = Enumerable.Range(0, 100).Select(x => new TestContainer 
+            { 
+                Content = $"Item {x}",
+                Height = 100,
+            }).ToList();
+
+            // Create a SelectingItemsControl with a virtualizing stack panel.
+            var target = CreateTarget(itemsSource: items, virtualizing: true);
+            target.AutoScrollToSelectedItem = false;
+
+            var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
+            var scroll = panel.FindAncestorOfType<ScrollViewer>()!;
+
+            // Select item 1.
+            target.SelectedIndex = 1;
+
+            // Scroll item 1 and 2 out of view.
+            scroll.Offset = new(0, 1000);
+            Layout(target);
+
+            Assert.Equal(10, panel.FirstRealizedIndex);
+            Assert.Equal(19, panel.LastRealizedIndex);
+
+            // Select item 2 now that items 1 and 2 are both unrealized.
+            target.SelectedIndex = 2;
+
+            // The selection should be updated.
+            Assert.Empty(SelectedContainers(target));
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(items[2], target.SelectedItem);
+            Assert.Equal(new[] { 2 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[2] }, target.Selection.SelectedItems);
+
+            // Scroll selected item back into view.
+            scroll.Offset = new(0, 0);
+            Layout(target);
+
+            // The selection should be preserved.
+            Assert.Equal(new[] { 2 }, SelectedContainers(target));
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(items[2], target.SelectedItem);
+            Assert.Equal(new[] { 2 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[2] }, target.Selection.SelectedItems);
+        }
+
+        [Fact]
+        public void Selection_Is_Not_Cleared_On_Recycling_Containers()
+        {
+            using var app = Start();
+            var items = Enumerable.Range(0, 100).Select(x => new ItemViewModel($"Item {x}", false)).ToList();
+
+            // Create a SelectingItemsControl that creates containers that raise IsSelectedChanged,
+            // with a virtualizing stack panel.
+            var target = CreateTarget<TestSelectorWithContainers>(
+                itemsSource: items, 
+                virtualizing: true);
+            target.AutoScrollToSelectedItem = false;
+
+            var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
+            var scroll = panel.FindAncestorOfType<ScrollViewer>()!;
+
+            // Select item 1.
+            target.SelectedIndex = 1;
+
+            // Scroll item 1 out of view.
+            scroll.Offset = new(0, 1000);
+            Layout(target);
+
+            Assert.Equal(10, panel.FirstRealizedIndex);
+            Assert.Equal(19, panel.LastRealizedIndex);
+
+            // The selection should be preserved.
+            Assert.Empty(SelectedContainers(target));
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Same(items[1], target.SelectedItem);
+            Assert.Equal(new[] { 1 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { items[1] }, target.Selection.SelectedItems);
+        }
+
+        [Fact]
         public void Selection_State_Change_On_Unrealized_Item_Is_Respected_With_IsSelected_Binding()
         {
             using var app = Start();
@@ -1197,7 +1281,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Setters =
                 {
-                    new Setter(TreeView.TemplateProperty, CreateTestContainerTemplate()),
+                    new Setter(TestContainer.TemplateProperty, CreateTestContainerTemplate()),
+                    new Setter(TestContainer.HeightProperty, 100.0),
                 },
             };
         }

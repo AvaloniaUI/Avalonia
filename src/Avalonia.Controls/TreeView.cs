@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
@@ -715,7 +716,7 @@ namespace Avalonia.Controls
             }
         }
 
-        [Obsolete]
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         private protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TreeItemContainerGenerator(this);

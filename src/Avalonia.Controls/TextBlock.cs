@@ -7,7 +7,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -565,7 +564,8 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var padding = Padding;
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
             var top = padding.Top;
             var textHeight = TextLayout.Bounds.Height;
 
@@ -659,7 +659,6 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var scale = LayoutHelper.GetLayoutScale(this);
-
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             _constraint = availableSize.Deflate(padding);
@@ -703,19 +702,24 @@ namespace Avalonia.Controls
                 }
             }
 
-            var measuredSize = TextLayout.Bounds.Size.Inflate(padding);
-
-            return measuredSize;
+            return TextLayout.Bounds.Size.Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (HasComplexContent)
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+
+            //Fixes: #11019
+            if (finalSize.Width < _constraint.Width)
             {
-                var scale = LayoutHelper.GetLayoutScale(this);
+                _textLayout?.Dispose();
+                _textLayout = null;
+                _constraint = finalSize.Deflate(padding);
+            }
 
-                var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
-
+            if (HasComplexContent)
+            {             
                 var currentY = padding.Top;
 
                 foreach (var textLine in TextLayout.TextLines)
@@ -730,7 +734,7 @@ namespace Avalonia.Controls
                                 && controlRun.Control is Control control)
                             {
                                 control.Arrange(
-                                    new Rect(new Point(currentX, currentY), 
+                                    new Rect(new Point(currentX, currentY),
                                     new Size(control.DesiredSize.Width, textLine.Height)));
                             }
 
