@@ -33,7 +33,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 target.SetValue(property, 200);
 
                 Assert.Equal(200, target.GetValue(property));
-                Assert.IsType<ArgumentOutOfRangeException>(target.DataValidationError);
+                Assert.Equal(target.DataValidationError?.Message, new ArgumentOutOfRangeException(nameof(ExceptionValidatingModel.Value)).Message);
 
                 target.SetValue(property, 10);
 
@@ -357,7 +357,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 set
                 {
                     if (value > MaxValue)
-                        throw new ArgumentOutOfRangeException(nameof(value));
+                        throw new ArgumentOutOfRangeException(nameof(Value));
                     _value = value;
                 }
             }
