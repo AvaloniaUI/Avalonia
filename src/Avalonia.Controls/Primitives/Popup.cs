@@ -74,7 +74,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public PlacementMode PlacementMode
         {
             get => GetValue(PlacementProperty);
