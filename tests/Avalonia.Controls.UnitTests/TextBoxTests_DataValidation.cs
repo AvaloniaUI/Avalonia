@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -57,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
 
                 IEnumerable<object> errors = DataValidationErrors.GetErrors(target);
                 Assert.Single(errors);
-                Assert.IsType<InvalidOperationException>(errors.Single());
+                Assert.Equal(errors.Single(), "More than 10.");
                 target.Text = "1";
                 Assert.Null(DataValidationErrors.GetErrors(target));
             }
