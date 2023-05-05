@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using Avalonia.Platform;
-using D2DBitmap = SharpDX.Direct2D1.Bitmap;
+using D2DBitmap = SharpDX.Direct2D1.Bitmap1;
 
 namespace Avalonia.Direct2D1.Media
 {

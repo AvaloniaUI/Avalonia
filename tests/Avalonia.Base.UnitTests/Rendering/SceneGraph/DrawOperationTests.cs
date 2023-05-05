@@ -51,8 +51,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 bitmap,
                 1,
                 new Rect(1, 1, 1, 1),
-                new Rect(1, 1, 1, 1),
-                BitmapInterpolationMode.Default);
+                new Rect(1, 1, 1, 1));
 
             Assert.Equal(2, bitmap.RefCount);
 

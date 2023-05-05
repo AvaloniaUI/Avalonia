@@ -160,59 +160,9 @@ namespace Avalonia.Direct2D1
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) => new GeometryGroupImpl(fillRule, children);
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) => new CombinedGeometryImpl(combineMode, g1, g2);
-
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
-            var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
-
-            var glyphCount = glyphInfos.Count;
-
-            var run = new SharpDX.DirectWrite.GlyphRun
-            {
-                FontFace = glyphTypefaceImpl.FontFace,
-                FontSize = (float)fontRenderingEmSize
-            };
-
-            var indices = new short[glyphCount];
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                indices[i] = (short)glyphInfos[i].GlyphIndex;
-            }
-
-            run.Indices = indices;
-
-            run.Advances = new float[glyphCount];
-
-            var width = 0.0;
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                var advance = glyphInfos[i].GlyphAdvance;
-
-                width += advance;
-
-                run.Advances[i] = (float)advance;
-            }
-
-            run.Offsets = new GlyphOffset[glyphCount];
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                var (x, y) = glyphInfos[i].GlyphOffset;
-
-                run.Offsets[i] = new GlyphOffset
-                {
-                    AdvanceOffset = (float)x,
-                    AscenderOffset = (float)y
-                };
-            }
-
-            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
-            var height = glyphTypeface.Metrics.LineSpacing * scale;
-
-            return new GlyphRunImpl(run, new Size(width, height), baselineOrigin);
+            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin, bounds);
         }
 
         class D2DApi : IPlatformRenderInterfaceContext

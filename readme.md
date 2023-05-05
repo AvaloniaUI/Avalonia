@@ -1,5 +1,4 @@
-![StarBanner3](https://user-images.githubusercontent.com/552074/235864283-691ac648-5113-4b5c-87e8-bed9ba192927.png)
-
+![Star our repo to show support](https://user-images.githubusercontent.com/552074/235945895-1b896994-a0b6-4e7c-a522-c5688c4ec1b9.png)
 ![Header](https://user-images.githubusercontent.com/552074/235865745-2a8e7274-4f66-4f77-8f05-feeb76e7d478.png)
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
@@ -48,7 +47,8 @@ Install-Package Avalonia.Desktop
 ```
 
 ## Showcase
-[![Showcase_Banner](https://user-images.githubusercontent.com/552074/235865504-f9acaf42-ea2d-456a-ab52-547c45614bd5.png)](https://avaloniaui.net/showcase)
+[![Showcase_Banner](https://user-images.githubusercontent.com/552074/235946124-bf6fda52-0c9f-4730-868b-0de957e5b97b.png)](https://avaloniaui.net/showcase)
+
 
 
 See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/Showcase). We welcome submissions! 
