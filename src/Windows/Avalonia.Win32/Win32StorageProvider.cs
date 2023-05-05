@@ -99,12 +99,14 @@ namespace Avalonia.Win32
                     }
                     frm.SetOptions(options);
 
-                    if (defaultExtension is not null)
+                    if (defaultExtension is null)
                     {
-                        fixed (char* pExt = defaultExtension)
-                        {
-                            frm.SetDefaultExtension(pExt);
-                        }
+                        defaultExtension = String.Empty;
+                    }
+
+                    fixed (char* pExt = defaultExtension)
+                    {
+                        frm.SetDefaultExtension(pExt);
                     }
 
                     suggestedFileName ??= "";
