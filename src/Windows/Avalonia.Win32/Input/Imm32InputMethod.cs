@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Avalonia.Input.TextInput;
 using Avalonia.Threading;
-
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.Input
@@ -75,6 +73,8 @@ namespace Avalonia.Win32.Input
             _caretManager.TryDestroy();
 
             _currentHimc = IntPtr.Zero;
+
+            SetInputScope(Hwnd, InputScope.IS_DEFAULT);
         }
 
         public void SetLanguageAndWindow(WindowImpl parent, IntPtr hwnd, IntPtr HKL)
@@ -129,6 +129,8 @@ namespace Avalonia.Win32.Input
                 }
 
                 ImmReleaseContext(Hwnd, himc);
+
+                SetInputScope(Hwnd, InputScope.IS_DEFAULT);
             });
         }
 
@@ -270,7 +272,40 @@ namespace Avalonia.Win32.Input
         
         public void SetOptions(TextInputOptions options)
         {
-            // we're skipping this. not usable on windows
+            var inputScope = InputScope.IS_DEFAULT;
+
+            switch(options.ContentType)
+            {
+                case TextInputContentType.Alpha:
+                    inputScope = InputScope.IS_TEXT;
+                    break;
+                case TextInputContentType.Digits:
+                    inputScope = InputScope.IS_DIGITS;
+                    break;
+                case TextInputContentType.Pin:
+                    inputScope = InputScope.IS_ALPHANUMERIC_PIN;
+                    break;
+                case TextInputContentType.Number:
+                    inputScope = InputScope.IS_NUMBER;
+                    break;
+                case TextInputContentType.Email:
+                    inputScope = InputScope.IS_EMAILNAME_OR_ADDRESS;
+                    break;
+                case TextInputContentType.Url:
+                    inputScope = InputScope.IS_URL;
+                    break;
+                case TextInputContentType.Name:
+                    inputScope = InputScope.IS_NAME_OR_PHONENUMBER;
+                    break;
+                case TextInputContentType.Password:
+                    inputScope = InputScope.IS_PASSWORD;
+                    break;
+                case TextInputContentType.Search:
+                    inputScope = InputScope.IS_SEARCH;
+                    break;
+            }
+
+            SetInputScope(Hwnd, inputScope);
         }
 
         public void CompositionChanged(string? composition)
