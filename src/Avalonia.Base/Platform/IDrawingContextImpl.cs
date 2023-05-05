@@ -1,8 +1,8 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -12,6 +12,11 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IDrawingContextImpl : IDisposable
     {
+        /// <summary>
+        /// Gets or sets the current render options used to control the rendering behavior of drawing operations.
+        /// </summary>
+        RenderOptions RenderOptions { get; set; }
+
         /// <summary>
         /// Gets or sets the current transform of the drawing context.
         /// </summary>
@@ -30,8 +35,7 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
+        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -157,15 +161,6 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
-        /// Pushes a bitmap blending value.
-        /// </summary>
-        /// <param name="blendingMode">The bitmap blending mode.</param>
-        void PushBitmapBlendMode(BitmapBlendingMode blendingMode);
-
-        /// <summary>
-        /// Pops the latest pushed bitmap blending value.
-        /// </summary>
-        void PopBitmapBlendMode();
 
         /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation

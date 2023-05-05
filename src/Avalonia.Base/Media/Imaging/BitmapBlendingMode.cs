@@ -3,8 +3,10 @@ namespace Avalonia.Media.Imaging
     /// <summary>
     /// Controls the way the bitmaps are drawn together.
     /// </summary>
-    public enum BitmapBlendingMode
+    public enum BitmapBlendingMode : byte
     {
+        Unspecified,
+
         /// <summary>
         /// Source is placed over the destination.
         /// </summary>
@@ -52,6 +54,6 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Display the sum of the source image and destination image.
         /// </summary>
-        Plus,
+        Plus
     }
 }

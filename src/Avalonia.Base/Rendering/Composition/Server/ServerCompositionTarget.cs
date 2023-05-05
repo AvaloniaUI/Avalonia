@@ -181,7 +181,7 @@ namespace Avalonia.Rendering.Composition.Server
                 else
                     targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
                         new Rect(_layerSize),
-                        new Rect(Size), BitmapInterpolationMode.LowQuality);
+                        new Rect(Size));
 
                 if (DebugOverlays != RendererDebugOverlays.None)
                 {

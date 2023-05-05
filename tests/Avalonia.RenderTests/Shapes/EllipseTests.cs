@@ -35,5 +35,49 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task Should_Render_Circle_Aliased()
+        {
+            var target = new Border
+            {
+                Background = Brushes.White,
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Ellipse
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 3.5,
+                }
+            };
+
+            RenderOptions.SetEdgeMode(target, EdgeMode.Aliased);
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_Circle_Antialiased()
+        {
+            var target = new Border
+            {
+                Background = Brushes.White,
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Ellipse
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 3.5,
+                }
+            };
+
+            RenderOptions.SetEdgeMode(target, EdgeMode.Antialias);
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }
