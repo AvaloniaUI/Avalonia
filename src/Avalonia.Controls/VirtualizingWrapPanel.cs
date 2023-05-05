@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls.Utils;
@@ -578,7 +577,7 @@ namespace Avalonia.Controls
                     uv.V = v;
                 }
 
-                _measureElements!.Add(index, e, Orientation, uv, size);
+                _measureElements!.Add(index, e, uv, size);
 
                 uv = new UVSize(Orientation)
                 {
@@ -625,7 +624,7 @@ namespace Avalonia.Controls
                     uv.V -= size.V;
                 }
 
-                _measureElements!.Add(index, e, Orientation, uv, size);
+                _measureElements!.Add(index, e, uv, size);
                 --index;
             }
 

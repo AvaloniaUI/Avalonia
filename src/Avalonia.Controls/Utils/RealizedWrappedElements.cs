@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Utils
 {
     /// <summary>
     /// Stores the realized element state for a virtualizing panel that arranges its children
-    /// in a stack layout, wrapping around when layout reaches the end, such as <see cref="VirtualizingWrapPanel"/>.
+    /// in a stack layout, continuing on the next line when layout reaches the end, such as <see cref="VirtualizingWrapPanel"/>.
     /// </summary>
     internal class RealizedWrappedElements
     {
@@ -39,13 +39,17 @@ namespace Avalonia.Controls.Utils
         public IReadOnlyList<Control?> Elements => _elements ??= new List<Control?>();
 
         /// <summary>
-        /// Gets the sizes of the elements on the primary axis.
+        /// Gets the sizes of the elements.
         /// </summary>
         public IReadOnlyList<UVSize> SizeUV => _sizes ??= new List<UVSize>();
+
+        /// <summary>
+        /// Gets the positions of the elements.
+        /// </summary>
         public IReadOnlyList<UVSize> PositionsUV => _positions ??= new List<UVSize>();
 
         /// <summary>
-        /// Gets the position of the first element on the primary axis.
+        /// Gets the position of the first element.
         /// </summary>
         public UVSize StartUV => _startUV;
 
@@ -56,7 +60,7 @@ namespace Avalonia.Controls.Utils
         /// <param name="element">The element.</param>
         /// <param name="uv">The position of the elemnt.</param>
         /// <param name="sizeUV">The size of the element.</param>
-        public void Add(int index, Control element, Orientation orientation, UVSize uv, UVSize sizeUV)
+        public void Add(int index, Control element, UVSize uv, UVSize sizeUV)
         {
             if (index < 0)
                 throw new ArgumentOutOfRangeException(nameof(index));
