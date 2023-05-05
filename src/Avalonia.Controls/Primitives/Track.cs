@@ -45,6 +45,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IgnoreThumbDrag));
 
+        private Vector _lastDrag;
+
         static Track()
         {
             ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
@@ -245,7 +247,10 @@ namespace Avalonia.Controls.Primitives
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.Y + (thumbLength * 0.5);
@@ -277,13 +282,23 @@ namespace Avalonia.Controls.Primitives
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.X + (thumbLength * 0.5);
             }
 
+            _lastDrag = default;
             return arrangeSize;
+        }
+
+        private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
+        {
+            var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
+            return _lastDrag - thumbDelta;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -444,6 +459,7 @@ namespace Avalonia.Controls.Primitives
                 Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
                 Minimum,
                 Maximum));
+            _lastDrag = e.Vector;
         }
 
         private void ShowChildren(bool visible)

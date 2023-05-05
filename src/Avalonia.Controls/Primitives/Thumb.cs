@@ -46,6 +46,12 @@ namespace Avalonia.Controls.Primitives
             remove { RemoveHandler(DragCompletedEvent, value); }
         }
 
+        internal void AdjustDrag(Vector v)
+        {
+            if (_lastPoint.HasValue)
+                _lastPoint = _lastPoint.Value + v;
+        }
+
         protected override AutomationPeer OnCreateAutomationPeer() => new ThumbAutomationPeer(this);
 
         protected virtual void OnDragStarted(VectorEventArgs e)
