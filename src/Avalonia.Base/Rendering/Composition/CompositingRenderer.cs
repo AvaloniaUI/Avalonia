@@ -260,6 +260,8 @@ public class CompositingRenderer : IRendererWithCompositor
             if (!comp.Effect.EffectEquals(visual.Effect))
                 comp.Effect = visual.Effect?.ToImmutable();
 
+            comp.RenderOptions = visual.RenderOptions;
+
             var renderTransform = Matrix.Identity;
 
             if (visual.HasMirrorTransform) 
@@ -271,8 +273,6 @@ public class CompositingRenderer : IRendererWithCompositor
                 var offset = Matrix.CreateTranslation(origin);
                 renderTransform *= (-offset) * visual.RenderTransform.Value * (offset);
             }
-
-
 
             comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
 

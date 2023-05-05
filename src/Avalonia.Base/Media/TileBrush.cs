@@ -83,7 +83,6 @@ namespace Avalonia.Media
                 SourceRectProperty,
                 StretchProperty,
                 TileModeProperty);
-            RenderOptions.BitmapInterpolationModeProperty.OverrideDefaultValue<TileBrush>(BitmapInterpolationMode.Default);
         }
 
         /// <summary>
@@ -139,18 +138,6 @@ namespace Avalonia.Media
         {
             get { return (TileMode)GetValue(TileModeProperty); }
             set { SetValue(TileModeProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the bitmap interpolation mode.
-        /// </summary>
-        /// <value>
-        /// The bitmap interpolation mode.
-        /// </value>
-        public BitmapInterpolationMode BitmapInterpolationMode
-        {
-            get { return RenderOptions.GetBitmapInterpolationMode(this); }
-            set { RenderOptions.SetBitmapInterpolationMode(this, value); }
         }
     }
 }

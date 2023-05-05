@@ -547,5 +547,38 @@ namespace Avalonia.Base.UnitTests.Layout
             Assert.True(root.IsMeasureValid);
             Assert.True(root.IsArrangeValid);
         }
+
+        [Fact]
+        public void GreatGrandparent_Can_Invalidate_Grandparent_Measure_During_Arrange()
+        {
+            // Issue #7706 (second part: scrollbar gets stuck)
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var grandparent = new LayoutTestControl { Child = parent };
+            var greatGrandparent = new LayoutTestControl { Child = grandparent };
+            var root = new LayoutTestRoot { Child = greatGrandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            greatGrandparent.DoArrangeOverride = (_, s) =>
+            {
+                grandparent.InvalidateMeasure();
+                return s;
+            };
+
+            child.InvalidateArrange();
+            greatGrandparent.InvalidateArrange();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+            Assert.True(greatGrandparent.IsMeasureValid);
+            Assert.True(greatGrandparent.IsArrangeValid);
+            Assert.True(root.IsMeasureValid);
+            Assert.True(root.IsArrangeValid);
+        }
     }
 }
