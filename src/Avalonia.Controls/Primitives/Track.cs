@@ -295,12 +295,6 @@ namespace Avalonia.Controls.Primitives
             return arrangeSize;
         }
 
-        private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
-        {
-            var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
-            return _lastDrag - thumbDelta;
-        }
-
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -309,6 +303,12 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
+        }
+
+        private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
+        {
+            var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
+            return _lastDrag - thumbDelta;
         }
 
         private static void CoerceLength(ref double componentLength, double trackLength)
@@ -455,11 +455,17 @@ namespace Avalonia.Controls.Primitives
             if (IgnoreThumbDrag)
                 return;
 
+            var value = Value;
+            var delta = ValueFromDistance(e.Vector.X, e.Vector.Y);
+            var factor = e.Vector / delta;
+
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(
-                Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
+                value + delta,
                 Minimum,
                 Maximum));
-            _lastDrag = e.Vector;
+            
+            // Record the part of the drag that actually had effect as the last drag delta.
+            _lastDrag = (Value - value) * factor;
         }
 
         private void ShowChildren(bool visible)
