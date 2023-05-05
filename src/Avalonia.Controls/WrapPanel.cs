@@ -17,7 +17,7 @@ namespace Avalonia.Controls
     /// Subsequent ordering happens sequentially from top to bottom or from right to left, 
     /// depending on the value of the <see cref="Orientation"/> property.
     /// </summary>
-    public class WrapPanel : Panel, INavigableContainer
+    public partial class WrapPanel : Panel, INavigableContainer
     {
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
@@ -254,38 +254,6 @@ namespace Avalonia.Controls
                     isHorizontal ? layoutSlotU : lineV,
                     isHorizontal ? lineV : layoutSlotU));
                 u += layoutSlotU;
-            }
-        }
-
-        private struct UVSize
-        {
-            internal UVSize(Orientation orientation, double width, double height)
-            {
-                U = V = 0d;
-                _orientation = orientation;
-                Width = width;
-                Height = height;
-            }
-
-            internal UVSize(Orientation orientation)
-            {
-                U = V = 0d;
-                _orientation = orientation;
-            }
-
-            internal double U;
-            internal double V;
-            private Orientation _orientation;
-
-            internal double Width
-            {
-                get { return _orientation == Orientation.Horizontal ? U : V; }
-                set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
-            }
-            internal double Height
-            {
-                get { return _orientation == Orientation.Horizontal ? V : U; }
-                set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
             }
         }
     }

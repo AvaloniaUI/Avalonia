@@ -9,7 +9,7 @@
           <ItemsControl x:Name="Items">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <WrapPanel/>
+                <VirtualizingWrapPanel/>
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.DataTemplates>
