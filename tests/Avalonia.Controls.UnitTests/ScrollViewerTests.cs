@@ -310,6 +310,54 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(0, 3500), target.Offset);
         }
 
+        [Fact]
+        public void Thumb_Does_Not_Become_Detached_From_Mouse_Position_When_Scrolling_Past_The_Start()
+        {
+            var content = new TestContent();
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new Size(1000, 2000), target.Extent);
+            Assert.Equal(new Size(1000, 1000), target.Viewport);
+
+            // We're working in absolute coordinates (i.e. relative to the root) and clicking on
+            // the center of the vertical thumb.
+            var thumb = GetVerticalThumb(target);
+            var p = GetRootPoint(thumb, thumb.Bounds.Center);
+
+            // Press the mouse button in the center of the thumb.
+            _mouse.Down(thumb, position: p);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Drag the thumb down 100 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 100));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(new Vector(0, 200), target.Offset);
+            Assert.Equal(100, thumb.Bounds.Top);
+
+            // Drag the thumb up 200 pixels - 100 pixels past the top of the scrollbar.
+            _mouse.Move(thumb, p -= new Vector(0, 200));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(new Vector(0, 0), target.Offset);
+            Assert.Equal(0, thumb.Bounds.Top);
+
+            // Drag the thumb back down 200 pixels.
+            _mouse.Move(thumb, p += new Vector(0, 200));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // We should now be back in the state after we first scrolled down 100 pixels.
+            Assert.Equal(new Vector(0, 200), target.Offset);
+            Assert.Equal(100, thumb.Bounds.Top);
+        }
+
         private Point GetRootPoint(Visual control, Point p)
         {
             if (control.GetVisualRoot() is Visual root &&
