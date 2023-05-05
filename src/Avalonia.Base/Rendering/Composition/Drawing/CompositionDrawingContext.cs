@@ -78,15 +78,14 @@ internal sealed class CompositionDrawingContext : DrawingContext, IDrawingContex
         }
     }
 
-    internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-        BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+    internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
     {
         var next = NextDrawAs<ImageNode>();
 
         if (next == null ||
-            !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode))
+            !next.Item.Equals(Transform, source, opacity, sourceRect, destRect))
         {
-            Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode));
+            Add(new ImageNode(Transform, source, opacity, sourceRect, destRect));
         }
         else
         {
@@ -227,20 +226,6 @@ internal sealed class CompositionDrawingContext : DrawingContext, IDrawingContex
         }
     }
 
-    protected override void PopBitmapBlendModeCore()
-    {
-        var next = NextDrawAs<BitmapBlendModeNode>();
-
-        if (next == null || !next.Item.Equals(null))
-        {
-            Add(new BitmapBlendModeNode());
-        }
-        else
-        {
-            ++_drawOperationIndex;
-        }
-    }
-
     protected override void PopOpacityCore()
     {
         var next = NextDrawAs<OpacityNode>();
@@ -352,21 +337,6 @@ internal sealed class CompositionDrawingContext : DrawingContext, IDrawingContex
 
         _needsToPopOpacityMask ??= OpacityMaskPopStackPool.Get();
         _needsToPopOpacityMask.Push(needsToPop);
-    }
-
-    /// <inheritdoc/>
-    protected override void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode)
-    {
-        var next = NextDrawAs<BitmapBlendModeNode>();
-
-        if (next == null || !next.Item.Equals(blendingMode))
-        {
-            Add(new BitmapBlendModeNode(blendingMode));
-        }
-        else
-        {
-            ++_drawOperationIndex;
-        }
     }
 
     private void Add<T>(T node) where T : class, IDrawOperation

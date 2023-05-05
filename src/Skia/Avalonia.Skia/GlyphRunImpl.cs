@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -7,30 +9,122 @@ namespace Avalonia.Skia
 {
     internal class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl(SKTextBlob textBlob, Size size, Point baselineOrigin)
+        private readonly GlyphTypefaceImpl _glyphTypefaceImpl;
+        private readonly ushort[] _glyphIndices;
+        private readonly SKPoint[] _glyphPositions;
+
+        private readonly Dictionary<SKFontEdging, SKTextBlob> _textBlobCache = new(1);
+
+        public GlyphRunImpl(IGlyphTypeface glyphTypeface, double fontRenderingEmSize,
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
-            TextBlob = textBlob ?? throw new ArgumentNullException(nameof(textBlob));
+            if (glyphTypeface == null)
+            {
+                throw new ArgumentNullException(nameof(glyphTypeface));
+            }
 
-            Bounds = new Rect(new Point(baselineOrigin.X, 0), size);
+            _glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
 
+            if (glyphInfos == null)
+            {
+                throw new ArgumentNullException(nameof(glyphInfos));
+            }
+
+            var count = glyphInfos.Count;
+            _glyphIndices = new ushort[count];
+            _glyphPositions = new SKPoint[count];
+
+            var currentX = 0.0;
+
+            for (int i = 0; i < count; i++)
+            {
+                var glyphInfo = glyphInfos[i];
+                var offset = glyphInfo.GlyphOffset;
+
+                _glyphIndices[i] = glyphInfo.GlyphIndex;
+
+                _glyphPositions[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
+
+                currentX += glyphInfos[i].GlyphAdvance;
+            }
+
+            FontRenderingEmSize = fontRenderingEmSize;
             BaselineOrigin = baselineOrigin;
+            Bounds = bounds;
         }
 
-        /// <summary>
-        ///     Gets the text blob to draw.
-        /// </summary>
-        public SKTextBlob TextBlob { get; }
+        public IGlyphTypeface GlyphTypeface => _glyphTypefaceImpl;
 
-        public Rect Bounds { get; }
+        public double FontRenderingEmSize { get; }
 
         public Point BaselineOrigin { get; }
 
-        public IReadOnlyList<float> GetIntersections(float upperBound, float lowerBound) => 
-            TextBlob.GetIntercepts(lowerBound, upperBound);
+        public Rect Bounds { get; }
 
-        void IDisposable.Dispose()
+        public SKTextBlob GetTextBlob(RenderOptions renderOptions)
         {
-            TextBlob.Dispose();
+            var edging = SKFontEdging.SubpixelAntialias;
+
+            switch (renderOptions.TextRenderingMode)
+            {
+                case TextRenderingMode.Alias:
+                    edging = SKFontEdging.Alias;
+                    break;
+                case TextRenderingMode.Antialias:
+                    edging = SKFontEdging.Antialias;
+                    break;
+                case TextRenderingMode.Unspecified:
+                    edging = renderOptions.EdgeMode == EdgeMode.Aliased ? SKFontEdging.Alias : SKFontEdging.SubpixelAntialias;
+                    break;
+            }
+
+            if (_textBlobCache.TryGetValue(edging, out var textBlob))
+            {
+                return textBlob;
+            }
+
+            var font = SKFontCache.Shared.Get();
+
+            font.LinearMetrics = true;
+            font.Subpixel = edging == SKFontEdging.SubpixelAntialias;
+            font.Edging = edging;
+            font.Hinting = SKFontHinting.Full;
+            font.Size = (float)FontRenderingEmSize;
+            font.Typeface = _glyphTypefaceImpl.Typeface;
+            font.Embolden = (_glyphTypefaceImpl.FontSimulations & FontSimulations.Bold) != 0;
+            font.SkewX = (_glyphTypefaceImpl.FontSimulations & FontSimulations.Oblique) != 0 ? -0.2f : 0;
+
+            var builder = SKTextBlobBuilderCache.Shared.Get();
+
+            var runBuffer = builder.AllocatePositionedRun(font, _glyphIndices.Length);
+
+            runBuffer.SetPositions(_glyphPositions);
+            runBuffer.SetGlyphs(_glyphIndices);
+
+            SKFontCache.Shared.Return(font);
+
+            textBlob = builder.Build();
+
+            SKTextBlobBuilderCache.Shared.Return(builder);
+
+            _textBlobCache.Add(edging, textBlob);
+
+            return textBlob;
+        }
+
+        public void Dispose()
+        {
+            foreach (var pair in _textBlobCache)
+            {
+                pair.Value.Dispose();
+            }
+        }
+
+        public IReadOnlyList<float> GetIntersections(float lowerLimit, float upperLimit)
+        {
+            var textBlob = GetTextBlob(default);
+
+            return textBlob.GetIntercepts(lowerLimit, upperLimit);
         }
     }
 }

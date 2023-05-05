@@ -98,6 +98,21 @@
                     <ComboBoxItem>Inline Item 3</ComboBoxItem>
                     <ComboBoxItem>Inline Item 4</ComboBoxItem>
                 </ComboBox>
+
+                <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}" DisplayMemberBinding="{Binding Name}">
+                
+                </ComboBox>
+
+                <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}" >
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}"></TextBlock>
+                                <TextBlock Text="{Binding Id}"></TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </WrapPanel>
 
             <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>

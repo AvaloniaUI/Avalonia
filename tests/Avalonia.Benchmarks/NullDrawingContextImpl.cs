@@ -15,12 +15,13 @@ namespace Avalonia.Benchmarks
 
         public Matrix Transform { get; set; }
 
+        public RenderOptions RenderOptions { get; set; }
+
         public void Clear(Color color)
         {
         }
 
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
         }
 
