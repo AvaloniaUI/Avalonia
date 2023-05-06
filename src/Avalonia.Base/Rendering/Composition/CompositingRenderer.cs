@@ -362,10 +362,16 @@ public class CompositingRenderer : IRendererWithCompositor
 
         Stop();
         CompositionTarget.Dispose();
-        
+
         // Wait for the composition batch to be applied and rendered to guarantee that
         // render target is not used anymore and can be safely disposed
         if (Compositor.Loop.RunsInBackground)
             _compositor.Commit().Wait();
+        else
+        {
+            // Ensure the ServerCompositionTarget is disposed immediately
+            _compositor.Commit();
+            _compositor.Server.ProcessPendingBatches();
+        }
     }
 }

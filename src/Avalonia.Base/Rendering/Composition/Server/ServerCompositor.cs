@@ -149,10 +149,8 @@ namespace Avalonia.Rendering.Composition.Server
         
         private void RenderCore()
         {
-            UpdateServerTime();
-            ApplyPendingBatches();
-            CompletePendingBatches();
-            
+            ProcessPendingBatches();
+
             foreach(var animation in _clockItems)
                 _clockItemsToUpdate.Add(animation);
 
@@ -172,6 +170,13 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Exception when rendering: {Error}", e);
             }
+        }
+
+        internal void ProcessPendingBatches()
+        {
+            UpdateServerTime();
+            ApplyPendingBatches();
+            CompletePendingBatches();
         }
 
         public void AddCompositionTarget(ServerCompositionTarget target)

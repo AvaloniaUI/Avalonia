@@ -32,7 +32,6 @@ namespace Avalonia.Rendering.Composition.Server
         private Size _layerSize;
         private IDrawingContextLayerImpl? _layer;
         private bool _redrawRequested;
-        private bool _disposed;
         private HashSet<ServerCompositionVisual> _attachedVisuals = new();
         private Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
@@ -41,6 +40,7 @@ namespace Avalonia.Rendering.Composition.Server
         public ICompositionTargetDebugEvents? DebugEvents { get; set; }
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
+        public bool IsDisposed { get; private set; }
 
         private FpsCounter FpsCounter
             => _fpsCounter ??= new FpsCounter(_diagnosticTextRenderer);
@@ -113,7 +113,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Render()
         {
-            if (_disposed)
+            if (IsDisposed)
             {
                 Compositor.RemoveCompositionTarget(this);
                 return;
@@ -275,9 +275,9 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Dispose()
         {
-            if (_disposed)
+            if (IsDisposed)
                 return;
-            _disposed = true;
+            IsDisposed = true;
             using (_compositor.RenderInterface.EnsureCurrent())
             {
                 if (_layer != null)

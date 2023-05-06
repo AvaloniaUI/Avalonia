@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +20,14 @@ using Avalonia.Threading;
 using Xunit;
 
 namespace Avalonia.UnitTests;
+
 public class CompositorTestServices : IDisposable
 {
     private readonly IDisposable _app;
     public Compositor Compositor { get; }
-    public ManualRenderTimer Timer { get; } = new();
+    public ManualRenderTimer Timer { get; }
     public EmbeddableControlRoot TopLevel { get; }
-    public CompositingRenderer Renderer { get; } = null!;
+    public CompositingRenderer Renderer { get; }
     public DebugEvents Events { get; } = new();
 
     public void Dispose()
@@ -34,12 +37,14 @@ public class CompositorTestServices : IDisposable
         _app.Dispose();
     }
 
-    public CompositorTestServices(Size? size = null, IPlatformRenderInterface renderInterface = null)
+    public CompositorTestServices(Size? size = null, IPlatformRenderInterface? renderInterface = null, bool runsInBackground = false)
     {
+        Timer = new ManualRenderTimer(runsInBackground);
+
         var services = TestServices.MockPlatformRenderInterface;
         if (renderInterface != null)
             services = services.With(renderInterface: renderInterface);
-        
+
         _app = UnitTestApplication.Start(services);
         try
         {
@@ -51,7 +56,7 @@ public class CompositorTestServices : IDisposable
             var impl = new TopLevelImpl(Compositor, size ?? new Size(1000, 1000));
             TopLevel = new EmbeddableControlRoot(impl)
             {
-                Template = new FuncControlTemplate((parent, scope) =>
+                Template = new FuncControlTemplate((_, scope) =>
                 {
                     var presenter = new ContentPresenter
                     {
@@ -61,7 +66,7 @@ public class CompositorTestServices : IDisposable
                     return presenter;
                 })
             };
-            Renderer = impl.Renderer;
+            Renderer = impl.Renderer!;
             TopLevel.Prepare();
             TopLevel.Renderer.Start();
             RunJobs();
@@ -124,16 +129,17 @@ public class CompositorTestServices : IDisposable
 
     public class ManualRenderTimer : IRenderTimer
     {
-        public event Action<TimeSpan> Tick;
-        public bool RunsInBackground => false;
+        public event Action<TimeSpan>? Tick;
+        public bool RunsInBackground { get; }
+        public ManualRenderTimer(bool runsInBackground = false) => RunsInBackground = runsInBackground;
         public void TriggerTick() => Tick?.Invoke(TimeSpan.Zero);
         public Task TriggerBackgroundTick() => Task.Run(TriggerTick);
     }
 
-    class TopLevelImpl : ITopLevelImpl
+    private class TopLevelImpl : ITopLevelImpl
     {
         private readonly Compositor _compositor;
-        public CompositingRenderer Renderer { get; private set; }
+        public CompositingRenderer? Renderer { get; private set; }
 
         public TopLevelImpl(Compositor compositor, Size clientSize)
         {
@@ -147,16 +153,16 @@ public class CompositorTestServices : IDisposable
         }
 
         public Size ClientSize { get; }
-        public Size? FrameSize { get; }
+        public Size? FrameSize => null;
         public double RenderScaling => 1;
         public IEnumerable<object> Surfaces { get; } = new[] { new DummyFramebufferSurface() };
-        public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, WindowResizeReason> Resized { get; set; }
-        public Action<double> ScalingChanged { get; set; }
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        class DummyFramebufferSurface : IFramebufferPlatformSurface
+        private class DummyFramebufferSurface : IFramebufferPlatformSurface
         {
             public ILockedFramebuffer Lock()
             {
@@ -171,10 +177,6 @@ public class CompositorTestServices : IDisposable
             return Renderer = new CompositingRenderer(root, _compositor, () => Surfaces);
         }
 
-        public void Invalidate(Rect rect)
-        {
-        }
-
         public void SetInputRoot(IInputRoot inputRoot)
         {
         }
@@ -183,27 +185,27 @@ public class CompositorTestServices : IDisposable
 
         public PixelPoint PointToScreen(Point point) => new();
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
         }
 
-        public Action Closed { get; set; }
-        public Action LostFocus { get; set; }
-        public IMouseDevice MouseDevice { get; } = new MouseDevice();
-        public IPopupImpl CreatePopup() => throw new NotImplementedException();
+        public Action? Closed { get; set; }
+        public Action? LostFocus { get; set; }
+
+        public IPopupImpl? CreatePopup() => null;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
         }
 
-        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
-        
-        public object TryGetFeature(Type featureType) => null;
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => default;
+
+        public object? TryGetFeature(Type featureType) => null;
     }
 }
