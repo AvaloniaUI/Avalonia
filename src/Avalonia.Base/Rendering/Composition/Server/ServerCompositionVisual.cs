@@ -66,6 +66,8 @@ namespace Avalonia.Rendering.Composition.Server
             if (OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
 
+            canvas.RenderOptions = RenderOptions;
+
             RenderCore(canvas, currentTransformedClip);
             
             // Hack to force invalidation of SKMatrix
@@ -121,6 +123,11 @@ namespace Avalonia.Rendering.Composition.Server
                 return default;
 
             var wasVisible = IsVisibleInFrame;
+
+            if(Parent != null)
+            {
+                RenderOptions = RenderOptions.MergeWith(Parent.RenderOptions);
+            }
 
             // Calculate new parent-relative transform
             if (_combinedTransformDirty)
