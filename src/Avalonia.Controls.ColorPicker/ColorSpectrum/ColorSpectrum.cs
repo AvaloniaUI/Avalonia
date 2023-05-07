@@ -683,7 +683,12 @@ namespace Avalonia.Controls.Primitives
 
                         case ColorSpectrumComponents.ValueSaturation:
                         case ColorSpectrumComponents.SaturationValue:
-                            newHsv.H = 1.0;
+                            // Hue is mathematically NOT a special case; however, is one conceptually.
+                            // It doesn't make sense to change the selected Hue value, so why is it set here?
+                            // Setting to 360.0 is equivalent to the max set for other components and is
+                            // internally wrapped back to 0.0 (since 360 degrees = 0 degrees).
+                            // This means effectively there is no change to the hue component value.
+                            newHsv.H = 360.0;
                             break;
                     }
 
