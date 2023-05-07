@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Metadata;
 using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
 
@@ -12,12 +13,13 @@ namespace Avalonia.Platform;
 /// <summary>
 /// Loads assets compiled into the application binary.
 /// </summary>
-internal class StandardAssetLoader : IAssetLoader
+[Unstable("StandardAssetLoader is considered unstable. Please use AssetLoader static class instead.")]
+public class StandardAssetLoader : IAssetLoader
 {
     private readonly IAssemblyDescriptorResolver _assemblyDescriptorResolver;
     private AssemblyDescriptor? _defaultResmAssembly;
 
-    public StandardAssetLoader(IAssemblyDescriptorResolver resolver, Assembly? assembly = null)
+    internal StandardAssetLoader(IAssemblyDescriptorResolver resolver, Assembly? assembly = null)
     {
         if (assembly == null)
             assembly = Assembly.GetEntryAssembly();
@@ -152,6 +154,8 @@ internal class StandardAssetLoader : IAssetLoader
 
         return Enumerable.Empty<Uri>();
     }
+
+    public static void RegisterResUriParsers() => AssetLoader.RegisterResUriParsers();
 
     private bool TryGetAsset(Uri uri, Uri? baseUri, [NotNullWhen(true)] out IAssetDescriptor? assetDescriptor)
     {
