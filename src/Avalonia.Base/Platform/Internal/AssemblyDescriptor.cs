@@ -8,8 +8,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Platform.Internal;
 
-[Unstable]
-public interface IAssemblyDescriptor
+internal interface IAssemblyDescriptor
 {
     Assembly Assembly { get; }
     Dictionary<string, IAssetDescriptor>? Resources { get; }

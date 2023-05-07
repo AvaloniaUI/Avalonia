@@ -7,8 +7,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Internal;
 
-[Unstable]
-public interface IAssemblyDescriptorResolver
+internal interface IAssemblyDescriptorResolver
 {
     IAssemblyDescriptor GetAssembly(string name);
 }

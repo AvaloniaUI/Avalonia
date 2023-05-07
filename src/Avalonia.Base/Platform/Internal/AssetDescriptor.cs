@@ -5,8 +5,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Internal;
 
-[Unstable]
-public interface IAssetDescriptor
+internal interface IAssetDescriptor
 {
     Stream GetStream();
     Assembly Assembly { get; }

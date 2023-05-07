@@ -19,7 +19,7 @@ public class StandardAssetLoader : IAssetLoader
     private readonly IAssemblyDescriptorResolver _assemblyDescriptorResolver;
     private AssemblyDescriptor? _defaultResmAssembly;
 
-    public StandardAssetLoader(IAssemblyDescriptorResolver resolver, Assembly? assembly = null)
+    internal StandardAssetLoader(IAssemblyDescriptorResolver resolver, Assembly? assembly = null)
     {
         if (assembly == null)
             assembly = Assembly.GetEntryAssembly();
