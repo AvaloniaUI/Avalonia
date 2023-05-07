@@ -31,9 +31,8 @@ namespace Avalonia.Controls.Primitives
         /// <param name="baseHsvColor">The base HSV color used for components not being changed.</param>
         /// <param name="isAlphaVisible">Whether the alpha component is visible and rendered in the bitmap.
         /// This property is ignored when the alpha component itself is being rendered.</param>
-        /// <param name="isSaturationValueMaxForced">Fix the saturation and value components to maximum
-        /// during calculation with the HSVA color model.
-        /// This will ensure colors are always discernible regardless of saturation/value.</param>
+        /// <param name="isPerceptive">Whether the slider adapts rendering to improve user-perception over exactness.
+        /// This will ensure colors are always discernible.</param>
         /// <returns>A new bitmap representing a gradient of color component values.</returns>
         public static async Task<ArrayList<byte>> CreateComponentBitmapAsync(
             int width,
@@ -43,7 +42,7 @@ namespace Avalonia.Controls.Primitives
             ColorComponent component,
             HsvColor baseHsvColor,
             bool isAlphaVisible,
-            bool isSaturationValueMaxForced)
+            bool isPerceptive)
         {
             if (width == 0 || height == 0)
             {
@@ -79,22 +78,41 @@ namespace Avalonia.Controls.Primitives
                     baseRgbColor = baseHsvColor.ToRgb();
                 }
 
-                // Maximize Saturation and Value components when in HSVA mode
-                if (isSaturationValueMaxForced &&
-                    colorModel == ColorModel.Hsva &&
+                // Apply any perceptive adjustments to the color
+                if (isPerceptive &&
                     component != ColorComponent.Alpha)
                 {
-                    switch (component)
+                    if (colorModel == ColorModel.Hsva)
                     {
-                        case ColorComponent.Component1:
-                            baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, 1.0, 1.0);
-                            break;
-                        case ColorComponent.Component2:
-                            baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, baseHsvColor.S, 1.0);
-                            break;
-                        case ColorComponent.Component3:
-                            baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, 1.0, baseHsvColor.V);
-                            break;
+                        // Maximize Saturation and Value components
+                        switch (component)
+                        {
+                            case ColorComponent.Component1: // Hue
+                                baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, 1.0, 1.0);
+                                break;
+                            case ColorComponent.Component2: // Saturation
+                                baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, baseHsvColor.S, 1.0);
+                                break;
+                            case ColorComponent.Component3: // Value
+                                baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, 1.0, baseHsvColor.V);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // Minimize component values other than the current one
+                        switch (component)
+                        {
+                            case ColorComponent.Component1: // Red
+                                baseRgbColor = new Color(baseRgbColor.A, baseRgbColor.R, 0, 0);
+                                break;
+                            case ColorComponent.Component2: // Green
+                                baseRgbColor = new Color(baseRgbColor.A, 0, baseRgbColor.G, 0);
+                                break;
+                            case ColorComponent.Component3: // Blue
+                                baseRgbColor = new Color(baseRgbColor.A, 0, 0, baseRgbColor.B);
+                                break;
+                        }
                     }
                 }
 

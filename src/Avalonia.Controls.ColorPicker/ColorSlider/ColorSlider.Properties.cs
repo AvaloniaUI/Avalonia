@@ -49,20 +49,20 @@ namespace Avalonia.Controls.Primitives
                 false);
 
         /// <summary>
+        /// Defines the <see cref="IsPerceptive"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsPerceptiveProperty =
+            AvaloniaProperty.Register<ColorSlider, bool>(
+                nameof(IsPerceptive),
+                true);
+
+        /// <summary>
         /// Defines the <see cref="IsRoundingEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsRoundingEnabledProperty =
             AvaloniaProperty.Register<ColorSlider, bool>(
                 nameof(IsRoundingEnabled),
                 false);
-
-        /// <summary>
-        /// Defines the <see cref="IsSaturationValueMaxForced"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsSaturationValueMaxForcedProperty =
-            AvaloniaProperty.Register<ColorSlider, bool>(
-                nameof(IsSaturationValueMaxForced),
-                true);
 
         /// <summary>
         /// Gets or sets the currently selected color in the RGB color model.
@@ -109,9 +109,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the alpha component is visible and rendered in the spectrum.
-        /// When false, this ensures that the spectrum is always visible and never transparent regardless of
-        /// the actual color.
+        /// Gets or sets a value indicating whether the alpha component is visible and rendered.
+        /// When false, this ensures that the gradient is always visible and never transparent regardless of
+        /// the actual color. This property is ignored when the alpha component itself is being displayed.
         /// </summary>
         /// <remarks>
         /// Setting to false means the alpha component is always forced to maximum for components other than
@@ -125,6 +125,26 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the slider adapts rendering to improve user-perception
+        /// over exactness. When true in the HSVA color model, this ensures that the gradient is always visible and
+        /// never washed out regardless of the actual color. When true in the RGBA color model, this ensures
+        /// the components always appear as red, green or blue.
+        /// </summary>
+        /// <remarks>
+        /// For example, with Hue in the HSVA color model, the Saturation and Value components are always forced
+        /// to maximum values during rendering. In the RGBA color model, all components other than
+        /// <see cref="ColorComponent"/> are forced to minimum values during rendering.
+        /// <br/><br/>
+        /// Also note this property will only adjust components other than <see cref="ColorComponent"/> during rendering.
+        /// This doesn't change the values of any components in the color – it is only for display.
+        /// </remarks>
+        public bool IsPerceptive
+        {
+            get => GetValue(IsPerceptiveProperty);
+            set => SetValue(IsPerceptiveProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether rounding of color component values is enabled.
         /// </summary>
         /// <remarks>
@@ -135,17 +155,6 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(IsRoundingEnabledProperty);
             set => SetValue(IsRoundingEnabledProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the saturation and value components are always forced to maximum values
-        /// when using the HSVA color model. Only component values other than <see cref="ColorComponent"/> will be changed.
-        /// This ensures, for example, that the Hue background is always visible and never washed out regardless of the actual color.
-        /// </summary>
-        public bool IsSaturationValueMaxForced
-        {
-            get => GetValue(IsSaturationValueMaxForcedProperty);
-            set => SetValue(IsSaturationValueMaxForcedProperty, value);
         }
     }
 }

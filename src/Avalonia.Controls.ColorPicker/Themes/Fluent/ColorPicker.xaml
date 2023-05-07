@@ -114,7 +114,7 @@
                                               AutomationProperties.Name="Third Component"
                                               Grid.Column="0"
                                               IsAlphaVisible="False"
-                                              IsSaturationValueMaxForced="True"
+                                              IsPerceptive="False"
                                               Orientation="Vertical"
                                               ColorModel="Hsva"
                                               ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
@@ -502,6 +502,21 @@
         </DropDownButton>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ primitives|ColorSlider#ColorSpectrumThirdComponentSlider[ColorComponent=Component1]">
+      <Setter Property="IsPerceptive" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ primitives|ColorSlider#Component1Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ primitives|ColorSlider#Component2Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ primitives|ColorSlider#Component3Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+
   </ControlTheme>
 
 </ResourceDictionary>
