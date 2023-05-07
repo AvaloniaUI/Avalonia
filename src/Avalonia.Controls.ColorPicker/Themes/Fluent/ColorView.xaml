@@ -361,7 +361,7 @@
                                         AutomationProperties.Name="Third Component"
                                         Grid.Column="0"
                                         IsAlphaMaxForced="True"
-                                        IsSaturationValueMaxForced="False"
+                                        IsSaturationValueMaxForced="True"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
                                         ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
