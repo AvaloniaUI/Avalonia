@@ -29,8 +29,8 @@ namespace Avalonia.Controls.Primitives
         /// <param name="colorModel">The color model being used: RGBA or HSVA.</param>
         /// <param name="component">The specific color component to sweep.</param>
         /// <param name="baseHsvColor">The base HSV color used for components not being changed.</param>
-        /// <param name="isAlphaMaxForced">Fix the alpha component value to maximum during calculation.
-        /// This will remove any alpha/transparency from the other component backgrounds.</param>
+        /// <param name="isAlphaVisible">Whether the alpha component is visible and rendered in the bitmap.
+        /// This property is ignored when the alpha component itself is being rendered.</param>
         /// <param name="isSaturationValueMaxForced">Fix the saturation and value components to maximum
         /// during calculation with the HSVA color model.
         /// This will ensure colors are always discernible regardless of saturation/value.</param>
@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Primitives
             ColorModel colorModel,
             ColorComponent component,
             HsvColor baseHsvColor,
-            bool isAlphaMaxForced,
+            bool isAlphaVisible,
             bool isSaturationValueMaxForced)
         {
             if (width == 0 || height == 0)
@@ -67,7 +67,7 @@ namespace Avalonia.Controls.Primitives
                 bgraPixelDataWidth  = width * 4;
 
                 // Maximize alpha component value
-                if (isAlphaMaxForced &&
+                if (isAlphaVisible == false &&
                     component != ColorComponent.Alpha)
                 {
                     baseHsvColor = new HsvColor(1.0, baseHsvColor.H, baseHsvColor.S, baseHsvColor.V);

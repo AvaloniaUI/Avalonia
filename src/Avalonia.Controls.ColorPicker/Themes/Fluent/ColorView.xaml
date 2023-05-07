@@ -360,7 +360,7 @@
                 <primitives:ColorSlider x:Name="ColorSpectrumThirdComponentSlider"
                                         AutomationProperties.Name="Third Component"
                                         Grid.Column="0"
-                                        IsAlphaMaxForced="True"
+                                        IsAlphaVisible="False"
                                         IsSaturationValueMaxForced="True"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"

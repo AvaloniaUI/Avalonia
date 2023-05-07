@@ -41,12 +41,12 @@ namespace Avalonia.Controls.Primitives
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
-        /// Defines the <see cref="IsAlphaMaxForced"/> property.
+        /// Defines the <see cref="IsAlphaVisible"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsAlphaMaxForcedProperty =
+        public static readonly StyledProperty<bool> IsAlphaVisibleProperty =
             AvaloniaProperty.Register<ColorSlider, bool>(
-                nameof(IsAlphaMaxForced),
-                true);
+                nameof(IsAlphaVisible),
+                false);
 
         /// <summary>
         /// Defines the <see cref="IsRoundingEnabled"/> property.
@@ -109,14 +109,19 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the alpha component is always forced to maximum for components
-        /// other than <see cref="ColorComponent"/>.
-        /// This ensures that the background is always visible and never transparent regardless of the actual color.
+        /// Gets or sets a value indicating whether the alpha component is visible and rendered in the spectrum.
+        /// When false, this ensures that the spectrum is always visible and never transparent regardless of
+        /// the actual color.
         /// </summary>
-        public bool IsAlphaMaxForced
+        /// <remarks>
+        /// Setting to false means the alpha component is always forced to maximum for components other than
+        /// <see cref="ColorComponent"/> during rendering. This doesn't change the value of the alpha component
+        /// in the color – it is only for display.
+        /// </remarks>
+        public bool IsAlphaVisible
         {
-            get => GetValue(IsAlphaMaxForcedProperty);
-            set => SetValue(IsAlphaMaxForcedProperty, value);
+            get => GetValue(IsAlphaVisibleProperty);
+            set => SetValue(IsAlphaVisibleProperty, value);
         }
 
         /// <summary>

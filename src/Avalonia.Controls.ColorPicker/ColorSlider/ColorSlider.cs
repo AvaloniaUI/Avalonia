@@ -52,8 +52,7 @@ namespace Avalonia.Controls.Primitives
             // This means under a certain alpha threshold, neither a white or black selector thumb
             // should be shown and instead the default slider thumb color should be used instead.
             if (Color.A < 128 &&
-                (IsAlphaMaxForced == false ||
-                 ColorComponent == ColorComponent.Alpha))
+                (IsAlphaVisible || ColorComponent == ColorComponent.Alpha))
             {
                 PseudoClasses.Set(pcDarkSelector, false);
                 PseudoClasses.Set(pcLightSelector, false);
@@ -122,7 +121,7 @@ namespace Avalonia.Controls.Primitives
                     ColorModel,
                     ColorComponent,
                     HsvColor,
-                    IsAlphaMaxForced,
+                    IsAlphaVisible,
                     IsSaturationValueMaxForced);
 
                 if (_backgroundBitmap != null)
@@ -319,10 +318,10 @@ namespace Avalonia.Controls.Primitives
         private HsvColor GetEquivalentBackgroundColor(HsvColor hsvColor)
         {
             var component = ColorComponent;
-            var isAlphaMaxForced = IsAlphaMaxForced;
+            var isAlphaVisible = IsAlphaVisible;
             var isSaturationValueMaxForced = IsSaturationValueMaxForced;
 
-            if (isAlphaMaxForced &&
+            if (isAlphaVisible == false &&
                 component != ColorComponent.Alpha)
             {
                 hsvColor = new HsvColor(1.0, hsvColor.H, hsvColor.S, hsvColor.V);
@@ -362,9 +361,9 @@ namespace Avalonia.Controls.Primitives
         private Color GetEquivalentBackgroundColor(Color rgbColor)
         {
             var component = ColorComponent;
-            var isAlphaMaxForced = IsAlphaMaxForced;
+            var isAlphaVisible = IsAlphaVisible;
 
-            if (isAlphaMaxForced &&
+            if (isAlphaVisible == false &&
                 component != ColorComponent.Alpha)
             {
                 rgbColor = new Color(255, rgbColor.R, rgbColor.G, rgbColor.B);
@@ -401,7 +400,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ColorComponentProperty ||
                      change.Property == ColorModelProperty ||
-                     change.Property == IsAlphaMaxForcedProperty ||
+                     change.Property == IsAlphaVisibleProperty ||
                      change.Property == IsSaturationValueMaxForcedProperty)
             {
                 ignorePropertyChanged = true;
