@@ -699,11 +699,11 @@
             </TabItem>
           </TabControl>
           <!-- Previewer -->
-          <!-- Note that top/bottom margins have -5 to remove for drop shadow padding -->
+          <!-- Note that the drop shadow is allowed to extend past the control bounds -->
           <primitives:ColorPreviewer Grid.Row="1"
                                      HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                      IsAccentColorsVisible="{TemplateBinding IsAccentColorsVisible}"
-                                     Margin="12,-5,12,7"
+                                     Margin="12,0,12,12"
                                      IsVisible="{TemplateBinding IsColorPreviewVisible}" />
         </Grid>
       </ControlTemplate>
