@@ -4039,18 +4039,22 @@ namespace Avalonia.Controls
                 return true;
             }
 
-            Debug.Assert(EditingRow != null);
+            var editingRow = EditingRow;
+            if (editingRow is null)
+            {
+                return false;
+            }
+
             Debug.Assert(_editingColumnIndex >= 0);
             Debug.Assert(_editingColumnIndex < ColumnsItemsInternal.Count);
             Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
-            Debug.Assert(EditingRow != null && EditingRow.Slot == CurrentSlot);
 
             // Cache these to see if they change later
             int currentSlot = CurrentSlot;
             int currentColumnIndex = CurrentColumnIndex;
 
             // We're ready to start ending, so raise the event
-            DataGridCell editingCell = EditingRow.Cells[_editingColumnIndex];
+            DataGridCell editingCell = editingRow.Cells[_editingColumnIndex];
             var editingElement = editingCell.Content as Control;
             if (editingElement == null)
             {
@@ -4058,7 +4062,7 @@ namespace Avalonia.Controls
             }
             if (raiseEvents)
             {
-                DataGridCellEditEndingEventArgs e = new DataGridCellEditEndingEventArgs(CurrentColumn, EditingRow, editingElement, editAction);
+                DataGridCellEditEndingEventArgs e = new DataGridCellEditEndingEventArgs(CurrentColumn, editingRow, editingElement, editAction);
                 OnCellEditEnding(e);
                 if (e.Cancel)
                 {
@@ -4112,7 +4116,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        if (EditingRow != null)
+                        if (editingRow != null)
                         {
                             if (editingCell.IsValid)
                             {
@@ -4120,10 +4124,10 @@ namespace Avalonia.Controls
                                 editingCell.UpdatePseudoClasses();
                             }
 
-                            if (EditingRow.IsValid)
+                            if (editingRow.IsValid)
                             {
-                                EditingRow.IsValid = false;
-                                EditingRow.UpdatePseudoClasses();
+                                editingRow.IsValid = false;
+                                editingRow.UpdatePseudoClasses();
                             }
                         }
 
@@ -4169,22 +4173,22 @@ namespace Avalonia.Controls
                 PopulateCellContent(
                     isCellEdited: !exitEditingMode,
                     dataGridColumn: CurrentColumn,
-                    dataGridRow: EditingRow,
+                    dataGridRow: editingRow,
                     dataGridCell: editingCell);
 
-                EditingRow.InvalidateDesiredHeight();
+                editingRow.InvalidateDesiredHeight();
                 var column = editingCell.OwningColumn;
                 if (column.Width.IsSizeToCells || column.Width.IsAuto)
                 {// Invalidate desired width and force recalculation
                     column.SetWidthDesiredValue(0);
-                    EditingRow.OwningGrid.AutoSizeColumn(column, editingCell.DesiredSize.Width);
+                    editingRow.OwningGrid.AutoSizeColumn(column, editingCell.DesiredSize.Width);
                 }
             }
 
             // We're done, so raise the CellEditEnded event
             if (raiseEvents)
             {
-                OnCellEditEnded(new DataGridCellEditEndedEventArgs(CurrentColumn, EditingRow, editAction));
+                OnCellEditEnded(new DataGridCellEditEndedEventArgs(CurrentColumn, editingRow, editAction));
             }
 
             // There's a chance that somebody reopened this cell for edit within the CellEditEnded handler,
