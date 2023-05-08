@@ -55,9 +55,10 @@
       </Grid>
     </ExperimentalAcrylicBorder>
 
+    <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Height="200">
+      
     <UniformGrid x:Name="BordersGrid"
                  HorizontalAlignment="Stretch"
-                 MaxWidth="660"
                  Columns="3">
       <UniformGrid.Styles>
         <Style Selector="ExperimentalAcrylicBorder">
@@ -149,6 +150,7 @@
       </ExperimentalAcrylicBorder>
 
     </UniformGrid>
+    </ScrollViewer>
 
 
     <ExperimentalAcrylicBorder Width="{Binding #BordersGrid.Bounds.Width}"
