@@ -12,7 +12,7 @@
     <!-- Exclude iOS, Android and Web samples from build -->
     <ProjectReference Remove="samples/*.iOS/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
-    <ProjectReference Remove="samples/*.Web/*.csproj" />
+    <ProjectReference Remove="samples/*.Browser/*.csproj" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
     <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
