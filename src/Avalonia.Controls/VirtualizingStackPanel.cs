@@ -493,8 +493,7 @@ namespace Avalonia.Controls
                 c = c?.GetVisualParent();
             }
 
-
-            return viewport;
+            return viewport.Intersect(new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity));
         }
 
         private void RealizeElements(
