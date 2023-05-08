@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Reactive;
@@ -29,10 +29,22 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<bool> HasErrorsProperty =
             AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, bool>("HasErrors");
+        
+        /// <summary>
+        /// Defines the DataValidationErrors.ErrorConverter attached property.
+        /// </summary>
+        public static readonly AttachedProperty<Func<object, object>?> ErrorConverterProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, Func<object, object>?>("ErrorConverter");
 
+        
         public static readonly StyledProperty<IDataTemplate> ErrorTemplateProperty =
             AvaloniaProperty.Register<DataValidationErrors, IDataTemplate>(nameof(ErrorTemplate));
 
+        /// <summary>
+        /// Defines the DataValidationErrors.DisplayErrors read-only attached property
+        /// </summary>
+        public static readonly AttachedProperty<IEnumerable<object>?> DisplayErrorsProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>?>("DisplayErrors");
 
         private Control? _owner;
 
@@ -56,6 +68,16 @@ namespace Avalonia.Controls
             ErrorsProperty.Changed.Subscribe(ErrorsChanged);
             HasErrorsProperty.Changed.Subscribe(HasErrorsChanged);
             TemplatedParentProperty.Changed.AddClassHandler<DataValidationErrors>((x, e) => x.OnTemplatedParentChange(e));
+            ErrorConverterProperty.Changed.Subscribe(OnErrorConverterChanged);
+        }
+
+        private static void OnErrorConverterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = (Control)e.Sender;
+            var converter = e.NewValue as Func<object, object>;
+            
+            control.SetValue(DisplayErrorsProperty, 
+                GetErrors(control)?.Select(err => converter is null ? err : converter.Invoke(err)));
         }
 
         private void OnTemplatedParentChange(AvaloniaPropertyChangedEventArgs e)
@@ -82,7 +104,18 @@ namespace Avalonia.Controls
                 hasErrors = true;
 
             control.SetValue(HasErrorsProperty, hasErrors);
+
+            // Update DisplayErrors
+            if (errors is null || GetErrorConverter(control) is null)
+            {
+                control.SetValue(DisplayErrorsProperty, errors);
+            }
+            else if (GetErrorConverter(control) is { } converter)
+            {
+                control.SetValue(DisplayErrorsProperty, errors.Select(x => converter.Invoke(x)));
+            }
         }
+        
         private static void HasErrorsChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
@@ -110,7 +143,24 @@ namespace Avalonia.Controls
         {
             return control.GetValue(HasErrorsProperty);
         }
-
+        
+        /// Gets the <see cref="ErrorsProperty"/> of the converted through the <see cref="ErrorConverterProperty"/> for display
+        /// </summary>
+        public static IEnumerable<object>? GetDisplayErrors(Control control)
+        {
+            return control.GetValue(DisplayErrorsProperty);
+        }
+        
+        public static Func<object, object>? GetErrorConverter(Control control)
+        {
+            return control.GetValue(ErrorConverterProperty);
+        }
+        
+        public static void SetErrorConverter(Control control, Func<object, object>? converter)
+        {
+            control.SetValue(ErrorConverterProperty, converter);
+        }
+        
         private static IEnumerable<object>? UnpackException(Exception? exception)
         {
             if (exception != null)
