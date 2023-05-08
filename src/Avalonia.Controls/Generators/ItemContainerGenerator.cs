@@ -10,34 +10,44 @@ namespace Avalonia.Controls.Generators
     /// When creating a container for an item from a <see cref="VirtualizingPanel"/>, the following
     /// process should be followed:
     ///
-    /// - <see cref="IsItemItsOwnContainer(Control)"/> should first be called if the item is
-    ///   derived from the <see cref="Control"/> class. If this method returns true then the
-    ///   item itself should be used as the container.
-    /// - If <see cref="IsItemItsOwnContainer(Control)"/> returns false then
-    ///   <see cref="CreateContainer"/> should be called to create a new container.
+    /// - <see cref="NeedsContainer(object, int, out object?)"/> should first be called to
+    ///   determine whether the item needs a container. This method will return true if the item
+    ///   should be wrapped in a container control, or false if the item itself can be used as a
+    ///   container.
+    /// - If <see cref="NeedsContainer(object, int, out object?)"/> returns true then the
+    ///   <see cref="CreateContainer"/> method should be called to create a new container, passing
+    ///   the recycle key returned from <see cref="NeedsContainer(object, int, out object?)"/>.
+    /// - If the panel supports recycling and the recycle key is non-null then the recycle key
+    ///   should be recorded for the container (e.g. in an attached property or the realized
+    ///   container list).
     /// - <see cref="PrepareItemContainer(Control, object?, int)"/> method should be called for the
     ///   container.
     /// - The container should then be added to the panel using 
     ///   <see cref="VirtualizingPanel.AddInternalChild(Control)"/>
     /// - Finally, <see cref="ItemContainerPrepared(Control, object?, int)"/> should be called.
     /// 
-    /// NOTE: If <see cref="IsItemItsOwnContainer(Control)"/> in the first step above returns true
-    /// then the above steps should be carried out a single time; the first time the item is 
-    /// displayed. Otherwise the steps should be carried out each time a new container is realized
-    /// for an item.
+    /// NOTE: If <see cref="NeedsContainer(object, int, out object?)"/> in the first step above
+    /// returns false then the above steps should be carried out a single time: the first time the
+    /// item is displayed. Otherwise the steps should be carried out each time a new container is
+    /// realized for an item.
     ///
     /// When unrealizing a container, the following process should be followed:
     /// 
-    /// - If <see cref="IsItemItsOwnContainer(Control)"/> for the item returned true then the item
-    ///   cannot be unrealized or recycled.
+    /// - If <see cref="NeedsContainer(object, int, out object?)"/> for the item returned false
+    ///   then the item cannot be unrealized or recycled.
     /// - Otherwise, <see cref="ClearItemContainer(Control)"/> should be called for the container
-    /// - If recycling is supported then the container should be added to a recycle pool.
-    /// - It is assumed that recyclable containers will not be removed from the panel but instead
-    ///   hidden from view using e.g. `container.IsVisible = false`.
+    /// - If recycling is supported by the panel and the container then the container should be
+    ///   added to a recycle pool keyed on the recycle key returned from 
+    ///   <see cref="NeedsContainer(object, int, out object?)"/>. It is assumed that recycled
+    ///   containers will not be removed from the panel but instead hidden from view using
+    ///   e.g. `container.IsVisible = false`.
+    /// - If recycling is not supported then the container should be removed from the panel.
     ///
     /// When recycling an unrealized container, the following process should be followed:
     /// 
-    /// - An element should be taken from the recycle pool.
+    /// - <see cref="NeedsContainer(object, int, out object?)"/> should be called to determine
+    ///   whether the item needs a container, and if so, the recycle key.
+    /// - A container should be taken from the recycle pool keyed on the returned recycle key.
     /// - The container should be made visible.
     /// - <see cref="PrepareItemContainer(Control, object?, int)"/> method should be called for the
     ///   container.
@@ -55,28 +65,43 @@ namespace Avalonia.Controls.Generators
         internal ItemContainerGenerator(ItemsControl owner) => _owner = owner;
 
         /// <summary>
-        /// Creates a new container control.
+        /// Determines whether the specified item needs to be wrapped in a container control.
         /// </summary>
-        /// <returns>The newly created container control.</returns>
-        /// <remarks>
-        /// Before calling this method, <see cref="IsItemItsOwnContainer(Control)"/> should be
-        /// called to determine whether the item itself should be used as a container. After
-        /// calling this method, <see cref="PrepareItemContainer(Control, object, int)"/> should
-        /// be called to prepare the container to display the specified item.
-        /// </remarks>
-        public Control CreateContainer() => _owner.CreateContainerForItemOverride();
+        /// <param name="item">The item to display.</param>
+        /// <param name="index">The index of the item.</param>
+        /// <param name="recycleKey">
+        /// When the method returns, contains a key that can be used to locate a previously
+        /// recycled container of the correct type, or null if the item cannot be recycled.
+        /// </param>
+        /// <returns>
+        /// true if the item needs a container; otherwise false if the item can itself be used
+        /// as a container.
+        /// </returns>
+        public bool NeedsContainer(object? item, int index, out object? recycleKey) =>
+            _owner.NeedsContainerOverride(item, index, out recycleKey);
 
         /// <summary>
-        /// Determines whether the specified item is (or is eligible to be) its own container.
+        /// Creates a new container control.
         /// </summary>
-        /// <param name="container">The item.</param>
-        /// <returns>true if the item is its own container, otherwise false.</returns>
+        /// <param name="item">The item to display.</param>
+        /// <param name="index">The index of the item.</param>
+        /// <param name="recycleKey">
+        /// The recycle key returned from <see cref="NeedsContainer(object, int, out object?)"/>
+        /// </param>
+        /// <returns>The newly created container control.</returns>
         /// <remarks>
-        /// Whereas in WPF/UWP, non-control items can be their own container, in Avalonia only
-        /// control items may be; the caller is responsible for checking if each item is a control
-        /// and calling this method before creating a new container.
+        /// Before calling this method, <see cref="NeedsContainer(object, int, out object?)"/>
+        /// should be called to determine whether the item itself should be used as a container.
+        /// After calling this method, <see cref="PrepareItemContainer(Control, object, int)"/>
+        /// must be called to prepare the container to display the specified item.
+        /// 
+        /// If the panel supports recycling then the returned recycle key should be stored alongside
+        /// the container and when container becomes eligible for recycling the container should
+        /// be placed in a recycle pool using this key. If the returned recycle key is null then
+        /// the container cannot be recycled.
         /// </remarks>
-        public bool IsItemItsOwnContainer(Control container) => _owner.IsItemItsOwnContainerOverride(container);
+        public Control CreateContainer(object? item, int index, object? recycleKey) 
+            => _owner.CreateContainerForItemOverride(item, index, recycleKey);
 
         /// <summary>
         /// Prepares the specified element as the container for the corresponding item.
@@ -85,10 +110,10 @@ namespace Avalonia.Controls.Generators
         /// <param name="item">The item to display.</param>
         /// <param name="index">The index of the item to display.</param>
         /// <remarks>
-        /// If <see cref="IsItemItsOwnContainer(Control)"/> is true for an item, then this method
-        /// must only be called a single time, otherwise this method must be called after the
-        /// container is created, and each subsequent time the container is recycled to display a
-        /// new item.
+        /// If <see cref="NeedsContainer(object, int, out object?)"/> is false for an
+        /// item, then this method must only be called a single time; otherwise this method must
+        /// be called after the container is created, and each subsequent time the container is
+        /// recycled to display a new item.
         /// </remarks>
         public void PrepareItemContainer(Control container, object? item, int index) => 
             _owner.PrepareItemContainer(container, item, index);
@@ -104,8 +129,8 @@ namespace Avalonia.Controls.Generators
         /// This method must be called when a container has been fully prepared and added
         /// to the logical and visual trees, but may be called before a layout pass has completed.
         /// It must be called regardless of the result of
-        /// <see cref="IsItemItsOwnContainer(Control)"/> but if that method returned true then
-        /// must be called only a single time.
+        /// <see cref="NeedsContainer(object, int, out object?)"/> but if that method returned
+        /// false then must be called only a single time.
         /// </remarks>
         public void ItemContainerPrepared(Control container, object? item, int index) =>
             _owner.ItemContainerPrepared(container, item, index);
@@ -128,7 +153,7 @@ namespace Avalonia.Controls.Generators
         /// This method must be called when a container is unrealized. The container must have
         /// already have been removed from the virtualizing panel's list of realized containers before
         /// this method is called. This method must not be called if
-        /// <see cref="IsItemItsOwnContainer"/> returned true for the item.
+        /// <see cref="NeedsContainer(object, int, out object?)"/> returned false for the item.
         /// </remarks>
         public void ClearItemContainer(Control container) => _owner.ClearItemContainer(container);
 
