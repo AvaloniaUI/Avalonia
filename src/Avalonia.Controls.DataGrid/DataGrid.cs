@@ -3734,7 +3734,7 @@ namespace Avalonia.Controls
             if (sender is Control editingElement)
             {
                 editingElement.LostFocus -= EditingElement_LostFocus;
-                if (EditingRow != null && EditingColumnIndex != -1)
+                if (EditingRow != null && _editingColumnIndex != -1)
                 {
                     FocusEditingCell(true);
                 }
@@ -4042,7 +4042,7 @@ namespace Avalonia.Controls
             var editingRow = EditingRow;
             if (editingRow is null)
             {
-                return false;
+                return true;
             }
 
             Debug.Assert(_editingColumnIndex >= 0);
@@ -4431,8 +4431,7 @@ namespace Avalonia.Controls
                     dataGridCell.Focus();
                     success = dataGridCell.ContainsFocusedElement();
                 }
-                //TODO Check
-                //success = dataGridCell.ContainsFocusedElement() ? true : dataGridCell.Focus();
+
                 _focusEditingControl = !success;
             }
             return success;
