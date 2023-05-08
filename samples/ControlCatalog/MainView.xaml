@@ -74,6 +74,9 @@
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:DataGridPage />
       </TabItem>
+      <TabItem Header="Data Validation">
+        <pages:DataValidationPage />
+      </TabItem>
       <TabItem Header="Date/Time Picker">
         <pages:DateTimePickerPage />
       </TabItem>
