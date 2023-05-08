@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Avalonia.Controls.Generators
 {
@@ -156,10 +157,10 @@ namespace Avalonia.Controls.Generators
         /// </remarks>
         public void ClearItemContainer(Control container) => _owner.ClearItemContainer(container);
 
-        [Obsolete("Use ItemsControl.ContainerFromIndex")]
+        [Obsolete("Use ItemsControl.ContainerFromIndex"), EditorBrowsable(EditorBrowsableState.Never)]
         public Control? ContainerFromIndex(int index) => _owner.ContainerFromIndex(index);
 
-        [Obsolete("Use ItemsControl.IndexFromContainer")]
+        [Obsolete("Use ItemsControl.IndexFromContainer"), EditorBrowsable(EditorBrowsableState.Never)]
         public int IndexFromContainer(Control container) => _owner.IndexFromContainer(container);
     }
 }

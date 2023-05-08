@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Platform.Storage;
 
@@ -25,7 +26,7 @@ namespace Avalonia.Input
         /// <returns>
         /// Collection of file names. If format isn't available, returns null.
         /// </returns>
-        [System.Obsolete("Use GetFiles, this method is supported only on desktop platforms.")]
+        [System.Obsolete("Use GetFiles, this method is supported only on desktop platforms."), EditorBrowsable(EditorBrowsableState.Never)]
         public static IEnumerable<string>? GetFileNames(this IDataObject dataObject)
         {
             return (dataObject.Get(DataFormats.FileNames) as IEnumerable<string>)

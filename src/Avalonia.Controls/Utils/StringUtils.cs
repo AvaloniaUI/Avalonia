@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using Avalonia.Media.TextFormatting.Unicode;
 
@@ -122,6 +123,8 @@ namespace Avalonia.Controls.Utils
             {
                 return 0;
             }
+
+            cursor = Math.Min(cursor, text.Length);
             
             int begin;
             int i;

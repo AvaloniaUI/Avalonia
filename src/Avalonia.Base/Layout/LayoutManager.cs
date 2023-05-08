@@ -21,6 +21,7 @@ namespace Avalonia.Layout
         private readonly Layoutable _owner;
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
+        private readonly List<Layoutable> _toArrangeAfterMeasure = new();
         private readonly Action _executeLayoutPass;
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
         private bool _disposed;
@@ -266,9 +267,14 @@ namespace Avalonia.Layout
 
                 if (!control.IsArrangeValid)
                 {
-                    Arrange(control);
+                    if (Arrange(control) == ArrangeResult.AncestorMeasureInvalid)
+                        _toArrangeAfterMeasure.Add(control);
                 }
             }
+
+            foreach (var i in _toArrangeAfterMeasure)
+                InvalidateArrange(i);
+            _toArrangeAfterMeasure.Clear();
         }
 
         private bool Measure(Layoutable control)
@@ -304,19 +310,19 @@ namespace Avalonia.Layout
             return true;
         }
 
-        private bool Arrange(Layoutable control)
+        private ArrangeResult Arrange(Layoutable control)
         {
             if (!control.IsVisible || !control.IsAttachedToVisualTree)
-                return false;
+                return ArrangeResult.NotVisible;
 
             if (control.VisualParent is Layoutable parent)
             {
-                if (!Arrange(parent))
-                    return false;
+                if (Arrange(parent) is var parentResult && parentResult != ArrangeResult.Arranged)
+                    return parentResult;
             }
 
             if (!control.IsMeasureValid)
-                return false;
+                return ArrangeResult.AncestorMeasureInvalid;
 
             if (!control.IsArrangeValid)
             {
@@ -332,7 +338,7 @@ namespace Avalonia.Layout
                 }
             }
 
-            return true;
+            return ArrangeResult.Arranged;
         }
 
         private void QueueLayoutPass()
@@ -434,6 +440,13 @@ namespace Avalonia.Layout
 
             public Layoutable Listener { get; }
             public Rect Viewport { get; set; }
+        }
+
+        private enum ArrangeResult
+        {
+            Arranged,
+            NotVisible,
+            AncestorMeasureInvalid,
         }
     }
 }

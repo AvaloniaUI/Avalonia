@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
@@ -676,7 +677,7 @@ namespace Avalonia.Controls
         /// TreeView to be able to create a <see cref="TreeItemContainerGenerator"/>. Can be
         /// removed in 12.0.
         /// </remarks>
-        [Obsolete]
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         private protected virtual ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);

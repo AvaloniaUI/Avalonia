@@ -59,7 +59,7 @@ namespace Avalonia.UnitTests
             {
                 _pressedButton = mouseButton;
                 _pointer.Capture((IInputElement)target);
-                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (Visual)source, position, Timestamp(), props,
+                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, GetRoot(target), position, Timestamp(), props,
                     modifiers, clickCount));
             }
         }
@@ -68,7 +68,7 @@ namespace Avalonia.UnitTests
 
         public void Move(Interactive target, Interactive source, in Point position, KeyModifiers modifiers = default)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, GetRoot(target), position,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), modifiers));
         }
 
@@ -88,7 +88,7 @@ namespace Avalonia.UnitTests
             );
             if (ButtonCount(props) == 0)
             {
-                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (Visual)target, position,
+                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, GetRoot(target), position,
                     Timestamp(), props, modifiers, _pressedButton));
                 _pointer.Capture(null);
             }
@@ -131,5 +131,9 @@ namespace Avalonia.UnitTests
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
+        private Visual GetRoot(Interactive source)
+        {
+            return ((source as Visual)?.GetVisualRoot() as Visual) ?? (Visual)source;
+        }
     }
 }

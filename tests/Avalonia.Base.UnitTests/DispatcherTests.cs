@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Xunit;
@@ -458,4 +460,46 @@ public class DispatcherTests
         }
     }
 
+    [Fact]
+    public void DispatcherInvokeAsyncUnwrapsTasks()
+    {
+        int asyncMethodStage = 0;
+        
+        async Task AsyncMethod()
+        {
+            asyncMethodStage = 1;
+            await Task.Delay(200);
+            asyncMethodStage = 2;
+        }
+        
+        async Task<int> AsyncMethodWithResult()
+        {
+            await Task.Delay(100);
+            return 1;
+        }
+        
+        async Task Test()
+        {
+            await Dispatcher.UIThread.InvokeAsync(AsyncMethod);
+            Assert.Equal(2, asyncMethodStage);
+            Assert.Equal(1, await Dispatcher.UIThread.InvokeAsync(AsyncMethodWithResult));
+            asyncMethodStage = 0;
+            
+            await Dispatcher.UIThread.InvokeAsync(AsyncMethod, DispatcherPriority.Default);
+            Assert.Equal(2, asyncMethodStage);
+            Assert.Equal(1, await Dispatcher.UIThread.InvokeAsync(AsyncMethodWithResult, DispatcherPriority.Default));
+            
+            Dispatcher.UIThread.ExitAllFrames();
+        }
+        
+        using (new DispatcherServices(new ManagedDispatcherImpl(null)))
+        {
+            var t = Test();
+            var cts = new CancellationTokenSource();
+            Task.Delay(3000).ContinueWith(_ => cts.Cancel());
+            Dispatcher.UIThread.MainLoop(cts.Token);
+            Assert.True(t.IsCompletedSuccessfully);
+            t.GetAwaiter().GetResult();
+        }
+    }
 }

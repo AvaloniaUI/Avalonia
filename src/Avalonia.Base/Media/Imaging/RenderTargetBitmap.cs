@@ -9,7 +9,7 @@ namespace Avalonia.Media.Imaging
     /// <summary>
     /// A bitmap that holds the rendering of a <see cref="Visual"/>.
     /// </summary>
-    public class RenderTargetBitmap : Bitmap, IDisposable
+    public class RenderTargetBitmap : Bitmap
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
@@ -67,6 +67,12 @@ namespace Avalonia.Media.Imaging
             var platform = PlatformImpl.Item.CreateDrawingContext();
             platform.Clear(Colors.Transparent);
             return new PlatformDrawingContext(platform);
+        }
+
+        public override void Dispose()
+        {
+            PlatformImpl.Dispose();
+            base.Dispose();
         }
     }
 }

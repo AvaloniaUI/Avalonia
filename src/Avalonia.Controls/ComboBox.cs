@@ -450,7 +450,22 @@ namespace Avalonia.Controls
             }
             else
             {
-                SelectionBoxItem = item;
+                if(ItemTemplate is null && DisplayMemberBinding is { } binding)
+                {
+                    var template = new FuncDataTemplate<object?>((_, _) =>
+                    new TextBlock
+                    {
+                        [TextBlock.DataContextProperty] = item,
+                        [!TextBlock.TextProperty] = binding,
+                    });
+                    var text = template.Build(item);
+                    SelectionBoxItem = text;
+                }
+                else
+                {
+                    SelectionBoxItem = item;
+                }
+                
             }
         }
 

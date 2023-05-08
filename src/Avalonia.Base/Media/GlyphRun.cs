@@ -153,7 +153,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets the conservative bounding box of the <see cref="GlyphRun"/>.
         /// </summary>
-        public Rect Bounds => PlatformImpl.Item.Bounds;
+        public Rect Bounds => new Rect(new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
 
         /// <summary>
         /// 
@@ -166,7 +166,7 @@ namespace Avalonia.Media
         /// </summary>
         public Point BaselineOrigin
         {
-            get => PlatformImpl.Item.BaselineOrigin;
+            get => _baselineOrigin ?? new Point(0, Metrics.Baseline);
             set => Set(ref _baselineOrigin, value);
         }
 
@@ -676,13 +676,17 @@ namespace Avalonia.Media
                 }
             }
 
-            return new GlyphRunMetrics(
-                width,
-                trailingWhitespaceLength,
-                newLineLength,
-                firstCluster,
-                lastCluster
-            );
+            return new GlyphRunMetrics
+            {
+                Baseline = -GlyphTypeface.Metrics.Ascent * Scale,
+                Width = width,
+                WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace,
+                Height = height,
+                NewLineLength = newLineLength,
+                TrailingWhitespaceLength = trailingWhitespaceLength,
+                FirstCluster = firstCluster,
+                LastCluster = lastCluster
+            };
         }
 
         private int GetTrailingWhitespaceLength(bool isReversed, out int newLineLength, out int glyphCount)
@@ -820,10 +824,11 @@ namespace Avalonia.Media
         private IRef<IGlyphRunImpl> CreateGlyphRunImpl()
         {
             var platformImpl = s_renderInterface.CreateGlyphRun(
-                GlyphTypeface, 
-                FontRenderingEmSize, 
-                GlyphInfos, 
-                _baselineOrigin ?? new Point(0, -GlyphTypeface.Metrics.Ascent * Scale));
+                GlyphTypeface,
+                FontRenderingEmSize,
+                GlyphInfos,
+                BaselineOrigin,
+                Bounds);
 
             _platformImpl = RefCountable.Create(platformImpl);
 
@@ -834,6 +839,17 @@ namespace Avalonia.Media
         {
             _platformImpl?.Dispose();
             _platformImpl = null;
+        }
+
+        /// <summary>
+        /// Gets the intersections of specified upper and lower limit.
+        /// </summary>
+        /// <param name="lowerLimit">Upper limit.</param>
+        /// <param name="upperLimit">Lower limit.</param>
+        /// <returns></returns>
+        public IReadOnlyList<float> GetIntersections(float lowerLimit, float upperLimit)
+        {
+            return PlatformImpl.Item.GetIntersections(lowerLimit, upperLimit);
         }
     }
 }

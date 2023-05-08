@@ -165,7 +165,7 @@ namespace Avalonia.Controls
                     {
                         Key.Left => ApplyToItemOrRecursivelyIfCtrl(FocusAwareCollapseItem, e.KeyModifiers),
                         Key.Right => ApplyToItemOrRecursivelyIfCtrl(ExpandItem, e.KeyModifiers),
-                        Key.Enter or Key.Space => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
+                        Key.Enter => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
 
                         // do not handle CTRL with numpad keys
                         Key.Subtract => FocusAwareCollapseItem,

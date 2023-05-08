@@ -79,11 +79,10 @@ namespace Avalonia.Media
         /// <param name="source">The bitmap.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawBitmap(IBitmap source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        public void DrawBitmap(IBitmap source, Rect sourceRect, Rect destRect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-            PlatformImpl.DrawBitmap(source.PlatformImpl, 1, sourceRect, destRect, bitmapInterpolationMode);
+            PlatformImpl.DrawBitmap(source.PlatformImpl, 1, sourceRect, destRect);
         }
 
         /// <summary>

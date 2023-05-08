@@ -185,7 +185,9 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 //Stop at the first missing glyph
-                if (!currentCodepoint.IsBreakChar && !glyphTypeface.TryGetGlyph(currentCodepoint, out _))
+                if (!currentCodepoint.IsBreakChar && 
+                    currentCodepoint.GeneralCategory != GeneralCategory.Control && 
+                    !glyphTypeface.TryGetGlyph(currentCodepoint, out _))
                 {
                     break;
                 }
