@@ -137,6 +137,42 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(to.Opacity, 1);
         }
 
+        [Fact]
+        public void CrossFade_To_Invisible_Control_Should_Make_Control_Transparent_Before_Visible()
+        {
+            // Issue #11167
+            using var app = Start();
+            var clock = GetMockGlobalClock();
+            var target = new CrossFade { Duration = TimeSpan.FromSeconds(1) };
+            var to = new Canvas { IsVisible = false };
+            var cancel = new CancellationTokenSource();
+
+            Assert.Equal(1, to.Opacity);
+
+            var toState = new List<(double opacity, bool isVisible)>();
+
+            to.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == Visual.IsVisibleProperty)
+                    toState.Add((to.Opacity, e.GetNewValue<bool>()));
+                if (e.Property == Visual.OpacityProperty)
+                    toState.Add((e.GetNewValue<double>(), to.IsVisible));
+            };
+
+            var task = target.Start(null, to, cancel.Token);
+            var time = 0;
+
+            // Run the animation finish.
+            while (time <= 1000)
+            {
+                clock.Pulse(TimeSpan.FromMilliseconds(time));
+                time += 100;
+            }
+
+            // First frame should be of a fully transparent visible control.
+            Assert.Equal((0.0, true), toState[0]);
+        }
+
         private static IDisposable Start()
         {
             var clock = new MockGlobalClock();
