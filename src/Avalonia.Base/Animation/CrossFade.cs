@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Animation
 {
@@ -41,13 +39,29 @@ namespace Avalonia.Animation
                         {
                             new Setter
                             {
+                                Property = Visual.IsVisibleProperty,
+                                Value = true,
+                            },
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 1d
+                            },
+                        },
+                        Cue = new Cue(0)
+                    },
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
                                 Property = Visual.OpacityProperty,
                                 Value = 0d
-                            }
+                            },
                         },
-                        Cue = new Cue(1d)
-                    }
-
+                        Cue = new Cue(1)
+                    },
                 }
             };
             _fadeInAnimation = new Animation
@@ -61,12 +75,23 @@ namespace Avalonia.Animation
                             new Setter
                             {
                                 Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
+                        Cue = new Cue(0)
+                    },
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
                                 Value = 1d
                             }
                         },
-                        Cue = new Cue(1d)
-                    }
-
+                        Cue = new Cue(1)
+                    },
                 }
             };
             _fadeOutAnimation.Duration = _fadeInAnimation.Duration = duration;
@@ -108,30 +133,34 @@ namespace Avalonia.Animation
             }
 
             var tasks = new List<Task>();
-            using (var disposables = new CompositeDisposable(1))
+            var initialFromVisible = true;
+            var initialToVisible = true;
+
+            if (from != null)
             {
-                if (to != null)
-                {
-                    disposables.Add(to.SetValue(Visual.OpacityProperty, 0, Data.BindingPriority.Animation)!);
-                }
+                tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
 
+                // Make "from" control invisible: this is overridden in the fade out animation, so
+                // will only take effect when the animation is completed.
+                initialFromVisible = from.IsVisible;
+                from.IsVisible = false;
+            }
+
+            if (to != null)
+            {
+                initialToVisible = to.IsVisible;
+                to.IsVisible = true;
+                tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
+            }
+
+            await Task.WhenAll(tasks);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
                 if (from != null)
-                {
-                    tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
-                }
-
+                    from.IsVisible = initialFromVisible;
                 if (to != null)
-                {
-                    to.IsVisible = true;
-                    tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
-                }
-
-                await Task.WhenAll(tasks);
-
-                if (from != null && !cancellationToken.IsCancellationRequested)
-                {
-                    from.IsVisible = false;
-                }
+                    to.IsVisible = initialToVisible;
             }
         }
 
