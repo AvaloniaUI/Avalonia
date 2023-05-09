@@ -82,7 +82,6 @@
       <Setter Property="VerticalContentAlignment" Value="Stretch" />
       <Setter Property="FontSize" Value="15" />
       <Setter Property="MinHeight" Value="32" />
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="Template">
         <ControlTemplate>
           <Border x:Name="CellBorder"
@@ -157,7 +156,6 @@
       <Setter Property="Background" Value="{DynamicResource DataGridColumnHeaderBackgroundBrush}" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="SeparatorBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
       <Setter Property="Padding" Value="12,0,0,0" />
       <Setter Property="FontSize" Value="12" />
@@ -268,7 +266,6 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type DataGridRowHeader}" TargetType="DataGridRowHeader">
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="SeparatorBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
       <Setter Property="AreSeparatorsVisible" Value="False" />
       <Setter Property="Template">
@@ -310,7 +307,6 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type DataGridRow}" TargetType="DataGridRow">
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="Background" Value="{Binding $parent[DataGrid].RowBackground}" />
       <Setter Property="Template">
         <ControlTemplate>
@@ -408,7 +404,6 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type DataGridRowGroupHeader}" TargetType="DataGridRowGroupHeader">
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="Foreground" Value="{DynamicResource DataGridRowGroupHeaderForegroundBrush}" />
       <Setter Property="Background" Value="{DynamicResource DataGridRowGroupHeaderBackgroundBrush}" />
       <Setter Property="FontSize" Value="15" />
@@ -433,7 +428,7 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Background="{TemplateBinding Background}"
                           CornerRadius="{TemplateBinding CornerRadius}"
-                          Focusable="False"
+                          IsTabStop="False"
                           Foreground="{TemplateBinding Foreground}" />
 
             <StackPanel Grid.Column="3"

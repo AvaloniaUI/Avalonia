@@ -729,6 +729,8 @@ namespace Avalonia.Controls
             RowDetailsTemplateProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowDetailsTemplateChanged(e));
             RowDetailsVisibilityModeProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowDetailsVisibilityModeChanged(e));
             AutoGenerateColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnAutoGenerateColumnsChanged(e));
+
+            FocusableProperty.OverrideDefaultValue<DataGrid>(true);
         }
 
         /// <summary>
@@ -2478,7 +2480,7 @@ namespace Avalonia.Controls
 
             if (_hScrollBar != null)
             {
-                //_hScrollBar.IsTabStop = false;
+                _hScrollBar.IsTabStop = false;
                 _hScrollBar.Maximum = 0.0;
                 _hScrollBar.Orientation = Orientation.Horizontal;
                 _hScrollBar.IsVisible = false;
@@ -2494,7 +2496,7 @@ namespace Avalonia.Controls
 
             if (_vScrollBar != null)
             {
-                //_vScrollBar.IsTabStop = false;
+                _vScrollBar.IsTabStop = false;
                 _vScrollBar.Maximum = 0.0;
                 _vScrollBar.Orientation = Orientation.Vertical;
                 _vScrollBar.IsVisible = false;
