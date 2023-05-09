@@ -237,9 +237,9 @@ namespace Avalonia.Diagnostics.Views
                             else
                             {
                                 //TODO Use Dictionary.Remove(Key, out Value) in netstandard 2.1
-                                if (_frozenPopupStates.ContainsKey(popup))
+                                if (_frozenPopupStates.TryGetValue(popup, out var value))
                                 {
-                                    _frozenPopupStates[popup].Dispose();
+                                    value.Dispose();
                                     _frozenPopupStates.Remove(popup);
                                 }
                             }
