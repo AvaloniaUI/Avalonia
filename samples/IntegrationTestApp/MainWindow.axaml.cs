@@ -202,7 +202,7 @@ namespace IntegrationTestApp
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
 
-            foreach (var window in lifetime.Windows)
+            foreach (var window in lifetime.Windows.ToArray())
             {
                 window.Activate();
             }
@@ -212,7 +212,7 @@ namespace IntegrationTestApp
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
 
-            foreach (var window in lifetime.Windows)
+            foreach (var window in lifetime.Windows.ToArray())
             {
                 window.Show();
                 if (window.WindowState == WindowState.Minimized)
