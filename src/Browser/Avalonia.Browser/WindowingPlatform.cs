@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -46,6 +47,13 @@ namespace Avalonia.Browser
                 .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+
+            if (AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() is { } options
+                && options.RegisterAvaloniaServiceWorker)
+            {
+                var swPath = AvaloniaModule.ResolveServiceWorkerPath();
+                AvaloniaModule.RegisterServiceWorker(swPath, options.AvaloniaServiceWorkerScope);
+            }
         }
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)

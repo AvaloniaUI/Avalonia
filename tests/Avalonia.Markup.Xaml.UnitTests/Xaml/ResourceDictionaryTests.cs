@@ -385,6 +385,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(Colors.Blue, ((ISolidColorBrush)userControl.FindResource("brush")!).Color);
         }
 
+        [Fact]
+        public void ResourceDictionary_Can_Be_Put_Inside_Of_ResourceDictionary()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ResourceDictionary x:Key='NotAThemeVariantKey' />
+</ResourceDictionary>";
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var nested = (ResourceDictionary)resources["NotAThemeVariantKey"];
+
+                Assert.NotNull(nested);
+            }
+        }
+        
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

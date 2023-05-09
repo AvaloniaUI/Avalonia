@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
@@ -128,7 +126,8 @@ namespace Avalonia.Headless
             IGlyphTypeface glyphTypeface, 
             double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, 
-            Point baselineOrigin)
+            Point baselineOrigin,
+            Rect bounds)
         {
             return new HeadlessGlyphRunStub();
         }
@@ -138,6 +137,10 @@ namespace Avalonia.Headless
             public Rect Bounds => new Rect(new Size(8, 12));
 
             public Point BaselineOrigin => new Point(0, 8);
+
+            public IGlyphTypeface GlyphTypeface => new HeadlessGlyphTypefaceImpl();
+
+            public double FontRenderingEmSize => 12;           
 
             public void Dispose()
             {
@@ -375,6 +378,8 @@ namespace Avalonia.Headless
 
             public Matrix Transform { get; set; }
 
+            public RenderOptions RenderOptions { get; set; }
+
             public void Clear(Color color)
             {
 
@@ -452,7 +457,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
             {
                 
             }

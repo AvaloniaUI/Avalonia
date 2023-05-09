@@ -177,7 +177,9 @@ dotnet_diagnostic.CA1828.severity = warning
 dotnet_diagnostic.CA1829.severity = warning
 #CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = warning
-#CACA2211:Non-constant fields should not be visible
+#CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
+dotnet_diagnostic.CA1854.severity = warning
+#CA2211:Non-constant fields should not be visible
 dotnet_diagnostic.CA2211.severity = error
 
 # Wrapping preferences

@@ -78,7 +78,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
         }
 
         public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
             throw new NotImplementedException();
         }
