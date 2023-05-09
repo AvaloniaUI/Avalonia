@@ -26,6 +26,8 @@ public partial class Dispatcher : IDispatcher
     private readonly AvaloniaSynchronizationContext?[] _priorityContexts =
         new AvaloniaSynchronizationContext?[DispatcherPriority.MaxValue - DispatcherPriority.MinValue + 1];
 
+    public event EventHandler<DispatcherUnhandledExceptionEventArgs>? UnhandledException;
+
     internal Dispatcher(IDispatcherImpl impl)
     {
         _impl = impl;
@@ -84,5 +86,16 @@ public partial class Dispatcher : IDispatcher
         DispatcherPriority.Validate(priority, nameof(priority));
         var index = priority - DispatcherPriority.MinValue;
         return _priorityContexts[index] ??= new(priority);
+    }
+
+    internal bool HandleUnhandledException(Exception exception)
+    {
+        if(UnhandledException is null)
+            return false;
+
+        var eventArgs = new DispatcherUnhandledExceptionEventArgs(exception);
+        UnhandledException.Invoke(this, eventArgs);
+
+        return eventArgs.IsHandled;
     }
 }
