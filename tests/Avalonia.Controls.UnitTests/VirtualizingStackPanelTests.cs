@@ -298,7 +298,9 @@ namespace Avalonia.Controls.UnitTests
             using var app = App();
             var (target, scroll, itemsControl) = CreateTarget();
 
-            target.GetRealizedElements().First()!.Focus();
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
+            focused.Focus();
             Assert.True(target.GetRealizedElements().First()!.IsKeyboardFocusWithin);
 
             scroll.Offset = new Vector(0, 200);
@@ -314,6 +316,7 @@ namespace Avalonia.Controls.UnitTests
             var (target, scroll, itemsControl) = CreateTarget();
 
             var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
 
@@ -331,6 +334,7 @@ namespace Avalonia.Controls.UnitTests
             var (target, scroll, itemsControl) = CreateTarget();
 
             var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
 
@@ -350,12 +354,14 @@ namespace Avalonia.Controls.UnitTests
             var (target, scroll, itemsControl) = CreateTarget();
 
             var originalFocused = target.GetRealizedElements().First()!;
+            originalFocused.Focusable = true;
             originalFocused.Focus();
 
             scroll.Offset = new Vector(0, 500);
             Layout(target);
 
             var newFocused = target.GetRealizedElements().First()!;
+            newFocused.Focusable = true;
             newFocused.Focus();
 
             Assert.False(originalFocused.IsVisible);

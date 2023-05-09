@@ -122,6 +122,11 @@ namespace Avalonia.Input
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
 
+            if (element is not null && !CanFocus(element))
+            {
+                return;
+            }
+
             if (_focusScopes.TryGetValue(scope, out var existingElement))
             {
                 if (element != existingElement)
@@ -242,6 +247,6 @@ namespace Avalonia.Input
             }
         }
 
-        private static bool IsVisible(IInputElement e) => (e as Visual)?.IsVisible ?? true;
+        private static bool IsVisible(IInputElement e) => (e as Visual)?.IsEffectivelyVisible ?? true;
     }
 }
