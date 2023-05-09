@@ -73,6 +73,8 @@ namespace Avalonia.Animation
             var parent = GetVisualParent(from, to);
             var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
             var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
+            var initialFromVisible = true;
+            var initialToVisible = true;
 
             if (from != null)
             {
@@ -83,7 +85,11 @@ namespace Avalonia.Animation
                     {
                         new KeyFrame
                         {
-                            Setters = { new Setter { Property = translateProperty, Value = 0d } },
+                            Setters = 
+                            {
+                                new Setter { Property = Visual.IsVisibleProperty, Value = true },
+                                new Setter { Property = translateProperty, Value = 0d },
+                            },
                             Cue = new Cue(0d)
                         },
                         new KeyFrame
@@ -102,11 +108,15 @@ namespace Avalonia.Animation
                     Duration = Duration
                 };
                 tasks.Add(animation.RunAsync(from, null, cancellationToken));
+
+                // Make "from" control invisible: this is overridden in the fade out animation, so
+                // will only take effect when the animation is completed.
+                initialFromVisible = from.IsVisible;
+                from.IsVisible = false;
             }
 
             if (to != null)
             {
-                to.IsVisible = true;
                 var animation = new Animation
                 {
                     Easing = SlideInEasing,
@@ -132,14 +142,20 @@ namespace Avalonia.Animation
                     },
                     Duration = Duration
                 };
+
+                initialToVisible = to.IsVisible;
+                to.IsVisible = true;
                 tasks.Add(animation.RunAsync(to, null, cancellationToken));
             }
 
             await Task.WhenAll(tasks);
 
-            if (from != null && !cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
-                from.IsVisible = false;
+                if (from != null)
+                    from.IsVisible = initialFromVisible;
+                if (to != null)
+                    to.IsVisible = initialToVisible;
             }
         }
 
