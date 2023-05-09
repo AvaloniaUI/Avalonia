@@ -128,6 +128,7 @@ namespace Avalonia.Controls
             DetailsTemplateProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnDetailsTemplateChanged(e));
             AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnAreDetailsVisibleChanged(e));
             PointerPressedEvent.AddClassHandler<DataGridRow>((x, e) => x.DataGridRow_PointerPressed(e), handledEventsToo: true);
+            IsTabStopProperty.OverrideDefaultValue<DataGridRow>(false);
         }
 
         /// <summary>

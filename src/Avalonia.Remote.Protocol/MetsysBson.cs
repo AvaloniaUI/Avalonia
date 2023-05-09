@@ -715,7 +715,8 @@ namespace Metsys.Bson
 
         public MagicProperty FindProperty(string name)
         {
-            return _properties.ContainsKey(name) ? _properties[name] : null;
+            _properties.TryGetValue(name, out var property);
+            return property;
         }
 
         public static TypeHelper GetHelperForType(Type type)
@@ -1196,7 +1197,9 @@ namespace Metsys.Bson
                 }
                 object container = null;
                 var property = typeHelper.FindProperty(name);
-                var propertyType = property != null ? property.Type : _typeMap.ContainsKey(storageType) ? _typeMap[storageType] : typeof(object);
+                var propertyType = property?.Type
+                    ?? (_typeMap.TryGetValue(storageType, out var type1) ? type1 : null)
+                    ?? typeof(object);
                 if (property != null && property.Setter == null)
                 {
                     container = property.Getter(instance);
@@ -1588,7 +1591,7 @@ namespace Metsys.Bson.Configuration
             {
                 return property;
             }
-            return map.ContainsKey(property) ? map[property] : property;
+            return map.TryGetValue(property, out var value) ? value : property;
         }
 
         public void AddIgnore<T>(string name)

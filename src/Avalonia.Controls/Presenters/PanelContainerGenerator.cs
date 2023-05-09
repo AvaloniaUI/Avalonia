@@ -113,14 +113,14 @@ namespace Avalonia.Controls.Presenters
             var generator = itemsControl.ItemContainerGenerator;
             Control container;
             
-            if (item is Control c && generator.IsItemItsOwnContainer(c))
+            if (generator.NeedsContainer(item, index, out var recycleKey))
             {
-                container = c;
-                container.SetValue(ItemIsOwnContainerProperty, true);
+                container = generator.CreateContainer(item, index, recycleKey);
             }
             else
             {
-                container = generator.CreateContainer();
+                container = (Control)item!;
+                container.SetValue(ItemIsOwnContainerProperty, true);
             }
 
             generator.PrepareItemContainer(container, item, index);

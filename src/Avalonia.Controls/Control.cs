@@ -403,7 +403,9 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = GetValue(FocusAdornerProperty) ?? adornerLayer.DefaultFocusAdorner;
+                        var template = IsSet(FocusAdornerProperty)
+                            ? GetValue(FocusAdornerProperty)
+                            : adornerLayer.DefaultFocusAdorner;
 
                         if (template != null)
                         {

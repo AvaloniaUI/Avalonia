@@ -50,7 +50,8 @@ internal static class StorageProviderHelpers
         }
     }
     
-    public static string NameWithExtension(string path, string? defaultExtension, FilePickerFileType? filter)
+    [return: NotNullIfNotNull(nameof(path))]
+    public static string? NameWithExtension(string? path, string? defaultExtension, FilePickerFileType? filter)
     {
         var name = Path.GetFileName(path);
         if (name != null && !Path.HasExtension(name))

@@ -39,13 +39,5 @@ namespace Avalonia.Media
         /// Gets the brush's tile mode.
         /// </summary>
         TileMode TileMode { get; }
-
-        /// <summary>
-        /// Gets the bitmap interpolation mode.
-        /// </summary>
-        /// <value>
-        /// The bitmap interpolation mode.
-        /// </value>
-        BitmapInterpolationMode BitmapInterpolationMode { get; }
     }
 }

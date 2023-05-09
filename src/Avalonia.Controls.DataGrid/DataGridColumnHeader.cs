@@ -72,6 +72,7 @@ namespace Avalonia.Controls
         {
             AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x, e) => x.OnAreSeparatorsVisibleChanged(e));
             PressedMixin.Attach<DataGridColumnHeader>();
+            IsTabStopProperty.OverrideDefaultValue<DataGridColumnHeader>(false);
         }
 
         /// <summary>

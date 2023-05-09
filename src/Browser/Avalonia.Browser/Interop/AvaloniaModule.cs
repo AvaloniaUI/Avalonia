@@ -25,6 +25,15 @@ internal static partial class AvaloniaModule
 
     public static Task ImportStorage() => s_importStorage.Value;
 
+    public static string ResolveServiceWorkerPath()
+    {
+        var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
+        return options.FrameworkAssetPathResolver!("sw.js");
+    }
+
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
     public static partial bool IsMobile();
+    
+    [JSImport("registerServiceWorker", AvaloniaModule.MainModuleName)]
+    public static partial void RegisterServiceWorker(string path, string? scope);
 }
