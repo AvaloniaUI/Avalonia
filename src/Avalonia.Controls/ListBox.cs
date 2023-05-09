@@ -29,18 +29,24 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1010",
+            Justification = "This property is owned by SelectingItemsControl, but protected there. ListBox changes its visibility.")]
         public static readonly new DirectProperty<SelectingItemsControl, IList?> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
         /// Defines the <see cref="Selection"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1010",
+            Justification = "This property is owned by SelectingItemsControl, but protected there. ListBox changes its visibility.")]
         public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
             SelectingItemsControl.SelectionProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1010",
+            Justification = "This property is owned by SelectingItemsControl, but protected there. ListBox changes its visibility.")]
         public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
@@ -84,6 +90,8 @@ namespace Avalonia.Controls
         /// Note that the selection mode only applies to selections made via user interaction.
         /// Multiple selections can be made programmatically regardless of the value of this property.
         /// </remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+            Justification = "This property is owned by SelectingItemsControl, but protected there. ListBox changes its visibility.")]
         public new SelectionMode SelectionMode
         {
             get { return base.SelectionMode; }
@@ -100,8 +108,15 @@ namespace Avalonia.Controls
         /// </summary>
         public void UnselectAll() => Selection.Clear();
 
-        protected internal override Control CreateContainerForItemOverride() => new ListBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ListBoxItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ListBoxItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<ListBoxItem>(item, out recycleKey);
+        }
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)

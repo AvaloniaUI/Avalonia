@@ -131,7 +131,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        public virtual void Dispose()
         {
             _bitmap.Dispose();
         }

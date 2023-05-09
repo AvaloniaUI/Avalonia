@@ -14,7 +14,7 @@ namespace Avalonia.Platform
             AssetLoader.RegisterResUriParsers();
             AvaloniaLocator.CurrentMutable
                 .Bind<IRuntimePlatform>().ToConstant(standardPlatform)
-                .Bind<IAssetLoader>().ToConstant(new AssetLoader(assembly))
+                .Bind<IAssetLoader>().ToConstant(new StandardAssetLoader(assembly))
                 .Bind<IDynamicLibraryLoader>().ToConstant(
 #if NET6_0_OR_GREATER
                     new Net6Loader()

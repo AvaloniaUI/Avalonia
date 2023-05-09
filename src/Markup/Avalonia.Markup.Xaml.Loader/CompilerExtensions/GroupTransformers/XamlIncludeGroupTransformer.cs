@@ -36,13 +36,29 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             throw new InvalidOperationException($"\"{nodeTypeName}\".Loaded property is expected to be defined");
         }
 
-        if (valueNode.Manipulation is not XamlObjectInitializationNode
-            {
-                Manipulation: XamlPropertyAssignmentNode { Property: { Name: "Source" } } sourceProperty
-            })
+        if (valueNode.Manipulation is not XamlObjectInitializationNode initializationNode)
         {
             throw new XamlDocumentParseException(context.CurrentDocument,
-                $"Source property must be set on the \"{nodeTypeName}\" node.", valueNode);
+                $"Invalid \"{nodeTypeName}\" node initialization.", valueNode);
+        }
+
+        var additionalProperties = new List<IXamlAstManipulationNode>();
+        if (initializationNode.Manipulation is not XamlPropertyAssignmentNode { Property: { Name: "Source" } } sourceProperty)
+        {
+            if (initializationNode.Manipulation is XamlManipulationGroupNode manipulationGroup
+                && manipulationGroup.Children.OfType<XamlPropertyAssignmentNode>()
+                    .FirstOrDefault(p => p.Property.Name == "Source") is { } sourceProperty2)
+            {
+                sourceProperty = sourceProperty2;
+                // We need to copy some additional properties from ResourceInclude to ResourceDictionary except the Source one.
+                // If there is any missing properties, then XAML compiler will throw an error in the emitter code.
+                additionalProperties = manipulationGroup.Children.Where(c => c != sourceProperty2).ToList();
+            }
+            else
+            {
+                throw new XamlDocumentParseException(context.CurrentDocument,
+                    $"Source property must be set on the \"{nodeTypeName}\" node.", valueNode);
+            }
         }
 
         var (assetPathUri, sourceUriNode) = ResolveSourceFromXamlInclude(context, nodeTypeName, sourceProperty, false);
@@ -65,12 +81,12 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         {
             if (targetDocument.BuildMethod is not null)
             {
-                return FromMethod(context, targetDocument.BuildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
+                return FromMethod(context, targetDocument.BuildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
             }
 
             if (targetDocument.ClassType is not null)
             {
-                return FromType(context, targetDocument.ClassType, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
+                return FromType(context, targetDocument.ClassType, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
             }
 
             return context.ParseError(
@@ -95,11 +111,11 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         var buildMethod = avaResType.FindMethod(m => m.Name == relativeName);
         if (buildMethod is not null)
         {
-            return FromMethod(context, buildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
+            return FromMethod(context, buildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
         }
         else if (assetAssembly.FindType(fullTypeName) is { } type)
         {
-            return FromType(context, type, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
+            return FromType(context, type, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
         }
 
         return context.ParseError(
@@ -108,7 +124,8 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
     }
 
     private static IXamlAstNode FromType(AstTransformationContext context, IXamlType type, IXamlAstNode li,
-        IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly)
+        IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly,
+        IEnumerable<IXamlAstManipulationNode> manipulationNodes)
     {
         if (!expectedLoadedType.IsAssignableFrom(type))
         {
@@ -116,15 +133,17 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
                 $"Resource \"{assetPathUri}\" is defined as \"{type}\" type in the \"{assembly}\" assembly, but expected \"{expectedLoadedType}\".",
                 li, fallbackNode);
         }
-        
+
         IXamlAstNode newObjNode = new XamlAstObjectNode(li, new XamlAstClrTypeReference(li, type, false));
+        ((XamlAstObjectNode)newObjNode).Children.AddRange(manipulationNodes);
         newObjNode = new AvaloniaXamlIlConstructorServiceProviderTransformer().Transform(context, newObjNode);
         newObjNode = new ConstructableObjectTransformer().Transform(context, newObjNode);
         return new NewObjectTransformer().Transform(context, newObjNode);
     }
 
     private static IXamlAstNode FromMethod(AstTransformationContext context, IXamlMethod method, IXamlAstNode li,
-        IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly)
+        IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly,
+        IEnumerable<IXamlAstManipulationNode> manipulationNodes)
     {
         if (!expectedLoadedType.IsAssignableFrom(method.ReturnType))
         {
@@ -134,8 +153,11 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         }
         
         var sp = context.Configuration.TypeMappings.ServiceProvider;
-        return new XamlStaticOrTargetedReturnMethodCallNode(li, method,
-            new[] { new NewServiceProviderNode(sp, li) });
+
+        return new XamlValueWithManipulationNode(li,
+            new XamlStaticOrTargetedReturnMethodCallNode(li, method,
+                new[] { new NewServiceProviderNode(sp, li) }),
+            new XamlManipulationGroupNode(li, manipulationNodes));
     }
     
     internal static (string?, IXamlAstNode?) ResolveSourceFromXamlInclude(

@@ -5,8 +5,8 @@ using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
-using Avalonia.Media.TextFormatting;
 using SkiaSharp;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Skia
 {
@@ -191,16 +191,7 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Height can't be less than 1", nameof(size));
             }
 
-            var createInfo = new SurfaceRenderTarget.CreateInfo
-            {
-                Width = size.Width,
-                Height = size.Height,
-                Dpi = dpi,
-                DisableTextLcdRendering = false,
-                DisableManualFbo = true,
-            };
-
-            return new SurfaceRenderTarget(createInfo);
+            return new RenderTargetBitmapImpl(size, dpi);
         }
 
         /// <inheritdoc />
@@ -209,67 +200,10 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(
-            IGlyphTypeface glyphTypeface,
-            double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos,
-            Point baselineOrigin)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
-            if (glyphTypeface == null)
-            {
-                throw new ArgumentNullException(nameof(glyphTypeface));
-            }
-
-            if (glyphInfos == null)
-            {
-                throw new ArgumentNullException(nameof(glyphInfos));
-            }
-
-            var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
-
-            var font = SKFontCache.Shared.Get();
-
-            font.LinearMetrics = true;
-            font.Subpixel = true;
-            font.Edging = SKFontEdging.SubpixelAntialias;
-            font.Hinting = SKFontHinting.Full;
-            font.Size = (float)fontRenderingEmSize;
-            font.Typeface = glyphTypefaceImpl.Typeface;
-            font.Embolden = (glyphTypefaceImpl.FontSimulations & FontSimulations.Bold) != 0;
-            font.SkewX = (glyphTypefaceImpl.FontSimulations & FontSimulations.Oblique) != 0 ? -0.2f : 0;
-
-
-            var builder = SKTextBlobBuilderCache.Shared.Get();
-            var count = glyphInfos.Count;
-
-            var runBuffer = builder.AllocatePositionedRun(font, count);
-
-            var glyphSpan = runBuffer.GetGlyphSpan();
-            var positionSpan = runBuffer.GetPositionSpan();
-
-            SKFontCache.Shared.Return(font);
-
-            var width = 0.0;
-
-            for (int i = 0; i < count; i++)
-            {
-                var glyphInfo = glyphInfos[i];
-                var offset = glyphInfo.GlyphOffset;
-
-                glyphSpan[i] = glyphInfo.GlyphIndex;
-
-                positionSpan[i] = new SKPoint((float)(width + offset.X), (float)offset.Y);
-
-                width += glyphInfo.GlyphAdvance;
-            }
-
-            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
-            var height = glyphTypeface.Metrics.LineSpacing * scale;
-            var skTextBlob = builder.Build();
-
-            SKTextBlobBuilderCache.Shared.Return(builder);
-
-            return new GlyphRunImpl(skTextBlob, new Size(width, height), baselineOrigin);
+            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin, bounds);
         }
     }
 }

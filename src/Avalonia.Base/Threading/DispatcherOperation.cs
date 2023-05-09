@@ -337,6 +337,8 @@ public class DispatcherOperation<T> : DispatcherOperation
 
     private TaskCompletionSource<T> TaskCompletionSource => (TaskCompletionSource<T>)TaskSource!;
 
+    public new TaskAwaiter<T> GetAwaiter() => GetTask().GetAwaiter();
+
     public new Task<T> GetTask() => TaskCompletionSource!.Task;
 
     protected override Task GetTaskCore() => GetTask();

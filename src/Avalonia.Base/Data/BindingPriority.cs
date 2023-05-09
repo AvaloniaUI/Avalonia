@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Avalonia.Data
 {
@@ -47,7 +48,7 @@ namespace Avalonia.Data
         /// </summary>
         Unset = int.MaxValue,
 
-        [Obsolete("Use Template priority")]
+        [Obsolete("Use Template priority"), EditorBrowsable(EditorBrowsableState.Never)]
         TemplatedParent = Template,
     }
 }

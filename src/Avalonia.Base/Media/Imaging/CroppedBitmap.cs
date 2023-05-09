@@ -83,12 +83,12 @@ namespace Avalonia.Media.Imaging
             }
         }
 
-        public void Draw(DrawingContext context, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void Draw(DrawingContext context, Rect sourceRect, Rect destRect)
         {
             if (Source is not IBitmap bmp)
                 return;
             var topLeft = SourceRect.TopLeft.ToPointWithDpi(bmp.Dpi);
-            Source.Draw(context, sourceRect.Translate(new Vector(topLeft.X, topLeft.Y)), destRect, bitmapInterpolationMode);           
+            Source.Draw(context, sourceRect.Translate(new Vector(topLeft.X, topLeft.Y)), destRect);           
         }
     }
 }

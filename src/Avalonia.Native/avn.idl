@@ -1,6 +1,7 @@
 @clr-namespace Avalonia.Native.Interop
 @clr-access internal
 @clr-map bool int
+@clr-map u_int64_t ulong
 @cpp-preamble @@
 #pragma once
 #include "com.h"
@@ -583,13 +584,13 @@ interface IAvnWindowBaseEvents : IUnknown
      void Deactivated();
      void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
      void PositionChanged(AvnPoint position);
-     bool RawMouseEvent(AvnRawMouseEventType type,
-                                uint timeStamp,
+     void RawMouseEvent(AvnRawMouseEventType type,
+                                u_int64_t timeStamp,
                                 AvnInputModifiers modifiers,
                                 AvnPoint point,
                                 AvnVector delta);
-     bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key);
-     bool RawTextInputEvent(uint timeStamp, [const] char* text);
+     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers, uint key);
+     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
      void ScalingChanged(double scaling);
      void RunRenderPriorityJobs();
      void LostFocus();

@@ -635,6 +635,22 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Does_Not_Throw_When_Estimating_Viewport_With_Ancestor_Margin()
+        {
+            // Issue #11272
+            using var app = App();
+            var (_, _, itemsControl) = CreateUnrootedTarget();
+            var container = new Decorator { Margin = new Thickness(100) };
+            var root = new TestRoot(true, container);
+            
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            container.Child = itemsControl;
+
+            root.LayoutManager.ExecuteLayoutPass();
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -682,6 +698,18 @@ namespace Avalonia.Controls.UnitTests
             Optional<IDataTemplate?> itemTemplate = default,
             IEnumerable<Style>? styles = null)
         {
+            var (target, scroll, itemsControl) = CreateUnrootedTarget(items, itemTemplate);
+            var root = CreateRoot(itemsControl, styles);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            return (target, scroll, itemsControl);
+        }
+
+        private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateUnrootedTarget(
+            IEnumerable<object>? items = null,
+            Optional<IDataTemplate?> itemTemplate = default)
+        {
             var target = new VirtualizingStackPanel();
 
             items ??= new ObservableCollection<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
@@ -691,8 +719,8 @@ namespace Avalonia.Controls.UnitTests
                 [~ItemsPresenter.ItemsPanelProperty] = new TemplateBinding(ItemsPresenter.ItemsPanelProperty),
             };
 
-            var scroll = new ScrollViewer 
-            { 
+            var scroll = new ScrollViewer
+            {
                 Name = "PART_ScrollViewer",
                 Content = presenter,
                 Template = ScrollViewerTemplate(),
@@ -706,15 +734,18 @@ namespace Avalonia.Controls.UnitTests
                 ItemTemplate = itemTemplate.GetValueOrDefault(DefaultItemTemplate()),
             };
 
-            var root = new TestRoot(true, itemsControl);
+            return (target, scroll, itemsControl);
+        }
+
+        private static TestRoot CreateRoot(Control? child, IEnumerable<Style>? styles = null)
+        {
+            var root = new TestRoot(true, child);
             root.ClientSize = new(100, 100);
 
             if (styles is not null)
                 root.Styles.AddRange(styles);
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
-
-            return (target, scroll, itemsControl);
+            return root;
         }
 
         private static IDataTemplate DefaultItemTemplate()

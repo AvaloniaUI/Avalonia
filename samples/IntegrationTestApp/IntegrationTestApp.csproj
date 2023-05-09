@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);AVP1012</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

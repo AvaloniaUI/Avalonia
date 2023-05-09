@@ -318,7 +318,9 @@ namespace Avalonia
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
         internal CompositionVisual? ChildCompositionVisual { get; set; }
-        
+
+        internal RenderOptions RenderOptions { get; set; }
+
         public bool HasNonUniformZIndexChildren { get; private set; }
 
         /// <summary>
@@ -329,6 +331,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's parent visual.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "GetVisualParent extension method is supposed to be used instead.")]
         internal Visual? VisualParent => _visualParent;
 
         /// <summary>

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Media
 {
@@ -53,12 +53,10 @@ namespace Avalonia.Media
         /// <param name="source">The image.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public virtual void DrawImage(IImage source, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode = default)
+        public virtual void DrawImage(IImage source, Rect sourceRect, Rect destRect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-            source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
+            source.Draw(this, sourceRect, destRect);
         }
         
         /// <summary>
@@ -68,8 +66,7 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        internal abstract void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
+        internal abstract void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -286,8 +283,7 @@ namespace Avalonia.Media
                 Opacity,
                 Clip,
                 GeometryClip,
-                OpacityMask,
-                BitmapBlendMode
+                OpacityMask
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -312,8 +308,6 @@ namespace Avalonia.Media
                     _context.PopGeometryClipCore();
                 else if (_type == PushedStateType.OpacityMask)
                     _context.PopOpacityMaskCore();
-                else if (_type == PushedStateType.BitmapBlendMode)
-                    _context.PopBitmapBlendModeCore();
             }
         }
 
@@ -394,16 +388,6 @@ namespace Avalonia.Media
         }
         protected abstract void PushOpacityMaskCore(IBrush mask, Rect bounds);
 
-        public PushedState PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-        {
-            PushBitmapBlendMode(blendingMode);
-            _states ??= StateStackPool.Get();
-            _states.Push(new RestoreState(this, RestoreState.PushedStateType.BitmapBlendMode));
-            return new PushedState(this);
-        }
-
-        protected abstract void PushBitmapBlendModeCore(BitmapBlendingMode blendingMode);
-
         /// <summary>
         /// Pushes a matrix transformation.
         /// </summary>
@@ -417,11 +401,11 @@ namespace Avalonia.Media
             return new PushedState(this);
         }
 
-        [Obsolete("Use PushTransform")]
+        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform")]
+        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushPostTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform")]
+        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushTransformContainer() => PushTransform(Matrix.Identity);
         
         
@@ -431,7 +415,6 @@ namespace Avalonia.Media
         protected abstract void PopGeometryClipCore();
         protected abstract void PopOpacityCore();
         protected abstract void PopOpacityMaskCore();
-        protected abstract void PopBitmapBlendModeCore();
         protected abstract void PopTransformCore();
         
         private static bool PenIsVisible(IPen? pen)

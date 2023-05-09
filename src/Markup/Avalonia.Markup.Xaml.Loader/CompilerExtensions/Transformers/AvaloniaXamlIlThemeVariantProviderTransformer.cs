@@ -10,7 +10,8 @@ internal class AvaloniaXamlIlThemeVariantProviderTransformer : IXamlAstTransform
 {
     public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
     {
-        var type = context.GetAvaloniaTypes().IThemeVariantProvider;
+        var avTypes = context.GetAvaloniaTypes();
+        var type = avTypes.IThemeVariantProvider;
         if (!(node is XamlAstObjectNode on
               && type.IsAssignableFrom(on.Type.GetClrType())))
             return node;
@@ -21,6 +22,13 @@ internal class AvaloniaXamlIlThemeVariantProviderTransformer : IXamlAstTransform
         if (keyDirective is null)
             return node;
 
+        var themeDictionariesColl = avTypes.IDictionaryT.MakeGenericType(avTypes.ThemeVariant, avTypes.IThemeVariantProvider);
+        if (context.ParentNodes().FirstOrDefault() is not XamlAstXamlPropertyValueNode propertyValueNode
+            || !themeDictionariesColl.IsAssignableFrom(propertyValueNode.Property.GetClrProperty().Getter.ReturnType))
+        {
+            return node;
+        }
+        
         var keyProp = type.Properties.First(p => p.Name == "Key");
         on.Children.Add(new XamlAstXamlPropertyValueNode(keyDirective,
             new XamlAstClrProperty(keyDirective, keyProp, context.Configuration),
