@@ -1,7 +1,8 @@
 require("esbuild").build({
     entryPoints: [
         "./modules/avalonia.ts",
-        "./modules/storage.ts"
+        "./modules/storage.ts",
+        "./modules/sw.ts"
     ],
     outdir: "../wwwroot",
     bundle: true,

@@ -148,8 +148,15 @@ namespace Avalonia.Controls
             return RegisterContentPresenter(presenter);
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new TabItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TabItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new TabItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<TabItem>(item, out recycleKey);
+        }
 
         protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {
