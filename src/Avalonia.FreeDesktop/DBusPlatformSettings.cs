@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
@@ -22,28 +22,31 @@ namespace Avalonia.FreeDesktop
 
             _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
-            _ = TryGetInitialValueAsync();
+            _ = TryGetInitialValuesAsync();
         }
 
         public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();
 
-        private async Task TryGetInitialValueAsync()
+        private async Task TryGetInitialValuesAsync()
+        {
+            _themeVariant = await TryGetThemeVariantAsync();
+            _accentColor = await TryGetAccentColorAsync();
+            _lastColorValues = BuildPlatformColorValues();
+            if (_lastColorValues is not null)
+                OnColorValuesChanged(_lastColorValues);
+        }
+
+        private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
         {
             try
             {
                 var value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
-                _themeVariant = ToColorScheme(((value.Value as DBusVariantItem)!.Value as DBusUInt32Item)!.Value);
+                return ToColorScheme(((value.Value as DBusVariantItem)!.Value as DBusUInt32Item)!.Value);
             }
-            catch (Exception ex)
+            catch (DBusException)
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, "Unable to get org.freedesktop.appearance.color-scheme value", ex);
+                return null;
             }
-
-            _accentColor = await TryGetAccentColorAsync();
-
-            _lastColorValues = BuildPlatformColorValues();
-            if (_lastColorValues is not null)
-                OnColorValuesChanged(_lastColorValues);
         }
 
         private async Task<Color?> TryGetAccentColorAsync()
@@ -53,9 +56,8 @@ namespace Avalonia.FreeDesktop
                 var value = await _settings!.ReadAsync("org.kde.kdeglobals.General", "AccentColor");
                 return ToAccentColor(((value.Value as DBusVariantItem)!.Value as DBusStringItem)!.Value);
             }
-            catch (Exception ex)
+            catch (DBusException)
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, "Unable to get org.kde.kdeglobals.General.AccentColor value", ex);
                 return null;
             }
         }
