@@ -1,8 +1,6 @@
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -12,7 +10,6 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -61,8 +58,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new WrapPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new WrapPanel());
 
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.

@@ -100,8 +100,6 @@ namespace Avalonia.Controls
         }
 
         private double _percentage;
-        private double _indeterminateStartingOffset;
-        private double _indeterminateEndingOffset;
         private Border? _indicator;
         private IDisposable? _trackSizeChangedListener;
 
@@ -122,17 +120,11 @@ namespace Avalonia.Controls
                 nameof(Percentage),
                 o => o.Percentage);
 
-        public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(IndeterminateStartingOffset),
-                p => p.IndeterminateStartingOffset,
-                (p, o) => p.IndeterminateStartingOffset = o);
+        public static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateStartingOffset));
 
-        public static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(IndeterminateEndingOffset),
-                p => p.IndeterminateEndingOffset,
-                (p, o) => p.IndeterminateEndingOffset = o);
+        public static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateEndingOffset));
 
         public double Percentage
         {
@@ -142,19 +134,19 @@ namespace Avalonia.Controls
 
         public double IndeterminateStartingOffset
         {
-            get => _indeterminateStartingOffset;
-            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+            get => GetValue(IndeterminateStartingOffsetProperty);
+            set => SetValue(IndeterminateStartingOffsetProperty, value);
         }
 
         public double IndeterminateEndingOffset
         {
-            get => _indeterminateEndingOffset;
-            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
+            get => GetValue(IndeterminateEndingOffsetProperty);
+            set => SetValue(IndeterminateEndingOffsetProperty, value);
         }
 
         static ProgressBar()
         {
-            ValueProperty.OverrideMetadata<ProgressBar>(new DirectPropertyMetadata<double>(defaultBindingMode: BindingMode.OneWay));
+            ValueProperty.OverrideMetadata<ProgressBar>(new(defaultBindingMode: BindingMode.OneWay));
             ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
@@ -261,8 +253,8 @@ namespace Avalonia.Controls
 
 
                     // Remove these properties when we switch to fluent as default and removed the old one.
-                    IndeterminateStartingOffset = -dim;
-                    IndeterminateEndingOffset = dim;
+                    SetCurrentValue(IndeterminateStartingOffsetProperty,-dim);
+                    SetCurrentValue(IndeterminateEndingOffsetProperty,dim);
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(

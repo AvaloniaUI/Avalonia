@@ -1,11 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
-using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -249,6 +246,37 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
+        [Theory]
+        [InlineData(ShowWindowMode.NonOwned, true)]
+        [InlineData(ShowWindowMode.Owned, true)]
+        [InlineData(ShowWindowMode.Modal, true)]
+        [InlineData(ShowWindowMode.NonOwned, false)]
+        [InlineData(ShowWindowMode.Owned, false)]
+        [InlineData(ShowWindowMode.Modal, false)]
+        public void Window_Has_Disabled_Maximize_Button_When_CanResize_Is_False(ShowWindowMode mode, bool extendClientArea)
+        {
+            using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+                AppiumWebElement? maximizeButton;
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    maximizeButton = extendClientArea ?
+                        secondaryWindow.FindElementByXPath("//Button[@Name='Maximise']") :
+                        secondaryWindow.FindElementByXPath("//TitleBar/Button[2]");
+                }
+                else
+                {
+                    maximizeButton = mode == ShowWindowMode.NonOwned ?
+                        secondaryWindow.FindElementByAccessibilityId("_XCUI:FullScreenWindow") :
+                        secondaryWindow.FindElementByAccessibilityId("_XCUI:ZoomWindow");
+                }
+
+                Assert.False(maximizeButton.Enabled);
+            }
+        }
+
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool> StartupLocationData()
         {
             var sizes = new Size?[] { null, new Size(400, 300) };
@@ -333,7 +361,8 @@ namespace Avalonia.IntegrationTests.Appium
             ShowWindowMode mode,
             WindowStartupLocation location = WindowStartupLocation.Manual,
             WindowState state = Controls.WindowState.Normal,
-            bool canResize = true)
+            bool canResize = true,
+            bool extendClientArea = false)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
@@ -341,7 +370,8 @@ namespace Avalonia.IntegrationTests.Appium
             var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
             var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
-            
+            var extendClientAreaCheckBox = _session.FindElementByAccessibilityId("ShowWindowExtendClientAreaToDecorationsHint");
+
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
@@ -366,7 +396,25 @@ namespace Avalonia.IntegrationTests.Appium
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
 
+            if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)
+                extendClientAreaCheckBox.Click();
+
             return showButton.OpenWindowWithClick();
+        }
+
+        private AppiumWebElement GetWindow(string identifier)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
+                // but in the meantime use the `parent::' selector to return the parent "real" window. 
+                return _session.FindElementByXPath(
+                    $"XCUIElementTypeWindow//*[@identifier='{identifier}']/parent::XCUIElementTypeWindow");
+            }
+            else
+            {
+                return _session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
+            }
         }
 
         private WindowInfo GetWindowInfo()

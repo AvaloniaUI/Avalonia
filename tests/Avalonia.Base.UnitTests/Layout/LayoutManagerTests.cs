@@ -42,6 +42,24 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Doesnt_Measure_And_Arrange_InvalidateMeasured_Control_When_Ancestor_Is_Not_Visible()
+        {
+            var control = new LayoutTestControl();
+            var parent = new Decorator { Child = control };
+            var root = new LayoutTestRoot { Child = parent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            control.Measured = control.Arranged = false;
+
+            parent.IsVisible = false;
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.False(control.Measured);
+            Assert.False(control.Arranged);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();
@@ -438,6 +456,40 @@ namespace Avalonia.Base.UnitTests.Layout
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             
             Assert.Equal(1, layoutCount);
+        }
+
+        [Fact]
+        public void Child_Can_Invalidate_Parent_Measure_During_Arrange()
+        {
+            // Issue #11015.
+            //
+            // - Child invalidates parent measure in arrange pass
+            // - Parent is added to measure & arrange queues
+            // - Arrange pass dequeues parent
+            // - Measure is not valid so parent is not arranged
+            // - Parent is measured
+            // - Parent has been dequeued from arrange queue so no arrange is performed
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var root = new LayoutTestRoot { Child = parent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            child.DoArrangeOverride = (_, s) =>
+            {
+                parent.InvalidateMeasure();
+                return s;
+            };
+
+            child.InvalidateMeasure();
+            parent.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
         }
     }
 }

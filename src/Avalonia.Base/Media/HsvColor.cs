@@ -131,7 +131,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// <list type="bullet">
-        ///   <item>0 is a shade of gray (no color).</item>
+        ///   <item>0 is fully white (or a shade of gray) and shows no color.</item>
         ///   <item>1 is the full color.</item>
         /// </list>
         /// </remarks>

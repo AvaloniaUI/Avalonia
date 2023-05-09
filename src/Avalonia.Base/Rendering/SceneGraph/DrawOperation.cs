@@ -40,6 +40,9 @@ namespace Avalonia.Rendering.SceneGraph
 
         public sealed override bool HitTest(Point p)
         {
+            if (Transform.IsIdentity)
+                return HitTestTransformed(p);
+
             if (!Transform.HasInverse)
                 return false;
 

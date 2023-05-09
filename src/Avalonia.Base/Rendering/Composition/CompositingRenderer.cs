@@ -252,8 +252,14 @@ public class CompositingRenderer : IRendererWithCompositor
             comp.Opacity = (float)visual.Opacity;
             comp.ClipToBounds = visual.ClipToBounds;
             comp.Clip = visual.Clip?.PlatformImpl;
-            comp.OpacityMask = visual.OpacityMask;
-            
+
+
+            if (!Equals(comp.OpacityMask, visual.OpacityMask))
+                comp.OpacityMask = visual.OpacityMask?.ToImmutable();
+
+            if (!comp.Effect.EffectEquals(visual.Effect))
+                comp.Effect = visual.Effect?.ToImmutable();
+
             var renderTransform = Matrix.Identity;
 
             if (visual.HasMirrorTransform) 

@@ -78,7 +78,10 @@ namespace Avalonia.Media
             {
                 var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-                return factory.CreateGeometryGroup(FillRule, _children);
+                var children = new IGeometryImpl?[_children.Count];
+                for (var c = 0; c < _children.Count; c++)
+                    children[c] = _children[c].PlatformImpl;
+                return factory.CreateGeometryGroup(FillRule, children!);
             }
 
             return null;

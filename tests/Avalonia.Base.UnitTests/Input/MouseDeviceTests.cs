@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -16,9 +17,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var scope = AvaloniaLocator.EnterScope();
             var settingsMock = new Mock<IPlatformSettings>();
-            var threadingMock = new Mock<IPlatformThreadingInterface>();
+            var dispatcherMock = new Mock<IDispatcherImpl>();
 
-            threadingMock.Setup(x => x.CurrentThreadIsLoopThread).Returns(true);
+            dispatcherMock.Setup(x => x.CurrentThreadIsLoopThread).Returns(true);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
@@ -26,7 +27,7 @@ namespace Avalonia.Base.UnitTests.Input
             using var app = UnitTestApplication.Start(
                 new TestServices(
                     inputManager: new InputManager(),
-                    threadingInterface: threadingMock.Object));
+                    dispatcherImpl: dispatcherMock.Object));
 
             var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();

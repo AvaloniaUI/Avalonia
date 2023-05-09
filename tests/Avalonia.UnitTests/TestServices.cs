@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using System.Reflection;
 using Avalonia.Animation;
+using Avalonia.Threading;
 
 namespace Avalonia.UnitTests
 {
@@ -24,7 +25,7 @@ namespace Avalonia.UnitTests
             renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             theme: () => CreateSimpleTheme(),
-            threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
+            dispatcherImpl: Mock.Of<IDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true),
             fontManagerImpl: new MockFontManagerImpl(),
             textShaperImpl: new MockTextShaperImpl(),
             windowingPlatform: new MockWindowingPlatform());
@@ -39,7 +40,7 @@ namespace Avalonia.UnitTests
             platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockThreadingInterface = new TestServices(
-            threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true));
+            dispatcherImpl: Mock.Of<IDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true));
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
             windowingPlatform: new MockWindowingPlatform());
@@ -73,7 +74,7 @@ namespace Avalonia.UnitTests
             IRenderTimer renderLoop = null,
             ICursorFactory standardCursorFactory = null,
             Func<IStyle> theme = null,
-            IPlatformThreadingInterface threadingInterface = null,
+            IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
@@ -92,7 +93,7 @@ namespace Avalonia.UnitTests
             TextShaperImpl = textShaperImpl;
             StandardCursorFactory = standardCursorFactory;
             Theme = theme;
-            ThreadingInterface = threadingInterface;
+            DispatcherImpl = dispatcherImpl;
             WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
@@ -110,7 +111,7 @@ namespace Avalonia.UnitTests
         public ITextShaperImpl TextShaperImpl { get; }
         public ICursorFactory StandardCursorFactory { get; }
         public Func<IStyle> Theme { get; }
-        public IPlatformThreadingInterface ThreadingInterface { get; }
+        public IDispatcherImpl DispatcherImpl { get; }
         public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
 
@@ -128,7 +129,7 @@ namespace Avalonia.UnitTests
             IScheduler scheduler = null,
             ICursorFactory standardCursorFactory = null,
             Func<IStyle> theme = null,
-            IPlatformThreadingInterface threadingInterface = null,
+            IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
@@ -148,7 +149,7 @@ namespace Avalonia.UnitTests
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 theme: theme ?? Theme,
-                threadingInterface: threadingInterface ?? ThreadingInterface,
+                dispatcherImpl: dispatcherImpl ?? DispatcherImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
                 windowImpl: windowImpl ?? WindowImpl);
         }

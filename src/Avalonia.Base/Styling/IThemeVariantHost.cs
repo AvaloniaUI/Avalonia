@@ -7,7 +7,6 @@ namespace Avalonia.Styling;
 /// <summary>
 /// Interface for the host element with a theme variant.
 /// </summary>
-[Unstable]
 public interface IThemeVariantHost : IResourceHost
 {
     /// <summary>

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Avalonia.Controls;
-
-#nullable enable
 
 namespace Avalonia.Markup.Xaml.Styling;
 

@@ -14,18 +14,20 @@ namespace Avalonia.Markup.Xaml.Converters
     [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
     public class AvaloniaPropertyTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        /// <inheritdoc />
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        /// <inheritdoc />
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             var registry = AvaloniaPropertyRegistry.Instance;
             var (ns, owner, propertyName) = PropertyParser.Parse(new CharacterReader(((string)value).AsSpan()));
             var ownerType = TryResolveOwnerByName(context, ns, owner);
-            var targetType = context.GetFirstParent<ControlTemplate>()?.TargetType ??
-                context.GetFirstParent<Style>()?.Selector?.TargetType ??
+            var targetType = context?.GetFirstParent<ControlTemplate>()?.TargetType ??
+                context?.GetFirstParent<Style>()?.Selector?.TargetType ??
                 typeof(Control);
             var effectiveOwner = ownerType ?? targetType;
             var property = registry.FindRegistered(effectiveOwner, propertyName);
@@ -51,11 +53,11 @@ namespace Avalonia.Markup.Xaml.Converters
         }
 
         [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
-        private static Type TryResolveOwnerByName(ITypeDescriptorContext context, string ns, string owner)
+        private static Type? TryResolveOwnerByName(ITypeDescriptorContext? context, string? ns, string? owner)
         {
             if (owner != null)
             {
-                var result = context.ResolveType(ns, owner);
+                var result = context?.ResolveType(ns, owner);
 
                 if (result == null)
                 {

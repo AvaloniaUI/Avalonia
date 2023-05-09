@@ -34,7 +34,11 @@ namespace Avalonia.Diagnostics.Controls
                 {
                     case ISolidColorBrush scb:
                     {
-                        var colorView = new ColorView { Color = scb.Color };
+                        var colorView = new ColorView
+                        {
+                            HexInputAlphaPosition = AlphaComponentPosition.Leading, // Always match XAML
+                            Color = scb.Color,
+                        };
 
                         colorView.ColorChanged += (_, e) => Brush = new ImmutableSolidColorBrush(e.NewColor);
 

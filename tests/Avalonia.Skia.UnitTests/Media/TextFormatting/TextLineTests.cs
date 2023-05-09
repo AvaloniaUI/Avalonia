@@ -623,6 +623,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Get_TextBounds_For_LineBreak()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(Environment.NewLine, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var textBounds = textLine.GetTextBounds(0, Environment.NewLine.Length);
+
+                Assert.Equal(1, textBounds.Count);
+
+                Assert.Equal(1, textBounds[0].TextRunBounds.Count);
+
+                Assert.Equal(Environment.NewLine.Length, textBounds[0].TextRunBounds[0].Length);
+            }
+        }
+
+        [Fact]
         public void Should_GetTextRange()
         {
             var text = "שדגככעיחדגכAישדגשדגחייטYDASYWIWחיחלדשSAטויליHUHIUHUIDWKLאא'ק'קחליק/'וקןגגגלךשף'/קפוכדגכשדגשיח'/קטאגשד";
@@ -967,6 +991,33 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(7, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width), 2);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_With_EndOfParagraph_RightToLeft()
+        {
+            var text = "لوحة المفاتيح العربية";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var textBounds = textLine.GetTextBounds(0, 1);
+
+                Assert.Equal(1, textBounds.Count);
+
+                var firstBounds = textBounds.First();
+
+                Assert.True(firstBounds.TextRunBounds.Count > 0);
             }
         }
 

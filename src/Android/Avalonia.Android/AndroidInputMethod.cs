@@ -1,14 +1,11 @@
 ﻿using System;
 using Android.Content;
 using Android.Runtime;
-using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls.Presenters;
-using Avalonia.Input;
 using Avalonia.Input.TextInput;
-using Avalonia.Reactive;
 
 namespace Avalonia.Android
 {
@@ -99,6 +96,9 @@ namespace Avalonia.Android
         {
             _host.InitEditorInfo((topLevel, outAttrs) =>
             {
+                if (_client == null)
+                    return null;
+
                 _inputConnection = new AvaloniaInputConnection(topLevel, this);
 
                 outAttrs.InputType = options.ContentType switch

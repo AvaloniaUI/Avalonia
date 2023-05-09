@@ -6,8 +6,6 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Avalonia.Markup.Parsers
 {
     internal enum SourceMode
@@ -201,8 +199,8 @@ namespace Avalonia.Markup.Parsers
 
             nodes.Add(new AttachedPropertyNameNode
             {
-                Namespace = ns.ToString(),
-                TypeName = owner.ToString(),
+                Namespace = ns,
+                TypeName = owner,
                 PropertyName = name.ToString()
             });
             return State.AfterMember;

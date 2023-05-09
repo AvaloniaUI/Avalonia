@@ -89,7 +89,7 @@ namespace Avalonia.X11
             }
         }
 
-        private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(Position, RenderScaling);
+        private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(_position ?? default, RenderScaling);
 
         private void HandleKeyEvent(ref XEvent ev)
         {

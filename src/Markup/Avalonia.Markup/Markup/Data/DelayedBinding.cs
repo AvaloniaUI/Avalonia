@@ -20,8 +20,7 @@ namespace Avalonia.Markup.Data
     /// </remarks>
     public static class DelayedBinding
     {
-        private static ConditionalWeakTable<StyledElement, List<Entry>> _entries = 
-            new ConditionalWeakTable<StyledElement, List<Entry>>();
+        private static readonly ConditionalWeakTable<StyledElement, List<Entry>> _entries = new();
 
         /// <summary>
         /// Adds a delayed binding to a control.
@@ -57,7 +56,7 @@ namespace Avalonia.Markup.Data
         /// <param name="target">The control.</param>
         /// <param name="property">The property on the control to bind to.</param>
         /// <param name="value">A function which returns the value.</param>
-        public static void Add(StyledElement target, PropertyInfo property, Func<StyledElement, object> value)
+        public static void Add(StyledElement target, PropertyInfo property, Func<StyledElement, object?> value)
         {
             if (target.IsInitialized)
             {
@@ -126,14 +125,14 @@ namespace Avalonia.Markup.Data
 
         private class ClrPropertyValueEntry : Entry
         {
-            public ClrPropertyValueEntry(PropertyInfo property, Func<StyledElement, object> value)
+            public ClrPropertyValueEntry(PropertyInfo property, Func<StyledElement, object?> value)
             {
                 Property = property;
                 Value = value;
             }
 
             public PropertyInfo Property { get; }
-            public Func<StyledElement, object> Value { get; }
+            public Func<StyledElement, object?> Value { get; }
 
             public override void Apply(StyledElement control)
             {

@@ -75,11 +75,11 @@
         </StackPanel.DataTemplates>
         <StackPanel Margin="18" Spacing="4" Width="200">
           <TextBlock FontSize="16" Text="Multiple"/>
-          <ListBox Items="{Binding Items}" SelectionMode="Multiple" Selection="{Binding Selection}"/>
+          <ListBox ItemsSource="{Binding Items}" SelectionMode="Multiple" Selection="{Binding Selection}"/>
         </StackPanel>
         <StackPanel Margin="18" Spacing="4" Width="200">
           <TextBlock FontSize="16" Text="Multiple"/>
-          <ListBox Items="{Binding Items}" SelectionMode="Multiple" Selection="{Binding Selection}"/>
+          <ListBox ItemsSource="{Binding Items}" SelectionMode="Multiple" Selection="{Binding Selection}"/>
         </StackPanel>
         <ContentControl Content="{ReflectionBinding Selection.SelectedItems[0]}">
           <ContentControl.DataTemplates>

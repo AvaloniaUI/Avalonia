@@ -86,7 +86,7 @@ namespace Avalonia.Controls
                                 continue;
                             }
                             if (current != radioButton && current.IsChecked.GetValueOrDefault())
-                                current.IsChecked = false;
+                                current.SetCurrentValue(IsCheckedProperty, false);
                             i++;
                         }
                         if (group.Count == 0)
@@ -193,7 +193,7 @@ namespace Avalonia.Controls
                     foreach (var sibling in siblings)
                     {
                         if (sibling.IsChecked.GetValueOrDefault())
-                            sibling.IsChecked = false;
+                            sibling.SetCurrentValue(IsCheckedProperty, false);
                     }
                 }
             }

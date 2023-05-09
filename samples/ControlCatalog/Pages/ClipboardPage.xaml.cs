@@ -32,13 +32,13 @@ namespace ControlCatalog.Pages
 
         private async void CopyText(object? sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard && ClipboardContent is { } clipboardContent)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard && ClipboardContent is { } clipboardContent)
                 await clipboard.SetTextAsync(clipboardContent.Text ?? String.Empty);
         }
 
         private async void PasteText(object? sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 ClipboardContent.Text = await clipboard.GetTextAsync();
             }
@@ -46,7 +46,7 @@ namespace ControlCatalog.Pages
 
         private async void CopyTextDataObject(object? sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var dataObject = new DataObject();
                 dataObject.Set(DataFormats.Text, ClipboardContent.Text ?? string.Empty);
@@ -56,7 +56,7 @@ namespace ControlCatalog.Pages
 
         private async void PasteTextDataObject(object? sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 ClipboardContent.Text = await clipboard.GetDataAsync(DataFormats.Text) as string ?? string.Empty;
             }
@@ -64,7 +64,7 @@ namespace ControlCatalog.Pages
 
         private async void CopyFilesDataObject(object? sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var storageProvider = TopLevel.GetTopLevel(this)!.StorageProvider;
                 var filesPath = (ClipboardContent.Text ?? string.Empty)
@@ -110,7 +110,7 @@ namespace ControlCatalog.Pages
 
         private async void PasteFilesDataObject(object? sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var files = await clipboard.GetDataAsync(DataFormats.Files) as IEnumerable<Avalonia.Platform.Storage.IStorageItem>;
 
@@ -120,7 +120,7 @@ namespace ControlCatalog.Pages
 
         private async void GetFormats(object sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var formats = await clipboard.GetFormatsAsync();
                 ClipboardContent.Text = string.Join(Environment.NewLine, formats);
@@ -129,7 +129,7 @@ namespace ControlCatalog.Pages
 
         private async void Clear(object sender, RoutedEventArgs args)
         {
-            if (Application.Current!.Clipboard is { } clipboard)
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 await clipboard.ClearAsync();
             }

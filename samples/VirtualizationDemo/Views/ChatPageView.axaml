@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:VirtualizationDemo.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VirtualizationDemo.Views.ChatPageView"
+             x:DataType="vm:ChatPageViewModel">
+  <ListBox ItemsSource="{Binding Messages}">
+    <ListBox.ItemContainerTheme>
+      <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+        <Setter Property="Padding" Value="8"/>
+      </ControlTheme>
+    </ListBox.ItemContainerTheme>
+    <ListBox.ItemTemplate>
+      <DataTemplate>
+        <Border CornerRadius="8" 
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                TextElement.Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                Padding="6"
+                HorizontalAlignment="Left"
+                MaxWidth="280">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top"
+                       Text="{Binding Sender}"
+                       FontWeight="Bold"/>
+            <TextBlock DockPanel.Dock="Bottom" 
+                       Text="{Binding Timestamp}"
+                       FontSize="10"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextAlignment="Right"
+                       Margin="0 4 0 0"/>
+            <TextBlock Text="{Binding Message}" TextWrapping="Wrap"/>
+          </DockPanel>
+        </Border>
+      </DataTemplate>
+    </ListBox.ItemTemplate>
+  </ListBox>
+</UserControl>

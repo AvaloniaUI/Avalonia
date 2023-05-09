@@ -28,6 +28,41 @@
     <Grid Grid.Column="2"
           Grid.Row="0"
           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <Grid.Resources>
+
+        <x:Double x:Key="ColorSliderSize">24</x:Double>
+        <x:Double x:Key="ColorSliderTrackSize">18</x:Double>
+        <CornerRadius x:Key="ColorSliderCornerRadius">12</CornerRadius>
+        <CornerRadius x:Key="ColorSliderTrackCornerRadius">9</CornerRadius>
+
+        <!-- Due to 'SystemControlForegroundBaseHighBrush' usage this only works in Fluent theme. -->
+        <!-- Otherwise it would be necessary to make custom light/dark resources. -->
+        <ControlTheme x:Key="ColorSliderThumbTheme"
+                      TargetType="Thumb">
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+          <Setter Property="BorderThickness" Value="5" />
+          <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Grid>
+                  <Border Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}" />
+                  <Ellipse Height="{TemplateBinding Height}"
+                           Width="{TemplateBinding Width}"
+                           Fill="Transparent"
+                           Stroke="{TemplateBinding Foreground}"
+                           StrokeThickness="1" />
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </ControlTheme>
+
+      </Grid.Resources>
       <ColorSpectrum x:Name="ColorSpectrum1"
                      Grid.Row="0"
                      Color="Red"

@@ -6,7 +6,8 @@
     <Using>Avalonia.Rendering.Composition.Animations</Using>
     
     <Manual Name="Avalonia.Platform.IGeometryImpl" Passthrough="true"/>
-    <Manual Name="Avalonia.Media.IBrush" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.IImmutableBrush" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.IImmutableEffect" Passthrough="true"/>
     <Manual Name="CompositionSurface" />
     <Manual Name="CompositionDrawingSurface" />
     <Object Name="CompositionVisual" Abstract="true">
@@ -27,7 +28,8 @@
         <Property Name="TransformMatrix" Type="Matrix4x4" DefaultValue="Matrix4x4.Identity" Animated="true"/>
         <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
-        <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IBrush?" Internal="true" />
+        <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IImmutableBrush?" Internal="true" />
+        <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
     <Object Name="CompositionSolidColorVisual" Inherits="CompositionContainerVisual">

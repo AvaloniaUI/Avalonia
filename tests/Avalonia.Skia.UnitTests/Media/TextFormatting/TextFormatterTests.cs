@@ -416,7 +416,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [InlineData("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor",
-            new[] { "Lorem ipsum ", "dolor sit ", "amet, ", "consectetur ", "adipisicing ", "elit, sed do ", "eiusmod tempor" })]
+            new[] { "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing ", "elit, sed do ", "eiusmod tempor" })]
 
         [Theory]
         public void Should_Produce_Wrapped_And_Trimmed_Lines(string text, string[] expectedLines)

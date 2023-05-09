@@ -113,7 +113,7 @@ namespace Avalonia.Layout
             AvaloniaProperty.Register<UniformGridLayout, double>(nameof(MinRowSpacing));
 
         /// <summary>
-        /// Defines the <see cref="MaximumRowsOrColumnsProperty"/> property.
+        /// Defines the <see cref="MaximumRowsOrColumns"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaximumRowsOrColumnsProperty =
             AvaloniaProperty.Register<UniformGridLayout, int>(nameof(MaximumRowsOrColumns));

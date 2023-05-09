@@ -526,6 +526,15 @@ namespace Avalonia
             }
         }
 
+        internal static Rect? Union(Rect? left, Rect? right)
+        {
+            if (left == null)
+                return right;
+            if (right == null)
+                return left;
+            return left.Value.Union(right.Value);
+        }
+
         /// <summary>
         /// Returns a new <see cref="Rect"/> with the specified X position.
         /// </summary>

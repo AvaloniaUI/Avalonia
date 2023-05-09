@@ -9,7 +9,7 @@ namespace Avalonia.Metadata;
 /// A typical usage example is a ListBox control, where <see cref="InheritDataTypeFromItemsAttribute"/> is defined on the ItemTemplate property,
 /// allowing the template to inherit the data type from the Items collection binding. 
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class InheritDataTypeFromItemsAttribute : Attribute
 {
     /// <summary>

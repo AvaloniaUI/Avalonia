@@ -37,10 +37,21 @@ namespace Avalonia.PropertyStore
         public IValueEntry? BaseValueEntry { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the property has a coercion function.
+        /// </summary>
+        public bool HasCoercion { get; protected set; }
+
+        /// <summary>
         /// Gets a value indicating whether the <see cref="Value"/> was overridden by a call to 
         /// <see cref="AvaloniaObject.SetCurrentValue{T}"/>.
         /// </summary>
         public bool IsOverridenCurrentValue { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Value"/> is the result of the 
+        /// 
+        /// </summary>
+        public bool IsCoercedDefaultValue { get; set; }
 
         /// <summary>
         /// Begins a reevaluation pass on the effective value.
@@ -63,10 +74,33 @@ namespace Avalonia.PropertyStore
         /// <summary>
         /// Ends a reevaluation pass on the effective value.
         /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being reevaluated.</param>
         /// <remarks>
-        /// This method unsubscribes from any unused value entries.
+        /// Handles coercing the default value if necessary.
         /// </remarks>
-        public void EndReevaluation()
+        public void EndReevaluation(ValueStore owner, AvaloniaProperty property)
+        {
+            if (Priority == BindingPriority.Unset && HasCoercion)
+                CoerceDefaultValueAndRaise(owner, property);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the effective value represents the default value of the
+        /// property and can be removed.
+        /// </summary>
+        /// <returns>True if the effective value van be removed; otherwise false.</returns>
+        public bool CanRemove()
+        {
+            return Priority == BindingPriority.Unset &&
+                !IsOverridenCurrentValue &&
+                !IsCoercedDefaultValue;
+        }
+
+        /// <summary>
+        /// Unsubscribes from any unused value entries.
+        /// </summary>
+        public void UnsubscribeIfNecessary()
         {
             if (Priority == BindingPriority.Unset)
             {
@@ -130,6 +164,17 @@ namespace Avalonia.PropertyStore
         /// <param name="property">The property being cleared.</param>
         public abstract void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property);
 
+        /// <summary>
+        /// Coerces the default value, raising <see cref="AvaloniaObject.PropertyChanged"/>
+        /// where necessary.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being coerced.</param>
+        protected abstract void CoerceDefaultValueAndRaise(ValueStore owner, AvaloniaProperty property);
+
+        /// <summary>
+        /// Gets the current effective value as a boxed value.
+        /// </summary>
         protected abstract object? GetBoxedValue();
 
         protected void UpdateValueEntry(IValueEntry? entry, BindingPriority priority)

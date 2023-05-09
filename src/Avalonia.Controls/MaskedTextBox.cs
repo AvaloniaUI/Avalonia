@@ -210,7 +210,7 @@ namespace Avalonia.Controls
 
             if (keymap is not null && Match(keymap.Paste))
             {
-                var clipboard = (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard));
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
                 if (clipboard is null)
                     return;

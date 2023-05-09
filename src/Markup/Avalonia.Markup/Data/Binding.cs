@@ -16,7 +16,6 @@ namespace Avalonia.Data
         /// Initializes a new instance of the <see cref="Binding"/> class.
         /// </summary>
         public Binding()
-            :base()
         {
         }
 
@@ -54,7 +53,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets a function used to resolve types from names in the binding path.
         /// </summary>
-        public Func<string, string, Type>? TypeResolver { get; set; }
+        public Func<string?, string, Type>? TypeResolver { get; set; }
 
         private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
         {

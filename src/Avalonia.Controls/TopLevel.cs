@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -75,7 +76,7 @@ namespace Avalonia.Controls
                 unsetValue: WindowTransparencyLevel.None);        
 
         /// <summary>
-        /// Defines the <see cref="TransparencyBackgroundFallbackProperty"/> property.
+        /// Defines the <see cref="TransparencyBackgroundFallback"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
@@ -87,7 +88,15 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
-        
+
+        /// <summary>
+        /// Defines the SystemBarColor attached property.
+        /// </summary>
+        public static readonly AttachedProperty<SolidColorBrush?> SystemBarColorProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, Control, SolidColorBrush?>(
+                "SystemBarColor",
+                inherits: true);
+
         /// <summary>
         /// Defines the <see cref="BackRequested"/> event.
         /// </summary>
@@ -124,6 +133,22 @@ namespace Avalonia.Controls
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
+
+            SystemBarColorProperty.Changed.AddClassHandler<Control>((view, e) =>
+            {
+                if (e.NewValue is SolidColorBrush colorBrush)
+                {
+                    if (view.Parent is TopLevel tl && tl.InsetsManager is { } insetsManager)
+                    {
+                        insetsManager.SystemBarColor = colorBrush.Color;
+                    }
+
+                    if (view is TopLevel topLevel && topLevel.InsetsManager is { } insets)
+                    {
+                        insets.SystemBarColor = colorBrush.Color;
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -379,6 +404,26 @@ namespace Avalonia.Controls
             set { SetValue(AccessText.ShowAccessKeyProperty, value); }
         }
 
+        /// <summary>
+        /// Helper for setting the color of the platform's system bars
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel</param>
+        /// <param name="color">The color to set</param>
+        public static void SetSystemBarColor(Control control, SolidColorBrush? color)
+        {
+            control.SetValue(SystemBarColorProperty, color);
+        }
+
+        /// <summary>
+        /// Helper for getting the color of the platform's system bars
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel, or the toplevel</param>
+        /// <returns>The current color of the platform's system bars</returns>
+        public static SolidColorBrush? GetSystemBarColor(Control control)
+        {
+            return control.GetValue(SystemBarColorProperty);
+        }
+
         /// <inheritdoc/>
         double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
 
@@ -387,12 +432,20 @@ namespace Avalonia.Controls
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
         
+        /// <summary>
+        /// File System storage service used for file pickers and bookmarks.
+        /// </summary>
         public IStorageProvider StorageProvider => _storageProvider
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
-            ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
+            ?? new NoopStorageProvider();
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
+
+        /// <summary>
+        /// Gets the platform's clipboard implementation
+        /// </summary>
+        public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
 
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
@@ -454,7 +507,8 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ActualThemeVariantProperty)
             {
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)change.GetNewValue<ThemeVariant>() ?? PlatformThemeVariant.Light);
+                var newThemeVariant = change.GetNewValue<ThemeVariant?>() ?? ThemeVariant.Default;
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)newThemeVariant ?? PlatformThemeVariant.Light);
             }
         }
         
@@ -477,6 +531,14 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            Renderer.SceneInvalidated -= SceneInvalidated;
+            // We need to wait for the renderer to complete any in-flight operations
+            Renderer.Dispose();
+            
+            Debug.Assert(PlatformImpl != null);
+            // The PlatformImpl is completely invalid at this point
+            PlatformImpl = null;
+            
             if (_globalStyles is object)
             {
                 _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
@@ -486,18 +548,13 @@ namespace Avalonia.Controls
             {
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
-
-            Renderer.SceneInvalidated -= SceneInvalidated;
-            Renderer.Dispose();
-
+            
             _layoutDiagnosticBridge?.Dispose();
             _layoutDiagnosticBridge = null;
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
             _backGestureSubscription?.Dispose();
-
-            PlatformImpl = null;
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
@@ -515,7 +572,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
         /// <param name="reason">The reason for the resize.</param>
-        protected virtual void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal virtual void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             ClientSize = clientSize;
             FrameSize = PlatformImpl!.FrameSize;

@@ -43,7 +43,7 @@
                               Margin="{TemplateBinding Padding}"
                               VerticalAlignment="Center"
                               Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding ItemTemplate}">
+                              ContentTemplate="{TemplateBinding HeaderTemplate}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
                   <AccessText Text="{Binding}" />
@@ -65,7 +65,7 @@
                    IsLightDismissEnabled="False"
                    IsOpen="{TemplateBinding IsSubMenuOpen,
                                             Mode=TwoWay}"
-                   Placement="Right">
+                   Placement="RightEdgeAlignedTop">
               <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">

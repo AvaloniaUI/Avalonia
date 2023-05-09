@@ -1,5 +1,10 @@
 using System.Collections.Generic;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Data;
+using Avalonia.Media;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -86,6 +91,31 @@ namespace Avalonia.Base.UnitTests
             };
 
             child.ClearValue(Class1.BazProperty);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void ClearValue_On_Parent_Raises_PropertyChanged_On_Child_With_Inherited_Grandparent_Value()
+        {
+            var grandparent = new Class1();
+            var parent = new Class2 { Parent = grandparent };
+            var child = new Class2 { Parent = parent };
+            var raised = 0;
+
+            grandparent.SetValue(Class1.BazProperty, "grandparent");
+            parent.SetValue(Class1.BazProperty, "parent");
+
+            child.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(child, e.Sender);
+                Assert.Equal("parent", e.OldValue);
+                Assert.Equal("grandparent", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
+
+            parent.ClearValue(Class1.BazProperty);
 
             Assert.Equal(1, raised);
         }

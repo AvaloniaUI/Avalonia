@@ -32,7 +32,7 @@ public class HugeTextLayout : IDisposable
 
         var testServices = TestServices.StyledWindow.With(
             renderInterface: new NullRenderingPlatform(),
-            threadingInterface: new NullThreadingPlatform(),
+            dispatcherImpl: new NullThreadingPlatform(),
             standardCursorFactory: new NullCursorFactory());
 
         if (s_useSkia)

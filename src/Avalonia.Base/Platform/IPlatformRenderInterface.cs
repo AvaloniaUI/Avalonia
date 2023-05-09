@@ -11,7 +11,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the main platform-specific interface for the rendering subsystem.
     /// </summary>
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterface
     {
         /// <summary>
@@ -48,7 +48,7 @@ namespace Avalonia.Platform
         /// <param name="fillRule">The fill rule.</param>
         /// <param name="children">The geometries to group.</param>
         /// <returns>A combined geometry.</returns>
-        IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children);
+        IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children);
 
         /// <summary>
         /// Creates a geometry group implementation.
@@ -57,7 +57,7 @@ namespace Avalonia.Platform
         /// <param name="g1">The first geometry.</param>
         /// <param name="g2">The second geometry.</param>
         /// <returns>A combined geometry.</returns>
-        IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2);
+        IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2);
 
         /// <summary>
         /// Created a geometry implementation for the glyph run.
@@ -201,7 +201,7 @@ namespace Avalonia.Platform
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
     }
 
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterfaceContext : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>

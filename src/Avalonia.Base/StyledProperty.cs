@@ -176,6 +176,11 @@ namespace Avalonia
             o.ClearValue<TValue>(this);
         }
 
+        internal override void RouteCoerceDefaultValue(AvaloniaObject o)
+        {
+            o.GetValueStore().CoerceDefaultValue(this);
+        }
+
         /// <inheritdoc/>
         internal override object? RouteGetValue(AvaloniaObject o)
         {

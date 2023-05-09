@@ -2,8 +2,6 @@ using System.Reflection;
 
 namespace Avalonia.Markup.Xaml;
 
-#nullable enable
-
 public class RuntimeXamlLoaderConfiguration
 {
     /// <summary>

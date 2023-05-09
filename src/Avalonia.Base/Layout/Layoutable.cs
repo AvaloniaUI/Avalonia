@@ -125,7 +125,7 @@ namespace Avalonia.Layout
             AvaloniaProperty.Register<Layoutable, VerticalAlignment>(nameof(VerticalAlignment));
 
         /// <summary>
-        /// Defines the <see cref="UseLayoutRoundingProperty"/> property.
+        /// Defines the <see cref="UseLayoutRounding"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             AvaloniaProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);

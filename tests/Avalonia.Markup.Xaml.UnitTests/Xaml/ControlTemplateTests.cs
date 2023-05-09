@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml.Templates;
@@ -257,7 +258,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var parent = (ContentControl)template.Build(new ContentControl()).Control;
+            var parent = (ContentControl)template.Build(new ContentControl()).Result;
 
             Assert.Equal("parent", parent.Name);
 
@@ -282,7 +283,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(typeof(ContentControl), template.TargetType);
 
-            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Control);
+            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Result);
         }
 
         [Fact]
@@ -298,7 +299,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var panel = (Panel)template.Build(new ContentControl()).Control;
+            var panel = (Panel)template.Build(new ContentControl()).Result;
 
             Assert.Equal(2, panel.Children.Count);
 
@@ -307,6 +308,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", foo.Name);
             Assert.Equal("Bar", bar.Name);
+        }
+
+        [Fact]
+        public void ControlTemplate_Can_Be_Empty()
+        {
+            var xaml = "<ControlTemplate xmlns='https://github.com/avaloniaui' />";
+            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
+
+            var templateResult = template.Build(new TemplatedControl());
+            Assert.Null(templateResult);
         }
     }
     public class ListBoxHierarchyLine : Panel

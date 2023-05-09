@@ -1,13 +1,20 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+  <!-- Note that the Slider thumb should generally follow the overall Slider dimensions.
+       Therefore, there are not currently separate resources to control it. -->
+  <x:Double x:Key="ColorSliderSize">20</x:Double>
+  <x:Double x:Key="ColorSliderTrackSize">20</x:Double>
+  <CornerRadius x:Key="ColorSliderCornerRadius">10</CornerRadius>
+  <CornerRadius x:Key="ColorSliderTrackCornerRadius">10</CornerRadius>
+
   <ControlTheme x:Key="ColorSliderThumbTheme"
                 TargetType="Thumb">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeForegroundBrush}" />
     <!--TODO: <Setter Property="BorderBrush" Value="{DynamicResource ColorControlDefaultSelectorBrush}" />-->
     <Setter Property="BorderThickness" Value="3" />
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -25,27 +32,28 @@
 
     <Style Selector="^:horizontal">
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="CornerRadius" Value="10" />
-      <Setter Property="Height" Value="20" />
+      <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
+      <Setter Property="Height" Value="{DynamicResource ColorSliderSize}" />
       <Setter Property="Template">
         <ControlTemplate TargetType="{x:Type ColorSlider}">
           <Border BorderThickness="{TemplateBinding BorderThickness}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Margin="{TemplateBinding Padding}">
-              <Rectangle HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch"
-                         Fill="{StaticResource ColorControlCheckeredBackgroundBrush}"
-                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
-                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
-              <Rectangle HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch"
-                         Fill="{TemplateBinding Background}"
-                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
-                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
+              <Border HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center"
+                      Height="{Binding ElementName=PART_Track, Path=Bounds.Height}"
+                      Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                      CornerRadius="{DynamicResource ColorSliderTrackCornerRadius}" />
+              <Border HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center"
+                      Height="{Binding ElementName=PART_Track, Path=Bounds.Height}"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{DynamicResource ColorSliderTrackCornerRadius}" />
               <Track Name="PART_Track"
+                     Height="{DynamicResource ColorSliderTrackSize}"
                      HorizontalAlignment="Stretch"
-                     VerticalAlignment="Stretch"
+                     VerticalAlignment="Center"
                      Minimum="{TemplateBinding Minimum}"
                      Maximum="{TemplateBinding Maximum}"
                      Value="{TemplateBinding Value, Mode=TwoWay}"
@@ -82,7 +90,7 @@
                   </RepeatButton>
                 </Track.IncreaseButton>
                 <Thumb Name="ColorSliderThumb"
-                       Theme="{StaticResource ColorSliderThumbTheme}"
+                       Theme="{DynamicResource ColorSliderThumbTheme}"
                        Margin="0"
                        Padding="0"
                        DataContext="{TemplateBinding Value}"
@@ -97,26 +105,27 @@
 
     <Style Selector="^:vertical">
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="CornerRadius" Value="10" />
-      <Setter Property="Width" Value="20" />
+      <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
+      <Setter Property="Width" Value="{DynamicResource ColorSliderSize}" />
       <Setter Property="Template">
         <ControlTemplate TargetType="{x:Type ColorSlider}">
           <Border BorderThickness="{TemplateBinding BorderThickness}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Margin="{TemplateBinding Padding}">
-              <Rectangle HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch"
-                         Fill="{StaticResource ColorControlCheckeredBackgroundBrush}"
-                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
-                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
-              <Rectangle HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch"
-                         Fill="{TemplateBinding Background}"
-                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
-                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
+              <Border HorizontalAlignment="Center"
+                      VerticalAlignment="Stretch"
+                      Width="{Binding ElementName=PART_Track, Path=Bounds.Width}"
+                      Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                      CornerRadius="{DynamicResource ColorSliderTrackCornerRadius}" />
+              <Border HorizontalAlignment="Center"
+                      VerticalAlignment="Stretch"
+                      Width="{Binding ElementName=PART_Track, Path=Bounds.Width}"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{DynamicResource ColorSliderTrackCornerRadius}" />
               <Track Name="PART_Track"
-                     HorizontalAlignment="Stretch"
+                     Width="{DynamicResource ColorSliderTrackSize}"
+                     HorizontalAlignment="Center"
                      VerticalAlignment="Stretch"
                      Minimum="{TemplateBinding Minimum}"
                      Maximum="{TemplateBinding Maximum}"
@@ -154,7 +163,7 @@
                   </RepeatButton>
                 </Track.IncreaseButton>
                 <Thumb Name="ColorSliderThumb"
-                       Theme="{StaticResource ColorSliderThumbTheme}"
+                       Theme="{DynamicResource ColorSliderThumbTheme}"
                        Margin="0"
                        Padding="0"
                        DataContext="{TemplateBinding Value}"

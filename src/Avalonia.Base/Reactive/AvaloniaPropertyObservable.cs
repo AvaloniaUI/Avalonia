@@ -4,18 +4,21 @@ using Avalonia.Data;
 
 namespace Avalonia.Reactive
 {
-    internal class AvaloniaPropertyObservable<T> : LightweightObservableBase<T>, IDescription
+    internal class AvaloniaPropertyObservable<TSource,TResult> : LightweightObservableBase<TResult>, IDescription
     {
         private readonly WeakReference<AvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
-        private Optional<T> _value;
+        private readonly Func<TSource, TResult>? _converter;
+        private Optional<TResult> _value;
 
         public AvaloniaPropertyObservable(
             AvaloniaObject target,
-            AvaloniaProperty property)
+            AvaloniaProperty property,
+            Func<TSource,TResult>? converter = null)
         {
             _target = new WeakReference<AvaloniaObject>(target);
             _property = property;
+            _converter = converter;
         }
 
         public string Description => $"{_target.GetType().Name}.{_property.Name}";
@@ -24,8 +27,17 @@ namespace Avalonia.Reactive
         {
             if (_target.TryGetTarget(out var target))
             {
-                _value = (T)target.GetValue(_property)!;
-                target.PropertyChanged += PropertyChanged;
+                if (_converter is { } converter)
+                {
+                    var unconvertedValue = (TSource)target.GetValue(_property)!;
+                    _value = converter(unconvertedValue);
+                    target.PropertyChanged += PropertyChanged_WithConversion;
+                }
+                else
+                {
+                    _value = (TResult)target.GetValue(_property)!;
+                    target.PropertyChanged += PropertyChanged;
+                }
             }
         }
 
@@ -33,13 +45,20 @@ namespace Avalonia.Reactive
         {
             if (_target.TryGetTarget(out var target))
             {
-                target.PropertyChanged -= PropertyChanged;
+                if (_converter is not null)
+                {
+                    target.PropertyChanged -= PropertyChanged_WithConversion;
+                }
+                else
+                {
+                    target.PropertyChanged -= PropertyChanged;
+                }
             }
 
             _value = default;
         }
 
-        protected override void Subscribed(IObserver<T> observer, bool first)
+        protected override void Subscribed(IObserver<TResult> observer, bool first)
         {
             if (_value.HasValue)
                 observer.OnNext(_value.Value);
@@ -49,23 +68,49 @@ namespace Avalonia.Reactive
         {
             if (e.Property == _property)
             {
-                T newValue;
+                TResult newValue;
 
-                if (e is AvaloniaPropertyChangedEventArgs<T> typed)
+                if (e is AvaloniaPropertyChangedEventArgs<TResult> typed)
                 {
                     newValue = AvaloniaObjectExtensions.GetValue(e.Sender, typed.Property);
                 }
                 else
                 {
-                    newValue = (T)e.Sender.GetValue(e.Property)!;
+                    newValue = (TResult)e.Sender.GetValue(e.Property)!;
                 }
 
-                if (!_value.HasValue ||
-                    !EqualityComparer<T>.Default.Equals(newValue, _value.Value))
+                PublishNewValue(newValue);
+            }
+        }
+
+        private void PropertyChanged_WithConversion(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == _property)
+            {
+                TSource newValueRaw;
+
+                if (e is AvaloniaPropertyChangedEventArgs<TSource> typed)
                 {
-                    _value = newValue;
-                    PublishNext(_value.Value!);
+                    newValueRaw = AvaloniaObjectExtensions.GetValue(e.Sender, typed.Property);
                 }
+                else
+                {
+                    newValueRaw = (TSource)e.Sender.GetValue(e.Property)!;
+                }
+
+                var newValue = _converter!(newValueRaw);
+
+                PublishNewValue(newValue);
+            }
+        }
+
+        private void PublishNewValue(TResult newValue)
+        {
+            if (!_value.HasValue ||
+                !EqualityComparer<TResult>.Default.Equals(newValue, _value.Value))
+            {
+                _value = newValue;
+                PublishNext(_value.Value!);
             }
         }
     }
