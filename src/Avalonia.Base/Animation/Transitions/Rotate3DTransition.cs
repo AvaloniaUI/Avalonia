@@ -56,14 +56,17 @@ public class Rotate3DTransition: PageSlide
             new() {
                 Setters =
                 {
+                    new Setter { Property = Visual.IsVisibleProperty, Value = isVisible },
                     new Setter { Property = rotateProperty, Value = rotation },
                     new Setter { Property = Visual.ZIndexProperty, Value = zIndex },
-                    new Setter { Property = Visual.IsVisibleProperty, Value = isVisible },
                     centerZSetter,
                     depthSetter
                 },
                 Cue = new Cue(cue)
             };
+
+        var initialFromVisible = true;
+        var initialToVisible = true;
 
         if (from != null)
         {
@@ -80,6 +83,11 @@ public class Rotate3DTransition: PageSlide
             };
 
             tasks[0] = animation.RunAsync(from, null, cancellationToken);
+
+            // Make "from" control invisible: this is overridden in the fade out animation, so
+            // will only take effect when the animation is completed.
+            initialFromVisible = from.IsVisible;
+            from.IsVisible = false;
         }
 
         if (to != null)
@@ -97,23 +105,19 @@ public class Rotate3DTransition: PageSlide
                 }
             };
 
+            initialToVisible = to.IsVisible;
+            to.IsVisible = true;
             tasks[from != null ? 1 : 0] = animation.RunAsync(to, null, cancellationToken);
         }
 
         await Task.WhenAll(tasks);
 
-        if (!cancellationToken.IsCancellationRequested)
+        if (cancellationToken.IsCancellationRequested)
         {
-            if (to != null)
-            {
-                to.ZIndex = 2;
-            }
-            
             if (from != null)
-            {
-                from.IsVisible = false;
-                from.ZIndex = 1;
-            }
+                from.IsVisible = initialFromVisible;
+            if (to != null)
+                to.IsVisible = initialToVisible;
         }
     }
 }
