@@ -498,6 +498,7 @@
       <Setter Property="GridLinesVisibility" Value="None" />
       <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
       <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
       <Setter Property="DropLocationIndicatorTemplate">
         <Template>
           <Rectangle Fill="{DynamicResource DataGridDropLocationIndicatorBackground}"
