@@ -43,10 +43,13 @@ namespace Avalonia.Diagnostics.Views
         {
             base.OnDataContextChanged(e);
 
-            ((TreePageViewModel)DataContext!).ClipboardCopyRequested += (sender, s) =>
+            if(DataContext is TreePageViewModel tpvm)
             {
-                TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(s);
-            };
+                tpvm.ClipboardCopyRequested += (sender, s) =>
+                {
+                    TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(s);
+                };
+            }
         }
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
