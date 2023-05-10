@@ -60,7 +60,7 @@ public class Rotate3DTransition : PageTransition
             {
                 CreateKeyFrame(parent, 0d, 0d, 2),
                 CreateKeyFrame(parent, 0.5d, 45d * (forward ? -1 : 1), 1),
-                CreateKeyFrame(parent, 1d, 90d * (forward ? -1 : 1), 1, isVisible: false)
+                CreateKeyFrame(parent, 1d, 90d * (forward ? -1 : 1), 1)
             },
         };
     }
@@ -81,7 +81,7 @@ public class Rotate3DTransition : PageTransition
         };
     }
 
-    private KeyFrame CreateKeyFrame(Visual parent, double cue, double rotation, int zIndex, bool isVisible = true)
+    private KeyFrame CreateKeyFrame(Visual parent, double cue, double rotation, int zIndex)
     {
         var (rotateProperty, center) = Orientation switch
         {
@@ -97,7 +97,6 @@ public class Rotate3DTransition : PageTransition
         {
             Setters =
                 {
-                    new Setter { Property = Visual.IsVisibleProperty, Value = isVisible },
                     new Setter { Property = rotateProperty, Value = rotation },
                     new Setter { Property = Visual.ZIndexProperty, Value = zIndex },
                     centerZSetter,
