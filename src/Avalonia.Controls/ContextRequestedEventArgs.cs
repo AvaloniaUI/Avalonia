@@ -24,6 +24,7 @@ namespace Avalonia.Controls
             : this()
         {
             _pointerEventArgs = pointerEventArgs;
+            Inner = pointerEventArgs;
         }
 
         /// <summary>

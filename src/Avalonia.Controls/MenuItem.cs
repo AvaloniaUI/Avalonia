@@ -343,7 +343,7 @@ namespace Avalonia.Controls
         {
             return new MenuItem();
         }
-
+        
         protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
         {
             if (item is MenuItem or Separator)
@@ -364,7 +364,7 @@ namespace Avalonia.Controls
             {
                 //Normally the Menu's IMenuInteractionHandler is sending the click events for us
                 //However when the item is not embedded into a menu we need to send them ourselves.
-                RaiseEvent(new RoutedEventArgs(ClickEvent));
+                RaiseEvent(new RoutedEventArgs(ClickEvent) { Inner = e });
             }
         }
 
@@ -441,14 +441,14 @@ namespace Avalonia.Controls
         protected override void OnPointerEntered(PointerEventArgs e)
         {
             base.OnPointerEntered(e);
-            RaiseEvent(new RoutedEventArgs(PointerEnteredItemEvent));
+            RaiseEvent(new RoutedEventArgs(PointerEnteredItemEvent) { Inner = e });
         }
 
         /// <inheritdoc/>
         protected override void OnPointerExited(PointerEventArgs e)
         {
             base.OnPointerExited(e);
-            RaiseEvent(new RoutedEventArgs(PointerExitedItemEvent));
+            RaiseEvent(new RoutedEventArgs(PointerExitedItemEvent) { Inner = e });
         }
 
         /// <summary>
