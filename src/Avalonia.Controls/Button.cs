@@ -275,7 +275,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick();
+        protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick(e);
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -283,7 +283,7 @@ namespace Avalonia.Controls
             switch (e.Key)
             {
                 case Key.Enter:
-                    OnClick();
+                    OnClick(e);
                     e.Handled = true;
                     break;
 
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
                     {
                         if (ClickMode == ClickMode.Press)
                         {
-                            OnClick();
+                            OnClick(e);
                         }
 
                         IsPressed = true;
@@ -315,7 +315,7 @@ namespace Avalonia.Controls
             {
                 if (ClickMode == ClickMode.Release)
                 {
-                    OnClick();
+                    OnClick(e);
                 }
                 IsPressed = false;
                 e.Handled = true;
@@ -327,7 +327,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invokes the <see cref="Click"/> event.
         /// </summary>
-        protected virtual void OnClick()
+        protected virtual void OnClick(RoutedEventArgs? e)
         {
             if (IsEffectivelyEnabled)
             {
@@ -340,13 +340,16 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
-                var e = new RoutedEventArgs(ClickEvent);
-                RaiseEvent(e);
+                var clickEvent = new RoutedEventArgs(ClickEvent)
+                {
+                    Inner = e,
+                };
+                RaiseEvent(clickEvent);
 
-                if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+                if (!clickEvent.Handled && Command?.CanExecute(CommandParameter) == true)
                 {
                     Command.Execute(CommandParameter);
-                    e.Handled = true;
+                    clickEvent.Handled = true;
                 }
             }
         }
@@ -395,7 +398,7 @@ namespace Avalonia.Controls
 
                 if (ClickMode == ClickMode.Press)
                 {
-                    OnClick();
+                    OnClick(e);
                 }
             }
         }
@@ -413,7 +416,7 @@ namespace Avalonia.Controls
                 if (ClickMode == ClickMode.Release &&
                     this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
-                    OnClick();
+                    OnClick(e);
                 }
             }
         }
@@ -548,7 +551,7 @@ namespace Avalonia.Controls
             }
         }
 
-        internal void PerformClick() => OnClick();
+        internal void PerformClick() => OnClick(null);
 
         /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
@@ -637,7 +640,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
-                OnClick();
+                OnClick(e);
                 e.Handled = true;
             }
         }
@@ -651,7 +654,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Escape && IsVisible && IsEnabled)
             {
-                OnClick();
+                OnClick(e);
                 e.Handled = true;
             }
         }
@@ -667,7 +670,7 @@ namespace Avalonia.Controls
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
-        void IClickableControl.RaiseClick() => OnClick();
+        void IClickableControl.RaiseClick() => OnClick(null);
 
         /// <summary>
         /// Event handler for when the button's flyout is opened.
