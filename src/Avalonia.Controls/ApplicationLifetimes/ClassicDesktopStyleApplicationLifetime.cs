@@ -36,7 +36,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         private static void OnWindowOpened(object? sender, RoutedEventArgs e)
         {
-            s_activeLifetime?._windows.Add((Window)sender!);
+            var window = (Window)sender!;
+            if (s_activeLifetime is not null && !s_activeLifetime._windows.Contains(window))
+            {
+                s_activeLifetime._windows.Add(window);
+            }
         }
 
         public ClassicDesktopStyleApplicationLifetime()
