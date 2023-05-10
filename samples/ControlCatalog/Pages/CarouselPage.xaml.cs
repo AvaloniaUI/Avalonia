@@ -41,13 +41,13 @@ namespace ControlCatalog.Pages
                     _carousel.PageTransition = null;
                     break;
                 case 1:
-                    _carousel.PageTransition = new PageSlide(TimeSpan.FromSeconds(0.25), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
+                    _carousel.PageTransition = new PageSlide(TimeSpan.FromSeconds(0.25), _orientation.SelectedIndex == 0 ? PageSlideAxis.Horizontal : PageSlideAxis.Vertical);
                     break;
                 case 2:
                     _carousel.PageTransition = new CrossFade(TimeSpan.FromSeconds(0.25));
                     break;
                 case 3:
-                    _carousel.PageTransition = new Rotate3DTransition(TimeSpan.FromSeconds(0.5), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
+                    _carousel.PageTransition = new Rotate3DTransition(TimeSpan.FromSeconds(0.5), _orientation.SelectedIndex == 0 ? PageSlideAxis.Horizontal : PageSlideAxis.Vertical);
                     break;
             }
         }

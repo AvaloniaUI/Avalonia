@@ -69,6 +69,8 @@ namespace Avalonia.Base.UnitTests.Animation
 
             from.PropertyChanged += (s, e) =>
             {
+                if (e.Property == Visual.IsVisibleProperty)
+                    fromState.Add((to.Opacity, e.GetNewValue<bool>()));
                 if (e.Property == Visual.OpacityProperty)
                     fromState.Add((e.GetNewValue<double>(), from.IsVisible));
             };
@@ -93,9 +95,10 @@ namespace Avalonia.Base.UnitTests.Animation
             // Run the last frame.
             clock.Pulse(TimeSpan.FromMilliseconds(time));
 
-            // Check that opacity is reset to default value (1.0) but control is not visible.
-            Assert.Equal(10, fromState.Count);
-            Assert.Equal((1.0, false), fromState[9]);
+            // Control should be hidden before transparency being reset.
+            Assert.Equal(11, fromState.Count);
+            Assert.Equal((0.9, false), fromState[9]);
+            Assert.Equal((1.0, false), fromState[10]);
         }
 
         [Fact]
@@ -169,8 +172,13 @@ namespace Avalonia.Base.UnitTests.Animation
                 time += 100;
             }
 
-            // First frame should be of a fully transparent visible control.
-            Assert.Equal((0.0, true), toState[0]);
+            // Control should be made transparent before shown.
+            Assert.Equal((0.0, false), toState[0]);
+            Assert.Equal((0.0, true), toState[1]);
+
+            // Control should remain visible.
+            Assert.True(task.IsCompleted);
+            Assert.True(to.IsVisible);
         }
 
         private static IDisposable Start()

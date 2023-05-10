@@ -1,26 +1,33 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Styling;
 
 namespace Avalonia.Animation;
 
-public class Rotate3DTransition: PageSlide
+public class Rotate3DTransition : PageTransition
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Rotate3DTransition"/>
+    /// </summary>
+    public Rotate3DTransition()
+        : this(TimeSpan.Zero)
+    {
+    }
 
     /// <summary>
-    ///  Creates a new instance of the <see cref="Rotate3DTransition"/>
+    /// Initializes a new instance of the <see cref="Rotate3DTransition"/>
     /// </summary>
     /// <param name="duration">How long the rotation should take place</param>
     /// <param name="orientation">The orientation of the rotation</param>
     /// <param name="depth">Defines the depth of the 3D Effect. If null, depth will be calculated automatically from the width or height of the common parent of the visual being rotated</param>
-    public Rotate3DTransition(TimeSpan duration, SlideAxis orientation = SlideAxis.Horizontal, double? depth = null)
-        : base(duration, orientation)
+    public Rotate3DTransition(TimeSpan duration, PageSlideAxis orientation = PageSlideAxis.Horizontal, double? depth = null)
+        : base(duration)
     {
+        Orientation = orientation;
         Depth = depth;
     }
-    
+
     /// <summary>
     ///  Defines the depth of the 3D Effect. If null, depth will be calculated automatically from the width or height
     ///  of the common parent of the visual being rotated.
@@ -28,33 +35,67 @@ public class Rotate3DTransition: PageSlide
     public double? Depth { get; set; }
 
     /// <summary>
-    ///  Creates a new instance of the <see cref="Rotate3DTransition"/>
+    /// Gets the direction of the animation.
     /// </summary>
-    public Rotate3DTransition() { }
+    public PageSlideAxis Orientation { get; set; }
 
-    /// <inheritdoc />
-    public override async Task Start(Visual? @from, Visual? to, bool forward, CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets or sets element entrance easing.
+    /// </summary>
+    public Easing SlideInEasing { get; set; } = new LinearEasing();
+
+    /// <summary>
+    /// Gets or sets element exit easing.
+    /// </summary>
+    public Easing SlideOutEasing { get; set; } = new LinearEasing();
+
+    protected override Animation GetHideAnimation(Visual? from, Visual? to, bool forward)
     {
-        if (cancellationToken.IsCancellationRequested)
+        var parent = PageSlide.GetVisualParent(from, to);
+        return new Animation
         {
-            return;
-        }
+            Easing = SlideOutEasing,
+            Duration = Duration,
+            Children =
+            {
+                CreateKeyFrame(parent, 0d, 0d, 2),
+                CreateKeyFrame(parent, 0.5d, 45d * (forward ? -1 : 1), 1),
+                CreateKeyFrame(parent, 1d, 90d * (forward ? -1 : 1), 1, isVisible: false)
+            },
+        };
+    }
 
-        var tasks = new Task[from != null && to != null ? 2 : 1];
-        var parent = GetVisualParent(from, to);
+    protected override Animation GetShowAnimation(Visual? from, Visual? to, bool forward)
+    {
+        var parent = PageSlide.GetVisualParent(from, to);
+        return new Animation
+        {
+            Easing = SlideInEasing,
+            Duration = Duration,
+            Children =
+            {
+                CreateKeyFrame(parent, 0d, 90d * (forward ? 1 : -1), 1),
+                CreateKeyFrame(parent, 0.5d, 45d * (forward ? 1 : -1), 1),
+                CreateKeyFrame(parent, 1d, 0d, 2)
+            },
+        };
+    }
+
+    private KeyFrame CreateKeyFrame(Visual parent, double cue, double rotation, int zIndex, bool isVisible = true)
+    {
         var (rotateProperty, center) = Orientation switch
         {
-            SlideAxis.Vertical => (Rotate3DTransform.AngleXProperty, parent.Bounds.Height),
-            SlideAxis.Horizontal => (Rotate3DTransform.AngleYProperty, parent.Bounds.Width),
+            PageSlideAxis.Vertical => (Rotate3DTransform.AngleXProperty, parent.Bounds.Height),
+            PageSlideAxis.Horizontal => (Rotate3DTransform.AngleYProperty, parent.Bounds.Width),
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var depthSetter = new Setter {Property = Rotate3DTransform.DepthProperty, Value = Depth ?? center};
-        var centerZSetter = new Setter {Property = Rotate3DTransform.CenterZProperty, Value = -center / 2};
+        var depthSetter = new Setter { Property = Rotate3DTransform.DepthProperty, Value = Depth ?? center };
+        var centerZSetter = new Setter { Property = Rotate3DTransform.CenterZProperty, Value = -center / 2 };
 
-        KeyFrame CreateKeyFrame(double cue, double rotation, int zIndex, bool isVisible = true) => 
-            new() {
-                Setters =
+        return new()
+        {
+            Setters =
                 {
                     new Setter { Property = Visual.IsVisibleProperty, Value = isVisible },
                     new Setter { Property = rotateProperty, Value = rotation },
@@ -62,62 +103,7 @@ public class Rotate3DTransition: PageSlide
                     centerZSetter,
                     depthSetter
                 },
-                Cue = new Cue(cue)
-            };
-
-        var initialFromVisible = true;
-        var initialToVisible = true;
-
-        if (from != null)
-        {
-            var animation = new Animation
-            {
-                Easing = SlideOutEasing,
-                Duration = Duration,
-                Children =
-                {
-                    CreateKeyFrame(0d, 0d, 2),
-                    CreateKeyFrame(0.5d, 45d * (forward ? -1 : 1), 1),
-                    CreateKeyFrame(1d, 90d * (forward ? -1 : 1), 1, isVisible: false)
-                }
-            };
-
-            tasks[0] = animation.RunAsync(from, null, cancellationToken);
-
-            // Make "from" control invisible: this is overridden in the fade out animation, so
-            // will only take effect when the animation is completed.
-            initialFromVisible = from.IsVisible;
-            from.IsVisible = false;
-        }
-
-        if (to != null)
-        {
-            to.IsVisible = true;
-            var animation = new Animation
-            {
-                Easing = SlideInEasing,
-                Duration = Duration,
-                Children =
-                {
-                    CreateKeyFrame(0d, 90d * (forward ? 1 : -1), 1),
-                    CreateKeyFrame(0.5d, 45d * (forward ? 1 : -1), 1),
-                    CreateKeyFrame(1d, 0d, 2)
-                }
-            };
-
-            initialToVisible = to.IsVisible;
-            to.IsVisible = true;
-            tasks[from != null ? 1 : 0] = animation.RunAsync(to, null, cancellationToken);
-        }
-
-        await Task.WhenAll(tasks);
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            if (from != null)
-                from.IsVisible = initialFromVisible;
-            if (to != null)
-                to.IsVisible = initialToVisible;
-        }
+            Cue = new Cue(cue)
+        };
     }
 }

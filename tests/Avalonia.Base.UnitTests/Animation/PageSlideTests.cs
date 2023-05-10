@@ -60,6 +60,8 @@ namespace Avalonia.Base.UnitTests.Animation
 
             from.PropertyChanged += (s, e) =>
             {
+                if (e.Property == Visual.IsVisibleProperty)
+                    fromState.Add((from.GetValue(TranslateTransform.XProperty), e.GetNewValue<bool>()));
                 if (e.Property == TranslateTransform.XProperty)
                     fromState.Add((e.GetNewValue<double>(), from.IsVisible));
             };
@@ -84,9 +86,10 @@ namespace Avalonia.Base.UnitTests.Animation
             // Run the last frame.
             clock.Pulse(TimeSpan.FromMilliseconds(time));
 
-            // Check that X translate is reset to default value (0.0) but control is not visible.
-            Assert.Equal(10, fromState.Count);
-            Assert.Equal((0.0, false), fromState[9]);
+            // Control should be hidden before translate being reset.
+            Assert.Equal(11, fromState.Count);
+            Assert.Equal((-900.0, false), fromState[9]);
+            Assert.Equal((0.0, false), fromState[10]);
         }
 
         [Fact]

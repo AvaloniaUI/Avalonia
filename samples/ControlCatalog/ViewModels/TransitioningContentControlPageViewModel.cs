@@ -113,8 +113,8 @@ namespace ControlCatalog.ViewModels
             }
 
             PageTransitions[1].Transition = new CrossFade(TimeSpan.FromMilliseconds(Duration));
-            PageTransitions[2].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Horizontal);
-            PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Vertical);
+            PageTransitions[2].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlideAxis.Horizontal);
+            PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlideAxis.Vertical);
 
             var compositeTransition = new CompositePageTransition();
             compositeTransition.PageTransitions.Add(PageTransitions[1].Transition!);

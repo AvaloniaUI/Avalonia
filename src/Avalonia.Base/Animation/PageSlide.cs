@@ -1,32 +1,32 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Animation
 {
     /// <summary>
+    /// The axis on which a <see cref="PageSlide"/> should occur
+    /// </summary>
+    public enum PageSlideAxis
+    {
+        Horizontal,
+        Vertical
+    }
+
+    /// <summary>
     /// Transitions between two pages by sliding them horizontally or vertically.
     /// </summary>
-    public class PageSlide : IPageTransition
+    public class PageSlide : PageTransition
     {
-        /// <summary>
-        /// The axis on which the PageSlide should occur
-        /// </summary>
-        public enum SlideAxis
-        {
-            Horizontal,
-            Vertical
-        }
+        private readonly Animation _slideOut;
+        private readonly Animation _slideIn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageSlide"/> class.
         /// </summary>
         public PageSlide()
+            : this(TimeSpan.Zero)
         {
         }
 
@@ -35,128 +35,78 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="duration">The duration of the animation.</param>
         /// <param name="orientation">The axis on which the animation should occur</param>
-        public PageSlide(TimeSpan duration, SlideAxis orientation = SlideAxis.Horizontal)
+        public PageSlide(TimeSpan duration, PageSlideAxis orientation = PageSlideAxis.Horizontal)
+            : base(duration)
         {
-            Duration = duration;
-            Orientation = orientation;
+            var property = orientation == PageSlideAxis.Horizontal ? 
+                TranslateTransform.XProperty : TranslateTransform.YProperty;
+            _slideIn = CreateSlideAnimation(duration, property);
+            _slideOut = CreateSlideAnimation(duration, property);
         }
 
         /// <summary>
-        /// Gets the duration of the animation.
+        /// Gets the direction of the animation.
         /// </summary>
-        public TimeSpan Duration { get; set; }
+        public PageSlideAxis Orientation
+        {
+            get
+            {
+                return _slideIn.Children[0].Setters[0].Property == TranslateTransform.XProperty ? 
+                    PageSlideAxis.Horizontal : PageSlideAxis.Vertical;
+            }
 
-        /// <summary>
-        /// Gets the duration of the animation.
-        /// </summary>
-        public SlideAxis Orientation { get; set; }
-        
+            set
+            {
+                if (Orientation != value)
+                {
+                    var property = value == PageSlideAxis.Horizontal ?
+                        TranslateTransform.XProperty : TranslateTransform.YProperty;
+                    _slideIn.Children[0].Setters[0].Property = property;
+                    _slideIn.Children[1].Setters[0].Property = property;
+                    _slideOut.Children[0].Setters[0].Property = property;
+                    _slideOut.Children[1].Setters[0].Property = property;
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets element entrance easing.
         /// </summary>
-        public Easing SlideInEasing { get; set; } = new LinearEasing();
+        public Easing SlideInEasing 
+        {
+            get => _slideIn.Easing;
+            set => _slideIn.Easing = value;
+        }
         
         /// <summary>
         /// Gets or sets element exit easing.
         /// </summary>
-        public Easing SlideOutEasing { get; set; } = new LinearEasing();
-
-        /// <inheritdoc />
-        public virtual async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+        public Easing SlideOutEasing
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            get => _slideOut.Easing;
+            set => _slideOut.Easing = value;
+        }
 
-            var tasks = new List<Task>();
+        protected override Animation GetHideAnimation(Visual? from, Visual? to, bool forward)
+        {
             var parent = GetVisualParent(from, to);
-            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
-            var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
-            var initialFromVisible = true;
-            var initialToVisible = true;
+            var distance = Orientation == PageSlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            _slideOut.Children[1].Setters[0].Value = forward ? -distance : distance;
+            return _slideOut;
+        }
 
-            if (from != null)
-            {
-                var animation = new Animation
-                {
-                    Easing = SlideOutEasing,
-                    Children =
-                    {
-                        new KeyFrame
-                        {
-                            Setters = 
-                            {
-                                new Setter { Property = Visual.IsVisibleProperty, Value = true },
-                                new Setter { Property = translateProperty, Value = 0d },
-                            },
-                            Cue = new Cue(0d)
-                        },
-                        new KeyFrame
-                        {
-                            Setters =
-                            {
-                                new Setter
-                                {
-                                    Property = translateProperty,
-                                    Value = forward ? -distance : distance
-                                }
-                            },
-                            Cue = new Cue(1d)
-                        }
-                    },
-                    Duration = Duration
-                };
-                tasks.Add(animation.RunAsync(from, null, cancellationToken));
+        protected override Animation GetShowAnimation(Visual? from, Visual? to, bool forward)
+        {
+            var parent = GetVisualParent(from, to);
+            var distance = Orientation == PageSlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            _slideIn.Children[0].Setters[0].Value = forward ? distance : -distance;
+            return _slideIn;
+        }
 
-                // Make "from" control invisible: this is overridden in the fade out animation, so
-                // will only take effect when the animation is completed.
-                initialFromVisible = from.IsVisible;
-                from.IsVisible = false;
-            }
-
-            if (to != null)
-            {
-                var animation = new Animation
-                {
-                    Easing = SlideInEasing,
-                    Children =
-                    {
-                        new KeyFrame
-                        {
-                            Setters =
-                            {
-                                new Setter
-                                {
-                                    Property = translateProperty,
-                                    Value = forward ? distance : -distance
-                                }
-                            },
-                            Cue = new Cue(0d)
-                        },
-                        new KeyFrame
-                        {
-                            Setters = { new Setter { Property = translateProperty, Value = 0d } },
-                            Cue = new Cue(1d)
-                        }
-                    },
-                    Duration = Duration
-                };
-
-                initialToVisible = to.IsVisible;
-                to.IsVisible = true;
-                tasks.Add(animation.RunAsync(to, null, cancellationToken));
-            }
-
-            await Task.WhenAll(tasks);
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                if (from != null)
-                    from.IsVisible = initialFromVisible;
-                if (to != null)
-                    to.IsVisible = initialToVisible;
-            }
+        protected override void InvalidateCachedAnimations()
+        {
+            base.InvalidateCachedAnimations();
+            _slideIn.Duration = _slideOut.Duration = Duration;
         }
 
         /// <summary>
@@ -171,7 +121,7 @@ namespace Avalonia.Animation
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        protected static Visual GetVisualParent(Visual? from, Visual? to)
+        internal static Visual GetVisualParent(Visual? from, Visual? to)
         {
             var p1 = (from ?? to)!.VisualParent;
             var p2 = (to ?? from)!.VisualParent;
@@ -182,6 +132,41 @@ namespace Avalonia.Animation
             }
 
             return p1 ?? throw new InvalidOperationException("Cannot determine visual parent.");
+        }
+
+        private static Animation CreateSlideAnimation(TimeSpan duration, AvaloniaProperty property)
+        {
+            return new Animation
+            {
+                Duration = duration,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = property,
+                                Value = 0.0,
+                            },
+                        },
+                        Cue = new Cue(0)
+                    },
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = property,
+                                Value = 0.0
+                            }
+                        },
+                        Cue = new Cue(1)
+                    }
+                },
+            };
         }
     }
 }
