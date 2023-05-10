@@ -21,7 +21,7 @@ namespace Avalonia.FreeDesktop
             var dbusFileChooser = new OrgFreedesktopPortalFileChooser(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             try
             {
-                await dbusFileChooser.GetVersionAsync();
+                await dbusFileChooser.GetVersionPropertyAsync();
             }
             catch
             {
