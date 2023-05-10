@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
@@ -22,39 +22,47 @@ namespace Avalonia.FreeDesktop
 
             _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
-            _ = TryGetInitialValueAsync();
+            _ = TryGetInitialValuesAsync();
         }
 
         public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();
 
-        private async Task TryGetInitialValueAsync()
+        private async Task TryGetInitialValuesAsync()
         {
-            try
-            {
-                var value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
-                _themeVariant = ReadAsColorScheme(value);
-            }
-            catch (Exception ex)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, "Unable to get org.freedesktop.appearance.color-scheme value", ex);
-            }
-
-            try
-            {
-                var value = await _settings!.ReadAsync("org.kde.kdeglobals.General", "AccentColor");
-                _accentColor = ReadAsAccentColor(value);
-            }
-            catch (Exception ex)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, "Unable to get org.kde.kdeglobals.General.AccentColor value", ex);
-            }
-
+            _themeVariant = await TryGetThemeVariantAsync();
+            _accentColor = await TryGetAccentColorAsync();
             _lastColorValues = BuildPlatformColorValues();
             if (_lastColorValues is not null)
                 OnColorValuesChanged(_lastColorValues);
         }
 
-        private void SettingsChangedHandler(Exception? exception, (string @namespace, string key, DBusVariantItem value) valueTuple)
+        private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
+        {
+            try
+            {
+                var value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
+                return ToColorScheme(((value.Value as DBusVariantItem)!.Value as DBusUInt32Item)!.Value);
+            }
+            catch (DBusException)
+            {
+                return null;
+            }
+        }
+
+        private async Task<Color?> TryGetAccentColorAsync()
+        {
+            try
+            {
+                var value = await _settings!.ReadAsync("org.kde.kdeglobals.General", "AccentColor");
+                return ToAccentColor(((value.Value as DBusVariantItem)!.Value as DBusStringItem)!.Value);
+            }
+            catch (DBusException)
+            {
+                return null;
+            }
+        }
+
+        private async void SettingsChangedHandler(Exception? exception, (string @namespace, string key, DBusVariantItem value) valueTuple)
         {
             if (exception is not null)
                 return;
@@ -62,12 +70,8 @@ namespace Avalonia.FreeDesktop
             switch (valueTuple)
             {
                 case ("org.freedesktop.appearance", "color-scheme", { } colorScheme):
-                    _themeVariant = ReadAsColorScheme(colorScheme);
-                    _lastColorValues = BuildPlatformColorValues();
-                    OnColorValuesChanged(_lastColorValues!);
-                    break;
-                case ("org.kde.kdeglobals.General", "AccentColor", { } accentColor):
-                    _accentColor = ReadAsAccentColor(accentColor);
+                    _themeVariant = ToColorScheme((colorScheme.Value as DBusUInt32Item)!.Value);
+                    _accentColor = await TryGetAccentColorAsync();
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
@@ -85,21 +89,20 @@ namespace Avalonia.FreeDesktop
             return null;
         }
 
-        private static PlatformThemeVariant ReadAsColorScheme(DBusVariantItem value)
+        private static PlatformThemeVariant ToColorScheme(uint value)
         {
             /*
             <member>0: No preference</member>
             <member>1: Prefer dark appearance</member>
             <member>2: Prefer light appearance</member>
             */
-            var isDark = ((value.Value as DBusVariantItem)!.Value as DBusUInt32Item)!.Value == 1;
+            var isDark = value == 1;
             return isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
         }
 
-        private static Color ReadAsAccentColor(DBusVariantItem value)
+        private static Color ToAccentColor(string value)
         {
-            var colorStr = ((value.Value as DBusVariantItem)!.Value as DBusStringItem)!.Value;
-            var rgb = colorStr.Split(',');
+            var rgb = value.Split(',');
             return new Color(255, byte.Parse(rgb[0]), byte.Parse(rgb[1]), byte.Parse(rgb[2]));
         }
     }
