@@ -7,7 +7,11 @@ namespace Avalonia.Headless.UnitTests;
 
 public class RenderingTests
 {
-    [AvaloniaFact]
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
     public void Should_Render_Last_Frame_To_Bitmap()
     {
         var window = new Window

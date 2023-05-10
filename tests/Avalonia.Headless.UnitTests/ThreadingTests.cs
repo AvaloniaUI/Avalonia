@@ -7,7 +7,11 @@ namespace Avalonia.Headless.UnitTests;
 
 public class ThreadingTests
 {
-    [AvaloniaFact]
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
     public void Should_Be_On_Dispatcher_Thread()
     {
         Dispatcher.UIThread.VerifyAccess();
@@ -20,10 +24,11 @@ public class ThreadingTests
     //     Dispatcher.UIThread.Post(() => throw new InvalidOperationException(), DispatcherPriority.Default);
     // }
 
-    [AvaloniaTheory]
-    [InlineData(1)]
-    [InlineData(10)]
-    [InlineData(100)]
+#if NUNIT
+    [AvaloniaTheory, Timeout(10000), TestCase(1), TestCase(10), TestCase(100)]
+#elif XUNIT
+    [AvaloniaTheory(Timeout = 10000), InlineData(1), InlineData(10), InlineData(100)]
+#endif
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
         await Task.Delay(100);

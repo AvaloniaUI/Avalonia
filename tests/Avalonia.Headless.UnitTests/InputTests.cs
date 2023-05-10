@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Disposables;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -31,7 +32,11 @@ public class InputTests
         };
     }
     
-    [AvaloniaFact]
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
     public void Should_Click_Button_On_Window()
     {
         Assert.True(_setupApp == Application.Current);
