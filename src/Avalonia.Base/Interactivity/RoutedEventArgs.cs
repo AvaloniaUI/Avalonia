@@ -56,5 +56,10 @@ namespace Avalonia.Interactivity
         /// Gets or sets the source object that raised the routed event.
         /// </summary>
         public object? Source { get; set; }
+
+        /// <summary>
+        /// Gets the inner RoutedEventArgs instance.
+        /// </summary>
+        public RoutedEventArgs? Inner { get; init; }
     }
 }
