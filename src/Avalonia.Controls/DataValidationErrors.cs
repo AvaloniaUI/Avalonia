@@ -41,10 +41,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataValidationErrors, IDataTemplate>(nameof(ErrorTemplate));
 
         /// <summary>
-        /// Defines the DataValidationErrors.DisplayErrors read-only attached property
+        /// Stores the original, not converted errors passed by the control
         /// </summary>
-        public static readonly AttachedProperty<IEnumerable<object>?> DisplayErrorsProperty =
-            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>?>("DisplayErrors");
+        private static readonly AttachedProperty<IEnumerable<object>?> OriginalErrorsProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>?>("OriginalErrors");
 
         private Control? _owner;
 
@@ -76,8 +76,8 @@ namespace Avalonia.Controls
             var control = (Control)e.Sender;
             var converter = e.NewValue as Func<object, object>;
             
-            control.SetValue(DisplayErrorsProperty, 
-                GetErrors(control)?.Select(err => converter is null ? err : converter.Invoke(err)));
+            control.SetValue(ErrorsProperty, 
+                control.GetValue(OriginalErrorsProperty)?.Select(err => converter is null ? err : converter.Invoke(err)));
         }
 
         private void OnTemplatedParentChange(AvaloniaPropertyChangedEventArgs e)
@@ -105,15 +105,8 @@ namespace Avalonia.Controls
 
             control.SetValue(HasErrorsProperty, hasErrors);
 
-            // Update DisplayErrors
-            if (errors is null || GetErrorConverter(control) is null)
-            {
-                control.SetValue(DisplayErrorsProperty, errors);
-            }
-            else if (GetErrorConverter(control) is { } converter)
-            {
-                control.SetValue(DisplayErrorsProperty, errors.Select(x => converter.Invoke(x)));
-            }
+            // Update original errors
+            control.SetValue(OriginalErrorsProperty, errors);
         }
         
         private static void HasErrorsChanged(AvaloniaPropertyChangedEventArgs e)
@@ -133,7 +126,7 @@ namespace Avalonia.Controls
         }
         public static void SetError(Control control, Exception? error)
         {
-            SetErrors(control, UnpackException(error));
+            SetErrors(control, UnpackException(error, control));
         }
         public static void ClearErrors(Control control)
         {
@@ -143,14 +136,7 @@ namespace Avalonia.Controls
         {
             return control.GetValue(HasErrorsProperty);
         }
-        
-        /// Gets the <see cref="ErrorsProperty"/> of the converted through the <see cref="ErrorConverterProperty"/> for display
-        /// </summary>
-        public static IEnumerable<object>? GetDisplayErrors(Control control)
-        {
-            return control.GetValue(DisplayErrorsProperty);
-        }
-        
+
         public static Func<object, object>? GetErrorConverter(Control control)
         {
             return control.GetValue(ErrorConverterProperty);
@@ -161,14 +147,15 @@ namespace Avalonia.Controls
             control.SetValue(ErrorConverterProperty, converter);
         }
         
-        private static IEnumerable<object>? UnpackException(Exception? exception)
+        private static IEnumerable<object>? UnpackException(Exception? exception, Control control)
         {
             if (exception != null)
             {
+                var converter = GetErrorConverter(control);
                 var aggregate = exception as AggregateException;
                 var exceptions = aggregate == null ?
-                    new[] { GetExceptionData(exception) } :
-                    aggregate.InnerExceptions.Select(GetExceptionData).ToArray();
+                    new[] { GetExceptionData(exception, converter) } :
+                    aggregate.InnerExceptions.Select(x => GetExceptionData(x, converter)).ToArray();
                 var filtered = exceptions.Where(x => !(x is BindingChainException)).ToList();
 
                 if (filtered.Count > 0)
@@ -180,13 +167,13 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private static object GetExceptionData(Exception exception)
+        private static object GetExceptionData(Exception exception, Func<object, object>? converter)
         {
             if (exception is DataValidationException dataValidationException &&
                 dataValidationException.ErrorData is object data)
-                return data;
+                return converter is null ? data : converter.Invoke(data);
 
-            return exception;
+            return converter is null ? exception : converter.Invoke(exception);
         }
     }
 }
