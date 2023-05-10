@@ -166,7 +166,7 @@ namespace Avalonia.Controls
                 {
                     if (AllowSpin)
                     {
-                        OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Increase));
+                        OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Increase) { Inner = e });
                         e.Handled = true;
                     }
                     break;
@@ -175,7 +175,7 @@ namespace Avalonia.Controls
                 {
                     if (AllowSpin)
                     {
-                        OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Decrease));
+                        OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Decrease) { Inner = e });
                         e.Handled = true;
                     }
                     break;
@@ -202,7 +202,7 @@ namespace Avalonia.Controls
             {
                 if (e.Delta.Y != 0)
                 {
-                    var spinnerEventArgs = new SpinEventArgs(SpinEvent, (e.Delta.Y < 0) ? SpinDirection.Decrease : SpinDirection.Increase, true);
+                    var spinnerEventArgs = new SpinEventArgs(SpinEvent, (e.Delta.Y < 0) ? SpinDirection.Decrease : SpinDirection.Increase, true) { Inner = e };
                     OnSpin(spinnerEventArgs);
                     e.Handled = true;
                 }
@@ -274,7 +274,7 @@ namespace Avalonia.Controls
             if (AllowSpin)
             {
                 var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
-                OnSpin(new SpinEventArgs(SpinEvent, direction));
+                OnSpin(new SpinEventArgs(SpinEvent, direction) { Inner = e });
             }
         }
 
