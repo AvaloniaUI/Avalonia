@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -128,7 +129,7 @@ namespace Avalonia.Controls
                 // Get or create an element for the new item.
                 if (index >= 0 && index < items.Count)
                 {
-                    _realized = GetOrCreateElement(items, index);
+                    _realized = GetOrCreateElement(items, index, _transitionFrom is not null);
                     _realizedIndex = index;
                 }
             }
@@ -245,7 +246,7 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
-        private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
+        private Control GetOrCreateElement(IReadOnlyList<object?> items, int index, bool willTransition)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
@@ -265,6 +266,10 @@ namespace Avalonia.Controls
                 {
                     e = GetItemAsOwnContainer(item, index);
                 }
+
+                // If there is a transition, we want the control to be initially invisible, and
+                // shown by the transition at the correct time.
+                e.IsVisible = !willTransition;
             }
 
             return e;
@@ -306,7 +311,6 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
-                recycled.IsVisible = true;
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;

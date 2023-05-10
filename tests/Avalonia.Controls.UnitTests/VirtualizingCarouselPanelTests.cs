@@ -168,14 +168,14 @@ namespace Avalonia.Controls.UnitTests
                 Layout(target);
 
                 Assert.Equal(items, target.Children);
-                Assert.All(items, x => Assert.True(x.IsVisible));
+                Assert.True(items[0].IsVisible);
+                Assert.False(items[1].IsVisible);
 
                 transitionTask.SetResult();
                 sync.ExecutePostedCallbacks();
 
                 Assert.Equal(items, target.Children);
                 Assert.False(items[0].IsVisible);
-                Assert.True(items[1].IsVisible);
             }
 
             [Fact]
