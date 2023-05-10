@@ -30,10 +30,7 @@ public class HugeTextLayout : IDisposable
     {
         _manySmallStrings = Enumerable.Range(0, 1000).Select(_ => RandomString(s_rand.Next(2, 15))).ToArray();
 
-        var testServices = TestServices.StyledWindow.With(
-            renderInterface: new NullRenderingPlatform(),
-            dispatcherImpl: new NullThreadingPlatform(),
-            standardCursorFactory: new NullCursorFactory());
+        var testServices = TestServices.StyledWindow;
 
         if (s_useSkia)
         {

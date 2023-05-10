@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -11,6 +13,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
@@ -82,22 +85,22 @@ namespace Avalonia.Headless
     {
         public FontMetrics Metrics => new FontMetrics
         {
-            DesignEmHeight = 1,
-            Ascent = 8,
-            Descent = 4,
+            DesignEmHeight = 10,
+            Ascent = 2,
+            Descent = 10,
+            IsFixedPitch = true,
             LineGap = 0,
             UnderlinePosition = 2,
             UnderlineThickness = 1,
             StrikethroughPosition = 2,
-            StrikethroughThickness = 1,
-            IsFixedPitch = true
+            StrikethroughThickness = 1
         };
 
         public int GlyphCount => 1337;
 
-        public FontSimulations FontSimulations { get; }
+        public FontSimulations FontSimulations => FontSimulations.None;
 
-        public string FamilyName => "Arial";
+        public string FamilyName => "$Default";
 
         public FontWeight Weight => FontWeight.Normal;
 
@@ -111,24 +114,31 @@ namespace Avalonia.Headless
 
         public ushort GetGlyph(uint codepoint)
         {
-            return 1;
+            return (ushort)codepoint;
         }
 
         public bool TryGetGlyph(uint codepoint, out ushort glyph)
         {
-            glyph = 1;
+            glyph = 8;
 
             return true;
         }
 
         public int GetGlyphAdvance(ushort glyph)
         {
-            return 12;
+            return 8;
         }
 
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
-            return glyphs.ToArray().Select(x => (int)x).ToArray();
+            var advances = new int[glyphs.Length];
+
+            for (var i = 0; i < advances.Length; i++)
+            {
+                advances[i] = 8;
+            }
+
+            return advances;
         }
 
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
@@ -146,8 +156,8 @@ namespace Avalonia.Headless
         {
             metrics = new GlyphMetrics
             {
-                Height = 10,
-                Width = 8
+                Width = 10,
+                Height = 10
             };
 
             return true;
@@ -161,40 +171,81 @@ namespace Avalonia.Headless
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
+            var shapedBuffer = new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
+            var textSpan = text.Span;
+            var textStartIndex = TextTestHelper.GetStartCharIndex(text);
 
-            return new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
+            for (var i = 0; i < shapedBuffer.Length;)
+            {
+                var glyphCluster = i + textStartIndex;
+
+                var codepoint = Codepoint.ReadAt(textSpan, i, out var count);
+
+                var glyphIndex = typeface.GetGlyph(codepoint);
+
+                for (var j = 0; j < count; ++j)
+                {
+                    shapedBuffer[i + j] = new GlyphInfo(glyphIndex, glyphCluster, 10);
+                }
+
+                i += count;
+            }
+
+            return shapedBuffer;
         }
     }
 
     internal class HeadlessFontManagerStub : IFontManagerImpl
     {
+        private readonly string _defaultFamilyName;
+
+        public HeadlessFontManagerStub(string defaultFamilyName = "Default")
+        {
+            _defaultFamilyName = defaultFamilyName;
+        }
+
+        public int TryCreateGlyphTypefaceCount { get; private set; }
+
         public string GetDefaultFontFamilyName()
         {
-            return "Arial";
+            return _defaultFamilyName;
         }
 
-        public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
+        string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
         {
-            return new string[] { "Arial" };
+            return new[] { _defaultFamilyName };
         }
 
-        public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, out IGlyphTypeface glyphTypeface)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture, out Typeface fontKey)
         {
-            glyphTypeface= new HeadlessGlyphTypefaceImpl();
+            fontKey = new Typeface(_defaultFamilyName);
+
+            return false;
+        }
+
+        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            glyphTypeface = null;
+
+            TryCreateGlyphTypefaceCount++;
+
+            if (familyName == "Unknown")
+            {
+                return false;
+            }
+
+            glyphTypeface = new HeadlessGlyphTypefaceImpl();
 
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
+        public virtual bool TryCreateGlyphTypeface(Stream stream, out IGlyphTypeface glyphTypeface)
         {
-             glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl();
 
-            return true;
-        }
-
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface typeface)
-        {
-            typeface = new Typeface("Arial", fontStyle, fontWeight, fontStretch);
             return true;
         }
     }
@@ -247,6 +298,16 @@ namespace Avalonia.Headless
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
+    }
+    
+    internal static class TextTestHelper
+    {
+        public static int GetStartCharIndex(ReadOnlyMemory<char> text)
+        {
+            if (!MemoryMarshal.TryGetString(text, out _, out var start, out _))
+                throw new InvalidOperationException("text memory should have been a string");
+            return start;
         }
     }
 }

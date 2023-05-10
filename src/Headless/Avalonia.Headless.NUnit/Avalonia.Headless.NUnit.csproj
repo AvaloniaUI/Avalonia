@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <!-- Use lower minor version, as it is supposed to be compatible  -->
-    <PackageReference Include="xunit.core" Version="2.4.0" />
+    <PackageReference Include="NUnit" Version="3.13.0" />
   </ItemGroup>
 
   <ItemGroup>
