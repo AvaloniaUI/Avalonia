@@ -61,5 +61,17 @@ namespace Avalonia.Interactivity
         /// Gets the inner RoutedEventArgs instance.
         /// </summary>
         public RoutedEventArgs? Inner { get; init; }
+
+        /// <summary>
+        /// Get the first inner RoutedEventArgs instance that is of type T.
+        /// </summary>
+        /// <typeparam name="T">EventArgs type.</typeparam>
+        /// <returns>First child of given type.</returns>
+        public T? GetInnerEventArgs<T>() where T: RoutedEventArgs
+        {
+            if (Inner is null) return null;
+            if (Inner is T t) return t;
+            return Inner.GetInnerEventArgs<T>();
+        }
     }
 }

@@ -340,10 +340,7 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
-                var clickEvent = new RoutedEventArgs(ClickEvent)
-                {
-                    Inner = e,
-                };
+                var clickEvent = new RoutedEventArgs(ClickEvent) { Inner = e };
                 RaiseEvent(clickEvent);
 
                 if (!clickEvent.Handled && Command?.CanExecute(CommandParameter) == true)

@@ -371,7 +371,7 @@ namespace Avalonia.Controls
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
-                var eventArgs = new RoutedEventArgs(ClickEvent);
+                var eventArgs = new RoutedEventArgs(ClickEvent) { Inner = e };
                 RaiseEvent(eventArgs);
 
                 if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)
