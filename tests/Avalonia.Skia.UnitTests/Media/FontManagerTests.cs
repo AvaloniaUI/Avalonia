@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using SkiaSharp;
@@ -90,7 +91,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Only_Try_To_Create_GlyphTypeface_Once()
         {
-            var fontManagerImpl = new MockFontManagerImpl();
+            var fontManagerImpl = new HeadlessFontManagerStub();
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
             {

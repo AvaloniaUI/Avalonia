@@ -126,7 +126,6 @@
 
     <ControlTheme x:Key="{x:Type DataGridRowHeader}"
                   TargetType="DataGridRowHeader">
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="Template">
         <ControlTemplate>
           <Grid x:Name="PART_Root"

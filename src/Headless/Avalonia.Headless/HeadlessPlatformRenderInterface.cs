@@ -18,7 +18,8 @@ namespace Avalonia.Headless
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
-                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub())
+                .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
         }
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
@@ -128,18 +129,30 @@ namespace Avalonia.Headless
             Point baselineOrigin,
             Rect bounds)
         {
-            return new HeadlessGlyphRunStub();
+            return new HeadlessGlyphRunStub(glyphTypeface, fontRenderingEmSize, baselineOrigin, bounds);
         }
 
-        private class HeadlessGlyphRunStub : IGlyphRunImpl
+        internal class HeadlessGlyphRunStub : IGlyphRunImpl
         {
-            public Rect Bounds => new Rect(new Size(8, 12));
+            public HeadlessGlyphRunStub(
+                IGlyphTypeface glyphTypeface,
+                double fontRenderingEmSize,
+                Point baselineOrigin,
+                Rect bounds)
+            {
+                GlyphTypeface = glyphTypeface;
+                FontRenderingEmSize = fontRenderingEmSize;
+                BaselineOrigin = baselineOrigin;
+                Bounds =bounds;
+            }
 
-            public Point BaselineOrigin => new Point(0, 8);
+            public Rect Bounds { get; }
 
-            public IGlyphTypeface GlyphTypeface => new HeadlessGlyphTypefaceImpl();
+            public Point BaselineOrigin { get; }
 
-            public double FontRenderingEmSize => 12;           
+            public IGlyphTypeface GlyphTypeface { get; }
+
+            public double FontRenderingEmSize { get; }           
 
             public void Dispose()
             {
@@ -234,8 +247,11 @@ namespace Avalonia.Headless
 
         private class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
         {
+            private HeadlessStreamingGeometryContextStub _context;
+            
             public HeadlessStreamingGeometryStub() : base(default)
             {
+                _context = new HeadlessStreamingGeometryContextStub(this);
             }
 
             public IStreamGeometryImpl Clone()
@@ -245,13 +261,18 @@ namespace Avalonia.Headless
 
             public IStreamGeometryContextImpl Open()
             {
-                return new HeadlessStreamingGeometryContextStub(this);
+                return _context;
+            }
+
+            public override bool FillContains(Point point)
+            {
+                return _context.FillContains(point);
             }
 
             private class HeadlessStreamingGeometryContextStub : IStreamGeometryContextImpl
             {
                 private readonly HeadlessStreamingGeometryStub _parent;
-                private double _x1, _y1, _x2, _y2;
+                private List<Point> points = new List<Point>();
                 public HeadlessStreamingGeometryContextStub(HeadlessStreamingGeometryStub parent)
                 {
                     _parent = parent;
@@ -259,19 +280,30 @@ namespace Avalonia.Headless
 
                 private void Track(Point pt)
                 {
-                    if (_x1 > pt.X)
-                        _x1 = pt.X;
-                    if (_x2 < pt.X)
-                        _x2 = pt.X;
-                    if (_y1 > pt.Y)
-                        _y1 = pt.Y;
-                    if (_y2 < pt.Y)
-                        _y2 = pt.Y;
+                    points.Add(pt);
                 }
 
+                public Rect CalculateBounds()
+                {
+                    var left = double.MaxValue;
+                    var right = double.MinValue;
+                    var top = double.MaxValue;
+                    var bottom = double.MinValue;
+
+                    foreach (var p in points)
+                    {
+                        left = Math.Min(p.X, left);
+                        right = Math.Max(p.X, right);
+                        top = Math.Min(p.Y, top);
+                        bottom = Math.Max(p.Y, bottom);
+                    }
+
+                    return new Rect(new Point(left, top), new Point(right, bottom));
+                }
+                
                 public void Dispose()
                 {
-                    _parent.Bounds = new Rect(_x1, _y1, _x2 - _x1, _y2 - _y1);
+                    _parent.Bounds = CalculateBounds();
                 }
 
                 public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
@@ -302,6 +334,35 @@ namespace Avalonia.Headless
                 public void SetFillRule(FillRule fillRule)
                 {
 
+                }
+                
+                public bool FillContains(Point point)
+                {
+                    // Use the algorithm from https://www.blackpawn.com/texts/pointinpoly/default.html
+                    // to determine if the point is in the geometry (since it will always be convex in this situation)
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        var a = points[i];
+                        var b = points[(i + 1) % points.Count];
+                        var c = points[(i + 2) % points.Count];
+
+                        Vector v0 = c - a;
+                        Vector v1 = b - a;
+                        Vector v2 = point - a;
+
+                        var dot00 = v0 * v0;
+                        var dot01 = v0 * v1;
+                        var dot02 = v0 * v2;
+                        var dot11 = v1 * v1;
+                        var dot12 = v1 * v2;
+
+
+                        var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+                        var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+                        var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+                        if ((u >= 0) && (v >= 0) && (u + v < 1)) return true;
+                    }
+                    return false;
                 }
             }
         }
@@ -368,7 +429,7 @@ namespace Avalonia.Headless
             }
         }
 
-        private class HeadlessDrawingContextStub : IDrawingContextImpl
+        internal class HeadlessDrawingContextStub : IDrawingContextImpl
         {
             public void Dispose()
             {

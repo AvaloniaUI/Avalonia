@@ -17,10 +17,7 @@ namespace Avalonia.Benchmarks.Styling
 
         public Style_Apply_Detach_Complex()
         {
-            _app = UnitTestApplication.Start(
-                TestServices.StyledWindow.With(
-                    renderInterface: new NullRenderingPlatform(),
-                    dispatcherImpl: new NullThreadingPlatform()));
+            _app = UnitTestApplication.Start(TestServices.StyledWindow);
 
             // Simulate an application with a lot of styles by creating a tree of nested panels,
             // each with a bunch of styles applied.

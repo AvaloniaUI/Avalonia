@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -27,7 +28,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Should_Throw_When_Default_FamilyName_Is_Null()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new MockFontManagerImpl(null))))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new HeadlessFontManagerStub(null!))))
             {
                 Assert.Throws<InvalidOperationException>(() => FontManager.Current);
             }
@@ -39,7 +40,7 @@ namespace Avalonia.Base.UnitTests.Media
             var options = new FontManagerOptions { DefaultFamilyName = "MyFont" };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new MockFontManagerImpl())))
+                .With(fontManagerImpl: new HeadlessFontManagerStub())))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
@@ -62,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Media
             };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new MockFontManagerImpl())))
+                .With(fontManagerImpl: new HeadlessFontManagerStub())))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
