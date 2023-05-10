@@ -21,20 +21,21 @@ namespace Avalonia.Headless
             private Action? _forceTick; 
             protected override IDisposable StartCore(Action<TimeSpan> tick)
             {
-                bool cancelled = false;
                 var st = Stopwatch.StartNew();
                 _forceTick = () => tick(st.Elapsed);
-                DispatcherTimer.Run(() =>
+
+                var timer = new DispatcherTimer(DispatcherPriority.Render)
                 {
-                    if (cancelled)
-                        return false;
-                    tick(st.Elapsed);
-                    return !cancelled;
-                }, TimeSpan.FromSeconds(1.0 / _framesPerSecond), DispatcherPriority.Render);
+                    Interval = TimeSpan.FromSeconds(1.0 / _framesPerSecond),
+                    Tag = "HeadlessRenderTimer"
+                };
+                timer.Tick += (s, e) => tick(st.Elapsed);
+                timer.Start();
+
                 return Disposable.Create(() =>
                 {
                     _forceTick = null;
-                    cancelled = true;
+                    timer.Stop();
                 });
             }
 

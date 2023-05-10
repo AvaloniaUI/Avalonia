@@ -7,6 +7,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -15,10 +16,10 @@ namespace Avalonia.Headless;
 
 /// <summary>
 /// Headless unit test session that needs to be used by the actual testing framework.
-/// All UI tests are supposed to be executed from the <see cref="Dispatcher"/> or <see cref="SynchronizationContext"/>
-/// to keep execution flow on the UI thread.
+/// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
+[Unstable("This API is experimental and might be unstable. Use on your risk. API might or might not be changed in a minor update.")]
 public sealed class HeadlessUnitTestSession : IDisposable
 {
     private static readonly ConcurrentDictionary<Assembly, HeadlessUnitTestSession> s_session = new();
@@ -82,14 +83,13 @@ public sealed class HeadlessUnitTestSession : IDisposable
             using var application = EnsureApplication();
 
             var cts = new CancellationTokenSource();
-            using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
-            using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
+            using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts);
+            using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts);
 
             try
             {
                 var task = action();
-                task.ContinueWith((_, s) => ((CancellationTokenSource)s!).Cancel(), cts,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+                task.ContinueWith((_, s) => ((CancellationTokenSource)s!).Cancel(), cts);
 
                 if (cts.IsCancellationRequested)
                 {
@@ -97,7 +97,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 }
 
                 var frame = new DispatcherFrame();
-                using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
+                using var innerCts = cts.Token.Register(() => frame.Continue = false);
                 Dispatcher.UIThread.PushFrame(frame);
 
                 var result = task.GetAwaiter().GetResult();

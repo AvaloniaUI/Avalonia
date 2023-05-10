@@ -1035,14 +1035,14 @@ namespace Avalonia.Controls.UnitTests
         {
             Type IStyleable.StyleKey => typeof(ItemsControl);
 
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
                 return new ContainerControl();
             }
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
             {
-                return item is ContainerControl;
+                return NeedsContainer<ContainerControl>(item, out recycleKey);
             }
         }
 

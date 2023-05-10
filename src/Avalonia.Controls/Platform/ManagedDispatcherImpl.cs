@@ -58,6 +58,10 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     
     public void RunLoop(CancellationToken token)
     {
+        CancellationTokenRegistration registration = default;
+        if (token.CanBeCanceled) 
+            registration = token.Register(() => _wakeup.Set());
+
         while (!token.IsCancellationRequested)
         {
             bool signaled;
@@ -105,5 +109,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             else
                 _wakeup.WaitOne();
         }
+
+        registration.Dispose();
     }
 }

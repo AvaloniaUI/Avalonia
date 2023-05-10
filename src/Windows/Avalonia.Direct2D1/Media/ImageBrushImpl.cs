@@ -7,9 +7,7 @@ namespace Avalonia.Direct2D1.Media
 {
     internal sealed class ImageBrushImpl : BrushImpl
     {
-        private readonly OptionalDispose<Bitmap> _bitmap;
-
-        private readonly Avalonia.Media.Imaging.BitmapInterpolationMode _bitmapInterpolationMode;
+        private readonly OptionalDispose<Bitmap1> _bitmap;
 
         public ImageBrushImpl(
             ITileBrush brush,
@@ -40,8 +38,6 @@ namespace Avalonia.Direct2D1.Media
                         GetBrushProperties(brush, calc.DestinationRect));
                 }
             }
-
-            _bitmapInterpolationMode = brush.BitmapInterpolationMode;
         }
 
         public override void Dispose()
@@ -103,8 +99,7 @@ namespace Avalonia.Direct2D1.Media
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                
-                context.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect, _bitmapInterpolationMode);
+                context.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect);
                 context.PopClip();
             }
 

@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <Compile Include="..\Avalonia.Headless.UnitTests\**\*.cs" />
+    <Compile Remove="..\Avalonia.Headless.UnitTests\bin\**\*.cs" />
+    <Compile Remove="..\Avalonia.Headless.UnitTests\obj\**\*.cs" />
   </ItemGroup>
   
   <ItemGroup>

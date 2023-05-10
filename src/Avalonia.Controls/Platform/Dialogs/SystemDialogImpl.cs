@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -10,7 +11,7 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Defines a platform-specific system dialog implementation.
     /// </summary>
-    [Obsolete]
+    [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
     internal class SystemDialogImpl : ISystemDialogImpl
     {
         public async Task<string[]?> ShowFileDialogAsync(FileDialog dialog, Window parent)

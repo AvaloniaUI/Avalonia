@@ -8,6 +8,8 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 using Avalonia.Platform;
+using System.ComponentModel;
+
 namespace Avalonia.OpenGL.Controls
 {
     public abstract class OpenGlControlBase : Control
@@ -217,7 +219,7 @@ namespace Avalonia.OpenGL.Controls
             return true;
         }
 
-        [Obsolete("Use RequestNextFrameRendering()")]
+        [Obsolete("Use RequestNextFrameRendering()"), EditorBrowsable(EditorBrowsableState.Never)]
         // ReSharper disable once MemberCanBeProtected.Global
         public new void InvalidateVisual() => RequestNextFrameRendering(); 
         

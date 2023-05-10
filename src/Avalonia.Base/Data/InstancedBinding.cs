@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Reactive;
 using ObservableEx = Avalonia.Reactive.Observable;
 
@@ -49,7 +50,7 @@ namespace Avalonia.Data
         /// </summary>
         public IObservable<object?> Source { get; }
 
-        [Obsolete("Use Source property")]
+        [Obsolete("Use Source property"), EditorBrowsable(EditorBrowsableState.Never)]
         public IObservable<object?> Observable => Source;
 
         /// <summary>

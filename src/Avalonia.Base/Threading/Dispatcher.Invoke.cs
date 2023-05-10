@@ -248,11 +248,11 @@ public partial class Dispatcher
     ///     An operation representing the queued delegate to be invoked.
     /// </returns>
     /// <remarks>
-    ///     Note that the default priority is DispatcherPriority.Normal.
+    ///     Note that the default priority is DispatcherPriority.Default.
     /// </remarks>
     public DispatcherOperation InvokeAsync(Action callback)
     {
-        return InvokeAsync(callback, DispatcherPriority.Normal, CancellationToken.None);
+        return InvokeAsync(callback, default, CancellationToken.None);
     }
 
     /// <summary>
@@ -326,11 +326,11 @@ public partial class Dispatcher
     ///     An operation representing the queued delegate to be invoked.
     /// </returns>
     /// <remarks>
-    ///     Note that the default priority is DispatcherPriority.Normal.
+    ///     Note that the default priority is DispatcherPriority.Default.
     /// </remarks>
     public DispatcherOperation<TResult> InvokeAsync<TResult>(Func<TResult> callback)
     {
-        return InvokeAsync(callback, DispatcherPriority.Normal, CancellationToken.None);
+        return InvokeAsync(callback, DispatcherPriority.Default, CancellationToken.None);
     }
 
     /// <summary>
@@ -548,6 +548,18 @@ public partial class Dispatcher
     /// <param name="callback">
     ///     A Func&lt;Task&gt; delegate to invoke through the dispatcher.
     /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes.
+    /// </returns>
+    public Task InvokeAsync(Func<Task> callback) => InvokeAsync(callback, DispatcherPriority.Default);
+    
+    /// <summary>
+    ///     Executes the specified Func&lt;Task&gt; asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="callback">
+    ///     A Func&lt;Task&gt; delegate to invoke through the dispatcher.
+    /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
     ///     callback is invoked relative to the other pending operations
@@ -556,11 +568,29 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    public Task InvokeAsync(Func<Task> callback, DispatcherPriority priority = default)
+    public Task InvokeAsync(Func<Task> callback, DispatcherPriority priority)
     {
         _ = callback ?? throw new ArgumentNullException(nameof(callback));
         return InvokeAsync<Task>(callback, priority).GetTask().Unwrap();
     }
+
+    /// <summary>
+    ///     Executes the specified Func&lt;Task&lt;TResult&gt;&gt; asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="action">
+    ///     A Func&lt;Task&lt;TResult&gt;&gt; delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> action) =>
+        InvokeAsync(action, DispatcherPriority.Default);
     
     /// <summary>
     ///     Executes the specified Func&lt;Task&lt;TResult&gt;&gt; asynchronously on the
@@ -577,7 +607,7 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
+    public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         return InvokeAsync<Task<TResult>>(action, priority).GetTask().Unwrap();

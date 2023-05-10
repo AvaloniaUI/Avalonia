@@ -224,15 +224,13 @@ namespace Avalonia.Media.Imaging
         void IImage.Draw(
             DrawingContext context,
             Rect sourceRect,
-            Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode)
+            Rect destRect)
         {
             context.DrawBitmap(
                 PlatformImpl,
                 1,
                 sourceRect,
-                destRect,
-                bitmapInterpolationMode);
+                destRect);
         }
 
         private static IPlatformRenderInterface GetFactory()

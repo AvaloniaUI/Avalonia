@@ -1065,6 +1065,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             // Scroll selected item back into view.
             scroll.Offset = new(0, 0);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                }
+            };
+
             Layout(target);
 
             // The selection should be preserved.
@@ -1388,14 +1396,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             Type IStyleable.StyleKey => typeof(TestSelector);
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
-            {
-                return item is TestContainer;
-            }
-
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
                 return new TestContainer();
+            }
+
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+            {
+                return NeedsContainer<TestContainer>(item, out recycleKey);
             }
         }
 

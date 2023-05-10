@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 
@@ -7,7 +8,7 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Defines a platform-specific system dialog implementation.
     /// </summary>
-    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API")]
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     [Unstable]
     public interface ISystemDialogImpl
     {

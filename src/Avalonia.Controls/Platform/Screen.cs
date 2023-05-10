@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Avalonia.Platform
 {
@@ -17,7 +18,7 @@ namespace Avalonia.Platform
         public double Scaling { get; }
 
         /// <inheritdoc cref="Scaling"/>
-        [Obsolete("Use the Scaling property instead.")]
+        [Obsolete("Use the Scaling property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public double PixelDensity => Scaling;
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Avalonia.Platform
         public bool IsPrimary { get; }
 
         /// <inheritdoc cref="IsPrimary"/>
-        [Obsolete("Use the IsPrimary property instead.")]
+        [Obsolete("Use the IsPrimary property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public bool Primary => IsPrimary;
 
         /// <summary>
