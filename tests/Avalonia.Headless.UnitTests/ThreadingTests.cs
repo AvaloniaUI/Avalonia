@@ -16,14 +16,17 @@ public class ThreadingTests
     {
         Dispatcher.UIThread.VerifyAccess();
     }
-    
-    // This test should always fail, uncomment to test if it fails.
-    // [AvaloniaFact]
-    // public void Should_Fail_Test_On_Delayed_Post_When_FlushDispatcher()
-    // {
-    //     Dispatcher.UIThread.Post(() => throw new InvalidOperationException(), DispatcherPriority.Default);
-    // }
 
+#if NUNIT
+    [AvaloniaTest(Ignore = "This test should always fail, enable to test if it fails")]
+#elif XUNIT
+    [AvaloniaFact(Skip = "This test should always fail, enable to test if it fails")]
+#endif
+    public void Should_Fail_Test_On_Delayed_Post_When_FlushDispatcher()
+    {
+        Dispatcher.UIThread.Post(() => throw new InvalidOperationException(), DispatcherPriority.Default);
+    }
+    
 #if NUNIT
     [AvaloniaTheory, Timeout(10000), TestCase(1), TestCase(10), TestCase(100)]
 #elif XUNIT
