@@ -269,7 +269,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.UnitTests", "tests\Avalonia.Headless.XUnit.UnitTests\Avalonia.Headless.XUnit.UnitTests.csproj", "{EBA7613E-C36C-4E0C-AB45-71B143F86219}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.NUnit.UnitTests", "tests\Avalonia.Headless.NUnit.UnitTests\Avalonia.Headless.NUnit.UnitTests.csproj", "{47025FBC-2130-42EE-98C9-D3989B3B9446}"
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Headless.UnitTests", "tests\Avalonia.Headless.UnitTests\Avalonia.Headless.UnitTests.csproj", "{3B2405E8-9E7A-46D1-8E2D-EF9ED124C9F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -654,10 +653,6 @@ Global
 		{F47F8316-4D4B-4026-8EF3-16B2CFDA8119}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F47F8316-4D4B-4026-8EF3-16B2CFDA8119}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F47F8316-4D4B-4026-8EF3-16B2CFDA8119}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B2405E8-9E7A-46D1-8E2D-EF9ED124C9F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B2405E8-9E7A-46D1-8E2D-EF9ED124C9F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B2405E8-9E7A-46D1-8E2D-EF9ED124C9F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B2405E8-9E7A-46D1-8E2D-EF9ED124C9F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -741,7 +736,6 @@ Global
 		{EBA7613E-C36C-4E0C-AB45-71B143F86219} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{47025FBC-2130-42EE-98C9-D3989B3B9446} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{F47F8316-4D4B-4026-8EF3-16B2CFDA8119} = {FF237916-7150-496B-89ED-6CA3292896E7}
-		{3B2405E8-9E7A-46D1-8E2D-EF9ED124C9F2} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

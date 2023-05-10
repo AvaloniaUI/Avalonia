@@ -13,6 +13,7 @@ public class InputTests
 #endif
 {
     private Window _window;
+    private Application _setupApp;
 
 #if NUNIT
     [SetUp]
@@ -21,6 +22,7 @@ public class InputTests
     public InputTests()
 #endif
     {
+        _setupApp = Application.Current;
         Dispatcher.UIThread.VerifyAccess();
         _window = new Window
         {
@@ -32,6 +34,8 @@ public class InputTests
     [AvaloniaFact]
     public void Should_Click_Button_On_Window()
     {
+        Assert.True(_setupApp == Application.Current);
+        
         var buttonClicked = false;
         var button = new Button
         {
@@ -57,6 +61,8 @@ public class InputTests
     public void Dispose()
 #endif
     {
+        Assert.True(_setupApp == Application.Current);
+
         Dispatcher.UIThread.VerifyAccess();
         _window.Close();
     }

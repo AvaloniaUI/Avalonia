@@ -9,12 +9,20 @@ using NUnit.Framework.Internal.Commands;
 
 namespace Avalonia.Headless.NUnit;
 
-internal class AvaloniaTestMethodCommand : DelegatingTestCommand
+internal class AvaloniaTestMethodCommand : TestCommand
 {
     private readonly HeadlessUnitTestSession _session;
+    private readonly TestCommand _innerCommand;
     private readonly List<Action> _beforeTest;
     private readonly List<Action> _afterTest;
 
+    // There are multiple problems with NUnit integration at the moment when we wrote this integration.
+    // NUnit doesn't have extensibility API for running on custom dispatcher/sync-context.
+    // See https://github.com/nunit/nunit/issues/2917 https://github.com/nunit/nunit/issues/2774
+    // To workaround that we had to replace inner TestMethodCommand with our own implementation while keeping original hierarchy of commands.
+    // Which will respect proper async/await awaiting code that works with our session and can be block-awaited to fit in NUnit.
+    // Also, we need to push BeforeTest/AfterTest callbacks to the very same session call.
+    // I hope there will be a better solution without reflection, but for now that's it.
     private static FieldInfo s_innerCommand = typeof(DelegatingTestCommand)
         .GetField("innerCommand", BindingFlags.Instance | BindingFlags.NonPublic)!;
     private static FieldInfo s_beforeTest = typeof(BeforeAndAfterTestCommand)
@@ -27,9 +35,10 @@ internal class AvaloniaTestMethodCommand : DelegatingTestCommand
         TestCommand innerCommand,
         List<Action> beforeTest,
         List<Action> afterTest)
-        : base(innerCommand)
+        : base(innerCommand.Test)
     {
         _session = session;
+        _innerCommand = innerCommand;
         _beforeTest = beforeTest;
         _afterTest = afterTest;
     }
@@ -78,10 +87,10 @@ internal class AvaloniaTestMethodCommand : DelegatingTestCommand
     {
         _beforeTest.ForEach(a => a());
         
-        var testMethod = innerCommand.Test.Method;
+        var testMethod = _innerCommand.Test.Method;
         var methodInfo = testMethod!.MethodInfo;
 
-        var result = methodInfo.Invoke(context.TestObject, innerCommand.Test.Arguments);
+        var result = methodInfo.Invoke(context.TestObject, _innerCommand.Test.Arguments);
         // Only Task, non generic ValueTask are supported in async context. No ValueTask<> nor F# tasks.
         if (result is Task task)
         {
