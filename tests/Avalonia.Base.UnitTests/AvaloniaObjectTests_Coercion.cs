@@ -344,15 +344,43 @@ namespace Avalonia.Base.UnitTests
 
             private static AvaloniaPropertyChangedEventArgs Clone(AvaloniaPropertyChangedEventArgs change)
             {
-                var e = (AvaloniaPropertyChangedEventArgs<int>)change;
-                return new AvaloniaPropertyChangedEventArgs<int>(
-                    change.Sender,
-                    e.Property,
-                    e.OldValue,
-                    e.NewValue,
-                    change.Priority,
-                    change.IsEffectiveValueChange);
+                if (change.Property.PropertyType == typeof(int))
+                {
+                    var e = (AvaloniaPropertyChangedEventArgs<int>)change;
+                    return new AvaloniaPropertyChangedEventArgs<int>(
+                        change.Sender,
+                        e.Property,
+                        e.OldValue,
+                        e.NewValue,
+                        change.Priority,
+                        change.IsEffectiveValueChange);
+                }
+                else if (change.Property.PropertyType == typeof(double))
+                {
+                    var e = (AvaloniaPropertyChangedEventArgs<double>)change;
+                    return new AvaloniaPropertyChangedEventArgs<double>(
+                        change.Sender,
+                        e.Property,
+                        e.OldValue,
+                        e.NewValue,
+                        change.Priority,
+                        change.IsEffectiveValueChange);
+                }
+                throw new NotSupportedException(change.Property.PropertyType.Name);
             }
+        }
+
+        [Fact]
+        public void Coerce_AttachedProperty()
+        {
+            var numberOfCall = 0;
+            AttachedPropertyOwnerCoerce.CoerceDoubleCallback = (_) => numberOfCall++;
+            var class1 = new Class1();
+
+            class1.SetValue(AttachedPropertyOwnerCoerce.DoubleProperty, 101.1d);
+
+            Assert.Equal(1, numberOfCall);
+            Assert.Equal(100, AttachedPropertyOwnerCoerce.GetDouble(class1));
         }
 
         private class Class2 : AvaloniaObject
@@ -422,6 +450,24 @@ namespace Avalonia.Base.UnitTests
             {
                 var o = (Control1)instance;
                 return Math.Clamp(value, o.MinFoo, o.MaxFoo);
+            }
+        }
+
+        private class AttachedPropertyOwnerCoerce
+        {
+            public static readonly AttachedProperty<double> DoubleProperty =
+                AvaloniaProperty.RegisterAttached<AttachedPropertyOwnerCoerce, Class1, double>("Double",coerce: CoerceDouble);
+
+            public static Action<AvaloniaObject> CoerceDoubleCallback;
+
+            public static double GetDouble(Class1 control) => control.GetValue(DoubleProperty);
+            public static void SetDouble(Class1 control, double value) => control.SetValue(DoubleProperty, value);
+
+            private static double CoerceDouble(AvaloniaObject instance, double value)
+            {
+                CoerceDoubleCallback?.Invoke(instance);
+                var o = (Class1)instance;
+                return Math.Clamp(value, 50d, 100d);
             }
         }
     }
