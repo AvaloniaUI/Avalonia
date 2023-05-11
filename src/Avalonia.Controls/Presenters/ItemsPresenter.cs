@@ -52,13 +52,6 @@ namespace Avalonia.Controls.Presenters
                 nameof(VerticalSnapPointsChanged),
                 RoutingStrategies.Bubble);
 
-        static ItemsPresenter()
-        {
-            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
-                typeof(ItemsPresenter),
-                KeyboardNavigationMode.Once);
-        }
-
         event EventHandler? ILogicalScrollable.ScrollInvalidated
         {
             add => _scrollInvalidated += value;
