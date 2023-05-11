@@ -58,6 +58,9 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(ListBox),
+                KeyboardNavigationMode.Once);
         }
 
         /// <summary>

@@ -752,16 +752,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{10 - x}"), realized);
         }
 
-        private static void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
-        {
-            listBox.RaiseEvent(new KeyEventArgs
-            {
-                RoutedEvent = InputElement.KeyDownEvent,
-                KeyModifiers = inputModifiers,
-                Key = key
-            });
-        }
-
         [Fact]
         public void WrapSelection_Should_Wrap()
         {
@@ -946,6 +936,117 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Tab_Navigation_Should_Move_To_First_Item_When_No_Anchor_Element_Selected()
+        {
+            var services = TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice());
+            using var app = UnitTestApplication.Start(services);
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            var button = new Button 
+            { 
+                Content = "Button",
+                [DockPanel.DockProperty] = Dock.Top,
+            };
+
+            var root = new TestRoot
+            {
+                Child = new DockPanel
+                {
+                    Children =
+                    {
+                        button,
+                        target,
+                    }
+                }
+            };
+
+            var navigation = new KeyboardNavigationHandler();
+            navigation.SetOwner(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            RaiseKeyEvent(button, Key.Tab);
+
+            var item = target.ContainerFromIndex(0);
+            Assert.Same(item, FocusManager.Instance.Current);
+        }
+
+        [Fact]
+        public void Tab_Navigation_Should_Move_To_Anchor_Element()
+        {
+            var services = TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice());
+            using var app = UnitTestApplication.Start(services);
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            var button = new Button
+            {
+                Content = "Button",
+                [DockPanel.DockProperty] = Dock.Top,
+            };
+
+            var root = new TestRoot
+            {
+                Width = 1000,
+                Height = 1000,
+                Child = new DockPanel
+                {
+                    Children =
+                    {
+                        button,
+                        target,
+                    }
+                }
+            };
+
+            var navigation = new KeyboardNavigationHandler();
+            navigation.SetOwner(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            target.Selection.AnchorIndex = 1;
+            RaiseKeyEvent(button, Key.Tab);
+
+            var item = target.ContainerFromIndex(1);
+            Assert.Same(item, FocusManager.Instance.Current);
+
+            RaiseKeyEvent(item, Key.Tab);
+
+            Assert.Same(button, FocusManager.Instance.Current);
+
+            target.Selection.AnchorIndex = 2;
+            RaiseKeyEvent(button, Key.Tab);
+
+            item = target.ContainerFromIndex(2);
+            Assert.Same(item, FocusManager.Instance.Current);
+        }
+
+        private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
         }
 
         private record ItemViewModel(string Caption);
