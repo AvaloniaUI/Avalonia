@@ -24,6 +24,13 @@ public class TransitioningContentControl : ContentControl
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
         AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition));
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+        Justification = "Default property values shouldn't be set with SetCurrentValue.")]
+    public TransitioningContentControl()
+    {
+        PageTransition = new CrossFade(TimeSpan.FromMilliseconds(125));
+    }
+
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
