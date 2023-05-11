@@ -1236,13 +1236,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
                 Prepare(target);
-                _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
+
+                var container = target.ContainerFromIndex(1)!;
+                _helper.Down(container);
 
                 var panel = target.Presenter.Panel;
 
-                Assert.Equal(
-                    KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
-                    panel.Children[1]);
+                Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
             }
         }
 
