@@ -1690,7 +1690,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:MethodAsCommandDataContext'>
-    <Button Name='button' Command='{CompiledBinding Do}' CommandParameter='{CompiledBinding Parameter, Mode=OneWay}'/>
+    <Button Name='button' Command='{CompiledBinding Do}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
@@ -1963,7 +1963,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Metadata.DependsOn(nameof(Parameter))]
         public bool CanDo(object parameter)
         {
-            return ReferenceEquals(null, parameter) == false;
+            return ReferenceEquals(null, Parameter) == false;
         }
     }
 
