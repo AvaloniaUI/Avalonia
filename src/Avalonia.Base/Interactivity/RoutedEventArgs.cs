@@ -69,9 +69,14 @@ namespace Avalonia.Interactivity
         /// <returns>First child of given type.</returns>
         public T? GetInnerEventArgs<T>() where T: RoutedEventArgs
         {
-            if (Inner is null) return null;
-            if (Inner is T t) return t;
-            return Inner.GetInnerEventArgs<T>();
+            var inner = Inner;
+            while (inner != null) 
+            {
+                if (inner is T t)
+                    return t;
+                inner = inner.Inner;
+            }
+            return null;
         }
     }
 }

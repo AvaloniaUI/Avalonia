@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
@@ -397,6 +399,28 @@ namespace Avalonia.Base.UnitTests.Interactivity
             target.RaiseEvent(args);
 
             Assert.Equal(new[] { "3", "2b", "1" }, invoked);
+        }
+        
+        [Fact]
+        public void Get_Inner_EventArgs_Exist()
+        {
+            var event1 = new KeyEventArgs();
+            var event2 = new SpinEventArgs(SpinDirection.Increase) { Inner = event1 };
+            var root = new RoutedEventArgs() { Inner = event2 };
+            var inner1 = root.GetInnerEventArgs<KeyEventArgs>();
+            Assert.NotNull(inner1);
+            var inner2 = root.GetInnerEventArgs<SpinEventArgs>();
+            Assert.NotNull(inner2);
+        }
+        
+        [Fact]
+        public void Get_Inner_EventArgs_Not_Exist()
+        {
+            var event1 = new KeyEventArgs();
+            var event2 = new SpinEventArgs(SpinDirection.Increase) { Inner = event1 };
+            var root = new RoutedEventArgs() { Inner = event2 };
+            var inner1 = root.GetInnerEventArgs<PointerEventArgs>();
+            Assert.Null(inner1);
         }
 
         private static TestInteractive CreateTree(
