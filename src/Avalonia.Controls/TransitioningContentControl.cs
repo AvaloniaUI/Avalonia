@@ -22,14 +22,9 @@ public class TransitioningContentControl : ContentControl
     /// Defines the <see cref="PageTransition"/> property.
     /// </summary>
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
-        AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition));
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
-        Justification = "Default property values shouldn't be set with SetCurrentValue.")]
-    public TransitioningContentControl()
-    {
-        PageTransition = new CrossFade(TimeSpan.FromMilliseconds(125));
-    }
+        AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(
+            nameof(PageTransition),
+            defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
 
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -101,6 +96,18 @@ public class TransitioningContentControl : ContentControl
         {
             _transitionFrom = change.GetOldValue<object?>();
             InvalidateArrange();
+        }
+    }
+
+    private class ImmutableCrossFade : IPageTransition
+    {
+        private readonly CrossFade _inner;
+
+        public ImmutableCrossFade(TimeSpan duration) => _inner = new CrossFade(duration);
+
+        public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+        {
+            return _inner.Start(from, to, cancellationToken);
         }
     }
 }
