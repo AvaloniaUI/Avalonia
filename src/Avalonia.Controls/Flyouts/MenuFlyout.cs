@@ -24,9 +24,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property
         /// </summary>
-        public static readonly DirectProperty<MenuFlyout, IDataTemplate?> ItemTemplateProperty =
-            AvaloniaProperty.RegisterDirect<MenuFlyout, IDataTemplate?>(nameof(ItemTemplate),
-                x => x.ItemTemplate, (x, v) => x.ItemTemplate = v);
+        public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
+            AvaloniaProperty.Register<MenuFlyout, IDataTemplate?>(nameof(ItemTemplate));
 
         /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.
@@ -59,8 +58,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ItemTemplate
         {
-            get => _itemTemplate;
-            set => SetAndRaise(ItemTemplateProperty, ref _itemTemplate, value);
+            get => GetValue(ItemTemplateProperty);
+            set => SetValue(ItemTemplateProperty, value);
         }
 
         /// <summary>
@@ -82,7 +81,6 @@ namespace Avalonia.Controls
         }
         
         private Classes? _classes;
-        private IDataTemplate? _itemTemplate;
 
         protected override Control CreatePresenter()
         {

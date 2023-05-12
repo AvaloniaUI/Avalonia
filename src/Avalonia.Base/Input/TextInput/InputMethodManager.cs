@@ -48,9 +48,9 @@ namespace Avalonia.Input.TextInput
                     }
 
                     _transformTracker.SetVisual(_client?.TextViewVisual);
-                    UpdateCursorRect();
                     
                     _im?.SetClient(_client);
+                    UpdateCursorRect();
                 }
                 else
                 {

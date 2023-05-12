@@ -26,6 +26,138 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.Same(target, FocusManager.Instance.Current);
             }
         }
+        
+        [Fact]
+        public void Invisible_Controls_Should_Not_Receive_Focus()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button() { IsVisible = false}
+                };
+                
+                Assert.Null(FocusManager.Instance.Current);
+
+                target.Focus();
+                
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+        
+        [Fact]
+        public void Effectively_Invisible_Controls_Should_Not_Receive_Focus()
+        {
+            var target = new Button();
+            Panel container;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Panel
+                    {
+                        IsVisible = false,
+                        Children = { target }
+                    }
+                };
+                
+                Assert.Null(FocusManager.Instance.Current);
+
+                target.Focus();
+                
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Trying_To_Focus_Invisible_Control_Should_Not_Change_Focus()
+        {
+            Button first;
+            Button second;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    { 
+                        Children =
+                        {
+                            (first = new Button()),
+                            (second = new Button() { IsVisible = false}),
+                        }
+                    }
+                };
+
+                first.Focus();
+
+                Assert.Same(first, FocusManager.Instance.Current);
+
+                second.Focus();
+
+                Assert.Same(first, FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Disabled_Controls_Should_Not_Receive_Focus()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button() { IsEnabled = false }
+                };
+
+                Assert.Null(FocusManager.Instance.Current);
+
+                target.Focus();
+
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Effectively_Disabled_Controls_Should_Not_Receive_Focus()
+        {
+            var target = new Button();
+            Panel container;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Panel
+                    {
+                        IsEnabled = false,
+                        Children = { target }
+                    }
+                };
+
+                Assert.Null(FocusManager.Instance.Current);
+
+                target.Focus();
+
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
 
         [Fact]
         public void Focus_Should_Not_Get_Restored_To_Enabled_Control()
@@ -55,6 +187,90 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Hidden()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button()
+                };
+
+                target.Focus();
+                target.IsVisible = false;
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact(Skip = "Need to implement IsEffectivelyVisible change notifications.")]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Effectively_Hidden()
+        {
+            Border container;
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Border
+                    {
+                        Child = target = new Button(),
+                    }
+                };
+
+                target.Focus();
+                container.IsVisible = false;
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Disabled()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button()
+                };
+
+                target.Focus();
+                target.IsEnabled = false;
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Effectively_Disabled()
+        {
+            Border container;
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Border
+                    {
+                        Child = target = new Button(),
+                    }
+                };
+
+                target.Focus();
+                container.IsEnabled = false;
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
         public void Focus_Should_Be_Cleared_When_Control_Is_Removed_From_VisualTree()
         {
             Button target;
@@ -78,8 +294,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -115,8 +331,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -157,8 +373,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -190,8 +406,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var panel1 = new Panel { Children = { target1 } };
                 var panel2 = new Panel { Children = { target2 } };
                 var root = new TestRoot
@@ -245,8 +461,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -290,8 +506,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 
                 var root1 = new TestRoot
                 {

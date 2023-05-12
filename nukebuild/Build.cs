@@ -35,8 +35,6 @@ using MicroCom.CodeGenerator;
 
 partial class Build : NukeBuild
 {
-    [Solution("Avalonia.sln")] readonly Solution Solution;
-
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
     {
@@ -143,10 +141,12 @@ partial class Build : NukeBuild
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
-        var project = Solution.GetProject(projectName).NotNull("project != null");
+        var project = RootDirectory.GlobFiles(@$"**\{projectName}.csproj").FirstOrDefault()
+            ?? throw new InvalidOperationException($"Project {projectName} doesn't exist");
+
         // Nuke and MSBuild tools have build-in helpers to get target frameworks from the project.
         // Unfortunately, it gets broken with every second SDK update, so we had to do it manually.
-        var fileXml = XDocument.Parse(File.ReadAllText(project.Path));
+        var fileXml = XDocument.Parse(File.ReadAllText(project));
         var targetFrameworks = fileXml.Descendants("TargetFrameworks")
             .FirstOrDefault()?.Value.Split(';').Select(f => f.Trim());
         if (targetFrameworks is null)
@@ -212,7 +212,8 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
-            RunCoreTest("Avalonia.Headless.UnitTests");
+            RunCoreTest("Avalonia.Headless.NUnit.UnitTests");
+            RunCoreTest("Avalonia.Headless.XUnit.UnitTests");
         });
 
     Target RunRenderTests => _ => _
@@ -311,7 +312,7 @@ partial class Build : NukeBuild
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? Execute<Build>(x => x.Package)
+            ? Execute<Build>(x => x.RunToolsTests)
             : Execute<Build>(x => x.RunTests);
 
 }

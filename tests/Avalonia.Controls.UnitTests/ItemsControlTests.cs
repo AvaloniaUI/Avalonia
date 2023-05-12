@@ -9,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -1022,26 +1023,26 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
         private class ItemsControlWithContainer : ItemsControl, IStyleable
         {
             Type IStyleable.StyleKey => typeof(ItemsControl);
 
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
                 return new ContainerControl();
             }
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
             {
-                return item is ContainerControl;
+                return NeedsContainer<ContainerControl>(item, out recycleKey);
             }
         }
 

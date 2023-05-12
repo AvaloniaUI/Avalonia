@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
@@ -1694,12 +1695,12 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
         private class Node : NotifyingBase
@@ -1761,7 +1762,10 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeViewWithDerivedTreeViewItems : TreeView
         {
-            protected internal override Control CreateContainerForItemOverride() => new DerivedTreeViewItem();
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+            {
+                return new DerivedTreeViewItem();
+            }
         }
 
         private class DerivedTreeViewItem : TreeViewItem

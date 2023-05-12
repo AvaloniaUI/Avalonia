@@ -58,6 +58,9 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(ListBox),
+                KeyboardNavigationMode.Once);
         }
 
         /// <summary>
@@ -108,8 +111,15 @@ namespace Avalonia.Controls
         /// </summary>
         public void UnselectAll() => Selection.Clear();
 
-        protected internal override Control CreateContainerForItemOverride() => new ListBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ListBoxItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ListBoxItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<ListBoxItem>(item, out recycleKey);
+        }
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)

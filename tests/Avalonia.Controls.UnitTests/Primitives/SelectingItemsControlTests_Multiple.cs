@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -1064,6 +1065,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             // Scroll selected item back into view.
             scroll.Offset = new(0, 0);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                }
+            };
+
             Layout(target);
 
             // The selection should be preserved.
@@ -1339,12 +1348,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
         private class TestSelector : SelectingItemsControl
@@ -1387,14 +1396,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             Type IStyleable.StyleKey => typeof(TestSelector);
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
-            {
-                return item is TestContainer;
-            }
-
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
                 return new TestContainer();
+            }
+
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+            {
+                return NeedsContainer<TestContainer>(item, out recycleKey);
             }
         }
 

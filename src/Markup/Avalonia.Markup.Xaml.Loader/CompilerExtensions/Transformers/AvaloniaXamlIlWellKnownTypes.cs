@@ -65,6 +65,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType Int { get; }
         public IXamlType Long { get; }
         public IXamlType Uri { get; }
+        public IXamlType IDictionaryT { get; }
         public IXamlType FontFamily { get; }
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
@@ -194,6 +195,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Int = cfg.TypeSystem.GetType("System.Int32");
             Long = cfg.TypeSystem.GetType("System.Int64");
             Uri = cfg.TypeSystem.GetType("System.Uri");
+            IDictionaryT = cfg.TypeSystem.GetType("System.Collections.Generic.IDictionary`2");
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
             ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
