@@ -402,7 +402,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
         }
         
         [Fact]
-        public void Get_Inner_EventArgs_Exist()
+        public void Get_Inner_EventArgs_Exists()
         {
             var event1 = new KeyEventArgs();
             var event2 = new SpinEventArgs(SpinDirection.Increase) { Inner = event1 };
@@ -414,7 +414,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
         }
         
         [Fact]
-        public void Get_Inner_EventArgs_Not_Exist()
+        public void Get_Inner_EventArgs_Does_Not_Exist()
         {
             var event1 = new KeyEventArgs();
             var event2 = new SpinEventArgs(SpinDirection.Increase) { Inner = event1 };
