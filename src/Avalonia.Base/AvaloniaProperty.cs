@@ -338,7 +338,7 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode,
                 coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits, validate);
+            var result = new AttachedProperty<TValue>(name, typeof(THost), metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(typeof(TOwner), result);
             registry.RegisterAttached(typeof(THost), result);
