@@ -225,6 +225,20 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
+            ItemsPresenterPart?.ApplyTemplate();
+
+            // Set TabNavigation to Once on the panel if not already set and
+            // forward the TabOnceActiveElement to the panel.
+            if (ItemsPresenterPart?.Panel is { } panel)
+            {
+                if (!panel.IsSet(KeyboardNavigation.TabNavigationProperty))
+                    panel.SetCurrentValue(
+                        KeyboardNavigation.TabNavigationProperty,
+                        KeyboardNavigationMode.Once);
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    panel,
+                    KeyboardNavigation.GetTabOnceActiveElement(this));
+            }
         }
 
         /// <inheritdoc/>
@@ -268,7 +282,17 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
 
             if (change.Property == TabStripPlacementProperty)
+            {
                 RefreshContainers();
+            }
+            else if (change.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
+                ItemsPresenterPart?.Panel is { } panel)
+            {
+                // Forward TabOnceActiveElement to the panel.
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    panel,
+                    change.GetNewValue<IInputElement?>());
+            }
         }
     }
 }
