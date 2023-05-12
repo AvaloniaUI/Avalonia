@@ -659,9 +659,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                // if Minimum is set (i.e: Minimum is greater than decimal.MinValue) we set value to Minimum on Increment. 
+                // if Minimum is set we set value to Minimum on Increment. 
                 // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
-                result = Minimum > decimal.MinValue ? Minimum : 0;
+                result = IsSet(MinimumProperty) ? Minimum : 0;
             }
 
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
@@ -680,9 +680,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                // if Maximum is set (i.e: Maximum is smaller than decimal.MaxValue) we set value to Maximum on decrement. 
+                // if Maximum is set we set value to Maximum on decrement. 
                 // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
-                result = Maximum < decimal.MaxValue ? Maximum : 0;
+                result = IsSet(MaximumProperty) ? Maximum : 0;
             }
 
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
