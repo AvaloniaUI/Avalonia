@@ -156,10 +156,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     throw new ArgumentException("Unable to resolve namespace for type " + qualifiedTypeName);
                 foreach (var entry in lst)
                 {
-                    var asm = Assembly.Load(new AssemblyName(entry.ClrAssemblyName));
-                    var resolved = asm.GetType(entry.ClrNamespace + "." + name);
-                    if (resolved != null)
-                        return resolved;
+                    if (entry.ClrAssemblyName is { Length: > 0 })
+                    {
+                        var asm = Assembly.Load(new AssemblyName(entry.ClrAssemblyName));
+                        var resolved = asm.GetType(entry.ClrNamespace + "." + name);
+                        if (resolved != null)
+                            return resolved;
+                    }
                 }
 
                 throw new ArgumentException(
