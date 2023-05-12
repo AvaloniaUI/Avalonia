@@ -221,11 +221,25 @@ namespace Avalonia.Controls
                 {
                     _owner.ResourcesChanged += ResourcesChanged;
                 }
+                if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
+                {
+                    themeVariantHost.ActualThemeVariantChanged += ActualThemeVariantChanged;
+                }
             }
 
             protected override void Deinitialize()
             {
                 _target.OwnerChanged -= OwnerChanged;
+
+                if (_owner is not null)
+                {
+                    _owner.ResourcesChanged -= ResourcesChanged;
+                }
+                if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
+                {
+                    themeVariantHost.ActualThemeVariantChanged -= ActualThemeVariantChanged;
+                }
+
                 _owner = null;
             }
 
@@ -253,7 +267,7 @@ namespace Avalonia.Controls
                 }
                 if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
                 {
-                    themeVariantHost.ActualThemeVariantChanged += ActualThemeVariantChanged;
+                    themeVariantHost.ActualThemeVariantChanged -= ActualThemeVariantChanged;
                 }
 
                 _owner = _target.Owner;
@@ -264,7 +278,7 @@ namespace Avalonia.Controls
                 }
                 if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost2)
                 {
-                    themeVariantHost2.ActualThemeVariantChanged -= ActualThemeVariantChanged;
+                    themeVariantHost2.ActualThemeVariantChanged += ActualThemeVariantChanged;
                 }
 
                 PublishNext();
