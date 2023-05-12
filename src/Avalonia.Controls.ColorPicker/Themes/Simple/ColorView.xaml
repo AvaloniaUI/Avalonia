@@ -323,7 +323,7 @@
                                         AutomationProperties.Name="Third Component"
                                         Grid.Column="0"
                                         IsAlphaVisible="False"
-                                        IsPerceptive="False"
+                                        IsPerceptive="True"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
                                         ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
@@ -709,6 +709,7 @@
       </ControlTemplate>
     </Setter>
 
+    <!--
     <Style Selector="^ /template/ primitives|ColorSlider#ColorSpectrumThirdComponentSlider[ColorComponent=Component1]">
       <Setter Property="IsPerceptive" Value="True" />
     </Style>
@@ -722,6 +723,7 @@
     <Style Selector="^ /template/ primitives|ColorSlider#Component3Slider[ColorModel=Rgba]">
       <Setter Property="IsPerceptive" Value="False" />
     </Style>
+    -->
 
   </ControlTheme>
 
