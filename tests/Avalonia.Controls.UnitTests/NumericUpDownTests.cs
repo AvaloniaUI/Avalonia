@@ -51,8 +51,8 @@ namespace Avalonia.Controls.UnitTests
             decimal? expected)
         {
             var control = CreateControl();
-            control.Minimum = min;
-            control.Maximum = max;
+            if (min > decimal.MinValue) control.Minimum = min;
+            if (max < decimal.MaxValue) control.Maximum = max;
             control.Value = value;
 
             var spinner = GetSpinner(control);
