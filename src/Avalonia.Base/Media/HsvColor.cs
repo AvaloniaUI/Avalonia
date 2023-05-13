@@ -90,7 +90,7 @@ namespace Avalonia.Media
         /// <param name="color">The RGB color to convert to HSV.</param>
         public HsvColor(Color color)
         {
-            var hsv = Color.ToHsv(color);
+            var hsv = color.ToHsv();
 
             A = hsv.A;
             H = hsv.H;
@@ -377,16 +377,6 @@ namespace Avalonia.Media
         public static HsvColor FromHsv(double h, double s, double v)
         {
             return new HsvColor(1.0, h, s, v);
-        }
-
-        /// <summary>
-        /// Converts the given HSV color to its RGB color equivalent.
-        /// </summary>
-        /// <param name="hsvColor">The color in the HSV color model.</param>
-        /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
-        public static Color ToRgb(HsvColor hsvColor)
-        {
-            return HsvColor.ToRgb(hsvColor.H, hsvColor.S, hsvColor.V, hsvColor.A);
         }
 
         /// <summary>

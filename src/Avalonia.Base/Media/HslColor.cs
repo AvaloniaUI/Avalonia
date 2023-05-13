@@ -90,7 +90,7 @@ namespace Avalonia.Media
         /// <param name="color">The RGB color to convert to HSL.</param>
         public HslColor(Color color)
         {
-            var hsl = Color.ToHsl(color);
+            var hsl = color.ToHsl();
 
             A = hsl.A;
             H = hsl.H;
@@ -347,16 +347,6 @@ namespace Avalonia.Media
         public static HslColor FromHsl(double h, double s, double l)
         {
             return new HslColor(1.0, h, s, l);
-        }
-
-        /// <summary>
-        /// Converts the given HSL color to its RGB color equivalent.
-        /// </summary>
-        /// <param name="hslColor">The color in the HSL color model.</param>
-        /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSLA values.</returns>
-        public static Color ToRgb(HslColor hslColor)
-        {
-            return HslColor.ToRgb(hslColor.H, hslColor.S, hslColor.L, hslColor.A);
         }
 
         /// <summary>

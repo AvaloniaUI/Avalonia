@@ -518,21 +518,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given RGB color to its HSL color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
-        public static HslColor ToHsl(Color color)
-        {
-            // Normalize RGBA components into the 0..1 range
-            return Color.ToHsl(
-                (byteToDouble * color.R),
-                (byteToDouble * color.G),
-                (byteToDouble * color.B),
-                (byteToDouble * color.A));
-        }
-
-        /// <summary>
         /// Converts the given RGBA color component values to their HSL color equivalent.
         /// </summary>
         /// <param name="red">The Red component in the RGB color model.</param>
@@ -604,21 +589,6 @@ namespace Avalonia.Media
             double saturation = chroma == 0 ? 0 : chroma / (1 - Math.Abs((2 * lightness) - 1));
 
             return new HslColor(a, 60 * h1, saturation, lightness, clampValues: false);
-        }
-
-        /// <summary>
-        /// Converts the given RGB color to its HSV color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
-        public static HsvColor ToHsv(Color color)
-        {
-            // Normalize RGBA components into the 0..1 range
-            return Color.ToHsv(
-                (byteToDouble * color.R),
-                (byteToDouble * color.G),
-                (byteToDouble * color.B),
-                (byteToDouble * color.A));
         }
 
         /// <summary>
