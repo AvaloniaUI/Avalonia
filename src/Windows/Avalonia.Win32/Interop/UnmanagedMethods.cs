@@ -1909,7 +1909,7 @@ namespace Avalonia.Win32.Interop
                     var result = ImmGetCompositionString(hIMC, dwIndex, (IntPtr)bufferPtr, (uint)bufferLength);
                     if (result >= 0)
                     {
-                        return Encoding.Unicode.GetString(buffer.ToArray());
+                        return Encoding.Unicode.GetString(bufferPtr, bufferLength);
                     }
                 }
             }
