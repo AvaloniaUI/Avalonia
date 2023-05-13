@@ -1902,7 +1902,7 @@ namespace Avalonia.Win32.Interop
 
             if (bufferLength > 0)
             {
-                var buffer = bufferLength <= 64 ? stackalloc byte[bufferLength] : new byte[bufferLength];
+                var buffer = bufferLength <= 64 ? stackalloc byte[bufferLength + 8] : new byte[bufferLength];
 
                 fixed (byte* bufferPtr = buffer)
                 {
