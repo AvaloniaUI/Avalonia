@@ -478,7 +478,6 @@ namespace Avalonia.Media
         /// <returns>The HSL equivalent color.</returns>
         public HslColor ToHsl()
         {
-            // Don't use the HslColor(Color) constructor to avoid an extra HslColor
             return Color.ToHsl(R, G, B, A);
         }
 
@@ -488,7 +487,6 @@ namespace Avalonia.Media
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
             return Color.ToHsv(R, G, B, A);
         }
 
