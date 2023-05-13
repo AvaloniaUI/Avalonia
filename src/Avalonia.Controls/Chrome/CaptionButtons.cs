@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Chrome
     /// </summary>
     [TemplatePart("PART_CloseButton",      typeof(Button))]
     [TemplatePart("PART_RestoreButton",    typeof(Button))]
-    [TemplatePart("PART_MinimiseButton",   typeof(Button))]
+    [TemplatePart("PART_MinimizeButton",   typeof(Button))]
     [TemplatePart("PART_FullScreenButton", typeof(Button))]
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class CaptionButtons : TemplatedControl
@@ -97,12 +97,12 @@ namespace Avalonia.Controls.Chrome
 
             var closeButton = e.NameScope.Get<Button>("PART_CloseButton");
             var restoreButton = e.NameScope.Get<Button>("PART_RestoreButton");
-            var minimiseButton = e.NameScope.Get<Button>("PART_MinimiseButton");
+            var minimizeButton = e.NameScope.Get<Button>("PART_MinimizeButton");
             var fullScreenButton = e.NameScope.Get<Button>("PART_FullScreenButton");
 
             closeButton.Click += (sender, e) => OnClose();
             restoreButton.Click += (sender, e) => OnRestore();
-            minimiseButton.Click += (sender, e) => OnMinimize();
+            minimizeButton.Click += (sender, e) => OnMinimize();
             fullScreenButton.Click += (sender, e) => OnToggleFullScreen();
 
             restoreButton.IsEnabled = HostWindow?.CanResize ?? true;
