@@ -376,6 +376,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void SelectedContentTemplate_Updates_After_New_ContentTemplate()
+        {
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                ItemsSource = new[] { "Foo" },
+            };
+            var root = new TestRoot(target);
+
+            ApplyTemplate(target);
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+
+            Assert.Equal(null, Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
+
+            target.ContentTemplate = new FuncDataTemplate<string>((x, _) =>
+                    new TextBlock { Tag = "bar", Text = x });
+
+            Assert.Equal("bar", Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
+        }
+
+        [Fact]
         public void Should_Not_Propagate_DataContext_To_TabItem_Content()
         {
             var dataContext = "DataContext";
