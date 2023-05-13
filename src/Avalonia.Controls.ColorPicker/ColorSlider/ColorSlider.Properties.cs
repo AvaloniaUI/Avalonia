@@ -126,17 +126,19 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Gets or sets a value indicating whether the slider adapts rendering to improve user-perception
-        /// over exactness. When true in the HSVA color model, this ensures that the gradient is always visible and
-        /// never washed out regardless of the actual color. When true in the RGBA color model, this ensures
-        /// the components always appear as red, green or blue.
+        /// over exactness.
         /// </summary>
         /// <remarks>
+        /// When true in the HSVA color model, this ensures that the gradient is always visible and
+        /// never washed out regardless of the actual color. When true in the RGBA color model, this ensures
+        /// the gradient always appears as red, green or blue.
+        /// <br/><br/>
         /// For example, with Hue in the HSVA color model, the Saturation and Value components are always forced
         /// to maximum values during rendering. In the RGBA color model, all components other than
         /// <see cref="ColorComponent"/> are forced to minimum values during rendering.
         /// <br/><br/>
-        /// Also note this property will only adjust components other than <see cref="ColorComponent"/> during rendering.
-        /// This doesn't change the values of any components in the color – it is only for display.
+        /// Note this property will only adjust components other than <see cref="ColorComponent"/> during rendering.
+        /// This also doesn't change the values of any components in the actual color – it is only for display.
         /// </remarks>
         public bool IsPerceptive
         {
