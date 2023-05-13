@@ -19,6 +19,10 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
+        [DllImport("user32.dll")]
+        public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
+        const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
+        
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We do .NET COM interop availability checks")]
@@ -739,6 +743,28 @@ namespace Avalonia.Win32
 
                             Imm32InputMethod.Current.CompositionChanged(currentComposition);
                         }
+                        
+                        if  (flags == (GCS.GCS_COMPATTR | GCS.GCS_COMPCLAUSE | GCS.GCS_COMPREADSTR | GCS.GCS_COMPSTR | GCS.GCS_CURSORPOS |
+                            GCS.GCS_DELTASTART | GCS.GCS_RESULTCLAUSE | GCS.GCS_RESULTREADCLAUSE | GCS.GCS_RESULTREADSTR |
+                            GCS.GCS_RESULTSTR))
+                        {
+                            var rs = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_RESULTSTR);
+                            _ignoreWmChar = true;
+                            Imm32InputMethod.Current.IsComposing = false;
+                            if (!string.IsNullOrEmpty(rs) && ToInt32(wParam) >= 32)
+                            {
+                                e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, rs);
+                            }
+                                
+                            Imm32InputMethod.Current.Composition = null;
+                            if (Imm32InputMethod.Current.IsActive)
+                            {
+                                Imm32InputMethod.Current.Client.SetPreeditText(null);
+                            }
+                            Imm32InputMethod.Current.IsComposing = true;
+                            keybd_event((byte)VirtualKeyStates.VK_RIGHT, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
+                            break;
+                        } 
 
                         if ((flags & GCS.GCS_RESULTSTR) != 0)
                         {
