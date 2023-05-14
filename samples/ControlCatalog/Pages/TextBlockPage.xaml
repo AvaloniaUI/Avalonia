@@ -118,7 +118,7 @@
         </StackPanel>
       </Border>
       <Border>
-        <SelectableTextBlock SelectionBrush="LightBlue" Margin="10" TextWrapping="Wrap">
+        <SelectableTextBlock Margin="10" TextWrapping="Wrap">
           This <Span FontWeight="Bold">is</Span> a
           <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
           with <Span TextDecorations="Underline">several</Span>

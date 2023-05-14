@@ -30,7 +30,7 @@ namespace Avalonia.Controls
                 o => o.SelectedText);
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>(new(new Data.Optional<IBrush?>(Brushes.Blue)));
+            TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>();
 
         public static readonly DirectProperty<SelectableTextBlock, bool> CanCopyProperty =
             TextBox.CanCopyProperty.AddOwner<SelectableTextBlock>(o => o.CanCopy);
