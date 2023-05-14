@@ -149,7 +149,7 @@ namespace Avalonia.Build.Tasks
             {
                 var ctor = asm.MainModule.ImportReference(typeSystem.GetTypeReference(asmMetadata).Resolve()
                     .GetConstructors().First(c => c.Parameters.Count == 2).Resolve());
-                var strType = asm.MainModule.ImportReference(typeof(string));
+                var strType = asm.MainModule.TypeSystem.String;
                 var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
                 var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
                 asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
