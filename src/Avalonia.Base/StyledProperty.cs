@@ -16,6 +16,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="validate">
@@ -26,11 +27,12 @@ namespace Avalonia
         public StyledProperty(
             string name,
             Type ownerType,
+            Type hostType,
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
             Func<TValue, bool>? validate = null,
             Action<AvaloniaObject, bool>? notifying = null)
-                : base(name, ownerType, metadata, notifying)
+                : base(name, ownerType, hostType, metadata, notifying)
         {
             Inherits = inherits;
             ValidateValue = validate;

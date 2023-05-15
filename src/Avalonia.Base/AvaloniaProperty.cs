@@ -39,12 +39,14 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="valueType">The type of the property's value.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="Notifying"/> callback.</param>
         protected AvaloniaProperty(
             string name,
             Type valueType,
             Type ownerType,
+            Type hostType,
             AvaloniaPropertyMetadata metadata,
             Action<AvaloniaObject, bool>? notifying = null)
         {
@@ -63,9 +65,9 @@ namespace Avalonia
             Notifying = notifying;
             Id = s_nextId++;
 
-            _metadata.Add(ownerType, metadata ?? throw new ArgumentNullException(nameof(metadata)));
+            _metadata.Add(hostType, metadata ?? throw new ArgumentNullException(nameof(metadata)));
             _defaultMetadata = metadata.GenerateTypeSafeMetadata();
-            _singleMetadata = new(ownerType, metadata);
+            _singleMetadata = new(hostType, metadata);
         }
 
         /// <summary>
@@ -255,6 +257,7 @@ namespace Avalonia
             var result = new StyledProperty<TValue>(
                 name,
                 typeof(TOwner),
+                typeof(TOwner),
                 metadata,
                 inherits,
                 validate);
@@ -301,6 +304,7 @@ namespace Avalonia
             var result = new StyledProperty<TValue>(
                 name,
                 typeof(TOwner),
+                typeof(TOwner),
                 metadata,
                 inherits,
                 validate,
@@ -338,7 +342,7 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode,
                 coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, typeof(THost), metadata, inherits, validate);
+            var result = new AttachedProperty<TValue>(name, typeof(TOwner), typeof(THost), metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(typeof(TOwner), result);
             registry.RegisterAttached(typeof(THost), result);
@@ -375,7 +379,7 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode,
                 coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits, validate);
+            var result = new AttachedProperty<TValue>(name, ownerType, typeof(THost), metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(ownerType, result);
             registry.RegisterAttached(typeof(THost), result);
