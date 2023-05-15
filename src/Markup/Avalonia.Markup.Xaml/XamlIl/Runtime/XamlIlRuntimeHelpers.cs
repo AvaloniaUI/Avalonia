@@ -154,7 +154,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var namespaces = _nsInfo.XmlNamespaces;
                 if (!namespaces.TryGetValue(ns, out var lst))
                     throw new ArgumentException("Unable to resolve namespace for type " + qualifiedTypeName);
-                var resolvable = lst.Where(static e => e.ClrAsseblyName is { Length: > 0 });
+                var resolvable = lst.Where(static e => e.ClrAssemblyName is { Length: > 0 });
                 foreach (var entry in resolvable)
                 {
                     var asm = Assembly.Load(new AssemblyName(entry.ClrAssemblyName));
