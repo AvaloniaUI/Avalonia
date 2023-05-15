@@ -24,7 +24,7 @@ namespace Avalonia
         /// <para>This method is not part of the property's metadata and so cannot be changed after registration.</para>
         /// </param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
-        public StyledProperty(
+        internal StyledProperty(
             string name,
             Type ownerType,
             Type hostType,
