@@ -517,12 +517,12 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+            public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
             {
                 
             }
 
-            public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+            public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
             {
                 
             }
@@ -536,7 +536,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+            public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
             {
                 
             }

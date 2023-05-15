@@ -8,7 +8,7 @@ namespace Avalonia.Utilities
     /// A ref-counted wrapper for a disposable object.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IRef<out T> : IDisposable where T : class
+    internal interface IRef<out T> : IDisposable where T : class
     {
         /// <summary>
         /// The item that is being ref-counted.
@@ -37,7 +37,7 @@ namespace Avalonia.Utilities
 
     
 
-    public static class RefCountable
+    internal static class RefCountable
     {
         /// <summary>
         /// Create a reference counted object wrapping the given item.
@@ -49,37 +49,7 @@ namespace Avalonia.Utilities
         {
             return new Ref<T>(item, new RefCounter(item));
         }
-        
-        /// <summary>
-        /// Create an non-owning non-clonable reference to an item.
-        /// </summary>
-        /// <typeparam name="T">The type of item.</typeparam>
-        /// <param name="item">The item.</param>
-        /// <returns>A temporary reference that cannot be cloned that doesn't own the element.</returns>
-        public static IRef<T> CreateUnownedNotClonable<T>(T item) where T : class
-            => new TempRef<T>(item);
 
-        class TempRef<T> : IRef<T> where T : class
-        {
-            public void Dispose()
-            {
-                
-            }
-
-            public TempRef(T item)
-            {
-                Item = item;
-            }
-            
-            public T Item { get; }
-            public IRef<T> Clone() => throw new NotSupportedException();
-
-            public IRef<TResult> CloneAs<TResult>() where TResult : class
-                => throw new NotSupportedException();
-
-            public int RefCount => 1;
-        }
-        
         class RefCounter
         {
             private IDisposable? _item;

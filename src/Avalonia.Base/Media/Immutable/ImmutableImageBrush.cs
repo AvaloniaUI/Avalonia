@@ -23,7 +23,7 @@ namespace Avalonia.Media.Immutable
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
         public ImmutableImageBrush(
-            IBitmap? source,
+            Bitmap? source,
             AlignmentX alignmentX = AlignmentX.Center,
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
@@ -58,6 +58,6 @@ namespace Avalonia.Media.Immutable
         }
 
         /// <inheritdoc/>
-        public IBitmap? Source { get; }
+        public IImageBrushSource? Source { get; }
     }
 }

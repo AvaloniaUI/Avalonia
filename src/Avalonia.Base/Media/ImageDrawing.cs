@@ -37,7 +37,7 @@ namespace Avalonia.Media
             set => SetValue(RectProperty, value);
         }
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             var imageSource = ImageSource;
             var rect = Rect;

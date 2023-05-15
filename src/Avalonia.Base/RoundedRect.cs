@@ -143,5 +143,12 @@ namespace Avalonia
             return new RoundedRect(new Rect(left, top, right - left, bottom - top),
                 radii[0], radii[1], radii[2], radii[3]);
         }
+        
+        /// <summary>
+        /// This method should be used internally to check for the rect emptiness
+        /// Once we add support for WPF-like empty rects, there will be an actual implementation
+        /// For now it's internal to keep some loud community members happy about the API being pretty 
+        /// </summary>
+        internal bool IsEmpty() => this == default;
     }
 }
