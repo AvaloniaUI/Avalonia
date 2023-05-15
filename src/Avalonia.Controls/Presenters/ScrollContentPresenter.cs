@@ -85,7 +85,7 @@ namespace Avalonia.Controls.Presenters
         private Size _viewport;
         private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
         private Dictionary<int, Vector>? _scrollGestureSnapPoints;
-        private List<Control>? _anchorCandidates;
+        private HashSet<Control>? _anchorCandidates;
         private Control? _anchorElement;
         private Rect _anchorElementBounds;
         private bool _isAnchorElementDirty;
@@ -347,7 +347,7 @@ namespace Avalonia.Controls.Presenters
                     "An anchor control must be a visual descendent of the ScrollContentPresenter.");
             }
 
-            _anchorCandidates ??= new List<Control>();
+            _anchorCandidates ??= new();
             _anchorCandidates.Add(element);
             _isAnchorElementDirty = true;
         }

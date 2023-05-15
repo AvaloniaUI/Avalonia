@@ -98,43 +98,13 @@ namespace Avalonia.Media
             L = hsl.L;
         }
 
-        /// <summary>
-        /// Gets the Alpha (transparency) component in the range from 0..1 (percentage).
-        /// </summary>
-        /// <remarks>
-        /// <list type="bullet">
-        ///   <item>0 is fully transparent.</item>
-        ///   <item>1 is fully opaque.</item>
-        /// </list>
-        /// </remarks>
+        /// <inheritdoc cref="HsvColor.A"/>
         public double A { get; }
 
-        /// <summary>
-        /// Gets the Hue component in the range from 0..360 (degrees).
-        /// This is the color's location, in degrees, on a color wheel/circle from 0 to 360.
-        /// Note that 360 is equivalent to 0 and will be adjusted automatically.
-        /// </summary>
-        /// <remarks>
-        /// <list type="bullet">
-        ///   <item>0/360 degrees is Red.</item>
-        ///   <item>60 degrees is Yellow.</item>
-        ///   <item>120 degrees is Green.</item>
-        ///   <item>180 degrees is Cyan.</item>
-        ///   <item>240 degrees is Blue.</item>
-        ///   <item>300 degrees is Magenta.</item>
-        /// </list>
-        /// </remarks>
+        /// <inheritdoc cref="HsvColor.H"/>
         public double H { get; }
 
-        /// <summary>
-        /// Gets the Saturation component in the range from 0..1 (percentage).
-        /// </summary>
-        /// <remarks>
-        /// <list type="bullet">
-        ///   <item>0 is a shade of gray (no color).</item>
-        ///   <item>1 is the full color.</item>
-        /// </list>
-        /// </remarks>
+        /// <inheritdoc cref="HsvColor.S"/>
         public double S { get; }
 
         /// <summary>

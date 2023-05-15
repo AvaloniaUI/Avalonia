@@ -118,6 +118,43 @@ namespace Avalonia
             };
         }
 
+        /// <summary>
+        /// Begin configuring an <see cref="Application"/>.
+        /// Should only be used for testing and design purposes, as it relies on dynamic code.
+        /// </summary>
+        /// <param name="entryPointType">
+        /// Parameter from which <see cref="AppBuilder"/> should be created.
+        /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
+        /// </param>
+        /// <returns>An <see cref="AppBuilder"/> instance. If can't be created, thrown an exception.</returns>
+        internal static AppBuilder Configure(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+            Type entryPointType)
+        {
+            var appBuilderObj = entryPointType
+                .GetMethod(
+                    "BuildAvaloniaApp",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
+                    null,
+                    Array.Empty<Type>(),
+                    null)?
+                .Invoke(null, Array.Empty<object?>());
+
+            if (appBuilderObj is AppBuilder appBuilder)
+            {
+                return appBuilder;
+            }
+
+            if (typeof(Application).IsAssignableFrom(entryPointType))
+            {
+                return Configure(() => (Application)Activator.CreateInstance(entryPointType)!);
+            }
+
+            throw new InvalidOperationException(
+                $"Unable to create AppBuilder from type {entryPointType.Name}." +
+                $"Input type either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application type.");
+        }
+        
         protected AppBuilder Self => this;
 
         public AppBuilder AfterSetup(Action<AppBuilder> callback)
@@ -206,7 +243,7 @@ namespace Avalonia
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
             return Self;
         }
-        
+
         /// <summary>
         /// Registers an action that is executed with the current font manager.
         /// </summary>
@@ -251,17 +288,26 @@ namespace Avalonia
             }
 
             s_setupWasAlreadyCalled = true;
+            SetupUnsafe();
+        }
+
+        /// <summary>
+        /// Setup method that doesn't check for input initalizers being set.
+        /// Nor 
+        /// </summary>
+        internal void SetupUnsafe()
+        {
             _optionsInitializers?.Invoke();
-            RuntimePlatformServicesInitializer();
-            RenderingSubsystemInitializer();
-            WindowingSubsystemInitializer();
-            AfterPlatformServicesSetupCallback(Self);
-            Instance = _appFactory();
+            RuntimePlatformServicesInitializer?.Invoke();
+            RenderingSubsystemInitializer?.Invoke();
+            WindowingSubsystemInitializer?.Invoke();
+            AfterPlatformServicesSetupCallback?.Invoke(Self);
+            Instance = _appFactory!();
             Instance.ApplicationLifetime = _lifetime;
             AvaloniaLocator.CurrentMutable.BindToSelf(Instance);
             Instance.RegisterServices();
             Instance.Initialize();
-            AfterSetupCallback(Self);
+            AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
         }
     }

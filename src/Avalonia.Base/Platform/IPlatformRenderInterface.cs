@@ -11,7 +11,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the main platform-specific interface for the rendering subsystem.
     /// </summary>
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterface
     {
         /// <summary>
@@ -169,8 +169,9 @@ namespace Avalonia.Platform
         /// <param name="fontRenderingEmSize">The font rendering em size.</param>
         /// <param name="glyphInfos">The list of glyphs.</param>
         /// <param name="baselineOrigin">The baseline origin of the run. Can be null.</param>
+        /// <param name="bounds">the conservative bounding box of the run</param>
         /// <returns>An <see cref="IGlyphRunImpl"/>.</returns>
-        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin);
+        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds);
 
         /// <summary>
         /// Creates a backend-specific object using a low-level API graphics context
@@ -201,7 +202,7 @@ namespace Avalonia.Platform
         bool IsSupportedBitmapPixelFormat(PixelFormat format);
     }
 
-    [Unstable]
+    [Unstable, PrivateApi]
     public interface IPlatformRenderInterfaceContext : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>

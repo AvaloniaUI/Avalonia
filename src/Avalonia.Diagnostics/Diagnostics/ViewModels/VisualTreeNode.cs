@@ -23,7 +23,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 _ => TreeNodeCollection.Empty
             };
 
-            if (Visual is IStyleable styleable)
+            if (Visual is StyledElement styleable)
                 IsInTemplate = styleable.TemplatedParent != null;
         }
 

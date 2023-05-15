@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -18,7 +17,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="glyphRun">The glyph run to draw.</param>
         public GlyphRunNode(
             Matrix transform,
-            IImmutableBrush foreground,
+            IImmutableBrush? foreground,
             IRef<IGlyphRunImpl> glyphRun)
             : base(glyphRun.Item.Bounds, transform, foreground)
         {
@@ -53,7 +52,10 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
+        public override bool HitTestTransformed(Point p)
+        {
+            return GlyphRun.Item.Bounds.ContainsExclusive(p);
+        }
 
         public override void Dispose()
         {

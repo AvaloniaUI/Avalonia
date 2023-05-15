@@ -43,7 +43,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public override void Render(IDrawingContextImpl context) => context.DrawEllipse(Brush, Pen, Rect);
 
-        public override bool HitTest(Point p)
+        public override bool HitTestTransformed(Point p)
         {
             var center = Rect.Center;
 

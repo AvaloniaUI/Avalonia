@@ -65,7 +65,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IFocusScope, ILayoutRoot
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
@@ -227,7 +227,7 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
@@ -420,7 +420,7 @@ namespace Avalonia.Controls
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey => typeof(Window);
+        protected override Type StyleKeyOverride => typeof(Window);
 
         /// <summary>
         /// Fired before a window is closed.
@@ -700,7 +700,7 @@ namespace Avalonia.Controls
 
                 if (initialSize != ClientSize)
                 {
-                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
                 LayoutManager.ExecuteInitialLayoutPass();
@@ -713,7 +713,7 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner?.AddChild(this, false);
 
-                SetWindowStartupLocation(owner?.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, false);
                 Renderer.Start();
@@ -778,7 +778,7 @@ namespace Avalonia.Controls
 
                 if (initialSize != ClientSize)
                 {
-                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
                 LayoutManager.ExecuteInitialLayoutPass();
@@ -789,7 +789,7 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner.AddChild(this, true);
 
-                SetWindowStartupLocation(owner.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, true);
 
@@ -870,7 +870,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(IWindowBaseImpl? owner = null)
+        private void SetWindowStartupLocation(Window? owner = null)
         {
             var startupLocation = WindowStartupLocation;
 
@@ -975,7 +975,7 @@ namespace Avalonia.Controls
 
         protected sealed override Size ArrangeSetBounds(Size size)
         {
-            PlatformImpl?.Resize(size, PlatformResizeReason.Layout);
+            PlatformImpl?.Resize(size, WindowResizeReason.Layout);
             return ClientSize;
         }
 
@@ -994,7 +994,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
             {
@@ -1005,8 +1005,8 @@ namespace Avalonia.Controls
                 // to the requested size.
                 if (sizeToContent != SizeToContent.Manual &&
                     CanResize &&
-                    reason == PlatformResizeReason.Unspecified ||
-                    reason == PlatformResizeReason.User)
+                    reason == WindowResizeReason.Unspecified ||
+                    reason == WindowResizeReason.User)
                 {
                     if (clientSize.Width != ClientSize.Width)
                         sizeToContent &= ~SizeToContent.Width;

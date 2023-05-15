@@ -647,6 +647,10 @@ namespace Avalonia.Input
             {
                 PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
             }
+            else if (change.Property == IsVisibleProperty && !change.GetNewValue<bool>() && IsFocused)
+            {
+                FocusManager.Instance?.Focus(null);
+            }
         }
 
         /// <summary>

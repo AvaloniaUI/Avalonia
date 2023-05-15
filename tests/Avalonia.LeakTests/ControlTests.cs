@@ -51,7 +51,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = new DataGrid
                         {
-                            Items = _observableCollection
+                            ItemsSource = _observableCollection
                         }
                     };
 
@@ -558,7 +558,7 @@ namespace Avalonia.LeakTests
                     control.ContextMenu = null;
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
                 Assert.Same(window, FocusManager.Instance.Current);
@@ -605,7 +605,7 @@ namespace Avalonia.LeakTests
                     contextMenu.Close();
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
                 Assert.Same(window, FocusManager.Instance.Current);

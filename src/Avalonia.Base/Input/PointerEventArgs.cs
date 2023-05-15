@@ -14,8 +14,7 @@ namespace Avalonia.Input
         private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
-        [Unstable]
-        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
+        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerEventArgs(RoutedEvent routedEvent,
             object? source,
             IPointer pointer,
@@ -77,14 +76,14 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the pointer position relative to a control.
         /// </summary>
-        /// <param name="relativeTo">The control.</param>
+        /// <param name="relativeTo">The visual whose coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns>The pointer position in the control's coordinates.</returns>
         public Point GetPosition(Visual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
 
         /// <summary>
         /// Returns the PointerPoint associated with the current event
         /// </summary>
-        /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
+        /// <param name="relativeTo">The visual whose coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns></returns>
         public PointerPoint GetCurrentPoint(Visual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
@@ -129,8 +128,7 @@ namespace Avalonia.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
-        [Unstable]
-        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
+        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerPressedEventArgs(
             object source,
             IPointer pointer,
@@ -150,8 +148,7 @@ namespace Avalonia.Input
 
     public class PointerReleasedEventArgs : PointerEventArgs
     {
-        [Unstable]
-        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
+        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerReleasedEventArgs(
             object source, IPointer pointer,
             Visual rootVisual, Point rootVisualPosition, ulong timestamp,
@@ -173,8 +170,7 @@ namespace Avalonia.Input
     {
         public IPointer Pointer { get; }
 
-        [Unstable]
-        [Obsolete("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.,")]
+        [Unstable("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.,")]
         public PointerCaptureLostEventArgs(object source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
         {
             Pointer = pointer;

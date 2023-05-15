@@ -23,7 +23,7 @@ namespace Avalonia.Styling
             {
                 if (theme.TargetType is null)
                     throw new InvalidOperationException("ControlTheme has no TargetType.");
-                return theme.TargetType.IsAssignableFrom(((IStyleable)control).StyleKey) ?
+                return theme.TargetType.IsAssignableFrom(StyledElement.GetStyleKey(control)) ?
                     SelectorMatch.AlwaysThisType :
                     SelectorMatch.NeverThisType;
             }

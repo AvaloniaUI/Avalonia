@@ -554,6 +554,36 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
         }
 
+        [Fact]
+        public void Content_Can_Be_Bound_In_ItemContainerTheme()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[] { new ItemViewModel("Foo"), new ItemViewModel("Bar") };
+                var theme = new ControlTheme(typeof(ListBoxItem))
+                {
+                    Setters =
+                    {
+                        new Setter(ListBoxItem.ContentProperty, new Binding("Caption")),
+                    }
+                };
+
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    ItemsSource = items,
+                    ItemContainerTheme = theme,
+                };
+
+                Prepare(target);
+
+                var containers = target.GetRealizedContainers().Cast<ListBoxItem>().ToList();
+                Assert.Equal(2, containers.Count);
+                Assert.Equal("Foo", containers[0].Content);
+                Assert.Equal("Bar", containers[1].Content);
+            }
+        }
+
         private static FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
@@ -720,16 +750,6 @@ namespace Avalonia.Controls.UnitTests
 
             // "Item1" should remain selected, and now be at the bottom of the viewport.
             Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{10 - x}"), realized);
-        }
-
-        private static void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
-        {
-            listBox.RaiseEvent(new KeyEventArgs
-            {
-                RoutedEvent = InputElement.KeyDownEvent,
-                KeyModifiers = inputModifiers,
-                Key = key
-            });
         }
 
         [Fact]
@@ -917,6 +937,119 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, raised);
         }
+
+        [Fact]
+        public void Tab_Navigation_Should_Move_To_First_Item_When_No_Anchor_Element_Selected()
+        {
+            var services = TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice());
+            using var app = UnitTestApplication.Start(services);
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            var button = new Button 
+            { 
+                Content = "Button",
+                [DockPanel.DockProperty] = Dock.Top,
+            };
+
+            var root = new TestRoot
+            {
+                Child = new DockPanel
+                {
+                    Children =
+                    {
+                        button,
+                        target,
+                    }
+                }
+            };
+
+            var navigation = new KeyboardNavigationHandler();
+            navigation.SetOwner(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            RaiseKeyEvent(button, Key.Tab);
+
+            var item = target.ContainerFromIndex(0);
+            Assert.Same(item, FocusManager.Instance.Current);
+        }
+
+        [Fact]
+        public void Tab_Navigation_Should_Move_To_Anchor_Element()
+        {
+            var services = TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice());
+            using var app = UnitTestApplication.Start(services);
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = { "Foo", "Bar", "Baz" },
+            };
+
+            var button = new Button
+            {
+                Content = "Button",
+                [DockPanel.DockProperty] = Dock.Top,
+            };
+
+            var root = new TestRoot
+            {
+                Width = 1000,
+                Height = 1000,
+                Child = new DockPanel
+                {
+                    Children =
+                    {
+                        button,
+                        target,
+                    }
+                }
+            };
+
+            var navigation = new KeyboardNavigationHandler();
+            navigation.SetOwner(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            target.Selection.AnchorIndex = 1;
+            RaiseKeyEvent(button, Key.Tab);
+
+            var item = target.ContainerFromIndex(1);
+            Assert.Same(item, FocusManager.Instance.Current);
+
+            RaiseKeyEvent(item, Key.Tab);
+
+            Assert.Same(button, FocusManager.Instance.Current);
+
+            target.Selection.AnchorIndex = 2;
+            RaiseKeyEvent(button, Key.Tab);
+
+            item = target.ContainerFromIndex(2);
+            Assert.Same(item, FocusManager.Instance.Current);
+        }
+
+        private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
+        }
+
+        private record ItemViewModel(string Caption);
 
         private class ResettingCollection : List<string>, INotifyCollectionChanged
         {

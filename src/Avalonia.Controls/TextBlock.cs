@@ -7,7 +7,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -565,7 +564,8 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var padding = Padding;
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
             var top = padding.Top;
             var textHeight = TextLayout.Bounds.Height;
 
@@ -659,11 +659,9 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var scale = LayoutHelper.GetLayoutScale(this);
-
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
             _constraint = availableSize.Deflate(padding);
-
             _textLayout?.Dispose();
             _textLayout = null;
 
@@ -690,85 +688,65 @@ namespace Avalonia.Controls
                     inline.BuildTextRun(textRuns);
                 }
 
-                foreach (var textRun in textRuns)
+                _textRuns = textRuns;
+
+                foreach (var textRun in _textRuns)
                 {
                     if (textRun is EmbeddedControlRun controlRun &&
-                        controlRun.Control is Control control)
+                    controlRun.Control is Control control)
                     {
                         VisualChildren.Add(control);
 
                         control.Measure(Size.Infinity);
                     }
                 }
-
-                _textRuns = textRuns;
             }
 
-            var measuredSize = TextLayout.Bounds.Size.Inflate(padding);
-
-            return measuredSize;
+            return TextLayout.Bounds.Size.Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var textWidth = Math.Ceiling(TextLayout.Bounds.Width);
-
-            if (finalSize.Width < textWidth)
-            {
-                finalSize = finalSize.WithWidth(textWidth);
-            }
-
             var scale = LayoutHelper.GetLayoutScale(this);
-
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
-            if (HasComplexContent)
+            //Fixes: #11019
+            if (finalSize.Width < _constraint.Width)
             {
-                ArrangeComplexContent(TextLayout, padding);
+                _textLayout?.Dispose();
+                _textLayout = null;
+                _constraint = finalSize.Deflate(padding);
             }
 
-            if (MathUtilities.AreClose(_constraint.Inflate(padding).Width, finalSize.Width))
-            {
-                return finalSize;
-            }
-
-            _constraint = new Size(Math.Ceiling(finalSize.Deflate(padding).Width), double.PositiveInfinity);
-
-            _textLayout?.Dispose();
-            _textLayout = null;
-
             if (HasComplexContent)
-            {
-                ArrangeComplexContent(TextLayout, padding);
+            {             
+                var currentY = padding.Top;
+
+                foreach (var textLine in TextLayout.TextLines)
+                {
+                    var currentX = padding.Left + textLine.Start;
+
+                    foreach (var run in textLine.TextRuns)
+                    {
+                        if (run is DrawableTextRun drawable)
+                        {
+                            if (drawable is EmbeddedControlRun controlRun
+                                && controlRun.Control is Control control)
+                            {
+                                control.Arrange(
+                                    new Rect(new Point(currentX, currentY),
+                                    new Size(control.DesiredSize.Width, textLine.Height)));
+                            }
+
+                            currentX += drawable.Size.Width;
+                        }
+                    }
+
+                    currentY += textLine.Height;
+                }
             }
 
             return finalSize;
-        }
-
-        private static void ArrangeComplexContent(TextLayout textLayout, Thickness padding)
-        {
-            var currentY = padding.Top;
-
-            foreach (var textLine in textLayout.TextLines)
-            {
-                var currentX = padding.Left + textLine.Start;
-
-                foreach (var run in textLine.TextRuns)
-                {
-                    if (run is DrawableTextRun drawable)
-                    {
-                        if (drawable is EmbeddedControlRun controlRun
-                            && controlRun.Control is Control control)
-                        {
-                            control.Arrange(new Rect(new Point(currentX, currentY), control.DesiredSize));
-                        }
-
-                        currentX += drawable.Size.Width;
-                    }
-                }
-
-                currentY += textLine.Height;
-            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()

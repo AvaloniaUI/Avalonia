@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Avalonia.Input
 {
@@ -17,7 +18,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Dataformat for one or more filenames
         /// </summary>
-        [Obsolete("Use DataFormats.Files, this format is supported only on desktop platforms.")]
+        [Obsolete("Use DataFormats.Files, this format is supported only on desktop platforms."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly string FileNames = nameof(FileNames);
     }
 }

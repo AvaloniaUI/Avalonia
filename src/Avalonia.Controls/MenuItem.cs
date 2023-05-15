@@ -54,12 +54,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, KeyGesture?>(nameof(InputGesture));
 
         /// <summary>
-        /// Defines the <see cref="IsSelected"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<MenuItem>();
-
-        /// <summary>
         /// Defines the <see cref="IsSubMenuOpen"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
@@ -345,8 +339,22 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new MenuItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            if (item is MenuItem or Separator)
+            {
+                recycleKey = null;
+                return false;
+            }
+
+            recycleKey = DefaultRecycleKey;
+            return true;
+        }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {

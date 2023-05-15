@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Xml.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
@@ -105,15 +106,22 @@ namespace Avalonia.Controls.Primitives
                 nameof(SelectionMode));
 
         /// <summary>
+        /// Defines the IsSelected attached property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsSelectedProperty =
+            AvaloniaProperty.RegisterAttached<SelectingItemsControl, Control, bool>(
+                "IsSelected",
+                defaultBindingMode: BindingMode.TwoWay);
+
+        /// <summary>
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
             AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
-        /// Event that should be raised by items that implement <see cref="ISelectable"/> to
-        /// notify the parent <see cref="SelectingItemsControl"/> that their selection state
-        /// has changed.
+        /// Event that should be raised by containers when their selection state changes to notify
+        /// the parent <see cref="SelectingItemsControl"/> that their selection state has changed.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>(
@@ -302,20 +310,9 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                if (_updateState?.Selection.HasValue == true)
-                {
-                    return _updateState.Selection.Value;
-                }
-                else
-                {
-                    if (_selection is null)
-                    {
-                        _selection = CreateDefaultSelectionModel();
-                        InitializeSelectionModel(_selection);
-                    }
-
-                    return _selection;
-                }
+                return _updateState?.Selection.HasValue == true ?
+                    _updateState.Selection.Value :
+                    GetOrCreateSelectionModel();
             }
             set
             {
@@ -421,6 +418,21 @@ namespace Avalonia.Controls.Primitives
         public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
 
         /// <summary>
+        /// Gets the value of the <see cref="IsSelectedProperty"/> on the specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The value of the attached property.</returns>
+        public static bool GetIsSelected(Control control) => control.GetValue(IsSelectedProperty);
+
+        /// <summary>
+        /// Gets the value of the <see cref="IsSelectedProperty"/> on the specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value of the property.</param>
+        /// <returns>The value of the attached property.</returns>
+        public static void SetIsSelected(Control control, bool value) => control.SetValue(IsSelectedProperty, value);
+
+        /// <summary>
         /// Tries to get the container that was the source of an event.
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
@@ -473,20 +485,36 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <inheritdoc />
-        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
+        protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
         {
-            base.PrepareContainerForItemOverride(element, item, index);
+            // Ensure that the selection model is created at this point so that accessing it in 
+            // ContainerForItemPreparedOverride doesn't cause it to be initialized (which can
+            // make containers become deselected when they're synced with the empty selection
+            // mode).
+            GetOrCreateSelectionModel();
 
-            if ((element as ISelectable)?.IsSelected == true)
+            base.PrepareContainerForItemOverride(container, item, index);
+        }
+
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            base.ContainerForItemPreparedOverride(container, item, index);
+
+            // Once the container has been full prepared and added to the tree, any bindings from
+            // styles or item container themes are guaranteed to be applied. 
+            if (!container.IsSet(IsSelectedProperty))
             {
-                Selection.Select(index);
-                MarkContainerSelected(element, true);
+                // The IsSelected property is not set on the container: update the container
+                // selection based on the current selection as understood by this control.
+                MarkContainerSelected(container, Selection.IsSelected(index));
             }
             else
             {
-                var selected = Selection.IsSelected(index);
-                MarkContainerSelected(element, selected);
+                // The IsSelected property is set on the container: there is a style or item
+                // container theme which has bound the IsSelected property. Update our selection
+                // based on the selection state of the container.
+                var containerIsSelected = GetIsSelected(container);
+                UpdateSelection(index, containerIsSelected, toggleModifier: true);
             }
         }
 
@@ -501,15 +529,7 @@ namespace Avalonia.Controls.Primitives
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);
-
-            if (Presenter?.Panel is InputElement panel && 
-                KeyboardNavigation.GetTabOnceActiveElement(panel) == element)
-            {
-                KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-            }
-
-            if (element is ISelectable)
-                MarkContainerSelected(element, false);
+            element.ClearValue(IsSelectedProperty);
         }
 
         /// <inheritdoc/>
@@ -808,12 +828,6 @@ namespace Avalonia.Controls.Primitives
                 Selection.Clear();
                 Selection.Select(index);
             }
-
-            if (Presenter?.Panel is { } panel)
-            {
-                var container = ContainerFromIndex(index);
-                KeyboardNavigation.SetTabOnceActiveElement(panel, container);
-            }
         }
 
         /// <summary>
@@ -874,6 +888,17 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
 
+        private ISelectionModel GetOrCreateSelectionModel()
+        {
+            if (_selection is null)
+            {
+                _selection = CreateDefaultSelectionModel();
+                InitializeSelectionModel(_selection);
+            }
+
+            return _selection;
+        }
+
         private void OnItemsViewSourceChanged(object? sender, EventArgs e)
         {
             if (_selection is not null && _updateState is null)
@@ -891,6 +916,7 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
+                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(Selection.AnchorIndex));
                 AutoScrollToSelectedItemIfNecessary();
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
@@ -1098,11 +1124,14 @@ namespace Avalonia.Controls.Primitives
         {
             if (!_ignoreContainerSelectionChanged &&
                 e.Source is Control control &&
-                e.Source is ISelectable selectable &&
                 control.Parent == this &&
-                IndexFromContainer(control) != -1)
+                IndexFromContainer(control) is var index &&
+                index >= 0)
             {
-                UpdateSelection(control, selectable.IsSelected);
+                if (GetIsSelected(control))
+                    Selection.Select(index);
+                else
+                    Selection.Deselect(index);
             }
 
             if (e.Source != this)
@@ -1112,31 +1141,18 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Sets a container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
+        /// Sets the <see cref="IsSelectedProperty"/> on the specified container.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
         /// <returns>The previous selection state.</returns>
-        private bool MarkContainerSelected(Control container, bool selected)
+        private void MarkContainerSelected(Control container, bool selected)
         {
+            _ignoreContainerSelectionChanged = true;
+
             try
             {
-                bool result;
-
-                _ignoreContainerSelectionChanged = true;
-
-                if (container is ISelectable selectable)
-                {
-                    result = selectable.IsSelected;
-                    selectable.IsSelected = selected;
-                }
-                else
-                {
-                    result = container.Classes.Contains(":selected");
-                    ((IPseudoClasses)container.Classes).Set(":selected", selected);
-                }
-
-                return result;
+                container.SetCurrentValue(IsSelectedProperty, selected);
             }
             finally
             {

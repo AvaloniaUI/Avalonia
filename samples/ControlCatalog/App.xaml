@@ -26,8 +26,6 @@
           <Color x:Key="CatalogBaseHighColor">#FFFFFFFF</Color>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
-      <Color x:Key="SystemAccentColor">#FF0078D7</Color>
-      <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
 
       <!-- Styles attached dynamically depending on current theme (simple or fluent) -->
       <StyleInclude x:Key="DataGridFluent" Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />

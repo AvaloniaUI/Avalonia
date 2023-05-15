@@ -7,6 +7,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
@@ -72,7 +73,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234",
                     ContextFlyout = new MenuFlyout
                     {
-                        Items = new List<MenuItem>
+                        Items =
                         {
                             new MenuItem { Header = "Item 1" },
                             new MenuItem {Header = "Item 2" },
@@ -657,7 +658,6 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Text = "1234",
-                    IsVisible = false
                 };
 
                 var root = new TestRoot { Child = target1 };
@@ -892,16 +892,16 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
-            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            renderInterface: new MockPlatformRenderInterface(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),     
-            textShaperImpl: new MockTextShaperImpl(), 
-            fontManagerImpl: new MockFontManagerImpl());
+            textShaperImpl: new HeadlessTextShaperStub(), 
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private static IControlTemplate CreateTemplate()
         {

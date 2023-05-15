@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Metadata;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Media
 {
@@ -43,8 +42,7 @@ namespace Avalonia.Media
         void IImage.Draw(
             DrawingContext context,
             Rect sourceRect,
-            Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode)
+            Rect destRect)
         {
             var drawing = Drawing;
 

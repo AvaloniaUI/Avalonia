@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 scope.Complete();
 
                 if(typeof(T) == typeof(Control))
-                    return new ControlTemplateResult((Control)obj, scope);
+                    return new TemplateResult<Control>((Control)obj, scope);
 
                 return new TemplateResult<T>((T)obj, scope);
             };
@@ -50,6 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             private readonly IServiceProvider? _parentProvider;
             private readonly List<IResourceNode>? _parentResourceNodes;
             private readonly INameScope _nameScope;
+            private IRuntimePlatform? _runtimePlatform;
 
             public DeferredParentServiceProvider(IServiceProvider? parentProvider, List<IResourceNode>? parentResourceNodes,
                 object rootObject, INameScope nameScope)
@@ -80,6 +81,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return this;
                 if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
                     return this;
+                if (serviceType == typeof(IRuntimePlatform))
+                {
+                    if(_runtimePlatform == null)
+                        _runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+                    return _runtimePlatform;
+                }
                 return _parentProvider?.GetService(serviceType);
             }
 

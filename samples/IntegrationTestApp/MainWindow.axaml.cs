@@ -202,7 +202,7 @@ namespace IntegrationTestApp
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
 
-            foreach (var window in lifetime.Windows)
+            foreach (var window in lifetime.Windows.ToArray())
             {
                 window.Activate();
             }
@@ -212,7 +212,7 @@ namespace IntegrationTestApp
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
 
-            foreach (var window in lifetime.Windows)
+            foreach (var window in lifetime.Windows.ToArray())
             {
                 window.Show();
                 if (window.WindowState == WindowState.Minimized)
@@ -270,6 +270,8 @@ namespace IntegrationTestApp
                 this.Get<ListBox>("BasicListBox").SelectedIndex = -1;
             if (source?.Name == "MenuClickedMenuItemReset")
                 this.Get<TextBlock>("ClickedMenuItem").Text = "None";
+            if (source?.Name == "ResetSliders")
+                this.Get<Slider>("HorizontalSlider").Value = 50;
             if (source?.Name == "ShowTransparentWindow")
                 ShowTransparentWindow();
             if (source?.Name == "ShowTransparentPopup")

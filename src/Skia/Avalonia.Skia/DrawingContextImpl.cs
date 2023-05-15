@@ -5,12 +5,9 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
-using Avalonia.Skia.Helpers;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
 
@@ -19,16 +16,16 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
+    internal partial class DrawingContextImpl : IDrawingContextImpl,
+        IDrawingContextWithAcrylicLikeSupport,
+        IDrawingContextImplWithEffects
     {
         private IDisposable?[]? _disposables;
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
-        private readonly Stack<BitmapBlendingMode> _blendingModeStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
-        private BitmapBlendingMode _currentBlendingMode = BitmapBlendingMode.SourceOver;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
         private bool _disposed;
@@ -169,6 +166,8 @@ namespace Avalonia.Skia
         public SKCanvas Canvas { get; }
         public SKSurface? Surface { get; }
 
+        public RenderOptions RenderOptions { get; set; }
+
         private void CheckLease()
         {
             if (_leased)
@@ -183,7 +182,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
             CheckLease();
             var drawableImage = (IDrawableBitmapImpl)source.Item;
@@ -192,8 +191,8 @@ namespace Avalonia.Skia
 
             var paint = SKPaintCache.Shared.Get();
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * (_useOpacitySaveLayer ? 1 : _currentOpacity)));
-            paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
-            paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
+            paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
+            paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
             drawableImage.Draw(this, s, d, paint);
             SKPaintCache.Shared.ReturnReset(paint);
@@ -204,7 +203,7 @@ namespace Avalonia.Skia
         {
             CheckLease();
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
+            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect);
             PopOpacityMask();
         }
 
@@ -249,6 +248,12 @@ namespace Avalonia.Skia
             }
         }
 
+        private static float SkBlurRadiusToSigma(double radius) {
+            if (radius <= 0)
+                return 0.0f;
+            return 0.288675f * (float)radius + 0.5f;
+        }
+        
         private struct BoxShadowFilter : IDisposable
         {
             public readonly SKPaint Paint;
@@ -260,12 +265,6 @@ namespace Avalonia.Skia
                 Paint = paint;
                 _filter = filter;
                 ClipOperation = clipOperation;
-            }
-
-            private static float SkBlurRadiusToSigma(double radius) {
-                if (radius <= 0)
-                    return 0.0f;
-                return 0.288675f * (float)radius + 0.5f;
             }
 
             public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity)
@@ -520,7 +519,9 @@ namespace Avalonia.Skia
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 
-                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.Item.BaselineOrigin.X,
+                var textBlob = glyphRunImpl.GetTextBlob(RenderOptions);
+
+                Canvas.DrawText(textBlob, (float)glyphRun.Item.BaselineOrigin.X,
                     (float)glyphRun.Item.BaselineOrigin.Y, paintWrapper.Paint);
             }
         }
@@ -648,27 +649,6 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Restore();
-        }
-
-        /// <inheritdoc />
-        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-        {
-            CheckLease();
-            _blendingModeStack.Push(_currentBlendingMode);
-            _currentBlendingMode = blendingMode;
-        }
-
-        /// <inheritdoc />
-        public void PopBitmapBlendMode()
-        {
-            CheckLease();
-            _currentBlendingMode = _blendingModeStack.Pop();
-        }
-
-        public void Custom(ICustomDrawOperation custom)
-        {
-            CheckLease();
-            custom.Render(this);
         }
 
         /// <inheritdoc />
@@ -912,12 +892,14 @@ namespace Avalonia.Skia
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
+                context.RenderOptions = RenderOptions;
+
                 context.DrawBitmap(
                     RefCountable.CreateUnownedNotClonable(tileBrushImage),
                     1,
                     sourceRect,
-                    targetRect,
-                    tileBrush.BitmapInterpolationMode);
+                    targetRect);
+
                 context.PopClip();
             }
 
@@ -1150,7 +1132,7 @@ namespace Avalonia.Skia
         {
             var paintWrapper = new PaintWrapper(paint);
 
-            paint.IsAntialias = true;
+            paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
             double opacity = brush.Opacity * (_useOpacitySaveLayer ? 1 :_currentOpacity);
 

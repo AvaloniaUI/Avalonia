@@ -67,9 +67,12 @@ namespace Avalonia.Controls.Presenters
                 for (var i = 0; i < count; ++i)
                 {
                     var c = children[index + i];
+
                     if (!c.IsSet(ItemIsOwnContainerProperty))
+                    {
                         itemsControl.RemoveLogicalChild(children[i + index]);
-                    generator.ClearItemContainer(c);
+                        generator.ClearItemContainer(c);
+                    }
                 }
 
                 children.RemoveRange(index, count);
@@ -110,14 +113,14 @@ namespace Avalonia.Controls.Presenters
             var generator = itemsControl.ItemContainerGenerator;
             Control container;
             
-            if (item is Control c && generator.IsItemItsOwnContainer(c))
+            if (generator.NeedsContainer(item, index, out var recycleKey))
             {
-                container = c;
-                container.SetValue(ItemIsOwnContainerProperty, true);
+                container = generator.CreateContainer(item, index, recycleKey);
             }
             else
             {
-                container = generator.CreateContainer();
+                container = (Control)item!;
+                container.SetValue(ItemIsOwnContainerProperty, true);
             }
 
             generator.PrepareItemContainer(container, item, index);

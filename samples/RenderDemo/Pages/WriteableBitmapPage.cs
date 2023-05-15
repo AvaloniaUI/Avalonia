@@ -59,7 +59,7 @@ namespace RenderDemo.Pages
                                 color = new Color(fillAlpha, r, g, b);
                             }
 
-                            data[y * fb.Size.Width + x] = (int) color.ToUint32();
+                            data[y * fb.Size.Width + x] = (int) color.ToUInt32();
                         }
                     }
 

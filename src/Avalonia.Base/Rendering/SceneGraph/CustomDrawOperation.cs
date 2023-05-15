@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 
@@ -13,11 +14,20 @@ namespace Avalonia.Rendering.SceneGraph
             Custom = custom;
         }
 
-        public override bool HitTest(Point p) => Custom.HitTest(p);
+        public override bool HitTestTransformed(Point p) => Custom.HitTest(p);
 
         public override void Render(IDrawingContextImpl context)
         {
-            Custom.Render(context);
+            using var immediateDrawingContext = new ImmediateDrawingContext(context, false);
+            try
+            {
+                Custom.Render(immediateDrawingContext);
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
+                    ?.Log(Custom, $"Exception in {Custom.GetType().Name}.{nameof(ICustomDrawOperation.Render)} {{0}}", e);
+            }
         }
 
         public override void Dispose() => Custom.Dispose();
@@ -48,6 +58,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Renders the node to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        void Render(IDrawingContextImpl context);
+        void Render(ImmediateDrawingContext context);
     }
 }

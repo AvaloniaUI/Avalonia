@@ -60,6 +60,29 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Lays_Out_Descendents_That_Were_Invalidated_While_Ancestor_Was_Not_Visible()
+        {
+            // Issue #11076
+            var control = new LayoutTestControl();
+            var parent = new Decorator { Child = control };
+            var grandparent = new Decorator { Child = parent };
+            var root = new LayoutTestRoot { Child = grandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.IsVisible = false;
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.IsVisible = true;
+
+            root.LayoutManager.ExecuteLayoutPass();
+            
+            Assert.True(control.IsMeasureValid);
+            Assert.True(control.IsArrangeValid);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();
@@ -456,6 +479,106 @@ namespace Avalonia.Base.UnitTests.Layout
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             
             Assert.Equal(1, layoutCount);
+        }
+
+        [Fact]
+        public void Child_Can_Invalidate_Parent_Measure_During_Arrange()
+        {
+            // Issue #11015.
+            //
+            // - Child invalidates parent measure in arrange pass
+            // - Parent is added to measure & arrange queues
+            // - Arrange pass dequeues parent
+            // - Measure is not valid so parent is not arranged
+            // - Parent is measured
+            // - Parent has been dequeued from arrange queue so no arrange is performed
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var root = new LayoutTestRoot { Child = parent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            child.DoArrangeOverride = (_, s) =>
+            {
+                parent.InvalidateMeasure();
+                return s;
+            };
+
+            child.InvalidateMeasure();
+            parent.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Grandparent_Can_Invalidate_Root_Measure_During_Arrange()
+        {
+            // Issue #11161.
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var grandparent = new LayoutTestControl { Child = parent };
+            var root = new LayoutTestRoot { Child = grandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            grandparent.DoArrangeOverride = (_, s) =>
+            {
+                root.InvalidateMeasure();
+                return s;
+            };
+            grandparent.CallBaseArrange = true;
+
+            child.InvalidateMeasure();
+            grandparent.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+            Assert.True(grandparent.IsMeasureValid);
+            Assert.True(grandparent.IsArrangeValid);
+            Assert.True(root.IsMeasureValid);
+            Assert.True(root.IsArrangeValid);
+        }
+
+        [Fact]
+        public void GreatGrandparent_Can_Invalidate_Grandparent_Measure_During_Arrange()
+        {
+            // Issue #7706 (second part: scrollbar gets stuck)
+            var child = new LayoutTestControl();
+            var parent = new LayoutTestControl { Child = child };
+            var grandparent = new LayoutTestControl { Child = parent };
+            var greatGrandparent = new LayoutTestControl { Child = grandparent };
+            var root = new LayoutTestRoot { Child = greatGrandparent };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            greatGrandparent.DoArrangeOverride = (_, s) =>
+            {
+                grandparent.InvalidateMeasure();
+                return s;
+            };
+
+            child.InvalidateArrange();
+            greatGrandparent.InvalidateArrange();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+            Assert.True(parent.IsMeasureValid);
+            Assert.True(parent.IsArrangeValid);
+            Assert.True(greatGrandparent.IsMeasureValid);
+            Assert.True(greatGrandparent.IsArrangeValid);
+            Assert.True(root.IsMeasureValid);
+            Assert.True(root.IsArrangeValid);
         }
     }
 }

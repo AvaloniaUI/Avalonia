@@ -91,31 +91,44 @@ public class DispatcherFrame
 
     internal void Run(IControlledDispatcherImpl impl)
     {
-        // Since the actual platform run loop is controlled by a Cancellation token, we are restarting 
-        // it if frame still needs to run
-        while (Continue)
-            RunCore(impl);
-    }
+        Dispatcher.VerifyAccess();
+        
+        // Since the actual platform run loop is controlled by a Cancellation token, we have an
+        // outer loop that restarts the platform one in case Continue was set to true after being set to false
+        while (true)
+        {
+            // Take the instance lock since `Continue` is changed from one too
+            lock (Dispatcher.InstanceLock)
+            {
+                if (!Continue)
+                    return;
+                
+                if (_isRunning)
+                    throw new InvalidOperationException("This frame is already running");
 
-    private void RunCore(IControlledDispatcherImpl impl)
-    {
-        if (_isRunning)
-            throw new InvalidOperationException("This frame is already running");
-        _isRunning = true;
-        try
-        {
-            _cancellationTokenSource = new CancellationTokenSource();
-            // Wake up the dispatcher in case it has pending jobs
-            Dispatcher.RequestProcessing();
-            impl.RunLoop(_cancellationTokenSource.Token);
-        }
-        finally
-        {
-            _isRunning = false;
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource = null;
+                _cancellationTokenSource = new CancellationTokenSource();
+                _isRunning = true;
+            }
+
+            try
+            {
+                // Wake up the dispatcher in case it has pending jobs
+                Dispatcher.RequestProcessing();
+                impl.RunLoop(_cancellationTokenSource.Token);
+            }
+            finally
+            {
+                lock (Dispatcher.InstanceLock)
+                {
+                    _isRunning = false;
+                    _cancellationTokenSource?.Cancel();
+                    _cancellationTokenSource?.Dispose();
+                    _cancellationTokenSource = null;
+                }
+            }
         }
     }
+    
 
     internal void MaybeExitOnDispatcherRequest()
     {

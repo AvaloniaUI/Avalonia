@@ -170,8 +170,15 @@ namespace Avalonia.Controls
             UpdateFlowDirection();
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new ComboBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ComboBoxItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ComboBoxItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<ComboBoxItem>(item, out recycleKey);
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -443,7 +450,22 @@ namespace Avalonia.Controls
             }
             else
             {
-                SelectionBoxItem = item;
+                if(ItemTemplate is null && DisplayMemberBinding is { } binding)
+                {
+                    var template = new FuncDataTemplate<object?>((_, _) =>
+                    new TextBlock
+                    {
+                        [TextBlock.DataContextProperty] = item,
+                        [!TextBlock.TextProperty] = binding,
+                    });
+                    var text = template.Build(item);
+                    SelectionBoxItem = text;
+                }
+                else
+                {
+                    SelectionBoxItem = item;
+                }
+                
             }
         }
 

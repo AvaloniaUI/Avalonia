@@ -5,7 +5,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics.Controls
 {
-    internal class FilterTextBox : TextBox, IStyleable
+    internal class FilterTextBox : TextBox
     {
         public static readonly StyledProperty<bool> UseRegexFilterProperty =
             AvaloniaProperty.Register<FilterTextBox, bool>(nameof(UseRegexFilter),
@@ -42,6 +42,6 @@ namespace Avalonia.Diagnostics.Controls
             set => SetValue(UseWholeWordFilterProperty, value);
         }
 
-        Type IStyleable.StyleKey => typeof(TextBox);
+        protected override Type StyleKeyOverride => typeof(TextBox);
     }
 }

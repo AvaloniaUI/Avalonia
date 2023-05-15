@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
@@ -1012,6 +1013,33 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
                 var textBounds = textLine.GetTextBounds(0, 1);
+
+                Assert.Equal(1, textBounds.Count);
+
+                var firstBounds = textBounds.First();
+
+                Assert.True(firstBounds.TextRunBounds.Count > 0);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_With_EndOfParagraph()
+        {
+            var text = "abc";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var textBounds = textLine.GetTextBounds(3, 1);
 
                 Assert.Equal(1, textBounds.Count);
 

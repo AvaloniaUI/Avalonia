@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:ControlSamples"
+        xmlns:vm="using:VirtualizationDemo.ViewModels"
+        xmlns:views="using:VirtualizationDemo.Views"
+        x:Class="VirtualizationDemo.MainWindow"
+        Title="AvaloniaUI Virtualization Demo"
+        x:DataType="vm:MainWindowViewModel">
+  <controls:HamburgerMenu>
+    <TabItem Header="Playground" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+      <views:PlaygroundPageView DataContext="{Binding Playground}"/>
+    </TabItem>
+    <TabItem Header="Chat" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+      <views:ChatPageView DataContext="{Binding Chat}"/>
+    </TabItem>
+    <TabItem Header="Expanders" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+      <views:ExpanderPageView DataContext="{Binding Expanders}"/>
+    </TabItem>
+  </controls:HamburgerMenu>
+</Window>

@@ -13,13 +13,13 @@ namespace Avalonia.Controls
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : IResourceDictionary
+    public class ResourceDictionary : IResourceDictionary, IThemeVariantProvider
     {
         private object? lastDeferredItemKey;
         private Dictionary<object, object?>? _inner;
         private IResourceHost? _owner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
-        private AvaloniaDictionary<ThemeVariant, IResourceProvider>? _themeDictionary;
+        private AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>? _themeDictionary;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
@@ -93,13 +93,13 @@ namespace Avalonia.Controls
             }
         }
 
-        public IDictionary<ThemeVariant, IResourceProvider> ThemeDictionaries
+        public IDictionary<ThemeVariant, IThemeVariantProvider> ThemeDictionaries
         {
             get
             {
                 if (_themeDictionary == null)
                 {
-                    _themeDictionary = new AvaloniaDictionary<ThemeVariant, IResourceProvider>(2);
+                    _themeDictionary = new AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>(2);
                     _themeDictionary.ForEachItem(
                         (_, x) =>
                         {
@@ -120,6 +120,8 @@ namespace Avalonia.Controls
                 return _themeDictionary;
             }
         }
+        
+        ThemeVariant? IThemeVariantProvider.Key { get; set; }
 
         bool IResourceNode.HasResources
         {
@@ -192,7 +194,7 @@ namespace Avalonia.Controls
 
             if (_themeDictionary is not null)
             {
-                IResourceProvider? themeResourceProvider;
+                IThemeVariantProvider? themeResourceProvider;
                 if (theme is not null && theme != ThemeVariant.Default)
                 {
                     if (_themeDictionary.TryGetValue(theme, out themeResourceProvider)

@@ -13,7 +13,7 @@ namespace Avalonia.ReactiveUI
     /// the ViewModel property and display it. This control is very useful
     /// inside a DataTemplate to display the View associated with a ViewModel.
     /// </summary>
-    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger, IStyleable
+    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewModel"/> property.
@@ -78,7 +78,7 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public IViewLocator? ViewLocator { get; set; }
 
-        Type IStyleable.StyleKey => typeof(TransitioningContentControl);
+        protected override Type StyleKeyOverride => typeof(TransitioningContentControl);
 
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.

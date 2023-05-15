@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Moq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Controls;
 
 namespace Avalonia.UnitTests
 {
@@ -54,8 +55,8 @@ namespace Avalonia.UnitTests
                 windowImpl.Object.PositionChanged?.Invoke(x);
             });
 
-            windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
-                .Callback<Size, PlatformResizeReason>((x, y) =>
+            windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<WindowResizeReason>()))
+                .Callback<Size, WindowResizeReason>((x, y) =>
             {
                 var constrainedSize = x.Constrain(s_screenSize);
                 
@@ -68,7 +69,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Show(true, It.IsAny<bool>())).Callback(() =>
             {
-                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, PlatformResizeReason.Unspecified);
+                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, WindowResizeReason.Unspecified);
                 windowImpl.Object.Activated?.Invoke();
             });
 
@@ -87,7 +88,7 @@ namespace Avalonia.UnitTests
             {
                 clientSize = size.Constrain(s_screenSize);
                 popupImpl.Object.PositionChanged?.Invoke(pos);
-                popupImpl.Object.Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
+                popupImpl.Object.Resized?.Invoke(clientSize, WindowResizeReason.Unspecified);
             });
             
             var positioner = new ManagedPopupPositioner(positionerHelper);

@@ -1,6 +1,5 @@
 ﻿using Avalonia.Platform;
 using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -17,15 +16,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The draw opacity.</param>
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
             : base(destRect, transform)
         {
             Source = source.Clone();
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
-            BitmapInterpolationMode = bitmapInterpolationMode;
             SourceVersion = Source.Item.Version;
         }
 
@@ -53,14 +50,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the destination rect.
         /// </summary>
         public Rect DestRect { get; }
-
-        /// <summary>
-        /// Gets the bitmap interpolation mode.
-        /// </summary>
-        /// <value>
-        /// The scaling mode.
-        /// </value>
-        public BitmapInterpolationMode BitmapInterpolationMode { get; }
         
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -70,31 +59,29 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The opacity of the other draw operation.</param>
         /// <param name="sourceRect">The source rect of the other draw operation.</param>
         /// <param name="destRect">The dest rect of the other draw operation.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
             return transform == Transform &&
                    Equals(source.Item, Source.Item) &&
                    source.Item.Version == SourceVersion &&
                    opacity == Opacity &&
                    sourceRect == SourceRect &&
-                   destRect == DestRect &&
-                   bitmapInterpolationMode == BitmapInterpolationMode;
+                   destRect == DestRect;
         }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            context.DrawBitmap(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
+            context.DrawBitmap(Source, Opacity, SourceRect, DestRect);
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => DestRect.ContainsExclusive(p);
+        public override bool HitTestTransformed(Point p) => DestRect.ContainsExclusive(p);
 
         public override void Dispose()
         {

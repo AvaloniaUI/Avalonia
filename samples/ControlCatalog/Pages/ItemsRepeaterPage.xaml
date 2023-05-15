@@ -66,7 +66,7 @@
       <ScrollViewer Name="scroller"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">
-        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}"
+        <ItemsRepeater Name="repeater" Background="Transparent" ItemsSource="{Binding Items}"
                        ItemTemplate="{StaticResource elementFactory}"/>
       </ScrollViewer>
     </Border>

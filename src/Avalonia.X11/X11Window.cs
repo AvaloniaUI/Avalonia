@@ -24,6 +24,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
+using System.Runtime.InteropServices;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
@@ -48,6 +49,7 @@ namespace Avalonia.X11
         private readonly X11NativeControlHost _nativeControlHost;
         private PixelPoint? _position;
         private PixelSize _realSize;
+        private bool _cleaningUp;
         private IntPtr _handle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
@@ -183,7 +185,7 @@ namespace Avalonia.X11
                 surfaces.Insert(0,
                     new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)
-                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
+                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
 
             surfaces.Add(Handle);
 
@@ -350,7 +352,7 @@ namespace Avalonia.X11
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         //TODO
         public Action<double>? ScalingChanged { get; set; }
         public Action? Deactivated { get; set; }
@@ -507,7 +509,7 @@ namespace Avalonia.X11
                         UpdateImePosition();
 
                         if (changedSize && !updatedSizeViaScaling && !_popup)
-                            Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+                            Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
 
                     }, DispatcherPriority.Layout);
                 if (_useRenderWindow)
@@ -522,7 +524,7 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.DestroyNotify 
                      && ev.DestroyWindowEvent.window == _handle)
             {
-                Cleanup();
+                Cleanup(true);
             }
             else if (ev.type == XEventName.ClientMessage)
             {
@@ -588,7 +590,7 @@ namespace Avalonia.X11
                 UpdateImePosition();
                 SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                 if(!skipResize)
-                    Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
+                    Resize(oldScaledSize, true, WindowResizeReason.DpiChange);
                 return true;
             }
             
@@ -628,6 +630,8 @@ namespace Avalonia.X11
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
+                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
+                        IntPtr.Zero);
                 }
             }
         }
@@ -638,7 +642,7 @@ namespace Avalonia.X11
             {
                 // Occurs once the window has been mapped, which is the earliest the extents
                 // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
-                Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+                Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
             }
 
             if (atom == _x11.Atoms._NET_WM_STATE)
@@ -734,6 +738,10 @@ namespace Avalonia.X11
         {
             if (_inputRoot is null)
                 return;
+
+            if (_disabled && args is RawPointerEventArgs pargs && pargs.Type == RawPointerEventType.Move)
+                return;
+
             Input?.Invoke(args);
             if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
@@ -816,7 +824,7 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
-            Cleanup();            
+            Cleanup(false);            
         }
 
         public virtual object? TryGetFeature(Type featureType)
@@ -849,8 +857,17 @@ namespace Avalonia.X11
             return null;
         }
 
-        private void Cleanup()
+        private void Cleanup(bool fromDestroyNotification)
         {
+            // Prevent reentrancy
+            if(_cleaningUp)
+                return;
+            _cleaningUp = true;
+            
+            // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
+            if (_handle != IntPtr.Zero)
+                Closed?.Invoke();
+            
             if (_rawEventGrouper != null)
             {
                 _rawEventGrouper.Dispose();
@@ -888,10 +905,10 @@ namespace Avalonia.X11
                 _platform.XI2?.OnWindowDestroyed(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
-                Closed?.Invoke();
                 _mouse.Dispose();
                 _touch.Dispose();
-                XDestroyWindow(_x11.Display, handle);
+                if (!fromDestroyNotification)
+                    XDestroyWindow(_x11.Display, handle);
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
@@ -942,19 +959,19 @@ namespace Avalonia.X11
         }
 
 
-        public void Resize(Size clientSize, PlatformResizeReason reason) => Resize(clientSize, false, reason);
+        public void Resize(Size clientSize, WindowResizeReason reason) => Resize(clientSize, false, reason);
         public void Move(PixelPoint point) => Position = point;
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
             _scalingOverride = scaling;
             UpdateScaling(true);
-            Resize(size, true, PlatformResizeReason.Layout);
+            Resize(size, true, WindowResizeReason.Layout);
         }
 
         private PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
 
-        private void Resize(Size clientSize, bool force, PlatformResizeReason reason)
+        private void Resize(Size clientSize, bool force, WindowResizeReason reason)
         {
             if (!force && clientSize == ClientSize)
                 return;
@@ -1191,6 +1208,32 @@ namespace Avalonia.X11
         public void SetEnabled(bool enable)
         {
             _disabled = !enable;
+
+            UpdateWMHints();
+        }
+
+        private void UpdateWMHints()
+        {
+            var wmHintsPtr = XGetWMHints(_x11.Display, _handle);
+
+            XWMHints hints = default;
+
+            if (wmHintsPtr != IntPtr.Zero)
+            {
+                hints = Marshal.PtrToStructure<XWMHints>(wmHintsPtr);
+            }
+
+            var flags = hints.flags.ToInt64();
+            flags |= (long)XWMHintsFlags.InputHint;
+            hints.flags = (IntPtr)flags;
+            hints.input = !_disabled ? 1 : 0;
+
+            XSetWMHints(_x11.Display, _handle, ref hints);
+
+            if (wmHintsPtr != IntPtr.Zero)
+            {
+                XFree(wmHintsPtr);
+            }
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
@@ -1279,6 +1322,8 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
+
+        public bool IsEnabled => !_disabled;
 
         public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
         {

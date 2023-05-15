@@ -30,7 +30,7 @@ namespace Avalonia.Rendering.SceneGraph
 
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => false;
+        public override bool HitTestTransformed(Point p) => false;
 
         /// <summary>
         /// Determines if this draw operation equals another.

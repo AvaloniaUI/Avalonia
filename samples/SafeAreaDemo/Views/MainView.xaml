@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SafeAreaDemo.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:Class="SafeAreaDemo.Views.MainView"
+             x:DataType="vm:MainViewModel">
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <Border BorderBrush="Red"
+                Margin="{Binding ViewPadding}"
+                BorderThickness="1">
+            <Grid>
+            <Label Margin="5"
+                   Foreground="Red"
+                   HorizontalAlignment="Stretch"
+                   HorizontalContentAlignment="Right">View Bounds</Label>
+            <Label Margin="5"
+                   Foreground="Red"
+                   VerticalAlignment="Bottom"
+                   HorizontalContentAlignment="Right">View Bounds</Label>                
+            </Grid>
+        </Border>
+        <Border BorderBrush="LimeGreen"
+                Margin="{Binding SafeAreaPadding}"
+                BorderThickness="1">
+            <DockPanel>
+                <Label Margin="5"
+                       Foreground="LimeGreen"
+                       DockPanel.Dock="Bottom"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Left" >Safe Area</Label>
+                <Grid DockPanel.Dock="Bottom"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <Label HorizontalAlignment="Left">Options:</Label>
+                        <CheckBox IsChecked="{Binding Fullscreen}">Fullscreen</CheckBox>
+                        <CheckBox IsChecked="{Binding UseSafeArea}">Use Safe Area</CheckBox>
+                        <CheckBox IsChecked="{Binding HideSystemBars}">Hide System Bars</CheckBox>
+                        <TextBox Width="200" Watermark="Tap to Show Keyboard"/>
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

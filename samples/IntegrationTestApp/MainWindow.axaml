@@ -170,10 +170,21 @@
           </StackPanel>
         </Grid>
       </TabItem>
-      <TabItem Header="SliderTab">
-          <Slider VerticalAlignment="Top" Name="Slider" Value="30"/>
+      
+      <TabItem Header="Slider">
+          <DockPanel>
+            <DockPanel DockPanel.Dock="Top">
+              <TextBox Name="HorizontalSliderValue"
+                       DockPanel.Dock="Right"
+                       Text="{Binding #HorizontalSlider.Value, Mode=OneWay, StringFormat=\{0:0\}}"
+                       VerticalAlignment="Top"/>
+              <Slider Name="HorizontalSlider" Value="50"/>
+            </DockPanel>
+            <Button Name="ResetSliders">Reset</Button>
+          </DockPanel>
       </TabItem>
-      <TabItem Header="ScrollBarTab">
+      
+      <TabItem Header="ScrollBar">
         <ScrollBar Name="MyScrollBar" Orientation="Horizontal" AllowAutoHide="False" Width="200" Height="30" Value="20"/>
       </TabItem>
     </TabControl>

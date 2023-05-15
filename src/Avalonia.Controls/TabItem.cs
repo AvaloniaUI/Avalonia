@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TabItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TabItem>();
 
         /// <summary>
         /// Initializes static members of the <see cref="TabItem"/> class.
@@ -42,6 +42,8 @@ namespace Avalonia.Controls
         /// <value>
         /// The tab strip placement.
         /// </value>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031",
+            Justification = "This property is supposed to be inherited only and settable on parent TabControl.")]
         public Dock TabStripPlacement
         {
             get { return GetValue(TabStripPlacementProperty); }
@@ -83,7 +85,7 @@ namespace Avalonia.Controls
                 {
                     Header = obj.NewValue;
                 }
-            }          
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,11 +117,11 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> synchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <returns>
     ///     The return value from the delegate being invoked.
@@ -136,11 +135,11 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> synchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
@@ -156,11 +155,11 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> synchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
@@ -183,11 +182,11 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> synchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; synchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
@@ -249,11 +248,11 @@ public partial class Dispatcher
     ///     An operation representing the queued delegate to be invoked.
     /// </returns>
     /// <remarks>
-    ///     Note that the default priority is DispatcherPriority.Normal.
+    ///     Note that the default priority is DispatcherPriority.Default.
     /// </remarks>
     public DispatcherOperation InvokeAsync(Action callback)
     {
-        return InvokeAsync(callback, DispatcherPriority.Normal, CancellationToken.None);
+        return InvokeAsync(callback, default, CancellationToken.None);
     }
 
     /// <summary>
@@ -317,29 +316,29 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> asynchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <returns>
     ///     An operation representing the queued delegate to be invoked.
     /// </returns>
     /// <remarks>
-    ///     Note that the default priority is DispatcherPriority.Normal.
+    ///     Note that the default priority is DispatcherPriority.Default.
     /// </remarks>
     public DispatcherOperation<TResult> InvokeAsync<TResult>(Func<TResult> callback)
     {
-        return InvokeAsync(callback, DispatcherPriority.Normal, CancellationToken.None);
+        return InvokeAsync(callback, DispatcherPriority.Default, CancellationToken.None);
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> asynchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
@@ -355,11 +354,11 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<TResult> asynchronously on the
+    ///     Executes the specified Func&lt;TResult&gt; asynchronously on the
     ///     thread that the Dispatcher was created on.
     /// </summary>
     /// <param name="callback">
-    ///     A Func<TResult> delegate to invoke through the dispatcher.
+    ///     A Func&lt;TResult&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
@@ -479,7 +478,7 @@ public partial class Dispatcher
             // operation has already started when the timeout expires,
             // we still wait for it to complete.  This is different
             // than simply waiting on the operation with a timeout
-            // because we are the ones queueing the dispatcher
+            // because we are the ones queuing the dispatcher
             // operation, not the caller.  We can't leave the operation
             // in a state that it might execute if we return that it did not
             // invoke.
@@ -492,12 +491,12 @@ public partial class Dispatcher
 
                 // Old async semantics return from Wait without
                 // throwing an exception if the operation was aborted.
-                // There is no need to test the timout condition, since
+                // There is no need to test the timeout condition, since
                 // the old async semantics would just return the result,
                 // which would be null.
 
                 // This should not block because either the operation
-                // is using the old async sematics, or the operation
+                // is using the old async semantics, or the operation
                 // completed successfully.
                 result = operation.GetResult();
             }
@@ -543,32 +542,23 @@ public partial class Dispatcher
     }
 
     /// <summary>
-    ///     Executes the specified Func<Task> asynchronously on the
+    ///     Executes the specified Func&lt;Task&gt; asynchronously on the
     ///     thread that the Dispatcher was created on
     /// </summary>
     /// <param name="callback">
-    ///     A Func<Task> delegate to invoke through the dispatcher.
-    /// </param>
-    /// <param name="priority">
-    ///     The priority that determines in what order the specified
-    ///     callback is invoked relative to the other pending operations
-    ///     in the Dispatcher.
+    ///     A Func&lt;Task&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <returns>
-    ///     An task that completes after the task returned from callback finishes
+    ///     An task that completes after the task returned from callback finishes.
     /// </returns>
-    public Task InvokeTaskAsync(Func<Task> callback, DispatcherPriority priority = default)
-    {
-        _ = callback ?? throw new ArgumentNullException(nameof(callback));
-        return InvokeAsync(callback, priority).GetTask().Unwrap();
-    }
+    public Task InvokeAsync(Func<Task> callback) => InvokeAsync(callback, DispatcherPriority.Default);
     
     /// <summary>
-    ///     Executes the specified Func<Task<TResult>> asynchronously on the
+    ///     Executes the specified Func&lt;Task&gt; asynchronously on the
     ///     thread that the Dispatcher was created on
     /// </summary>
     /// <param name="callback">
-    ///     A Func<Task<TResult>> delegate to invoke through the dispatcher.
+    ///     A Func&lt;Task&gt; delegate to invoke through the dispatcher.
     /// </param>
     /// <param name="priority">
     ///     The priority that determines in what order the specified
@@ -578,10 +568,49 @@ public partial class Dispatcher
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
-    public Task<TResult> InvokeTaskAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority = default)
+    public Task InvokeAsync(Func<Task> callback, DispatcherPriority priority)
+    {
+        _ = callback ?? throw new ArgumentNullException(nameof(callback));
+        return InvokeAsync<Task>(callback, priority).GetTask().Unwrap();
+    }
+
+    /// <summary>
+    ///     Executes the specified Func&lt;Task&lt;TResult&gt;&gt; asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="action">
+    ///     A Func&lt;Task&lt;TResult&gt;&gt; delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> action) =>
+        InvokeAsync(action, DispatcherPriority.Default);
+    
+    /// <summary>
+    ///     Executes the specified Func&lt;Task&lt;TResult&gt;&gt; asynchronously on the
+    ///     thread that the Dispatcher was created on
+    /// </summary>
+    /// <param name="action">
+    ///     A Func&lt;Task&lt;TResult&gt;&gt; delegate to invoke through the dispatcher.
+    /// </param>
+    /// <param name="priority">
+    ///     The priority that determines in what order the specified
+    ///     callback is invoked relative to the other pending operations
+    ///     in the Dispatcher.
+    /// </param>
+    /// <returns>
+    ///     An task that completes after the task returned from callback finishes
+    /// </returns>
+    public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> action, DispatcherPriority priority)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
-        return InvokeAsync(action, priority).GetTask().Unwrap();
+        return InvokeAsync<Task<TResult>>(action, priority).GetTask().Unwrap();
     }
 
     /// <summary>

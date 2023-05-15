@@ -27,24 +27,24 @@ namespace Avalonia.Skia
 
             const double defaultFontRenderingEmSize = 12.0;
 
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalAscender, out var ascent);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalDescender, out var descent);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalLineGap, out var lineGap);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughOffset);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughSize);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlineOffset);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineSize);
+            
             Metrics = new FontMetrics
             {
                 DesignEmHeight = (short)Typeface.UnitsPerEm,
-                Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
-                Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
-                LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
-                UnderlinePosition = metrics.UnderlinePosition != null ?
-                (int)(metrics.UnderlinePosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                UnderlineThickness = metrics.UnderlineThickness != null ?
-                (int)(metrics.UnderlineThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                StrikethroughPosition = metrics.StrikeoutPosition != null ?
-                (int)(metrics.StrikeoutPosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                StrikethroughThickness = metrics.StrikeoutThickness != null ?
-                (int)(metrics.StrikeoutThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
+                Ascent = -ascent,
+                Descent = -descent,
+                LineGap = lineGap,
+                UnderlinePosition = -underlineOffset,
+                UnderlineThickness = underlineSize,
+                StrikethroughPosition = -strikethroughOffset,
+                StrikethroughThickness = strikethroughSize,
                 IsFixedPitch = Typeface.IsFixedPitch
             };
 

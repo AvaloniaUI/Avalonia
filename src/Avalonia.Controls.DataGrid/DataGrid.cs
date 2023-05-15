@@ -152,8 +152,6 @@ namespace Avalonia.Controls
         private double _verticalOffset;
         private byte _verticalScrollChangesIgnored;
 
-        private IEnumerable _items;
-
         public event EventHandler<ScrollEventArgs> HorizontalScroll;
         public event EventHandler<ScrollEventArgs> VerticalScroll;
 
@@ -652,21 +650,18 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Identifies the ItemsSource dependency property.
+        /// Identifies the ItemsSource property.
         /// </summary>
-        public static readonly DirectProperty<DataGrid, IEnumerable> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<DataGrid, IEnumerable>(
-                nameof(Items),
-                o => o.Items,
-                (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable> ItemsSourceProperty =
+            AvaloniaProperty.Register<DataGrid, IEnumerable>(nameof(ItemsSource));
 
         /// <summary>
         /// Gets or sets a collection that is used to generate the content of the control.
         /// </summary>
-        public IEnumerable Items
+        public IEnumerable ItemsSource
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         public static readonly StyledProperty<bool> AreRowDetailsFrozenProperty =
@@ -713,7 +708,7 @@ namespace Avalonia.Controls
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
 
-            ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
+            ItemsSourceProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsSourcePropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
             ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnColumnWidthChanged(e));
             FrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnFrozenColumnCountChanged(e));
@@ -734,6 +729,8 @@ namespace Avalonia.Controls
             RowDetailsTemplateProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowDetailsTemplateChanged(e));
             RowDetailsVisibilityModeProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowDetailsVisibilityModeChanged(e));
             AutoGenerateColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnAutoGenerateColumnsChanged(e));
+
+            FocusableProperty.OverrideDefaultValue<DataGrid>(true);
         }
 
         /// <summary>
@@ -816,10 +813,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// ItemsProperty property changed handler.
+        /// ItemsSourceProperty property changed handler.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private void OnItemsSourcePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
             {
@@ -830,7 +827,7 @@ namespace Avalonia.Controls
 
                 if (LoadingOrUnloadingRow)
                 {
-                    SetValueNoCallback(ItemsProperty, oldValue);
+                    SetValueNoCallback(ItemsSourceProperty, oldValue);
                     throw DataGridError.DataGrid.CannotChangeItemsWhenLoadingRows();
                 }
 
@@ -1855,7 +1852,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (CurrentSlot == -1 || Items == null || RowGroupHeadersTable.Contains(CurrentSlot))
+                if (CurrentSlot == -1 || ItemsSource == null || RowGroupHeadersTable.Contains(CurrentSlot))
                 {
                     return null;
                 }
@@ -2483,7 +2480,7 @@ namespace Avalonia.Controls
 
             if (_hScrollBar != null)
             {
-                //_hScrollBar.IsTabStop = false;
+                _hScrollBar.IsTabStop = false;
                 _hScrollBar.Maximum = 0.0;
                 _hScrollBar.Orientation = Orientation.Horizontal;
                 _hScrollBar.IsVisible = false;
@@ -2499,7 +2496,7 @@ namespace Avalonia.Controls
 
             if (_vScrollBar != null)
             {
-                //_vScrollBar.IsTabStop = false;
+                _vScrollBar.IsTabStop = false;
                 _vScrollBar.Maximum = 0.0;
                 _vScrollBar.Orientation = Orientation.Vertical;
                 _vScrollBar.IsVisible = false;
@@ -3739,7 +3736,7 @@ namespace Avalonia.Controls
             if (sender is Control editingElement)
             {
                 editingElement.LostFocus -= EditingElement_LostFocus;
-                if (EditingRow != null && EditingColumnIndex != -1)
+                if (EditingRow != null && _editingColumnIndex != -1)
                 {
                     FocusEditingCell(true);
                 }
@@ -3962,6 +3959,7 @@ namespace Avalonia.Controls
                 bool focusLeftDataGrid = true;
                 bool dataGridWillReceiveRoutedEvent = true;
                 Visual focusedObject = FocusManager.Instance.Current as Visual;
+                DataGridColumn editingColumn = null;
 
                 while (focusedObject != null)
                 {
@@ -3974,22 +3972,29 @@ namespace Avalonia.Controls
                     // Walk up the visual tree.  If we hit the root, try using the framework element's
                     // parent.  We do this because Popups behave differently with respect to the visual tree,
                     // and it could have a parent even if the VisualTreeHelper doesn't find it.
-                    Visual parent = focusedObject.GetVisualParent();
+                    var parent = focusedObject.Parent as Visual;
                     if (parent == null)
                     {
-                        if (focusedObject is Control element)
-                        {
-                            parent = element.VisualParent;
-                            if (parent != null)
-                            {
-                                dataGridWillReceiveRoutedEvent = false;
-                            }
-                        }
+                        parent = focusedObject.GetVisualParent();
+                    }
+                    else
+                    {
+                        dataGridWillReceiveRoutedEvent = false;
                     }
                     focusedObject = parent;
                 }
 
-                if (focusLeftDataGrid)
+                if (EditingRow != null && EditingColumnIndex != -1)
+                {
+                    editingColumn = ColumnsItemsInternal[EditingColumnIndex];
+
+                    if (focusLeftDataGrid && editingColumn is DataGridTemplateColumn)
+                    {
+                        dataGridWillReceiveRoutedEvent = false;
+                    }
+                }
+
+                if (focusLeftDataGrid && !(editingColumn is DataGridTemplateColumn))
                 {
                     ContainsFocus = false;
                     if (EditingRow != null)
@@ -4036,18 +4041,22 @@ namespace Avalonia.Controls
                 return true;
             }
 
-            Debug.Assert(EditingRow != null);
+            var editingRow = EditingRow;
+            if (editingRow is null)
+            {
+                return true;
+            }
+
             Debug.Assert(_editingColumnIndex >= 0);
             Debug.Assert(_editingColumnIndex < ColumnsItemsInternal.Count);
             Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
-            Debug.Assert(EditingRow != null && EditingRow.Slot == CurrentSlot);
 
             // Cache these to see if they change later
             int currentSlot = CurrentSlot;
             int currentColumnIndex = CurrentColumnIndex;
 
             // We're ready to start ending, so raise the event
-            DataGridCell editingCell = EditingRow.Cells[_editingColumnIndex];
+            DataGridCell editingCell = editingRow.Cells[_editingColumnIndex];
             var editingElement = editingCell.Content as Control;
             if (editingElement == null)
             {
@@ -4055,7 +4064,7 @@ namespace Avalonia.Controls
             }
             if (raiseEvents)
             {
-                DataGridCellEditEndingEventArgs e = new DataGridCellEditEndingEventArgs(CurrentColumn, EditingRow, editingElement, editAction);
+                DataGridCellEditEndingEventArgs e = new DataGridCellEditEndingEventArgs(CurrentColumn, editingRow, editingElement, editAction);
                 OnCellEditEnding(e);
                 if (e.Cancel)
                 {
@@ -4109,7 +4118,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        if (EditingRow != null)
+                        if (editingRow != null)
                         {
                             if (editingCell.IsValid)
                             {
@@ -4117,10 +4126,10 @@ namespace Avalonia.Controls
                                 editingCell.UpdatePseudoClasses();
                             }
 
-                            if (EditingRow.IsValid)
+                            if (editingRow.IsValid)
                             {
-                                EditingRow.IsValid = false;
-                                EditingRow.UpdatePseudoClasses();
+                                editingRow.IsValid = false;
+                                editingRow.UpdatePseudoClasses();
                             }
                         }
 
@@ -4166,22 +4175,22 @@ namespace Avalonia.Controls
                 PopulateCellContent(
                     isCellEdited: !exitEditingMode,
                     dataGridColumn: CurrentColumn,
-                    dataGridRow: EditingRow,
+                    dataGridRow: editingRow,
                     dataGridCell: editingCell);
 
-                EditingRow.InvalidateDesiredHeight();
+                editingRow.InvalidateDesiredHeight();
                 var column = editingCell.OwningColumn;
                 if (column.Width.IsSizeToCells || column.Width.IsAuto)
                 {// Invalidate desired width and force recalculation
                     column.SetWidthDesiredValue(0);
-                    EditingRow.OwningGrid.AutoSizeColumn(column, editingCell.DesiredSize.Width);
+                    editingRow.OwningGrid.AutoSizeColumn(column, editingCell.DesiredSize.Width);
                 }
             }
 
             // We're done, so raise the CellEditEnded event
             if (raiseEvents)
             {
-                OnCellEditEnded(new DataGridCellEditEndedEventArgs(CurrentColumn, EditingRow, editAction));
+                OnCellEditEnded(new DataGridCellEditEndedEventArgs(CurrentColumn, editingRow, editAction));
             }
 
             // There's a chance that somebody reopened this cell for edit within the CellEditEnded handler,
@@ -4424,8 +4433,7 @@ namespace Avalonia.Controls
                     dataGridCell.Focus();
                     success = dataGridCell.ContainsFocusedElement();
                 }
-                //TODO Check
-                //success = dataGridCell.ContainsFocusedElement() ? true : dataGridCell.Focus();
+
                 _focusEditingControl = !success;
             }
             return success;

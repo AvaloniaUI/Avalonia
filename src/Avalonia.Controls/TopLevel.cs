@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -82,11 +83,11 @@ namespace Avalonia.Controls
 
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<TopLevel>();
         
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<TopLevel>();
 
         /// <summary>
         /// Defines the SystemBarColor attached property.
@@ -285,6 +286,11 @@ namespace Avalonia.Controls
         public event EventHandler? Closed;
 
         /// <summary>
+        /// Gets or sets a method called when the TopLevel's scaling changes.
+        /// </summary>
+        public event EventHandler? ScalingChanged;
+        
+        /// <summary>
         /// Gets or sets the client size of the window.
         /// </summary>
         public Size ClientSize
@@ -427,14 +433,17 @@ namespace Avalonia.Controls
         double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
 
         /// <inheritdoc/>
-        double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
+        public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
         
+        /// <summary>
+        /// File System storage service used for file pickers and bookmarks.
+        /// </summary>
         public IStorageProvider StorageProvider => _storageProvider
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
-            ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
+            ?? new NoopStorageProvider();
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
 
@@ -527,6 +536,14 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            Renderer.SceneInvalidated -= SceneInvalidated;
+            // We need to wait for the renderer to complete any in-flight operations
+            Renderer.Dispose();
+            
+            Debug.Assert(PlatformImpl != null);
+            // The PlatformImpl is completely invalid at this point
+            PlatformImpl = null;
+            
             if (_globalStyles is object)
             {
                 _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
@@ -536,18 +553,13 @@ namespace Avalonia.Controls
             {
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
-
-            Renderer.SceneInvalidated -= SceneInvalidated;
-            Renderer.Dispose();
-
+            
             _layoutDiagnosticBridge?.Dispose();
             _layoutDiagnosticBridge = null;
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
             _backGestureSubscription?.Dispose();
-
-            PlatformImpl = null;
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
@@ -565,7 +577,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
         /// <param name="reason">The reason for the resize.</param>
-        protected virtual void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal virtual void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             ClientSize = clientSize;
             FrameSize = PlatformImpl!.FrameSize;
@@ -583,6 +595,7 @@ namespace Avalonia.Controls
         protected virtual void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
+            ScalingChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)

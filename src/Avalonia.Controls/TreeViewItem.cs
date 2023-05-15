@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         /// <summary>
         /// Defines the <see cref="Level"/> property.
@@ -45,6 +45,7 @@ namespace Avalonia.Controls
 
         private TreeView? _treeView;
         private Control? _header;
+        private Control? _headerPresenter;
         private int _level;
         private bool _templateApplied;
         private bool _deferredBringIntoViewFlag;
@@ -90,19 +91,24 @@ namespace Avalonia.Controls
 
         internal TreeView? TreeViewOwner => _treeView;
 
-        protected internal override Control CreateContainerForItemOverride()
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
-            return EnsureTreeView().CreateContainerForItemOverride();
+            return EnsureTreeView().CreateContainerForItemOverride(item, index, recycleKey);
         }
 
-        protected internal override bool IsItemItsOwnContainerOverride(Control item)
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
         {
-            return EnsureTreeView().IsItemItsOwnContainerOverride(item);
+            return EnsureTreeView().NeedsContainerOverride(item, index, out recycleKey);
         }
 
         protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
         {
             EnsureTreeView().PrepareContainerForItemOverride(container, item, index);
+        }
+
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().ContainerForItemPreparedOverride(container, item, index);
         }
 
         /// <inheritdoc/>
@@ -159,7 +165,7 @@ namespace Avalonia.Controls
                     {
                         Key.Left => ApplyToItemOrRecursivelyIfCtrl(FocusAwareCollapseItem, e.KeyModifiers),
                         Key.Right => ApplyToItemOrRecursivelyIfCtrl(ExpandItem, e.KeyModifiers),
-                        Key.Enter or Key.Space => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
+                        Key.Enter => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
 
                         // do not handle CTRL with numpad keys
                         Key.Subtract => FocusAwareCollapseItem,
@@ -250,15 +256,16 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if (_header is InputElement previousInputMethod)
+            if (_headerPresenter is InputElement previousInputMethod)
             {
                 previousInputMethod.DoubleTapped -= HeaderDoubleTapped;
             }
 
             _header = e.NameScope.Find<Control>("PART_Header");
+            _headerPresenter = e.NameScope.Find<Control>("PART_HeaderPresenter");
             _templateApplied = true;
 
-            if (_header is InputElement im)
+            if (_headerPresenter is InputElement im)
             {
                 im.DoubleTapped += HeaderDoubleTapped;
             }
