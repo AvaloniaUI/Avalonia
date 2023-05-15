@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj" />
+    <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
     <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
