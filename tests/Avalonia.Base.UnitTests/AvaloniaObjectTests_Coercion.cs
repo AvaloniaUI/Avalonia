@@ -32,6 +32,16 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Coerces_Set_Value_Attached_On_Class_Not_Derived_From_Owner()
+        {
+            var target = new Class2();
+
+            target.SetValue(Class1.AttachedProperty, 150);
+
+            Assert.Equal(100, target.GetValue(Class1.AttachedProperty));
+        }
+
+        [Fact]
         public void Coerces_Bound_Value()
         {
             var target = new Class1();
@@ -301,7 +311,7 @@ namespace Avalonia.Base.UnitTests
                     coerce: CoerceFoo);
 
             public static readonly AttachedProperty<int> AttachedProperty =
-                AvaloniaProperty.RegisterAttached<Class1, Class1, int>(
+                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, int>(
                     "Attached",
                     defaultValue: 11,
                     coerce: CoerceFoo);
@@ -332,8 +342,9 @@ namespace Avalonia.Base.UnitTests
 
             public static int CoerceFoo(AvaloniaObject instance, int value)
             {
-                var o = (Class1)instance;
-                return Math.Clamp(value, o.MinFoo, o.MaxFoo);
+                return instance is Class1 o ? 
+                    Math.Clamp(value, o.MinFoo, o.MaxFoo) :
+                    Math.Clamp(value, 0, 100);
             }
 
             protected override void OnPropertyChangedCore(AvaloniaPropertyChangedEventArgs change)

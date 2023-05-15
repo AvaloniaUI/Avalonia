@@ -2160,6 +2160,45 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Does_Not_Write_To_Bound_SelectedItem_When_DataContext_Changes()
+        {
+            // Issue #9438.
+            var vm1 = new SelectionViewModel();
+            vm1.Items.Add("foo");
+            vm1.Items.Add("bar");
+            vm1.SelectedItem = "bar";
+
+            var vm2 = new SelectionViewModel();
+            vm2.Items.Add("foo");
+            vm2.Items.Add("bar");
+            vm2.SelectedItem = "bar";
+
+            var target = new SelectingItemsControl
+            {
+                DataContext = vm1,
+                [!ItemsControl.ItemsSourceProperty] = new Binding("Items"),
+                [!SelectingItemsControl.SelectedItemProperty] = new Binding("SelectedItem"),
+                Template = Template(),
+            };
+
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            var selectedItemChangedRaised = 0;
+            vm2.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(vm2.SelectedItem))
+                {
+                    ++selectedItemChangedRaised;
+                }
+            };
+
+            target.DataContext = vm2;
+
+            Assert.Equal(0, selectedItemChangedRaised);
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -2238,6 +2277,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private class SelectionViewModel : NotifyingBase
         {
             private int _selectedIndex = -1;
+            private object _selectedItem;
 
             public SelectionViewModel()
             {
@@ -2255,6 +2295,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }
             }
 
+            public object SelectedItem
+            {
+                get => _selectedItem;
+                set
+                {
+                    _selectedItem = value;
+                    RaisePropertyChanged();
+                }
+            }
+
             public ObservableCollection<string> Items { get; }
             public ObservableCollection<string> SelectedItems { get; }
         }
@@ -2267,6 +2317,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
+            public new static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+                SelectingItemsControl.SelectedItemsProperty;
+
             public TestSelector()
             {
                 

@@ -24,7 +24,7 @@ namespace Avalonia
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property. May be null.</param>
         /// <param name="metadata">The property metadata.</param>
-        public DirectProperty(
+        internal DirectProperty(
             string name,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue>? setter,
@@ -98,45 +98,6 @@ namespace Avalonia
 
             var result = new DirectProperty<TNewOwner, TValue>(
                 (DirectPropertyBase<TValue>)this,
-                getter,
-                setter,
-                metadata);
-
-            AvaloniaPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
-            return result;
-        }
-
-        /// <summary>
-        /// Registers the direct property on another type.
-        /// </summary>
-        /// <typeparam name="TNewOwner">The type of the additional owner.</typeparam>
-        /// <param name="getter">Gets the current value of the property.</param>
-        /// <param name="setter">Sets the value of the property.</param>
-        /// <param name="unsetValue">
-        /// The value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>
-        /// </param>
-        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
-        /// <returns>The property.</returns>
-        public DirectProperty<TNewOwner, TValue> AddOwnerWithDataValidation<TNewOwner>(
-            Func<TNewOwner, TValue> getter,
-            Action<TNewOwner,TValue> setter,
-            TValue unsetValue = default!,
-            BindingMode defaultBindingMode = BindingMode.Default,
-            bool enableDataValidation = false)
-                where TNewOwner : AvaloniaObject
-        {
-            var metadata = new DirectPropertyMetadata<TValue>(
-                unsetValue: unsetValue,
-                defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
-
-            metadata.Merge(GetMetadata<TOwner>(), this);
-
-            var result = new DirectProperty<TNewOwner, TValue>(
-                this,
                 getter,
                 setter,
                 metadata);
