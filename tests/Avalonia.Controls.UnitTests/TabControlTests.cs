@@ -603,9 +603,9 @@ namespace Avalonia.Controls.UnitTests
             public string Value { get; }
         }
 
-        private class TestTabControl : TabControl, IStyleable
+        private class TestTabControl : TabControl
         {
-            Type IStyleable.StyleKey => typeof(TabControl);
+            protected override Type StyleKeyOverride => typeof(TabControl);
             public new ISelectionModel Selection => base.Selection;
         }
     }

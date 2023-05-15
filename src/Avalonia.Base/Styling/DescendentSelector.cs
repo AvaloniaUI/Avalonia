@@ -44,9 +44,9 @@ namespace Avalonia.Styling
             {
                 c = c.LogicalParent;
 
-                if (c is IStyleable)
+                if (c is StyledElement s)
                 {
-                    var match = _parent.Match((StyledElement)c, parent, subscribe);
+                    var match = _parent.Match(s, parent, subscribe);
 
                     if (match.Result == SelectorMatchResult.Sometimes)
                     {
