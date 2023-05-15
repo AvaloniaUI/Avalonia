@@ -15,6 +15,7 @@ namespace Avalonia.Base.UnitTests
                 new StyledProperty<int>(
                     "BadDefault",
                     typeof(Class1),
+                    typeof(Class1),
                     new StyledPropertyMetadata<int>(101),
                     validate: Class1.ValidateFoo));
         }

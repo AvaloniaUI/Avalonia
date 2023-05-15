@@ -19,14 +19,16 @@ namespace Avalonia
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
         protected AvaloniaProperty(
             string name,
             Type ownerType,
+            Type hostType,
             AvaloniaPropertyMetadata metadata,
             Action<AvaloniaObject, bool>? notifying = null)
-            : base(name, typeof(TValue), ownerType, metadata, notifying)
+            : base(name, typeof(TValue), ownerType, hostType, metadata, notifying)
         {
             _changed = new LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>>();
         }

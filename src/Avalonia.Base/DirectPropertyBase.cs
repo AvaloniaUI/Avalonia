@@ -24,7 +24,7 @@ namespace Avalonia
             string name,
             Type ownerType,
             AvaloniaPropertyMetadata metadata)
-            : base(name, ownerType, metadata)
+            : base(name, ownerType, ownerType, metadata)
         {
             Owner = ownerType;
         }
