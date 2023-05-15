@@ -42,7 +42,7 @@ namespace Avalonia
         /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="Notifying"/> callback.</param>
-        protected AvaloniaProperty(
+        private protected AvaloniaProperty(
             string name,
             Type valueType,
             Type ownerType,
@@ -76,7 +76,7 @@ namespace Avalonia
         /// <param name="source">The direct property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        protected AvaloniaProperty(
+        private protected AvaloniaProperty(
             AvaloniaProperty source,
             Type ownerType,
             AvaloniaPropertyMetadata? metadata)
@@ -153,7 +153,7 @@ namespace Avalonia
         /// will be true before the property change notifications are sent and false afterwards. This
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
-        public Action<AvaloniaObject, bool>? Notifying { get; }
+        internal Action<AvaloniaObject, bool>? Notifying { get; }
 
         /// <summary>
         /// Gets the integer ID that represents this property.
@@ -558,7 +558,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="metadata">The metadata.</param>
-        protected void OverrideMetadata(Type type, AvaloniaPropertyMetadata metadata)
+        private protected void OverrideMetadata(Type type, AvaloniaPropertyMetadata metadata)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             _ = metadata ?? throw new ArgumentNullException(nameof(metadata));
@@ -577,7 +577,7 @@ namespace Avalonia
             _singleMetadata = null;
         }
 
-        protected abstract IObservable<AvaloniaPropertyChangedEventArgs> GetChanged();
+        private protected abstract IObservable<AvaloniaPropertyChangedEventArgs> GetChanged();
 
         private AvaloniaPropertyMetadata GetMetadataWithOverrides(Type type)
         {

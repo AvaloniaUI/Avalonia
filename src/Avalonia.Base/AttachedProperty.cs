@@ -17,7 +17,7 @@ namespace Avalonia
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="validate">A value validation callback.</param>
-        public AttachedProperty(
+        internal AttachedProperty(
             string name,
             Type ownerType,
             Type hostType,
