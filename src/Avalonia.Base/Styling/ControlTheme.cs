@@ -46,7 +46,7 @@ namespace Avalonia.Styling
             if (TargetType is null)
                 throw new InvalidOperationException("ControlTheme has no TargetType.");
 
-            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(((IStyleable)target).StyleKey))
+            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(StyledElement.GetStyleKey(target)))
             {
                 Attach(target, null, type);
                 return SelectorMatchResult.AlwaysThisType;

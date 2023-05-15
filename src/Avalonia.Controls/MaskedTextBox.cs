@@ -10,7 +10,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
-    public class MaskedTextBox : TextBox, IStyleable
+    public class MaskedTextBox : TextBox
     {
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
@@ -183,7 +183,7 @@ namespace Avalonia.Controls
             set => SetValue(ResetOnSpaceProperty, value);
         }
 
-        Type IStyleable.StyleKey => typeof(TextBox);
+        protected override Type StyleKeyOverride => typeof(TextBox);
 
         /// <inheritdoc />
         protected override void OnGotFocus(GotFocusEventArgs e)

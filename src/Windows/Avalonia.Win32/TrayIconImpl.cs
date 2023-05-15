@@ -170,9 +170,9 @@ namespace Avalonia.Win32
             WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024,
         }
 
-        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable
+        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter
         {
-            Type IStyleable.StyleKey => typeof(MenuFlyoutPresenter);
+            protected override Type StyleKeyOverride => typeof(MenuFlyoutPresenter);
 
             public override void Close()
             {

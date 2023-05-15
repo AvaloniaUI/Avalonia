@@ -1031,9 +1031,9 @@ namespace Avalonia.Controls.UnitTests
                     textShaperImpl: new HeadlessTextShaperStub()));
         }
 
-        private class ItemsControlWithContainer : ItemsControl, IStyleable
+        private class ItemsControlWithContainer : ItemsControl
         {
-            Type IStyleable.StyleKey => typeof(ItemsControl);
+            protected override Type StyleKeyOverride => typeof(ItemsControl);
 
             protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
@@ -1046,9 +1046,9 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class ContainerControl : ContentControl, IStyleable
+        private class ContainerControl : ContentControl
         {
-            Type IStyleable.StyleKey => typeof(ContentControl);
+            protected override Type StyleKeyOverride => typeof(ContentControl);
         }
 
         private record Item(string Caption, string? Value = null);

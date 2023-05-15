@@ -4,7 +4,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
-    class OffscreenTopLevel : TopLevel, IStyleable
+    class OffscreenTopLevel : TopLevel
     {
         public OffscreenTopLevelImplBase Impl { get; }
 
@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             }
         }
 
-        Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
+        protected override Type StyleKeyOverride => typeof(EmbeddableControlRoot);
         public void Dispose()
         {
             PlatformImpl?.Dispose();
