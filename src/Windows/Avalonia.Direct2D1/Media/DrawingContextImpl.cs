@@ -149,6 +149,7 @@ namespace Avalonia.Direct2D1.Media
         {
             switch (interpolationMode)
             {
+                case BitmapInterpolationMode.Unspecified:
                 case BitmapInterpolationMode.LowQuality:
                     return InterpolationMode.Linear;
                 case BitmapInterpolationMode.MediumQuality:
@@ -156,7 +157,6 @@ namespace Avalonia.Direct2D1.Media
                 case BitmapInterpolationMode.HighQuality:
                     return InterpolationMode.HighQualityCubic;
                 case BitmapInterpolationMode.None:
-                case BitmapInterpolationMode.Unspecified:
                     return InterpolationMode.NearestNeighbor;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
