@@ -458,9 +458,10 @@ namespace Avalonia.Input
                 SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
                 PseudoClasses.Set(":disabled", !value);
 
-                if (!IsEffectivelyEnabled && FocusManager.Instance?.Current == this)
+                if (!IsEffectivelyEnabled && FocusManager.GetFocusManager(this) is {} focusManager
+                    && Equals(focusManager.GetFocusedElement(), this))
                 {
-                    FocusManager.Instance?.Focus(null);
+                    focusManager.ClearFocus();
                 }
             }
         }
@@ -491,12 +492,10 @@ namespace Avalonia.Input
         public GestureRecognizerCollection GestureRecognizers
             => _gestureRecognizers ?? (_gestureRecognizers = new GestureRecognizerCollection(this));
 
-        /// <summary>
-        /// Focuses the control.
-        /// </summary>
-        public void Focus()
+        /// <inheritdoc />
+        public bool Focus(NavigationMethod method = NavigationMethod.Unspecified, KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            FocusManager.Instance?.Focus(this);
+            return FocusManager.GetFocusManager(this)?.Focus(this, method, keyModifiers) ?? false; 
         }
 
         /// <inheritdoc/>
@@ -506,7 +505,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.Instance?.Focus(null);
+                FocusManager.GetFocusManager(this)?.ClearFocus();
             }
         }
 
@@ -649,7 +648,7 @@ namespace Avalonia.Input
             }
             else if (change.Property == IsVisibleProperty && !change.GetNewValue<bool>() && IsFocused)
             {
-                FocusManager.Instance?.Focus(null);
+                FocusManager.GetFocusManager(this)?.ClearFocus();
             }
         }
 

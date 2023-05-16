@@ -979,7 +979,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseKeyEvent(button, Key.Tab);
 
             var item = target.ContainerFromIndex(0);
-            Assert.Same(item, FocusManager.Instance.Current);
+            Assert.Same(item, root.FocusManager.GetFocusedElement());
         }
 
         [Fact]
@@ -1026,17 +1026,17 @@ namespace Avalonia.Controls.UnitTests
             RaiseKeyEvent(button, Key.Tab);
 
             var item = target.ContainerFromIndex(1);
-            Assert.Same(item, FocusManager.Instance.Current);
+            Assert.Same(item, root.FocusManager.GetFocusedElement());
 
             RaiseKeyEvent(item, Key.Tab);
 
-            Assert.Same(button, FocusManager.Instance.Current);
+            Assert.Same(button, root.FocusManager.GetFocusedElement());
 
             target.Selection.AnchorIndex = 2;
             RaiseKeyEvent(button, Key.Tab);
 
             item = target.ContainerFromIndex(2);
-            Assert.Same(item, FocusManager.Instance.Current);
+            Assert.Same(item, root.FocusManager.GetFocusedElement());
         }
 
         private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
