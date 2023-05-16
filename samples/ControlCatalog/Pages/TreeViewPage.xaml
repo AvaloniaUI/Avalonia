@@ -11,13 +11,18 @@
                 HorizontalAlignment="Center"
                 Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
-        <TreeView ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350">
+        <TreeView ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}" SelectedItem="{Binding SelectedItem}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350">
           <TreeView.ItemTemplate>
             <TreeDataTemplate ItemsSource="{Binding Children}">
               <TextBlock Text="{Binding Header}"/>
             </TreeDataTemplate>
           </TreeView.ItemTemplate>
         </TreeView>
+
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="SelectedItem: " />
+          <TextBlock Text="{Binding SelectedItem.Header}" />
+        </StackPanel>
 
         <Button Command="{Binding AddItemCommand}">Add</Button>
         <Button Command="{Binding RemoveItemCommand}">Remove</Button>

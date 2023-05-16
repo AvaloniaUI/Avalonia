@@ -10,6 +10,7 @@ namespace ControlCatalog.ViewModels
     {
         private readonly Node _root;
         private SelectionMode _selectionMode;
+        private Node _selectedItem;
 
         public TreeViewPageViewModel()
         {
@@ -25,6 +26,13 @@ namespace ControlCatalog.ViewModels
 
         public ObservableCollection<Node> Items { get; }
         public ObservableCollection<Node> SelectedItems { get; }
+
+        public Node SelectedItem
+        {
+            get => _selectedItem;
+            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
+        }
+
         public MiniCommand AddItemCommand { get; }
         public MiniCommand RemoveItemCommand { get; }
         public MiniCommand SelectRandomItemCommand { get; }
@@ -47,12 +55,7 @@ namespace ControlCatalog.ViewModels
 
         private void RemoveItem()
         {
-            while (SelectedItems.Count > 0)
-            {
-                Node lastItem = (Node)SelectedItems[0];
-                RecursiveRemove(Items, lastItem);
-                SelectedItems.RemoveAt(0);
-            }
+            SelectedItem?.Parent?.RemoveItem(SelectedItem);
 
             bool RecursiveRemove(ObservableCollection<Node> items, Node selectedItem)
             {
