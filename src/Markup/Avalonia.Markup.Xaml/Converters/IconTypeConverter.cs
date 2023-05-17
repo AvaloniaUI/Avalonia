@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.Converters
                 return CreateIconFromPath(context, path);
             }
 
-            var bitmap = value as IBitmap;
+            var bitmap = value as Bitmap;
             if (bitmap != null)
             {
                 return new WindowIcon(bitmap);

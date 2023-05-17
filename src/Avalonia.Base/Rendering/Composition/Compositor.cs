@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
@@ -29,8 +30,10 @@ namespace Avalonia.Rendering.Composition
         private Action _commit;
         private BatchStreamObjectPool<object?> _batchObjectPool = new();
         private BatchStreamMemoryPool _batchMemoryPool = new();
-        private List<CompositionObject> _objectsForSerialization = new();
+        private Queue<ICompositorSerializable> _objectSerializationQueue = new();
+        private HashSet<ICompositorSerializable> _objectSerializationHashSet = new();
         private Queue<Action> _invokeBeforeCommitWrite = new(), _invokeBeforeCommitRead = new();
+        private HashSet<IDisposable> _disposeOnNextBatch = new();
         internal ServerCompositor Server => _server;
         private Task? _pendingBatch;
         private readonly object _pendingBatchLock = new();
@@ -44,11 +47,13 @@ namespace Avalonia.Rendering.Composition
 
         internal event Action? AfterCommit;
 
+        
         /// <summary>
         /// Creates a new compositor on a specified render loop that would use a particular GPU
         /// </summary>
         /// <param name="loop"></param>
         /// <param name="gpu"></param>
+        [PrivateApi]
         public Compositor(IRenderLoop loop, IPlatformGraphics? gpu)
         {
             Loop = loop;
@@ -112,16 +117,30 @@ namespace Avalonia.Rendering.Composition
             
             using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
             {
-                foreach (var obj in _objectsForSerialization)
+                while(_objectSerializationQueue.TryDequeue(out var obj))
                 {
-                    writer.WriteObject(obj.Server);
-                    obj.SerializeChanges(writer);
+                    var serverObject = obj.TryGetServer(this);
+                    if (serverObject != null)
+                    {
+                        writer.WriteObject(serverObject);
+                        obj.SerializeChanges(this, writer);
 #if DEBUG_COMPOSITOR_SERIALIZATION
-                    writer.Write(BatchStreamDebugMarkers.ObjectEndMagic);
-                    writer.WriteObject(BatchStreamDebugMarkers.ObjectEndMarker);
+                        writer.Write(BatchStreamDebugMarkers.ObjectEndMagic);
+                        writer.WriteObject(BatchStreamDebugMarkers.ObjectEndMarker);
 #endif
+                    }
                 }
-                _objectsForSerialization.Clear();
+                _objectSerializationHashSet.Clear();
+
+                if (_disposeOnNextBatch.Count != 0)
+                {
+                    writer.WriteObject(ServerCompositor.RenderThreadDisposeStartMarker);
+                    writer.Write(_disposeOnNextBatch.Count);
+                    foreach (var d in _disposeOnNextBatch)
+                        writer.WriteObject(d);
+                    _disposeOnNextBatch.Clear();
+                }
+
                 if (_pendingServerCompositorJobs.Count > 0)
                 {
                     writer.WriteObject(ServerCompositor.RenderThreadJobsStartMarker);
@@ -152,13 +171,20 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        internal void RegisterForSerialization(CompositionObject compositionObject)
+        internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {
             Dispatcher.UIThread.VerifyAccess();
-            _objectsForSerialization.Add(compositionObject);
+            if(_objectSerializationHashSet.Add(compositionObject))
+                _objectSerializationQueue.Enqueue(compositionObject);
             RequestCommitAsync();
         }
 
+        internal void DisposeOnNextBatch(SimpleServerObject obj)
+        {
+            if (obj is IDisposable disposable && _disposeOnNextBatch.Add(disposable))
+                RequestCommitAsync();
+        }
+        
         /// <summary>
         /// Enqueues a callback to be called before the next scheduled commit.
         /// If there is no scheduled commit it automatically schedules one
@@ -227,5 +253,8 @@ namespace Avalonia.Rendering.Composition
                     return new CompositionInterop(this, feature);
                 }
             }));
+
+        internal bool UnitTestIsRegisteredForSerialization(ICompositorSerializable serializable) =>
+            _objectSerializationHashSet.Contains(serializable);
     }
 }
