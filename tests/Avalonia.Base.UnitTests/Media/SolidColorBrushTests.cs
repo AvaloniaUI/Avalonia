@@ -9,12 +9,10 @@ namespace Avalonia.Base.UnitTests.Media
         public void Changing_Color_Raises_Invalidated()
         {
             var target = new SolidColorBrush(Colors.Red);
-            var raised = false;
-
-            target.Invalidated += (s, e) => raised = true;
-            target.Color = Colors.Green;
-
-            Assert.True(raised);
+            RenderResourceTestHelper.AssertResourceInvalidation(target, () =>
+            {
+                target.Color = Colors.Green;
+            });
         }
     }
 }

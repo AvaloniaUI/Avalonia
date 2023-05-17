@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// Represents a mutable brush which can return an immutable clone of itself.
     /// </summary>
     [NotClientImplementable]
-    internal interface IMutableBrush : IBrush, IAffectsRender
+    internal interface IMutableBrush : IBrush
     {
         /// <summary>
         /// Creates an immutable clone of the brush.

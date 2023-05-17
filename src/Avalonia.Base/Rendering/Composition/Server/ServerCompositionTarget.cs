@@ -179,7 +179,7 @@ namespace Avalonia.Rendering.Composition.Server
                 if (_layer.CanBlit)
                     _layer.Blit(targetContext);
                 else
-                    targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
+                    targetContext.DrawBitmap(_layer, 1,
                         new Rect(_layerSize),
                         new Rect(Size));
 

@@ -69,7 +69,7 @@ namespace Avalonia.Media
 
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             var bounds = GetBounds();
 

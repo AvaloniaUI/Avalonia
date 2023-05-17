@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 
 // Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
@@ -130,7 +131,7 @@ namespace Avalonia.Rendering.Composition
                 else if (o.Value.Server == null)
                     throw new InvalidOperationException($"Object of type {o.Value.GetType()} is not allowed");
                 else
-                    dic[o.Key] = new PropertySetSnapshot.Value(o.Value.Server);
+                    dic[o.Key] = new PropertySetSnapshot.Value((ServerObject)o.Value.Server);
             }
 
             foreach (var v in _variants)

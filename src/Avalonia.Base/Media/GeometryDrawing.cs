@@ -58,7 +58,7 @@ namespace Avalonia.Media
             set => SetValue(PenProperty, value);
         }
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             if (Geometry != null)
             {

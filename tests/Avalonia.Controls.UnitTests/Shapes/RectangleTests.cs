@@ -54,39 +54,5 @@ namespace Avalonia.Controls.UnitTests.Shapes
             geometry = Assert.IsType<RectangleGeometry>(target.RenderedGeometry);
             Assert.Equal(new Rect(0, 0, 200, 200), geometry.Rect);
         }
-
-        [Fact]
-        public void Changing_Fill_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new Rectangle()
-            {
-                Fill = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Fill).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
-        public void Changing_Stroke_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new Rectangle()
-            {
-                Stroke = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Stroke).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
     }
 }

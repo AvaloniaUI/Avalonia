@@ -63,7 +63,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
                 using (var dc = wic.CreateDrawingContext(null))
                 {
                     dc.DrawBitmap(
-                        RefCountable.CreateUnownedNotClonable(this),
+                        this,
                         1,
                         new Rect(PixelSize.ToSizeWithDpi(Dpi.X)),
                         new Rect(PixelSize.ToSizeWithDpi(Dpi.X)));
