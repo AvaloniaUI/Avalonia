@@ -360,16 +360,15 @@ namespace Avalonia.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
-        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public PushedState PushOpacity(double opacity, Rect bounds)
+        public PushedState PushOpacity(double opacity)
         {
-            PushOpacityCore(opacity, bounds);
+            PushOpacityCore(opacity);
             _states ??= StateStackPool.Get();
             _states.Push(new RestoreState(this, RestoreState.PushedStateType.Opacity));
             return new PushedState(this);
         }
-        protected abstract void PushOpacityCore(double opacity, Rect bounds);
+        protected abstract void PushOpacityCore(double opacity);
 
         /// <summary>
         /// Pushes an opacity mask.

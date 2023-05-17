@@ -212,15 +212,14 @@ internal class RenderDataDrawingContext : DrawingContext
             });
     }
 
-    protected override void PushOpacityCore(double opacity, Rect bounds)
+    protected override void PushOpacityCore(double opacity)
     {
         if (opacity == 1)
             Push();
         else
             Push(new RenderDataOpacityNode
             {
-                Opacity = opacity,
-                BoundsRect = bounds
+                Opacity = opacity
             });
     }
 
