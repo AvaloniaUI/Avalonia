@@ -196,7 +196,7 @@ namespace Avalonia.Input
         {
             // Element might not be a visual, and not attached to the root.
             // But IFocusManager is always expected to be a FocusManager. 
-            return (FocusManager?)((IInputRoot?)(element as Visual)?.VisualRoot)?.FocusManager
+            return (FocusManager?)((element as Visual)?.VisualRoot as IInputRoot)?.FocusManager
                    // In our unit tests some elements might not have a root. Remove when we migrate to headless tests.
                 ?? (FocusManager?)AvaloniaLocator.Current.GetService<IFocusManager>();
         }
