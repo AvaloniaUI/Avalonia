@@ -431,6 +431,8 @@ namespace Avalonia.Controls.UnitTests
                 items.Remove("1");
                 lm.ExecuteLayoutPass();
 
+                Threading.Dispatcher.UIThread.RunJobs();
+
                 Assert.Equal("30", target.ContainerFromIndex(items.Count - 1).DataContext);
                 Assert.Equal("29", target.ContainerFromIndex(items.Count - 2).DataContext);
                 Assert.Equal("28", target.ContainerFromIndex(items.Count - 3).DataContext);
@@ -456,8 +458,13 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
+                Threading.Dispatcher.UIThread.RunJobs();
+
                 // First an item that is not index 0 must be selected.
                 _mouse.Click(target.Presenter.Panel.Children[1]);
+
+                Threading.Dispatcher.UIThread.RunJobs();
+
                 Assert.Equal(1, target.Selection.AnchorIndex);
 
                 // We're going to be clicking on item 9.
@@ -470,12 +477,15 @@ namespace Avalonia.Controls.UnitTests
                 // into view due to SelectionMode.AlwaysSelected.
                 target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) =>
                 {
+
                     Assert.Same(item, e.TargetObject);
                     ++raised;
                 });
 
                 // Click item 9.
                 _mouse.Click(item);
+
+                Threading.Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(1, raised);
             }
@@ -742,6 +752,8 @@ namespace Avalonia.Controls.UnitTests
 
             items.Reverse();
             Layout(target);
+
+            Threading.Dispatcher.UIThread.RunJobs();
 
             realized = target.GetRealizedContainers()
                 .Cast<ListBoxItem>()
