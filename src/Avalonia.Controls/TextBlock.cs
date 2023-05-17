@@ -567,7 +567,7 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
             var top = padding.Top;
-            var textHeight = TextLayout.Bounds.Height;
+            var textHeight = TextLayout.Height;
 
             if (Bounds.Height < textHeight)
             {
@@ -588,7 +588,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin);
+            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
         }
 
         private bool _clearTextInternal;
@@ -702,7 +702,9 @@ namespace Avalonia.Controls
                 }
             }
 
-            return TextLayout.Bounds.Size.Inflate(padding);
+            var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+
+            return new Size(width, TextLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
