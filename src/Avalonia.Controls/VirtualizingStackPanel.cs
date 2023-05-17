@@ -662,9 +662,12 @@ namespace Avalonia.Controls
             _scrollViewer?.UnregisterAnchorCandidate(element);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
-            Debug.Assert(recycleKey is not null);
 
-            if (recycleKey == s_itemIsItsOwnContainer)
+            if (recycleKey is null)
+            {
+                RemoveInternalChild(element);
+            }
+            else if (recycleKey == s_itemIsItsOwnContainer)
             {
                 element.IsVisible = false;
             }
@@ -687,9 +690,8 @@ namespace Avalonia.Controls
             Debug.Assert(ItemContainerGenerator is not null);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
-            Debug.Assert(recycleKey is not null);
-
-            if (recycleKey == s_itemIsItsOwnContainer)
+            
+            if (recycleKey is null || recycleKey == s_itemIsItsOwnContainer)
             {
                 RemoveInternalChild(element);
             }
