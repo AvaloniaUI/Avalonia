@@ -18,6 +18,7 @@
   <Import Project="..\..\..\build\System.Drawing.Common.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\ApiListing.props" />
   <Import Project="..\..\..\build\SourceGenerators.props" />
   <ItemGroup>
     <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />

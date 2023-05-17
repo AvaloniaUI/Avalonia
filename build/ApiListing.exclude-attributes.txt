@@ -1,0 +1,5 @@
+T:System.Runtime.CompilerServices.AsyncIteratorStateMachineAttribute
+T:System.Runtime.CompilerServices.AsyncStateMachineAttribute
+T:System.Runtime.CompilerServices.CompilerGeneratedAttribute
+T:System.Runtime.CompilerServices.NullableContextAttribute
+T:System.Runtime.CompilerServices.NullableAttribute

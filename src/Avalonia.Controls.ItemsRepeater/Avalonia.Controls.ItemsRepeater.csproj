@@ -13,7 +13,7 @@
   </ItemGroup>
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <!--<Import Project="..\..\build\ApiDiff.props" />-->
+  <Import Project="..\..\build\ApiListing.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />

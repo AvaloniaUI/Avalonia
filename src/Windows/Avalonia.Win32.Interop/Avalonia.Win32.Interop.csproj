@@ -15,5 +15,6 @@
   </ItemGroup>
 
   <Import Project="..\..\..\build\SharpDX.props" />
+  <Import Project="..\..\..\build\ApiListing.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

@@ -13,6 +13,7 @@
 
   <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\ApiListing.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />

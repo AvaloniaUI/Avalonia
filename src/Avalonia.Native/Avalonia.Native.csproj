@@ -24,6 +24,7 @@
     <MicroComIdl Include="avn.idl" CSharpInteropPath="Interop.Generated.cs" />
   </ItemGroup>
 
+  <Import Project="..\..\build\ApiListing.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

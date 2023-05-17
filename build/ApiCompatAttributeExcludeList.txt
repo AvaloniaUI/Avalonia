@@ -1,2 +1,0 @@
-T:Avalonia.Metadata.NotClientImplementableAttribute
-T:Avalonia.Metadata.UnstableAttribute

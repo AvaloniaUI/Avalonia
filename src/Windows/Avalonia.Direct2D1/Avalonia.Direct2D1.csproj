@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
   </ItemGroup>
+  <Import Project="..\..\..\build\ApiListing.props" />
   <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
