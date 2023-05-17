@@ -1,4 +1,8 @@
+using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
@@ -23,11 +27,6 @@ namespace Avalonia.Media
                 nameof(EndPoint), 
                 RelativePoint.BottomRight);
 
-        static LinearGradientBrush()
-        {
-            AffectsRender<LinearGradientBrush>(StartPointProperty, EndPointProperty);
-        }
-
         /// <summary>
         /// Gets or sets the start point for the gradient.
         /// </summary>
@@ -50,6 +49,15 @@ namespace Avalonia.Media
         public override IImmutableBrush ToImmutable()
         {
             return new ImmutableLinearGradientBrush(this);
+        }
+        
+        internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
+            static c => new ServerCompositionSimpleLinearGradientBrush(c.Server);
+
+        private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            base.SerializeChanges(c, writer);
+            ServerCompositionSimpleLinearGradientBrush.SerializeAllChanges(writer, StartPoint, EndPoint);
         }
     }
 }

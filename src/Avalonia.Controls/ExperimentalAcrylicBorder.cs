@@ -5,6 +5,9 @@ using Avalonia.Platform;
 using System;
 using Avalonia.Reactive;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -16,9 +19,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ExperimentalAcrylicMaterial> MaterialProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicBorder, ExperimentalAcrylicMaterial>(nameof(Material));
 
-        private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
-
         private IDisposable? _subscription;
+        private IDisposable? _materialSubscription;
 
         static ExperimentalAcrylicBorder()
         {
@@ -71,32 +73,55 @@ namespace Avalonia.Controls
                             break;
                     }
                 });
+            UpdateMaterialSubscription();
+        }
+
+        void UpdateMaterialSubscription()
+        {
+            _materialSubscription?.Dispose();
+            _materialSubscription = null;
+            if (CompositionVisual == null)
+                return;
+            if (Material == null!)
+                return;
+            _materialSubscription = Observable.FromEventPattern<AvaloniaPropertyChangedEventArgs>(
+                    h => Material.PropertyChanged += h,
+                    h => Material.PropertyChanged -= h)
+                .Subscribe(_ => UpdateMaterialSubscription());
+            SyncMaterial(CompositionVisual);
+        }
+        
+        private void SyncMaterial(CompositionVisual? visual)
+        {
+            if (visual is CompositionExperimentalAcrylicVisual v)
+            {
+                v.CornerRadius = CornerRadius;
+                v.Material = (ImmutableExperimentalAcrylicMaterial)Material.ToImmutable();
+            }
+        }
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if(change.Property == MaterialProperty)
+                UpdateMaterialSubscription();
+            if(change.Property == CornerRadiusProperty)
+                SyncMaterial(CompositionVisual);
+            base.OnPropertyChanged(change);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-
+            UpdateMaterialSubscription();
             _subscription?.Dispose();
         }
 
-        public sealed override void Render(DrawingContext context)
+        private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
         {
-            if (context is IDrawingContextWithAcrylicLikeSupport idc)
-            {
-                var cornerRadius = CornerRadius;
+            var v = new CompositionExperimentalAcrylicVisual(compositor, this);
+            SyncMaterial(v);
 
-                idc.DrawRectangle(
-                    Material,
-                    new RoundedRect(
-                        new Rect(Bounds.Size),
-                        cornerRadius.TopLeft, cornerRadius.TopRight,
-                        cornerRadius.BottomRight, cornerRadius.BottomLeft));
-            }
-            else
-            {
-                _borderRenderHelper.Render(context, Bounds.Size, new Thickness(), CornerRadius, new ImmutableSolidColorBrush(Material.FallbackColor), null, default);
-            }
+            return v;
         }
 
         /// <summary>

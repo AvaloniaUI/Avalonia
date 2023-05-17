@@ -38,7 +38,7 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        public new IRef<IRenderTargetBitmapImpl> PlatformImpl { get; }
+        internal new IRef<IRenderTargetBitmapImpl> PlatformImpl { get; }
 
         /// <summary>
         /// Renders a visual to the <see cref="RenderTargetBitmap"/>.

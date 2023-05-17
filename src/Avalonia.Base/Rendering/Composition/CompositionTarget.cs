@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.Composition
     /// <summary>
     /// Represents the composition output (e. g. a window, embedded control, entire screen)
     /// </summary>
-    public partial class CompositionTarget
+    internal partial class CompositionTarget
     {
         partial void OnRootChanged()
         {

@@ -54,14 +54,14 @@ namespace Avalonia.Controls
             return value;
         }
 
-        public static readonly StyledProperty<IBitmap?> IconProperty =
-            AvaloniaProperty.Register<NativeMenuItem, IBitmap?>(nameof(Icon));
+        public static readonly StyledProperty<Bitmap?> IconProperty =
+            AvaloniaProperty.Register<NativeMenuItem, Bitmap?>(nameof(Icon));
 
-        public IBitmap? Icon
+        public Bitmap? Icon
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
-        }  
+        }
 
         public static readonly StyledProperty<string?> HeaderProperty =
             AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(Header));
@@ -175,7 +175,7 @@ namespace Avalonia.Controls
             }
         }
     }
-
+    
     public enum NativeMenuItemToggleType
     {
         None,
