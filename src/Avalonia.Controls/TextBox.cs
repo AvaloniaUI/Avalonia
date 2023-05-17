@@ -19,6 +19,8 @@ using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
 using Avalonia.Threading;
 using Avalonia.Platform;
+using System.Reflection;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls
 {
@@ -100,7 +102,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectionStart"/> property
         /// </summary>
         public static readonly StyledProperty<int> SelectionStartProperty =
-            AvaloniaProperty.Register<TextBox, int>(nameof(SelectionStart), 
+            AvaloniaProperty.Register<TextBox, int>(nameof(SelectionStart),
                 coerce: CoerceCaretIndex);
 
         /// <summary>
@@ -475,7 +477,7 @@ namespace Avalonia.Controls
             get => GetValue(SelectionEndProperty);
             set => SetValue(SelectionEndProperty, value);
         }
-        
+
         private void OnSelectionEndChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateCommandStates();
@@ -486,7 +488,7 @@ namespace Avalonia.Controls
                 SetCurrentValue(CaretIndexProperty, value);
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the maximum character length of the TextBox
         /// </summary>
@@ -536,7 +538,7 @@ namespace Avalonia.Controls
         private static string? CoerceText(AvaloniaObject sender, string? value)
         {
             var textBox = (TextBox)sender;
-            
+
             // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
             // since intial state would never be no text and you'd always have to make a text 
             // change before undo would be available
@@ -988,7 +990,7 @@ namespace Avalonia.Controls
             {
                 var textBuilder = StringBuilderCache.Acquire(Math.Max(currentText.Length, newLength));
                 textBuilder.Append(currentText);
-                
+
                 var caretIndex = CaretIndex;
 
                 if (selectionLength != 0)
@@ -1050,7 +1052,7 @@ namespace Avalonia.Controls
 
                 if (clipboard == null)
                     return;
-                
+
                 await clipboard.SetTextAsync(text);
                 DeleteSelection();
             }
@@ -1417,7 +1419,7 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (_presenter == null )
+            if (_presenter == null)
             {
                 return;
             }
@@ -1434,11 +1436,10 @@ namespace Avalonia.Controls
 
                 _presenter.MoveCaretToPoint(point);
 
-                var index = _presenter.CaretIndex;
-
+                var caretIndex = _presenter.CaretIndex;
                 var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-
-                SetCurrentValue(CaretIndexProperty, index);
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
 
                 switch (e.ClickCount)
                 {
@@ -1447,48 +1448,43 @@ namespace Avalonia.Controls
                         {
                             if (_wordSelectionStart >= 0)
                             {
-                                var previousWord = StringUtils.PreviousWord(text, index);
+                                UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
 
-                                if (index > _wordSelectionStart)
-                                {
-                                    SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, index));
-                                }
-
-                                if (index < _wordSelectionStart || previousWord == _wordSelectionStart)
-                                {
-                                    SetCurrentValue(SelectionStartProperty, previousWord);
-                                }
+                                SetCurrentValue(SelectionStartProperty, selectionStart);
+                                SetCurrentValue(SelectionEndProperty, selectionEnd);
                             }
                             else
                             {
-                                SetCurrentValue(SelectionStartProperty, Math.Min(oldIndex, index));
-                                SetCurrentValue(SelectionEndProperty, Math.Max(oldIndex, index));
+                                SetCurrentValue(SelectionEndProperty, caretIndex);
                             }
                         }
                         else
                         {
-                            if(_wordSelectionStart == -1 || index < SelectionStart || index > SelectionEnd)
-                            {
-                                SetCurrentValue(SelectionStartProperty, index);
-                                SetCurrentValue(SelectionEndProperty, index);
-                                _wordSelectionStart = -1;
-                            }                           
+                            SetCurrentValue(SelectionStartProperty, caretIndex);
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                            _wordSelectionStart = -1;
                         }
 
                         break;
-                    case 2:                       
+                    case 2:
 
-                        if (!StringUtils.IsStartOfWord(text, index))
+                        if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
-                            SetCurrentValue(SelectionStartProperty, StringUtils.PreviousWord(text, index));
+                            selectionStart = StringUtils.PreviousWord(text, caretIndex);
                         }
 
-                        _wordSelectionStart = SelectionStart;
-
-                        if (!StringUtils.IsEndOfWord(text, index))
+                        if (!StringUtils.IsEndOfWord(text, caretIndex))
                         {
-                            SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, index));
+                            selectionEnd = StringUtils.NextWord(text, caretIndex);
                         }
+
+                        if (selectionStart != selectionEnd)
+                        {
+                            _wordSelectionStart = selectionStart;
+                        }
+
+                        SetCurrentValue(SelectionStartProperty, selectionStart);
+                        SetCurrentValue(SelectionEndProperty, selectionEnd);
 
                         break;
                     case 3:
@@ -1519,35 +1515,50 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
-                _presenter.MoveCaretToPoint(point);  
+                _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;
+         
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
 
-                var text = Text;
-
-                if (text != null && _wordSelectionStart >= 0)
+                if (_wordSelectionStart >= 0)
                 {
-                    var distance = caretIndex - _wordSelectionStart;
+                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
 
-                    if (distance <= 0)
-                    {
-                        SetCurrentValue(SelectionStartProperty, StringUtils.PreviousWord(text, caretIndex));
-                    }
-
-                    if (distance >= 0)
-                    {
-                        if(SelectionStart != _wordSelectionStart)
-                        {
-                            SetCurrentValue(SelectionStartProperty, _wordSelectionStart);
-                        }
-
-                        SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, caretIndex));
-                    }
+                    SetCurrentValue(SelectionStartProperty, selectionStart);
+                    SetCurrentValue(SelectionEndProperty, selectionEnd);
                 }
                 else
                 {
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
+            }
+        }
+
+        private void UpdateWordSelectionRange(int caretIndex, ref int selectionStart, ref int selectionEnd)
+        {
+            var text = Text;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            if (caretIndex > _wordSelectionStart)
+            {
+                var nextWord = StringUtils.NextWord(text, caretIndex);
+
+                selectionEnd = nextWord;
+
+                selectionStart = _wordSelectionStart;
+            }
+            else
+            {
+                var previousWord = StringUtils.PreviousWord(text, caretIndex);
+                selectionStart = previousWord;
+
+                selectionEnd = StringUtils.NextWord(text, _wordSelectionStart);
             }
         }
 
