@@ -7,7 +7,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
-    [Unstable]
+    [PrivateApi]
     public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
         private IInputElement? _focusedElement;

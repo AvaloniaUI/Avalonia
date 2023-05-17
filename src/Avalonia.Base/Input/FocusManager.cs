@@ -11,7 +11,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Manages focus for the application.
     /// </summary>
-    [Unstable]
+    [PrivateApi]
     public class FocusManager : IFocusManager
     {
         /// <summary>
