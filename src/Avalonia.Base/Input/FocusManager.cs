@@ -23,7 +23,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Initializes a new instance of the <see cref="FocusManager"/> class.
         /// </summary>
-        internal FocusManager()
+        static FocusManager()
         {
             InputElement.PointerPressedEvent.AddClassHandler(
                 typeof(IInputElement),
@@ -237,7 +237,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
+        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
         {
             if (sender is null)
                 return;
@@ -253,7 +253,7 @@ namespace Avalonia.Input
                 {
                     if (element is IInputElement inputElement && CanFocus(inputElement))
                     {
-                        Focus(inputElement, NavigationMethod.Pointer, ev.KeyModifiers);
+                        inputElement.Focus(NavigationMethod.Pointer, ev.KeyModifiers);
 
                         break;
                     }
