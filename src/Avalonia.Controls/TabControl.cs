@@ -226,7 +226,7 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
+            ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
             ItemsPresenterPart?.ApplyTemplate();
 
             // Set TabNavigation to Once on the panel if not already set and
