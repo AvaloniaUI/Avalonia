@@ -15,12 +15,8 @@ namespace Avalonia.Rendering.Composition.Server
     /// Server-side <see cref="CompositionObject" /> counterpart.
     /// Is responsible for animation activation and invalidation
     /// </summary>
-    internal abstract class ServerObject : IExpressionObject
+    internal abstract class ServerObject : SimpleServerObject, IExpressionObject
     {
-        public ServerCompositor Compositor { get; }
-
-        public virtual long LastChangedBy => ItselfLastChangedBy;
-        public long ItselfLastChangedBy { get; private set; }
         private uint _activationCount;
         public bool IsActive => _activationCount != 0;
         private InlineDictionary<CompositionProperty, ServerObjectSubscriptionStore> _subscriptions;
@@ -42,9 +38,8 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
             
-        public ServerObject(ServerCompositor compositor)
+        public ServerObject(ServerCompositor compositor) : base(compositor)
         {
-            Compositor = compositor;
         }
 
         public virtual ExpressionVariant GetPropertyForAnimation(string name)
@@ -90,13 +85,13 @@ namespace Avalonia.Rendering.Composition.Server
                 subs.Invalidate();
         }
 
-        protected void SetValue<T>(CompositionProperty prop, out T field, T value)
+        protected new void SetValue<T>(CompositionProperty prop, ref T field, T value)
         {
             field = value;
             InvalidateSubscriptions(prop);
         }
 
-        protected T GetValue<T>(CompositionProperty prop, ref T field)
+        protected new T GetValue<T>(CompositionProperty prop, ref T field)
         {
             if (_subscriptions.TryGetValue(prop, out var subs))
                 subs.IsValid = true;
@@ -143,11 +138,6 @@ namespace Avalonia.Rendering.Composition.Server
             ValuesInvalidated();
         }
 
-        protected virtual void ValuesInvalidated()
-        {
-            
-        }
-
         public void SubscribeToInvalidation(CompositionProperty member, IAnimationInstance animation)
         {
             if (!_subscriptions.TryGetValue(member, out var store))
@@ -164,19 +154,5 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
-
-        protected virtual void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
-        {
-            if (this is IDisposable disp
-                && reader.Read<byte>() == 1)
-                disp.Dispose();
-        }
-        
-        public void DeserializeChanges(BatchStreamReader reader, Batch batch)
-        {
-            DeserializeChangesCore(reader, batch.CommittedAt);
-            ValuesInvalidated();
-            ItselfLastChangedBy = batch.SequenceId;
-        }
     }
 }

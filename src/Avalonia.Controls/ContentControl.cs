@@ -11,7 +11,7 @@ using Avalonia.Metadata;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
+    /// Displays <see cref="Content"/> according to an <see cref="IDataTemplate"/>.
     /// </summary>
     [TemplatePart("PART_ContentPresenter", typeof(IContentPresenter))]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
