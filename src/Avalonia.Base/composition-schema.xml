@@ -6,13 +6,16 @@
     <Using>Avalonia.Rendering.Composition.Animations</Using>
     
     <Manual Name="Avalonia.Platform.IGeometryImpl" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.ITransform" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.IBrush" Passthrough="true"/>
     <Manual Name="Avalonia.Media.IImmutableBrush" Passthrough="true"/>
     <Manual Name="Avalonia.Media.IImmutableEffect" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.Immutable.ImmutableDashStyle" Passthrough="true"/>
     <Manual Name="CompositionSurface" />
     <Manual Name="CompositionDrawingSurface" />
     <Object Name="CompositionVisual" Abstract="true">
-        <Property Name="Root" Type="CompositionTarget?" InternalSet="true" />
-        <Property Name="Parent" Type="CompositionVisual?" InternalSet="true"  />
+        <Property Name="Root" Type="CompositionTarget?" Internal="true" />
+        <Property Name="Parent" Type="CompositionVisual?" Internal="true"  />
         <Property Name="Visible" Type="bool" Animated="true" DefaultValue="true"/>
         <Property Name="Opacity" Type="float" Animated="true" DefaultValue="1"/>
         
@@ -39,8 +42,13 @@
     <Object Name="CompositionSurfaceVisual" Inherits="CompositionContainerVisual">
         <Property Name="Surface" Type="CompositionSurface?" />
     </Object>
+    <Manual Name="CompositionDrawListVisual" />
+    <Object Name="CompositionExperimentalAcrylicVisual" Inherits="CompositionDrawListVisual" Internal="true" CustomCtor="true" CustomServerCtor="true">
+        <Property Name="Material" Type="Avalonia.Media.ImmutableExperimentalAcrylicMaterial" />
+        <Property Name="CornerRadius" Type="CornerRadius" />
+    </Object>
     <List Name="CompositionVisualCollection" ItemType="CompositionVisual" CustomCtor="true"/>
-    <Object Name="CompositionTarget" CustomServerCtor="true">
+    <Object Name="CompositionTarget" CustomServerCtor="true" Internal="true">
         <Property Name="Root" Type="CompositionVisual?"/>
         <Property Name="IsEnabled" Type="bool"/>
         <Property Name="DebugOverlays" Type="RendererDebugOverlays"/>
@@ -55,4 +63,45 @@
     <KeyFrameAnimation Type="Vector3"/>
     <KeyFrameAnimation Type="Vector4"/>
     <KeyFrameAnimation Type="Quaternion"/>
+    <Object Name="CompositionSimpleTransform" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
+        <Property Name="Value" Type="Avalonia.Matrix" />
+    </Object>
+    <Object Name="CompositionSimplePen" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
+        <Property Name="Brush" Type="Avalonia.Media.IBrush?" />
+        <Property Name="DashStyle" Type="Avalonia.Media.Immutable.ImmutableDashStyle?" />
+        <Property Name="LineCap" Type="Avalonia.Media.PenLineCap" />
+        <Property Name="LineJoin" Type="Avalonia.Media.PenLineJoin" />
+        <Property Name="MiterLimit" Type="double" />
+        <Property Name="Thickness" Type="double" />
+    </Object>
+    <Object Name="CompositionSimpleBrush" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
+        <Property Name="Opacity" Type="double" />
+        <Property Name="TransformOrigin" Type="RelativePoint" />
+        <Property Name="Transform" Type="Avalonia.Media.ITransform?" />
+    </Object>
+    <Object Name="CompositionSimpleSolidColorBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
+        <Property Name="Color" Type="Avalonia.Media.Color" />
+    </Object>
+    <Manual Name="CompositionSimpleGradientBrush" />
+    <Object Name="CompositionSimpleConicGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
+        <Property Name="Angle" Type="double" />
+        <Property Name="Center" Type="Avalonia.RelativePoint" />
+    </Object>
+    <Object Name="CompositionSimpleRadialGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
+        <Property Name="Center" Type="Avalonia.RelativePoint" />
+        <Property Name="GradientOrigin" Type="Avalonia.RelativePoint" />
+        <Property Name="Radius" Type="double" />
+    </Object>
+    <Object Name="CompositionSimpleLinearGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
+        <Property Name="StartPoint" Type="Avalonia.RelativePoint" />
+        <Property Name="EndPoint" Type="Avalonia.RelativePoint" />
+    </Object>
+    <Object Name="CompositionSimpleTileBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
+        <Property Name="AlignmentX" Type="Avalonia.Media.AlignmentX" />
+        <Property Name="AlignmentY" Type="Avalonia.Media.AlignmentY" />
+        <Property Name="DestinationRect" Type="Avalonia.RelativeRect" />
+        <Property Name="SourceRect" Type="Avalonia.RelativeRect" />
+        <Property Name="Stretch" Type="Avalonia.Media.Stretch" />
+        <Property Name="TileMode" Type="Avalonia.Media.TileMode" />
+    </Object>
 </NComposition>

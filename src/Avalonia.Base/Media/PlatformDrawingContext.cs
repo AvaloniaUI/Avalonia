@@ -10,7 +10,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media;
 
-internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWithAcrylicLikeSupport
+internal sealed class PlatformDrawingContext : DrawingContext
 {
     private readonly IDrawingContextImpl _impl;
     private readonly bool _ownsImpl;
@@ -45,7 +45,7 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
     protected override void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect) => _impl.DrawEllipse(brush, pen, rect);
 
     internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect) =>
-        _impl.DrawBitmap(source, opacity, sourceRect, destRect);
+        _impl.DrawBitmap(source.Item, opacity, sourceRect, destRect);
 
     public override void Custom(ICustomDrawOperation custom)
     {
@@ -66,7 +66,7 @@ internal sealed class PlatformDrawingContext : DrawingContext, IDrawingContextWi
         _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
 
         if (foreground != null) 
-            _impl.DrawGlyphRun(foreground, glyphRun.PlatformImpl);
+            _impl.DrawGlyphRun(foreground, glyphRun.PlatformImpl.Item);
     }
 
     protected override void PushClipCore(RoundedRect rect) => _impl.PushClip(rect);

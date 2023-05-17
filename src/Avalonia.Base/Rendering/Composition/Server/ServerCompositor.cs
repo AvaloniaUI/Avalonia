@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.Composition.Server
     /// 2) triggers animation ticks
     /// 3) asks composition targets to render themselves
     /// </summary>
-    internal class ServerCompositor : IRenderLoopTask
+    internal partial class ServerCompositor : IRenderLoopTask
     {
         private readonly IRenderLoop _renderLoop;
 
@@ -35,6 +35,7 @@ namespace Avalonia.Rendering.Composition.Server
         private object _lock = new object();
         private Thread? _safeThread;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
+        internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
 
@@ -79,8 +80,14 @@ namespace Avalonia.Rendering.Composition.Server
                             ReadServerJobs(stream);
                             continue;
                         }
+
+                        if (readObject == RenderThreadDisposeStartMarker)
+                        {
+                            ReadDisposeJobs(stream);
+                            continue;
+                        }
                         
-                        var target = (ServerObject)readObject!;
+                        var target = (SimpleServerObject)readObject!;
                         target.DeserializeChanges(stream, batch);
 #if DEBUG_COMPOSITOR_SERIALIZATION
                         if (stream.ReadObject() != BatchStreamDebugMarkers.ObjectEndMarker)
@@ -103,6 +110,16 @@ namespace Avalonia.Rendering.Composition.Server
             object? readObject;
             while ((readObject = reader.ReadObject()) != RenderThreadJobsEndMarker)
                 _receivedJobQueue.Enqueue((Action)readObject!);
+        }
+
+        void ReadDisposeJobs(BatchStreamReader reader)
+        {
+            var count = reader.Read<int>();
+            while (count > 0)
+            {
+                (reader.ReadObject() as IDisposable)?.Dispose();
+                count--;
+            }
         }
 
         void ExecuteServerJobs()
@@ -160,6 +177,8 @@ namespace Avalonia.Rendering.Composition.Server
                 animation.OnTick();
             
             _clockItemsToUpdate.Clear();
+
+            ApplyEnqueuedRenderResourceChanges();
             
             try
             {

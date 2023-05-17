@@ -68,7 +68,7 @@ namespace Avalonia.Rendering.Composition.Server
                 var effectiveChar = c is >= FirstChar and <= LastChar ? c : ' ';
                 var run = _runs[effectiveChar - FirstChar];
                 context.Transform = originalTransform * Matrix.CreateTranslation(offset, 0.0);
-                context.DrawGlyphRun(foreground, run.PlatformImpl);
+                context.DrawGlyphRun(foreground, run.PlatformImpl.Item);
                 offset += run.Bounds.Width;
             }
 

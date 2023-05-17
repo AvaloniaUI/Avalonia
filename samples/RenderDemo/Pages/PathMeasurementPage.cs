@@ -53,15 +53,15 @@ namespace RenderDemo.Pages
                 bitmapCtx.DrawGeometry(null, strokePen, basePath);
 
 
-                var length = basePath.PlatformImpl.ContourLength;
+                var length = basePath.ContourLength;
 
-                if (basePath.PlatformImpl.TryGetSegment(length * 0.05, length * 0.2, true, out var dst1))
+                if (basePath.TryGetSegment(length * 0.05, length * 0.2, true, out var dst1))
                     bitmapCtx.DrawGeometry(null, strokePen1, dst1);
 
-                if (basePath.PlatformImpl.TryGetSegment(length * 0.2, length * 0.8, true, out var dst2))
+                if (basePath.TryGetSegment(length * 0.2, length * 0.8, true, out var dst2))
                     bitmapCtx.DrawGeometry(null, strokePen2, dst2);
 
-                if (basePath.PlatformImpl.TryGetSegment(length * 0.8, length * 0.95, true, out var dst3))
+                if (basePath.TryGetSegment(length * 0.8, length * 0.95, true, out var dst3))
                     bitmapCtx.DrawGeometry(null, strokePen3, dst3);
                 
                 var pathBounds = basePath.GetRenderBounds(strokePen);

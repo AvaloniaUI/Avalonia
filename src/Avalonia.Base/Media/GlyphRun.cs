@@ -214,7 +214,7 @@ namespace Avalonia.Media
         /// <summary>
         /// The platform implementation of the <see cref="GlyphRun"/>.
         /// </summary>
-        public IRef<IGlyphRunImpl> PlatformImpl
+        internal IRef<IGlyphRunImpl> PlatformImpl
             => _platformImpl ??= CreateGlyphRunImpl();
 
         /// <summary>
@@ -851,5 +851,8 @@ namespace Avalonia.Media
         {
             return PlatformImpl.Item.GetIntersections(lowerLimit, upperLimit);
         }
+
+        public IImmutableGlyphRunReference? TryCreateImmutableGlyphRunReference()
+            => new ImmutableGlyphRunReference(PlatformImpl.Clone());
     }
 }
