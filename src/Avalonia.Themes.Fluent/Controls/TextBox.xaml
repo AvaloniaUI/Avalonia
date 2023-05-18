@@ -136,7 +136,8 @@
                   <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                                 IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
-                                AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
+                                AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                                BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
                     <Panel>
                       <TextBlock Name="PART_Watermark"
                               Opacity="0.5"
