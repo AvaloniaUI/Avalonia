@@ -285,7 +285,7 @@ namespace Avalonia.Controls
             }
         }
 
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             // ContextMenu can be assigned to the ContextMenu property in a setter. This overrides
             // the behavior defined in Control which requires controls to be wrapped in a <template>.
