@@ -103,7 +103,8 @@
                    HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />-->
       <ColorPreviewer Grid.Row="8"
                       IsAccentColorsVisible="False"
-                      HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+                      HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}"
+                      Margin="0,2,0,0" />
     </Grid>
   </Grid>
 </UserControl>

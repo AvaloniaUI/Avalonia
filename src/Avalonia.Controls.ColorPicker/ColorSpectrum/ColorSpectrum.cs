@@ -45,6 +45,7 @@ namespace Avalonia.Controls.Primitives
 
         private bool _updatingColor = false;
         private bool _updatingHsvColor = false;
+        private bool _coercedInitialColor = false;
         private bool _isPointerPressed = false;
         private bool _shouldShowLargeSelection = false;
         private List<Hsv> _hsvValues = new List<Hsv>();
@@ -601,13 +602,101 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Changes the currently selected color (always in HSV) and applies all necessary updates.
+        /// </summary>
+        /// <remarks>
+        /// Some additional logic is applied in certain situations to coerce and sync color values.
+        /// Use this method instead of update the <see cref="Color"/> or <see cref="HsvColor"/> directly.
+        /// </remarks>
+        /// <param name="newHsv">The new HSV color to change to.</param>
         private void UpdateColor(Hsv newHsv)
         {
             _updatingColor = true;
             _updatingHsvColor = true;
 
-            Rgb newRgb = newHsv.ToRgb();
             double alpha = HsvColor.A;
+
+            // It is common for the ColorPicker (and therefore the Spectrum) to be initialized
+            // with a #00000000 color value in some use cases. This is usually used to indicate
+            // that no color has been selected by the user. Note that #00000000 is different than
+            // #00FFFFFF (Transparent).
+            //
+            // In this situation, the first time the user clicks on the spectrum the third
+            // component and alpha component will remain zero. This is because the spectrum only
+            // controls two components at any given time.
+            //
+            // This is very unintuitive from a user-standpoint as after the user clicks on the
+            // spectrum they must then increase the alpha and then the third component sliders
+            // to the desired value. In fact, until they increase these slider values no color
+            // will show at all since it is fully transparent and black. In almost all cases
+            // though the desired value is simply full color.
+            //
+            // To work around this usability issue with an initial #00000000 color, the selected
+            // color is coerced (only the first time) into a color with maximum third component
+            // value and maximum alpha. This can only happen once and only if those two components
+            // are already zero.
+            //
+            // Also note this is NOT currently done for #00FFFFFF (Transparent) but based on
+            // further usability study that case may need to be handled here as well. Right now
+            // Transparent is treated as a normal color value with the alpha intentionally set
+            // to zero so the alpha slider must still be adjusted after the spectrum.
+            if (!_coercedInitialColor &&
+                IsLoaded)
+            {
+                bool isAlphaComponentZero = (alpha == 0.0);
+                bool isThirdComponentZero = false;
+
+                switch (Components)
+                {
+                    case ColorSpectrumComponents.HueValue:
+                    case ColorSpectrumComponents.ValueHue:
+                        isThirdComponentZero = (newHsv.S == 0.0);
+                        break;
+
+                    case ColorSpectrumComponents.HueSaturation:
+                    case ColorSpectrumComponents.SaturationHue:
+                        isThirdComponentZero = (newHsv.V == 0.0);
+                        break;
+
+                    case ColorSpectrumComponents.ValueSaturation:
+                    case ColorSpectrumComponents.SaturationValue:
+                        isThirdComponentZero = (newHsv.H == 0.0);
+                        break;
+                }
+
+                if (isAlphaComponentZero && isThirdComponentZero)
+                {
+                    alpha = 1.0;
+
+                    switch (Components)
+                    {
+                        case ColorSpectrumComponents.HueValue:
+                        case ColorSpectrumComponents.ValueHue:
+                            newHsv.S = 1.0;
+                            break;
+
+                        case ColorSpectrumComponents.HueSaturation:
+                        case ColorSpectrumComponents.SaturationHue:
+                            newHsv.V = 1.0;
+                            break;
+
+                        case ColorSpectrumComponents.ValueSaturation:
+                        case ColorSpectrumComponents.SaturationValue:
+                            // Hue is mathematically NOT a special case; however, is one conceptually.
+                            // It doesn't make sense to change the selected Hue value, so why is it set here?
+                            // Setting to 360.0 is equivalent to the max set for other components and is
+                            // internally wrapped back to 0.0 (since 360 degrees = 0 degrees).
+                            // This means effectively there is no change to the hue component value.
+                            newHsv.H = 360.0;
+                            break;
+                    }
+
+                    _coercedInitialColor = true;
+                }
+            }
+
+            Rgb newRgb = newHsv.ToRgb();
 
             SetCurrentValue(ColorProperty, newRgb.ToColor(alpha));
             SetCurrentValue(HsvColorProperty, newHsv.ToHsvColor(alpha));
