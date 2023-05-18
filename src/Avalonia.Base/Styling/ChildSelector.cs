@@ -19,13 +19,13 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public override bool InTemplate => _parent.InTemplate;
+        internal override bool InTemplate => _parent.InTemplate;
 
         /// <inheritdoc/>
-        public override bool IsCombinator => true;
+        internal override bool IsCombinator => true;
 
         /// <inheritdoc/>
-        public override Type? TargetType => null;
+        internal override Type? TargetType => null;
 
         public override string ToString(Style? owner)
         {
@@ -37,7 +37,7 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var controlParent = ((ILogical)control).LogicalParent;
 
@@ -64,7 +64,7 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector? MovePrevious() => null;
-        protected override Selector? MovePreviousOrParent() => _parent;
+        private protected override Selector? MovePrevious() => null;
+        private protected override Selector? MovePreviousOrParent() => _parent;
     }
 }
