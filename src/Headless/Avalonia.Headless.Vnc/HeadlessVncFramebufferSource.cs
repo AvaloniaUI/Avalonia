@@ -40,11 +40,11 @@ namespace Avalonia.Headless.Vnc
                 {
                     Window?.MouseMove(pt);
                     foreach (var btn in CheckedButtons)
-                        if (_previousButtons.HasAllFlags(btn) && !buttons.HasAllFlags(btn))
+                        if (_previousButtons.HasFlag(btn) && !buttons.HasFlag(btn))
                             Window?.MouseUp(pt, TranslateButton(btn), modifiers);
                     
                     foreach (var btn in CheckedButtons)
-                        if (!_previousButtons.HasAllFlags(btn) && buttons.HasAllFlags(btn))
+                        if (!_previousButtons.HasFlag(btn) && buttons.HasFlag(btn))
                             Window?.MouseDown(pt, TranslateButton(btn), modifiers);
                     _previousButtons = buttons;
                 }, DispatcherPriority.Input);
