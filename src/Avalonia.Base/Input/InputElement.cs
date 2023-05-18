@@ -657,7 +657,7 @@ namespace Avalonia.Input
         /// Updates the <see cref="IsEffectivelyEnabled"/> property value according to the parent
         /// control's enabled state and <see cref="IsEnabledCore"/>.
         /// </summary>
-        protected void UpdateIsEffectivelyEnabled()
+        private protected void UpdateIsEffectivelyEnabled()
         {
             UpdateIsEffectivelyEnabled(this.GetVisualParent<InputElement>());
         }
