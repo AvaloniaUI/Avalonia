@@ -1,5 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -12,6 +14,12 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the image to draw.
         /// </summary>
-        IBitmap? Source { get; }
+        IImageBrushSource? Source { get; }
+    }
+
+    [NotClientImplementable]
+    public interface IImageBrushSource
+    {
+        internal IRef<IBitmapImpl>? Bitmap { get; }
     }
 }

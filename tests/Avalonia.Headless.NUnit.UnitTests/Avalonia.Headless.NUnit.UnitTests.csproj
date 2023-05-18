@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <DefineConstants>$(DefineConstants);NUNIT</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\UnitTests.NetFX.props" />
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Avalonia.Headless.UnitTests\**\*.cs" />
+    <Compile Remove="..\Avalonia.Headless.UnitTests\bin\**\*.cs" />
+    <Compile Remove="..\Avalonia.Headless.UnitTests\obj\**\*.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+    <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.NUnit\Avalonia.Headless.NUnit.csproj" />
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+  </ItemGroup>
+</Project>

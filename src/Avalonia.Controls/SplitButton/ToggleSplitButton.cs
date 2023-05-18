@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// the secondary part opens a flyout.
     /// </summary>
     [PseudoClasses(pcChecked)]
-    public class ToggleSplitButton : SplitButton, IStyleable
+    public class ToggleSplitButton : SplitButton
     {
         /// <summary>
         /// Raised when the <see cref="IsChecked"/> property value changes.
@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         /// Both <see cref="ToggleSplitButton"/> and <see cref="SplitButton"/> share
         /// the same exact default style.
         /// </remarks>
-        Type IStyleable.StyleKey => typeof(SplitButton);
+        protected override Type StyleKeyOverride => typeof(SplitButton);
 
         /// <summary>
         /// Toggles the <see cref="IsChecked"/> property between true and false.

@@ -243,7 +243,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 else if (ch == '-')
                 {
                     if (len != 0)
-                        return false;
+                        break;
                     len = c + 1;
                 }
                 else

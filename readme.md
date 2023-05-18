@@ -120,6 +120,8 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
 <a href="https://baseheadinc.com/" target="_blank"><img height="50" src="https://baseheadinc.com/wp-content/uploads/2020/09/BH-Logo-for-Site-Header-New.png"></a>
 
+<a href="https://aws.amazon.com/developer/language/net/" target="_blank"><img src="https://github.com/AvaloniaUI/Avalonia/assets/552074/7771d8b9-ef84-4503-9889-033a87d2c852"></a>
+
 ## Commercial Support 
 
 We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.

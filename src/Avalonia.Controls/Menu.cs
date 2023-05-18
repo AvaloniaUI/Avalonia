@@ -35,6 +35,9 @@ namespace Avalonia.Controls
         static Menu()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(Menu),
+                KeyboardNavigationMode.Once);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<Menu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Menu>(AutomationControlType.Menu);
         }

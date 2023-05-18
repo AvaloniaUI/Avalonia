@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Xml.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
@@ -528,13 +529,6 @@ namespace Avalonia.Controls.Primitives
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);
-
-            if (Presenter?.Panel is InputElement panel && 
-                KeyboardNavigation.GetTabOnceActiveElement(panel) == element)
-            {
-                KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-            }
-
             element.ClearValue(IsSelectedProperty);
         }
 
@@ -834,12 +828,6 @@ namespace Avalonia.Controls.Primitives
                 Selection.Clear();
                 Selection.Select(index);
             }
-
-            if (Presenter?.Panel is { } panel)
-            {
-                var container = ContainerFromIndex(index);
-                KeyboardNavigation.SetTabOnceActiveElement(panel, container);
-            }
         }
 
         /// <summary>
@@ -928,6 +916,7 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
+                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(Selection.AnchorIndex));
                 AutoScrollToSelectedItemIfNecessary();
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)

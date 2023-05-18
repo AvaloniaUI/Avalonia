@@ -182,10 +182,10 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             CheckLease();
-            var drawableImage = (IDrawableBitmapImpl)source.Item;
+            var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
 
@@ -199,11 +199,11 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             CheckLease();
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect);
+            DrawBitmap(source, 1, new Rect(0, 0, source.PixelSize.Width, source.PixelSize.Height), destRect);
             PopOpacityMask();
         }
 
@@ -506,7 +506,7 @@ namespace Avalonia.Skia
         }
        
         /// <inheritdoc />
-        public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+        public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
         {
             CheckLease();
 
@@ -515,14 +515,14 @@ namespace Avalonia.Skia
                 return;
             }
 
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Bounds.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Bounds.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
+                var glyphRunImpl = (GlyphRunImpl)glyphRun;
 
                 var textBlob = glyphRunImpl.GetTextBlob(RenderOptions);
 
-                Canvas.DrawText(textBlob, (float)glyphRun.Item.BaselineOrigin.X,
-                    (float)glyphRun.Item.BaselineOrigin.Y, paintWrapper.Paint);
+                Canvas.DrawText(textBlob, (float)glyphRun.BaselineOrigin.X,
+                    (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
             }
         }
 
@@ -895,7 +895,7 @@ namespace Avalonia.Skia
                 context.RenderOptions = RenderOptions;
 
                 context.DrawBitmap(
-                    RefCountable.CreateUnownedNotClonable(tileBrushImage),
+                    tileBrushImage,
                     1,
                     sourceRect,
                     targetRect);
@@ -1175,7 +1175,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (tileBrush as IImageBrush)?.Source?.PlatformImpl.Item as IDrawableBitmapImpl;
+                tileBrushImage = (tileBrush as IImageBrush)?.Source?.Bitmap?.Item as IDrawableBitmapImpl;
             }
 
             if (tileBrush != null && tileBrushImage != null)

@@ -121,7 +121,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             Decorator target = new Decorator
             {
                 Padding = new Thickness(8),
-                Width = 180,
+                Width = 190,
                 Height = 80,
 
                 Child = new StackPanel()

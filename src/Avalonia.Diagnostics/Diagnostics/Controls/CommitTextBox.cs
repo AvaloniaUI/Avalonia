@@ -7,9 +7,9 @@ using Avalonia.Styling;
 namespace Avalonia.Diagnostics.Controls
 {
     //TODO: UpdateSourceTrigger & Binding.ValidationRules could help removing the need for this control.
-    internal sealed class CommitTextBox : TextBox, IStyleable
+    internal sealed class CommitTextBox : TextBox
     {
-        Type IStyleable.StyleKey => typeof(TextBox);
+        protected override Type StyleKeyOverride => typeof(TextBox);
 
         /// <summary>
         ///     Defines the <see cref="CommittedText" /> property.

@@ -5,37 +5,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    internal sealed class CustomDrawOperation : DrawOperationWithTransform
-    {
-        public ICustomDrawOperation Custom { get; }
-        public CustomDrawOperation(ICustomDrawOperation custom, Matrix transform) 
-            : base(custom.Bounds, transform)
-        {
-            Custom = custom;
-        }
-
-        public override bool HitTestTransformed(Point p) => Custom.HitTest(p);
-
-        public override void Render(IDrawingContextImpl context)
-        {
-            using var immediateDrawingContext = new ImmediateDrawingContext(context, false);
-            try
-            {
-                Custom.Render(immediateDrawingContext);
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
-                    ?.Log(Custom, $"Exception in {Custom.GetType().Name}.{nameof(ICustomDrawOperation.Render)} {{0}}", e);
-            }
-        }
-
-        public override void Dispose() => Custom.Dispose();
-
-        public bool Equals(Matrix transform, ICustomDrawOperation custom) =>
-            Transform == transform && Custom?.Equals(custom) == true;
-    }
-
     public interface ICustomDrawOperation : IEquatable<ICustomDrawOperation>, IDisposable
     {
         /// <summary>

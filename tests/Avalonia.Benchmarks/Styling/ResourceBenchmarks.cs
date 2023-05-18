@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -20,12 +21,8 @@ namespace Avalonia.Benchmarks.Styling
                 assetLoader: new StandardAssetLoader(),
                 globalClock: new MockGlobalClock(),
                 platform: new AppBuilder().RuntimePlatform,
-                renderInterface: new MockPlatformRenderInterface(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
                 theme: () => CreateTheme(),
-                dispatcherImpl: new NullThreadingPlatform(),
-                fontManagerImpl: new MockFontManagerImpl(),
-                textShaperImpl: new MockTextShaperImpl(),
                 windowingPlatform: new MockWindowingPlatform());
 
             return UnitTestApplication.Start(services);

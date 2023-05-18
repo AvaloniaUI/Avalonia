@@ -65,7 +65,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IFocusScope, ILayoutRoot
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
@@ -420,7 +420,7 @@ namespace Avalonia.Controls
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey => typeof(Window);
+        protected override Type StyleKeyOverride => typeof(Window);
 
         /// <summary>
         /// Fired before a window is closed.

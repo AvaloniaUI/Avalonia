@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
@@ -721,6 +722,86 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedItem = item;
             Assert.True(called);
+        }
+
+        [Fact]
+        public void Removing_Selected_Root_Item_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+
+            target.SelectedItem = item;
+
+            data.RemoveAt(0);
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Resetting_Root_Items_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+
+            target.SelectedItem = item;
+
+            data.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Removing_Selected_Child_Item_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0].Children[1];
+
+            target.SelectedItem = item;
+
+            data[0].Children.RemoveAt(1);
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Replacing_Selected_Child_Item_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0].Children[1];
+
+            target.SelectedItem = item;
+
+            data[0].Children[1] = new Node();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Clearing_Child_Items_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0].Children[1];
+
+            target.SelectedItem = item;
+
+            data[0].Children.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
         }
 
         [Fact]
@@ -1694,12 +1775,12 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
         private class Node : NotifyingBase

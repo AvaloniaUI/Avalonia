@@ -288,17 +288,26 @@ namespace Avalonia
             }
 
             s_setupWasAlreadyCalled = true;
+            SetupUnsafe();
+        }
+
+        /// <summary>
+        /// Setup method that doesn't check for input initalizers being set.
+        /// Nor 
+        /// </summary>
+        internal void SetupUnsafe()
+        {
             _optionsInitializers?.Invoke();
-            RuntimePlatformServicesInitializer();
-            RenderingSubsystemInitializer();
-            WindowingSubsystemInitializer();
-            AfterPlatformServicesSetupCallback(Self);
-            Instance = _appFactory();
+            RuntimePlatformServicesInitializer?.Invoke();
+            RenderingSubsystemInitializer?.Invoke();
+            WindowingSubsystemInitializer?.Invoke();
+            AfterPlatformServicesSetupCallback?.Invoke(Self);
+            Instance = _appFactory!();
             Instance.ApplicationLifetime = _lifetime;
             AvaloniaLocator.CurrentMutable.BindToSelf(Instance);
             Instance.RegisterServices();
             Instance.Initialize();
-            AfterSetupCallback(Self);
+            AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
         }
     }

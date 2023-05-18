@@ -712,7 +712,7 @@ namespace Avalonia.Controls
 
             if (itemContainerTheme is not null &&
                 !container.IsSet(ThemeProperty) &&
-                ((IStyleable)container).StyleKey == itemContainerTheme.TargetType)
+                StyledElement.GetStyleKey(container) == itemContainerTheme.TargetType)
             {
                 container.Theme = itemContainerTheme;
             }

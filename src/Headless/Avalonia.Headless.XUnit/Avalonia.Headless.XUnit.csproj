@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.core" Version="2.4.2" />
+    <!-- Use lower minor version, as it is supposed to be compatible  -->
+    <PackageReference Include="xunit.core" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>

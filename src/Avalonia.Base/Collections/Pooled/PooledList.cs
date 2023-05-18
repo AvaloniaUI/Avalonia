@@ -1423,7 +1423,7 @@ namespace Avalonia.Collections.Pooled
 
         private static bool ShouldClear(ClearMode mode)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1_OR_GREATER
             return mode == ClearMode.Always
                 || (mode == ClearMode.Auto && RuntimeHelpers.IsReferenceOrContainsReferences<T>());
 #else

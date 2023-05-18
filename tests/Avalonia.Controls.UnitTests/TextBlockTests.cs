@@ -30,40 +30,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new TextBlock()
-            {
-                Background = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Background).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
-        public void Changing_Foreground_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new TextBlock()
-            {
-                Foreground = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Foreground).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
         public void Changing_InlinesCollection_Should_Invalidate_Measure()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

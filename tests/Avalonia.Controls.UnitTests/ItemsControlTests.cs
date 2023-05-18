@@ -9,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -1022,17 +1023,17 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
-        private class ItemsControlWithContainer : ItemsControl, IStyleable
+        private class ItemsControlWithContainer : ItemsControl
         {
-            Type IStyleable.StyleKey => typeof(ItemsControl);
+            protected override Type StyleKeyOverride => typeof(ItemsControl);
 
             protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
@@ -1045,9 +1046,9 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class ContainerControl : ContentControl, IStyleable
+        private class ContainerControl : ContentControl
         {
-            Type IStyleable.StyleKey => typeof(ContentControl);
+            protected override Type StyleKeyOverride => typeof(ContentControl);
         }
 
         private record Item(string Caption, string? Value = null);

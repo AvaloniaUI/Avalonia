@@ -6,7 +6,7 @@ namespace Avalonia.Media
     /// Represents a mutable brush which can return an immutable clone of itself.
     /// </summary>
     [NotClientImplementable]
-    public interface IMutableExperimentalAcrylicMaterial : IExperimentalAcrylicMaterial, IAffectsRender
+    public interface IMutableExperimentalAcrylicMaterial : IExperimentalAcrylicMaterial
     {
         /// <summary>
         /// Creates an immutable clone of the brush.

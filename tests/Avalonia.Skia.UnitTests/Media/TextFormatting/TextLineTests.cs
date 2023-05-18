@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
@@ -704,6 +705,28 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var sumOfBoundsWidth = textBounds.Sum(x => x.Rectangle.Width);
 
                 Assert.Equal(lineWidth, sumOfBoundsWidth, 2);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_For_Distance_With_TextEndOfLine()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource("Hello World", defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 1000,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(1000);
+
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
+                Assert.Equal(1, characterHit.TrailingLength);
             }
         }
 

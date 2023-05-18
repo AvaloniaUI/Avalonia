@@ -111,6 +111,39 @@ public class ThemeDictionariesTests : XamlTestBase
     }
 
     [Fact]
+    public void DynamicResource_In_ResourceProvider_Updated_When_Control_Theme_Changed()
+    {
+        var themeVariantScope = new ThemeVariantScope
+        {
+            RequestedThemeVariant = ThemeVariant.Light,
+            Resources = new ResourceDictionary
+            {
+                ThemeDictionaries =
+                {
+                    [ThemeVariant.Dark] = new ResourceDictionary { ["DemoBackground"] = Brushes.Black },
+                    [ThemeVariant.Light] = new ResourceDictionary { ["DemoBackground"] = Brushes.White }
+                }
+            },
+            Child = new Border()
+        };
+        
+        var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(@"
+<ResourceDictionary xmlns='https://github.com/avaloniaui' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <GeometryDrawing x:Key='Geo' Brush='{DynamicResource DemoBackground}' />
+</ResourceDictionary>");
+        
+        themeVariantScope.Resources.MergedDictionaries.Add(resources);
+        var geo = (GeometryDrawing)themeVariantScope.FindResource("Geo");
+        
+        Assert.NotNull(geo);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)geo.Brush)!.Color);
+
+        themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
+        
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)geo.Brush)!.Color);
+    }
+
+    [Fact]
     public void Intermediate_StaticResource_Can_Be_Reached_From_ThemeDictionaries()
     {
         var themeVariantScope = (ThemeVariantScope)AvaloniaRuntimeXamlLoader.Load(@"

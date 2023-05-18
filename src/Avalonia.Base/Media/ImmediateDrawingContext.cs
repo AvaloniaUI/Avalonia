@@ -67,7 +67,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="source">The bitmap.</param>
         /// <param name="rect">The rect in the output to draw to.</param>
-        public void DrawBitmap(IBitmap source, Rect rect)
+        public void DrawBitmap(Bitmap source, Rect rect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
             DrawBitmap(source, new Rect(source.Size), rect);
@@ -79,10 +79,10 @@ namespace Avalonia.Media
         /// <param name="source">The bitmap.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawBitmap(IBitmap source, Rect sourceRect, Rect destRect)
+        public void DrawBitmap(Bitmap source, Rect sourceRect, Rect destRect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-            PlatformImpl.DrawBitmap(source.PlatformImpl, 1, sourceRect, destRect);
+            PlatformImpl.DrawBitmap(source.PlatformImpl.Item, 1, sourceRect, destRect);
         }
 
         /// <summary>
@@ -180,11 +180,11 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IImmutableBrush foreground, IRef<IGlyphRunImpl> glyphRun)
+        public void DrawGlyphRun(IImmutableBrush foreground, IImmutableGlyphRunReference glyphRun)
         {
             _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
-
-            PlatformImpl.DrawGlyphRun(foreground, glyphRun);
+            if (glyphRun.GlyphRun != null)
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun.GlyphRun.Item);
         }
 
         /// <summary>

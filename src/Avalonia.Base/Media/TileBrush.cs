@@ -1,4 +1,7 @@
 using Avalonia.Media.Imaging;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
@@ -73,18 +76,7 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<TileMode> TileModeProperty =
             AvaloniaProperty.Register<TileBrush, TileMode>(nameof(TileMode));
-
-        static TileBrush()
-        {
-            AffectsRender<TileBrush>(
-                AlignmentXProperty,
-                AlignmentYProperty,
-                DestinationRectProperty,
-                SourceRectProperty,
-                StretchProperty,
-                TileModeProperty);
-        }
-
+        
         /// <summary>
         /// Gets or sets the horizontal alignment of a tile in the destination.
         /// </summary>
@@ -138,6 +130,13 @@ namespace Avalonia.Media
         {
             get { return (TileMode)GetValue(TileModeProperty); }
             set { SetValue(TileModeProperty, value); }
+        }
+
+        private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            base.SerializeChanges(c, writer);
+            ServerCompositionSimpleTileBrush.SerializeAllChanges(writer, AlignmentX, AlignmentY, DestinationRect, SourceRect,
+                Stretch, TileMode);
         }
     }
 }
