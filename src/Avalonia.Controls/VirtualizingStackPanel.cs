@@ -343,7 +343,7 @@ namespace Avalonia.Controls
         {
             var items = Items;
 
-            if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null)
+            if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null || !IsEffectivelyVisible)
                 return null;
 
             if (GetRealizedElement(index) is Control element)

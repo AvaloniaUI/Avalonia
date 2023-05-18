@@ -692,7 +692,41 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Null(firstItem.Parent);
             Assert.Null(firstItem.VisualParent);
-            Assert.Empty(itemsControl.ItemsPanelRoot!.Children);
+            Assert.Empty(itemsControl.ItemsPanelRoot!.Children);            
+        }
+
+        [Fact]
+        public void ScrollIntoView_On_Effectively_Invisible_Panel_Does_Not_Create_Ghost_Elements()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+            var (target, _, itemsControl) = CreateUnrootedTarget(items: items);
+            var container = new Decorator { Margin = new Thickness(100), Child = itemsControl };
+            var root = new TestRoot(true, container);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Clear the items and do a layout to recycle all elements.
+            itemsControl.ItemsSource = null;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Should have no realized elements and 3 unrealized elements.
+            Assert.Equal(0, target.GetRealizedElements().Count);
+            Assert.Equal(3, target.Children.Count);
+
+            // Make the panel effectively invisible and set items.
+            container.IsVisible = false;
+            itemsControl.ItemsSource = items;
+
+            // Try to scroll into view while effectively invisible.
+            target.ScrollIntoView(0);
+
+            // Make the panel visible and layout.
+            container.IsVisible = true;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Should have 3 realized elements and no unrealized elements.
+            Assert.Equal(3, target.GetRealizedElements().Count);
+            Assert.Equal(3, target.Children.Count);
         }
 
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
