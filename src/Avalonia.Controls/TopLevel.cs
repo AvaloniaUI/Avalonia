@@ -452,6 +452,9 @@ namespace Avalonia.Controls
         /// </summary>
         public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
 
+        /// <inheritdoc />
+        public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -725,7 +728,7 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (Visual?)FocusManager.Instance?.Current;
+            var focused = (Visual?)FocusManager?.GetFocusedElement();
             if (focused == null)
                 return;
             while (focused.VisualParent != null)

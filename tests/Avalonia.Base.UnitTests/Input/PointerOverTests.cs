@@ -20,7 +20,9 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Close_Should_Remove_PointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+            using var app = UnitTestApplication.Start(new TestServices(
+                inputManager: new InputManager(),
+                focusManager: new FocusManager()));
 
             var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
