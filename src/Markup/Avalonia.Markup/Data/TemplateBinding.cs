@@ -109,7 +109,7 @@ namespace Avalonia.Data
         }
 
         /// <inheritdoc/>
-        void ISetterValue.Initialize(ISetter setter) => _isSetterValue = true;
+        void ISetterValue.Initialize(SetterBase setter) => _isSetterValue = true;
 
         protected override void Subscribed()
         {

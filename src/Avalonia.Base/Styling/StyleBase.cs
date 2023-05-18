@@ -16,7 +16,7 @@ namespace Avalonia.Styling
         private IResourceHost? _owner;
         private StyleChildren? _children;
         private IResourceDictionary? _resources;
-        private List<ISetter>? _setters;
+        private List<SetterBase>? _setters;
         private List<IAnimation>? _animations;
         private StyleInstance? _sharedInstance;
 
@@ -60,7 +60,7 @@ namespace Avalonia.Styling
             }
         }
 
-        public IList<ISetter> Setters => _setters ??= new List<ISetter>();
+        public IList<SetterBase> Setters => _setters ??= new();
         public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
 
         bool IResourceNode.HasResources => _resources?.Count > 0;
@@ -69,7 +69,7 @@ namespace Avalonia.Styling
         internal bool HasChildren => _children?.Count > 0;
         internal bool HasSettersOrAnimations => _setters?.Count > 0 || _animations?.Count > 0;
 
-        public void Add(ISetter setter) => Setters.Add(setter);
+        public void Add(SetterBase setter) => Setters.Add(setter);
         public void Add(IStyle style) => Children.Add(style);
 
         public event EventHandler? OwnerChanged;
