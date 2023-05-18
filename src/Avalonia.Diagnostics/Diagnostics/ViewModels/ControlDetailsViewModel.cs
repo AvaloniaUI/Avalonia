@@ -64,7 +64,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 // We need to place styles without activator first, such styles will be overwritten by ones with activators.
                 foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
                 {
-                    var styleSource = appliedStyle.Source;
+                    var styleSource = appliedStyle.Style;
 
                     var setters = new List<SetterViewModel>();
 

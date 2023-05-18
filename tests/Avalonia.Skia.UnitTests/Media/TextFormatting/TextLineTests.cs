@@ -708,6 +708,28 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_CharacterHit_For_Distance_With_TextEndOfLine()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource("Hello World", defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 1000,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(1000);
+
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
+                Assert.Equal(1, characterHit.TrailingLength);
+            }
+        }
+
         private class MixedTextBufferTextSource : ITextSource
         {
             public TextRun? GetTextRun(int textSourceIndex)

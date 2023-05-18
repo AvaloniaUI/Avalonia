@@ -64,7 +64,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (Properties.BackgroundBrush != null)
                 {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
                 }
 
                 drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
