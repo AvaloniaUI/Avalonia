@@ -255,7 +255,7 @@
         }
     }
 
-    uint32 timestamp = static_cast<uint32>([event timestamp] * 1000);
+    auto timestamp = static_cast<uint64>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
     if(type != Move ||
@@ -406,7 +406,7 @@
 
     auto key = s_KeyMap[[event keyCode]];
 
-    uint32_t timestamp = static_cast<uint32_t>([event timestamp] * 1000);
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
     if(_parent != nullptr)
