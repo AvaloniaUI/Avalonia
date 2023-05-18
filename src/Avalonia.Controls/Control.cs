@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <inheritdoc/>
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             if (setter is Setter s && s.Property == ContextFlyoutProperty)
             {
