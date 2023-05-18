@@ -200,7 +200,7 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// This method is automatically called when the control is attached to a visual tree.
         /// </remarks>
-        protected internal virtual void AttachToScrollViewer()
+        internal void AttachToScrollViewer()
         {
             var owner = this.FindAncestorOfType<ScrollViewer>();
 
