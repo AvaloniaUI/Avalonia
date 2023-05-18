@@ -16,17 +16,6 @@
     </AndroidResource>
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(RunAOTCompilation)'=='' and '$(Configuration)'=='Release' and '$(TF_BUILD)'==''">
-    <RunAOTCompilation>True</RunAOTCompilation>
-  </PropertyGroup>
-  
-  <!-- PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
-    <EnableLLVM>True</EnableLLVM>
-    <AndroidAotAdditionalArguments>no-write-symbols,nodebug</AndroidAotAdditionalArguments>
-    <AndroidAotMode>Hybrid</AndroidAotMode>
-    <AndroidGenerateJniMarshalMethods>True</AndroidGenerateJniMarshalMethods>
-  </PropertyGroup -->
-
   <PropertyGroup Condition="'$(AndroidEnableProfiler)'=='True'">
     <IsEmulator Condition="'$(IsEmulator)' == ''">True</IsEmulator>
     <DebugSymbols>True</DebugSymbols>
@@ -41,4 +30,5 @@
     <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
+  <Import Project="../../src/Android/Avalonia.Android/Avalonia.Android.targets" />
 </Project>

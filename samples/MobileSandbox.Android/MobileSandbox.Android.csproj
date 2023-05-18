@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-android</TargetFramework>
+    <TargetFramework>net7.0-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
@@ -9,6 +9,8 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <!-- Uncomment to test without Avalonia aot profile -->
+    <AvaloniaUseDefaultAotProfile>false</AvaloniaUseDefaultAotProfile>
   </PropertyGroup>
   <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
@@ -16,22 +18,10 @@
     </AndroidResource>
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(RunAOTCompilation)'=='' and '$(Configuration)'=='Release' and '$(TF_BUILD)'==''">
-    <RunAOTCompilation>True</RunAOTCompilation>
-  </PropertyGroup>
-  
-  <!-- PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
-    <EnableLLVM>True</EnableLLVM>
-    <AndroidAotAdditionalArguments>no-write-symbols,nodebug</AndroidAotAdditionalArguments>
-    <AndroidAotMode>Hybrid</AndroidAotMode>
-    <AndroidGenerateJniMarshalMethods>True</AndroidGenerateJniMarshalMethods>
-  </PropertyGroup -->
-
   <PropertyGroup Condition="'$(AndroidEnableProfiler)'=='True'">
     <IsEmulator Condition="'$(IsEmulator)' == ''">True</IsEmulator>
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
-
   <ItemGroup>
     <AndroidEnvironment Condition="'$(IsEmulator)'=='True'" Include="environment.emulator.txt" />
     <AndroidEnvironment Condition="'$(IsEmulator)'!='True'" Include="environment.device.txt" />
@@ -41,4 +31,11 @@
     <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
     <ProjectReference Include="..\MobileSandbox\MobileSandbox.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- https://github.com/AvaloniaUI/Avalonia/issues/8108 -->
+    <PackageReference Include="Mono.AotProfiler.Android" Version="7.0.0" />
+  </ItemGroup>
+
+  <Import Project="../../src/Android/Avalonia.Android/Avalonia.Android.targets" />
 </Project>

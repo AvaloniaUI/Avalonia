@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <AvaloniaUseDefaultAotProfile Condition="'$(AvaloniaUseDefaultAotProfile)' == ''">true</AvaloniaUseDefaultAotProfile>
+    <AndroidUseDefaultAotProfile Condition="'$(AvaloniaUseDefaultAotProfile)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AvaloniaUseDefaultAotProfile)' != 'false'">
+    <AndroidAotProfile Include="$(MSBuildThisFileDirectory)avalonia.aprof" />
+  </ItemGroup>
+</Project>
