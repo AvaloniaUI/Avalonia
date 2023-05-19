@@ -19,7 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="*.props" Pack="true" PackagePath="build\" />
-    <Content Include="*.targets" Pack="true" PackagePath="build\;buildTransitive\" />
+    <Content Include="*.targets" Pack="true" PackagePath="build\" />
     <Content Include="*.aprof" Pack="true" PackagePath="build\" />
   </ItemGroup>
   <Import Project="..\..\..\build\DevAnalyzers.props" />
