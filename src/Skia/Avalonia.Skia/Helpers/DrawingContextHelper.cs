@@ -20,7 +20,7 @@ namespace Avalonia.Skia.Helpers
             {
                 Canvas = canvas,
                 Dpi = dpi,
-                DisableTextLcdRendering = true,
+                DisableSubpixelTextRendering = true,
             };
 
             return new DrawingContextImpl(createInfo);

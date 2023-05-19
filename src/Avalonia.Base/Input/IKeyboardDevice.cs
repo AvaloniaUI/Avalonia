@@ -44,13 +44,7 @@ namespace Avalonia.Input
     }
 
     [NotClientImplementable]
-    public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
+    public interface IKeyboardDevice : IInputDevice
     {
-        IInputElement? FocusedElement { get; }
-
-        void SetFocusedElement(
-            IInputElement? element, 
-            NavigationMethod method,
-            KeyModifiers modifiers);
     }
 }
