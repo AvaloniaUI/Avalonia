@@ -288,10 +288,10 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 button.Focus();
-                Assert.True(FocusManager.Instance?.Current == button);
+                Assert.True(window.FocusManager.GetFocusedElement() == button);
                 button.Flyout.ShowAt(button);
                 Assert.False(button.IsFocused);
-                Assert.True(FocusManager.Instance?.Current == flyoutTextBox);
+                Assert.True(window.FocusManager.GetFocusedElement() == flyoutTextBox);
             }
         }
 
@@ -322,10 +322,10 @@ namespace Avalonia.Controls.UnitTests
                 window.Content = button;
                 window.Show();
 
-                FocusManager.Instance?.Focus(button);
-                Assert.True(FocusManager.Instance?.Current == button);
+                button.Focus();
+                Assert.True(window.FocusManager.GetFocusedElement() == button);
                 button.Flyout.ShowAt(button);
-                Assert.True(FocusManager.Instance?.Current == button);
+                Assert.True(window.FocusManager.GetFocusedElement() == button);
             }
         }
 

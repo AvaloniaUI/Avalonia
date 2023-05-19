@@ -1567,7 +1567,7 @@ namespace Avalonia.Controls
             base.OnPointerReleased(e);
             if (!HasFocusInternal && e.InitialPressMouseButton == MouseButton.Left)
             {
-                FocusManager.Instance?.Focus(this);
+                Focus();
             }
         }
 

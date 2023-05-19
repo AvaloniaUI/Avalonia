@@ -11,40 +11,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        IInputElement? Current { get; }
+        IInputElement? GetFocusedElement();
 
         /// <summary>
-        /// Gets the current focus scope.
+        /// Clears currently focused element.
         /// </summary>
-        IFocusScope? Scope { get; }
-
-        /// <summary>
-        /// Focuses a control.
-        /// </summary>
-        /// <param name="control">The control to focus.</param>
-        /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
-        void Focus(
-            IInputElement? control,
-            NavigationMethod method = NavigationMethod.Unspecified,
-            KeyModifiers keyModifiers = KeyModifiers.None);
-
-        /// <summary>
-        /// Notifies the focus manager of a change in focus scope.
-        /// </summary>
-        /// <param name="scope">The new focus scope.</param>
-        /// <remarks>
-        /// This should not be called by client code. It is called by an <see cref="IFocusScope"/>
-        /// when it activates, e.g. when a Window is activated.
-        /// </remarks>
-        void SetFocusScope(IFocusScope scope);
-
-        /// <summary>
-        /// Notifies the focus manager that a focus scope has been removed.
-        /// </summary>
-        /// <param name="scope">The focus scope to be removed.</param>
-        /// This should not be called by client code. It is called by an <see cref="IFocusScope"/>
-        /// when it deactivates or closes, e.g. when a Window is closed.
-        void RemoveFocusScope(IFocusScope scope);
+        [Unstable("This API might be removed in 11.x minor updates. Please consider focusing another element instead of removing focus at all for better UX.")]
+        void ClearFocus();
     }
 }
