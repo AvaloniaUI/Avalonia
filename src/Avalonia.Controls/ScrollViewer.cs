@@ -188,6 +188,12 @@ namespace Avalonia.Controls
         /// true to use a behavior that brings focused items into view. false to use a behavior
         /// that focused items do not automatically scroll into view. The default is true.
         /// </value>
+        /// <remarks>
+        /// <see cref="BringIntoViewOnFocusChange"/> can either be set explicitly on a
+        /// <see cref="ScrollViewer"/>, or a the attached 
+        /// <code>ScrollViewer.BringIntoViewOnFocusChange</code> property can be set on an element
+        /// that hosts a <see cref="ScrollViewer"/>.
+        /// </remarks>
         public bool BringIntoViewOnFocusChange
         {
             get => GetValue(BringIntoViewOnFocusChangeProperty);
