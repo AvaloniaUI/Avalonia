@@ -125,7 +125,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var selfType = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().First().Type.GetClrType();
                 
                 // When using self bindings with setters we need to change target type to resolved selector type.
-                if (context.GetAvaloniaTypes().ISetter.IsAssignableFrom(selfType))
+                if (context.GetAvaloniaTypes().SetterBase.IsAssignableFrom(selfType))
                 {
                     selfType = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().First().TargetType.GetClrType();
                 }

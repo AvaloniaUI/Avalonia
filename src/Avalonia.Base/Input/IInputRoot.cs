@@ -19,6 +19,14 @@ namespace Avalonia.Input
         IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
 
         /// <summary>
+        /// Gets focus manager of the root.
+        /// </summary>
+        /// <remarks>
+        /// Focus manager can be null only if application wasn't initialized yet.
+        /// </remarks>
+        IFocusManager? FocusManager { get; }
+        
+        /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
         /// </summary>
         IInputElement? PointerOverElement { get; set; }

@@ -14,7 +14,7 @@ namespace Avalonia.Styling
         /// Gets a value indicating whether either this selector or a previous selector has moved
         /// into a template.
         /// </summary>
-        public abstract bool InTemplate { get; }
+        internal abstract bool InTemplate { get; }
 
         /// <summary>
         /// Gets a value indicating whether this selector is a combinator.
@@ -22,12 +22,12 @@ namespace Avalonia.Styling
         /// <remarks>
         /// A combinator is a selector such as Child or Descendent which links simple selectors.
         /// </remarks>
-        public abstract bool IsCombinator { get; }
+        internal abstract bool IsCombinator { get; }
 
         /// <summary>
         /// Gets the target type of the selector, if available.
         /// </summary>
-        public abstract Type? TargetType { get; }
+        internal abstract Type? TargetType { get; }
 
         /// <summary>
         /// Tries to match the selector with a control.
@@ -41,7 +41,7 @@ namespace Avalonia.Styling
         /// or simply return an immediate result.
         /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        public SelectorMatch Match(StyledElement control, IStyle? parent = null, bool subscribe = true)
+        internal SelectorMatch Match(StyledElement control, IStyle? parent = null, bool subscribe = true)
         {
             // First match the selector until a combinator is found. Selectors are stored from 
             // right-to-left, so MatchUntilCombinator reverses this order because the type selector
@@ -88,17 +88,17 @@ namespace Avalonia.Styling
         /// or simply return an immediate result.
         /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        protected abstract SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe);
+        private protected abstract SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe);
 
         /// <summary>
         /// Moves to the previous selector.
         /// </summary>
-        protected abstract Selector? MovePrevious();
+        private protected abstract Selector? MovePrevious();
 
         /// <summary>
         /// Moves to the previous selector or the parent selector.
         /// </summary>
-        protected abstract Selector? MovePreviousOrParent();
+        private protected abstract Selector? MovePreviousOrParent();
 
         internal virtual void ValidateNestingSelector(bool inControlTheme)
         {

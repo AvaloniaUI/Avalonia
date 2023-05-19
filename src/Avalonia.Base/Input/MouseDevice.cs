@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Reactive;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 #pragma warning disable CS0618
@@ -11,6 +12,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Represents a mouse device.
     /// </summary>
+    [PrivateApi]
     public class MouseDevice : IMouseDevice, IDisposable
     {
         private int _clickCount;

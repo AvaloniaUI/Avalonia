@@ -107,7 +107,7 @@ namespace Avalonia.LinuxFramebuffer
 
                     if (_topLevel is IFocusScope scope)
                     {
-                        FocusManager.Instance?.SetFocusScope(scope);
+                        ((FocusManager)_topLevel.FocusManager).SetFocusScope(scope);
                     }
                 }
 
