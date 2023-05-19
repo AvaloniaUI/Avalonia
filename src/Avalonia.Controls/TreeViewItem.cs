@@ -238,7 +238,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            FocusManager.Instance?.Focus(treeViewItem, NavigationMethod.Directional);
+                            treeViewItem.Focus(NavigationMethod.Directional);
                         }
 
                         return true;
