@@ -72,7 +72,10 @@ namespace Avalonia.Controls
                         // Otherwise perform the selection when the pointer is released as to not
                         // interfere with gestures.
                         _pointerDownPoint = p.Position;
-                        e.Handled = true;
+
+                        // Ideally we'd set handled here, but that would prevent the scroll gesture
+                        // recognizer from working.
+                        ////e.Handled = true;
                     }
                 }
             }
