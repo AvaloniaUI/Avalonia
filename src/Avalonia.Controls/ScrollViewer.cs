@@ -184,6 +184,10 @@ namespace Avalonia.Controls
         /// Gets or sets a value that determines whether the <see cref="ScrollViewer"/> uses a
         /// bring-into-view scroll behavior when an item in the view gets focus.
         /// </summary>
+        /// <value>
+        /// true to use a behavior that brings focused items into view. false to use a behavior
+        /// that focused items do not automatically scroll into view. The default is true.
+        /// </value>
         public bool BringIntoViewOnFocusChange
         {
             get => GetValue(BringIntoViewOnFocusChangeProperty);
