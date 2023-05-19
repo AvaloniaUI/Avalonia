@@ -298,11 +298,11 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(false, item.IsSelected);
 
-                RaisePressedEvent(target, item, MouseButton.Left);
+                RaisePressedEvent(item, MouseButton.Left);
 
                 Assert.Equal(true, item.IsSelected);
 
-                RaisePressedEvent(target, item, MouseButton.Left);
+                RaisePressedEvent(item, MouseButton.Left);
 
                 Assert.Equal(false, item.IsSelected);
             }
@@ -328,9 +328,9 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
+        private void RaisePressedEvent(ListBoxItem item, MouseButton mouseButton)
         {
-            _mouse.Click(listBox, item, mouseButton);
+            _mouse.Click(item, item, mouseButton);
         }
 
         [Fact]
@@ -776,7 +776,7 @@ namespace Avalonia.Controls.UnitTests
 
                 first.Focus();
 
-                RaisePressedEvent(target, first, MouseButton.Left);
+                RaisePressedEvent(first, MouseButton.Left);
                 Assert.Equal(true, first.IsSelected);
 
                 RaiseKeyEvent(target, Key.Up);
