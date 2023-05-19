@@ -53,8 +53,7 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                DisableSubpixelTextRendering = true
+                Dpi = framebuffer.Dpi
             };
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
