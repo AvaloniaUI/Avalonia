@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Diagnostics;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
@@ -126,6 +127,7 @@ namespace ControlCatalog.NetCore
                 })
                 .UseSkia()
                 .WithInterFont()
+                .EmulateTouchWithMouse()
                 .AfterSetup(builder =>
                 {
                     builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()

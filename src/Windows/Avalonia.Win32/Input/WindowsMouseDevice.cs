@@ -23,7 +23,7 @@ namespace Avalonia.Win32.Input
         
         internal class WindowsMousePointer : Pointer
         {
-            private WindowsMousePointer() : base(GetNextFreeId(),PointerType.Mouse, true)
+            private WindowsMousePointer() : base(GetNextFreeId(), !EmulateTouch ? PointerType.Mouse : PointerType.Touch, true)
             {
             }
             

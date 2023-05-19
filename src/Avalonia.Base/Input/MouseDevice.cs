@@ -15,6 +15,7 @@ namespace Avalonia.Input
     [PrivateApi]
     public class MouseDevice : IMouseDevice, IDisposable
     {
+        private bool _mouseDown;
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
@@ -25,8 +26,13 @@ namespace Avalonia.Input
 
         public MouseDevice(Pointer? pointer = null)
         {
-            _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            _pointer = pointer ?? new Pointer(
+                Pointer.GetNextFreeId(), 
+                !EmulateTouch ? PointerType.Mouse : PointerType.Touch, 
+                true);
         }
+
+        internal static bool EmulateTouch { get; set; }
 
         public void ProcessRawEvent(RawInputEventArgs e)
         {
@@ -109,7 +115,7 @@ namespace Avalonia.Input
 
         }
 
-        static PointerPointProperties CreateProperties(RawPointerEventArgs args)
+        PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
             return new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind());
         }
@@ -122,6 +128,7 @@ namespace Avalonia.Input
             root = root ?? throw new ArgumentNullException(nameof(root));
 
             var source = _pointer.Captured ?? root.InputHitTest(p);
+            _mouseDown = true;
 
             if (source != null)
             {
@@ -160,7 +167,7 @@ namespace Avalonia.Input
 
             var source = _pointer.Captured ?? hitTest;
 
-            if (source is object)
+            if (source is object && (!EmulateTouch || _mouseDown))
             {
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)root,
                     p, timestamp, properties, inputModifiers, intermediatePoints);
@@ -179,6 +186,7 @@ namespace Avalonia.Input
             root = root ?? throw new ArgumentNullException(nameof(root));
 
             var source = _pointer.Captured ?? hitTest;
+            _mouseDown = false;
 
             if (source is not null)
             {
