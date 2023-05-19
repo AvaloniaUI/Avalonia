@@ -6,7 +6,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Logging
 {
-    public class TraceLogSink : ILogSink
+    internal class TraceLogSink : ILogSink
     {
         private readonly LogEventLevel _level;
         private readonly IList<string>? _areas;

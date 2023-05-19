@@ -2,7 +2,7 @@
 
 namespace Avalonia.Rendering.Utilities
 {
-    public class TileBrushCalculator
+    internal class TileBrushCalculator
     {
         private readonly Size _imageSize;
         private readonly Rect _drawRect;
