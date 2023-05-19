@@ -699,7 +699,7 @@ namespace Avalonia.Controls.UnitTests
         public void ScrollIntoView_On_Effectively_Invisible_Panel_Does_Not_Create_Ghost_Elements()
         {
             var items = new[] { "foo", "bar", "baz" };
-            var (target, _, itemsControl) = CreateUnrootedTarget(items: items);
+            var (target, _, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items);
             var container = new Decorator { Margin = new Thickness(100), Child = itemsControl };
             var root = new TestRoot(true, container);
 
