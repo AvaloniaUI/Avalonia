@@ -7,7 +7,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
 
@@ -26,7 +25,7 @@ namespace Avalonia.Skia
         private readonly Stack<double> _opacityStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
-        private readonly bool _canTextUseLcdRendering;
+        private readonly bool _disableSubpixelTextRendering;
         private Matrix _currentTransform;
         private bool _disposed;
         private GRContext? _grContext;
@@ -59,11 +58,11 @@ namespace Avalonia.Skia
             /// Dpi of drawings.
             /// </summary>
             public Vector Dpi;
-            
+
             /// <summary>
-            /// Render text without Lcd rendering.
+            /// Render text without subpixel antialiasing.
             /// </summary>
-            public bool DisableTextLcdRendering;
+            public bool DisableSubpixelTextRendering;
 
             /// <summary>
             /// GPU-accelerated context (optional)
@@ -135,7 +134,7 @@ namespace Avalonia.Skia
 
             _dpi = createInfo.Dpi;
             _disposables = disposables;
-            _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
+            _disableSubpixelTextRendering = createInfo.DisableSubpixelTextRendering;
             _grContext = createInfo.GrContext;
             _gpu = createInfo.Gpu;
             if (_grContext != null)
@@ -519,7 +518,23 @@ namespace Avalonia.Skia
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun;
 
-                var textBlob = glyphRunImpl.GetTextBlob(RenderOptions);
+                var textRenderOptions = RenderOptions;
+
+                if (_disableSubpixelTextRendering)
+                {
+                    switch (textRenderOptions.TextRenderingMode)
+                    {
+                        case TextRenderingMode.Unspecified
+                            when textRenderOptions.EdgeMode == EdgeMode.Antialias || textRenderOptions.EdgeMode == EdgeMode.Unspecified:
+                        case TextRenderingMode.SubpixelAntialias:
+                            {
+                                textRenderOptions = textRenderOptions with { TextRenderingMode = TextRenderingMode.Antialias };
+                                break;
+                            }
+                    }
+                }
+
+                var textBlob = glyphRunImpl.GetTextBlob(textRenderOptions);
 
                 Canvas.DrawText(textBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -969,6 +984,7 @@ namespace Avalonia.Skia
 
                 using (var ctx = intermediate.CreateDrawingContext())
                 {
+                    ctx.RenderOptions = RenderOptions;
                     ctx.Clear(Colors.Transparent);
                     content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
                 }
@@ -997,6 +1013,7 @@ namespace Avalonia.Skia
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _dpi);
             using (var ctx = pictureTarget.CreateDrawingContext(calc.IntermediateSize))
             {
+                ctx.RenderOptions = RenderOptions;
                 ctx.PushClip(calc.IntermediateClip);
                 content.Render(ctx, transform);
                 ctx.PopClip();
@@ -1283,7 +1300,7 @@ namespace Avalonia.Skia
                 Height = pixelSize.Height,
                 Dpi = _dpi,
                 Format = format,
-                DisableTextLcdRendering = !_canTextUseLcdRendering,
+                DisableTextLcdRendering = isLayer ? _disableSubpixelTextRendering : true,
                 GrContext = _grContext,
                 Gpu = _gpu,
                 Session = _session,
