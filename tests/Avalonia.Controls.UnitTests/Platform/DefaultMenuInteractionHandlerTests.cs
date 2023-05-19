@@ -267,7 +267,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.KeyDown(item.Object, e);
 
                 parentItem.Verify(x => x.Close());
-                parentItem.Verify(x => x.Focus());
+                parentItem.Verify(x => x.Focus(It.IsAny<NavigationMethod>(), It.IsAny<KeyModifiers>()));
                 Assert.True(e.Handled);
             }
 
@@ -351,7 +351,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.KeyDown(item.Object, e);
 
                 parentItem.Verify(x => x.Close());
-                parentItem.Verify(x => x.Focus());
+                parentItem.Verify(x => x.Focus(It.IsAny<NavigationMethod>(), It.IsAny<KeyModifiers>()));
                 Assert.True(e.Handled);
             }
 

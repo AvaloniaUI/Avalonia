@@ -234,7 +234,7 @@ namespace Avalonia.Controls
 
                 if (this is IFocusScope scope)
                 {
-                    FocusManager.Instance?.RemoveFocusScope(scope);
+                    ((FocusManager?)FocusManager)?.RemoveFocusScope(scope);
                 }
 
                 base.HandleClosed();
@@ -326,7 +326,7 @@ namespace Avalonia.Controls
 
             if (scope != null)
             {
-                FocusManager.Instance?.SetFocusScope(scope);
+                ((FocusManager?)FocusManager)?.SetFocusScope(scope);
             }
 
             IsActive = true;

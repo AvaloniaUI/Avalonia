@@ -566,19 +566,20 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                var focus = FocusManager.Instance;
+                var focus = FocusManager.GetFocusManager(this);
                 var direction = e.Key.ToNavigationDirection();
                 var container = Presenter?.Panel as INavigableContainer;
 
-                if (container == null ||
-                    focus?.Current == null ||
+                if (focus == null ||
+                    container == null ||
+                    focus.GetFocusedElement() == null ||
                     direction == null ||
                     direction.Value.IsTab())
                 {
                     return;
                 }
 
-                Visual? current = focus.Current as Visual;
+                Visual? current = focus.GetFocusedElement() as Visual;
 
                 while (current != null)
                 {
@@ -588,7 +589,7 @@ namespace Avalonia.Controls
 
                         if (next != null)
                         {
-                            focus.Focus(next, NavigationMethod.Directional, e.KeyModifiers);
+                            next.Focus(NavigationMethod.Directional, e.KeyModifiers);
                             e.Handled = true;
                         }
 
