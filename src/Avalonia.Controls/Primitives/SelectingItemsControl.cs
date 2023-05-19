@@ -704,7 +704,8 @@ namespace Avalonia.Controls.Primitives
             bool wrap = false,
             bool rangeModifier = false)
         {
-            var from = ContainerFromIndex(Selection.AnchorIndex);
+            var from = GetContainerFromEventSource(FocusManager.Instance?.Current) ??
+                ContainerFromIndex(Selection.AnchorIndex);
             return MoveSelection(from, direction, wrap, rangeModifier);
         }
 
@@ -722,14 +723,29 @@ namespace Avalonia.Controls.Primitives
             bool wrap = false,
             bool rangeModifier = false)
         {
-            if (Presenter?.Panel is INavigableContainer container &&
-                GetNextControl(container, direction, from, wrap) is Control next)
+            if (Presenter?.Panel is not INavigableContainer container)
+                return false;
+
+            if (from is null)
+            {
+                direction = direction switch
+                {
+                    NavigationDirection.Down => NavigationDirection.First,
+                    NavigationDirection.Up => NavigationDirection.Last,
+                    NavigationDirection.Right => NavigationDirection.First,
+                    NavigationDirection.Left => NavigationDirection.Last,
+                    _ => direction,
+                };
+            }
+
+            if (GetNextControl(container, direction, from, wrap) is Control next)
             {
                 var index = IndexFromContainer(next);
 
                 if (index != -1)
                 {
                     UpdateSelection(index, true, rangeModifier);
+                    next.Focus();
                     return true;
                 }
             }

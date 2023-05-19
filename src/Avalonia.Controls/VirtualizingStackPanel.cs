@@ -265,12 +265,14 @@ namespace Avalonia.Controls
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
         {
             var count = Items.Count;
+            var fromControl = from as Control;
 
-            if (count == 0 || from is not Control fromControl)
+            if (count == 0 || 
+                fromControl is null && direction is not NavigationDirection.First or NavigationDirection.Last)
                 return null;
 
             var horiz = Orientation == Orientation.Horizontal;
-            var fromIndex = from != null ? IndexFromContainer(fromControl) : -1;
+            var fromIndex = fromControl != null ? IndexFromContainer(fromControl) : -1;
             var toIndex = fromIndex;
 
             switch (direction)

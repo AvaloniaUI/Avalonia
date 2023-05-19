@@ -12,6 +12,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -750,6 +751,146 @@ namespace Avalonia.Controls.UnitTests
 
             // "Item1" should remain selected, and now be at the bottom of the viewport.
             Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{10 - x}"), realized);
+        }
+
+        [Fact]
+        public void Arrow_Keys_Should_Move_Selection_Vertical()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            RaiseKeyEvent(target, Key.Down);
+            Assert.Equal(1, target.SelectedIndex);
+
+            RaiseKeyEvent(target, Key.Down);
+            Assert.Equal(2, target.SelectedIndex);
+
+            RaiseKeyEvent(target, Key.Up);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Arrow_Keys_Should_Move_Selection_Horizontal()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = items,
+                ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel 
+                {
+                    Orientation = Orientation.Horizontal 
+                }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            RaiseKeyEvent(target, Key.Right);
+            Assert.Equal(1, target.SelectedIndex);
+
+            RaiseKeyEvent(target, Key.Right);
+            Assert.Equal(2, target.SelectedIndex);
+
+            RaiseKeyEvent(target, Key.Left);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Arrow_Keys_Should_Focus_Selection()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            RaiseKeyEvent(target, Key.Down);
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
+
+            RaiseKeyEvent(target, Key.Down);
+            Assert.True(target.ContainerFromIndex(2).IsFocused);
+
+            RaiseKeyEvent(target, Key.Up);
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
+        }
+
+        [Fact]
+        public void Down_Key_Selecting_From_No_Selection_And_No_Focus_Selects_From_Start()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                Width = 100,
+                Height = 100,
+            };
+
+            Prepare(target);
+
+            RaiseKeyEvent(target, Key.Down);
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Down_Key_Selecting_From_No_Selection_Selects_From_Focus()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                Width = 100,
+                Height = 100,
+            };
+
+            Prepare(target);
+
+            target.ContainerFromIndex(1)!.Focus();
+            RaiseKeyEvent(target, Key.Down);
+
+            Assert.Equal(2, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Ctrl_Down_Key_Moves_Focus_But_Not_Selection()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                Width = 100,
+                Height = 100,
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            target.ContainerFromIndex(0)!.Focus();
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Control);
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
         }
 
         [Fact]

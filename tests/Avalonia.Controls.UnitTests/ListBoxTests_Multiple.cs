@@ -479,6 +479,104 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, target.SelectedItems.Count);
             }
         }
+
+        [Fact]
+        public void Shift_Arrow_Key_Selects_Range()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
+                SelectedIndex = 0,
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar", }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
+
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar", "Baz", }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(2).IsFocused);
+
+            RaiseKeyEvent(target, Key.Up, KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar", }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
+        }
+
+        [Fact]
+        public void Shift_Down_Key_Selecting_Selects_Range_End_From_Focus()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
+                SelectedIndex = 0,
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.ContainerFromIndex(1)!.Focus();
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(2).IsFocused);
+        }
+
+        [Fact]
+        public void Shift_Down_Key_Selecting_Selects_Range_End_From_Focus_Moved_With_Ctrl_Key()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
+                SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
+                SelectedIndex = 0,
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
+
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Control);
+
+            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(2).IsFocused);
+
+            RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar", "Baz", "Qux" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1, 2, 3 }, SelectedContainers(target));
+            Assert.True(target.ContainerFromIndex(3).IsFocused);
+        }
+
         private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollViewer
@@ -501,20 +599,14 @@ namespace Avalonia.Controls.UnitTests
             }.RegisterInNameScope(scope);
         }
 
-        private static void ApplyTemplate(ListBox target)
+        private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
         {
-            // Apply the template to the ListBox itself.
-            target.ApplyTemplate();
-
-            // Then to its inner ScrollViewer.
-            var scrollViewer = (ScrollViewer)target.GetVisualChildren().Single();
-            scrollViewer.ApplyTemplate();
-
-            // Then make the ScrollViewer create its child.
-            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
-
-            // Now the ItemsPresenter should be reigstered, so apply its template.
-            ((Control)target.Presenter).ApplyTemplate();
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
         }
 
         private static IEnumerable<int> SelectedContainers(SelectingItemsControl target)

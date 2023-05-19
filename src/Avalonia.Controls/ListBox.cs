@@ -128,8 +128,11 @@ namespace Avalonia.Controls
         protected override void OnKeyDown(KeyEventArgs e)
         {
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
-            if (e.Key.ToNavigationDirection() is { } direction)
+            if (!ctrl &&
+                e.Key.ToNavigationDirection() is { } direction && 
+                direction.IsDirectional())
             {
                 e.Handled |= MoveSelection(
                     direction,
@@ -144,12 +147,11 @@ namespace Avalonia.Controls
             }
             else if (e.Key == Key.Space || e.Key == Key.Enter)
             {
-                var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
                 e.Handled |= UpdateSelectionFromEventSource(
                     e.Source,
                     true,
                     e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    toggle);
+                    ctrl);
             }
 
             base.OnKeyDown(e);
