@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Input.Navigation;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -8,7 +9,8 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
-    internal class KeyboardNavigationHandler : IKeyboardNavigationHandler
+    [Unstable]
+    public class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
         /// The window to which the handler belongs.
