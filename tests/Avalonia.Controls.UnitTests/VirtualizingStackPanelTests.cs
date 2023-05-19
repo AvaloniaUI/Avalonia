@@ -646,7 +646,7 @@ namespace Avalonia.Controls.UnitTests
         {
             // Issue #11272
             using var app = App();
-            var (_, _, itemsControl) = CreateUnrootedTarget();
+            var (_, _, itemsControl) = CreateUnrootedTarget<ItemsControl>();
             var container = new Decorator { Margin = new Thickness(100) };
             var root = new TestRoot(true, container);
             
@@ -658,10 +658,48 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Supports_Null_Recycle_Key_When_Scrolling()
+        {
+            using var app = App();
+            var (_, scroll, itemsControl) = CreateUnrootedTarget<NonRecyclingItemsControl>();
+            var root = CreateRoot(itemsControl);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var firstItem = itemsControl.ContainerFromIndex(0)!;
+            scroll.Offset = new(0, 20);
+
+            Layout(itemsControl);
+
+            Assert.Null(firstItem.Parent);
+            Assert.Null(firstItem.VisualParent);
+            Assert.DoesNotContain(firstItem, itemsControl.ItemsPanelRoot!.Children);
+        }
+
+        [Fact]
+        public void Supports_Null_Recycle_Key_When_Clearing_Items()
+        {
+            using var app = App();
+            var (_, _, itemsControl) = CreateUnrootedTarget<NonRecyclingItemsControl>();
+            var root = CreateRoot(itemsControl);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var firstItem = itemsControl.ContainerFromIndex(0)!;
+            itemsControl.ItemsSource = null;
+
+            Layout(itemsControl);
+
+            Assert.Null(firstItem.Parent);
+            Assert.Null(firstItem.VisualParent);
+            Assert.Empty(itemsControl.ItemsPanelRoot!.Children);            
+        }
+
+        [Fact]
         public void ScrollIntoView_On_Effectively_Invisible_Panel_Does_Not_Create_Ghost_Elements()
         {
             var items = new[] { "foo", "bar", "baz" };
-            var (target, _, itemsControl) = CreateUnrootedTarget(items: items);
+            var (target, _, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items);
             var container = new Decorator { Margin = new Thickness(100), Child = itemsControl };
             var root = new TestRoot(true, container);
 
@@ -738,7 +776,7 @@ namespace Avalonia.Controls.UnitTests
             Optional<IDataTemplate?> itemTemplate = default,
             IEnumerable<Style>? styles = null)
         {
-            var (target, scroll, itemsControl) = CreateUnrootedTarget(items, itemTemplate);
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(items, itemTemplate);
             var root = CreateRoot(itemsControl, styles);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -746,9 +784,10 @@ namespace Avalonia.Controls.UnitTests
             return (target, scroll, itemsControl);
         }
 
-        private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateUnrootedTarget(
+        private static (VirtualizingStackPanel, ScrollViewer, T) CreateUnrootedTarget<T>(
             IEnumerable<object>? items = null,
             Optional<IDataTemplate?> itemTemplate = default)
+                where T : ItemsControl, new()
         {
             var target = new VirtualizingStackPanel();
 
@@ -766,7 +805,7 @@ namespace Avalonia.Controls.UnitTests
                 Template = ScrollViewerTemplate(),
             };
 
-            var itemsControl = new ItemsControl
+            var itemsControl = new T
             {
                 ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, ns) => scroll.RegisterInNameScope(ns)),
@@ -839,6 +878,17 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        }
+
+        private class NonRecyclingItemsControl : ItemsControl
+        {
+            protected override Type StyleKeyOverride => typeof(ItemsControl);
+
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+            {
+                recycleKey = null;
+                return true;
+            }
         }
     }
 }
