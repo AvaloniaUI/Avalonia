@@ -106,7 +106,7 @@ namespace Avalonia.Skia
             {
                 Surface = _surface.Surface,
                 Dpi = Dpi,
-                DisableTextLcdRendering = _disableLcdRendering,
+                DisableSubpixelTextRendering = _disableLcdRendering,
                 GrContext = _grContext,
                 Gpu = _gpu,
             };
