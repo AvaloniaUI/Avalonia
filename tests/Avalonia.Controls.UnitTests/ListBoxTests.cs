@@ -894,6 +894,37 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Down_Key_Brings_Unrealized_Selection_Into_View()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var items = Enumerable.Range(0, 100).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
+                Width = 100,
+                Height = 100,
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            target.ContainerFromIndex(0)!.Focus();
+            target.Scroll.Offset = new Vector(0, 100);
+            Layout(target);
+
+            var panel = (VirtualizingStackPanel)target.ItemsPanelRoot;
+            Assert.Equal(10, panel.FirstRealizedIndex);
+
+            RaiseKeyEvent(target, Key.Down);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.Equal(new Vector(0, 10), target.Scroll.Offset);
+        }
+
+        [Fact]
         public void WrapSelection_Should_Wrap()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))

@@ -70,8 +70,8 @@ namespace Avalonia.Controls
         private ScrollViewer? _scrollViewer;
         private Rect _viewport = s_invalidViewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
-        private Control? _unrealizedFocusedElement;
-        private int _unrealizedFocusedIndex = -1;
+        private Control? _outOfViewportFocusedElement;
+        private int _outOfViewportFocusedIndex = -1;
 
         public VirtualizingStackPanel()
         {
@@ -332,14 +332,21 @@ namespace Avalonia.Controls
         {
             if (index < 0 || index >= Items.Count)
                 return null;
-            if (_realizedElements?.GetElement(index) is { } realized)
+            if (GetRealizedElement(index) is { } realized)
                 return realized;
             if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
                 return c;
             return null;
         }
 
-        protected internal override int IndexFromContainer(Control container) => _realizedElements?.GetIndex(container) ?? -1;
+        protected internal override int IndexFromContainer(Control container)
+        {
+            if (container == _scrollToElement)
+                return _scrollToIndex;
+            if (container == _outOfViewportFocusedElement)
+                return _outOfViewportFocusedIndex;
+            return _realizedElements?.GetIndex(container) ?? -1;
+        }
 
         protected internal override Control? ScrollIntoView(int index)
         {
@@ -590,6 +597,8 @@ namespace Avalonia.Controls
         {
             if (_scrollToIndex == index)
                 return _scrollToElement;
+            if (_outOfViewportFocusedIndex == index)
+                return _outOfViewportFocusedElement;
             return _realizedElements?.GetElement(index);
         }
 
@@ -620,15 +629,6 @@ namespace Avalonia.Controls
                 return null;
 
             var generator = ItemContainerGenerator!;
-
-            if (_unrealizedFocusedIndex == index && _unrealizedFocusedElement is not null)
-            {
-                var element = _unrealizedFocusedElement;
-                _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-                _unrealizedFocusedElement = null;
-                _unrealizedFocusedIndex = -1;
-                return element;
-            }
 
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
@@ -672,9 +672,9 @@ namespace Avalonia.Controls
             }
             else if (element.IsKeyboardFocusWithin)
             {
-                _unrealizedFocusedElement = element;
-                _unrealizedFocusedIndex = index;
-                _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
+                _outOfViewportFocusedElement = element;
+                _outOfViewportFocusedIndex = index;
+                _outOfViewportFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
             }
             else
             {
@@ -744,13 +744,13 @@ namespace Avalonia.Controls
 
         private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
         {
-            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+            if (_outOfViewportFocusedElement is null || sender != _outOfViewportFocusedElement)
                 return;
 
-            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
-            _unrealizedFocusedElement = null;
-            _unrealizedFocusedIndex = -1;
+            _outOfViewportFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+            RecycleElement(_outOfViewportFocusedElement, _outOfViewportFocusedIndex);
+            _outOfViewportFocusedElement = null;
+            _outOfViewportFocusedIndex = -1;
         }
 
         /// <inheritdoc/>
