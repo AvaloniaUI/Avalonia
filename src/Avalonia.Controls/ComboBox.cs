@@ -230,8 +230,7 @@ namespace Avalonia.Controls
                 var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
                 {
-                    FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
-                    e.Handled = true;
+                    e.Handled = firstChild.Focus(NavigationMethod.Directional);
                 }
             }
         }

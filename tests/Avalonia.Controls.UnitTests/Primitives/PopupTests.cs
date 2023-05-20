@@ -642,10 +642,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 tb.Focus();
 
-                Assert.True(FocusManager.Instance?.Current == tb);
+                var focusManager = TopLevel.GetTopLevel(tb)!.FocusManager;
+                tb = Assert.IsType<TextBox>(focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                var nextFocus = KeyboardNavigationHandler.GetNext(FocusManager.Instance.Current, NavigationDirection.Next);
+                var nextFocus = KeyboardNavigationHandler.GetNext(tb, NavigationDirection.Next);
 
                 Assert.True(nextFocus == b);
 
@@ -684,7 +685,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 p.Close();
 
-                var focus = FocusManager.Instance?.Current;
+                var focusManager = window.FocusManager;
+                var focus = focusManager.GetFocusedElement();
                 Assert.True(focus == window);
             }
         }
@@ -723,7 +725,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 windowTB.Focus();
 
-                var focus = FocusManager.Instance?.Current;
+                var focusManager = window.FocusManager;
+                var focus = focusManager.GetFocusedElement();
 
                 Assert.True(focus == windowTB);
 

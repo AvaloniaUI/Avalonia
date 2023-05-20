@@ -58,7 +58,7 @@ namespace Avalonia.Animation
         /// This method should not be called from user code, it will be called automatically by the framework
         /// when a control is added to the visual tree.
         /// </remarks>
-        protected void EnableTransitions()
+        internal void EnableTransitions()
         {
             if (!_transitionsEnabled)
             {
@@ -83,7 +83,7 @@ namespace Avalonia.Animation
         /// This method should not be called from user code, it will be called automatically by the framework
         /// when a control is removed from the visual tree.
         /// </remarks>
-        protected void DisableTransitions()
+        internal void DisableTransitions()
         {
             if (_transitionsEnabled)
             {

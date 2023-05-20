@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Input.Navigation;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -8,6 +9,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
+    [Unstable]
     public class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
@@ -88,7 +90,7 @@ namespace Avalonia.Input
                 var method = direction == NavigationDirection.Next ||
                              direction == NavigationDirection.Previous ?
                              NavigationMethod.Tab : NavigationMethod.Directional;
-                FocusManager.Instance?.Focus(next, method, keyModifiers);
+                next.Focus(method, keyModifiers);
             }
         }
 
@@ -99,7 +101,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            var current = FocusManager.Instance?.Current;
+            var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
 
             if (current != null && e.Key == Key.Tab)
             {

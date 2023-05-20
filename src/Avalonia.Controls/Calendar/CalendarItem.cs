@@ -171,7 +171,7 @@ namespace Avalonia.Controls.Primitives
                 var childCount = Calendar.RowsPerMonth + Calendar.RowsPerMonth * Calendar.ColumnsPerMonth;
                 using var children = new PooledList<Control>(childCount);
 
-                for (int i = 0; i < Calendar.RowsPerMonth; i++)
+                for (int i = 0; i < Calendar.ColumnsPerMonth; i++)
                 {
                     if (DayTitleTemplate?.Build() is Control cell)
                     {

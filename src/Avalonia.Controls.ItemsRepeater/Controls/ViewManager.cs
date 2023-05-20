@@ -695,7 +695,7 @@ namespace Avalonia.Controls
         {
             Control? focusedElement = null;
 
-            if (FocusManager.Instance?.Current is Visual child)
+            if (TopLevel.GetTopLevel(_owner)?.FocusManager?.GetFocusedElement() is Visual child)
             {
                 var parent = child.GetVisualParent();
                 var owner = _owner;

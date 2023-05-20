@@ -173,7 +173,7 @@ namespace Avalonia.Media.Imaging
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
 
-        protected internal unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
+        private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
             ILockedFramebuffer fb)
         {
             if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))

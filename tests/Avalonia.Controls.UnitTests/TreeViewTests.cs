@@ -969,7 +969,6 @@ namespace Avalonia.Controls.UnitTests
         public void Keyboard_Navigation_Should_Move_To_Last_Selected_Node()
         {
             using var app = Start();
-            var focus = FocusManager.Instance!;
             var navigation = AvaloniaLocator.Current.GetRequiredService<IKeyboardNavigationHandler>();
             var data = CreateTestTreeData();
 
@@ -984,6 +983,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children = { target, button },
             });
+            var focus = root.FocusManager;
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             ExpandAll(target);
@@ -994,20 +994,19 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedItem = item;
             node.Focus();
-            Assert.Same(node, focus.Current);
+            Assert.Same(node, focus.GetFocusedElement());
 
-            navigation.Move(focus.Current!, NavigationDirection.Next);
-            Assert.Same(button, focus.Current);
+            navigation.Move(focus.GetFocusedElement()!, NavigationDirection.Next);
+            Assert.Same(button, focus.GetFocusedElement());
 
-            navigation.Move(focus.Current!, NavigationDirection.Next);
-            Assert.Same(node, focus.Current);
+            navigation.Move(focus.GetFocusedElement()!, NavigationDirection.Next);
+            Assert.Same(node, focus.GetFocusedElement());
         }
 
         [Fact]
         public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
         {
             using var app = Start();
-            var focus = FocusManager.Instance!;
             var data = CreateTestTreeData();
 
             var selectedNode = new Node { Value = "Out of Tree Selected Item" };
@@ -1025,6 +1024,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children = { target, button },
             });
+            var focus = root.FocusManager;
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             ExpandAll(target);
@@ -1035,7 +1035,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedItem = selectedNode;
             node.Focus();
-            Assert.Same(node, focus.Current);
+            Assert.Same(node, focus.GetFocusedElement());
         }
 
         [Fact]

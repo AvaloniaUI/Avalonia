@@ -174,7 +174,7 @@ public unsafe class VulkanContext : IDisposable
                 for (uint queueFamilyIndex = 0; queueFamilyIndex < queueFamilyCount; queueFamilyIndex++)
                 {
                     var family = familyProperties[queueFamilyIndex];
-                    if (!family.QueueFlags.HasAllFlags(QueueFlags.GraphicsBit))
+                    if (!family.QueueFlags.HasFlag(QueueFlags.GraphicsBit))
                         continue;
 
 

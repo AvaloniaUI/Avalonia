@@ -504,6 +504,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the index of the selected tab/panel/page (subview).
         /// </summary>
+        /// <remarks>
+        /// When using the default control theme, this property is designed to be used with the
+        /// <see cref="ColorViewTab"/> enum. The <see cref="ColorViewTab"/> enum defines the
+        /// index values of each of the three standard tabs.
+        /// Use like `SelectedIndex = (int)ColorViewTab.Palette`.
+        /// </remarks>
         public int SelectedIndex
         {
             get => GetValue(SelectedIndexProperty);
