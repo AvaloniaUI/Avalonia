@@ -95,7 +95,8 @@ namespace Avalonia.Controls
                 var tapRect = new Rect(_pointerDownPoint, new Size())
                     .Inflate(new Thickness(tapSize.Width, tapSize.Height));
 
-                if (tapRect.ContainsExclusive(point.Position) &&
+                if (new Rect(Bounds.Size).ContainsExclusive(point.Position) &&
+                    tapRect.ContainsExclusive(point.Position) &&
                     ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
                 {
                     if (owner.UpdateSelectionFromPointerEvent(this, e))
