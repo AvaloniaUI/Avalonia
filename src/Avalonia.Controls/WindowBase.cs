@@ -178,14 +178,6 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Trys to get the platform handle for the window.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
-        /// could not be retrieved.
-        /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
 
         /// <summary>
         /// Ensures that the window is initialized.
