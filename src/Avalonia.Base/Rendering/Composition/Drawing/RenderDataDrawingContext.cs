@@ -77,10 +77,12 @@ internal class RenderDataDrawingContext : DrawingContext
         if (parent.Node == null)
             return;
 
-        if (!(parent.Node is T))
+        if (parent.Node is not T)
             throw new InvalidOperationException("Invalid Pop operation");
+
+        if (_currentItemList == null) return;
         
-        foreach(var item in _currentItemList!)
+        foreach(var item in _currentItemList)
             parent.Node.Children.Add(item);
         _currentItemList.Clear();
         s_listPool.ReturnAndSetNull(ref _currentItemList);
@@ -92,10 +94,7 @@ internal class RenderDataDrawingContext : DrawingContext
         if (_compositor == null)
             return;
         
-        if (resource == null
-            || resource is IImmutableBrush
-            || resource is ImmutablePen
-            || resource is ImmutableTransform)
+        if (resource is null or IImmutableBrush or ImmutablePen or ImmutableTransform)
             return;
         
         if (resource is ICompositionRenderResource renderResource)
@@ -283,8 +282,6 @@ internal class RenderDataDrawingContext : DrawingContext
             while (_parentNodeStack.Count > 0) 
                 Pop<IRenderDataItem>();
         }
-        
-
     }
     
     public CompositionRenderData? GetRenderResults()
