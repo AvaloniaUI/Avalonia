@@ -144,8 +144,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TextBlock, InlineCollection?>(
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
-        protected TextLayout? _textLayout;
-        protected Size _constraint;
+        private TextLayout? _textLayout;
+        private Size _constraint;
         private IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
