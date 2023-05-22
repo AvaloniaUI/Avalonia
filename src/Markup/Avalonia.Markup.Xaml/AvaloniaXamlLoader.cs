@@ -9,7 +9,7 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public static class AvaloniaXamlLoader
     {
-        public interface IRuntimeXamlLoader
+        internal interface IRuntimeXamlLoader
         {
             object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration);
         }

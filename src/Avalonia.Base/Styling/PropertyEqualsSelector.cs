@@ -91,8 +91,8 @@ namespace Avalonia.Styling
         private protected override Selector? MovePrevious() => _previous;
         private protected override Selector? MovePreviousOrParent() => _previous;
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
-        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
         internal static bool Compare(Type propertyType, object? propertyValue, object? value)
         {
             if (propertyType == typeof(object) &&
