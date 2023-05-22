@@ -241,7 +241,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected void UpdateKnobPos(bool value)
+        private void UpdateKnobPos(bool value)
         {
             if ((_switchKnob != null) && (_knobsPanel != null))
             {

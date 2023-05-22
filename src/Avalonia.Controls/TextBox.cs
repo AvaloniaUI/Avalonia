@@ -1017,7 +1017,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public string? RemoveInvalidCharacters(string? text)
+        private string? RemoveInvalidCharacters(string? text)
         {
             if (text is null)
                 return null;

@@ -395,7 +395,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler!;
+        internal IAccessKeyHandler AccessKeyHandler => _accessKeyHandler!;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
@@ -532,13 +532,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
+        private protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="rect">The dirty area.</param>
-        protected virtual void HandlePaint(Rect rect)
+        private void HandlePaint(Rect rect)
         {
             Renderer.Paint(rect);
         }
@@ -546,7 +546,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
-        protected virtual void HandleClosed()
+        private protected virtual void HandleClosed()
         {
             Renderer.SceneInvalidated -= SceneInvalidated;
             // We need to wait for the renderer to complete any in-flight operations
@@ -604,7 +604,7 @@ namespace Avalonia.Controls
         /// <see cref="ITopLevelImpl.ScalingChanged"/>.
         /// </summary>
         /// <param name="scaling">The window scaling.</param>
-        protected virtual void HandleScalingChanged(double scaling)
+        private void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             ScalingChanged?.Invoke(this, EventArgs.Empty);
@@ -624,7 +624,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected virtual void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
+        private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
         {
             if(_transparencyFallbackBorder != null)
             {
@@ -749,7 +749,7 @@ namespace Avalonia.Controls
 
         protected override bool BypassFlowDirectionPolicies => true;
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }

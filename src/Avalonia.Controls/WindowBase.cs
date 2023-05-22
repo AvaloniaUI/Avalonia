@@ -60,7 +60,7 @@ namespace Avalonia.Controls
             impl.PositionChanged = HandlePositionChanged;
         }
 
-        protected IDisposable FreezeVisibilityChangeHandling()
+        private protected IDisposable FreezeVisibilityChangeHandling()
         {
             return new IgnoreVisibilityChangesDisposable(this);
         }
@@ -218,7 +218,7 @@ namespace Avalonia.Controls
         /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         protected virtual void OnResized(WindowResizedEventArgs e) => Resized?.Invoke(this, e);
 
-        protected override void HandleClosed()
+        private protected override void HandleClosed()
         {
             using (FreezeVisibilityChangeHandling())
             {

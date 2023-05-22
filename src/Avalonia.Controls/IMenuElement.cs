@@ -8,8 +8,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents an <see cref="IMenu"/> or <see cref="IMenuItem"/>.
     /// </summary>
-    [NotClientImplementable]
-    public interface IMenuElement : IInputElement, ILogical
+    internal interface IMenuElement : IInputElement, ILogical
     {
         /// <summary>
         /// Gets or sets the currently selected submenu item.
