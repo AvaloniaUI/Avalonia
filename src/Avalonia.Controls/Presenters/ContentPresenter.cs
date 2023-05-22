@@ -540,17 +540,6 @@ namespace Avalonia.Controls.Presenters
                 BoxShadow);
         }
 
-        /// <summary>
-        /// Creates the child control.
-        /// </summary>
-        /// <returns>The child control or null.</returns>
-        protected virtual Control? CreateChild()
-        {
-            var content = Content;
-            var oldChild = Child;
-            return CreateChild(content, oldChild, ContentTemplate);
-        }
-
         private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)
         {            
             var newChild = content as Control;
