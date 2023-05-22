@@ -2,7 +2,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
-    [Unstable]
+    [PrivateApi]
     public interface INativeMenuExporterEventsImplBridge
     {
         void RaiseNeedsUpdate ();
