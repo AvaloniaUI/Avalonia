@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Parsers
     /// <summary>
     /// Parses a <see cref="Selector"/> from text.
     /// </summary>
-    public class SelectorParser
+    internal class SelectorParser
     {
         private readonly Func<string, string, Type> _typeResolver;
 
