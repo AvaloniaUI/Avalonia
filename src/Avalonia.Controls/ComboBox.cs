@@ -21,8 +21,9 @@ namespace Avalonia.Controls
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
-        public const string pcDropdownOpen = ":dropdownopen";
-        public const string pcPressed = ":pressed";
+        internal const string pcDropdownOpen = ":dropdownopen";
+        internal const string pcPressed = ":pressed";
+
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
