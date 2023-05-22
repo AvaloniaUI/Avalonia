@@ -71,7 +71,7 @@ public class TransitioningContentControl : ContentControl
         return result;
     }
 
-    protected override bool RegisterContentPresenter(IContentPresenter presenter)
+    protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
         if (!base.RegisterContentPresenter(presenter) &&
             presenter is ContentPresenter p &&
