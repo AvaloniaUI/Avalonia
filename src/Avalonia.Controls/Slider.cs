@@ -191,16 +191,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected Track? Track => _track;
 
-        /// <summary>
-        /// Gets the <see cref="Button"/> that decreases the <see cref="Slider"/> value.
-        /// </summary>
-        protected Button? DecreaseButton => _decreaseButton;
-
-        /// <summary>
-        /// Gets the <see cref="Button"/> that increases the <see cref="Slider"/> value.
-        /// </summary>
-        protected Button? IncreaseButton => _increaseButton;
-
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
