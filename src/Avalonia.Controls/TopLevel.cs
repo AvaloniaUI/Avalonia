@@ -386,15 +386,6 @@ namespace Avalonia.Controls
 	public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
 
         /// <summary>
-        /// Trys to get the platform handle for the TopLevel-derived control.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
-        /// could not be retrieved.
-        /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
-
-        /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
         public IRenderer Renderer { get; }
