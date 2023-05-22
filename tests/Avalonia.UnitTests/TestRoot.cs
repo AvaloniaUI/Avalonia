@@ -51,8 +51,6 @@ namespace Avalonia.UnitTests
 
         public IRenderer Renderer { get; set; }
 
-        public IAccessKeyHandler AccessKeyHandler => null;
-
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
         public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 

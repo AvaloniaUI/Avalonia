@@ -9,11 +9,6 @@ namespace Avalonia.Input
     public interface IInputRoot : IInputElement
     {
         /// <summary>
-        /// Gets or sets the access key handler.
-        /// </summary>
-        IAccessKeyHandler AccessKeyHandler { get; }
-
-        /// <summary>
         /// Gets or sets the keyboard navigation handler.
         /// </summary>
         IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
