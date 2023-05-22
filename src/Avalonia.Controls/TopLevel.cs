@@ -523,7 +523,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
+        private protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
