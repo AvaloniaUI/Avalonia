@@ -704,8 +704,8 @@ namespace Avalonia.Controls.Primitives
             bool wrap = false,
             bool rangeModifier = false)
         {
-            var from = GetContainerFromEventSource(FocusManager.Instance?.Current) ??
-                ContainerFromIndex(Selection.AnchorIndex);
+            var focused = FocusManager.GetFocusManager(this)?.GetFocusedElement();
+            var from = GetContainerFromEventSource(focused) ?? ContainerFromIndex(Selection.AnchorIndex);
             return MoveSelection(from, direction, wrap, rangeModifier);
         }
 
