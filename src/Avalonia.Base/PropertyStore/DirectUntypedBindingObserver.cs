@@ -5,7 +5,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
     internal class DirectUntypedBindingObserver<T> : IObserver<object?>,
         IDisposable
     {

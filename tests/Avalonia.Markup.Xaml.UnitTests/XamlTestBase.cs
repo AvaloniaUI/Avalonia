@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public XamlTestBase()
         {
             // Ensure necessary assemblies are loaded.
-            var _ = typeof(TemplateBinding);
+            var _ = typeof(Binding);
             GC.KeepAlive(typeof(ItemsRepeater));
             if (AvaloniaLocator.Current.GetService<AvaloniaXamlLoader.IRuntimeXamlLoader>() == null)
                 AvaloniaLocator.CurrentMutable.Bind<AvaloniaXamlLoader.IRuntimeXamlLoader>()

@@ -9,7 +9,7 @@ namespace Avalonia.Collections
     /// <summary>
     /// Creates an <see cref="AvaloniaList{T}"/> from a string representation.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
     public class AvaloniaListConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T> : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

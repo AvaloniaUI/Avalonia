@@ -2,11 +2,11 @@
 
 internal static class TrimmingMessages
 {
-    public const string ImplicitTypeConvertionSupressWarningMessage = "Implicit convertion methods might be removed by the linker. We don't have a reliable way to prevent it, except converting everything in compile time when possible.";
-    public const string ImplicitTypeConvertionRequiresUnreferencedCodeMessage = "Implicit convertion methods are required for type conversion.";
+    public const string ImplicitTypeConversionSupressWarningMessage = "Implicit conversion methods might be removed by the linker. We don't have a reliable way to prevent it, except converting everything in compile time when possible.";
+    public const string ImplicitTypeConversionRequiresUnreferencedCodeMessage = "Implicit conversion methods are required for type conversion.";
 
-    public const string TypeConvertionSupressWarningMessage = "Convertion methods might be removed by the linker. We don't have a reliable way to prevent it, except converting everything in compile time when possible.";
-    public const string TypeConvertionRequiresUnreferencedCodeMessage = "Convertion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.";
+    public const string TypeConversionSupressWarningMessage = "Conversion methods might be removed by the linker. We don't have a reliable way to prevent it, except converting everything in compile time when possible.";
+    public const string TypeConversionRequiresUnreferencedCodeMessage = "Conversion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.";
 
     public const string ReflectionBindingRequiresUnreferencedCodeMessage = "BindingExpression and ReflectionBinding heavily use reflection. Consider using CompiledBindings instead.";
     public const string ReflectionBindingSupressWarningMessage = "BindingExpression and ReflectionBinding internal heavily use reflection.";
