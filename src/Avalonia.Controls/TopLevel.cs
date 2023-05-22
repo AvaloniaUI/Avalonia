@@ -740,7 +740,7 @@ namespace Avalonia.Controls
 
         protected override bool BypassFlowDirectionPolicies => true;
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }
