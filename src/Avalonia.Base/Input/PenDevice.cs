@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 #pragma warning disable CS0618
 
@@ -11,6 +12,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Represents a pen/stylus device.
     /// </summary>
+    [PrivateApi]
     public class PenDevice : IPenDevice, IDisposable
     {
         private readonly Dictionary<long, Pointer> _pointers = new();

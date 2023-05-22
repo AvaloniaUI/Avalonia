@@ -318,7 +318,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;
 

@@ -119,7 +119,9 @@ namespace Avalonia.Input
         /// <summary>
         /// Focuses the control.
         /// </summary>
-        void Focus();
+        /// <param name="method">The method by which focus was changed.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
+        bool Focus(NavigationMethod method = NavigationMethod.Unspecified, KeyModifiers keyModifiers = KeyModifiers.None);
 
         /// <summary>
         /// Gets the key bindings for the element.

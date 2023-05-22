@@ -29,7 +29,7 @@ namespace Avalonia.Collections.Pooled
     [DebuggerTypeProxy(typeof(StackDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class PooledStack<T> : IEnumerable<T>, ICollection, IReadOnlyCollection<T>, IDisposable, IDeserializationCallback
+    internal class PooledStack<T> : IEnumerable<T>, ICollection, IReadOnlyCollection<T>, IDisposable, IDeserializationCallback
     {
         [NonSerialized]
         private ArrayPool<T> _pool;

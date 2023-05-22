@@ -555,7 +555,7 @@ namespace Avalonia.Controls
         }
 
         // Workaround to seal Render method, we need to make so because AccessText was overriding Render method which is sealed now.
-        internal protected virtual void RenderCore(DrawingContext context)
+        private protected virtual void RenderCore(DrawingContext context)
         {
             var background = Background;
 

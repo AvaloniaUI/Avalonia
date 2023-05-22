@@ -154,7 +154,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var namespaces = _nsInfo.XmlNamespaces;
                 if (!namespaces.TryGetValue(ns, out var lst))
                     throw new ArgumentException("Unable to resolve namespace for type " + qualifiedTypeName);
-                foreach (var entry in lst)
+                var resolvable = lst.Where(static e => e.ClrAssemblyName is { Length: > 0 });
+                foreach (var entry in resolvable)
                 {
                     var asm = Assembly.Load(new AssemblyName(entry.ClrAssemblyName));
                     var resolved = asm.GetType(entry.ClrNamespace + "." + name);
@@ -164,7 +165,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
 
                 throw new ArgumentException(
                     $"Unable to resolve type {qualifiedTypeName} from any of the following locations: " +
-                    string.Join(",", lst.Select(e => $"`{e.ClrAssemblyName}:{e.ClrNamespace}.{name}`")));
+                    string.Join(",", resolvable.Select(e => $"`clr-namespace:{e.ClrNamespace};assembly={e.ClrAssemblyName}`")))
+                    { HelpLink = "https://docs.avaloniaui.net/guides/basics/introduction-to-xaml#valid-xaml-namespaces" };
             }
         }
 

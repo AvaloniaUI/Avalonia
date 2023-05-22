@@ -86,7 +86,7 @@ namespace Avalonia.Diagnostics
         private static IDisposable Open(IDevToolsTopLevelGroup topLevelGroup, DevToolsOptions options,
             Window? owner, Application? app)
         {
-            var focussedControl = KeyboardDevice.Instance?.FocusedElement as Control;
+            var focusedControl = owner?.FocusManager?.GetFocusedElement() as Control;
             AvaloniaObject root = topLevelGroup switch
             {
                 ClassicDesktopStyleApplicationLifetimeTopLevelGroup gr => new Controls.Application(gr, app ?? Application.Current!),
@@ -98,7 +98,7 @@ namespace Avalonia.Diagnostics
             if (s_open.TryGetValue(topLevelGroup, out var mainWindow))
             {
                 mainWindow.Activate();
-                mainWindow.SelectedControl(focussedControl);
+                mainWindow.SelectedControl(focusedControl);
                 return Disposable.Empty;
             }
             if (topLevelGroup.Items.Count == 1 && topLevelGroup.Items is not INotifyCollectionChanged)
@@ -110,7 +110,7 @@ namespace Avalonia.Diagnostics
                     if (group.Key.Items.Contains(singleTopLevel))
                     {
                         group.Value.Activate();
-                        group.Value.SelectedControl(focussedControl);
+                        group.Value.SelectedControl(focusedControl);
                         return Disposable.Empty;
                     }
                 }
@@ -124,7 +124,7 @@ namespace Avalonia.Diagnostics
                 Tag = topLevelGroup
             };
             window.SetOptions(options);
-            window.SelectedControl(focussedControl);
+            window.SelectedControl(focusedControl);
             window.Closed += DevToolsClosed;
             s_open.Add(topLevelGroup, window);
             if (options.ShowAsChildWindow && owner is not null)
