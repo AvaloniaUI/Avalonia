@@ -535,7 +535,7 @@ namespace Avalonia.Controls
             return true;
         }
 
-        protected virtual void HandleWindowStateChanged(WindowState state)
+        private void HandleWindowStateChanged(WindowState state)
         {
             WindowState = state;
 
@@ -979,7 +979,7 @@ namespace Avalonia.Controls
             return ClientSize;
         }
 
-        protected sealed override void HandleClosed()
+        private protected sealed override void HandleClosed()
         {
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
