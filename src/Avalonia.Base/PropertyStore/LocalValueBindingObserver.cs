@@ -14,7 +14,7 @@ namespace Avalonia.PropertyStore
 
         public void Start(IObservable<object?> source) => _subscription = source.Subscribe(this);
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         public void OnNext(object? value)
         {
             if (value == BindingOperations.DoNothing)
