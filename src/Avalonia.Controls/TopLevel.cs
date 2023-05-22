@@ -375,7 +375,7 @@ namespace Avalonia.Controls
         /// Gets the platform-specific window implementation.
         /// </summary>
         public ITopLevelImpl? PlatformImpl { get; private set; }
-        
+
         /// <summary>
         /// Trys to get the platform handle for the TopLevel-derived control.
         /// </summary>
@@ -383,7 +383,7 @@ namespace Avalonia.Controls
         /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-	public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
+        public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
 
         /// <summary>
         /// Gets the renderer for the window.
