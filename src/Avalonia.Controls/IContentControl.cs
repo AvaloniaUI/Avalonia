@@ -8,8 +8,7 @@ namespace Avalonia.Controls
     /// Defines a control that displays <see cref="Content"/> according to a
     /// <see cref="Avalonia.Controls.Templates.FuncDataTemplate"/>.
     /// </summary>
-    [NotClientImplementable]
-    public interface IContentControl
+    internal interface IContentControl
     {
         /// <summary>
         /// Gets or sets the content to display.

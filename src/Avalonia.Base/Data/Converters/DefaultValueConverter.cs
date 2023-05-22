@@ -10,7 +10,7 @@ namespace Avalonia.Data.Converters
     /// Provides a default set of value conversions for bindings that do not specify a value
     /// converter.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
     public class DefaultValueConverter : IValueConverter
     {
         /// <summary>

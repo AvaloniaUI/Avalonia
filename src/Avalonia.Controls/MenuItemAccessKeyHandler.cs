@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Handles access keys within a <see cref="MenuItem"/>
     /// </summary>
-    public class MenuItemAccessKeyHandler : IAccessKeyHandler
+    internal class MenuItemAccessKeyHandler : IAccessKeyHandler
     {
         /// <summary>
         /// The registered access keys.

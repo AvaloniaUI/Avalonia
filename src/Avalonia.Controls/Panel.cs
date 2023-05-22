@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        public bool TryGetTotalCount(out int count)
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
             count = Children.Count;
             return true;

@@ -60,7 +60,7 @@ namespace Avalonia.Controls
             impl.PositionChanged = HandlePositionChanged;
         }
 
-        protected IDisposable FreezeVisibilityChangeHandling()
+        private protected IDisposable FreezeVisibilityChangeHandling()
         {
             return new IgnoreVisibilityChangesDisposable(this);
         }
@@ -178,14 +178,6 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Trys to get the platform handle for the window.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
-        /// could not be retrieved.
-        /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
 
         /// <summary>
         /// Ensures that the window is initialized.
@@ -226,7 +218,7 @@ namespace Avalonia.Controls
         /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         protected virtual void OnResized(WindowResizedEventArgs e) => Resized?.Invoke(this, e);
 
-        protected override void HandleClosed()
+        private protected override void HandleClosed()
         {
             using (FreezeVisibilityChangeHandling())
             {

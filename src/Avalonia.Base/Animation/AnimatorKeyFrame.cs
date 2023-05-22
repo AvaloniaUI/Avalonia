@@ -67,7 +67,7 @@ namespace Avalonia.Animation
             }
         }
 
-        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
         public T GetTypedValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConv = TypeDescriptor.GetConverter(typeof(T));

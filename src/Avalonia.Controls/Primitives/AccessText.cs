@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _accessKeys = (e.Root as IInputRoot)?.AccessKeyHandler;
+            _accessKeys = (e.Root as TopLevel)?.AccessKeyHandler;
 
             if (_accessKeys != null && AccessKey != 0)
             {
