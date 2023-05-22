@@ -60,7 +60,7 @@ namespace Avalonia.Controls
             impl.PositionChanged = HandlePositionChanged;
         }
 
-        protected IDisposable FreezeVisibilityChangeHandling()
+        private protected IDisposable FreezeVisibilityChangeHandling()
         {
             return new IgnoreVisibilityChangesDisposable(this);
         }
