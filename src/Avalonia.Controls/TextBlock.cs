@@ -829,7 +829,7 @@ namespace Avalonia.Controls
             InvalidateTextLayout();
         }
 
-        protected readonly record struct SimpleTextSource : ITextSource
+        private readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
             private readonly TextRunProperties _defaultProperties;
