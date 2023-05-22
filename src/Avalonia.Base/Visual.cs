@@ -321,7 +321,7 @@ namespace Avalonia
 
         internal RenderOptions RenderOptions { get; set; }
 
-        public bool HasNonUniformZIndexChildren { get; private set; }
+        internal bool HasNonUniformZIndexChildren { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.

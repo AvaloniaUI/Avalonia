@@ -9,7 +9,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles access keys for a window.
     /// </summary>
-    public class AccessKeyHandler : IAccessKeyHandler
+    internal class AccessKeyHandler : IAccessKeyHandler
     {
         /// <summary>
         /// Defines the AccessKeyPressed attached event.

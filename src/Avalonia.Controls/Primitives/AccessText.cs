@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Primitives
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        protected internal override void RenderCore(DrawingContext context)
+        private protected override void RenderCore(DrawingContext context)
         {
             base.RenderCore(context);
             int underscore = Text?.IndexOf('_') ?? -1;

@@ -29,7 +29,7 @@ namespace Avalonia.Collections.Pooled
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [Serializable]
-    public class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposable, IDeserializationCallback
+    internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposable, IDeserializationCallback
     {
         // internal constant copied from Array.MaxArrayLength
         private const int MaxArrayLength = 0x7FEFFFFF;
