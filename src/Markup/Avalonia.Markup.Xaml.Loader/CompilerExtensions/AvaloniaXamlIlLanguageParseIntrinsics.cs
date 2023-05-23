@@ -274,6 +274,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.WindowTransparencyLevel))
+            {
+                foreach (var property in types.WindowTransparencyLevel.Properties)
+                {
+                    if (property.PropertyType == types.WindowTransparencyLevel && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
+                }
+            }
+
             if (type.Equals(types.Uri))
             {
                 var uriText = text.Trim();

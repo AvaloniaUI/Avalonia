@@ -57,20 +57,18 @@ namespace Avalonia.Controls
                     if (tl.PlatformImpl is null)
                         return;
 
-                    switch (x)
+                    if (x == WindowTransparencyLevel.None
+                        || x == WindowTransparencyLevel.Transparent)
                     {
-                        case WindowTransparencyLevel.Transparent:
-                        case WindowTransparencyLevel.None:
-                            Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.TransparentLevel;
-                            break;
-
-                        case WindowTransparencyLevel.Blur:
-                            Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.BlurLevel;
-                            break;
-
-                        case WindowTransparencyLevel.AcrylicBlur:
-                            Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.AcrylicBlurLevel;
-                            break;
+                        Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.TransparentLevel;
+                    }
+                    else if (x == WindowTransparencyLevel.Blur)
+                    {
+                        Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.BlurLevel;
+                    }
+                    else if (x == WindowTransparencyLevel.AcrylicBlur)
+                    {
+                        Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.AcrylicBlurLevel;
                     }
                 });
             UpdateMaterialSubscription();
