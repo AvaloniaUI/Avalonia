@@ -1,134 +1,84 @@
 ﻿using System;
-using System.Threading;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Markup;
-using Avalonia.Win32.Interoperability.Wpf;
+using Avalonia.Controls.Embedding;
+using Avalonia.Win32.Interop;
 using AvControl = Avalonia.Controls.Control;
 
-namespace Avalonia.Win32.Interoperability
+namespace Avalonia.Win32.Interoperability;
+
+/// <summary>
+/// An element that allows you to host a Avalonia control on a WPF page.
+/// </summary>
+[ContentProperty("Content")]
+public class WpfAvaloniaHost : HwndHost
 {
+    private EmbeddableControlRoot? _root;
+    private AvControl? _content;
+
     /// <summary>
-    /// An element that allows you to host a Avalonia control on a WPF page.
+    /// Initializes a new instance of the <see cref="WpfAvaloniaHost"/> class.
     /// </summary>
-    [ContentProperty("Content")]
-    public class WpfAvaloniaHost : FrameworkElement, IDisposable, IAddChild
+    public WpfAvaloniaHost()
     {
-        private WpfTopLevelImpl? _impl;
-        private readonly SynchronizationContext _sync;
-        private bool _hasChildren;
+        DataContextChanged += AvaloniaHwndHost_DataContextChanged;
+    }
 
-        private WpfTopLevelImpl Impl => _impl ?? throw new ObjectDisposedException("WpfAvaloniaHost was already disposed.");
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WpfAvaloniaHost"/> class.
-        /// </summary>
-        public WpfAvaloniaHost()
+    private void AvaloniaHwndHost_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        if (Content != null)
         {
-            _sync = SynchronizationContext.Current!;
-            _impl = new WpfTopLevelImpl();
-            _impl.ControlRoot.Prepare();
-            _impl.Visibility = Visibility.Visible;
-            SnapsToDevicePixels = true;
-            UseLayoutRounding = true;
-            PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
+            Content.DataContext = e.NewValue;
         }
+    }
 
-        private void OnSourceChanged(object sender, SourceChangedEventArgs e)
+    /// <summary>
+    /// Gets or sets the Avalonia control hosted by the <see cref="WpfAvaloniaHost"/> element.
+    /// </summary>
+    public AvControl? Content
+    {
+        get => _content;
+        set
         {
-            if (e.NewSource != null && !_hasChildren)
+            if (_content != value)
             {
-                AddLogicalChild(_impl);
-                AddVisualChild(_impl);
-                _hasChildren = true;
-            }
-            else
-            {
-                RemoveVisualChild(_impl);
-                RemoveLogicalChild(_impl);
-                _hasChildren = false;
+                _content = value;
+                if (_root is not null)
+                {
+                    _root.Content = value;
+                }
+                if (value != null)
+                {
+                    value.DataContext = DataContext;
+                }
             }
         }
+    }
 
-        /// <summary>
-        /// Gets or sets the Avalonia control hosted by the <see cref="WpfAvaloniaHost"/> element.
-        /// </summary>
-        public AvControl? Content
+    /// <inheritdoc />
+    protected override HandleRef BuildWindowCore(HandleRef hwndParent)
+    {
+        _root = new EmbeddableControlRoot();
+        _root.Content = _content;
+        _root.Prepare();
+        _root.Renderer.Start();
+
+        var handle = _root.TryGetPlatformHandle()?.Handle
+                     ?? throw new InvalidOperationException("WpfAvaloniaHost is unable to create EmbeddableControlRoot.");
+
+        if (PresentationSource.FromVisual(this) is HwndSource source)
         {
-            get => (AvControl?)Impl.ControlRoot.Content;
-            set => Impl.ControlRoot.Content = value;
-        }
-
-        //Separate class is needed to prevent accidental resurrection
-        private class Disposer
-        {
-            private readonly WpfTopLevelImpl _impl;
-
-            public Disposer(WpfTopLevelImpl impl)
-            {
-                _impl = impl;
-            }
-
-            public void Callback(object? state)
-            {
-                _impl.Dispose();
-            }
-        }
-
-        /// <inheritdoc />
-        protected override System.Windows.Size MeasureOverride(System.Windows.Size constraint)
-        {
-            var impl = Impl;
-            impl.InvalidateMeasure();
-            impl.Measure(constraint);
-            return impl.DesiredSize;
-        }
-
-        /// <inheritdoc />
-        protected override System.Windows.Size ArrangeOverride(System.Windows.Size arrangeSize)
-        {
-            Impl.Arrange(new System.Windows.Rect(arrangeSize));
-            return arrangeSize;
+            _ = UnmanagedMethods.SetParent(handle, source.Handle);
         }
         
-        /// <inheritdoc />
-        protected override int VisualChildrenCount => 1;
+        return new HandleRef(_root, handle);
+    }
 
-        /// <inheritdoc />
-        protected override System.Windows.Media.Visual GetVisualChild(int index) => Impl;
-
-        ~WpfAvaloniaHost()
-        {
-            if (_impl != null)
-                _sync.Post(new Disposer(_impl).Callback, null);
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (_impl != null)
-            {
-                RemoveVisualChild(_impl);
-                RemoveLogicalChild(_impl);
-                _impl.Dispose();
-                _impl = null;
-                GC.SuppressFinalize(this);
-            }
-        }
-
-        void IAddChild.AddChild(object value)
-        {
-            if (Content == null)
-                if (value is AvControl avControl)
-                    Content = avControl;
-                else
-                    throw new InvalidOperationException("WpfAvaloniaHost.Content only accepts value of Avalonia.Controls.Control type.");
-            else
-                throw new InvalidOperationException("WpfAvaloniaHost.Content was already set.");
-        }
-
-        void IAddChild.AddText(string text)
-        {
-            //
-        }
+    /// <inheritdoc />
+    protected override void DestroyWindowCore(HandleRef hwnd)
+    {
+        _root?.Dispose();
     }
 }
