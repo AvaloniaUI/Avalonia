@@ -1,22 +1,28 @@
+using System;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// An item in  a <see cref="TabStrip"/> or <see cref="TabControl"/>.
+    /// An item in a <see cref="TabControl"/>.
     /// </summary>
     [PseudoClasses(":pressed", ":selected")]
     public class TabItem : HeaderedContentControl, ISelectable
     {
+        private Dock? _tabStripPlacement;
+        private IDisposable? _ownerSubscriptions;
+
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
         /// </summary>
-        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-            TabControl.TabStripPlacementProperty.AddOwner<TabItem>();
+        public static readonly DirectProperty<TabItem, Dock?> TabStripPlacementProperty =
+            AvaloniaProperty.RegisterDirect<TabItem, Dock?>(nameof(TabStripPlacement), o => o.TabStripPlacement);
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -37,16 +43,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the tab strip placement.
+        /// Gets the placement of this tab relative to the outer <see cref="TabControl"/>, if there is one.
         /// </summary>
-        /// <value>
-        /// The tab strip placement.
-        /// </value>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031",
-            Justification = "This property is supposed to be inherited only and settable on parent TabControl.")]
-        public Dock TabStripPlacement
+        public Dock? TabStripPlacement
         {
-            get { return GetValue(TabStripPlacementProperty); }
+            get => _tabStripPlacement;
+            private set => SetAndRaise(TabStripPlacementProperty, ref _tabStripPlacement, value);
         }
 
         /// <summary>
@@ -59,6 +61,24 @@ namespace Avalonia.Controls
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            _ownerSubscriptions?.Dispose();
+            _ownerSubscriptions = null;
+
+            if (this.FindAncestorOfType<TabControl>() is { } owner && owner.IndexFromContainer(this) != -1)
+            {
+                SubscribeToOwnerProperties(owner);
+            }
+        }
+
+        protected void SubscribeToOwnerProperties(AvaloniaObject owner)
+        {
+            _ownerSubscriptions = owner.GetObservable(TabControl.TabStripPlacementProperty).Subscribe(v => TabStripPlacement = v);
+        }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {

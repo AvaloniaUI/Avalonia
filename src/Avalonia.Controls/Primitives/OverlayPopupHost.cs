@@ -29,6 +29,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
         public void SetChild(Control? control)
         {
             Content = control;

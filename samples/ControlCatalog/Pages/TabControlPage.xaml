@@ -4,7 +4,27 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:viewModels="using:ControlCatalog.ViewModels"
     x:DataType="viewModels:TabControlPageViewModel">
-    <DockPanel>
+    <DockPanel Classes.WithContentTemplates="{Binding IsChecked, ElementName=UseContentTemplates}">
+        <DockPanel.Styles>
+            <Style Selector="DockPanel.WithContentTemplates">
+                <Style Selector="^ TabItem">
+                    <Setter Property="ContentTemplate">
+                        <DataTemplate x:CompileBindings="False">
+                            <Border BorderBrush="Red" BorderThickness="10">
+                                <ContentPresenter Content="{Binding}"/>
+                            </Border>
+                        </DataTemplate>
+                    </Setter>
+                </Style>
+                <Style Selector="^ TabControl">
+                    <Setter Property="ContentTemplate">
+                        <DataTemplate>
+                            <TextBlock Text="This template should be overriden by each TabItem's template."/>
+                        </DataTemplate>
+                    </Setter>
+                </Style>
+            </Style>
+        </DockPanel.Styles>
         <TextBlock 
             DockPanel.Dock="Top" 
             Classes="h2"
@@ -55,14 +75,14 @@
                     Margin="0 16"
                     DisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
                     TabStripPlacement="{Binding TabPlacement}">
-                    <TabControl.ContentTemplate>
+                    <TabControl.DataTemplates>
                         <DataTemplate x:DataType="viewModels:TabControlPageViewModelItem">
                             <StackPanel Orientation="Vertical" Spacing="8">
                                 <TextBlock Text="{Binding Text}"/>
                                 <Image Source="{Binding Image}" Width="300"/>
                             </StackPanel>
                         </DataTemplate>
-                    </TabControl.ContentTemplate>
+                    </TabControl.DataTemplates>
                     <TabControl.Styles>
                         <Style Selector="TabItem" x:DataType="viewModels:TabControlPageViewModelItem">
                             <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
@@ -78,12 +98,13 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
                 <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
-                <ComboBox SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
+                <ComboBox SelectedIndex="{Binding TabPlacement, Mode=TwoWay}" Width="100">
                     <ComboBoxItem>Left</ComboBoxItem>
                     <ComboBoxItem>Bottom</ComboBoxItem>
                     <ComboBoxItem>Right</ComboBoxItem>
                     <ComboBoxItem>Top</ComboBoxItem>
                 </ComboBox>
+                <CheckBox Name="UseContentTemplates">Set TabItem.ContentTemplate</CheckBox>
             </StackPanel>
         </Grid>
     </DockPanel>
