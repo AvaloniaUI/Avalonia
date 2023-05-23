@@ -1,25 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.CheckBoxPage" Background="White">
-  <Grid>
-    <TextBlock x:Name="myTb" />
-    <ToggleButton x:Name="TogglePopupButton" Height="30" Width="150" HorizontalAlignment="Left">
-      <StackPanel>
-        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
-          <Run Text="Is button toggled? " />
-          <Run Text="{Binding IsChecked, ElementName=TogglePopupButton}" />
-        </TextBlock>
+             x:Class="ControlCatalog.Pages.CheckBoxPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h2">A check box control</TextBlock>
 
-        <Popup Name="myPopup" IsOpen="{Binding IsChecked, ElementName=TogglePopupButton}">
-          <Panel>
-            <Border BorderThickness="1" IsHitTestVisible="False" Margin="0" BorderBrush="Red" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-
-            <TextBlock Name="myPopupText" Background="LightBlue" Foreground="Blue" Padding="30" Margin="150">
-              Popup Text
-            </TextBlock>
-          </Panel>
-        </Popup>
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical"
+                  Spacing="16">
+        <CheckBox>_Unchecked</CheckBox>
+        <CheckBox IsChecked="True">_Checked</CheckBox>
+        <CheckBox IsChecked="{x:Null}">_Indeterminate</CheckBox>
+        <CheckBox IsChecked="True" IsEnabled="False">Disabled</CheckBox>
       </StackPanel>
-    </ToggleButton>
-  </Grid>
+      <StackPanel Orientation="Vertical"
+                  HorizontalAlignment="Center"
+                  Spacing="16">
+        <CheckBox IsChecked="False" IsThreeState="True">Three State: Unchecked</CheckBox>
+        <CheckBox IsChecked="True" IsThreeState="True">Three State: Checked</CheckBox>
+        <CheckBox IsChecked="{x:Null}" IsThreeState="True">Three State: Indeterminate</CheckBox>
+        <CheckBox IsChecked="{x:Null}" IsThreeState="True" IsEnabled="False">Three State: Disabled</CheckBox>
+      </StackPanel>
+    </StackPanel>
+  </StackPanel>
 </UserControl>
