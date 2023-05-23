@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -125,15 +126,50 @@ namespace Avalonia.PropertyStore
 
         public override void CoerceValue(ValueStore owner, AvaloniaProperty property)
         {
+            Debug.Assert(BasePriority > BindingPriority.Animation);
+            Debug.Assert(Priority <= BasePriority);
+
             if (_uncommon is null)
                 return;
-            SetAndRaiseCore(
-                owner, 
-                (StyledProperty<T>)property, 
-                _uncommon._uncoercedValue!, 
-                Priority, 
-                _uncommon._uncoercedBaseValue!,
-                BasePriority);
+
+            var p = (StyledProperty<T>)property;
+            var oldValue = Value;
+            var valueChanged = false;
+            var baseValueChanged = false;
+            var v = _uncommon._uncoercedValue!;
+            var bv = _uncommon._uncoercedBaseValue!;
+
+            if (_uncommon?._coerce is { } coerce)
+            {
+                v = coerce(owner.Owner, v);
+                if (Priority != BasePriority)
+                    bv = coerce(owner.Owner, bv);
+            }
+
+            if (!EqualityComparer<T>.Default.Equals(Value, v))
+            {
+                Value = v;
+                valueChanged = true;
+            }
+
+            if (!EqualityComparer<T>.Default.Equals(_baseValue, bv))
+            {
+                _baseValue = v;
+                baseValueChanged = true;
+            }
+
+            if (valueChanged)
+            {
+                using var notifying = PropertyNotifying.Start(owner.Owner, property);
+                owner.Owner.RaisePropertyChanged(p, oldValue, Value, Priority, true);
+                if (property.Inherits)
+                    owner.OnInheritedEffectiveValueChanged(p, oldValue, this);
+            }
+
+            if (baseValueChanged)
+            {
+                owner.Owner.RaisePropertyChanged(p, default, _baseValue!, BasePriority, false);
+            }
         }
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
@@ -216,7 +252,7 @@ namespace Avalonia.PropertyStore
                 valueChanged = !EqualityComparer<T>.Default.Equals(Value, v);
                 Value = v;
                 Priority = priority;
-                if (_uncommon is not null)
+                if (_uncommon is not null && !isCoercedDefaultValue)
                     _uncommon._uncoercedValue = value;
             }
 
@@ -225,7 +261,7 @@ namespace Avalonia.PropertyStore
                 baseValueChanged = !EqualityComparer<T>.Default.Equals(_baseValue, v);
                 _baseValue = v;
                 BasePriority = priority;
-                if (_uncommon is not null)
+                if (_uncommon is not null && !isCoercedDefaultValue)
                     _uncommon._uncoercedBaseValue = value;
             }
 
@@ -237,63 +273,6 @@ namespace Avalonia.PropertyStore
                     owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
             }
             else if (baseValueChanged)
-            {
-                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
-            }
-        }
-
-        private void SetAndRaiseCore(
-            ValueStore owner,
-            StyledProperty<T> property,
-            T value,
-            BindingPriority priority,
-            T baseValue,
-            BindingPriority basePriority)
-        {
-            Debug.Assert(basePriority > BindingPriority.Animation);
-            Debug.Assert(priority <= basePriority);
-
-            var oldValue = Value;
-            var valueChanged = false;
-            var baseValueChanged = false;
-            var v = value;
-            var bv = baseValue;
-
-            if (_uncommon?._coerce is { } coerce)
-            {
-                v = coerce(owner.Owner, value);
-                if (priority != basePriority)
-                    bv = coerce(owner.Owner, baseValue);
-            }
-
-            if (!EqualityComparer<T>.Default.Equals(Value, v))
-            {
-                Value = v;
-                valueChanged = true;
-                if (_uncommon is not null)
-                    _uncommon._uncoercedValue = value;
-            }
-
-            if (!EqualityComparer<T>.Default.Equals(_baseValue, bv))
-            {
-                _baseValue = v;
-                baseValueChanged = true;
-                if (_uncommon is not null)
-                    _uncommon._uncoercedValue = baseValue;
-            }
-
-            Priority = priority;
-            BasePriority = basePriority;
-
-            if (valueChanged)
-            {
-                using var notifying = PropertyNotifying.Start(owner.Owner, property);
-                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
-                if (property.Inherits)
-                    owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
-            }
-            
-            if (baseValueChanged)
             {
                 owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
             }
