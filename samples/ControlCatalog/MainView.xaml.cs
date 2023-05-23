@@ -83,7 +83,7 @@ namespace ControlCatalog
                 if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected)
                 {
                     var topLevel = (TopLevel)this.GetVisualRoot()!;
-                    topLevel.TransparencyLevelHint = selected;
+                    topLevel.TransparencyLevelHint = new[] { selected };
 
                     if (selected != WindowTransparencyLevel.None)
                     {

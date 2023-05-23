@@ -307,78 +307,80 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 bool isAboveR = Build.VERSION.SdkInt > BuildVersionCodes.R;
                 if (_view.Context is AvaloniaMainActivity activity)
                 {
-                    switch (transparencyLevel)
+                    if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur ||
+                        transparencyLevel == WindowTransparencyLevel.Mica ||
+                        transparencyLevel == WindowTransparencyLevel.None)
                     {
-                        case WindowTransparencyLevel.AcrylicBlur:
-                        case WindowTransparencyLevel.ForceAcrylicBlur:
-                        case WindowTransparencyLevel.Mica:
-                        case WindowTransparencyLevel.None:
-                            if (!isBelowR)
+                        if (!isBelowR)
+                        {
+                            activity.SetTranslucent(false);
+                        }
+                        if (isAboveR)
+                        {
+                            activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+
+                            var attr = activity.Window?.Attributes;
+                            if (attr != null)
                             {
-                                activity.SetTranslucent(false);
+                                attr.BlurBehindRadius = 0;
+
+                                activity.Window.Attributes = attr;
                             }
-                            if (isAboveR)
+                        }
+                        activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
+
+                        if (transparencyLevel != WindowTransparencyLevel.None)
+                        {
+                            return;
+                        }
+                    }
+
+                    if (transparencyLevel == WindowTransparencyLevel.Transparent)
+                    {
+                        if (!isBelowR)
+                        {
+                            activity.SetTranslucent(true);
+                        }
+                        if (isAboveR)
+                        {
+                            activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+
+                            var attr = activity.Window?.Attributes;
+                            if (attr != null)
                             {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+                                attr.BlurBehindRadius = 0;
 
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 0;
-
-                                    activity.Window.Attributes = attr;
-                                }
+                                activity.Window.Attributes = attr;
                             }
-                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
+                        }
+                        activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
 
-                            if(transparencyLevel != WindowTransparencyLevel.None)
-                            {
-                                return;
-                            }
-                            break;
-                        case WindowTransparencyLevel.Transparent:
-                            if (!isBelowR)
-                            {
-                                activity.SetTranslucent(true);
-                            }
-                            if (isAboveR)
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+                    if (transparencyLevel == WindowTransparencyLevel.Blur)
+                    {
+                        if (isAboveR)
+                        {
+                            activity.SetTranslucent(true);
+                            activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
 
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 0;
+                            var attr = activity.Window?.Attributes;
+                            if (attr != null)
+                            {
+                                attr.BlurBehindRadius = 120;
 
-                                    activity.Window.Attributes = attr;
-                                }
+                                activity.Window.Attributes = attr;
                             }
                             activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-                            break;
-                        case WindowTransparencyLevel.Blur:
-                            if (isAboveR)
-                            {
-                                activity.SetTranslucent(true);
-                                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
+                        }
+                        else
+                        {
+                            activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
 
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 120;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-                            }
-                            else
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
-
-                                return;
-                            }
-                            break;
+                            return;
+                        }
                     }
+
                     TransparencyLevel = transparencyLevel;
                 }
             }

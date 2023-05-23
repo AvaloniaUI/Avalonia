@@ -41,7 +41,11 @@ namespace Avalonia.X11
         
         private WindowTransparencyLevel UpdateAtomsAndGetTransparency()
         {
-            if (_requestedLevel >= WindowTransparencyLevel.Blur)
+            var blur = _requestedLevel == WindowTransparencyLevel.Blur ||
+                _requestedLevel == WindowTransparencyLevel.AcrylicBlur ||
+                _requestedLevel == WindowTransparencyLevel.Mica;
+
+            if (blur)
             {
                 if (!_blurAtomsAreSet)
                 {
@@ -62,7 +66,7 @@ namespace Avalonia.X11
 
             if (!_globals.IsCompositionEnabled)
                 return WindowTransparencyLevel.None;
-            if (_requestedLevel >= WindowTransparencyLevel.Blur && CanBlur)
+            if (blur && CanBlur)
                 return WindowTransparencyLevel.Blur;
             return WindowTransparencyLevel.Transparent;
         }

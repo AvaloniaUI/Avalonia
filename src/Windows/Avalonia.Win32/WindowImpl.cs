@@ -435,7 +435,9 @@ namespace Avalonia.Win32
 
             Marshal.FreeHGlobal(accentPtr);
 
-            if (transparencyLevel >= WindowTransparencyLevel.Blur)
+            if (transparencyLevel == WindowTransparencyLevel.Blur ||
+                transparencyLevel == WindowTransparencyLevel.AcrylicBlur ||
+                transparencyLevel == WindowTransparencyLevel.Mica)
             {
                 Win7EnableBlur(transparencyLevel);
             }
@@ -447,13 +449,14 @@ namespace Avalonia.Win32
         {
             if (_isUsingComposition)
             {
-                var effect = transparencyLevel switch
-                {
-                    WindowTransparencyLevel.Mica => BlurEffect.Mica,
-                    WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
-                    WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
-                    _ => BlurEffect.None
-                };
+                BlurEffect effect;
+
+                if (transparencyLevel == WindowTransparencyLevel.Mica)
+                    effect = BlurEffect.Mica;
+                else if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+                    effect = BlurEffect.Acrylic;
+                else
+                    effect = BlurEffect.None;
 
                 if (Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion)
                 {
@@ -485,27 +488,22 @@ namespace Avalonia.Win32
                     transparencyLevel = WindowTransparencyLevel.Blur;
                 }
 
-                switch (transparencyLevel)
+                if (transparencyLevel == WindowTransparencyLevel.Transparent)
                 {
-                    default:
-                    case WindowTransparencyLevel.None:
-                        accent.AccentState = AccentState.ACCENT_DISABLED;
-                        break;
-
-                    case WindowTransparencyLevel.Transparent:
-                        accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
-                        break;
-
-                    case WindowTransparencyLevel.Blur:
-                        accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-                        break;
-
-                    case WindowTransparencyLevel.AcrylicBlur:
-                    case WindowTransparencyLevel.ForceAcrylicBlur: // hack-force acrylic.
-                    case WindowTransparencyLevel.Mica:
-                        accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
-                        transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                        break;
+                    accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
+                }
+                else if (transparencyLevel == WindowTransparencyLevel.Blur)
+                {
+                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                }
+                else if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur || transparencyLevel == WindowTransparencyLevel.Mica)
+                {
+                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                }
+                else
+                {
+                    accent.AccentState = AccentState.ACCENT_DISABLED;
                 }
 
                 accent.AccentFlags = 2;
