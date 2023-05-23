@@ -74,7 +74,7 @@ namespace Avalonia.Input
             {
                 var screenPt = _rootVisual.PointToScreen(pt);
 
-                return relativeTo.PointToClient(screenPt) * v.TransformToVisual(relativeTo) ?? default;
+                return relativeTo.PointToClient(screenPt);
             }
 
             return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
