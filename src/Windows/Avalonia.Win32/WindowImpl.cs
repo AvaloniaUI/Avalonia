@@ -346,7 +346,7 @@ namespace Avalonia.Win32
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
             TransparencyLevel = EnableBlur(transparencyLevel);
         }

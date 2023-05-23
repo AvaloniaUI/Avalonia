@@ -485,7 +485,7 @@ namespace Avalonia.Native
             _native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) 
         {
             if (TransparencyLevel != transparencyLevel)
             {

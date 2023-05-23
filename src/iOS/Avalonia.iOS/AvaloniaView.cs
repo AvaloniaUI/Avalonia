@@ -139,7 +139,7 @@ namespace Avalonia.iOS
                 return null;
             }
 
-            public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+            public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
             {
                 // No-op
             }

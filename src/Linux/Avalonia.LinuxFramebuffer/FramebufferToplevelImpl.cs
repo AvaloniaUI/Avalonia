@@ -75,7 +75,7 @@ using Avalonia.Rendering.Composition;
 
         public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 

@@ -1307,7 +1307,7 @@ namespace Avalonia.X11
 
         public IPopupPositioner? PopupPositioner { get; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) =>
             _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
 
         public void SetWindowManagerAddShadowHint(bool enabled)

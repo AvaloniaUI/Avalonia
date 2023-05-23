@@ -223,12 +223,18 @@ namespace Avalonia.Browser
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (transparencyLevel == WindowTransparencyLevel.None
-                || transparencyLevel == WindowTransparencyLevel.Transparent)
+            foreach (var transparencyLevel in transparencyLevels)
             {
-                TransparencyLevel = transparencyLevel;
+                // Browser view is always transparent, so we don't need to change anything, but accept new value.
+                if (TransparencyLevel != transparencyLevel
+                    && (transparencyLevel == WindowTransparencyLevel.Transparent
+                    || transparencyLevel == WindowTransparencyLevel.None))
+                {
+                    TransparencyLevel = transparencyLevel;
+                    TransparencyLevelChanged?.Invoke(transparencyLevel);
+                }
             }
         }
 
