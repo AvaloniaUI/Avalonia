@@ -5,6 +5,7 @@
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
     <UseDirect3D9>true</UseDirect3D9>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
@@ -13,5 +14,7 @@
   </ItemGroup>
 
   <Import Project="..\..\..\build\SharpDX.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 </Project>

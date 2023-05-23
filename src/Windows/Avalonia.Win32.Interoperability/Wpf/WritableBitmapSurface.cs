@@ -11,7 +11,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
     internal class WritableBitmapSurface : IFramebufferPlatformSurface
     {
         private readonly WpfTopLevelImpl _impl;
-        private WriteableBitmap _bitmap;
+        private WriteableBitmap? _bitmap;
         public WritableBitmapSurface(WpfTopLevelImpl impl)
         {
             _impl = impl;

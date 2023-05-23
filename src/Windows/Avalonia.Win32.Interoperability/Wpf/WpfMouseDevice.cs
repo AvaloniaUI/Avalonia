@@ -23,7 +23,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
                 _impl = impl;
             }
 
-            protected override void PlatformCapture(IInputElement control)
+            protected override void PlatformCapture(IInputElement? control)
             {
                 if (control == null)
                 {

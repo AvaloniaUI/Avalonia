@@ -95,19 +95,19 @@ namespace Avalonia.Win32.Interoperability.Wpf
 
             public void Flush()
             {
-                s_dxDevice.ImmediateContext.ResolveSubresource(_resource, 0, _sharedResource, 0, Format.B8G8R8A8_UNorm);
+                s_dxDevice!.ImmediateContext.ResolveSubresource(_resource, 0, _sharedResource, 0, Format.B8G8R8A8_UNorm);
                 s_dxDevice.ImmediateContext.Flush();
                 s_dxDevice.ImmediateContext.End(_event);
                 s_dxDevice.ImmediateContext.GetData(_event).Dispose();
             }
         }
 
-        private D3DImage _image;
-        private SwapBuffer _backBuffer;
+        private D3DImage? _image;
+        private SwapBuffer? _backBuffer;
         private readonly WpfTopLevelImpl _impl;
-        private static Device s_dxDevice;
-        private static Direct3DEx s_d3DContext;
-        private static DeviceEx s_d3DDevice;
+        private static Device? s_dxDevice;
+        private static Direct3DEx? s_d3DContext;
+        private static DeviceEx? s_d3DDevice;
         private Vector _oldDpi;
 
 
@@ -138,7 +138,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
             _impl = impl;
         }
 
-        public RenderTarget GetOrCreateRenderTarget()
+        public RenderTarget? GetOrCreateRenderTarget()
         {
             EnsureDirectX();
             var scale = _impl.GetScaling();
@@ -168,7 +168,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
             return _backBuffer.Target;
         }
 
-        private static void RemoveAndDispose<T>(ref T d) where T : IDisposable
+        private static void RemoveAndDispose<T>(ref T? d) where T : IDisposable
         {
             d?.Dispose();
             d = default;
@@ -176,11 +176,15 @@ namespace Avalonia.Win32.Interoperability.Wpf
 
         private void Swap()
         {
-            _backBuffer.Flush();
-            _image.Lock();
-            _image.SetBackBuffer(D3DResourceType.IDirect3DSurface9, _backBuffer?.Texture?.NativePointer ?? IntPtr.Zero, true);
-            _image.AddDirtyRect(new Int32Rect(0, 0, _image.PixelWidth, _image.PixelHeight));
-            _image.Unlock();
+            _backBuffer?.Flush();
+            if (_image is not null)
+            {
+                _image.Lock();
+                _image.SetBackBuffer(D3DResourceType.IDirect3DSurface9,
+                    _backBuffer?.Texture?.NativePointer ?? IntPtr.Zero, true);
+                _image.AddDirtyRect(new Int32Rect(0, 0, _image.PixelWidth, _image.PixelHeight));
+                _image.Unlock();
+            }
         }
 
         public void DestroyRenderTarget()

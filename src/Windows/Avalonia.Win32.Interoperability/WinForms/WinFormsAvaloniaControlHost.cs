@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Avalonia.Controls.Embedding;
 using Avalonia.Win32.Interop;
 using WinFormsControl = System.Windows.Forms.Control;
+using AvControl = Avalonia.Controls.Control;
 
 namespace Avalonia.Win32.Interoperability
 {
@@ -35,9 +36,9 @@ namespace Avalonia.Win32.Interoperability
         /// <summary>
         /// Gets or sets the Avalonia control hosted by the <see cref="WinFormsAvaloniaControlHost"/> element.
         /// </summary>
-        public Avalonia.Controls.Control Content
+        public AvControl? Content
         {
-            get => (Avalonia.Controls.Control)_root.Content;
+            get => (AvControl?)_root.Content;
             set => _root.Content = value;
         }
 
@@ -49,7 +50,7 @@ namespace Avalonia.Win32.Interoperability
             base.Dispose(disposing);
         }
 
-        private void RootGotFocus(object sender, Interactivity.RoutedEventArgs e)
+        private void RootGotFocus(object? sender, Interactivity.RoutedEventArgs e)
         {
             UnmanagedMethods.SetFocus(WindowHandle);
         }
@@ -57,14 +58,16 @@ namespace Avalonia.Win32.Interoperability
         /// <inheritdoc />
         protected override void OnGotFocus(EventArgs e)
         {
-            if (_root != null)
-                UnmanagedMethods.SetFocus(WindowHandle);
+            var handle = WindowHandle;
+            if (handle != default)
+                UnmanagedMethods.SetFocus(handle);
         }
         
         private void FixPosition()
         {
-            if (_root != null && Width > 0 && Height > 0)
-                UnmanagedMethods.MoveWindow(WindowHandle, 0, 0, Width, Height, true);
+            var handle = WindowHandle;
+            if (handle != default && Width > 0 && Height > 0)
+                UnmanagedMethods.MoveWindow(handle, 0, 0, Width, Height, true);
         }
         
         /// <inheritdoc />

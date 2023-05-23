@@ -9,7 +9,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal static class CursorShim
     {
-        public static Cursor FromHCursor(IntPtr hcursor)
+        public static Cursor? FromHCursor(IntPtr hcursor)
         {
             var field = typeof(Cursor).GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
                 .FirstOrDefault(f => f.FieldType == typeof(SafeHandle));

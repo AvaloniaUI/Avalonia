@@ -13,16 +13,18 @@ namespace Avalonia.Win32.Interoperability
     [ContentProperty("Content")]
     public class WpfAvaloniaHost : FrameworkElement, IDisposable, IAddChild
     {
-        private WpfTopLevelImpl _impl;
+        private WpfTopLevelImpl? _impl;
         private readonly SynchronizationContext _sync;
         private bool _hasChildren;
 
+        private WpfTopLevelImpl Impl => _impl ?? throw new ObjectDisposedException("WpfAvaloniaHost was already disposed.");
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="WpfAvaloniaHost"/> class.
         /// </summary>
         public WpfAvaloniaHost()
         {
-            _sync = SynchronizationContext.Current;
+            _sync = SynchronizationContext.Current!;
             _impl = new WpfTopLevelImpl();
             _impl.ControlRoot.Prepare();
             _impl.Visibility = Visibility.Visible;
@@ -50,10 +52,10 @@ namespace Avalonia.Win32.Interoperability
         /// <summary>
         /// Gets or sets the Avalonia control hosted by the <see cref="WpfAvaloniaHost"/> element.
         /// </summary>
-        public AvControl Content
+        public AvControl? Content
         {
-            get => (AvControl)_impl.ControlRoot.Content;
-            set => _impl.ControlRoot.Content = value;
+            get => (AvControl?)Impl.ControlRoot.Content;
+            set => Impl.ControlRoot.Content = value;
         }
 
         //Separate class is needed to prevent accidental resurrection
@@ -66,7 +68,7 @@ namespace Avalonia.Win32.Interoperability
                 _impl = impl;
             }
 
-            public void Callback(object state)
+            public void Callback(object? state)
             {
                 _impl.Dispose();
             }
@@ -75,15 +77,16 @@ namespace Avalonia.Win32.Interoperability
         /// <inheritdoc />
         protected override System.Windows.Size MeasureOverride(System.Windows.Size constraint)
         {
-            _impl.InvalidateMeasure();
-            _impl.Measure(constraint);
-            return _impl.DesiredSize;
+            var impl = Impl;
+            impl.InvalidateMeasure();
+            impl.Measure(constraint);
+            return impl.DesiredSize;
         }
 
         /// <inheritdoc />
         protected override System.Windows.Size ArrangeOverride(System.Windows.Size arrangeSize)
         {
-            _impl.Arrange(new System.Windows.Rect(arrangeSize));
+            Impl.Arrange(new System.Windows.Rect(arrangeSize));
             return arrangeSize;
         }
         
@@ -91,7 +94,7 @@ namespace Avalonia.Win32.Interoperability
         protected override int VisualChildrenCount => 1;
 
         /// <inheritdoc />
-        protected override System.Windows.Media.Visual GetVisualChild(int index) => _impl;
+        protected override System.Windows.Media.Visual GetVisualChild(int index) => Impl;
 
         ~WpfAvaloniaHost()
         {

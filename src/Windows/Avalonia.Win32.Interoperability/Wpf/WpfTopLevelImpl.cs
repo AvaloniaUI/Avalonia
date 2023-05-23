@@ -22,17 +22,17 @@ namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal class WpfTopLevelImpl : FrameworkElement, ITopLevelImpl
     {
-        private HwndSource _currentHwndSource;
+        private HwndSource? _currentHwndSource;
+        private IInputRoot? _inputRoot;
         private readonly HwndSourceHook _hook;
         private readonly ITopLevelImpl _ttl;
-        private IInputRoot _inputRoot;
         private readonly IEnumerable<object> _surfaces;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private Size _finalSize;
 
         public EmbeddableControlRoot ControlRoot { get; }
-        internal ImageSource ImageSource { get; set; }
+        internal ImageSource? ImageSource { get; set; }
 
         public class CustomControlRoot : EmbeddableControlRoot, IEmbeddedLayoutRoot
         {
@@ -43,7 +43,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
 
             protected override void OnMeasureInvalidated()
             {
-                ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
+                ((FrameworkElement?)PlatformImpl)?.InvalidateMeasure();
             }
 
             public Size AllocatedSize => ClientSize;
@@ -56,7 +56,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
             _ttl = this;
             _surfaces = new object[] {new WritableBitmapSurface(this), new Direct2DImageSurface(this)};
             _mouse = new WpfMouseDevice(this);
-            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+            _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
 
             ControlRoot = new CustomControlRoot(this);
             SnapsToDevicePixels = true;
@@ -138,7 +138,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
 
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 
-        private static RawInputModifiers GetModifiers(MouseEventArgs e)
+        private static RawInputModifiers GetModifiers(MouseEventArgs? e)
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
@@ -163,7 +163,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
         }
 
         private void MouseEvent(RawPointerEventType type, MouseEventArgs e)
-            => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, _inputRoot, type,
+            => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, _inputRoot!, type,
             e.GetPosition(this).ToAvaloniaPoint(), GetModifiers(e)));
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -202,25 +202,25 @@ namespace Avalonia.Win32.Interoperability.Wpf
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e) =>
-            _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, _inputRoot,
+            _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, _inputRoot!,
                 e.GetPosition(this).ToAvaloniaPoint(), new Vector(0, e.Delta), GetModifiers(e)));
 
         protected override void OnMouseLeave(MouseEventArgs e) => MouseEvent(RawPointerEventType.LeaveWindow, e);
 
         protected override void OnKeyDown(KeyEventArgs e)
-            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, RawKeyEventType.KeyDown,
+            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot!, RawKeyEventType.KeyDown,
                 (Key) e.Key,
                 GetModifiers(null)));
 
         protected override void OnKeyUp(KeyEventArgs e)
-            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint)e.Timestamp, _inputRoot, RawKeyEventType.KeyUp,
+            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint)e.Timestamp, _inputRoot!, RawKeyEventType.KeyUp,
                 (Key)e.Key,
                 GetModifiers(null)));
 
         protected override void OnTextInput(TextCompositionEventArgs e)
-            => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, e.Text));
+            => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot!, e.Text));
 
-        void ITopLevelImpl.SetCursor(ICursorImpl cursor)
+        void ITopLevelImpl.SetCursor(ICursorImpl? cursor)
         {
             if (cursor == null)
                 Cursor = Cursors.Arrow;
@@ -228,15 +228,15 @@ namespace Avalonia.Win32.Interoperability.Wpf
                 Cursor = CursorShim.FromHCursor(handle.Handle);
         }
 
-        Action<RawInputEventArgs> ITopLevelImpl.Input { get; set; } //TODO
-        Action<Rect> ITopLevelImpl.Paint { get; set; }
-        Action<Size, WindowResizeReason> ITopLevelImpl.Resized { get; set; }
-        Action<double> ITopLevelImpl.ScalingChanged { get; set; }
+        Action<RawInputEventArgs>? ITopLevelImpl.Input { get; set; } //TODO
+        Action<Rect>? ITopLevelImpl.Paint { get; set; }
+        Action<Size, WindowResizeReason>? ITopLevelImpl.Resized { get; set; }
+        Action<double>? ITopLevelImpl.ScalingChanged { get; set; }
 
-        Action<WindowTransparencyLevel> ITopLevelImpl.TransparencyLevelChanged { get; set; }
+        Action<WindowTransparencyLevel>? ITopLevelImpl.TransparencyLevelChanged { get; set; }
 
-        Action ITopLevelImpl.Closed { get; set; }
-        public new Action LostFocus { get; set; }
+        Action? ITopLevelImpl.Closed { get; set; }
+        public new Action? LostFocus { get; set; }
 
         internal Vector GetScaling()
         {
@@ -246,7 +246,7 @@ namespace Avalonia.Win32.Interoperability.Wpf
             return new Vector(src.TransformToDevice.M11, src.TransformToDevice.M22);
         }
 
-        public IPopupImpl CreatePopup() => null;
+        public IPopupImpl? CreatePopup() => null;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
@@ -256,6 +256,6 @@ namespace Avalonia.Win32.Interoperability.Wpf
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
         
-        public object TryGetFeature(Type featureType) => null;
+        public object? TryGetFeature(Type featureType) => null;
     }
 }
