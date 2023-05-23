@@ -1,52 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Rendering;
-using Avalonia.VisualTree;
 using ControlCatalog;
-using Window = System.Windows.Window;
 
 namespace WindowsInteropTest
 {
-    /// <summary>
-    /// Interaction logic for EmbedToWpfDemo.xaml
-    /// </summary>
-    public partial class EmbedToWpfDemo : Window
+    public partial class EmbedToWpfDemo
     {
-        private IRenderer _renderer;
         public EmbedToWpfDemo()
         {
             InitializeComponent();
-            var view = new MainView();
-            Host.Content = view;
-            var tl = (TopLevel)view.GetVisualRoot();
-            tl.AttachDevTools();
-            _renderer = tl.Renderer;
-            _renderer.Start();
-            var btn = (Avalonia.Controls.Button) RightBtn.Content;
+            Host.Content = new MainView();
+
+            var btn = (Button) RightBtn.Content!;
             btn.Click += delegate
             {
                 btn.Content += "!";
             };
 
+            Loaded += OnLoaded;
         }
 
-        protected override void OnClosed(EventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            _renderer.Stop();
-            base.OnClosed(e);
+            TopLevel.GetTopLevel((MainView)Host.Content)!.AttachDevTools();
         }
     }
 }
