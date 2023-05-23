@@ -639,8 +639,7 @@ namespace Avalonia.Controls
                 TextTrimming,
                 _constraint.Width,
                 _constraint.Height,
-                maxLines: MaxLines,
-                lineHeight: LineHeight);
+                MaxLines);
         }
 
         /// <summary>
