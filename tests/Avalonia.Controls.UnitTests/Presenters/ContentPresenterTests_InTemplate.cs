@@ -391,7 +391,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             templatedParent.ApplyTemplate();
 
-            return ((ContentPresenter)templatedParent.Presenter, templatedParent);
+            return (templatedParent.Presenter, templatedParent);
         }
 
         private class TestContentControl : ContentControl, IContentPresenterHost

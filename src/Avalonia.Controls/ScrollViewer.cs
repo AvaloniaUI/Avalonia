@@ -644,7 +644,7 @@ namespace Avalonia.Controls
             (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             _childSubscription?.Dispose();
             _childSubscription = null;

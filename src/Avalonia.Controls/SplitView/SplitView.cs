@@ -279,7 +279,7 @@ namespace Avalonia.Controls
             remove => RemoveHandler(PaneOpeningEvent, value);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             var result = base.RegisterContentPresenter(presenter);
 

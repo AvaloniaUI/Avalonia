@@ -140,13 +140,13 @@ namespace Avalonia.Controls
 
         internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
-        internal IContentPresenter? ContentPart { get; private set; }
+        internal ContentPresenter? ContentPart { get; private set; }
 
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
         }
@@ -210,10 +210,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// Called when an <see cref="ContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
         {
             if (presenter.Name == "PART_SelectedContentHost")
             {
