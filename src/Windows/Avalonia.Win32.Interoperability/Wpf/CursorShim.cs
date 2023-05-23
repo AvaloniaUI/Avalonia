@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Windows.Input;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal static class CursorShim
     {

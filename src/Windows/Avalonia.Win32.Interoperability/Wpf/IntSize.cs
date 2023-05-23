@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal struct IntSize : IEquatable<IntSize>
     {

@@ -3,7 +3,7 @@ using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal class WpfMouseDevice : MouseDevice
     {

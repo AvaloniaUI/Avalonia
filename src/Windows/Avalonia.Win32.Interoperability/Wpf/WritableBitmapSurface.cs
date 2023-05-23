@@ -6,7 +6,7 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal class WritableBitmapSurface : IFramebufferPlatformSurface
     {

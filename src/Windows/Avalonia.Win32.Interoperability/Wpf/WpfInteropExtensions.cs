@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Win32.Interop.Wpf
+﻿namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal static class WpfInteropExtensions
     {

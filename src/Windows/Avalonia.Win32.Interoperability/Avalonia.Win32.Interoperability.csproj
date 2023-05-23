@@ -5,7 +5,6 @@
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
     <UseDirect3D9>true</UseDirect3D9>
-    <PackageId>Avalonia.Win32.Interoperability</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />

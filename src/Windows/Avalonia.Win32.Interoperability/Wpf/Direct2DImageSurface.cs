@@ -16,7 +16,7 @@ using RenderTarget = SharpDX.Direct2D1.RenderTarget;
 using Surface = SharpDX.DXGI.Surface;
 using Usage = SharpDX.Direct3D9.Usage;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal class Direct2DImageSurface : IExternalDirect2DRenderTargetSurface, IDisposable
     {

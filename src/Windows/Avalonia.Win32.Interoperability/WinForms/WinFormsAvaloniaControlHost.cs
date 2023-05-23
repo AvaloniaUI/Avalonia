@@ -2,9 +2,10 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 using Avalonia.Controls.Embedding;
+using Avalonia.Win32.Interop;
 using WinFormsControl = System.Windows.Forms.Control;
 
-namespace Avalonia.Win32.Interop
+namespace Avalonia.Win32.Interoperability
 {
     /// <summary>
     /// An element that allows you to host a Avalonia control on a Windows Forms page.

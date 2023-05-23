@@ -13,11 +13,12 @@ using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Win32.Interop;
 using Key = Avalonia.Input.Key;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MouseButton = System.Windows.Input.MouseButton;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interoperability.Wpf
 {
     internal class WpfTopLevelImpl : FrameworkElement, ITopLevelImpl
     {

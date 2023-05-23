@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Windows;
 using System.Windows.Markup;
-using Avalonia.Win32.Interop.Wpf;
+using Avalonia.Win32.Interoperability.Wpf;
 using AvControl = Avalonia.Controls.Control;
 
-namespace Avalonia.Win32.Interop
+namespace Avalonia.Win32.Interoperability
 {
     /// <summary>
     /// An element that allows you to host a Avalonia control on a WPF page.
