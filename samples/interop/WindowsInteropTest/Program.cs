@@ -18,7 +18,7 @@ namespace WindowsInteropTest
                 .UseWin32()
                 .UseSkia()
                 .SetupWithoutStarting();
-            System.Windows.Forms.Application.Run(new SelectorForm());
+            System.Windows.Forms.Application.Run(new EmbedToWinFormsDemo());
         }
     }
 }
