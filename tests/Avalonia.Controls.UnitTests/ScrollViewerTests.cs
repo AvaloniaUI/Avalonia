@@ -440,7 +440,7 @@ namespace Avalonia.Controls.UnitTests
             throw new InvalidOperationException("Could not get the point in root coordinates.");
         }
 
-        private Control CreateTemplate(ScrollViewer control, INameScope scope)
+        internal static Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
             {
@@ -480,7 +480,7 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private Control CreateScrollBarTemplate(ScrollBar scrollBar, INameScope scope)
+        private static Control CreateScrollBarTemplate(ScrollBar scrollBar, INameScope scope)
         {
             return new Border
             {

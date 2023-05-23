@@ -133,7 +133,8 @@
                              IsVisible="False"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
-                  <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                  <ScrollViewer Name="PART_ScrollViewer"
+                                HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                                 IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                                 AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
