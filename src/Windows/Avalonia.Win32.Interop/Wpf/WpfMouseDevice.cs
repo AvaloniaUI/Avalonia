@@ -5,7 +5,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WpfMouseDevice : MouseDevice
+    internal class WpfMouseDevice : MouseDevice
     {
         private readonly WpfTopLevelImpl _impl;
 
@@ -14,7 +14,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _impl = impl;
         }
 
-        class WpfMousePointer : Pointer
+        private class WpfMousePointer : Pointer
         {
             private readonly WpfTopLevelImpl _impl;
 
@@ -35,6 +35,5 @@ namespace Avalonia.Win32.Interop.Wpf
                     System.Windows.Input.Mouse.Capture(_impl);
             }
         }
-        
     }
 }

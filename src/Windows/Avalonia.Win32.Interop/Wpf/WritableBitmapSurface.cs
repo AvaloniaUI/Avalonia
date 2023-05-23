@@ -8,7 +8,7 @@ using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WritableBitmapSurface : IFramebufferPlatformSurface
+    internal class WritableBitmapSurface : IFramebufferPlatformSurface
     {
         private readonly WpfTopLevelImpl _impl;
         private WriteableBitmap _bitmap;

@@ -2,7 +2,7 @@
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    struct IntSize : IEquatable<IntSize>
+    internal struct IntSize : IEquatable<IntSize>
     {
         public bool Equals(IntSize other)
         {

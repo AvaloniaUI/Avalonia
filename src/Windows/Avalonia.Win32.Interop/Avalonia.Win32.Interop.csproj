@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
-    <ExtrasEnableImplicitWinFormsReferences>true</ExtrasEnableImplicitWinFormsReferences>
     <UseDirect3D9>true</UseDirect3D9>
     <PackageId>Avalonia.Win32.Interoperability</PackageId>
   </PropertyGroup>

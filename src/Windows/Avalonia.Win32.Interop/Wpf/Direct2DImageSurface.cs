@@ -18,9 +18,9 @@ using Usage = SharpDX.Direct3D9.Usage;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class Direct2DImageSurface : IExternalDirect2DRenderTargetSurface, IDisposable
+    internal class Direct2DImageSurface : IExternalDirect2DRenderTargetSurface, IDisposable
     {
-        class SwapBuffer: IDisposable
+        private class SwapBuffer: IDisposable
         {
             private readonly Query _event;
             private readonly SharpDX.Direct3D11.Resource _resource;
@@ -114,7 +114,7 @@ namespace Avalonia.Win32.Interop.Wpf
         [DllImport("user32.dll", SetLastError = false)]
         private static extern IntPtr GetDesktopWindow();
 
-        static void EnsureDirectX()
+        private static void EnsureDirectX()
         {
             if(s_d3DDevice != null)
                 return;
@@ -168,13 +168,13 @@ namespace Avalonia.Win32.Interop.Wpf
             return _backBuffer.Target;
         }
 
-        static void RemoveAndDispose<T>(ref T d) where T : IDisposable
+        private static void RemoveAndDispose<T>(ref T d) where T : IDisposable
         {
             d?.Dispose();
             d = default;
         }
 
-        void Swap()
+        private void Swap()
         {
             _backBuffer.Flush();
             _image.Lock();

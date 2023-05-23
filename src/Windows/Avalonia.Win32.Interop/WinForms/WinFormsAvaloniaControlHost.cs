@@ -2,38 +2,45 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 using Avalonia.Controls.Embedding;
-using Avalonia.Input;
-using Avalonia.VisualTree;
-using Avalonia.Win32.Interop;
 using WinFormsControl = System.Windows.Forms.Control;
 
-namespace Avalonia.Win32.Embedding
+namespace Avalonia.Win32.Interop
 {
+    /// <summary>
+    /// An element that allows you to host a Avalonia control on a Windows Forms page.
+    /// </summary>
     [ToolboxItem(true)]
     public class WinFormsAvaloniaControlHost : WinFormsControl
     {
-        private readonly EmbeddableControlRoot _root = new EmbeddableControlRoot();
+        private readonly EmbeddableControlRoot _root = new();
 
-        private IntPtr WindowHandle => ((WindowImpl) _root?.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
+        private IntPtr WindowHandle => _root?.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WinFormsAvaloniaControlHost"/> class.
+        /// </summary>
         public WinFormsAvaloniaControlHost()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             UnmanagedMethods.SetParent(WindowHandle, Handle);
             _root.Prepare();
             if (_root.IsFocused)
-                _root.FocusManager.ClearFocus();
+                _root.FocusManager?.ClearFocus();
             _root.GotFocus += RootGotFocus;
 
             FixPosition();
         }
 
+        /// <summary>
+        /// Gets or sets the Avalonia control hosted by the <see cref="WinFormsAvaloniaControlHost"/> element.
+        /// </summary>
         public Avalonia.Controls.Control Content
         {
-            get { return (Avalonia.Controls.Control)_root.Content; }
-            set { _root.Content = value; }
+            get => (Avalonia.Controls.Control)_root.Content;
+            set => _root.Content = value;
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -46,27 +53,27 @@ namespace Avalonia.Win32.Embedding
             UnmanagedMethods.SetFocus(WindowHandle);
         }
 
+        /// <inheritdoc />
         protected override void OnGotFocus(EventArgs e)
         {
             if (_root != null)
                 UnmanagedMethods.SetFocus(WindowHandle);
         }
-
-
-        void FixPosition()
+        
+        private void FixPosition()
         {
             if (_root != null && Width > 0 && Height > 0)
                 UnmanagedMethods.MoveWindow(WindowHandle, 0, 0, Width, Height, true);
         }
-
-
-
+        
+        /// <inheritdoc />
         protected override void OnResize(EventArgs e)
         {
             FixPosition();
             base.OnResize(e);
         }
 
+        /// <inheritdoc />
         protected override void OnPaint(PaintEventArgs e)
         {
 

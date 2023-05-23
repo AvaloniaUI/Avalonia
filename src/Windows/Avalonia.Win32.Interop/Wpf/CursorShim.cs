@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    static class CursorShim
+    internal static class CursorShim
     {
         public static Cursor FromHCursor(IntPtr hcursor)
         {
@@ -20,7 +20,7 @@ namespace Avalonia.Win32.Interop.Wpf
             return rv;
         }
 
-        class SafeHandleShim : SafeHandle
+        private class SafeHandleShim : SafeHandle
         {
             public SafeHandleShim(IntPtr hcursor) : base(new IntPtr(-1), false)
             {

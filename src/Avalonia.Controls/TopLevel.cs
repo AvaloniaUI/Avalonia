@@ -383,7 +383,7 @@ namespace Avalonia.Controls
         /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
+        public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
 
         /// <summary>
         /// Gets the renderer for the window.

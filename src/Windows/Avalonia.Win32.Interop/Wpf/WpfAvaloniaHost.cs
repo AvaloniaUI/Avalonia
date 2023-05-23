@@ -2,15 +2,24 @@
 using System.Threading;
 using System.Windows;
 using System.Windows.Markup;
+using Avalonia.Win32.Interop.Wpf;
+using AvControl = Avalonia.Controls.Control;
 
-namespace Avalonia.Win32.Interop.Wpf
+namespace Avalonia.Win32.Interop
 {
+    /// <summary>
+    /// An element that allows you to host a Avalonia control on a WPF page.
+    /// </summary>
     [ContentProperty("Content")]
     public class WpfAvaloniaHost : FrameworkElement, IDisposable, IAddChild
     {
         private WpfTopLevelImpl _impl;
         private readonly SynchronizationContext _sync;
         private bool _hasChildren;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WpfAvaloniaHost"/> class.
+        /// </summary>
         public WpfAvaloniaHost()
         {
             _sync = SynchronizationContext.Current;
@@ -38,14 +47,17 @@ namespace Avalonia.Win32.Interop.Wpf
             }
         }
 
-        public object Content
+        /// <summary>
+        /// Gets or sets the Avalonia control hosted by the <see cref="WpfAvaloniaHost"/> element.
+        /// </summary>
+        public AvControl Content
         {
-            get => _impl.ControlRoot.Content;
+            get => (AvControl)_impl.ControlRoot.Content;
             set => _impl.ControlRoot.Content = value;
         }
 
         //Separate class is needed to prevent accidental resurrection
-        class Disposer
+        private class Disposer
         {
             private readonly WpfTopLevelImpl _impl;
 
@@ -60,6 +72,7 @@ namespace Avalonia.Win32.Interop.Wpf
             }
         }
 
+        /// <inheritdoc />
         protected override System.Windows.Size MeasureOverride(System.Windows.Size constraint)
         {
             _impl.InvalidateMeasure();
@@ -67,13 +80,17 @@ namespace Avalonia.Win32.Interop.Wpf
             return _impl.DesiredSize;
         }
 
+        /// <inheritdoc />
         protected override System.Windows.Size ArrangeOverride(System.Windows.Size arrangeSize)
         {
             _impl.Arrange(new System.Windows.Rect(arrangeSize));
             return arrangeSize;
         }
         
+        /// <inheritdoc />
         protected override int VisualChildrenCount => 1;
+
+        /// <inheritdoc />
         protected override System.Windows.Media.Visual GetVisualChild(int index) => _impl;
 
         ~WpfAvaloniaHost()
@@ -82,6 +99,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 _sync.Post(new Disposer(_impl).Callback, null);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_impl != null)
@@ -97,9 +115,12 @@ namespace Avalonia.Win32.Interop.Wpf
         void IAddChild.AddChild(object value)
         {
             if (Content == null)
-                Content = value;
+                if (value is AvControl avControl)
+                    Content = avControl;
+                else
+                    throw new InvalidOperationException("WpfAvaloniaHost.Content only accepts value of Avalonia.Controls.Control type.");
             else
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("WpfAvaloniaHost.Content was already set.");
         }
 
         void IAddChild.AddText(string text)

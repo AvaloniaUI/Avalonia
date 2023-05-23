@@ -19,7 +19,7 @@ using MouseButton = System.Windows.Input.MouseButton;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WpfTopLevelImpl : FrameworkElement, ITopLevelImpl
+    internal class WpfTopLevelImpl : FrameworkElement, ITopLevelImpl
     {
         private HwndSource _currentHwndSource;
         private readonly HwndSourceHook _hook;
@@ -137,7 +137,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 
-        static RawInputModifiers GetModifiers(MouseEventArgs e)
+        private static RawInputModifiers GetModifiers(MouseEventArgs e)
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
@@ -161,7 +161,7 @@ namespace Avalonia.Win32.Interop.Wpf
             return rv;
         }
 
-        void MouseEvent(RawPointerEventType type, MouseEventArgs e)
+        private void MouseEvent(RawPointerEventType type, MouseEventArgs e)
             => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, _inputRoot, type,
             e.GetPosition(this).ToAvaloniaPoint(), GetModifiers(e)));
 

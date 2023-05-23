@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Win32.Interop.Wpf
 {
-    static class WpfInteropExtensions
+    internal static class WpfInteropExtensions
     {
         public static System.Windows.Point ToWpfPoint(this Point pt) => new System.Windows.Point(pt.X, pt.Y);
         public static System.Windows.Point ToWpfPoint(this PixelPoint pt) => new System.Windows.Point(pt.X, pt.Y);
