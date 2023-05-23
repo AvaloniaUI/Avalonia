@@ -70,16 +70,14 @@ namespace Avalonia.Input
             if (relativeTo == null)
                 return pt;
 
-            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot))
+            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot) && relativeTo.VisualRoot is Visual v)
             {
                 var screenPt = _rootVisual.PointToScreen(pt);
 
-                return relativeTo.PointToClient(screenPt);
+                return relativeTo.PointToClient(screenPt) * v.TransformToVisual(relativeTo) ?? default;
             }
-            else
-            {
-                return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
-            }
+
+            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
 
         /// <summary>
