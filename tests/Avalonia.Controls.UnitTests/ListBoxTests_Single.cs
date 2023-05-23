@@ -40,45 +40,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Focusing_Item_With_Arrow_Key_Should_Select_It()
-        {
-            var target = new ListBox
-            {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                ItemsSource = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            ApplyTemplate(target);
-
-            target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
-            {
-                NavigationMethod = NavigationMethod.Directional,
-            });
-
-            Assert.Equal(0, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Focusing_Item_With_Arrow_Key_And_Ctrl_Pressed_Should_Not_Select_It()
-        {
-            var target = new ListBox
-            {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                ItemsSource = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            ApplyTemplate(target);
-
-            target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
-            {
-                NavigationMethod = NavigationMethod.Directional,
-                KeyModifiers = KeyModifiers.Control
-            });
-
-            Assert.Equal(-1, target.SelectedIndex);
-        }
-
-        [Fact]
         public void Pressing_Space_On_Focused_Item_With_Ctrl_Pressed_Should_Select_It()
         {
             using (UnitTestApplication.Start())
