@@ -7,6 +7,7 @@ namespace ControlCatalog.Pages
     public partial class CheckBoxPage : UserControl
     {
         private TextBlock myTb;
+        private int count;
 
         public CheckBoxPage()
         {
@@ -25,7 +26,7 @@ namespace ControlCatalog.Pages
         {
             base.OnPointerMoved(e);
 
-            myTb.Text = e.GetPosition(this).ToString();
+            myTb.Text = e.GetPosition(this).ToString() + ", " + count++;
         }
     }
 }
