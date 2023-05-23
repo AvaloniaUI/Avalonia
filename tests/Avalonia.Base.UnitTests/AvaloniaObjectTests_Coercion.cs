@@ -138,6 +138,26 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Uncoerced_Value_Is_Passed_To_Second_Coerce()
+        {
+            var target = new Class1 { Foo = 99 };
+
+            target.MaxFoo = 20;
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 99 }, target.CoerceFooInvocations);
+            Assert.Equal(20, target.Foo);
+
+            target.MaxFoo = 100;
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 99 }, target.CoerceFooInvocations);
+            Assert.Equal(99, target.Foo);
+        }
+
+        [Fact]
         public void Coerced_Value_Can_Be_Restored_If_Limit_Changed()
         {
             var target = new Class1();
@@ -241,6 +261,25 @@ namespace Avalonia.Base.UnitTests
             target.CoerceValue(Class1.FooProperty);
 
             Assert.Equal(new[] { 11 }, target.CoerceFooInvocations);
+        }
+
+        [Fact]
+        public void Uncoerced_Default_Value_Is_Passed_To_Second_Coerce()
+        {
+            var target = new Class1();
+
+            target.MinFoo = 20;
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 11 }, target.CoerceFooInvocations);
+
+            target.MinFoo = 10;
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 11 }, target.CoerceFooInvocations);
+            Assert.Equal(11, target.Foo);
         }
 
         [Fact]
