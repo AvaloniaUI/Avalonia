@@ -117,7 +117,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.
         /// </summary>
-        void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel);
+        void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels);
 
         /// <summary>
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
