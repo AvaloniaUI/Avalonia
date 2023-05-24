@@ -196,7 +196,7 @@ namespace Avalonia.X11
             _rawEventGrouper = new RawEventGrouper(DispatchInput, platform.EventGrouperDispatchQueue);
             
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
-            _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
+            _transparencyHelper.SetTransparencyRequest(Array.Empty<WindowTransparencyLevel>());
 
             CreateIC();
 
@@ -1307,9 +1307,9 @@ namespace Avalonia.X11
 
         public IPopupPositioner? PopupPositioner { get; }
 
-        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            ////_transparencyHelper?.SetTransparencyRequest(transparencyLevel);
+            _transparencyHelper?.SetTransparencyRequest(transparencyLevels);
         }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
