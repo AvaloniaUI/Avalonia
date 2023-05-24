@@ -179,8 +179,8 @@
               </DockPanel>
               <CheckBox IsChecked="{Binding ShowHiddenFiles}" Content="Show hidden files" DockPanel.Dock="Left"/>
               <UniformGrid x:Name="Finalize" HorizontalAlignment="Right" Rows="1">
-                <Button Command="{Binding Ok}" Width="80">OK</Button>
-                <Button Command="{Binding Cancel}" Width="80">Cancel</Button>
+                <Button Command="{Binding Ok}" MinWidth="80">OK</Button>
+                <Button Command="{Binding Cancel}" MinWidth="80">Cancel</Button>
               </UniformGrid>
             </DockPanel>
           </DockPanel>

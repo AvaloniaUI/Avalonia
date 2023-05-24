@@ -93,8 +93,8 @@
                   <Setter Property="Margin" Value="4" />
                 </Style>
               </StackPanel.Styles>
-              <Button Command="{Binding Ok}" Width="60">OK</Button>
-              <Button Command="{Binding Cancel}" Width="60">Cancel</Button>
+              <Button Command="{Binding Ok}" MinWidth="60">OK</Button>
+              <Button Command="{Binding Cancel}" MinWidth="60">Cancel</Button>
             </StackPanel>
           </DockPanel>
 
