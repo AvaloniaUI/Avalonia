@@ -485,27 +485,27 @@ namespace Avalonia.Native
             _native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
-        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) 
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) 
         {
-            ////if (TransparencyLevel != transparencyLevel)
-            ////{
-            ////    if (transparencyLevel == WindowTransparencyLevel.Blur ||
-            ////        transparencyLevel == WindowTransparencyLevel.AcrylicBlur ||
-            ////        transparencyLevel == WindowTransparencyLevel.Mica)
-            ////    {
-            ////        transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-            ////    }
+            foreach (var level in transparencyLevels)
+            {
+                AvnWindowTransparencyMode? mode = null;
 
-            ////    TransparencyLevel = transparencyLevel;
+                if (level == WindowTransparencyLevel.None)
+                    mode = AvnWindowTransparencyMode.Opaque;
+                if (level == WindowTransparencyLevel.Transparent)
+                    mode = AvnWindowTransparencyMode.Transparent;
+                else if (level == WindowTransparencyLevel.AcrylicBlur)
+                    mode = AvnWindowTransparencyMode.Blur;
 
-            ////    _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
-            ////        ? AvnWindowTransparencyMode.Opaque 
-            ////        : transparencyLevel == WindowTransparencyLevel.Transparent 
-            ////            ? AvnWindowTransparencyMode.Transparent
-            ////            : AvnWindowTransparencyMode.Blur);
-
-            ////    TransparencyLevelChanged?.Invoke(TransparencyLevel);
-            ////}
+                if (mode.HasValue)
+                {
+                    _native?.SetTransparencyMode(mode.Value);
+                    TransparencyLevel = level;
+                    TransparencyLevelChanged?.Invoke(TransparencyLevel);
+                    break;
+                }
+            }
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
