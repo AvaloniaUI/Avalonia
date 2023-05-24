@@ -177,7 +177,10 @@ internal class RenderDataDrawingContext : DrawingContext
         });
     }
 
-    public override void Custom(ICustomDrawOperation custom) => Add(new RenderDataCustomNode());
+    public override void Custom(ICustomDrawOperation custom) => Add(new RenderDataCustomNode
+    {
+        Operation = custom
+    });
 
     public override void DrawGlyphRun(IBrush? foreground, GlyphRun? glyphRun)
     {
