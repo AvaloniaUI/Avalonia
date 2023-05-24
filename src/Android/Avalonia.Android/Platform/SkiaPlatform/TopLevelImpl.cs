@@ -312,17 +312,32 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                     continue;
                 }
 
-                if (level == WindowTransparencyLevel.None && OperatingSystem.IsAndroidVersionAtLeast(30))
+                if (level == WindowTransparencyLevel.None)
                 {
-                    activity.SetTranslucent(false);
+                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    {
+                        activity.SetTranslucent(false);
+                    }
+
+                    activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.White));
                 }
                 else if (level == WindowTransparencyLevel.Transparent)
                 {
-                    SetTransparencyTransparent(activity);
+                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    {
+                        activity.SetTranslucent(true);
+                        SetBlurBehind(activity, 0);
+                        activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
                 }
                 else if (level == WindowTransparencyLevel.Blur)
                 {
-                    SetTransparencyBlur(activity);
+                    if (OperatingSystem.IsAndroidVersionAtLeast(31))
+                    {
+                        activity.SetTranslucent(true);
+                        SetBlurBehind(activity, 120);
+                        activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
                 }
 
                 TransparencyLevel = level;
@@ -376,29 +391,13 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return false;
         }
 
-        private static void SetTransparencyTransparent(AvaloniaMainActivity activity)
+        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
         {
-            if (OperatingSystem.IsAndroidVersionAtLeast(30))
-            {
-                activity.SetTranslucent(true);
-                SetBlurBehindRadius(activity, 0);
-                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-            }
-        }
-
-        private static void SetTransparencyBlur(AvaloniaMainActivity activity)
-        {
-            if (OperatingSystem.IsAndroidVersionAtLeast(31))
-            {
-                activity.SetTranslucent(true);
+            if (radius == 0)
+                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+            else
                 activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
-                SetBlurBehindRadius(activity, 120);
-                activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-            }
-        }
 
-        private static void SetBlurBehindRadius(AvaloniaMainActivity activity, int radius)
-        {
             if (OperatingSystem.IsAndroidVersionAtLeast(31) && activity.Window?.Attributes is { } attr)
             {
                 attr.BlurBehindRadius = radius;
