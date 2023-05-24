@@ -226,6 +226,7 @@ enum AvnAutomationProperty
     AutomationPeer_ClassName,
     AutomationPeer_Name,
     RangeValueProvider_Value,
+    TextProvider_SelectionChanged,
 }
 
 struct AvnSize
@@ -912,6 +913,14 @@ interface IAvnAutomationPeer : IUnknown
      
      bool IsSelectionItemProvider();
      bool SelectionItemProvider_IsSelected();
+     
+     bool IsTextProvider();
+     int TextProvider_GetCaretLineNumber();
+     int TextProvider_GetLineForIndex(int index);
+     IAvnString* TextProvider_GetText(int start, int length);
+     int TextProvider_GetTextLength();
+     IAvnString* TextProvider_GetSelectedText();
+     void TextProvider_GetSelection(int* start, int* length);
      
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();

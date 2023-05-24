@@ -23,7 +23,10 @@ namespace Avalonia.Native
             _inner = inner;
             _inner.ChildrenChanged += (_, _) => Node?.ChildrenChanged();
             if (inner is WindowBaseAutomationPeer window)
-                window.FocusChanged += (_, _) => Node?.FocusChanged(); 
+                window.FocusChanged += (_, _) => Node?.FocusChanged();
+            if (inner is ITextProvider textProvider)
+                textProvider.SelectedRangesChanged += (_, _) =>
+                    Node?.PropertyChanged(AvnAutomationProperty.TextProvider_SelectionChanged);
         }
 
         ~AvnAutomationPeer() => Node?.Dispose();
@@ -48,7 +51,7 @@ namespace Avalonia.Native
         public void SetFocus() => _inner.SetFocus();
         public int ShowContextMenu() => _inner.ShowContextMenu().AsComBool();
 
-        public IAvnAutomationPeer? RootPeer
+        public IAvnAutomationPeer RootPeer
         {
             get
             {
@@ -129,7 +132,34 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => (_inner is ISelectionItemProvider).AsComBool();
         public int SelectionItemProvider_IsSelected() => ((ISelectionItemProvider)_inner).IsSelected.AsComBool();
+
+        public int IsTextProvider() => (_inner is ITextProvider).AsComBool();
         
+        public int TextProvider_GetCaretLineNumber()
+        {
+            var provider = (ITextProvider)_inner;
+            return provider.GetLineForIndex(provider.CaretIndex);
+        }
+
+        public int TextProvider_GetLineForIndex(int index) => ((ITextProvider)_inner).GetLineForIndex(index);
+        
+        public IAvnString TextProvider_GetSelectedText()
+        {
+            var provider = (ITextProvider)_inner;
+            var selection = provider.GetSelection().FirstOrDefault();
+            return provider.GetText(selection).ToAvnString();
+        }
+
+        public unsafe void TextProvider_GetSelection(int* start, int* length)
+        {
+            var selection = ((ITextProvider)_inner).GetSelection().FirstOrDefault();
+            *start = selection.Start;
+            *length = selection.Length;
+        }
+
+        public IAvnString TextProvider_GetText(int start, int length) => ((ITextProvider)_inner).GetText(new(start, length)).ToAvnString();
+        public int TextProvider_GetTextLength() => ((ITextProvider)_inner).DocumentRange.Length;
+
         public int IsToggleProvider() => (_inner is IToggleProvider).AsComBool();
         public int ToggleProvider_GetToggleState() => (int)((IToggleProvider)_inner).ToggleState;
         public void ToggleProvider_Toggle() => ((IToggleProvider)_inner).Toggle();

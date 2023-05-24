@@ -41,7 +41,15 @@ public:
     
     virtual void PropertyChanged (AvnAutomationProperty property) override
     {
-        
+        switch (property)
+        {
+            case TextProvider_SelectionChanged:
+                NSAccessibilityPostNotification(_owner, NSAccessibilitySelectedTextChangedNotification);
+                break;
+            default:
+                // Nothing to do.
+                break;
+        }
     }
     
     virtual void FocusChanged () override
@@ -163,7 +171,7 @@ private:
         case AutomationTitleBar: return NSAccessibilityGroupRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
-       // reader focus on the item instead of passing focus to child items.
+        // reader focus on the item instead of passing focus to child items.
         default: return NSAccessibilityGroupRole;
     }
 }
@@ -380,6 +388,71 @@ private:
     }
     
     return [super isAccessibilitySelectorAllowed:selector];
+}
+
+- (NSInteger)accessibilityInsertionPointLineNumber
+{
+    if (_peer->IsTextProvider())
+        return _peer->TextProvider_GetCaretLineNumber();
+    return [super accessibilityNumberOfCharacters];
+}
+
+- (NSInteger)accessibilityLineForIndex:(NSInteger)index
+{
+    if (_peer->IsTextProvider())
+        return _peer->TextProvider_GetLineForIndex((int)index);
+    return [super accessibilityLineForIndex:index];
+}
+
+- (NSInteger)accessibilityNumberOfCharacters
+{
+    if (_peer->IsTextProvider())
+        return _peer->TextProvider_GetTextLength();
+    return [super accessibilityNumberOfCharacters];
+}
+
+- (NSString *)accessibilitySelectedText
+{
+    if (_peer->IsTextProvider())
+        return GetNSStringAndRelease(_peer->TextProvider_GetSelectedText());
+    return [super accessibilitySelectedText];
+}
+
+- (NSRange)accessibilitySelectedTextRange
+{
+    if (_peer->IsTextProvider())
+    {
+        int start;
+        int length;
+        _peer->TextProvider_GetSelection(&start, &length);
+        return NSMakeRange(start, length);
+    }
+    
+    return [super accessibilitySelectedTextRange];
+}
+
+- (void)setAccessibilitySelectedTextRange:(NSRange)accessibilitySelectedTextRange
+{
+    // We need to implement this function for VoiceOver to announce the current character,
+    // even though we don't do anything and doesn't seem to ever be called ¯\_(ツ)_/¯.
+}
+
+- (NSString *)accessibilityStringForRange:(NSRange)range
+{
+    if (_peer->IsTextProvider())
+        return GetNSStringAndRelease(_peer->TextProvider_GetText((int)range.location, (int)range.length));
+    return [super accessibilitySelectedText];
+}
+
+- (NSRange)accessibilityVisibleCharacterRange
+{
+    if (_peer->IsTextProvider())
+    {
+        auto length = _peer->TextProvider_GetTextLength();
+        return NSMakeRange(0, length);
+    }
+    
+    return [super accessibilityVisibleCharacterRange];
 }
 
 - (void)raiseChildrenChanged
