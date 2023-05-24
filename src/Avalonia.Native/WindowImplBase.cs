@@ -485,27 +485,27 @@ namespace Avalonia.Native
             _native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) 
         {
-            if (TransparencyLevel != transparencyLevel)
-            {
-                if (transparencyLevel == WindowTransparencyLevel.Blur ||
-                    transparencyLevel == WindowTransparencyLevel.AcrylicBlur ||
-                    transparencyLevel == WindowTransparencyLevel.Mica)
-                {
-                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                }
+            ////if (TransparencyLevel != transparencyLevel)
+            ////{
+            ////    if (transparencyLevel == WindowTransparencyLevel.Blur ||
+            ////        transparencyLevel == WindowTransparencyLevel.AcrylicBlur ||
+            ////        transparencyLevel == WindowTransparencyLevel.Mica)
+            ////    {
+            ////        transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+            ////    }
 
-                TransparencyLevel = transparencyLevel;
+            ////    TransparencyLevel = transparencyLevel;
 
-                _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
-                    ? AvnWindowTransparencyMode.Opaque 
-                    : transparencyLevel == WindowTransparencyLevel.Transparent 
-                        ? AvnWindowTransparencyMode.Transparent
-                        : AvnWindowTransparencyMode.Blur);
+            ////    _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
+            ////        ? AvnWindowTransparencyMode.Opaque 
+            ////        : transparencyLevel == WindowTransparencyLevel.Transparent 
+            ////            ? AvnWindowTransparencyMode.Transparent
+            ////            : AvnWindowTransparencyMode.Blur);
 
-                TransparencyLevelChanged?.Invoke(TransparencyLevel);
-            }
+            ////    TransparencyLevelChanged?.Invoke(TransparencyLevel);
+            ////}
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;

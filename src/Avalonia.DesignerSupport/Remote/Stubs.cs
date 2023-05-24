@@ -179,7 +179,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {

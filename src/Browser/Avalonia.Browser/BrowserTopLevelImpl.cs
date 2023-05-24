@@ -223,13 +223,13 @@ namespace Avalonia.Browser
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            if (transparencyLevel == WindowTransparencyLevel.None
-                || transparencyLevel == WindowTransparencyLevel.Transparent)
-            {
-                TransparencyLevel = transparencyLevel;
-            }
+            ////if (transparencyLevel == WindowTransparencyLevel.None
+            ////    || transparencyLevel == WindowTransparencyLevel.Transparent)
+            ////{
+            ////    TransparencyLevel = transparencyLevel;
+            ////}
         }
 
         public Size ClientSize => _clientSize;

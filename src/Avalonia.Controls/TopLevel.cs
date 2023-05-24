@@ -523,8 +523,8 @@ namespace Avalonia.Controls
             {
                 if (PlatformImpl != null)
                 {
-                    ////PlatformImpl.SetTransparencyLevelHint(
-                    ////    change.GetNewValue<IReadOnlyList<WindowTransparencyLevel>>() ?? Array.Empty<WindowTransparencyLevel>());
+                    PlatformImpl.SetTransparencyLevelHint(
+                        change.GetNewValue<IReadOnlyList<WindowTransparencyLevel>>() ?? Array.Empty<WindowTransparencyLevel>());
                 }
             }
             else if (change.Property == ActualThemeVariantProperty)

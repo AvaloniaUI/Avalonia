@@ -192,7 +192,7 @@ public class CompositorTestServices : IDisposable
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public IPopupImpl CreatePopup() => throw new NotImplementedException();
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
         }
 
