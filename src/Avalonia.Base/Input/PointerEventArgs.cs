@@ -72,7 +72,7 @@ namespace Avalonia.Input
 
             // If the visual the user passed in, is not connected to the same visual root
             // (i.e. they called it for a control inside a popup.
-            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot))
+            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot) && relativeTo.VisualRoot is { })
             {
                 // Convert to absolute screen coordinates.
                 var screenPt = _rootVisual.PointToScreen(pt);
