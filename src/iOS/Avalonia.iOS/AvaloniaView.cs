@@ -159,8 +159,8 @@ namespace Avalonia.iOS
 
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
-            public WindowTransparencyLevel TransparencyLevel { get; }
-            
+            public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
             {
                 // TODO adjust status bar depending on full screen mode.

@@ -185,7 +185,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public bool IsClientAreaExtendedToDecorations { get; }
 

@@ -225,11 +225,6 @@ namespace Avalonia.Browser
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            ////if (transparencyLevel == WindowTransparencyLevel.None
-            ////    || transparencyLevel == WindowTransparencyLevel.Transparent)
-            ////{
-            ////    TransparencyLevel = transparencyLevel;
-            ////}
         }
 
         public Size ClientSize => _clientSize;
@@ -249,7 +244,7 @@ namespace Avalonia.Browser
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
