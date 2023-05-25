@@ -285,7 +285,7 @@ namespace Avalonia.Controls
             }
         }
 
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             // ContextMenu can be assigned to the ContextMenu property in a setter. This overrides
             // the behavior defined in Control which requires controls to be wrapped in a <template>.
@@ -360,7 +360,7 @@ namespace Avalonia.Controls
 
         private void PopupOpened(object? sender, EventArgs e)
         {
-            _previousFocus = FocusManager.Instance?.Current;
+            _previousFocus = FocusManager.GetFocusManager(this)?.GetFocusedElement();
             Focus();
 
             _popupHostChangedHandler?.Invoke(_popup!.Host);
@@ -390,7 +390,7 @@ namespace Avalonia.Controls
             }
 
             // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            FocusManager.Instance?.Focus(_previousFocus);
+            _previousFocus?.Focus();
 
             RaiseEvent(new RoutedEventArgs
             {

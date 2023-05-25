@@ -173,7 +173,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPath Build() => new CompiledBindingPath(_elements.ToArray(), _rawSource);
     }
 
-    public interface ICompiledBindingPathElement
+    internal interface ICompiledBindingPathElement
     {
     }
 

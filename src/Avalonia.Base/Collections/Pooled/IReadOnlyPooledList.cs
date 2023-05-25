@@ -11,7 +11,7 @@ namespace Avalonia.Collections.Pooled
     /// </summary>
     /// <typeparam name="T">The type of elements in the read-only pooled list.</typeparam>
 
-    public interface IReadOnlyPooledList<T> : IReadOnlyList<T>
+    internal interface IReadOnlyPooledList<T> : IReadOnlyList<T>
     {
 #pragma warning disable CS0419
         /// <summary>

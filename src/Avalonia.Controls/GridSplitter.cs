@@ -695,7 +695,8 @@ namespace Avalonia.Controls
         {
             private readonly TranslateTransform _translation;
             private readonly Decorator _decorator;
-            
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Private object")]
             public PreviewAdorner(Control? previewControl)
             {
                 // Add a decorator to perform translations.

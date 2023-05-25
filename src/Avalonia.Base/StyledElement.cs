@@ -420,12 +420,12 @@ namespace Avalonia
 
         internal StyleDiagnostics GetStyleDiagnosticsInternal()
         {
-            var styles = new List<IStyleInstance>();
+            var styles = new List<AppliedStyle>();
 
             foreach (var frame in GetValueStore().Frames)
             {
                 if (frame is IStyleInstance style)
-                    styles.Add(style);
+                    styles.Add(new(style));
             }
 
             return new StyleDiagnostics(styles);
@@ -556,7 +556,7 @@ namespace Avalonia
         /// Notifies child controls that a change has been made to resources that apply to them.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             if (_logicalChildren is object)
             {

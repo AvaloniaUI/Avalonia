@@ -17,7 +17,7 @@ namespace Avalonia.Interactivity
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
-        protected internal virtual Interactive? InteractiveParent => VisualParent as Interactive;
+        internal virtual Interactive? InteractiveParent => VisualParent as Interactive;
 
         /// <summary>
         /// Adds a handler for the specified routed event.

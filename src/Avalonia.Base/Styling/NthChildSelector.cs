@@ -12,7 +12,7 @@ namespace Avalonia.Styling
     /// <remarks>
     /// Element indices are 1-based.
     /// </remarks>
-    public class NthChildSelector : Selector
+    internal class NthChildSelector : Selector
     {
         private const string NthChildSelectorName = "nth-child";
         private const string NthLastChildSelectorName = "nth-last-child";
@@ -39,16 +39,16 @@ namespace Avalonia.Styling
 
         }
 
-        public override bool InTemplate => _previous?.InTemplate ?? false;
+        internal override bool InTemplate => _previous?.InTemplate ?? false;
 
-        public override bool IsCombinator => false;
+        internal override bool IsCombinator => false;
 
-        public override Type? TargetType => _previous?.TargetType;
+        internal override Type? TargetType => _previous?.TargetType;
 
         public int Step { get; }
         public int Offset { get; }
 
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is ILogical logical))
             {
@@ -103,8 +103,8 @@ namespace Avalonia.Styling
             return match ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        protected override Selector? MovePrevious() => _previous;
-        protected override Selector? MovePreviousOrParent() => _previous;
+        private protected override Selector? MovePrevious() => _previous;
+        private protected override Selector? MovePreviousOrParent() => _previous;
 
         public override string ToString(Style? owner)
         {

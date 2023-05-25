@@ -39,7 +39,7 @@ internal class PictureRenderTarget : IDisposable
         {
             Canvas = canvas,
             Dpi = _dpi,
-            DisableTextLcdRendering = true,
+            DisableSubpixelTextRendering = true,
             GrContext = _grContext,
             Gpu = _gpu,
         };

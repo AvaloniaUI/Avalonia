@@ -10,7 +10,6 @@ namespace Avalonia.Media
     /// of <see cref="StreamGeometryContext"/> is obtained by calling
     /// <see cref="StreamGeometry.Open"/>.
     /// </remarks>
-    /// TODO: This class is just a wrapper around IStreamGeometryContextImpl: is it needed?
     public class StreamGeometryContext : IGeometryContext
     {
         private readonly IStreamGeometryContextImpl _impl;

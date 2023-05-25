@@ -123,9 +123,11 @@
                 <ContentPresenter Grid.Column="0"
                                   Grid.ColumnSpan="1"
                                   Content="{TemplateBinding InnerLeftContent}" />
-                <ScrollViewer Grid.Column="1"
+                <ScrollViewer Name="PART_ScrollViewer"
+                              Grid.Column="1"
                               Grid.ColumnSpan="1"
                               AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                              BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">

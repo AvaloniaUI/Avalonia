@@ -7,10 +7,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
-#if !BUILDTASK
-    public
-#endif
-    class PropertyPathGrammar
+    internal class PropertyPathGrammar
     {
         private enum State
         {

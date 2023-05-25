@@ -9,15 +9,18 @@ namespace Avalonia.Input
     public interface IInputRoot : IInputElement
     {
         /// <summary>
-        /// Gets or sets the access key handler.
-        /// </summary>
-        IAccessKeyHandler AccessKeyHandler { get; }
-
-        /// <summary>
         /// Gets or sets the keyboard navigation handler.
         /// </summary>
         IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
 
+        /// <summary>
+        /// Gets focus manager of the root.
+        /// </summary>
+        /// <remarks>
+        /// Focus manager can be null only if application wasn't initialized yet.
+        /// </remarks>
+        IFocusManager? FocusManager { get; }
+        
         /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
         /// </summary>

@@ -104,7 +104,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             foreach (var l in _layers)
                 ((ILogical)l).NotifyResourcesChanged(e);

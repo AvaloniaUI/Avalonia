@@ -22,7 +22,7 @@ namespace Avalonia.Media
             set { SetValue(PointProperty, value); }
         }
 
-        protected internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(StreamGeometryContext ctx)
         {
             ctx.LineTo(Point);
         }

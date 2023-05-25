@@ -335,5 +335,34 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.True(dataPoint.Item2 == parsedColor);
             }
         }
+
+        [Fact]
+        public void Hsv_To_From_Hsl_Conversion()
+        {
+            // Note that conversion of values more representative of actual colors is not done due to rounding error
+            // It would be necessary to introduce a different equality comparison that accounts for rounding differences in values
+            // This is a result of the math in the conversion itself
+            // RGB doesn't have this problem because it uses whole numbers
+            var data = new Tuple<HsvColor, HslColor>[]
+            {
+                Tuple.Create(new HsvColor(1.0, 0.0, 0.0, 0.0), new HslColor(1.0, 0.0, 0.0, 0.0)),
+                Tuple.Create(new HsvColor(1.0, 359.0, 1.0, 1.0), new HslColor(1.0, 359.0, 1.0, 0.5)),
+
+                Tuple.Create(new HsvColor(1.0, 128.0, 0.0, 0.0), new HslColor(1.0, 128.0, 0.0, 0.0)),
+                Tuple.Create(new HsvColor(1.0, 128.0, 0.0, 1.0), new HslColor(1.0, 128.0, 0.0, 1.0)),
+                Tuple.Create(new HsvColor(1.0, 128.0, 1.0, 1.0), new HslColor(1.0, 128.0, 1.0, 0.5)),
+
+                Tuple.Create(new HsvColor(0.23, 0.5, 1.0, 1.0), new HslColor(0.23, 0.5, 1.0, 0.5)),
+            };
+
+            foreach (var dataPoint in data)
+            {
+                var convertedHsl = dataPoint.Item1.ToHsl();
+                var convertedHsv = dataPoint.Item2.ToHsv();
+
+                Assert.Equal(convertedHsv, dataPoint.Item1);
+                Assert.Equal(convertedHsl, dataPoint.Item2);
+            }
+        }
     }
 }

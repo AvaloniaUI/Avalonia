@@ -18,9 +18,9 @@ namespace Avalonia.Controls
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public class SplitButton : ContentControl, ICommandSource
     {
-        protected const string pcChecked    = ":checked";
-        protected const string pcPressed    = ":pressed";
-        protected const string pcFlyoutOpen = ":flyout-open";
+        internal const string pcChecked    = ":checked";
+        internal const string pcPressed    = ":pressed";
+        internal const string pcFlyoutOpen = ":flyout-open";
 
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.

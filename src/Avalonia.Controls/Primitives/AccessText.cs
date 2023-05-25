@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Primitives
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        protected internal override void RenderCore(DrawingContext context)
+        private protected override void RenderCore(DrawingContext context)
         {
             base.RenderCore(context);
             int underscore = Text?.IndexOf('_') ?? -1;
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _accessKeys = (e.Root as IInputRoot)?.AccessKeyHandler;
+            _accessKeys = (e.Root as TopLevel)?.AccessKeyHandler;
 
             if (_accessKeys != null && AccessKey != 0)
             {

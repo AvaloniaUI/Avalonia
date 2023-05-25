@@ -190,9 +190,11 @@ namespace Avalonia.Input.Navigation
         private static IInputElement? FocusedElement(IInputElement? e)
         {
             // Focus delegation is enabled only if keyboard focus is outside the container
-            if (e != null && !e.IsKeyboardFocusWithin)
+            if (e != null && !e.IsKeyboardFocusWithin && e is IFocusScope scope)
             {
-                var focusedElement = (FocusManager.Instance as FocusManager)?.GetFocusedElement(e);
+                var focusManager = FocusManager.GetFocusManager(e);
+
+                var focusedElement = focusManager?.GetFocusedElement(scope);
                 if (focusedElement != null)
                 {
                     if (!IsFocusScope(e))
