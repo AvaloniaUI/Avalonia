@@ -46,6 +46,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidInsetsManager _insetsManager;
         private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
+        private WindowTransparencyLevel _transparencyLevel;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -69,6 +70,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+            _transparencyLevel = WindowTransparencyLevel.None;
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
         }
@@ -275,7 +277,18 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action LostFocus { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel 
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
@@ -312,6 +325,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                     continue;
                 }
 
+                if (level == TransparencyLevel)
+                {
+                    return;
+                }
+
                 if (level == WindowTransparencyLevel.None)
                 {
                     if (OperatingSystem.IsAndroidVersionAtLeast(30))
@@ -341,8 +359,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 }
 
                 TransparencyLevel = level;
-                break;
+                return;
             }
+
+            // If we get here, we didn't find a supported level. Use the default of None.
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            {
+                activity.SetTranslucent(false);
+            }
+
+            activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.White));
         }
 
         public virtual object TryGetFeature(Type featureType)

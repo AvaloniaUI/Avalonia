@@ -59,12 +59,12 @@ namespace Avalonia.Native
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
-        private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
         private IStorageProvider _storageProvider;
         private PlatformBehaviorInhibition _platformBehaviorInhibition;
+        private WindowTransparencyLevel _transparencyLevel = WindowTransparencyLevel.None;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature)
@@ -498,17 +498,34 @@ namespace Avalonia.Native
                 else if (level == WindowTransparencyLevel.AcrylicBlur)
                     mode = AvnWindowTransparencyMode.Blur;
 
-                if (mode.HasValue)
+                if (mode.HasValue && level != TransparencyLevel)
                 {
                     _native?.SetTransparencyMode(mode.Value);
                     TransparencyLevel = level;
-                    TransparencyLevelChanged?.Invoke(TransparencyLevel);
-                    break;
+                    return;
                 }
+            }
+
+            // If we get here, we didn't find a supported level. Use the default of None.
+            if (TransparencyLevel != WindowTransparencyLevel.None)
+            {
+                _native?.SetTransparencyMode(AvnWindowTransparencyMode.Opaque);
+                TransparencyLevel = WindowTransparencyLevel.None;
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {

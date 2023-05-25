@@ -16,7 +16,19 @@ namespace Avalonia.X11
         private bool _blurAtomsAreSet;
         
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
-        public WindowTransparencyLevel CurrentLevel => _currentLevel;
+        
+        public WindowTransparencyLevel CurrentLevel
+        {
+            get => _currentLevel;
+            set
+            {
+                if (_currentLevel != value)
+                {
+                    _currentLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public TransparencyHelper(X11Info x11, IntPtr window, X11Globals globals)
         {
@@ -28,7 +40,6 @@ namespace Avalonia.X11
 
         public void SetTransparencyRequest(IReadOnlyList<WindowTransparencyLevel> levels)
         {
-            WindowTransparencyLevel? newLevel = null;
             _requestedLevels = levels;
 
             foreach (var level in levels)
@@ -37,25 +48,16 @@ namespace Avalonia.X11
                     continue;
 
                 SetBlur(level == WindowTransparencyLevel.Blur);
-                newLevel = level;
-                break;
+                CurrentLevel = level;
+                return;
             }
 
-            // If no matching transparency level was found, revert to Transparent or None depending
-            // on whether composition is enabled.
-            if (!newLevel.HasValue)
-            {
-                newLevel = _globals.IsCompositionEnabled ? 
-                    WindowTransparencyLevel.Transparent :
-                    WindowTransparencyLevel.None;
-                SetBlur(false);
-            }
-
-            if (newLevel != _currentLevel)
-            {
-                _currentLevel = newLevel.Value;
-                TransparencyLevelChanged?.Invoke(newLevel.Value);
-            }
+            // If we get here, we didn't find a supported level. Use the defualt of Transparent or
+            // None, depending on whether composition is enabled.
+            SetBlur(false);
+            CurrentLevel = _globals.IsCompositionEnabled ?
+                WindowTransparencyLevel.Transparent :
+                WindowTransparencyLevel.None;
         }
 
         private bool IsSupported(WindowTransparencyLevel level)

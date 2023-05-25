@@ -99,6 +99,7 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         private bool _ignoreWmChar;
+        private WindowTransparencyLevel _transparencyLevel;
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
@@ -183,6 +184,7 @@ namespace Avalonia.Win32
             _storageProvider = new Win32StorageProvider(this);
 
             _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
+            _transparencyLevel = _isUsingComposition ? WindowTransparencyLevel.Transparent : WindowTransparencyLevel.None;
             s_instances.Add(this);
         }
 
@@ -316,7 +318,18 @@ namespace Avalonia.Win32
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         protected IntPtr Hwnd => _hwnd;
 
@@ -355,7 +368,8 @@ namespace Avalonia.Win32
             {
                 if (!IsSupported(level, windowsVersion))
                     continue;
-
+                if (level == TransparencyLevel)
+                    return;
                 if (level == WindowTransparencyLevel.Transparent)
                     SetTransparencyTransparent(windowsVersion);
                 else if (level == WindowTransparencyLevel.Blur)
@@ -366,7 +380,19 @@ namespace Avalonia.Win32
                     SetTransparencyMica(windowsVersion);
 
                 TransparencyLevel = level;
-                break;
+                return;
+            }
+
+            // If we get here, we didn't find a supported level. Use the defualt of Transparent or
+            // None, depending on whether composition is enabled.
+            if (_isUsingComposition)
+            {
+                SetTransparencyTransparent(windowsVersion);
+                TransparencyLevel = WindowTransparencyLevel.Transparent;
+            }
+            else
+            {
+                TransparencyLevel = WindowTransparencyLevel.None;
             }
         }
 
