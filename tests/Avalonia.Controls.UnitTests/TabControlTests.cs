@@ -272,28 +272,28 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
-            dataContext = ((Control)target.ContentPart).DataContext;
+            target.ContentPart.UpdateChild();
+            dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
 
@@ -367,7 +367,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
 
             ApplyTemplate(target);
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
             Assert.Equal("bar", content.Tag);
@@ -608,7 +608,7 @@ namespace Avalonia.Controls.UnitTests
 
                 tabItem.ApplyTemplate();
 
-                ((ContentPresenter)tabItem.Presenter).UpdateChild();
+                tabItem.Presenter.UpdateChild();
             }
 
             target.ContentPart.ApplyTemplate();

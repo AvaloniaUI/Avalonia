@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Presenters
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
     [PseudoClasses(":empty")]
-    public class ContentPresenter : Control, IContentPresenter
+    public class ContentPresenter : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.

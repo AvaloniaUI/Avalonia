@@ -305,7 +305,7 @@ namespace Avalonia.Controls.UnitTests
             scrollViewer.ApplyTemplate();
 
             // Then make the ScrollViewer create its child.
-            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
+            scrollViewer.Presenter.UpdateChild();
 
             // Now the ItemsPresenter should be reigstered, so apply its template.
             target.Presenter.ApplyTemplate();

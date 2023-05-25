@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the header presenter from the control's template.
         /// </summary>
-        public IContentPresenter? HeaderPresenter
+        public ContentPresenter? HeaderPresenter
         {
             get;
             private set;
@@ -77,16 +77,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
         }
 
         /// <summary>
-        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// Called when an <see cref="ContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
         {
             if (presenter.Name == "PART_HeaderPresenter")
             {
