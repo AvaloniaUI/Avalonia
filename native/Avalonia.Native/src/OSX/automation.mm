@@ -390,6 +390,28 @@ private:
     return [super isAccessibilitySelectorAllowed:selector];
 }
 
+- (NSRect)accessibilityFrameForRange:(NSRange)range
+{
+    id topLevel = [self accessibilityTopLevelUIElement];
+
+    if (_peer->IsTextProvider() && [topLevel isKindOfClass:[AvnRootAccessibilityElement class]])
+    {
+        auto root = (AvnRootAccessibilityElement*)topLevel;
+        auto view = [root ownerView];
+        
+        if (view)
+        {
+            auto window = [view window];
+            auto bounds = ToNSRect(_peer->TextProvider_GetBounds((int)range.location, (int)range.length));
+            auto windowBounds = [view convertRect:bounds toView:nil];
+            auto screenBounds = [window convertRectToScreen:windowBounds];
+            return screenBounds;
+        }
+    }
+    
+    return [super accessibilityFrameForRange:range];
+}
+
 - (NSInteger)accessibilityInsertionPointLineNumber
 {
     if (_peer->IsTextProvider())
@@ -409,6 +431,18 @@ private:
     if (_peer->IsTextProvider())
         return _peer->TextProvider_GetTextLength();
     return [super accessibilityNumberOfCharacters];
+}
+
+- (NSRange)accessibilityRangeForLine:(NSInteger)line
+{
+    if (_peer->IsTextProvider())
+    {
+        int start;
+        int length;
+        _peer->TextProvider_GetLineRange((int)line, &start, &length);
+        return NSMakeRange(start, length);
+    }
+    return [super accessibilityRangeForLine:line];
 }
 
 - (NSString *)accessibilitySelectedText

@@ -134,6 +134,17 @@ namespace Avalonia.Native
         public int SelectionItemProvider_IsSelected() => ((ISelectionItemProvider)_inner).IsSelected.AsComBool();
 
         public int IsTextProvider() => (_inner is ITextProvider).AsComBool();
+
+        public AvnRect TextProvider_GetBounds(int start, int length)
+        {
+            var rects = ((ITextProvider)_inner).GetBounds(new(start, length));
+            var union = new Rect();
+
+            foreach (var rect in rects)
+                union = union.Union(rect);
+
+            return union.ToAvnRect();
+        }
         
         public int TextProvider_GetCaretLineNumber()
         {
@@ -142,6 +153,13 @@ namespace Avalonia.Native
         }
 
         public int TextProvider_GetLineForIndex(int index) => ((ITextProvider)_inner).GetLineForIndex(index);
+
+        public unsafe void TextProvider_GetLineRange(int lineIndex, int* start, int* length)
+        {
+            var range = ((ITextProvider)_inner).GetLineRange(lineIndex);
+            *start = range.Start;
+            *length = range.Length;
+        }
         
         public IAvnString TextProvider_GetSelectedText()
         {

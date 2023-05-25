@@ -915,8 +915,10 @@ interface IAvnAutomationPeer : IUnknown
      bool SelectionItemProvider_IsSelected();
      
      bool IsTextProvider();
+     AvnRect TextProvider_GetBounds(int start, int length);
      int TextProvider_GetCaretLineNumber();
      int TextProvider_GetLineForIndex(int index);
+     void TextProvider_GetLineRange(int lineIndex, int* start, int* length);
      IAvnString* TextProvider_GetText(int start, int length);
      int TextProvider_GetTextLength();
      IAvnString* TextProvider_GetSelectedText();
