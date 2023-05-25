@@ -198,6 +198,11 @@ private:
     {
         return [NSNumber numberWithDouble:_peer->RangeValueProvider_GetValue()];
     }
+    else if (_peer->IsTextProvider())
+    {
+        // Only return the first 100 characters as text can be long.
+        return GetNSStringAndRelease(_peer->TextProvider_GetText(0, 100));
+    }
     else if (_peer->IsToggleProvider())
     {
         switch (_peer->ToggleProvider_GetToggleState()) {
@@ -386,7 +391,7 @@ private:
     {
         return _peer->IsRangeValueProvider();
     }
-    
+
     return [super isAccessibilitySelectorAllowed:selector];
 }
 
