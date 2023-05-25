@@ -114,7 +114,13 @@ namespace Avalonia.Input.GestureRecognizers
 
         void IGestureRecognizerActionsDispatcher.Capture(IPointer pointer, IGestureRecognizer recognizer)
         {
+            var p = pointer as Pointer;
+            if (p != null && p.CapturedGestureRecognizer != null && recognizer != p.CapturedGestureRecognizer)
+                    return;
+
             pointer.Capture(_inputElement);
+            p?.CaptureGestureRecognizer(recognizer);
+
             _pointerGrabs![pointer] = recognizer;
             foreach (var r in _recognizers!)
             {
