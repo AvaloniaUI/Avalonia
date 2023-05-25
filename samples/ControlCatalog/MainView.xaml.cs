@@ -85,7 +85,8 @@ namespace ControlCatalog
                     var topLevel = (TopLevel)this.GetVisualRoot()!;
                     topLevel.TransparencyLevelHint = new[] { selected };
 
-                    if (selected != WindowTransparencyLevel.None)
+                    if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
+                        topLevel.ActualTransparencyLevel == selected)
                     {
                         var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
                         var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
