@@ -91,6 +91,9 @@ namespace Avalonia.Input
         /// </remarks>
         internal void CaptureGestureRecognizer(IGestureRecognizer? gestureRecognizer)
         {
+            if (CapturedGestureRecognizer != gestureRecognizer)
+                CapturedGestureRecognizer?.PointerCaptureLost(this);
+
             CapturedGestureRecognizer = gestureRecognizer;
         }
     }
