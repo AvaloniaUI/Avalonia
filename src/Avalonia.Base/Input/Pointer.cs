@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -52,6 +53,9 @@ namespace Avalonia.Input
 
             if (Captured is Visual v3)
                 v3.DetachedFromVisualTree += OnCaptureDetached;
+
+            if (Captured == null)
+                CaptureGestureRecognizer(null);
         }
 
         static IInputElement? GetNextCapture(Visual parent)
@@ -69,6 +73,25 @@ namespace Avalonia.Input
             
         public PointerType Type { get; }
         public bool IsPrimary { get; }
-        public void Dispose() => Capture(null);
+
+        /// <summary>
+        /// Gets the gesture recognizer that is currently capturing by the pointer, if any.
+        /// </summary>
+        internal IGestureRecognizer? CapturedGestureRecognizer { get; private set; }
+
+        public void Dispose()
+        {
+            Capture(null);
+        }
+
+        /// <summary>
+        /// Captures pointer input to the specified gesture recognizer.
+        /// </summary>
+        /// <param name="gestureRecognizer">The gesture recognizer.</param>
+        /// </remarks>
+        internal void CaptureGestureRecognizer(IGestureRecognizer? gestureRecognizer)
+        {
+            CapturedGestureRecognizer = gestureRecognizer;
+        }
     }
 }
