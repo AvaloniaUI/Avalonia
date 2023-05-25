@@ -440,6 +440,12 @@ namespace Avalonia.Controls
             return new NoneAutomationPeer(this);
         }
 
+        internal AutomationPeer? GetAutomationPeer()
+        {
+            VerifyAccess();
+            return _automationPeer;
+        }
+
         internal AutomationPeer GetOrCreateAutomationPeer()
         {
             VerifyAccess();

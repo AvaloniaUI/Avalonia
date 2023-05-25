@@ -31,10 +31,30 @@ namespace Avalonia.Automation.Peers
             return CreatePeerForElement(element);
         }
 
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> for a <see cref="Control"/>, creating it if
+        /// necessary.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The automation peer.</returns>
+        /// <remarks>
+        /// Despite the name (which comes from the analogous WPF API), this method does not create
+        /// a new peer if one already exists: instead it returns the existing peer.
+        /// </remarks>
         public static AutomationPeer CreatePeerForElement(Control element)
         {
             return element.GetOrCreateAutomationPeer();
         }
+
+        /// <summary>
+        /// Gets an existing <see cref="AutomationPeer"/> for a <see cref="Control"/>.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The automation peer if already created; otherwise null.</returns>
+        /// <remarks>
+        /// To ensure that a peer is created, use <see cref="CreatePeerForElement(Control)"/>.
+        /// </remarks>
+        public static AutomationPeer? FromElement(Control element) => element.GetAutomationPeer();
 
         protected override void BringIntoViewCore() => Owner.BringIntoView();
 
