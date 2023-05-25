@@ -467,8 +467,9 @@ private:
 
 - (void)setAccessibilitySelectedTextRange:(NSRange)accessibilitySelectedTextRange
 {
-    // We need to implement this function for VoiceOver to announce the current character,
-    // even though we don't do anything and doesn't seem to ever be called ¯\_(ツ)_/¯.
+    if (_peer->IsTextProvider())
+        _peer->TextProvider_Select((int)accessibilitySelectedTextRange.location, (int)accessibilitySelectedTextRange.length);
+    return [super setAccessibilitySelectedTextRange:accessibilitySelectedTextRange];
 }
 
 - (NSString *)accessibilityStringForRange:(NSRange)range

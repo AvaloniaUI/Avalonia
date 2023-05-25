@@ -923,6 +923,7 @@ interface IAvnAutomationPeer : IUnknown
      int TextProvider_GetTextLength();
      IAvnString* TextProvider_GetSelectedText();
      void TextProvider_GetSelection(int* start, int* length);
+     void TextProvider_Select(int start, int length);
      
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();

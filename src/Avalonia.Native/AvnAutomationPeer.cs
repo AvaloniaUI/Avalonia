@@ -177,7 +177,8 @@ namespace Avalonia.Native
 
         public IAvnString TextProvider_GetText(int start, int length) => ((ITextProvider)_inner).GetText(new(start, length)).ToAvnString();
         public int TextProvider_GetTextLength() => ((ITextProvider)_inner).DocumentRange.Length;
-
+        public void TextProvider_Select(int start, int length) => ((ITextProvider)_inner).Select(new(start, length));
+        
         public int IsToggleProvider() => (_inner is IToggleProvider).AsComBool();
         public int ToggleProvider_GetToggleState() => (int)((IToggleProvider)_inner).ToggleState;
         public void ToggleProvider_Toggle() => ((IToggleProvider)_inner).Toggle();
