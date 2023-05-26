@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <inheritdoc/>
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             if (setter is Setter s && s.Property == ContextFlyoutProperty)
             {
@@ -403,7 +403,9 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = GetValue(FocusAdornerProperty) ?? adornerLayer.DefaultFocusAdorner;
+                        var template = IsSet(FocusAdornerProperty)
+                            ? GetValue(FocusAdornerProperty)
+                            : adornerLayer.DefaultFocusAdorner;
 
                         if (template != null)
                         {
@@ -436,6 +438,12 @@ namespace Avalonia.Controls
         protected virtual AutomationPeer OnCreateAutomationPeer()
         {
             return new NoneAutomationPeer(this);
+        }
+
+        internal AutomationPeer? GetAutomationPeer()
+        {
+            VerifyAccess();
+            return _automationPeer;
         }
 
         internal AutomationPeer GetOrCreateAutomationPeer()

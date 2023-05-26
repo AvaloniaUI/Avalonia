@@ -13,7 +13,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents the sequence of dashes and gaps that will be applied by a <see cref="Pen"/>.
     /// </summary>
-    public class DashStyle : Animatable, IDashStyle, IAffectsRender
+    public class DashStyle : Animatable, IDashStyle
     {
         /// <summary>
         /// Defines the <see cref="Dashes"/> property.
@@ -44,6 +44,8 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="dashes">The dashes collection.</param>
         /// <param name="offset">The dash sequence offset.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public DashStyle(IEnumerable<double>? dashes, double offset)
         {
             Dashes = (dashes as AvaloniaList<double>) ?? new AvaloniaList<double>(dashes ?? Array.Empty<double>());
@@ -102,7 +104,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the dash style changes.
         /// </summary>
-        public event EventHandler? Invalidated;
+        internal event EventHandler? Invalidated;
 
         /// <summary>
         /// Returns an immutable clone of the <see cref="DashStyle"/>.

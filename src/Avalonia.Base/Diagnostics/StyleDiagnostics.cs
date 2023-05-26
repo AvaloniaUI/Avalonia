@@ -11,9 +11,9 @@ namespace Avalonia.Diagnostics
         /// <summary>
         /// Currently applied styles.
         /// </summary>
-        public IReadOnlyList<IStyleInstance> AppliedStyles { get; }
+        public IReadOnlyList<AppliedStyle> AppliedStyles { get; }
 
-        public StyleDiagnostics(IReadOnlyList<IStyleInstance> appliedStyles)
+        public StyleDiagnostics(IReadOnlyList<AppliedStyle> appliedStyles)
         {
             AppliedStyles = appliedStyles;
         }

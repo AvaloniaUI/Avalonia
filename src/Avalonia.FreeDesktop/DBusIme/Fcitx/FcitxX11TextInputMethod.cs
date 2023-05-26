@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -138,7 +139,10 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
         private void OnCommitString(Exception? e, string s)
         {
             if (e is not null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitString failed: {e}");
                 return;
+            }
 
             FireCommit(s);
         }

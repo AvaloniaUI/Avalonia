@@ -1,31 +1,10 @@
 using System;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    internal sealed class CustomDrawOperation : DrawOperationWithTransform
-    {
-        public ICustomDrawOperation Custom { get; }
-        public CustomDrawOperation(ICustomDrawOperation custom, Matrix transform) 
-            : base(custom.Bounds, transform)
-        {
-            Custom = custom;
-        }
-
-        public override bool HitTestTransformed(Point p) => Custom.HitTest(p);
-
-        public override void Render(IDrawingContextImpl context)
-        {
-            Custom.Render(context);
-        }
-
-        public override void Dispose() => Custom.Dispose();
-
-        public bool Equals(Matrix transform, ICustomDrawOperation custom) =>
-            Transform == transform && Custom?.Equals(custom) == true;
-    }
-
     public interface ICustomDrawOperation : IEquatable<ICustomDrawOperation>, IDisposable
     {
         /// <summary>
@@ -48,6 +27,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Renders the node to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        void Render(IDrawingContextImpl context);
+        void Render(ImmediateDrawingContext context);
     }
 }

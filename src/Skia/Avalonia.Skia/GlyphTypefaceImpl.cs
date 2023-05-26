@@ -9,61 +9,65 @@ namespace Avalonia.Skia
     internal class GlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
+        private readonly SKTypeface _typeface;
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
-            Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
+            _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
+
+            SKFont = new SKFont(typeface)
+            {
+                LinearMetrics = true,
+                Embolden = (fontSimulations & FontSimulations.Bold) != 0,
+                SkewX = (fontSimulations & FontSimulations.Oblique) != 0 ? -0.2f : 0
+            };
 
             Face = new Face(GetTable)
             {
-                UnitsPerEm = Typeface.UnitsPerEm
+                UnitsPerEm = typeface.UnitsPerEm
             };
 
             Font = new Font(Face);
 
             Font.SetFunctionsOpenType();
 
-            var metrics = Typeface.ToFont().Metrics;
-
-            const double defaultFontRenderingEmSize = 12.0;
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalAscender, out var ascent);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalDescender, out var descent);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalLineGap, out var lineGap);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughOffset);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughSize);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlineOffset);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineSize);
 
             Metrics = new FontMetrics
             {
-                DesignEmHeight = (short)Typeface.UnitsPerEm,
-                Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
-                Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
-                LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm),
-                UnderlinePosition = metrics.UnderlinePosition != null ?
-                (int)(metrics.UnderlinePosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                UnderlineThickness = metrics.UnderlineThickness != null ?
-                (int)(metrics.UnderlineThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                StrikethroughPosition = metrics.StrikeoutPosition != null ?
-                (int)(metrics.StrikeoutPosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                StrikethroughThickness = metrics.StrikeoutThickness != null ?
-                (int)(metrics.StrikeoutThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
-                0,
-                IsFixedPitch = Typeface.IsFixedPitch
+                DesignEmHeight = (short)Face.UnitsPerEm,
+                Ascent = -ascent,
+                Descent = -descent,
+                LineGap = lineGap,
+                UnderlinePosition = -underlineOffset,
+                UnderlineThickness = underlineSize,
+                StrikethroughPosition = -strikethroughOffset,
+                StrikethroughThickness = strikethroughSize,
+                IsFixedPitch = typeface.IsFixedPitch
             };
 
-            GlyphCount = Typeface.GlyphCount;
+            GlyphCount = typeface.GlyphCount;
 
             FontSimulations = fontSimulations;
 
-            Weight = (FontWeight)Typeface.FontWeight;
+            Weight = (FontWeight)typeface.FontWeight;
 
-            Style = Typeface.FontSlant.ToAvalonia();
+            Style = typeface.FontSlant.ToAvalonia();
 
-            Stretch = (FontStretch)Typeface.FontStyle.Width;
+            Stretch = (FontStretch)typeface.FontStyle.Width;
         }
 
         public Face Face { get; }
 
         public Font Font { get; }
 
-        public SKTypeface Typeface { get; }
+        public SKFont SKFont { get; }
 
         public FontSimulations FontSimulations { get; }
 
@@ -73,7 +77,7 @@ namespace Avalonia.Skia
 
         public int GlyphCount { get; }
 
-        public string FamilyName => Typeface.FamilyName;
+        public string FamilyName => _typeface.FamilyName;
 
         public FontWeight Weight { get; }
 
@@ -89,7 +93,7 @@ namespace Avalonia.Skia
             {
                 return false;
             }
-            
+
             metrics = new GlyphMetrics
             {
                 XBearing = extents.XBearing,
@@ -97,7 +101,7 @@ namespace Avalonia.Skia
                 Width = extents.Width,
                 Height = extents.Height
             };
-                
+
             return true;
         }
 
@@ -156,13 +160,13 @@ namespace Avalonia.Skia
 
         private Blob? GetTable(Face face, Tag tag)
         {
-            var size = Typeface.GetTableSize(tag);
+            var size = _typeface.GetTableSize(tag);
 
             var data = Marshal.AllocCoTaskMem(size);
 
             var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeCoTaskMem(data));
 
-            return Typeface.TryGetTableData(tag, 0, size, data) ?
+            return _typeface.TryGetTableData(tag, 0, size, data) ?
                 new Blob(data, size, MemoryMode.ReadOnly, releaseDelegate) : null;
         }
 
@@ -192,7 +196,7 @@ namespace Avalonia.Skia
 
         public bool TryGetTable(uint tag, out byte[] table)
         {
-            return Typeface.TryGetTableData(tag, out table);
+            return _typeface.TryGetTableData(tag, out table);
         }
     }
 }

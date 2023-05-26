@@ -101,10 +101,6 @@
           "type": "boolean",
           "description": "skip-tests"
         },
-        "Solution": {
-          "type": "string",
-          "description": "Path to a solution file that is automatically loaded. Default is Avalonia.sln"
-        },
         "Target": {
           "type": "array",
           "description": "List of targets to be invoked. Default is '{default_target}'",

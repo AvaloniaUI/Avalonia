@@ -676,12 +676,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Moving_Selected_Item_Should_Clear_Selection()
         {
-            var items = new AvaloniaList<Item>
-            {
-                new Item(),
-                new Item(),
-            };
-
+            using var app = Start();
+            var items = new ObservableCollection<string> { "foo", "bar" };
             var target = new SelectingItemsControl
             {
                 ItemsSource = items,
@@ -706,7 +702,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.NotNull(receivedArgs);
             Assert.Empty(receivedArgs.AddedItems);
             Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
-            Assert.All(items, x => Assert.False(x.IsSelected));
+        }
+
+        [Fact]
+        public void Moving_Selected_Container_Should_Not_Clear_Selection()
+        {
+            var items = new AvaloniaList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            var moved = items[1];
+            items.Move(1, 0);
+
+            // Because the moved container is still marked as selected on the insert part of the
+            // move, it will remain selected.
+            Assert.Same(moved, target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Equal(2, receivedArgs.Count);
+            Assert.Equal(new[] { moved }, receivedArgs[0].RemovedItems);
+            Assert.Equal(new[] { moved }, receivedArgs[1].AddedItems);
+            Assert.True(items[0].IsSelected);
+            Assert.False(items[1].IsSelected);
         }
 
         [Fact]
@@ -1201,13 +1236,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
                 Prepare(target);
-                _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
+
+                var container = target.ContainerFromIndex(1)!;
+                _helper.Down(container);
 
                 var panel = target.Presenter.Panel;
 
-                Assert.Equal(
-                    KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
-                    panel.Children[1]);
+                Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
             }
         }
 
@@ -2125,6 +2160,45 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Does_Not_Write_To_Bound_SelectedItem_When_DataContext_Changes()
+        {
+            // Issue #9438.
+            var vm1 = new SelectionViewModel();
+            vm1.Items.Add("foo");
+            vm1.Items.Add("bar");
+            vm1.SelectedItem = "bar";
+
+            var vm2 = new SelectionViewModel();
+            vm2.Items.Add("foo");
+            vm2.Items.Add("bar");
+            vm2.SelectedItem = "bar";
+
+            var target = new SelectingItemsControl
+            {
+                DataContext = vm1,
+                [!ItemsControl.ItemsSourceProperty] = new Binding("Items"),
+                [!SelectingItemsControl.SelectedItemProperty] = new Binding("SelectedItem"),
+                Template = Template(),
+            };
+
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            var selectedItemChangedRaised = 0;
+            vm2.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(vm2.SelectedItem))
+                {
+                    ++selectedItemChangedRaised;
+                }
+            };
+
+            target.DataContext = vm2;
+
+            Assert.Equal(0, selectedItemChangedRaised);
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -2203,6 +2277,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private class SelectionViewModel : NotifyingBase
         {
             private int _selectedIndex = -1;
+            private object _selectedItem;
 
             public SelectionViewModel()
             {
@@ -2220,6 +2295,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }
             }
 
+            public object SelectedItem
+            {
+                get => _selectedItem;
+                set
+                {
+                    _selectedItem = value;
+                    RaisePropertyChanged();
+                }
+            }
+
             public ObservableCollection<string> Items { get; }
             public ObservableCollection<string> SelectedItems { get; }
         }
@@ -2232,6 +2317,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
+            public new static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+                SelectingItemsControl.SelectedItemsProperty;
+
             public TestSelector()
             {
                 

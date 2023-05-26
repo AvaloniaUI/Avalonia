@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
@@ -42,18 +43,23 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         set => _impl.Transform = (_transform = value) * PostTransform;
     }
 
+    public RenderOptions RenderOptions
+    {
+        get => _impl.RenderOptions;
+        set => _impl.RenderOptions = value;
+    }
+
     public void Clear(Color color)
     {
         _impl.Clear(color);
     }
 
-    public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-        BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+    public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
     {
-        _impl.DrawBitmap(source, opacity, sourceRect, destRect, bitmapInterpolationMode);
+        _impl.DrawBitmap(source, opacity, sourceRect, destRect);
     }
 
-    public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+    public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
     {
         _impl.DrawBitmap(source, opacityMask, opacityMaskRect, destRect);
     }
@@ -78,7 +84,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.DrawEllipse(brush, pen, rect);
     }
 
-    public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+    public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
     {
         _impl.DrawGlyphRun(foreground, glyphRun);
     }
@@ -133,21 +139,6 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.PopGeometryClip();
     }
 
-    public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-    {
-        _impl.PushBitmapBlendMode(blendingMode);
-    }
-
-    public void PopBitmapBlendMode()
-    {
-        _impl.PopBitmapBlendMode();
-    }
-
-    public void Custom(ICustomDrawOperation custom)
-    {
-        _impl.Custom(custom);
-    }
-
     public object? GetFeature(Type t) => _impl.GetFeature(t);
     
 
@@ -155,6 +146,8 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     {
         if (_impl is IDrawingContextWithAcrylicLikeSupport acrylic) 
             acrylic.DrawRectangle(material, rect);
+        else
+            _impl.DrawRectangle(new ImmutableSolidColorBrush(material.FallbackColor), null, rect);
     }
 
     public void PushEffect(IEffect effect)

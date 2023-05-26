@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition.Drawing;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
@@ -82,12 +83,8 @@ namespace Avalonia.Base.UnitTests.Media
         public void Changing_Opacity_Raises_Invalidated()
         {
             var target = new SolidColorBrush();
-            var raised = false;
 
-            target.Invalidated += (s, e) => raised = true;
-            target.Opacity = 0.5;
-
-            Assert.True(raised);
+            RenderResourceTestHelper.AssertResourceInvalidation(target, () => { target.Opacity = 0.5; });
         }
     }
 }

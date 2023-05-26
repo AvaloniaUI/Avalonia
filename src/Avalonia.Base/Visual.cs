@@ -318,8 +318,10 @@ namespace Avalonia
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
         internal CompositionVisual? ChildCompositionVisual { get; set; }
-        
-        public bool HasNonUniformZIndexChildren { get; private set; }
+
+        internal RenderOptions RenderOptions { get; set; }
+
+        internal bool HasNonUniformZIndexChildren { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
@@ -329,6 +331,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's parent visual.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "GetVisualParent extension method is supposed to be used instead.")]
         internal Visual? VisualParent => _visualParent;
 
         /// <summary>
@@ -771,7 +774,7 @@ namespace Avalonia
         /// Computes the <see cref="HasMirrorTransform"/> value according to the 
         /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
         /// </summary>
-        public virtual void InvalidateMirrorTransform()
+        protected internal virtual void InvalidateMirrorTransform()
         {
             var flowDirection = this.FlowDirection;
             var parentFlowDirection = FlowDirection.LeftToRight;

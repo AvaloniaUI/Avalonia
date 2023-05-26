@@ -1,5 +1,4 @@
 using Avalonia.Platform;
-using Avalonia.Rendering;
 
 namespace Avalonia.Skia
 {
@@ -31,7 +30,6 @@ namespace Avalonia.Skia
                 GrContext = session.GrContext,
                 Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
-                DisableTextLcdRendering = true,
                 Gpu = _skiaGpu,
                 CurrentSession =  session
             };

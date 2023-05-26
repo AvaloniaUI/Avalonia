@@ -1,10 +1,5 @@
 ﻿using Avalonia.Headless.UnitTests;
-using Avalonia.Headless.XUnit;
 using Avalonia.Themes.Simple;
-using Xunit;
-
-[assembly: AvaloniaTestFramework(typeof(TestApplication))]
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Avalonia.Headless.UnitTests;
 

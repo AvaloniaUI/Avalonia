@@ -558,10 +558,10 @@ namespace Avalonia.LeakTests
                     control.ContextMenu = null;
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+                Assert.Same(window, window.FocusManager.GetFocusedElement());
 
                 // Context menu in resources means the baseline may not be 0.
                 var initialMenuCount = 0;
@@ -605,10 +605,10 @@ namespace Avalonia.LeakTests
                     contextMenu.Close();
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+                Assert.Same(window, window.FocusManager.GetFocusedElement());
 
                 // Context menu in resources means the baseline may not be 0.
                 var initialMenuCount = 0;

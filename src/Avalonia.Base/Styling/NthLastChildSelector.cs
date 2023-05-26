@@ -8,7 +8,7 @@ namespace Avalonia.Styling
     /// <remarks>
     /// Element indices are 1-based.
     /// </remarks>
-    public class NthLastChildSelector : NthChildSelector
+    internal class NthLastChildSelector : NthChildSelector
     {
         /// <summary>
         /// Creates an instance of <see cref="NthLastChildSelector"/>

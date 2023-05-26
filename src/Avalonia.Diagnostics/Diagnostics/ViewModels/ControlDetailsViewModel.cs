@@ -64,7 +64,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 // We need to place styles without activator first, such styles will be overwritten by ones with activators.
                 foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
                 {
-                    var styleSource = appliedStyle.Source;
+                    var styleSource = appliedStyle.Style;
 
                     var setters = new List<SetterViewModel>();
 
@@ -522,7 +522,6 @@ namespace Avalonia.Diagnostics.ViewModels
                 .GroupBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.ToArray());
 
-            TreePage.PropertiesFilter.FilterString = string.Empty;
 
             var view = new DataGridCollectionView(properties);
             view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));

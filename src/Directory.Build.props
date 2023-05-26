@@ -3,10 +3,5 @@
   <Import Project="..\build\SharedVersion.props" />
   <Import Project="..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
   <Import Project="..\build\NetAnalyzers.props"/>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)\Shared\ModuleInitializer.cs" >
-       <Link>Shared\_ModuleInitializer.cs</Link>
-       <Visible>false</Visible>
-    </Compile>
-  </ItemGroup>
+  <Import Project="..\build\ExternalConsumers.props"/>
 </Project>

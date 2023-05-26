@@ -56,13 +56,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Placement"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep PlacementModeProperty for backward compatibility.")]
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
             Popup.PlacementProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
@@ -155,7 +157,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead.")]
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public PlacementMode PlacementMode
         {
             get => GetValue(PlacementProperty);
@@ -283,7 +285,7 @@ namespace Avalonia.Controls
             }
         }
 
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             // ContextMenu can be assigned to the ContextMenu property in a setter. This overrides
             // the behavior defined in Control which requires controls to be wrapped in a <template>.
@@ -358,7 +360,7 @@ namespace Avalonia.Controls
 
         private void PopupOpened(object? sender, EventArgs e)
         {
-            _previousFocus = FocusManager.Instance?.Current;
+            _previousFocus = FocusManager.GetFocusManager(this)?.GetFocusedElement();
             Focus();
 
             _popupHostChangedHandler?.Invoke(_popup!.Host);
@@ -388,7 +390,7 @@ namespace Avalonia.Controls
             }
 
             // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            FocusManager.Instance?.Focus(_previousFocus);
+            _previousFocus?.Focus();
 
             RaiseEvent(new RoutedEventArgs
             {

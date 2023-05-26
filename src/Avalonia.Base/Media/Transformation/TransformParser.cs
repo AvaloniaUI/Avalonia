@@ -4,7 +4,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media.Transformation
 {
-    public static class TransformParser
+    internal static class TransformParser
     {
         private static readonly (string, TransformFunction)[] s_functionMapping =
         {

@@ -4,8 +4,6 @@ using System.Xml.Serialization;
 
 namespace Avalonia.SourceGenerator.CompositionGenerator
 {
-
-        
     [XmlRoot("NComposition")]
     public class GConfig
     {
@@ -55,7 +53,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
     {
         [XmlAttribute]
         public string Name { get; set; }
-        
+
         [XmlAttribute]
         public string Inherits { get; set; }
         
@@ -70,6 +68,12 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         
         [XmlAttribute]
         public bool CustomServerCtor { get; set; }
+        
+        [XmlAttribute]
+        public bool Internal { get; set; }
+        
+        [XmlAttribute]
+        public bool ServerOnly { get; set; }
         
         [XmlElement(typeof(GImplements), ElementName = "Implements")]
         public List<GImplements> Implements { get; set; } = new List<GImplements>();

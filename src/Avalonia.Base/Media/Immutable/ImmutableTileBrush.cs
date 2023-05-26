@@ -21,8 +21,7 @@ namespace Avalonia.Media.Immutable
         /// How the source rectangle will be stretched to fill the destination rect.
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        protected ImmutableTileBrush(
+        private protected ImmutableTileBrush(
             AlignmentX alignmentX,
             AlignmentY alignmentY,
             RelativeRect destinationRect,
@@ -31,8 +30,7 @@ namespace Avalonia.Media.Immutable
             RelativePoint transformOrigin,
             RelativeRect sourceRect,
             Stretch stretch,
-            TileMode tileMode,
-            BitmapInterpolationMode bitmapInterpolationMode)
+            TileMode tileMode)
         {
             AlignmentX = alignmentX;
             AlignmentY = alignmentY;
@@ -43,7 +41,6 @@ namespace Avalonia.Media.Immutable
             SourceRect = sourceRect;
             Stretch = stretch;
             TileMode = tileMode;
-            BitmapInterpolationMode = bitmapInterpolationMode;
         }
 
         /// <summary>
@@ -60,8 +57,7 @@ namespace Avalonia.Media.Immutable
                   source.TransformOrigin,
                   source.SourceRect,
                   source.Stretch,
-                  source.TileMode,
-                  source.BitmapInterpolationMode)
+                  source.TileMode)
         {
         }
 
@@ -95,8 +91,5 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public TileMode TileMode { get; }
-
-        /// <inheritdoc/>
-        public BitmapInterpolationMode BitmapInterpolationMode { get; }
     }
 }

@@ -263,7 +263,7 @@ namespace Avalonia.IntegrationTests.Appium
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     maximizeButton = extendClientArea ?
-                        secondaryWindow.FindElementByXPath("//Button[@Name='Maximise']") :
+                        secondaryWindow.FindElementByXPath("//Button[@Name='Maximize']") :
                         secondaryWindow.FindElementByXPath("//TitleBar/Button[2]");
                 }
                 else

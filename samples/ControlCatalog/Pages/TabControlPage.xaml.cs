@@ -49,7 +49,7 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
-        private static IBitmap LoadBitmap(string uri)
+        private static Bitmap LoadBitmap(string uri)
         {
             var assets = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
             return new Bitmap(assets.Open(new Uri(uri)));

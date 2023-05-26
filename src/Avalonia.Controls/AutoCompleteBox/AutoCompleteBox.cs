@@ -762,7 +762,7 @@ namespace Avalonia.Controls
         /// otherwise, false.</returns>
         protected bool HasFocus()
         {
-            Visual? focused = FocusManager.Instance?.Current as Visual;
+            Visual? focused = FocusManager.GetFocusManager(this)?.GetFocusedElement() as Visual;
 
             while (focused != null)
             {
@@ -2042,6 +2042,8 @@ namespace Avalonia.Controls
             /// <summary>
             /// Identifies the Value dependency property.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1002:AvaloniaProperty objects should not be owned by a generic type",
+                Justification = "This property is not supposed to be used from XAML.")]
             public static readonly StyledProperty<T> ValueProperty =
                 AvaloniaProperty.Register<BindingEvaluator<T>, T>(nameof(Value));
 

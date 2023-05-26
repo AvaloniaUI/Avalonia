@@ -50,7 +50,7 @@ namespace Avalonia.ReactiveUI
     /// ReactiveUI routing documentation website</see> for more info.
     /// </para>
     /// </remarks>
-    public class RoutedViewHost : TransitioningContentControl, IActivatableView, IEnableLogger, IStyleable
+    public class RoutedViewHost : TransitioningContentControl, IActivatableView, IEnableLogger
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.
@@ -126,7 +126,7 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public IViewLocator? ViewLocator { get; set; }
 
-        Type IStyleable.StyleKey => typeof(TransitioningContentControl);
+        protected override Type StyleKeyOverride => typeof(TransitioningContentControl);
         
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.

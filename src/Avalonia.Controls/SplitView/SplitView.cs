@@ -22,15 +22,15 @@ namespace Avalonia.Controls
     [PseudoClasses(pcLightDismiss)]
     public class SplitView : ContentControl
     {
-        protected const string pcOpen = ":open";
-        protected const string pcClosed = ":closed";
-        protected const string pcCompactOverlay = ":compactoverlay";
-        protected const string pcCompactInline = ":compactinline";
-        protected const string pcOverlay = ":overlay";
-        protected const string pcInline = ":inline";
-        protected const string pcLeft = ":left";
-        protected const string pcRight = ":right";
-        protected const string pcLightDismiss = ":lightDismiss";
+        private const string pcOpen = ":open";
+        private const string pcClosed = ":closed";
+        private const string pcCompactOverlay = ":compactoverlay";
+        private const string pcCompactInline = ":compactinline";
+        private const string pcOverlay = ":overlay";
+        private const string pcInline = ":inline";
+        private const string pcLeft = ":left";
+        private const string pcRight = ":right";
+        private const string pcLightDismiss = ":lightDismiss";
 
         /// <summary>
         /// Defines the <see cref="CompactPaneLength"/> property
@@ -217,8 +217,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets whether WinUI equivalent LightDismissOverlayMode is enabled
         /// <para>When enabled, and the pane is open in Overlay or CompactOverlay mode,
-        /// the contents of the splitview are darkened to visually separate the open pane
-        /// and the rest of the SplitView</para>
+        /// the contents of the <see cref="SplitView"/> are darkened to visually separate the open pane
+        /// and the rest of the <see cref="SplitView"/>.</para>
         /// </summary>
         public bool UseLightDismissOverlayMode
         {
@@ -227,7 +227,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the TemplateSettings for the SplitView
+        /// Gets or sets the TemplateSettings for the <see cref="SplitView"/>.
         /// </summary>
         public SplitViewTemplateSettings TemplateSettings
         {
@@ -279,7 +279,7 @@ namespace Avalonia.Controls
             remove => RemoveHandler(PaneOpeningEvent, value);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             var result = base.RegisterContentPresenter(presenter);
 

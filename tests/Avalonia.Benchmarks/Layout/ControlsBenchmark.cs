@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
@@ -15,11 +16,7 @@ namespace Avalonia.Benchmarks.Layout
 
         public ControlsBenchmark()
         {
-            _app = UnitTestApplication.Start(
-                TestServices.StyledWindow.With(
-                    renderInterface: new NullRenderingPlatform(),
-                    dispatcherImpl: new NullThreadingPlatform(),
-                    standardCursorFactory: new NullCursorFactory()));
+            _app = UnitTestApplication.Start(TestServices.StyledWindow);
 
             _root = new TestRoot(true, null)
             {

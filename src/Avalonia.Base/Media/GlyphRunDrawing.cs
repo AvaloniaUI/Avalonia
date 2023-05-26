@@ -20,7 +20,7 @@
             set => SetValue(GlyphRunProperty, value);
         }
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             if (GlyphRun == null)
             {

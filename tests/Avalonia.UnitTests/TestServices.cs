@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using System.Reflection;
 using Avalonia.Animation;
+using Avalonia.Headless;
 using Avalonia.Threading;
 
 namespace Avalonia.UnitTests
@@ -20,27 +21,27 @@ namespace Avalonia.UnitTests
     public class TestServices
     {
         public static readonly TestServices StyledWindow = new TestServices(
-            assetLoader: new AssetLoader(),
+            assetLoader: new StandardAssetLoader(),
             platform: new StandardRuntimePlatform(),
-            renderInterface: new MockPlatformRenderInterface(),
-            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: Mock.Of<IDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true),
-            fontManagerImpl: new MockFontManagerImpl(),
-            textShaperImpl: new MockTextShaperImpl(),
+            dispatcherImpl: new NullDispatcherImpl(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub(),
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
-            assetLoader: new AssetLoader(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
-            textShaperImpl: new MockTextShaperImpl());
+            assetLoader: new StandardAssetLoader(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockThreadingInterface = new TestServices(
-            dispatcherImpl: Mock.Of<IDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true));
+            dispatcherImpl: new NullDispatcherImpl());
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
             windowingPlatform: new MockWindowingPlatform());
@@ -50,14 +51,14 @@ namespace Avalonia.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            assetLoader: new AssetLoader(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
-            textShaperImpl: new MockTextShaperImpl());
+            assetLoader: new StandardAssetLoader(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub());
 
         public static readonly TestServices TextServices = new TestServices(
-            assetLoader: new AssetLoader(),
-            renderInterface: new MockPlatformRenderInterface(),
+            assetLoader: new StandardAssetLoader(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HarfBuzzFontManagerImpl(),
             textShaperImpl: new HarfBuzzTextShaperImpl());
         
@@ -157,13 +158,6 @@ namespace Avalonia.UnitTests
         private static IStyle CreateSimpleTheme()
         {
             return new SimpleTheme();
-        }
-
-        private static IPlatformRenderInterface CreateRenderInterfaceMock()
-        {
-            return Mock.Of<IPlatformRenderInterface>(x =>
-                x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
-                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
 }

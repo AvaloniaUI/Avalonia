@@ -1,5 +1,5 @@
 using System;
-
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Presenters
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
     [PseudoClasses(":empty")]
-    public class ContentPresenter : Control, IContentPresenter
+    public class ContentPresenter : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -442,7 +442,7 @@ namespace Avalonia.Controls.Presenters
             var contentTemplate = ContentTemplate;
             var oldChild = Child;
             var newChild = CreateChild(content, oldChild, contentTemplate);
-            var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
+            var logicalChildren = GetEffectiveLogicalChildren();
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
@@ -487,6 +487,9 @@ namespace Avalonia.Controls.Presenters
             _createdChild = true;
 
         }
+
+        private IAvaloniaList<ILogical> GetEffectiveLogicalChildren()
+            => Host?.LogicalChildren ?? LogicalChildren;
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -535,17 +538,6 @@ namespace Avalonia.Controls.Presenters
         {
             _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);
-        }
-
-        /// <summary>
-        /// Creates the child control.
-        /// </summary>
-        /// <returns>The child control or null.</returns>
-        protected virtual Control? CreateChild()
-        {
-            var content = Content;
-            var oldChild = Child;
-            return CreateChild(content, oldChild, ContentTemplate);
         }
 
         private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)
@@ -692,7 +684,7 @@ namespace Avalonia.Controls.Presenters
             else if (Child != null)
             {
                 VisualChildren.Remove(Child);
-                LogicalChildren.Remove(Child);
+                GetEffectiveLogicalChildren().Remove(Child);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _recyclingDataTemplate = null;

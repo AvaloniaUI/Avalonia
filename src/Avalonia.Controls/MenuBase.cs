@@ -133,8 +133,22 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
-        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new MenuItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            if (item is MenuItem or Separator)
+            {
+                recycleKey = null;
+                return false;
+            }
+
+            recycleKey = DefaultRecycleKey;
+            return true;
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)

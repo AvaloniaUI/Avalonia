@@ -93,7 +93,7 @@
           </KeyFrame>
         </Animation>
       </Style.Animations>
-      <Setter Property="Width" Value="{Binding TemplateProperties.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+      <Setter Property="Width" Value="{Binding TemplateSettings.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
     </Style>
     <Style Selector="^:vertical:indeterminate /template/ Border#PART_IndeterminateIndicator">
       <Style.Animations>
@@ -108,7 +108,7 @@
           </KeyFrame>
         </Animation>
       </Style.Animations>
-      <Setter Property="Height" Value="{Binding TemplateProperties.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+      <Setter Property="Height" Value="{Binding TemplateSettings.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

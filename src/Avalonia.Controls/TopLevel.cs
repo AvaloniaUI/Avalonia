@@ -83,11 +83,11 @@ namespace Avalonia.Controls
 
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<TopLevel>();
         
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<TopLevel>();
 
         /// <summary>
         /// Defines the SystemBarColor attached property.
@@ -286,6 +286,11 @@ namespace Avalonia.Controls
         public event EventHandler? Closed;
 
         /// <summary>
+        /// Gets or sets a method called when the TopLevel's scaling changes.
+        /// </summary>
+        public event EventHandler? ScalingChanged;
+        
+        /// <summary>
         /// Gets or sets the client size of the window.
         /// </summary>
         public Size ClientSize
@@ -370,7 +375,16 @@ namespace Avalonia.Controls
         /// Gets the platform-specific window implementation.
         /// </summary>
         public ITopLevelImpl? PlatformImpl { get; private set; }
-        
+
+        /// <summary>
+        /// Trys to get the platform handle for the TopLevel-derived control.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
+        /// could not be retrieved.
+        /// </returns>
+        public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
+
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
@@ -381,7 +395,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler!;
+        internal IAccessKeyHandler AccessKeyHandler => _accessKeyHandler!;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
@@ -428,7 +442,7 @@ namespace Avalonia.Controls
         double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
 
         /// <inheritdoc/>
-        double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
+        public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
         
@@ -446,6 +460,9 @@ namespace Avalonia.Controls
         /// Gets the platform's clipboard implementation
         /// </summary>
         public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
+
+        /// <inheritdoc />
+        public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
@@ -515,13 +532,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
+        private protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="rect">The dirty area.</param>
-        protected virtual void HandlePaint(Rect rect)
+        private void HandlePaint(Rect rect)
         {
             Renderer.Paint(rect);
         }
@@ -529,7 +546,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
-        protected virtual void HandleClosed()
+        private protected virtual void HandleClosed()
         {
             Renderer.SceneInvalidated -= SceneInvalidated;
             // We need to wait for the renderer to complete any in-flight operations
@@ -587,9 +604,10 @@ namespace Avalonia.Controls
         /// <see cref="ITopLevelImpl.ScalingChanged"/>.
         /// </summary>
         /// <param name="scaling">The window scaling.</param>
-        protected virtual void HandleScalingChanged(double scaling)
+        private void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
+            ScalingChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
@@ -606,7 +624,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected virtual void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
+        private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
         {
             if(_transparencyFallbackBorder != null)
             {
@@ -719,7 +737,7 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (Visual?)FocusManager.Instance?.Current;
+            var focused = (Visual?)FocusManager?.GetFocusedElement();
             if (focused == null)
                 return;
             while (focused.VisualParent != null)
@@ -731,7 +749,7 @@ namespace Avalonia.Controls
 
         protected override bool BypassFlowDirectionPolicies => true;
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }

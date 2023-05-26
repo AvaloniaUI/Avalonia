@@ -20,7 +20,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     // This is needed for debugging purposes so we could see inspect the associated visual from debugger
     public readonly Visual UiVisual;
 #endif
-    private CompositionDrawList? _renderCommands;
+    private ServerCompositionRenderData? _renderCommands;
     
     public ServerCompositionDrawListVisual(ServerCompositor compositor, Visual v) : base(compositor)
     {
@@ -29,32 +29,14 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
 #endif
     }
 
-    Rect? _contentBounds;
-
-    public override Rect OwnContentBounds
-    {
-        get
-        {
-            if (_contentBounds == null)
-            {
-                var rect = default(Rect);
-                if(_renderCommands!=null)
-                    foreach (var cmd in _renderCommands)
-                        rect = rect.Union(cmd.Item.Bounds);
-                _contentBounds = rect;
-            }
-
-            return _contentBounds.Value;
-        }
-    }
+    public override Rect OwnContentBounds => _renderCommands?.Bounds ?? default;
 
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         if (reader.Read<byte>() == 1)
         {
             _renderCommands?.Dispose();
-            _renderCommands = reader.ReadObject<CompositionDrawList?>();
-            _contentBounds = null;
+            _renderCommands = reader.ReadObject<ServerCompositionRenderData?>();
         }
         base.DeserializeChangesCore(reader, committedAt);
     }

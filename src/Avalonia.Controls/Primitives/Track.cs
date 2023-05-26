@@ -45,6 +45,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IgnoreThumbDrag));
 
+        private Vector _lastDrag;
+
         static Track()
         {
             ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
@@ -245,7 +247,10 @@ namespace Avalonia.Controls.Primitives
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.Y + (thumbLength * 0.5);
@@ -277,12 +282,16 @@ namespace Avalonia.Controls.Primitives
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.X + (thumbLength * 0.5);
             }
 
+            _lastDrag = default;
             return arrangeSize;
         }
 
@@ -294,6 +303,12 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
+        }
+
+        private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
+        {
+            var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
+            return _lastDrag - thumbDelta;
         }
 
         private static void CoerceLength(ref double componentLength, double trackLength)
@@ -440,10 +455,17 @@ namespace Avalonia.Controls.Primitives
             if (IgnoreThumbDrag)
                 return;
 
+            var value = Value;
+            var delta = ValueFromDistance(e.Vector.X, e.Vector.Y);
+            var factor = e.Vector / delta;
+
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(
-                Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
+                value + delta,
                 Minimum,
                 Maximum));
+            
+            // Record the part of the drag that actually had effect as the last drag delta.
+            _lastDrag = (Value - value) * factor;
         }
 
         private void ShowChildren(bool visible)

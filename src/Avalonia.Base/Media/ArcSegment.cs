@@ -95,7 +95,7 @@ namespace Avalonia.Media
             set { SetValue(SweepDirectionProperty, value); }
         }
 
-        protected internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(StreamGeometryContext ctx)
         {
             ctx.ArcTo(Point, Size, RotationAngle, IsLargeArc, SweepDirection);
         }

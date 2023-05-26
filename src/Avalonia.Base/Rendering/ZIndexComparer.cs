@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
-    public class ZIndexComparer : IComparer<Visual>
+    internal class ZIndexComparer : IComparer<Visual>
     {
         public static readonly ZIndexComparer Instance = new ZIndexComparer();
         public static readonly Comparison<Visual> ComparisonInstance = Instance.Compare;

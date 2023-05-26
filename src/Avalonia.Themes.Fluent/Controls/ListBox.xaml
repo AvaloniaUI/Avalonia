@@ -36,7 +36,8 @@
                         VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                         IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                         IsScrollInertiaEnabled="{TemplateBinding (ScrollViewer.IsScrollInertiaEnabled)}"
-                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
+                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                        BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             AreVerticalSnapPointsRegular="{TemplateBinding AreVerticalSnapPointsRegular}"
                             AreHorizontalSnapPointsRegular="{TemplateBinding AreHorizontalSnapPointsRegular}"

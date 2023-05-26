@@ -63,68 +63,75 @@ public class RefAssemblyGenerator
         });
     }
 
+    static bool HasPrivateApi(IEnumerable<CustomAttribute> attrs) => attrs.Any(a =>
+        a.AttributeType.FullName == "Avalonia.Metadata.PrivateApiAttribute");
+    
     static void ProcessType(TypeDefinition type, MethodReference obsoleteCtor)
     {
         foreach (var nested in type.NestedTypes)
             ProcessType(nested, obsoleteCtor);
-        if (type.IsInterface)
+
+        var hideMethods = (type.IsInterface && type.Name.EndsWith("Impl"))
+                          || HasPrivateApi(type.CustomAttributes);
+
+        var injectMethod = hideMethods
+                           || type.CustomAttributes.Any(a =>
+                               a.AttributeType.FullName == "Avalonia.Metadata.NotClientImplementableAttribute");
+
+
+        
+        if (injectMethod)
         {
-            var hideMethods = type.Name.EndsWith("Impl")
-                              || (type.HasCustomAttributes && type.CustomAttributes.Any(a =>
-                                  a.AttributeType.FullName == "Avalonia.Metadata.PrivateApiAttribute"));
-
-            var injectMethod = hideMethods
-                               || type.CustomAttributes.Any(a =>
-                                   a.AttributeType.FullName == "Avalonia.Metadata.NotClientImplementableAttribute");
-            
-            if (hideMethods)
-            {
-                foreach (var m in type.Methods)
-                {
-                    var dflags = MethodAttributes.Public | MethodAttributes.Family | MethodAttributes.FamORAssem |
-                                 MethodAttributes.FamANDAssem | MethodAttributes.Assembly;
-                    m.Attributes = ((m.Attributes | dflags) ^ dflags) | MethodAttributes.Assembly;
-                }
-            }
-            
-            if(injectMethod)
-            {
-                type.Methods.Add(new MethodDefinition("NotClientImplementable",
-                    MethodAttributes.Assembly
-                    | MethodAttributes.Abstract
-                    | MethodAttributes.NewSlot
-                    | MethodAttributes.HideBySig, type.Module.TypeSystem.Void));
-            }
-
-            var forceUnstable = type.CustomAttributes.Any(a =>
-                a.AttributeType.FullName == "Avalonia.Metadata.UnstableAttribute");
-            
-            foreach (var m in type.Methods)
-                MarkAsUnstable(m, obsoleteCtor, forceUnstable);
-            foreach (var m in type.Properties)
-                MarkAsUnstable(m, obsoleteCtor, forceUnstable);
-            foreach (var m in type.Events)
-                MarkAsUnstable(m, obsoleteCtor, forceUnstable);
-            
+            type.Methods.Add(new MethodDefinition(
+                "(This interface or abstract class is -not- implementable by user code !)",
+                MethodAttributes.Assembly
+                | MethodAttributes.Abstract
+                | MethodAttributes.NewSlot
+                | MethodAttributes.HideBySig, type.Module.TypeSystem.Void));
         }
+
+        var forceUnstable = type.CustomAttributes.FirstOrDefault(a =>
+            a.AttributeType.FullName == "Avalonia.Metadata.UnstableAttribute");
+
+        foreach (var m in type.Methods)
+        {
+            if (hideMethods || HasPrivateApi(m.CustomAttributes))
+            {
+                var dflags = MethodAttributes.Public | MethodAttributes.Family | MethodAttributes.FamORAssem |
+                             MethodAttributes.FamANDAssem | MethodAttributes.Assembly;
+                m.Attributes = ((m.Attributes | dflags) ^ dflags) | MethodAttributes.Assembly;
+            }
+            MarkAsUnstable(m, obsoleteCtor, forceUnstable);
+        }
+
+        foreach (var m in type.Properties)
+            MarkAsUnstable(m, obsoleteCtor, forceUnstable);
+        foreach (var m in type.Events)
+            MarkAsUnstable(m, obsoleteCtor, forceUnstable);
     }
 
-    static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, bool force)
+    static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, ICustomAttribute unstableAttribute)
     {
-        if (!force && (
-            def.HasCustomAttributes == false
-            || def.CustomAttributes.All(a => a.AttributeType.FullName != "Avalonia.Metadata.UnstableAttribute")))
-            return;
-
         if (def.CustomAttributes.Any(a => a.AttributeType.FullName == "System.ObsoleteAttribute"))
             return;
 
+        unstableAttribute = def.CustomAttributes.FirstOrDefault(a =>
+            a.AttributeType.FullName == "Avalonia.Metadata.UnstableAttribute") ?? unstableAttribute;
+
+        if (unstableAttribute is null)
+            return;
+
+        var message = unstableAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
+        if (string.IsNullOrEmpty(message))
+        {
+            message = "This is a part of unstable API and can be changed in minor releases. Consider replacing it with alternatives or reach out developers on GitHub.";
+        }
+        
         def.CustomAttributes.Add(new CustomAttribute(obsoleteCtor)
         {
             ConstructorArguments =
             {
-                new CustomAttributeArgument(obsoleteCtor.Module.TypeSystem.String,
-                    "This is a part of unstable API and can be changed in minor releases. You have been warned")
+                new CustomAttributeArgument(obsoleteCtor.Module.TypeSystem.String, message)
             }
         });
     }

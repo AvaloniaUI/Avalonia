@@ -4,7 +4,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering
 {
-    public class ManagedDeferredRendererLock : DisposableLock, IDeferredRendererLock
+    internal class ManagedDeferredRendererLock : DisposableLock, IDeferredRendererLock
     {
        
     }

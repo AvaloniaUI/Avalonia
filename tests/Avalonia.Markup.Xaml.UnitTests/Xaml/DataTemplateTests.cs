@@ -32,7 +32,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Null(target.Presenter.Child);
             }
@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.IsType<Canvas>(target.Presenter.Child);
             }
@@ -117,7 +117,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
                 
                 Assert.Equal(typeof(string), template.DataType);
                 Assert.IsType<Canvas>(target.Presenter.Child);
@@ -145,7 +145,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.IsType<Canvas>(target.Presenter.Child);
             }
@@ -175,7 +175,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 var dataTemplate = (CustomDataTemplate)target.ContentTemplate;
                 Assert.Null(dataTemplate.FancyDataType);
@@ -217,11 +217,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 var canvas = (Canvas)target.Presenter.Child;
                 Assert.Same(viewModel, target.DataContext);
-                Assert.Same(viewModel.Child, ((Control)target.Presenter).DataContext);
+                Assert.Same(viewModel.Child, target.Presenter.DataContext);
                 Assert.Same(viewModel.Child.Child, canvas.DataContext);
             }
         }

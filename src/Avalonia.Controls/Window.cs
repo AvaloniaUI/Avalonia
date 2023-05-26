@@ -65,7 +65,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IFocusScope, ILayoutRoot
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
@@ -420,7 +420,7 @@ namespace Avalonia.Controls
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey => typeof(Window);
+        protected override Type StyleKeyOverride => typeof(Window);
 
         /// <summary>
         /// Fired before a window is closed.
@@ -535,7 +535,7 @@ namespace Avalonia.Controls
             return true;
         }
 
-        protected virtual void HandleWindowStateChanged(WindowState state)
+        private void HandleWindowStateChanged(WindowState state)
         {
             WindowState = state;
 
@@ -713,7 +713,7 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner?.AddChild(this, false);
 
-                SetWindowStartupLocation(owner?.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, false);
                 Renderer.Start();
@@ -789,7 +789,7 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner.AddChild(this, true);
 
-                SetWindowStartupLocation(owner.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, true);
 
@@ -870,7 +870,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(IWindowBaseImpl? owner = null)
+        private void SetWindowStartupLocation(Window? owner = null)
         {
             var startupLocation = WindowStartupLocation;
 
@@ -979,7 +979,7 @@ namespace Avalonia.Controls
             return ClientSize;
         }
 
-        protected sealed override void HandleClosed()
+        private protected sealed override void HandleClosed()
         {
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 

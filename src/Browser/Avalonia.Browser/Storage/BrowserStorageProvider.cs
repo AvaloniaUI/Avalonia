@@ -6,10 +6,9 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Browser.Storage;
-
-internal record FilePickerAcceptType(string Description, IReadOnlyDictionary<string, IReadOnlyList<string>> Accept);
 
 internal class BrowserStorageProvider : IStorageProvider
 {
@@ -17,9 +16,12 @@ internal class BrowserStorageProvider : IStorageProvider
     internal const string NoPermissionsMessage = "Permissions denied";
 
     public bool CanOpen => true;
-    public bool CanSave => StorageHelper.HasNativeFilePicker();
+    public bool CanSave => true;
     public bool CanPickFolder => true;
 
+    private bool PreferPolyfill =>
+        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferFileDialogPolyfill ?? false;
+    
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
         await AvaloniaModule.ImportStorage();
@@ -29,7 +31,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll);
+            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll, PreferPolyfill);
             if (items is null)
             {
                 return Array.Empty<IStorageFile>();
@@ -63,7 +65,9 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll);
+            var suggestedName =
+                StorageProviderHelpers.NameWithExtension(options.SuggestedFileName, options.DefaultExtension, null);
+            var item = await StorageHelper.SaveFileDialog(startIn, suggestedName, types, excludeAll, PreferPolyfill);
             return item is not null ? new JSStorageFile(item) : null;
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -89,7 +93,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
         try
         {
-            var item = await StorageHelper.SelectFolderDialog(startIn);
+            var item = await StorageHelper.SelectFolderDialog(startIn, PreferPolyfill);
             return item is not null ? new[] { new JSStorageFolder(item) } : Array.Empty<IStorageFolder>();
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -315,13 +319,14 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
             }
 
             var kind = storageItem.GetPropertyAsString("kind");
+            var item = StorageHelper.StorageItemFromHandle(storageItem)!;
             switch (kind)
             {
                 case "directory":
-                    yield return new JSStorageFolder(storageItem);
+                    yield return new JSStorageFolder(item);
                     break;
                 case "file":
-                    yield return new JSStorageFile(storageItem);
+                    yield return new JSStorageFile(item);
                     break;
             }
         }

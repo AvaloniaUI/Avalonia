@@ -44,7 +44,7 @@ namespace Avalonia.X11
             using(var cpuContext = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateBackendContext(null))
             using(var rt = cpuContext.CreateRenderTarget(new[]{this}))
             using (var ctx = rt.CreateDrawingContext())
-                ctx.DrawBitmap(bitmap.PlatformImpl, 1, new Rect(bitmap.Size),
+                ctx.DrawBitmap(bitmap.PlatformImpl.Item, 1, new Rect(bitmap.Size),
                     new Rect(0, 0, _width, _height));
             Data = new UIntPtr[_width * _height + 2];
             Data[0] = new UIntPtr((uint)_width);

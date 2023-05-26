@@ -1,4 +1,8 @@
+using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
@@ -31,11 +35,6 @@ namespace Avalonia.Media
                 nameof(Radius),
                 0.5);
         
-        static RadialGradientBrush()
-        {
-            AffectsRender<RadialGradientBrush>(CenterProperty, GradientOriginProperty, RadiusProperty);
-        }
-
         /// <summary>
         /// Gets or sets the start point for the gradient.
         /// </summary>
@@ -70,6 +69,15 @@ namespace Avalonia.Media
         public override IImmutableBrush ToImmutable()
         {
             return new ImmutableRadialGradientBrush(this);
+        }
+
+        internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
+            static c => new ServerCompositionSimpleRadialGradientBrush(c.Server);
+
+        private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            base.SerializeChanges(c, writer);
+            ServerCompositionSimpleRadialGradientBrush.SerializeAllChanges(writer, Center, GradientOrigin, Radius);
         }
     }
 }

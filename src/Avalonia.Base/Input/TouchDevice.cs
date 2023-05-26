@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 #pragma warning disable CS0618
 
@@ -14,6 +15,7 @@ namespace Avalonia.Input
     /// <remarks>
     /// This class is supposed to be used on per-toplevel basis, don't use a shared one
     /// </remarks>
+    [PrivateApi]
     public class TouchDevice : IPointerDevice, IDisposable
     {
         private readonly Dictionary<long, Pointer> _pointers = new Dictionary<long, Pointer>();

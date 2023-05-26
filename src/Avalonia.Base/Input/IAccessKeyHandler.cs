@@ -5,8 +5,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Defines the interface for classes that handle access keys for a window.
     /// </summary>
-    [Unstable]
-    public interface IAccessKeyHandler
+    internal interface IAccessKeyHandler
     {
         /// <summary>
         /// Gets or sets the window's main menu.

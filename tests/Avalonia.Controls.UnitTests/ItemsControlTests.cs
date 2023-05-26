@@ -9,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -575,8 +576,9 @@ namespace Avalonia.Controls.UnitTests
             });
 
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
+            var focusManager = ((IInputRoot)target.VisualRoot!).FocusManager;
 
-            Assert.Equal(panel.Children[1], FocusManager.Instance!.Current);
+            Assert.Equal(panel.Children[1], focusManager?.GetFocusedElement());
         }
 
         [Fact]
@@ -600,8 +602,9 @@ namespace Avalonia.Controls.UnitTests
             });
 
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
+            var focusManager = ((IInputRoot)target.VisualRoot!).FocusManager;
 
-            Assert.Equal(panel.Children[2], FocusManager.Instance!.Current);
+            Assert.Equal(panel.Children[2], focusManager?.GetFocusedElement());
         }
 
         [Fact]
@@ -828,6 +831,19 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
         }
 
+        [Fact]
+        public void ItemIsOwnContainer_Content_Should_Not_Be_Cleared_When_Removed()
+        {
+            // Issue #11128.
+            using var app = Start();
+            var item = new ContentPresenter { Content = "foo" };
+            var target = CreateTarget(items: new[] { item });
+
+            target.Items.RemoveAt(0);
+
+            Assert.Equal("foo", item.Content);
+        }
+
         private static ItemsControl CreateTarget(
             object? dataContext = null,
             IBinding? displayMemberBinding = null,
@@ -1009,32 +1025,32 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
-        private class ItemsControlWithContainer : ItemsControl, IStyleable
+        private class ItemsControlWithContainer : ItemsControl
         {
-            Type IStyleable.StyleKey => typeof(ItemsControl);
+            protected override Type StyleKeyOverride => typeof(ItemsControl);
 
-            protected internal override Control CreateContainerForItemOverride()
+            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
                 return new ContainerControl();
             }
 
-            protected internal override bool IsItemItsOwnContainerOverride(Control item)
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
             {
-                return item is ContainerControl;
+                return NeedsContainer<ContainerControl>(item, out recycleKey);
             }
         }
 
-        private class ContainerControl : ContentControl, IStyleable
+        private class ContainerControl : ContentControl
         {
-            Type IStyleable.StyleKey => typeof(ContentControl);
+            protected override Type StyleKeyOverride => typeof(ContentControl);
         }
 
         private record Item(string Caption, string? Value = null);

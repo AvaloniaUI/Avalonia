@@ -1,10 +1,11 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Avalonia.Headless.XUnit;
 
-internal class AvaloniaTestFramework<TAppBuilderEntry> : XunitTestFramework
+internal class AvaloniaTestFramework : XunitTestFramework
 {
     public AvaloniaTestFramework(IMessageSink messageSink) : base(messageSink)
     {
@@ -26,8 +27,7 @@ internal class AvaloniaTestFramework<TAppBuilderEntry> : XunitTestFramework
             IMessageSink executionMessageSink,
             ITestFrameworkExecutionOptions executionOptions)
         {
-            executionOptions.SetValue("xunit.execution.DisableParallelization", false);
-            using (var assemblyRunner = new AvaloniaTestRunner<TAppBuilderEntry>(
+            using (var assemblyRunner = new AvaloniaTestAssemblyRunner(
                        TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink,
                        executionOptions)) await assemblyRunner.RunAsync();
         }

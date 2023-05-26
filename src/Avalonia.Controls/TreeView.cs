@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
@@ -292,6 +293,23 @@ namespace Avalonia.Controls
             return TreeItemFromContainer(this, container);
         }
 
+        private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsViewCollectionChanged(sender, e);
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var i in e.OldItems!)
+                        SelectedItems.Remove(i);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    SelectedItems.Clear();
+                    break;
+            }
+        }
+
         /// <summary>
         /// Subscribes to the <see cref="SelectedItems"/> CollectionChanged event, if any.
         /// </summary>
@@ -485,8 +503,15 @@ namespace Avalonia.Controls
             return (false, null);
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new TreeViewItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<TreeViewItem>(item, out recycleKey);
+        }
 
         protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
         {
@@ -535,8 +560,7 @@ namespace Avalonia.Controls
 
                     if (next != null)
                     {
-                        FocusManager.Instance?.Focus(next, NavigationMethod.Directional);
-                        e.Handled = true;
+                        e.Handled = next.Focus(NavigationMethod.Directional);
                     }
                 }
                 else
@@ -715,7 +739,7 @@ namespace Avalonia.Controls
             }
         }
 
-        [Obsolete]
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         private protected override ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TreeItemContainerGenerator(this);

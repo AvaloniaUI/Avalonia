@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
@@ -1252,6 +1253,25 @@ namespace Avalonia.Base.UnitTests.Input
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Same(expected, result);
+        }
+
+        [Fact]
+        public void Focuses_First_Child_From_No_Focus()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var button = new Button();
+            var root = new TestRoot(button);
+            var target = new KeyboardNavigationHandler();
+
+            target.SetOwner(root);
+
+            root.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Tab,
+            });
+
+            Assert.True(button.IsFocused);
         }
     }
 }

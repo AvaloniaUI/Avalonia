@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Xml.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
@@ -528,13 +529,6 @@ namespace Avalonia.Controls.Primitives
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);
-
-            if (Presenter?.Panel is InputElement panel && 
-                KeyboardNavigation.GetTabOnceActiveElement(panel) == element)
-            {
-                KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-            }
-
             element.ClearValue(IsSelectedProperty);
         }
 
@@ -625,38 +619,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-
-            if (!e.Handled)
-            {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-
-                if (keymap is null)
-                    return;
-
-                bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-
-                if (ItemCount > 0 &&
-                    Match(keymap.SelectAll) &&
-                    SelectionMode.HasAllFlags(SelectionMode.Multiple))
-                {
-                    Selection.SelectAll();
-                    e.Handled = true;
-                }
-                else if (e.Key == Key.Space || e.Key == Key.Enter)
-                {
-                    UpdateSelectionFromEventSource(
-                          e.Source,
-                          true,
-                          e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                          e.KeyModifiers.HasFlag(KeyModifiers.Control));
-                }
-            }
-        }
-
-        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -735,11 +697,16 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="direction">The direction to move.</param>
         /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
+        /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <returns>True if the selection was moved; otherwise false.</returns>
-        protected bool MoveSelection(NavigationDirection direction, bool wrap)
+        protected bool MoveSelection(
+            NavigationDirection direction,
+            bool wrap = false,
+            bool rangeModifier = false)
         {
-            var from = SelectedIndex != -1 ? ContainerFromIndex(SelectedIndex) : null;
-            return MoveSelection(from, direction, wrap);
+            var focused = FocusManager.GetFocusManager(this)?.GetFocusedElement();
+            var from = GetContainerFromEventSource(focused) ?? ContainerFromIndex(Selection.AnchorIndex);
+            return MoveSelection(from, direction, wrap, rangeModifier);
         }
 
         /// <summary>
@@ -748,17 +715,37 @@ namespace Avalonia.Controls.Primitives
         /// <param name="from">The container which serves as a starting point for the movement.</param>
         /// <param name="direction">The direction to move.</param>
         /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
+        /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <returns>True if the selection was moved; otherwise false.</returns>
-        protected bool MoveSelection(Control? from, NavigationDirection direction, bool wrap)
+        protected bool MoveSelection(
+            Control? from,
+            NavigationDirection direction,
+            bool wrap = false,
+            bool rangeModifier = false)
         {
-            if (Presenter?.Panel is INavigableContainer container &&
-                GetNextControl(container, direction, from, wrap) is Control next)
+            if (Presenter?.Panel is not INavigableContainer container)
+                return false;
+
+            if (from is null)
+            {
+                direction = direction switch
+                {
+                    NavigationDirection.Down => NavigationDirection.First,
+                    NavigationDirection.Up => NavigationDirection.Last,
+                    NavigationDirection.Right => NavigationDirection.First,
+                    NavigationDirection.Left => NavigationDirection.Last,
+                    _ => direction,
+                };
+            }
+
+            if (GetNextControl(container, direction, from, wrap) is Control next)
             {
                 var index = IndexFromContainer(next);
 
                 if (index != -1)
                 {
-                    SelectedIndex = index;
+                    UpdateSelection(index, true, rangeModifier);
+                    next.Focus();
                     return true;
                 }
             }
@@ -833,12 +820,6 @@ namespace Avalonia.Controls.Primitives
                 using var operation = Selection.BatchUpdate();
                 Selection.Clear();
                 Selection.Select(index);
-            }
-
-            if (Presenter?.Panel is { } panel)
-            {
-                var container = ContainerFromIndex(index);
-                KeyboardNavigation.SetTabOnceActiveElement(panel, container);
             }
         }
 
@@ -928,6 +909,7 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
+                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(Selection.AnchorIndex));
                 AutoScrollToSelectedItemIfNecessary();
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)

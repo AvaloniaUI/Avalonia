@@ -298,7 +298,9 @@ namespace Avalonia.Controls.UnitTests
             using var app = App();
             var (target, scroll, itemsControl) = CreateTarget();
 
-            target.GetRealizedElements().First()!.Focus();
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
+            focused.Focus();
             Assert.True(target.GetRealizedElements().First()!.IsKeyboardFocusWithin);
 
             scroll.Offset = new Vector(0, 200);
@@ -314,6 +316,7 @@ namespace Avalonia.Controls.UnitTests
             var (target, scroll, itemsControl) = CreateTarget();
 
             var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
 
@@ -331,6 +334,7 @@ namespace Avalonia.Controls.UnitTests
             var (target, scroll, itemsControl) = CreateTarget();
 
             var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
 
@@ -350,12 +354,14 @@ namespace Avalonia.Controls.UnitTests
             var (target, scroll, itemsControl) = CreateTarget();
 
             var originalFocused = target.GetRealizedElements().First()!;
+            originalFocused.Focusable = true;
             originalFocused.Focus();
 
             scroll.Offset = new Vector(0, 500);
             Layout(target);
 
             var newFocused = target.GetRealizedElements().First()!;
+            newFocused.Focusable = true;
             newFocused.Focus();
 
             Assert.False(originalFocused.IsVisible);
@@ -635,6 +641,94 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Does_Not_Throw_When_Estimating_Viewport_With_Ancestor_Margin()
+        {
+            // Issue #11272
+            using var app = App();
+            var (_, _, itemsControl) = CreateUnrootedTarget<ItemsControl>();
+            var container = new Decorator { Margin = new Thickness(100) };
+            var root = new TestRoot(true, container);
+            
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            container.Child = itemsControl;
+
+            root.LayoutManager.ExecuteLayoutPass();
+        }
+
+        [Fact]
+        public void Supports_Null_Recycle_Key_When_Scrolling()
+        {
+            using var app = App();
+            var (_, scroll, itemsControl) = CreateUnrootedTarget<NonRecyclingItemsControl>();
+            var root = CreateRoot(itemsControl);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var firstItem = itemsControl.ContainerFromIndex(0)!;
+            scroll.Offset = new(0, 20);
+
+            Layout(itemsControl);
+
+            Assert.Null(firstItem.Parent);
+            Assert.Null(firstItem.VisualParent);
+            Assert.DoesNotContain(firstItem, itemsControl.ItemsPanelRoot!.Children);
+        }
+
+        [Fact]
+        public void Supports_Null_Recycle_Key_When_Clearing_Items()
+        {
+            using var app = App();
+            var (_, _, itemsControl) = CreateUnrootedTarget<NonRecyclingItemsControl>();
+            var root = CreateRoot(itemsControl);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var firstItem = itemsControl.ContainerFromIndex(0)!;
+            itemsControl.ItemsSource = null;
+
+            Layout(itemsControl);
+
+            Assert.Null(firstItem.Parent);
+            Assert.Null(firstItem.VisualParent);
+            Assert.Empty(itemsControl.ItemsPanelRoot!.Children);            
+        }
+
+        [Fact]
+        public void ScrollIntoView_On_Effectively_Invisible_Panel_Does_Not_Create_Ghost_Elements()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+            var (target, _, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items);
+            var container = new Decorator { Margin = new Thickness(100), Child = itemsControl };
+            var root = new TestRoot(true, container);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Clear the items and do a layout to recycle all elements.
+            itemsControl.ItemsSource = null;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Should have no realized elements and 3 unrealized elements.
+            Assert.Equal(0, target.GetRealizedElements().Count);
+            Assert.Equal(3, target.Children.Count);
+
+            // Make the panel effectively invisible and set items.
+            container.IsVisible = false;
+            itemsControl.ItemsSource = items;
+
+            // Try to scroll into view while effectively invisible.
+            target.ScrollIntoView(0);
+
+            // Make the panel visible and layout.
+            container.IsVisible = true;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Should have 3 realized elements and no unrealized elements.
+            Assert.Equal(3, target.GetRealizedElements().Count);
+            Assert.Equal(3, target.Children.Count);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -682,6 +776,19 @@ namespace Avalonia.Controls.UnitTests
             Optional<IDataTemplate?> itemTemplate = default,
             IEnumerable<Style>? styles = null)
         {
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(items, itemTemplate);
+            var root = CreateRoot(itemsControl, styles);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            return (target, scroll, itemsControl);
+        }
+
+        private static (VirtualizingStackPanel, ScrollViewer, T) CreateUnrootedTarget<T>(
+            IEnumerable<object>? items = null,
+            Optional<IDataTemplate?> itemTemplate = default)
+                where T : ItemsControl, new()
+        {
             var target = new VirtualizingStackPanel();
 
             items ??= new ObservableCollection<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
@@ -691,14 +798,14 @@ namespace Avalonia.Controls.UnitTests
                 [~ItemsPresenter.ItemsPanelProperty] = new TemplateBinding(ItemsPresenter.ItemsPanelProperty),
             };
 
-            var scroll = new ScrollViewer 
-            { 
+            var scroll = new ScrollViewer
+            {
                 Name = "PART_ScrollViewer",
                 Content = presenter,
                 Template = ScrollViewerTemplate(),
             };
 
-            var itemsControl = new ItemsControl
+            var itemsControl = new T
             {
                 ItemsSource = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, ns) => scroll.RegisterInNameScope(ns)),
@@ -706,15 +813,18 @@ namespace Avalonia.Controls.UnitTests
                 ItemTemplate = itemTemplate.GetValueOrDefault(DefaultItemTemplate()),
             };
 
-            var root = new TestRoot(true, itemsControl);
+            return (target, scroll, itemsControl);
+        }
+
+        private static TestRoot CreateRoot(Control? child, IEnumerable<Style>? styles = null)
+        {
+            var root = new TestRoot(true, child);
             root.ClientSize = new(100, 100);
 
             if (styles is not null)
                 root.Styles.AddRange(styles);
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
-
-            return (target, scroll, itemsControl);
+            return root;
         }
 
         private static IDataTemplate DefaultItemTemplate()
@@ -768,6 +878,17 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        }
+
+        private class NonRecyclingItemsControl : ItemsControl
+        {
+            protected override Type StyleKeyOverride => typeof(ItemsControl);
+
+            protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+            {
+                recycleKey = null;
+                return true;
+            }
         }
     }
 }

@@ -28,6 +28,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="PolyLineSegment"/> class.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
+            Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public PolyLineSegment()
         {
             Points = new Points();
@@ -42,7 +44,7 @@ namespace Avalonia.Media
             Points = new Points(points);
         }
 
-        protected internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(StreamGeometryContext ctx)
         {
             var points = Points;
             if (points.Count > 0)

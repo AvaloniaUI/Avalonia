@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
         /// </summary>
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
-            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>();
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
         
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;
@@ -250,14 +250,14 @@ namespace Avalonia.Controls.Primitives
                 // Try and focus content inside Flyout
                 if (Popup.Child.Focusable)
                 {
-                    FocusManager.Instance?.Focus(Popup.Child);
+                    Popup.Child.Focus();
                 }
                 else
                 {
                     var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
                     if (nextFocus != null)
                     {
-                        FocusManager.Instance?.Focus(nextFocus);
+                        nextFocus.Focus();
                     }
                 }
             }

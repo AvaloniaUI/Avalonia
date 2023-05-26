@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Reflection;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -489,7 +490,7 @@ namespace Avalonia.Controls
         {
             DataGridFillerColumn fillerColumn = ColumnsInternal.FillerColumn;
             double totalColumnsWidth = ColumnsInternal.VisibleEdgedColumnsWidth;
-            if (finalWidth > totalColumnsWidth)
+            if (finalWidth - totalColumnsWidth > LayoutHelper.LayoutEpsilon)
             {
                 fillerColumn.FillerWidth = finalWidth - totalColumnsWidth;
             }
@@ -971,6 +972,12 @@ namespace Avalonia.Controls
                         {
                             cx += _negHorizontalOffset;
                             _horizontalOffset -= _negHorizontalOffset;
+                            if (_horizontalOffset < LayoutHelper.LayoutEpsilon)
+                            {
+                                // Snap to zero to avoid trying to partially scroll in first scrolled off column below
+                                _horizontalOffset = 0;
+                            }
+
                             _negHorizontalOffset = 0;
                         }
                         else
@@ -979,6 +986,11 @@ namespace Avalonia.Controls
                             _negHorizontalOffset -= displayWidth - cx;
                             cx = displayWidth;
                         }
+
+                        // Make sure the HorizontalAdjustment is not greater than the new HorizontalOffset
+                        // since it would cause an assertion failure in DataGridCellsPresenter.ShouldDisplayCell
+                        // called by DataGridCellsPresenter.MeasureOverride.
+                        HorizontalAdjustment = Math.Min(HorizontalAdjustment, _horizontalOffset);
                     }
                     // second try to scroll entire columns
                     if (cx < displayWidth && _horizontalOffset > 0)

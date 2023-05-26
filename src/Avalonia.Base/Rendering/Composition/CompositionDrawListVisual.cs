@@ -1,9 +1,6 @@
-using System;
-using System.Numerics;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
-using Avalonia.VisualTree;
 
 // Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
@@ -21,12 +18,12 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
     public Visual Visual { get; }
 
     private bool _drawListChanged;
-    private CompositionDrawList? _drawList;
+    private CompositionRenderData? _drawList;
     
     /// <summary>
     /// The list of drawing commands
     /// </summary>
-    public CompositionDrawList? DrawList
+    public CompositionRenderData? DrawList
     {
         get => _drawList;
         set
@@ -43,7 +40,7 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         writer.Write((byte)(_drawListChanged ? 1 : 0));
         if (_drawListChanged)
         {
-            writer.WriteObject(DrawList?.Clone());
+            writer.WriteObject(DrawList?.Server);
             _drawListChanged = false;
         }
         base.SerializeChangesCore(writer);
@@ -64,9 +61,6 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
             return custom.HitTest(pt);
         }
 
-        foreach (var op in DrawList!)
-            if (op.Item.HitTest(pt))
-                return true;
-        return false;
+        return DrawList?.HitTest(pt) ?? false;
     }
 }
