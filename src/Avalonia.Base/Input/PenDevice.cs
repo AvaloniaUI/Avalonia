@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -107,8 +108,8 @@ namespace Avalonia.Input
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
         {
-            IInputElement source;
-            if (pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+            IInputElement? source;
+            if (pointer.CapturedGestureRecognizer is IGestureRecognizer gestureRecognizer)
             {
                 source = gestureRecognizer.Target ?? hitTest;
 
@@ -140,8 +141,8 @@ namespace Avalonia.Input
             IInputElement root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest)
         {
-            IInputElement source;
-            if (pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+            IInputElement? source;
+            if (pointer.CapturedGestureRecognizer is IGestureRecognizer gestureRecognizer)
             {
                 source = gestureRecognizer.Target ?? hitTest;
 
