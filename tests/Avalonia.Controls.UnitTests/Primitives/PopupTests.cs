@@ -19,6 +19,7 @@ using Avalonia.Rendering;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -1076,30 +1077,98 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void GetPosition_On_Control_In_Popup_Called_From_Parent_Should_Return_Valid_Coordinates()
+        {
+            // This test only applies when using a PopupRoot host and not an overlay popup.
+            if (UsePopupHost)
+                return;
+
+            using (CreateServices())
+            {
+                var popupContent = new Border() { Height = 100, Width = 100, Background = Brushes.Red };
+                var popup = new Popup {  Child = popupContent, HorizontalOffset = 40, VerticalOffset = 40, Placement = PlacementMode.AnchorAndGravity,
+                    PlacementAnchor = PopupAnchor.TopLeft, PlacementGravity = PopupGravity.BottomRight};
+                var popupParent = new Border { Child = popup };
+                var root = PreparedWindow(popupParent);
+
+                popup.Open();
+
+                // Verify that the popup is positioned at 40,40 as descibed by the Horizontal/
+                // VerticalOffset: 10,10 becomes 50,50 in screen coordinates.
+                Assert.Equal(new PixelPoint(50, 50), popupContent.PointToScreen(new Point(10, 10)));
+
+                // The popup parent is positioned at 0,0 in screen coordinates so client and
+                // screen coordinates are the same.
+                Assert.Equal(new PixelPoint(10, 10), popupParent.PointToScreen(new Point(10, 10)));
+
+                // The event will be raised on the popup content at 50,50 (90,90 in screen coordinates)
+                var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+                var ev = new PointerPressedEventArgs(
+                    popupContent,
+                    pointer,
+                    popupContent.VisualRoot as PopupRoot,
+                    new Point(50 , 50),
+                    0,
+                    new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                    KeyModifiers.None);
+
+                var contentRaised = 0;
+                var parentRaised = 0;
+
+                // The event is raised on the popup content in popup coordinates.
+                popupContent.AddHandler(Button.PointerPressedEvent, (s, e) =>
+                {
+                    ++contentRaised;
+                    Assert.Equal(new Point(50, 50), e.GetPosition(popupContent));
+                });
+
+                // The event is raised on the parent in root coordinates (which in this case are 
+                // the same as screen coordinates).
+                popupParent.AddHandler(Button.PointerPressedEvent, (s, e) =>
+                {
+                    ++parentRaised;
+                    Assert.Equal(new Point(90, 90), e.GetPosition(popupParent));
+                });
+
+                popupContent.RaiseEvent(ev);
+
+                Assert.Equal(1, contentRaised);
+                Assert.Equal(1, parentRaised);
+            }
+        }
+
+        private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
+        {
+            impl ??= popupParent.PlatformImpl.CreatePopup();
+
+            var result = new PopupRoot(popupParent, impl)
+            {
+                Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
+                    new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = parent[!PopupRoot.ContentProperty],
+                    }.RegisterInNameScope(scope)),
+            };
+
+            result.ApplyTemplate();
+
+            return result;
+        }
+
         private IDisposable CreateServices()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
-                new MockWindowingPlatform(null,
-                    x =>
-                    {
-                        if(UsePopupHost)
-                            return null;
-                        return MockWindowingPlatform.CreatePopupMock(x).Object;
-                    })));
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: CreateMockWindowingPlatform()));
         }
 
         private IDisposable CreateServicesWithFocus()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
-                new MockWindowingPlatform(null,
-                    x =>
-                    {
-                        if (UsePopupHost)
-                            return null;
-                        return MockWindowingPlatform.CreatePopupMock(x).Object;
-                    }), 
-                    focusManager: new FocusManager(),
-                    keyboardDevice: () => new KeyboardDevice()));
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: CreateMockWindowingPlatform(),
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice()));
         }
 
        
@@ -1114,6 +1183,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 0,
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
                 KeyModifiers.None);
+        }
+
+        private MockWindowingPlatform CreateMockWindowingPlatform()
+        {
+            return new MockWindowingPlatform(() =>
+            {
+                var mock = MockWindowingPlatform.CreateWindowMock();
+                
+                mock.Setup(x => x.CreatePopup()).Returns(() =>
+                {
+                    if (UsePopupHost)
+                        return null;
+                    return MockWindowingPlatform.CreatePopupMock(mock.Object).Object;
+                });
+
+                return mock.Object;
+            }, null);
         }
 
         private static Window PreparedWindow(object content = null)
