@@ -39,7 +39,6 @@ namespace Avalonia.Browser
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
-            TransparencyLevel = WindowTransparencyLevel.None;
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
