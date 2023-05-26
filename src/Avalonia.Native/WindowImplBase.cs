@@ -59,6 +59,7 @@ namespace Avalonia.Native
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
+        private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
