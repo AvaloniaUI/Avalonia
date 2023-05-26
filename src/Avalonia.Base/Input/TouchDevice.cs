@@ -117,15 +117,15 @@ namespace Avalonia.Input
                 _pointers.Remove(args.RawPointerId);
                 using (pointer)
                 {
-                    pointer.Capture(null);
-                    pointer.CaptureGestureRecognizer(null);
+                    pointer?.Capture(null);
+                    pointer?.CaptureGestureRecognizer(null);
                 }
             }
 
             if (args.Type == RawPointerEventType.TouchUpdate)
             {
                 target = gestureTarget ?? target;
-                var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, (Visual)args.Root,
+                var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer!, (Visual)args.Root,
                     args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
                     keyModifier, args.IntermediatePoints);

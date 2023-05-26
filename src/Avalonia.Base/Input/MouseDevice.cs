@@ -7,7 +7,7 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-
+using Avalonia.Input.GestureRecognizers;
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
@@ -163,8 +163,8 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
-            IInputElement source;
-            if (_pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+            IInputElement? source;
+            if (_pointer.CapturedGestureRecognizer is IGestureRecognizer gestureRecognizer)
             {
                 source = gestureRecognizer.Target ?? hitTest;
 
@@ -199,8 +199,8 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
-            IInputElement source;
-            if (_pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+            IInputElement? source;
+            if (_pointer.CapturedGestureRecognizer is IGestureRecognizer gestureRecognizer)
             {
                 source = gestureRecognizer.Target ?? hitTest;
 
