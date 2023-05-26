@@ -319,13 +319,14 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
             }
 
             var kind = storageItem.GetPropertyAsString("kind");
+            var item = StorageHelper.StorageItemFromHandle(storageItem)!;
             switch (kind)
             {
                 case "directory":
-                    yield return new JSStorageFolder(storageItem);
+                    yield return new JSStorageFolder(item);
                     break;
                 case "file":
-                    yield return new JSStorageFile(storageItem);
+                    yield return new JSStorageFile(item);
                     break;
             }
         }
