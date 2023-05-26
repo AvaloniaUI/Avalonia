@@ -2,6 +2,7 @@ namespace Avalonia.Input.GestureRecognizers
 {
     public interface IGestureRecognizer
     {
+        IInputElement? Target { get; }
         void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions);
         void PointerPressed(PointerPressedEventArgs e);
         void PointerReleased(PointerReleasedEventArgs e);

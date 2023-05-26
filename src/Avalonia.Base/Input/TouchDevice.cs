@@ -49,6 +49,7 @@ namespace Avalonia.Input
             }
 
             var target = pointer.Captured ?? args.Root;
+            var gestureTarget = pointer.CapturedGestureRecognizer?.Target;
             var updateKind = args.Type.ToUpdateKind();
             var keyModifier = args.InputModifiers.ToKeyModifiers();
 
@@ -88,10 +89,19 @@ namespace Avalonia.Input
                 _pointers.Remove(args.RawPointerId);
                 using (pointer)
                 {
-                    target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
-                        (Visual)args.Root, args.Position, ev.Timestamp,
-                        new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind),
-                        keyModifier, MouseButton.Left));
+                    target = gestureTarget ?? target;
+                    var e = new PointerReleasedEventArgs(target, pointer,
+                            (Visual)args.Root, args.Position, ev.Timestamp,
+                            new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind),
+                            keyModifier, MouseButton.Left);
+                    if (gestureTarget != null)
+                    {
+                        pointer?.CapturedGestureRecognizer?.PointerReleased(e);
+                    }
+                    else
+                    {
+                        target.RaiseEvent(e);
+                    }
                 }
             }
 
@@ -99,15 +109,28 @@ namespace Avalonia.Input
             {
                 _pointers.Remove(args.RawPointerId);
                 using (pointer)
+                {
                     pointer.Capture(null);
+                    pointer.CaptureGestureRecognizer(null);
+                }
             }
 
             if (args.Type == RawPointerEventType.TouchUpdate)
             {
-                target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, (Visual)args.Root,
+                target = gestureTarget ?? target;
+                var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, (Visual)args.Root,
                     args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
-                    keyModifier, args.IntermediatePoints));
+                    keyModifier, args.IntermediatePoints);
+
+                if (gestureTarget != null)
+                {
+                    pointer?.CapturedGestureRecognizer?.PointerMoved(e);
+                }
+                else
+                {
+                    target.RaiseEvent(e);
+                }
             }
         }
 

@@ -54,7 +54,7 @@ namespace Avalonia.Input
             if (Captured is Visual v3)
                 v3.DetachedFromVisualTree += OnCaptureDetached;
 
-            if (Captured == null)
+            if (Captured != null)
                 CaptureGestureRecognizer(null);
         }
 
@@ -93,6 +93,9 @@ namespace Avalonia.Input
         {
             if (CapturedGestureRecognizer != gestureRecognizer)
                 CapturedGestureRecognizer?.PointerCaptureLost(this);
+
+            if (gestureRecognizer != null)
+                Capture(null);
 
             CapturedGestureRecognizer = gestureRecognizer;
         }

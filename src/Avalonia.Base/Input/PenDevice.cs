@@ -107,7 +107,22 @@ namespace Avalonia.Input
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
         {
-            var source = pointer.Captured ?? hitTest;
+            IInputElement source;
+            if (pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+            {
+                source = gestureRecognizer.Target ?? hitTest;
+
+                if (source != null)
+                {
+                    var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, pointer, (Visual)root,
+                        p, timestamp, properties, inputModifiers, intermediatePoints);
+                    gestureRecognizer.PointerMoved(e);
+
+                    return e.Handled;
+                }
+            }
+
+            source = pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
@@ -125,7 +140,22 @@ namespace Avalonia.Input
             IInputElement root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest)
         {
-            var source = pointer.Captured ?? hitTest;
+            IInputElement source;
+            if (pointer.CapturedGestureRecognizer is { } gestureRecognizer)
+            {
+                source = gestureRecognizer.Target ?? hitTest;
+
+                if (source != null)
+                {
+                    var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
+                    _lastMouseDownButton);
+                    gestureRecognizer.PointerReleased(e);
+
+                    return e.Handled;
+                }
+            }
+
+            source = pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
@@ -134,6 +164,7 @@ namespace Avalonia.Input
 
                 source.RaiseEvent(e);
                 pointer.Capture(null);
+                pointer.CaptureGestureRecognizer(null);
                 _lastMouseDownButton = default;
                 return e.Handled;
             }

@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
-    public class PullGestureRecognizer : StyledElement, IGestureRecognizer
+    public class PullGestureRecognizer : AvaloniaObject, IGestureRecognizer
     {
         internal static int MinPullDetectionSize = 50;
 
@@ -26,6 +25,8 @@ namespace Avalonia.Input
             get => GetValue(PullDirectionProperty);
             set => SetValue(PullDirectionProperty, value);
         }
+
+        public IInputElement? Target => _target;
 
         public PullGestureRecognizer(PullDirection pullDirection)
         {
@@ -54,6 +55,7 @@ namespace Avalonia.Input
             {
                 var currentPosition = e.GetPosition(visual);
                 _actions!.Capture(e.Pointer, this);
+                e.PreventGestureRecognition();
 
                 Vector delta = default;
                 switch (PullDirection)
