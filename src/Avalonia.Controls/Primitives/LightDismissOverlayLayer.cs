@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (InputPassThroughElement is Visual v)
             {
-                var hit = ((Visual?)VisualRoot)?.GetVisualAt(point, x => x != this);
+                var hit = ((IInputElement?)VisualRoot)?.InputHitTest(point, x => x != this) as Visual;
 
                 if (hit is object)
                 {
