@@ -379,8 +379,6 @@ namespace Avalonia.Media.TextFormatting
 
                         currentIndexedRun = _indexedTextRuns[i];
                     }
-
-                    break;
                 }
 
                 return currentIndexedRun;
@@ -612,8 +610,6 @@ namespace Avalonia.Media.TextFormatting
 
                         currentIndexedRun = _indexedTextRuns[i];
                     }
-
-                    break;
                 }
 
                 return currentIndexedRun;
