@@ -2,7 +2,7 @@
 
 namespace Avalonia.Input
 {
-    public class PinchGestureRecognizer : StyledElement, IGestureRecognizer
+    public class PinchGestureRecognizer : AvaloniaObject, IGestureRecognizer
     {
         private IInputElement? _target;
         private IGestureRecognizerActionsDispatcher? _actions;
@@ -12,6 +12,8 @@ namespace Avalonia.Input
         private IPointer? _secondContact;
         private Point _secondPoint;
         private Point _origin;
+
+        public IInputElement? Target => _target;
 
         public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
         {

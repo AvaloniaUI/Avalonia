@@ -91,7 +91,9 @@ namespace Avalonia.Input.GestureRecognizers
         {
             get => _scrollStartDistance;
             set => SetAndRaise(ScrollStartDistanceProperty, ref _scrollStartDistance, value);
-        }        
+        }
+
+        public IInputElement? Target => _target;
 
         public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
         {
@@ -132,6 +134,8 @@ namespace Avalonia.Input.GestureRecognizers
                             _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? ScrollStartDistance : -ScrollStartDistance));
 
                         _actions!.Capture(e.Pointer, this);
+
+                        e.PreventGestureRecognition();
                     }
                 }
 
