@@ -438,6 +438,13 @@ private:
     return [super accessibilityNumberOfCharacters];
 }
 
+- (NSString *)accessibilityPlaceholderValue
+{
+    if (_peer->IsTextProvider())
+        return GetNSStringAndRelease(_peer->TextProvider_GetPlaceholderText());
+    return [super accessibilityPlaceholderValue];
+}
+
 - (NSRange)accessibilityRangeForLine:(NSInteger)line
 {
     if (_peer->IsTextProvider())

@@ -919,6 +919,7 @@ interface IAvnAutomationPeer : IUnknown
      int TextProvider_GetCaretLineNumber();
      int TextProvider_GetLineForIndex(int index);
      void TextProvider_GetLineRange(int lineIndex, int* start, int* length);
+     IAvnString* TextProvider_GetPlaceholderText();
      IAvnString* TextProvider_GetText(int start, int length);
      int TextProvider_GetTextLength();
      IAvnString* TextProvider_GetSelectedText();

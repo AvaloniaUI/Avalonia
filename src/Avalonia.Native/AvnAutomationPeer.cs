@@ -160,6 +160,8 @@ namespace Avalonia.Native
             *start = range.Start;
             *length = range.Length;
         }
+
+        public IAvnString TextProvider_GetPlaceholderText() => ((ITextProvider)_inner).PlaceholderText.ToAvnString();
         
         public IAvnString TextProvider_GetSelectedText()
         {
