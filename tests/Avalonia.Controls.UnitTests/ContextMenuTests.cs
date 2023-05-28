@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
 
                 bool opened = false;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     opened = true;
                 };
@@ -220,7 +220,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int closedCount = 0;
 
-                sut.MenuClosed += (sender, args) =>
+                sut.Closed += (sender, args) =>
                 {
                     closedCount++;
                 };

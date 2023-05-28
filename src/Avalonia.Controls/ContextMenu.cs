@@ -353,7 +353,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
@@ -394,7 +394,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
             
