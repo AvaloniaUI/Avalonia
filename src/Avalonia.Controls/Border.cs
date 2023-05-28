@@ -50,24 +50,28 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="BorderDashOffset"/> property.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public static readonly StyledProperty<double> BorderDashOffsetProperty =
             AvaloniaProperty.Register<Border, double>(nameof(BorderDashOffset));
 
         /// <summary>
         /// Defines the <see cref="BorderDashArray"/> property.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public static readonly StyledProperty<AvaloniaList<double>?> BorderDashArrayProperty =
             AvaloniaProperty.Register<Border, AvaloniaList<double>?>(nameof(BorderDashArray));
 
         /// <summary>
         /// Defines the <see cref="BorderLineCap"/> property.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public static readonly StyledProperty<PenLineCap> BorderLineCapProperty =
             AvaloniaProperty.Register<Border, PenLineCap>(nameof(BorderLineCap), PenLineCap.Flat);
 
         /// <summary>
         /// Defines the <see cref="BorderLineJoin"/> property.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public static readonly StyledProperty<PenLineJoin> BorderLineJoinProperty =
             AvaloniaProperty.Register<Border, PenLineJoin>(nameof(BorderLineJoin), PenLineJoin.Miter);
 
@@ -86,10 +90,6 @@ namespace Avalonia.Controls
                 BorderBrushProperty,
                 BorderThicknessProperty,
                 CornerRadiusProperty,
-                BorderDashArrayProperty,
-                BorderLineCapProperty,
-                BorderLineJoinProperty,
-                BorderDashOffsetProperty,
                 BoxShadowProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
         }
@@ -115,8 +115,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? Background
         {
-            get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
         }
 
         /// <summary>
@@ -124,17 +124,18 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? BorderBrush
         {
-            get { return GetValue(BorderBrushProperty); }
-            set { SetValue(BorderBrushProperty, value); }
+            get => GetValue(BorderBrushProperty);
+            set => SetValue(BorderBrushProperty, value);
         }
 
         /// <summary>
         /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public AvaloniaList<double>? BorderDashArray
         {
-            get { return GetValue(BorderDashArrayProperty); }
-            set { SetValue(BorderDashArrayProperty, value); }
+            get => GetValue(BorderDashArrayProperty);
+            set => SetValue(BorderDashArrayProperty, value);
         }
 
         /// <summary>
@@ -142,35 +143,38 @@ namespace Avalonia.Controls
         /// </summary>
         public Thickness BorderThickness
         {
-            get { return GetValue(BorderThicknessProperty); }
-            set { SetValue(BorderThicknessProperty, value); }
+            get => GetValue(BorderThicknessProperty);
+            set => SetValue(BorderThicknessProperty, value);
         }
 
         /// <summary>
         /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public double BorderDashOffset
         {
-            get { return GetValue(BorderDashOffsetProperty); }
-            set { SetValue(BorderDashOffsetProperty, value); }
+            get => GetValue(BorderDashOffsetProperty);
+            set => SetValue(BorderDashOffsetProperty, value);
         }
 
         /// <summary>
         /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public PenLineCap BorderLineCap
         {
-            get { return GetValue(BorderLineCapProperty); }
-            set { SetValue(BorderLineCapProperty, value); }
+            get => GetValue(BorderLineCapProperty);
+            set => SetValue(BorderLineCapProperty, value);
         }
 
         /// <summary>
         /// Gets or sets a <see cref="PenLineJoin"/> enumeration value that specifies the type of join that is used at the vertices of a Shape.
         /// </summary>
+        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
         public PenLineJoin BorderLineJoin
         {
-            get { return GetValue(BorderLineJoinProperty); }
-            set { SetValue(BorderLineJoinProperty, value); }
+            get => GetValue(BorderLineJoinProperty);
+            set => SetValue(BorderLineJoinProperty, value);
         }
 
         /// <summary>
@@ -178,8 +182,8 @@ namespace Avalonia.Controls
         /// </summary>
         public CornerRadius CornerRadius
         {
-            get { return GetValue(CornerRadiusProperty); }
-            set { SetValue(CornerRadiusProperty, value); }
+            get => GetValue(CornerRadiusProperty);
+            set => SetValue(CornerRadiusProperty, value);
         }
 
         /// <summary>
@@ -227,8 +231,14 @@ namespace Avalonia.Controls
         /// <param name="context">The drawing context.</param>
         public sealed override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
-                BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);
+            _borderRenderHelper.Render(
+                context,
+                Bounds.Size,
+                LayoutThickness,
+                CornerRadius,
+                Background,
+                BorderBrush,
+                BoxShadow);
         }
 
         /// <summary>
