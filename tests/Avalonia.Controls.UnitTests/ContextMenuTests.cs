@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
                 var tracker = 0;
 
                 var c = new ContextMenu();
-                c.ContextMenuClosing += (s, e) =>
+                c.Closing += (s, e) =>
                 {
                     tracker++;
                     e.Cancel = true;
@@ -430,7 +430,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 new Window { Content = target };
 
-                sut.ContextMenuOpening += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Opening += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 _mouse.Click(target, MouseButton.Right);
 
@@ -574,7 +574,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = PreparedWindow(target);
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
-                sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Closing += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 window.Show();
 
