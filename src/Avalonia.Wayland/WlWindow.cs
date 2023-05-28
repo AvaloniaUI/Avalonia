@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -256,7 +255,7 @@ namespace Avalonia.Wayland
 
             if (!DidReceiveInitialConfigure)
             {
-                // Emulate Window 7+'s default window size behavior in case no explicit size was set. If no configure_bounds event was set, fall back to a hardcoded size.
+                // Emulate Window 7+'s default window size behavior in case no explicit size was set. If no configure_bounds event was send, fall back to a hardcoded size.
                 if (AppliedState.Size == default)
                     AppliedState.Size = new PixelSize(Math.Max((int)(AppliedState.Bounds.Width * 0.75), 300), Math.Max((int)(AppliedState.Bounds.Height * 0.7), 200));
 
