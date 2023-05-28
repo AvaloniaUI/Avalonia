@@ -278,6 +278,7 @@ namespace Avalonia.Controls
                 new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
 
             WindowManagerAddShadowHintChanged(_popupHost, false);
+            WindowManagerIsLightDismissEnabledHintChanged(_popupHost, false);
 
             _popupHost.Show();
             _popupHostChangedHandler?.Invoke(_popupHost);
@@ -299,6 +300,14 @@ namespace Avalonia.Controls
             if (host is PopupRoot pr)
             {
                 pr.PlatformImpl?.SetWindowManagerAddShadowHint(hint);
+            }
+        }
+
+        private void WindowManagerIsLightDismissEnabledHintChanged(IPopupHost host, bool hint)
+        {
+            if (host is PopupRoot pr)
+            {
+                pr.PlatformImpl?.SetIsLightDismissEnabledHint(hint);
             }
         }
 

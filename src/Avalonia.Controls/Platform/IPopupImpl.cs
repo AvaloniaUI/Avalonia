@@ -12,5 +12,7 @@ namespace Avalonia.Platform
         IPopupPositioner? PopupPositioner { get; }
 
         void SetWindowManagerAddShadowHint(bool enabled);
+
+        void SetIsLightDismissEnabledHint(bool enabled);
     }
 }

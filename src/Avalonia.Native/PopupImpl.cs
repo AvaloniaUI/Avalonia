@@ -74,6 +74,10 @@ namespace Avalonia.Native
         {
         }
 
+        public void SetIsLightDismissEnabledHint(bool enabled)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }

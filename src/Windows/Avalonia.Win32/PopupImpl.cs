@@ -163,6 +163,10 @@ namespace Avalonia.Win32
             EnableBoxShadow(Handle.Handle, enabled);
         }
 
+        public void SetIsLightDismissEnabledHint(bool enabled)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }
