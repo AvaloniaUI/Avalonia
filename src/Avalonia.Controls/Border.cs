@@ -47,34 +47,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             AvaloniaProperty.Register<Border, BoxShadows>(nameof(BoxShadow));
 
-        /// <summary>
-        /// Defines the <see cref="BorderDashOffset"/> property.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public static readonly StyledProperty<double> BorderDashOffsetProperty =
-            AvaloniaProperty.Register<Border, double>(nameof(BorderDashOffset));
-
-        /// <summary>
-        /// Defines the <see cref="BorderDashArray"/> property.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public static readonly StyledProperty<AvaloniaList<double>?> BorderDashArrayProperty =
-            AvaloniaProperty.Register<Border, AvaloniaList<double>?>(nameof(BorderDashArray));
-
-        /// <summary>
-        /// Defines the <see cref="BorderLineCap"/> property.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public static readonly StyledProperty<PenLineCap> BorderLineCapProperty =
-            AvaloniaProperty.Register<Border, PenLineCap>(nameof(BorderLineCap), PenLineCap.Flat);
-
-        /// <summary>
-        /// Defines the <see cref="BorderLineJoin"/> property.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public static readonly StyledProperty<PenLineJoin> BorderLineJoinProperty =
-            AvaloniaProperty.Register<Border, PenLineJoin>(nameof(BorderLineJoin), PenLineJoin.Miter);
-
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
         private Thickness? _layoutThickness;
         private double _scale;
@@ -129,52 +101,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public AvaloniaList<double>? BorderDashArray
-        {
-            get => GetValue(BorderDashArrayProperty);
-            set => SetValue(BorderDashArrayProperty, value);
-        }
-
-        /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
         public Thickness BorderThickness
         {
             get => GetValue(BorderThicknessProperty);
             set => SetValue(BorderThicknessProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public double BorderDashOffset
-        {
-            get => GetValue(BorderDashOffsetProperty);
-            set => SetValue(BorderDashOffsetProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public PenLineCap BorderLineCap
-        {
-            get => GetValue(BorderLineCapProperty);
-            set => SetValue(BorderLineCapProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a <see cref="PenLineJoin"/> enumeration value that specifies the type of join that is used at the vertices of a Shape.
-        /// </summary>
-        [Obsolete("Dashed lines on Border are no longer supported. Use Shapes directly instead.")]
-        public PenLineJoin BorderLineJoin
-        {
-            get => GetValue(BorderLineJoinProperty);
-            set => SetValue(BorderLineJoinProperty, value);
         }
 
         /// <summary>
