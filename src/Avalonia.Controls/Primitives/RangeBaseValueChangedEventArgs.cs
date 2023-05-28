@@ -10,8 +10,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeBaseValueChangedEventArgs"/> class.
         /// </summary>
-        /// <param name="oldValue">The old property value.</param>
-        /// <param name="newValue">The new property value.</param>
+        /// <param name="oldValue">The old value of the range value property.</param>
+        /// <param name="newValue">The new value of the range value property.</param>
         /// <param name="routedEvent">The routed event associated with these event args.</param>
         public RangeBaseValueChangedEventArgs(double oldValue, double newValue, RoutedEvent? routedEvent)
             : base(routedEvent)
@@ -23,8 +23,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeBaseValueChangedEventArgs"/> class.
         /// </summary>
-        /// <param name="oldValue">The old property value.</param>
-        /// <param name="newValue">The new property value.</param>
+        /// <param name="oldValue">The old value of the range value property.</param>
+        /// <param name="newValue">The new value of the range value property.</param>
         /// <param name="routedEvent">The routed event associated with these event args.</param>
         /// <param name="source">The source object that raised the routed event.</param>
         public RangeBaseValueChangedEventArgs(double oldValue, double newValue, RoutedEvent? routedEvent, object? source)
@@ -35,12 +35,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets the old value of the property.
+        /// Gets the old value of the range value property.
         /// </summary>
         public double OldValue { get; init; }
 
         /// <summary>
-        /// Gets the new value of the property.
+        /// Gets the new value of the range value property.
         /// </summary>
         public double NewValue { get; init; }
     }
