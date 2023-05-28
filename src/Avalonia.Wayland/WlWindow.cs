@@ -127,7 +127,7 @@ namespace Avalonia.Wayland
 
         internal XdgSurface XdgSurface { get; }
 
-        protected WlOutput? WlOutput { get; private set; }
+        internal WlOutput? WlOutput { get; private set; }
 
         public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
 
