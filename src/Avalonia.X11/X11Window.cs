@@ -220,7 +220,7 @@ namespace Avalonia.X11
 
             _storageProvider = new CompositeStorageProvider(new[]
             {
-                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider?>(null),
+                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync($"x11:{Handle:X}") : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this)
             });
         }
@@ -1311,6 +1311,10 @@ namespace Avalonia.X11
             _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
+        public void SetIsLightDismissEnabledHint(bool enabled)
         {
         }
 

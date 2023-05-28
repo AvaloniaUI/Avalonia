@@ -47,7 +47,10 @@ namespace Avalonia.OpenGL.Egl
         
         [GetProcAddress("eglGetDisplay")]
         public partial IntPtr GetDisplay(IntPtr nativeDisplay);
-        
+
+        [GetProcAddress("eglGetPlatformDisplay", true)]
+        public partial IntPtr GetPlatformDisplay(int platform, IntPtr nativeDisplay, int[]? attrs);
+
         [GetProcAddress("eglGetPlatformDisplayEXT", true)]
         public partial IntPtr GetPlatformDisplayExt(int platform, IntPtr nativeDisplay, int[]? attrs);
 

@@ -83,7 +83,7 @@ namespace Avalonia.X11
                 _imeControl.ForwardKey += ev =>
                 {
                     ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
-                        _inputRoot, ev.Type, X11KeyTransform.ConvertKey((X11Key)ev.KeyVal),
+                        _inputRoot, ev.Type, XkbKeyTransform.ConvertKey((XkbKey)ev.KeyVal),
                         (RawInputModifiers)ev.Modifiers));
                 };
             }
@@ -96,15 +96,15 @@ namespace Avalonia.X11
             var index = ev.KeyEvent.state.HasAllFlags(XModifierMask.ShiftMask);
 
             // We need the latin key, since it's mainly used for hotkeys, we use a different API for text anyway
-            var key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
+            var key = (XkbKey)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
                 
             // Manually switch the Shift index for the keypad,
             // there should be a proper way to do this
             if (ev.KeyEvent.state.HasAllFlags(XModifierMask.Mod2Mask)
-                && key > X11Key.Num_Lock && key <= X11Key.KP_9)
-                key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
+                && key > XkbKey.Num_Lock && key <= XkbKey.KP_9)
+                key = (XkbKey)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
 
-            var convertedKey = X11KeyTransform.ConvertKey(key);
+            var convertedKey = XkbKeyTransform.ConvertKey(key);
             var modifiers = TranslateModifiers(ev.KeyEvent.state);
             var timestamp = (ulong)ev.KeyEvent.time.ToInt64();
             RawKeyEventArgs args =
