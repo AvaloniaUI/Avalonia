@@ -266,6 +266,7 @@ namespace Avalonia.Wayland
             else if (_didResize)
             {
                 RequestFrame();
+                WlSurface.Commit();
             }
         }
 
