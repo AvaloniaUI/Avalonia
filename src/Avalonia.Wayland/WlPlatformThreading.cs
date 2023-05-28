@@ -83,7 +83,6 @@ namespace Avalonia.Wayland
             }
             finally
             {
-                Console.WriteLine($"Display error: {_platform.WlDisplay.GetError()}");
                 _platform.Dispose();
                 LibC.close(_sigRead);
                 LibC.close(_sigWrite);
