@@ -31,6 +31,8 @@ namespace Avalonia.Controls
             private double _containerAnimationEndPosition;
             private double _container2AnimationStartPosition;
             private double _container2AnimationEndPosition;
+            private double _indeterminateStartingOffset;
+            private double _indeterminateEndingOffset;
 
             /// <summary>
             /// Defines the <see cref="ContainerAnimationStartPosition"/> property.
@@ -93,14 +95,20 @@ namespace Avalonia.Controls
             /// <summary>
             /// Defines the <see cref="IndeterminateStartingOffset"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
-                AvaloniaProperty.Register<ProgressBarTemplateSettings, double>(nameof(IndeterminateStartingOffset));
-
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double> IndeterminateStartingOffsetProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                    nameof(IndeterminateStartingOffset),
+                    p => p.IndeterminateStartingOffset,
+                    (p, o) => p.IndeterminateStartingOffset = o);
+            
             /// <summary>
             /// Defines the <see cref="IndeterminateEndingOffset"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
-                AvaloniaProperty.Register<ProgressBarTemplateSettings, double>(nameof(IndeterminateEndingOffset));
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double> IndeterminateEndingOffsetProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                    nameof(IndeterminateEndingOffset),
+                    p => p.IndeterminateEndingOffset,
+                    (p, o) => p.IndeterminateEndingOffset = o);
 
             /// <summary>
             /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's width.
@@ -163,17 +171,17 @@ namespace Avalonia.Controls
             /// </summary>
             public double IndeterminateStartingOffset
             {
-                get => GetValue(IndeterminateStartingOffsetProperty);
-                set => SetValue(IndeterminateStartingOffsetProperty, value);
+                get => _indeterminateStartingOffset;
+                set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
             }
-
+            
             /// <summary>
             /// Used by <see cref="Avalonia.Themes.Simple"/> to define the ending point of its indeterminate animation.
             /// </summary>
             public double IndeterminateEndingOffset
             {
-                get => GetValue(IndeterminateEndingOffsetProperty);
-                set => SetValue(IndeterminateEndingOffsetProperty, value);
+                get => _indeterminateEndingOffset;
+                set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
             }
         }
 
