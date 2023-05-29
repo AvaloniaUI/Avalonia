@@ -123,6 +123,16 @@ public class RefAssemblyGenerator
             }
         }
 
+        foreach (var cl in type.NestedTypes)
+        {
+            ProcessType(cl, obsoleteCtor);
+            if (hideMembers)
+            {
+                var dflags = TypeAttributes.Public;
+                cl.Attributes = ((cl.Attributes | dflags) ^ dflags) | TypeAttributes.NotPublic;
+            }
+        }
+
         foreach (var m in type.Properties)
             MarkAsUnstable(m, obsoleteCtor, forceUnstable);
         foreach (var m in type.Events)

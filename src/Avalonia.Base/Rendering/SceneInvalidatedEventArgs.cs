@@ -5,7 +5,7 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Provides data for the <see cref="IRenderer.SceneInvalidated"/> event.
     /// </summary>
-    public class SceneInvalidatedEventArgs : EventArgs
+    internal class SceneInvalidatedEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SceneInvalidatedEventArgs"/> class.

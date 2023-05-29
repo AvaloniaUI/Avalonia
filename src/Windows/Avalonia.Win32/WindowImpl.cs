@@ -70,7 +70,6 @@ namespace Avalonia.Win32
         private readonly TouchDevice _touchDevice;
         private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
-        private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly object? _gl;
         private readonly bool _wmPointerEnabled;
@@ -128,7 +127,6 @@ namespace Avalonia.Win32
                 IsResizable = true,
                 Decorations = SystemDecorations.Full
             };
-            _rendererLock = new ManagedDeferredRendererLock();
 
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
@@ -1497,7 +1495,7 @@ namespace Avalonia.Win32
             public void Dispose() => _owner._resizeReason = _restore;
         }
 
-        private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
+        private class WindowImplPlatformHandle : INativePlatformHandleSurface
         {
             private readonly WindowImpl _owner;
             public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;

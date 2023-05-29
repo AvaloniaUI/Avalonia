@@ -119,24 +119,12 @@ namespace Avalonia
         public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
-        /// Gets the application's focus manager.
-        /// </summary>
-        /// <value>
-        /// The application's focus manager.
-        /// </value>
-        public IFocusManager? FocusManager
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Gets the application's input manager.
         /// </summary>
         /// <value>
         /// The application's input manager.
         /// </value>
-        public InputManager? InputManager
+        internal InputManager? InputManager
         {
             get;
             private set;
@@ -238,7 +226,7 @@ namespace Avalonia
         public virtual void RegisterServices()
         {
             AvaloniaSynchronizationContext.InstallIfNeeded();
-            FocusManager = new FocusManager();
+            var focusManager = new FocusManager();
             InputManager = new InputManager();
 
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
@@ -250,7 +238,7 @@ namespace Avalonia
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
-                .Bind<IFocusManager>().ToConstant(FocusManager)
+                .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
