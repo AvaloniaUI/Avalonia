@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Avalonia.Metadata;
 
 namespace Avalonia.Rendering
 {
+    [PrivateApi]
     public class SleepLoopRenderTimer : IRenderTimer
     {
         private Action<TimeSpan>? _tick;

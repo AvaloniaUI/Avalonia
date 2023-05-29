@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
 {
@@ -31,6 +32,7 @@ namespace Avalonia.Input.Raw
     /// <summary>
     /// A raw mouse event.
     /// </summary>
+    [PrivateApi]
     public class RawPointerEventArgs : RawInputEventArgs
     {
         private RawPointerPoint _point;
@@ -124,6 +126,7 @@ namespace Avalonia.Input.Raw
         internal IInputElement? InputHitTestResult { get; set; }
     }
 
+    [PrivateApi]
     public record struct RawPointerPoint
     {
         /// <summary>

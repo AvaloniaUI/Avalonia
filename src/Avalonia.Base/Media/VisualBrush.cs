@@ -64,7 +64,7 @@ namespace Avalonia.Media
 
         private InlineDictionary<Compositor, CompositionRenderDataSceneBrushContent?> _renderDataDictionary;
 
-        protected override void OnReferencedFromCompositor(Compositor c)
+        private protected override void OnReferencedFromCompositor(Compositor c)
         {
             _renderDataDictionary.Add(c, CreateServerContent(c));
             base.OnReferencedFromCompositor(c);

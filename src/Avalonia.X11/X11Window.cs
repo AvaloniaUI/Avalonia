@@ -1326,7 +1326,7 @@ namespace Avalonia.X11
 
         public bool IsEnabled => !_disabled;
 
-        public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
+        public class SurfacePlatformHandle : INativePlatformHandleSurface
         {
             private readonly X11Window _owner;
 

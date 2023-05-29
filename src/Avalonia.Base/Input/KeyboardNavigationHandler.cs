@@ -10,7 +10,7 @@ namespace Avalonia.Input
     /// Handles keyboard navigation for a window.
     /// </summary>
     [Unstable]
-    public class KeyboardNavigationHandler : IKeyboardNavigationHandler
+    public sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
         /// The window to which the handler belongs.
@@ -24,6 +24,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
+        [PrivateApi]
         public void SetOwner(IInputRoot owner)
         {
             if (_owner != null)
@@ -102,7 +103,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
+        void OnKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Tab)
             {
