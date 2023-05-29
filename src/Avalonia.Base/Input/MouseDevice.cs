@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Reactive;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
+
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
@@ -126,9 +129,10 @@ namespace Avalonia.Input
             if (source != null)
             {
                 _pointer.Capture(source);
-                if (source != null)
+
+                var settings = ((IInputRoot?)(source as Interactive)?.GetVisualRoot())?.PlatformSettings;
+                if (settings is not null)
                 {
-                    var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
                     var doubleClickTime = settings.GetDoubleTapTime(PointerType.Mouse).TotalMilliseconds;
                     var doubleClickSize = settings.GetDoubleTapSize(PointerType.Mouse);
 
@@ -141,11 +145,12 @@ namespace Avalonia.Input
                     _lastClickTime = timestamp;
                     _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
-                    _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                    var e = new PointerPressedEventArgs(source, _pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
-                    source.RaiseEvent(e);
-                    return e.Handled;
                 }
+
+                _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
+                var e = new PointerPressedEventArgs(source, _pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
+                source.RaiseEvent(e);
+                return e.Handled;
             }
 
             return false;
