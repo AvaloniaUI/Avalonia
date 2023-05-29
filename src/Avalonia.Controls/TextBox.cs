@@ -32,20 +32,17 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Cut action
         /// </summary>
-        public static KeyGesture? CutGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
+        public static KeyGesture? CutGesture { get; } = PlatformHotkeyConfiguration.Instance?.Cut.FirstOrDefault();
 
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Copy action
         /// </summary>
-        public static KeyGesture? CopyGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Copy.FirstOrDefault();
+        public static KeyGesture? CopyGesture { get; } = PlatformHotkeyConfiguration.Instance?.Copy.FirstOrDefault();
 
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Paste action
         /// </summary>
-        public static KeyGesture? PasteGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Paste.FirstOrDefault();
+        public static KeyGesture? PasteGesture { get; } = PlatformHotkeyConfiguration.Instance?.Paste.FirstOrDefault();
 
         /// <summary>
         /// Defines the <see cref="AcceptsReturn"/> property
@@ -1103,7 +1100,7 @@ namespace Avalonia.Controls
             var handled = false;
             var modifiers = e.KeyModifiers;
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = PlatformHotkeyConfiguration.Instance!;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
             bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);

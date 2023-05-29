@@ -113,8 +113,8 @@ namespace Avalonia.Native
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
-            
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+            var hotkeys = PlatformHotkeyConfiguration.Instance;
             if (hotkeys is not null)
             {
                 hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));

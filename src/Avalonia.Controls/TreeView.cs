@@ -571,7 +571,7 @@ namespace Avalonia.Controls
 
             if (!e.Handled)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = PlatformHotkeyConfiguration.Instance;
                 bool Match(List<KeyGesture>? gestures) => gestures?.Any(g => g.Matches(e)) ?? false;
 
                 if (this.SelectionMode == SelectionMode.Multiple && Match(keymap?.SelectAll))
@@ -656,7 +656,7 @@ namespace Avalonia.Controls
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
+                        e.KeyModifiers.HasAllFlags(PlatformHotkeyConfiguration.Instance!.CommandModifiers),
                         point.Properties.IsRightButtonPressed);
                 }
             }

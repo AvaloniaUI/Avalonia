@@ -127,7 +127,7 @@ namespace Avalonia.Controls
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var hotkeys = PlatformHotkeyConfiguration.Instance;
             var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             if (!ctrl &&
@@ -165,7 +165,7 @@ namespace Avalonia.Controls
 
         internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
         {
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var hotkeys = PlatformHotkeyConfiguration.Instance;
             var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             return UpdateSelectionFromEventSource(

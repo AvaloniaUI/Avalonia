@@ -49,7 +49,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
 
                 target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
@@ -79,7 +79,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
                 _mouse.Click(target.Presenter.Panel.Children[0]);
 
@@ -97,7 +97,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
                 target.SelectedIndex = 0;
 
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
 
                 _mouse.Click(target.Presenter.Panel.Children[0]);
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
                     SelectionMode = SelectionMode.Toggle,
                 };
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
                 target.SelectedIndex = 0;
 
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
                 target.SelectedIndex = 0;
 
@@ -181,7 +181,7 @@ namespace Avalonia.Controls.UnitTests
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                     SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 ApplyTemplate(target);
                 target.SelectedIndex = 1;
 

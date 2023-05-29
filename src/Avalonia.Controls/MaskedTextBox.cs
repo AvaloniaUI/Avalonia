@@ -204,7 +204,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var keymap = PlatformHotkeyConfiguration.Instance;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 

@@ -392,7 +392,7 @@ namespace Avalonia.Controls.Primitives
                 && IsOpen
                 && Target?.ContextFlyout == this)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = PlatformHotkeyConfiguration.Instance;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {
