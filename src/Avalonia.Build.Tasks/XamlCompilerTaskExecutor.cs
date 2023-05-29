@@ -352,7 +352,7 @@ namespace Avalonia.Build.Tasks
 
                         ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
                             parsed, res.Uri, res, classType,
-                            classModifierPublic ?? true,
+                            classModifierPublic.Value,
                             populateBuilder,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null && classModifierPublic.Value),
