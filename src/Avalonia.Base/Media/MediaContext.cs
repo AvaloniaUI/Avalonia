@@ -28,6 +28,14 @@ internal partial class MediaContext : ICompositorScheduler
     private List<Action>? _invokeOnRenderCallbacks;
     private readonly Stack<List<Action>> _invokeOnRenderCallbackListPool = new();
 
+    private DispatcherTimer _animationsTimer = new(DispatcherPriority.Render)
+    {
+        // Since this timer is used to drive animations that didn't contribute to the previous frame at all
+        // We can safely use 16ms interval until we fix our animation system to actually report the next expected 
+        // frame
+        Interval = TimeSpan.FromMilliseconds(16)
+    };
+
     private Dictionary<object, TopLevelInfo> _topLevels = new();
 
     private MediaContext()
@@ -35,6 +43,11 @@ internal partial class MediaContext : ICompositorScheduler
         _render = Render;
         _inputMarkerHandler = InputMarkerHandler;
         _clock = new(this);
+        _animationsTimer.Tick += (_, _) =>
+        {
+            _animationsTimer.Stop();
+            ScheduleRender(false);
+        };
     }
     
     public static MediaContext Instance
@@ -129,14 +142,12 @@ internal partial class MediaContext : ICompositorScheduler
 
             break;
         }
-
-        // We are currently using compositor commit callbacks to drive animations
-        // Later we should use WPF's approach that asks the animation system for the next tick time
-        // and use some timer if the next animation frame is not needed to be sent to the compositor immediately
+        
         if (_requestedCommits.Count > 0 || _clock.HasSubscriptions)
         {
-            _animationsAreWaitingForComposition = true;
-            CommitCompositorsWithThrottling();
+            _animationsAreWaitingForComposition = CommitCompositorsWithThrottling();
+            if (!_animationsAreWaitingForComposition && _clock.HasSubscriptions) 
+                _animationsTimer.Start();
         }
     }
 
