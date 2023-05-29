@@ -343,6 +343,8 @@ namespace Avalonia.Build.Tasks
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
 
+                        // All XAML files are public by default.
+                        classModifierPublic ??= true;
 
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
@@ -353,8 +355,8 @@ namespace Avalonia.Build.Tasks
                             classModifierPublic ?? true,
                             populateBuilder,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
-                                classTypeDefinition == null),
-                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true)));
+                                classTypeDefinition == null && classModifierPublic.Value),
+                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, classModifierPublic.Value)));
                     }
                     catch (Exception e)
                     {
@@ -400,7 +402,7 @@ namespace Avalonia.Build.Tasks
                             document.PopulateMethod,
                             document.BuildMethod,
                             builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
-                                true),
+                                document.IsPublic),
                             (closureName, closureBaseType) =>
                                 populateBuilder.DefineSubType(closureBaseType, closureName, false),
                             (closureName, returnType, parameterTypes) =>
