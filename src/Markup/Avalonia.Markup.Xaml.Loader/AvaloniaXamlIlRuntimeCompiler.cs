@@ -231,8 +231,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
                                ?? ((IXamlAstValueNode)parsed.Root).Type.GetClrType().Name;
                 var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + xamlName);
                 var builder = _sreTypeSystem.CreateTypeBuilder(tb);
-                parsedDocuments.Add(new XamlDocumentResource(parsed, document.BaseUri?.ToString(), null, null,
-                    builder,
+                parsedDocuments.Add(new XamlDocumentResource(parsed, document.BaseUri?.ToString(),
+                    null, null, true, builder,
                     compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
                     document.RootInstance is null ? compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true) : null));
                 originalDocuments.Add(document);

@@ -18,14 +18,14 @@ namespace Avalonia.Media.TextFormatting
         public static BidiReorderer Instance
             => t_instance ??= new();
 
-        public void BidiReorder(Span<TextRun> textRuns, FlowDirection flowDirection)
+        public IndexedTextRun[] BidiReorder(Span<TextRun> textRuns, FlowDirection flowDirection, int firstTextSourceIndex)
         {
             Debug.Assert(_runs.Length == 0);
             Debug.Assert(_ranges.Length == 0);
 
             if (textRuns.IsEmpty)
             {
-                return;
+                return Array.Empty<IndexedTextRun>();
             }
 
             try
@@ -46,6 +46,22 @@ namespace Avalonia.Media.TextFormatting
 
                 // Reorder them into visual order.
                 var firstIndex = LinearReorder();
+                var indexedTextRuns = new IndexedTextRun[textRuns.Length];
+
+                for (var i = 0; i < textRuns.Length; i++)
+                {
+                    var currentRun = textRuns[i];
+
+                    indexedTextRuns[i] = new IndexedTextRun
+                    {
+                        TextRun = currentRun,
+                        TextSourceCharacterIndex = firstTextSourceIndex,
+                        RunIndex = i,
+                        NextRunIndex = i + 1
+                    };
+
+                    firstTextSourceIndex += currentRun.Length;
+                }
 
                 // Now perform a recursive reversal of each run.
                 // From the highest level found in the text to the lowest odd level on each line, including intermediate levels
@@ -76,7 +92,7 @@ namespace Avalonia.Media.TextFormatting
                 if (max == 0 || (min == max && (max & 1) == 0))
                 {
                     // Nothing to reverse.
-                    return;
+                    return indexedTextRuns;
                 }
 
                 // Now apply the reversal and replace the original contents.
@@ -107,13 +123,25 @@ namespace Avalonia.Media.TextFormatting
                 var index = 0;
 
                 currentIndex = firstIndex;
+
                 while (currentIndex >= 0)
                 {
                     ref var current = ref _runs[currentIndex];
-                    textRuns[index++] = current.Run;
+
+                    textRuns[index] = current.Run;
+
+                    var indexedRun = indexedTextRuns[index];
+
+                    indexedRun.RunIndex = current.RunIndex;
+
+                    indexedRun.NextRunIndex = current.NextRunIndex;
+
+                    index++;
 
                     currentIndex = current.NextRunIndex;
                 }
+
+                return indexedTextRuns;
             }
             finally
             {
@@ -227,25 +255,6 @@ namespace Avalonia.Media.TextFormatting
             return previousIndex;
         }
 
-        private struct OrderedBidiRun
-        {
-            public OrderedBidiRun(int runIndex, TextRun run, sbyte level)
-            {
-                RunIndex = runIndex;
-                Run = run;
-                Level = level;
-                NextRunIndex = -1;
-            }
-
-            public int RunIndex { get; }
-
-            public sbyte Level { get; }
-
-            public TextRun Run { get; }
-
-            public int NextRunIndex { get; set; } // -1 if none
-        }
-
         private struct BidiRange
         {
             public BidiRange(sbyte level, int leftRunIndex, int rightRunIndex, int previousRangeIndex)
@@ -264,5 +273,24 @@ namespace Avalonia.Media.TextFormatting
 
             public int PreviousRangeIndex { get; } // -1 if none
         }
+    }
+
+    internal struct OrderedBidiRun
+    {
+        public OrderedBidiRun(int runIndex, TextRun run, sbyte level)
+        {
+            RunIndex = runIndex;
+            Run = run;
+            Level = level;
+            NextRunIndex = -1;
+        }
+
+        public int RunIndex { get; }
+
+        public sbyte Level { get; }
+
+        public TextRun Run { get; }
+
+        public int NextRunIndex { get; set; } // -1 if none
     }
 }
