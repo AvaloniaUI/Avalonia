@@ -304,7 +304,7 @@ namespace Avalonia.Build.Tasks
                                      || "Internal".Equals(classModifierText, StringComparison.OrdinalIgnoreCase))
                                 classModifierPublic = false;
                             else
-                                throw new XamlParseException("Invalid value for x:ClassModifier. Expected value are: Public, NotPublic.", precompileDirective);
+                                throw new XamlParseException("Invalid value for x:ClassModifier. Expected value are: Public, NotPublic (internal).", precompileDirective);
                         }
                         
                         var classDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
