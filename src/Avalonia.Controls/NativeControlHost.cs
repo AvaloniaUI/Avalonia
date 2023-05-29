@@ -129,7 +129,7 @@ namespace Avalonia.Controls
             if(_queuedForMoveResize)
                 return;
             _queuedForMoveResize = true;
-            Dispatcher.UIThread.Post(UpdateHost, DispatcherPriority.Render);
+            Dispatcher.UIThread.Post(UpdateHost, DispatcherPriority.AfterRender);
         }
 
         public bool TryUpdateNativeControlPosition()

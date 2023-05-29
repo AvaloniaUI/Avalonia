@@ -43,7 +43,6 @@ namespace Avalonia.iOS
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IRenderLoop>().ToSingleton<RenderLoop>()
                 .Bind<IRenderTimer>().ToConstant(Timer)
                 .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);

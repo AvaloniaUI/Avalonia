@@ -64,11 +64,6 @@ public class SpringEasing : Easing
         Damping = damping;
         InitialVelocity = initialVelocity;
     }
-
-    public SpringEasing(Spring keySpline)
-    {
-        _internalSpring = keySpline;
-    }
     
     public SpringEasing()
     {

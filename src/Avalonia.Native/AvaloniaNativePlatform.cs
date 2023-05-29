@@ -113,10 +113,7 @@ namespace Avalonia.Native
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
-
-            var renderLoop = new RenderLoop();
-            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(renderLoop);
-
+            
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             if (hotkeys is not null)
             {
@@ -141,7 +138,7 @@ namespace Avalonia.Native
                 }
             }
             
-            Compositor = new Compositor(renderLoop, _platformGl);
+            Compositor = new Compositor(_platformGl, true);
         }
 
         public ITrayIconImpl CreateTrayIcon()

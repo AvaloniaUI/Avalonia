@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Skews an <see cref="Visual"/>.
     /// </summary>
-    public class SkewTransform : Transform
+    public sealed class SkewTransform : Transform
     {
         /// <summary>
         /// Defines the <see cref="AngleX"/> property.

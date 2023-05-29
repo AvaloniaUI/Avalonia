@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class VirtualizingStackPanelTests
+    public class VirtualizingStackPanelTests : ScopedTestBase
     {
         [Fact]
         public void Creates_Initial_Items()

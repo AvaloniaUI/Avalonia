@@ -25,8 +25,8 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             public TestContext()
             {
                 _compositor = new Compositor(new RenderLoop(
-                    new CompositorTestServices.ManualRenderTimer(),
-                    new Dispatcher(new NullDispatcherImpl())), null);
+                        new CompositorTestServices.ManualRenderTimer()), null, false,
+                    new NullCompositorScheduler(), true);
                 Context = new RenderDataDrawingContext(_compositor);
             }
 

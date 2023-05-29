@@ -7,7 +7,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="CornerRadius"/> properties.
     /// </summary>
-    public class CornerRadiusAnimator : Animator<CornerRadius>
+    internal class CornerRadiusAnimator : Animator<CornerRadius>
     {
         public override CornerRadius Interpolate(double progress, CornerRadius oldValue, CornerRadius newValue)
         {

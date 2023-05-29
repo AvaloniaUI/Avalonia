@@ -7,7 +7,7 @@ namespace Avalonia.Media;
 /// <summary>
 ///  Non-Affine 3D transformation for rotating a visual around a definable axis
 /// </summary>
-public class Rotate3DTransform : Transform
+public sealed class Rotate3DTransform : Transform
 {
     private readonly bool _isInitializing;
     

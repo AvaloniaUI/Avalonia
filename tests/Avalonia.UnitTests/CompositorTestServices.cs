@@ -22,14 +22,14 @@ public class CompositorTestServices : IDisposable
 {
     private readonly IDisposable _app;
     public Compositor Compositor { get; }
+    internal CompositingRenderer Renderer { get; }
     public ManualRenderTimer Timer { get; } = new();
     public EmbeddableControlRoot TopLevel { get; }
-    public CompositingRenderer Renderer { get; } = null!;
     public DebugEvents Events { get; } = new();
 
     public void Dispose()
     {
-        TopLevel.Renderer.Stop();
+        TopLevel.StopRendering();
         TopLevel.Dispose();
         _app.Dispose();
     }
@@ -44,10 +44,8 @@ public class CompositorTestServices : IDisposable
         try
         {
             AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(Timer);
-            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>()
-                .ToConstant(new RenderLoop(Timer, Dispatcher.UIThread));
 
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
+            Compositor = new Compositor(new RenderLoop(Timer), null);
             var impl = new TopLevelImpl(Compositor, size ?? new Size(1000, 1000));
             TopLevel = new EmbeddableControlRoot(impl)
             {
@@ -61,10 +59,10 @@ public class CompositorTestServices : IDisposable
                     return presenter;
                 })
             };
-            Renderer = impl.Renderer;
             TopLevel.Prepare();
-            TopLevel.Renderer.Start();
+            TopLevel.StartRendering();
             RunJobs();
+            Renderer = ((CompositingRenderer)TopLevel.Renderer);
             Renderer.CompositionTarget.Server.DebugEvents = Events;
         }
         catch
@@ -133,7 +131,6 @@ public class CompositorTestServices : IDisposable
     class TopLevelImpl : ITopLevelImpl
     {
         private readonly Compositor _compositor;
-        public CompositingRenderer Renderer { get; private set; }
 
         public TopLevelImpl(Compositor compositor, Size clientSize)
         {
@@ -166,10 +163,7 @@ public class CompositorTestServices : IDisposable
             }
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return Renderer = new CompositingRenderer(root, _compositor, () => Surfaces);
-        }
+        public Compositor Compositor => _compositor;
 
         public void Invalidate(Rect rect)
         {
@@ -205,5 +199,13 @@ public class CompositorTestServices : IDisposable
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
         
         public object TryGetFeature(Type featureType) => null;
+    }
+}
+
+public class NullCompositorScheduler : ICompositorScheduler
+{
+    public void CommitRequested(Compositor compositor)
+    {
+        
     }
 }

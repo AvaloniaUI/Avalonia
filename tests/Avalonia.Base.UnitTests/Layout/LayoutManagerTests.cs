@@ -3,11 +3,12 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class LayoutManagerTests
+    public class LayoutManagerTests : ScopedTestBase
     {
         [Fact]
         public void Measures_And_Arranges_InvalidateMeasured_Control()
@@ -476,7 +477,7 @@ namespace Avalonia.Base.UnitTests.Layout
             root.LayoutManager.InvalidateArrange(control);
             root.LayoutManager.ExecuteInitialLayoutPass();
             
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             
             Assert.Equal(1, layoutCount);
         }

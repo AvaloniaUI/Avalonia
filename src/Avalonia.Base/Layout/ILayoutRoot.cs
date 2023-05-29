@@ -21,6 +21,6 @@ namespace Avalonia.Layout
         /// <summary>
         /// Associated instance of layout manager
         /// </summary>
-        ILayoutManager LayoutManager { get; }
+        internal ILayoutManager LayoutManager { get; }
     }
 }

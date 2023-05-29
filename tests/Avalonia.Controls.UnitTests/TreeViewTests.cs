@@ -23,7 +23,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TreeViewTests
+    public class TreeViewTests : ScopedTestBase
     {
         private readonly MouseTestHelper _mouse = new();
 

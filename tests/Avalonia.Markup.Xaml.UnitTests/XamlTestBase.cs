@@ -2,28 +2,35 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    public class XamlTestBase
+    static class XamlLoaderInit
     {
-        public XamlTestBase()
+        [ModuleInitializer]
+        public static void Init()
         {
-            // Ensure necessary assemblies are loaded.
             var _ = typeof(Binding);
-            GC.KeepAlive(typeof(ItemsRepeater));
+            GC.KeepAlive(typeof(ItemsRepeater).Assembly);
             if (AvaloniaLocator.Current.GetService<AvaloniaXamlLoader.IRuntimeXamlLoader>() == null)
                 AvaloniaLocator.CurrentMutable.Bind<AvaloniaXamlLoader.IRuntimeXamlLoader>()
                     .ToConstant(new TestXamlLoaderShim());
         }
-        
+
         class TestXamlLoaderShim : AvaloniaXamlLoader.IRuntimeXamlLoader
         {
             public object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration) 
                 => AvaloniaRuntimeXamlLoader.Load(document, configuration);
         }
+    }
+    
+    public class XamlTestBase : ScopedTestBase
+    {
+
     }
 }

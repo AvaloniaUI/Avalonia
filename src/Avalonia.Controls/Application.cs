@@ -8,6 +8,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -259,10 +260,8 @@ namespace Avalonia
                 AvaloniaLocator.CurrentMutable
                     .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
 
-            var clock = new RenderLoopClock();
-            AvaloniaLocator.CurrentMutable
-                .Bind<IGlobalClock>().ToConstant(clock)
-                .GetService<IRenderLoop>()?.Add(clock);
+            AvaloniaLocator.CurrentMutable.Bind<IGlobalClock>()
+                .ToConstant(MediaContext.Instance.Clock);
         }
 
         public virtual void OnFrameworkInitializationCompleted()

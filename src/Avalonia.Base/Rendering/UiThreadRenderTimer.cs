@@ -32,7 +32,7 @@ namespace Avalonia.Rendering
                     return false;
                 tick(st.Elapsed);
                 return !cancelled;
-            }, TimeSpan.FromSeconds(1.0 / FramesPerSecond), DispatcherPriority.Render);
+            }, TimeSpan.FromSeconds(1.0 / FramesPerSecond), DispatcherPriority.UiThreadRender);
             return Disposable.Create(() => cancelled = true);
         }
     }

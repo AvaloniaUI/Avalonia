@@ -585,8 +585,7 @@ namespace Avalonia.Win32
             _maxSize = maxSize;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
+        public Compositor Compositor => Win32Platform.Compositor;
 
         public void Resize(Size value, WindowResizeReason reason)
         {

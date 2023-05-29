@@ -7,7 +7,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="Vector"/> properties.
     /// </summary>
-    public class VectorAnimator : Animator<Vector>
+    internal class VectorAnimator : Animator<Vector>
     {
         public override Vector Interpolate(double progress, Vector oldValue, Vector newValue)
         {

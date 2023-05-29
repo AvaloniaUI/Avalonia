@@ -22,6 +22,7 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls
 {
@@ -182,7 +183,7 @@ namespace Avalonia.Controls
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
-            Renderer = impl.CreateRenderer(this);
+            Renderer = new CompositingRenderer(this, impl.Compositor, () => impl.Surfaces);
             Renderer.SceneInvalidated += SceneInvalidated;
 
             impl.SetInputRoot(this);
@@ -352,7 +353,7 @@ namespace Avalonia.Controls
             remove { RemoveHandler(BackRequestedEvent, value); }
         }
 
-        public ILayoutManager LayoutManager
+        internal ILayoutManager LayoutManager
         {
             get
             {
@@ -371,6 +372,17 @@ namespace Avalonia.Controls
             }
         }
 
+        ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
+
+        /// <summary>
+        /// Executes a layout pass.
+        /// </summary>
+        /// <remarks>
+        /// You should not usually need to call this method explictly, the layout manager will
+        /// schedule layout passes itself.
+        /// </remarks>
+        public void UpdateLayout() => LayoutManager?.ExecuteLayoutPass();
+
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
@@ -388,7 +400,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
-        public IRenderer Renderer { get; }
+        internal CompositingRenderer Renderer { get; }
+
+        internal IHitTester HitTester => HitTesterOverride ?? Renderer;
+
+        // This property setter is here purely for lazy unit tests
+        // that don't want to set up a proper hit-testable visual tree
+        // and should be removed after fixing those tests
+        internal IHitTester? HitTesterOverride;
+
+        IRenderer IRenderRoot.Renderer => Renderer;
+        IHitTester IRenderRoot.HitTester => HitTester;
+
+        /// <summary>
+        /// Gets a value indicating whether the renderer should draw specific diagnostics.
+        /// </summary>
+        public RendererDiagnostics RendererDiagnostics => Renderer.Diagnostics;
 
         internal PixelPoint? LastPointerPosition => _pointerOverPreProcessor?.LastPosition;
         
@@ -542,6 +569,10 @@ namespace Avalonia.Controls
         {
             Renderer.Paint(rect);
         }
+
+        protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);
+
+        protected void StopRendering() => MediaContext.Instance.RemoveTopLevel(this);
 
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.

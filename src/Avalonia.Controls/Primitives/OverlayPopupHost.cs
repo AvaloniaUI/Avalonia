@@ -124,7 +124,7 @@ namespace Avalonia.Controls.Primitives
             {
                 OverlayLayer.SetLeft(this, _lastRequestedPosition.X);
                 OverlayLayer.SetTop(this, _lastRequestedPosition.Y);
-            }, DispatcherPriority.Layout);
+            }, DispatcherPriority.Render);
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;

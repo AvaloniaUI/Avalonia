@@ -26,6 +26,10 @@ namespace Avalonia.Controls.Embedding
             LayoutManager.ExecuteInitialLayoutPass();
         }
 
+        public new void StartRendering() => base.StartRendering();
+
+        public new void StopRendering() => base.StopRendering();
+        
         private void EnsureInitialized()
         {
             if (!this.IsInitialized)

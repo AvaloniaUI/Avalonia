@@ -565,12 +565,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var renderer = RendererMocks.CreateRenderer();
+                var compositor = RendererMocks.CreateDummyCompositor();
                 var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
                 var windowImpl = Mock.Get(platform.CreateWindow());
-                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+                windowImpl.Setup(x => x.Compositor).Returns(compositor);
+                var hitTester = new Mock<IHitTester>();
 
-                var window = new Window(windowImpl.Object);
+                var window = new Window(windowImpl.Object)
+                {
+                    HitTesterOverride = hitTester.Object
+                };
                 window.ApplyStyling();
                 window.ApplyTemplate();
 
@@ -585,7 +589,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var border = new Border();
                 window.Content = border;
 
-                renderer.Setup(x =>
+                hitTester.Setup(x =>
                     x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(border);
 
@@ -751,7 +755,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(popup);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
 
                 var raised = false;
                 if (popup.Host is PopupRoot popupRoot)
@@ -774,7 +778,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 window.Position = new PixelPoint(10, 10);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
                 Assert.False(raised);
             }
         }
@@ -804,7 +808,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -835,7 +839,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 window.PlatformImpl?.Resize(new Size(700D, 500D), WindowResizeReason.Unspecified);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
                 Assert.True(raised);
             }
         }
@@ -865,7 +869,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -891,7 +895,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 window.PlatformImpl?.Resize(new Size(700D, 500D), WindowResizeReason.Unspecified);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
                 Assert.False(raised);
             }
         }
@@ -920,7 +924,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs();
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -950,7 +954,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 placementTarget.Margin = new Thickness(10, 0, 0, 0);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs();
                 Assert.True(raised);
             }
         }
@@ -980,7 +984,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs();
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -1006,7 +1010,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 placementTarget.Margin = new Thickness(10, 0, 0, 0);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                Dispatcher.UIThread.RunJobs();
                 Assert.False(raised);
             }
         }

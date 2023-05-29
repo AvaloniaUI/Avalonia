@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 
 using Moq;
@@ -595,10 +596,10 @@ namespace Avalonia.Controls.UnitTests
 
         private static Window PreparedWindow(object content = null)
         {
-            var renderer = RendererMocks.CreateRenderer();
+            
             var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
 
             var w = new Window(windowImpl.Object) { Content = content };
             w.ApplyStyling();

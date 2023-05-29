@@ -13,7 +13,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="SolidColorBrush"/> values. 
     /// </summary>
-    public class GradientBrushAnimator : Animator<IGradientBrush?>
+    internal class GradientBrushAnimator : Animator<IGradientBrush?>
     {
         private static readonly RelativePointAnimator s_relativePointAnimator = new RelativePointAnimator();
         private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();

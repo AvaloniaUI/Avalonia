@@ -3,7 +3,7 @@
     /// <summary>
     /// Animator that handles <see cref="float"/> properties.
     /// </summary>
-    public class FloatAnimator : Animator<float>
+    internal class FloatAnimator : Animator<float>
     {
         /// <inheritdocs/>
         public override float Interpolate(double progress, float oldValue, float newValue)

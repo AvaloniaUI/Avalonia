@@ -45,7 +45,6 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
             if (Options.UseGpu)
