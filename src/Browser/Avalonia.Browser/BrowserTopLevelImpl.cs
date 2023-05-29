@@ -186,12 +186,7 @@ namespace Avalonia.Browser
 
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
-            return new CompositingRenderer(root,
-                new Compositor(loop, AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>()), () => Surfaces);
-        }
+        public Compositor Compositor { get; } = new(AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
 
         public void Invalidate(Rect rect)
         {

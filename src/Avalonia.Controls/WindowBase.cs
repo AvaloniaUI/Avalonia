@@ -149,7 +149,7 @@ namespace Avalonia.Controls
         {
             using (FreezeVisibilityChangeHandling())
             {
-                Renderer.Stop();
+                StopRendering();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -173,7 +173,7 @@ namespace Avalonia.Controls
                 }
 
                 PlatformImpl?.Show(true, false);
-                Renderer.Start();
+                StartRendering();
                 OnOpened(EventArgs.Empty);
             }
         }

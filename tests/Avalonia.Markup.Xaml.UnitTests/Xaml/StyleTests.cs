@@ -387,13 +387,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
-                window.LayoutManager.ExecuteLayoutPass();
+                window.UpdateLayout();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
-                window.LayoutManager.ExecuteLayoutPass();
+                window.UpdateLayout();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }

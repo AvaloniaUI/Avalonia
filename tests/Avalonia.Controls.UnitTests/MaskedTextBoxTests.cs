@@ -14,6 +14,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -1010,8 +1011,7 @@ namespace Avalonia.Controls.UnitTests
         private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
         {
             var clipboard = new Mock<ITopLevelImpl>();
-            clipboard.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(RendererMocks.CreateRenderer().Object);
+            clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
                 .Returns(new ClipboardStub());
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);

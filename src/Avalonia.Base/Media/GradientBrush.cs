@@ -37,7 +37,7 @@ namespace Avalonia.Media
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
-        public GradientBrush()
+        internal GradientBrush()
         {
             this.GradientStops = new GradientStops();
         }

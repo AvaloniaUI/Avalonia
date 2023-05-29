@@ -134,7 +134,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Raises_Click()
         {
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var pt = new Point(50, 50);
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
@@ -165,7 +165,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
 
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
@@ -197,7 +197,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_With_RenderTransform_Raises_Click()
         {
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IHitTester>();
             var pt = new Point(150, 50);
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
@@ -383,10 +383,11 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestButton : Button, IRenderRoot
         {
-            public TestButton(IRenderer renderer)
+            public TestButton(IHitTester hit)
             {
                 IsVisible = true;
-                Renderer = renderer;
+                HitTester = hit;
+                Renderer = new NullRenderer();
             }
 
             public new Rect Bounds
@@ -398,6 +399,7 @@ namespace Avalonia.Controls.UnitTests
             public Size ClientSize => throw new NotImplementedException();
 
             public IRenderer Renderer { get; }
+            public IHitTester HitTester { get; }
 
             public double RenderScaling => throw new NotImplementedException();
 

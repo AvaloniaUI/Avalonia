@@ -11,7 +11,7 @@ namespace GpuInterop
         {
             InitializeComponent();
             this.AttachDevTools();
-            Renderer.Diagnostics.DebugOverlays = RendererDebugOverlays.Fps;
+            RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
         }
 
         private void InitializeComponent()

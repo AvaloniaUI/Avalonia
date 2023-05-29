@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -105,7 +106,7 @@ namespace Avalonia.Win32
 
                             if (_owner is Window window)
                             {
-                                var visual = window.Renderer.HitTestFirst(position, window, x =>
+                                var visual = window.GetVisualAt(position, x =>
                                 {
                                     if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                     {

@@ -69,10 +69,8 @@ namespace Avalonia.DesignerSupport.Remote
             public bool RunsInBackground => false;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root,
-                new Compositor(new RenderLoop(new DummyRenderTimer(), Dispatcher.UIThread), null), () => Surfaces);
-        
+        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+
         public void Dispose()
         {
         }

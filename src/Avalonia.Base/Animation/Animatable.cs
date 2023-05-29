@@ -17,7 +17,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="Clock"/> property.
         /// </summary>
-        public static readonly StyledProperty<IClock> ClockProperty =
+        internal static readonly StyledProperty<IClock> ClockProperty =
             AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets the clock which controls the animations on the control.
         /// </summary>
-        public IClock Clock
+        internal IClock Clock
         {
             get => GetValue(ClockProperty);
             set => SetValue(ClockProperty, value);

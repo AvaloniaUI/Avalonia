@@ -541,11 +541,11 @@ namespace Avalonia.Controls
 
             if (state == WindowState.Minimized)
             {
-                Renderer.Stop();
+                StopRendering();
             }
             else
             {
-                Renderer.Start();
+                StartRendering();
             }
         }
 
@@ -568,7 +568,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                Renderer.Stop();
+                StopRendering();
 
                 if (Owner is Window owner)
                 {
@@ -716,7 +716,7 @@ namespace Avalonia.Controls
                 SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, false);
-                Renderer.Start();
+                StartRendering();
                 OnOpened(EventArgs.Empty);
             }
         }
@@ -793,7 +793,7 @@ namespace Avalonia.Controls
 
                 PlatformImpl?.Show(ShowActivated, true);
 
-                Renderer.Start();
+                StartRendering();
 
                 Observable.FromEventPattern(
                         x => Closed += x,

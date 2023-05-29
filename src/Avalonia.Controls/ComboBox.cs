@@ -361,19 +361,6 @@ namespace Avalonia.Controls
 
             _subscriptionsOnOpen.Clear();
 
-            var toplevel = TopLevel.GetTopLevel(this);
-            if (toplevel != null)
-            {
-                toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
-                {
-                    //eat wheel scroll event outside dropdown popup while it's open
-                    if (IsDropDownOpen && (ev.Source as Visual)?.GetVisualRoot() == toplevel)
-                    {
-                        ev.Handled = true;
-                    }
-                }, Interactivity.RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
-            }
-
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
 
             foreach (var parent in this.GetVisualAncestors().OfType<Control>())

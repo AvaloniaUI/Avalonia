@@ -127,7 +127,7 @@ namespace Avalonia.Build.Tasks
 
         public bool Execute()
         {
-            Enum.TryParse<MessageImportance>(ReportImportance, out _reportImportance);
+            Enum.TryParse(ReportImportance, true, out _reportImportance);
 
             BuildEngine.LogMessage($"GenerateAvaloniaResourcesTask -> Root: {Root}, {Resources?.Count()} resources, Output:{Output}", _reportImportance < MessageImportance.Low ? MessageImportance.High : _reportImportance);
             var resources = BuildResourceSources();

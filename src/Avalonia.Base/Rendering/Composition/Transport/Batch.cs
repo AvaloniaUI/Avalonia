@@ -15,12 +15,13 @@ namespace Avalonia.Rendering.Composition.Transport
     {
         private static long _nextSequenceId = 1;
         private static ConcurrentBag<BatchStreamData> _pool = new();
-        private readonly TaskCompletionSource<int>? _tcs;
+        private readonly TaskCompletionSource<int> _acceptedTcs = new();
+        private readonly TaskCompletionSource<int> _renderedTcs = new();
+        
         public long SequenceId { get; }
         
-        public Batch(TaskCompletionSource<int>? tcs)
+        public Batch()
         {
-            _tcs = tcs;
             SequenceId = Interlocked.Increment(ref _nextSequenceId);
             if (!_pool.TryTake(out var lst))
                 lst = new BatchStreamData();
@@ -30,14 +31,17 @@ namespace Avalonia.Rendering.Composition.Transport
         
         public BatchStreamData Changes { get; private set; }
         public TimeSpan CommittedAt { get; set; }
+        public Task Processed => _acceptedTcs.Task;
+        public Task Rendered => _renderedTcs.Task;
         
-        public void Complete()
+        public void NotifyProcessed()
         {
             _pool.Add(Changes);
             Changes = null!;
 
-            _tcs?.TrySetResult(0);
+            _acceptedTcs.TrySetResult(0);
         }
-
+        
+        public void NotifyRendered() => _renderedTcs.TrySetResult(0);
     }
 }

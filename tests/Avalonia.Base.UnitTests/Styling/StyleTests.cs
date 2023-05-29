@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
-    public class StyleTests
+    public class StyleTests : ScopedTestBase
     {
         [Fact]
         public void Style_With_Only_Type_Selector_Should_Update_Value()

@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public class Animation : AvaloniaObject, IAnimation
+    public sealed class Animation : AvaloniaObject, IAnimation
     {
         /// <summary>
         /// Defines the <see cref="Duration"/> property.
@@ -186,7 +186,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="setter">The animation setter.</param>
         /// <returns>The property animator type.</returns>
-        public static (Type Type, Func<IAnimator> Factory)? GetAnimator(IAnimationSetter setter)
+        internal static (Type Type, Func<IAnimator> Factory)? GetAnimator(IAnimationSetter setter)
         {
             if (s_animators.TryGetValue(setter, out var type))
             {
@@ -200,11 +200,9 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="setter">The animation setter.</param>
         /// <param name="value">The property animator value.</param>
-        public static void SetAnimator(IAnimationSetter setter,
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicMethods)]
-            Type value)
+        public static void SetAnimator(IAnimationSetter setter, CustomAnimatorBase value)
         {
-            s_animators[setter] = (value, () => (IAnimator)Activator.CreateInstance(value)!);
+            s_animators[setter] = (value.WrapperType, value.CreateWrapper);
         }
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator, Func<IAnimator> Factory)> Animators = new()
@@ -233,7 +231,7 @@ namespace Avalonia.Animation
         /// <typeparam name="TAnimator">
         /// The type of the animator to instantiate.
         /// </typeparam>
-        public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
+        internal static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
             where TAnimator : IAnimator, new()
         {
             Animators.Insert(0, (condition, typeof(TAnimator), () => new TAnimator()));
@@ -312,8 +310,11 @@ namespace Avalonia.Animation
             return (newAnimatorInstances, subscriptions);
         }
 
+        IDisposable IAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
+            => Apply(control, clock, match, onComplete);
+        
         /// <inheritdoc/>
-        public IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
+        internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
             if (animators.Count == 1)
@@ -358,14 +359,20 @@ namespace Avalonia.Animation
             return new CompositeDisposable(subscriptions);
         }
 
+        public Task RunAsync(Animatable control, CancellationToken cancellationToken = default) =>
+            RunAsync(control, null, cancellationToken);
+        
         /// <inheritdoc/>
-        public Task RunAsync(Animatable control, IClock? clock = null)
+        internal Task RunAsync(Animatable control, IClock? clock)
         {
             return RunAsync(control, clock, default);
         }
 
+        Task IAnimation.RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
+            => RunAsync(control, clock, cancellationToken);
+        
         /// <inheritdoc/>
-        public Task RunAsync(Animatable control, IClock? clock = null, CancellationToken cancellationToken = default)
+        internal Task RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {

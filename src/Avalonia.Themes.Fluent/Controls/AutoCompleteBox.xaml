@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:generic="using:System.Collections.Generic">
+                    xmlns:generic="using:System.Collections.Generic"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <AutoCompleteBox Width="200">

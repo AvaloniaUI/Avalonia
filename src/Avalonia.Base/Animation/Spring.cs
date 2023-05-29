@@ -10,7 +10,7 @@ namespace Avalonia.Animation;
 /// Determines how an animation is used based on spring formula.
 /// </summary>
 [TypeConverter(typeof(SpringTypeConverter))]
-public class Spring
+internal class Spring
 {
     private SpringSolver _springSolver;
     private double _mass;

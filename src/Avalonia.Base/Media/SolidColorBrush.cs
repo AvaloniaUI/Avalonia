@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
+    public sealed class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Color"/> property.

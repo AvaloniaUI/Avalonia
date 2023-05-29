@@ -7,7 +7,7 @@ using Avalonia.Media;
 // ReSharper disable once CheckNamespace
 namespace Avalonia.Animation.Animators;
 
-public class EffectAnimator : Animator<IEffect?>
+internal class EffectAnimator : Animator<IEffect?>
 {
     public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock,
         IObservable<bool> match, Action? onComplete)
@@ -68,7 +68,7 @@ public class EffectAnimator : Animator<IEffect?>
     }
 }
 
-public abstract class EffectAnimatorBase<T> : Animator<IEffect?> where T : class, IEffect?
+internal abstract class EffectAnimatorBase<T> : Animator<IEffect?> where T : class, IEffect?
 {
     public override IDisposable BindAnimation(Animatable control, IObservable<IEffect?> instance)
     {
@@ -91,7 +91,7 @@ public abstract class EffectAnimatorBase<T> : Animator<IEffect?> where T : class
     }
 }
 
-public class BlurEffectAnimator : EffectAnimatorBase<IBlurEffect>
+internal class BlurEffectAnimator : EffectAnimatorBase<IBlurEffect>
 {
     private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
 
@@ -102,7 +102,7 @@ public class BlurEffectAnimator : EffectAnimatorBase<IBlurEffect>
     }
 }
 
-public class DropShadowEffectAnimator : EffectAnimatorBase<IDropShadowEffect>
+internal class DropShadowEffectAnimator : EffectAnimatorBase<IDropShadowEffect>
 {
     private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
 

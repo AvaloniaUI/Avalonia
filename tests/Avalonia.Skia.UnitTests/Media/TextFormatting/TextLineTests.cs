@@ -1071,6 +1071,55 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetTextBounds_BiDi()
+        {
+            var text = "אבגדה 12345 ABCDEF אבגדה";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var bounds = textLine.GetTextBounds(6, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(0, bounds[0].Rectangle.Left);
+
+                bounds = textLine.GetTextBounds(5, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(36.005859374999993, bounds[0].Rectangle.Left);
+
+                bounds = textLine.GetTextBounds(0, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(71.165859375, bounds[0].Rectangle.Right);
+
+                bounds = textLine.GetTextBounds(11, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(71.165859375, bounds[0].Rectangle.Left);
+
+                bounds = textLine.GetTextBounds(0, 25);
+
+                Assert.Equal(5, bounds.Count);
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;

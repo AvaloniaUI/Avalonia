@@ -38,7 +38,7 @@ namespace Avalonia.iOS
 
             _topLevel.Prepare();
 
-            _topLevel.Renderer.Start();
+            _topLevel.StartRendering();
 
             var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
@@ -110,9 +110,7 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) =>
-                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
-
+            public Compositor Compositor => Platform.Compositor;
 
             public void Invalidate(Rect rect)
             {

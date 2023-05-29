@@ -21,7 +21,7 @@ namespace RenderDemo
             void BindOverlay(Expression<Func<MainWindowViewModel, bool>> expr, RendererDebugOverlays overlay)
                 => vm.WhenAnyValue(expr).Subscribe(x =>
                 {
-                    var diagnostics = Renderer.Diagnostics;
+                    var diagnostics = RendererDiagnostics;
                     diagnostics.DebugOverlays = x ?
                         diagnostics.DebugOverlays | overlay :
                         diagnostics.DebugOverlays & ~overlay;
