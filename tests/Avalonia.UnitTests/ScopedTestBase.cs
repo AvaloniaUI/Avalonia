@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Threading;
 
 namespace Avalonia.UnitTests;
 
@@ -8,11 +9,14 @@ public class ScopedTestBase : IDisposable
 
     public ScopedTestBase()
     {
+        AvaloniaLocator.Current = AvaloniaLocator.CurrentMutable = new AvaloniaLocator();
+        Dispatcher.ResetBeforeUnitTests();
         _scope = AvaloniaLocator.EnterScope();
     }
     
     public virtual void Dispose()
     {
+        Dispatcher.ResetForUnitTests();
         _scope.Dispose();
     }
 }

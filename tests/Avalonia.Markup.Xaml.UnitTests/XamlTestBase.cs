@@ -17,6 +17,13 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             var _ = typeof(Binding);
             GC.KeepAlive(typeof(ItemsRepeater).Assembly);
+        }
+    }
+    
+    public class XamlTestBase : ScopedTestBase
+    {
+        public XamlTestBase()
+        {
             if (AvaloniaLocator.Current.GetService<AvaloniaXamlLoader.IRuntimeXamlLoader>() == null)
                 AvaloniaLocator.CurrentMutable.Bind<AvaloniaXamlLoader.IRuntimeXamlLoader>()
                     .ToConstant(new TestXamlLoaderShim());
@@ -27,10 +34,5 @@ namespace Avalonia.Markup.Xaml.UnitTests
             public object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration) 
                 => AvaloniaRuntimeXamlLoader.Load(document, configuration);
         }
-    }
-    
-    public class XamlTestBase : ScopedTestBase
-    {
-
     }
 }
