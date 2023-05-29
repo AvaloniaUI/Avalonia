@@ -132,5 +132,18 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             Assert.True(ctx.Context.GetRenderResults()!.HitTest(new Point(25, 25)));
         }
+        
+        [Fact]
+        public void Empty_Push_Pop_Sequence_Produces_No_Results()
+        {
+            var ctx = new TestContext(_services);
+            using (ctx.Context.PushTransform(Matrix.CreateTranslation(20, 20)))
+            using (ctx.Context.PushOpacity(1, default))
+            {
+
+            }
+
+            Assert.Null(ctx.Context.GetRenderResults());
+        }
     }
 }
