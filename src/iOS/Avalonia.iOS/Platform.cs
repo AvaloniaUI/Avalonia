@@ -47,12 +47,8 @@ namespace Avalonia.iOS
                 .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
-                Compositor = new Compositor(
-                    AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
-
-
     }
 }
 

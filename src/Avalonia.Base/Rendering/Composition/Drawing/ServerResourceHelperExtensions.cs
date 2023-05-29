@@ -50,7 +50,6 @@ static class ServerResourceHelperExtensions
             return immutable;
         if (transform is ICompositionRenderResource<ITransform> resource)
             resource.GetForCompositor(compositor);
-        ThrowNotCompatible(transform);
-        return null;
+        return new ImmutableTransform(transform.Value);
     }
 }

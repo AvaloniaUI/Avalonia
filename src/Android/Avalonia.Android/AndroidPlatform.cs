@@ -52,11 +52,7 @@ namespace Avalonia.Android
                 EglPlatformGraphics.TryInitialize();
             }
             
-            Compositor = new Compositor(
-                AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                AvaloniaLocator.Current.GetService<IPlatformGraphics>());
-            
-
+            Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
     }
 
