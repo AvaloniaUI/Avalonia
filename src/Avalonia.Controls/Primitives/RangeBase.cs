@@ -45,14 +45,14 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="ValueChanged"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedPropertyChangedEventArgs<double>> ValueChangedEvent =
-            RoutedEvent.Register<RangeBase, RoutedPropertyChangedEventArgs<double>>(
+        public static readonly RoutedEvent<RangeBaseValueChangedEventArgs> ValueChangedEvent =
+            RoutedEvent.Register<RangeBase, RangeBaseValueChangedEventArgs>(
                 nameof(ValueChanged), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Occurs when the <see cref="Value"/> property changes.
         /// </summary>
-        public event EventHandler<RoutedPropertyChangedEventArgs<double>>? ValueChanged
+        public event EventHandler<RangeBaseValueChangedEventArgs>? ValueChanged
         {
             add => AddHandler(ValueChangedEvent, value);
             remove => RemoveHandler(ValueChangedEvent, value);
@@ -163,7 +163,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ValueProperty)
             {
-                var valueChangedEventArgs = new RoutedPropertyChangedEventArgs<double>(
+                var valueChangedEventArgs = new RangeBaseValueChangedEventArgs(
                     change.GetOldValue<double>(),
                     change.GetNewValue<double>(),
                     ValueChangedEvent);

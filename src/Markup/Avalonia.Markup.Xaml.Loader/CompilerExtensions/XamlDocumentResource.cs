@@ -13,6 +13,7 @@ internal class XamlDocumentResource : IXamlDocumentResource
         string? uri,
         IFileSource? fileSource,
         IXamlType? classType,
+        bool isPublic,
         IXamlTypeBuilder<IXamlILEmitter> typeBuilder,
         IXamlMethodBuilder<IXamlILEmitter> populateMethod,
         IXamlMethodBuilder<IXamlILEmitter>? buildMethod)
@@ -21,6 +22,7 @@ internal class XamlDocumentResource : IXamlDocumentResource
         Uri = uri;
         FileSource = fileSource;
         ClassType = classType;
+        IsPublic = isPublic;
         TypeBuilder = typeBuilder;
         PopulateMethod = populateMethod;
         BuildMethod = buildMethod;
@@ -31,6 +33,7 @@ internal class XamlDocumentResource : IXamlDocumentResource
     public IFileSource? FileSource { get; }
 
     public IXamlType? ClassType { get; }
+    public bool IsPublic { get; }
     public IXamlTypeBuilder<IXamlILEmitter> TypeBuilder { get; }
     public IXamlMethodBuilder<IXamlILEmitter> PopulateMethod { get; }
     public IXamlMethodBuilder<IXamlILEmitter>? BuildMethod { get; }

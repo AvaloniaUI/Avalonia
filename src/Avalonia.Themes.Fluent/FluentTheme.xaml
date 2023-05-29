@@ -2,7 +2,7 @@
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluent="using:Avalonia.Themes.Fluent"
-        xmlns:accents="clr-namespace:Avalonia.Themes.Fluent.Accents">
+        xmlns:accents="using:Avalonia.Themes.Fluent.Accents">
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
