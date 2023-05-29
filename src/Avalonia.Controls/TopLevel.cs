@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia.Reactive;
@@ -22,6 +23,7 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls
@@ -65,8 +67,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TransparencyLevelHint"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelHintProperty =
-            AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevelHint), WindowTransparencyLevel.None);
+        public static readonly StyledProperty<IReadOnlyList<WindowTransparencyLevel>> TransparencyLevelHintProperty =
+            AvaloniaProperty.Register<TopLevel, IReadOnlyList<WindowTransparencyLevel>>(nameof(TransparencyLevelHint), Array.Empty<WindowTransparencyLevel>());
 
         /// <summary>
         /// Defines the <see cref="ActualTransparencyLevel"/> property.
@@ -173,7 +175,7 @@ namespace Avalonia.Controls
             PlatformImpl = impl ?? throw new InvalidOperationException(
                 "Could not create window implementation: maybe no windowing subsystem was initialized?");
 
-            _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
+            _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
             dependencyResolver ??= AvaloniaLocator.Current;
 
@@ -311,8 +313,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
+        /// Accepts multiple values which are applied in a fallback order.
+        /// For instance, with "Mica, Blur" Mica will be applied only on platforms where it is possible,
+        /// and Blur will be used on the rest of them. Default value is an empty array or "None".    
         /// </summary>
-        public WindowTransparencyLevel TransparencyLevelHint
+        public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint
         {
             get { return GetValue(TransparencyLevelHintProperty); }
             set { SetValue(TransparencyLevelHintProperty, value); }
@@ -536,8 +541,8 @@ namespace Avalonia.Controls
             {
                 if (PlatformImpl != null)
                 {
-                    PlatformImpl.SetTransparencyLevelHint(change.GetNewValue<WindowTransparencyLevel>());
-                    HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
+                    PlatformImpl.SetTransparencyLevelHint(
+                        change.GetNewValue<IReadOnlyList<WindowTransparencyLevel>>() ?? Array.Empty<WindowTransparencyLevel>());
                 }
             }
             else if (change.Property == ActualThemeVariantProperty)
@@ -632,27 +637,11 @@ namespace Avalonia.Controls
             ScalingChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
-        {
-            if(requested == received)
-            {
-                return true;
-            }
-            else if(requested >= WindowTransparencyLevel.Blur && received >= WindowTransparencyLevel.Blur)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
         {
-            if(_transparencyFallbackBorder != null)
+            if (_transparencyFallbackBorder != null)
             {
-                if(transparencyLevel == WindowTransparencyLevel.None || 
-                    TransparencyLevelHint == WindowTransparencyLevel.None || 
-                    !TransparencyLevelsMatch(TransparencyLevelHint, transparencyLevel))
+                if (transparencyLevel == WindowTransparencyLevel.None)
                 {
                     _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
                 }
@@ -682,7 +671,6 @@ namespace Avalonia.Controls
                 return;
 
             _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
-
             HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
         }
 

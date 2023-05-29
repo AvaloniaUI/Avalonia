@@ -65,6 +65,7 @@ namespace Avalonia.Native
         private NativeControlHostImpl _nativeControlHost;
         private IStorageProvider _storageProvider;
         private PlatformBehaviorInhibition _platformBehaviorInhibition;
+        private WindowTransparencyLevel _transparencyLevel = WindowTransparencyLevel.None;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature)
@@ -479,26 +480,47 @@ namespace Avalonia.Native
             _native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) 
         {
-            if (TransparencyLevel != transparencyLevel)
+            foreach (var level in transparencyLevels)
             {
-                if (transparencyLevel > WindowTransparencyLevel.Transparent)
-                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                AvnWindowTransparencyMode? mode = null;
 
-                TransparencyLevel = transparencyLevel;
+                if (level == WindowTransparencyLevel.None)
+                    mode = AvnWindowTransparencyMode.Opaque;
+                if (level == WindowTransparencyLevel.Transparent)
+                    mode = AvnWindowTransparencyMode.Transparent;
+                else if (level == WindowTransparencyLevel.AcrylicBlur)
+                    mode = AvnWindowTransparencyMode.Blur;
 
-                _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
-                    ? AvnWindowTransparencyMode.Opaque 
-                    : transparencyLevel == WindowTransparencyLevel.Transparent 
-                        ? AvnWindowTransparencyMode.Transparent
-                        : AvnWindowTransparencyMode.Blur);
+                if (mode.HasValue && level != TransparencyLevel)
+                {
+                    _native?.SetTransparencyMode(mode.Value);
+                    TransparencyLevel = level;
+                    return;
+                }
+            }
 
-                TransparencyLevelChanged?.Invoke(TransparencyLevel);
+            // If we get here, we didn't find a supported level. Use the default of None.
+            if (TransparencyLevel != WindowTransparencyLevel.None)
+            {
+                _native?.SetTransparencyMode(AvnWindowTransparencyMode.Opaque);
+                TransparencyLevel = WindowTransparencyLevel.None;
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
