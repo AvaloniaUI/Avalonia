@@ -288,6 +288,24 @@ namespace Avalonia.Build.Tasks
                             if (precompileText != "true")
                                 throw new XamlParseException("Invalid value for x:Precompile", precompileDirective);
                         }
+
+                        var classModifierDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
+                            .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "ClassModifier");
+                        bool? classModifierPublic = null;
+                        if (classModifierDirective != null)
+                        {
+                            var classModifierText = (classModifierDirective.Values[0] as XamlAstTextNode)?.Text.Trim()
+                                .ToLowerInvariant();
+                            if ("Public".Equals(classModifierText, StringComparison.OrdinalIgnoreCase))
+                                classModifierPublic = true;
+                            // XAML spec uses "Public" and "NotPublic" values,
+                            // When WPF documentation uses "public" and "internal".
+                            else if ("NotPublic".Equals(classModifierText, StringComparison.OrdinalIgnoreCase)
+                                     || "Internal".Equals(classModifierText, StringComparison.OrdinalIgnoreCase))
+                                classModifierPublic = false;
+                            else
+                                throw new XamlParseException("Invalid value for x:ClassModifier. Expected value are: Public, NotPublic.", precompileDirective);
+                        }
                         
                         var classDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Class");
@@ -297,8 +315,21 @@ namespace Avalonia.Build.Tasks
                             if (classDirective.Values.Count != 1 || !(classDirective.Values[0] is XamlAstTextNode tn))
                                 throw new XamlParseException("x:Class should have a string value", classDirective);
                             classType = typeSystem.TargetAssembly.FindType(tn.Text);
+
                             if (classType == null)
                                 throw new XamlParseException($"Unable to find type `{tn.Text}`", classDirective);
+
+                            var isClassPublic = typeSystem.GetTypeReference(classType).Resolve().IsPublic;
+                            classModifierPublic ??= isClassPublic;
+
+                            // We do not really need x:ClassModifier support for x:Class, but we can at least use it for validation here.
+                            if (classModifierPublic != isClassPublic)
+                            {
+                                throw new XamlParseException(
+                                    "XAML file x:ClassModifier doesn't match the x:Class type modifiers.",
+                                    precompileDirective);
+                            }
+                            
                             compiler.OverrideRootType(parsed,
                                 new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
@@ -319,6 +350,7 @@ namespace Avalonia.Build.Tasks
 
                         ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
                             parsed, res.Uri, res, classType,
+                            classModifierPublic ?? true,
                             populateBuilder,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
@@ -502,7 +534,8 @@ namespace Avalonia.Build.Tasks
 
                         }
 
-                        if (document.BuildMethod != null || classTypeDefinition != null)
+                        if (document.IsPublic
+                            && (document.BuildMethod != null || classTypeDefinition != null))
                         {
                             var compiledBuildMethod = document.BuildMethod == null ?
                                 null :
