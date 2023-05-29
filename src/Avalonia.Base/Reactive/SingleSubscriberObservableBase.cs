@@ -3,7 +3,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Reactive
 {
-    public abstract class SingleSubscriberObservableBase<T> : IObservable<T>, IDisposable
+    internal abstract class SingleSubscriberObservableBase<T> : IObservable<T>, IDisposable
     {
         private Exception? _error;
         private IObserver<T>? _observer;
