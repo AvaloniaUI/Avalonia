@@ -375,15 +375,6 @@ namespace Avalonia.Controls
         ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
         /// <summary>
-        /// Executes a layout pass.
-        /// </summary>
-        /// <remarks>
-        /// You should not usually need to call this method explictly, the layout manager will
-        /// schedule layout passes itself.
-        /// </remarks>
-        public void UpdateLayout() => LayoutManager?.ExecuteLayoutPass();
-
-        /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
         public ITopLevelImpl? PlatformImpl { get; private set; }
