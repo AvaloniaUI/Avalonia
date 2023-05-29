@@ -98,10 +98,10 @@ namespace Avalonia.Controls.Primitives
             int pixelWidth;
             int pixelHeight;
 
-            if (base._track != null)
+            if (base.Track != null)
             {
-                pixelWidth = Convert.ToInt32(base._track.Bounds.Width * scale);
-                pixelHeight = Convert.ToInt32(base._track.Bounds.Height * scale);
+                pixelWidth = Convert.ToInt32(base.Track.Bounds.Width * scale);
+                pixelHeight = Convert.ToInt32(base.Track.Bounds.Height * scale);
             }
             else
             {

@@ -86,13 +86,13 @@ namespace Avalonia.Controls
             set { SetValue(OffContentProperty, value); }
         }
 
-        public IContentPresenter? OffContentPresenter
+        public ContentPresenter? OffContentPresenter
         {
             get;
             private set;
         }
 
-        public IContentPresenter? OnContentPresenter
+        public ContentPresenter? OnContentPresenter
         {
             get;
             private set;
@@ -142,7 +142,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             var result = base.RegisterContentPresenter(presenter);
 
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected void UpdateKnobPos(bool value)
+        private void UpdateKnobPos(bool value)
         {
             if ((_switchKnob != null) && (_knobsPanel != null))
             {

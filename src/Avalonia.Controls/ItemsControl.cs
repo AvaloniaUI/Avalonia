@@ -366,6 +366,30 @@ namespace Avalonia.Controls
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
 
         /// <summary>
+        /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>
+        /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
+        /// </returns>
+        public static ItemsControl? ItemsControlFromItemContaner(Control container)
+        {
+            var c = container.Parent as Control;
+
+            while (c is not null)
+            {
+                if (c is ItemsControl itemsControl)
+                {
+                    return itemsControl.IndexFromContainer(container) >= 0 ? itemsControl : null;
+                }
+
+                c = c.Parent as Control;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Creates or a container that can be used to display an item.
         /// </summary>
         protected internal virtual Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)

@@ -76,7 +76,7 @@ namespace Avalonia.Data
             bool enableDataValidation);
 
         /// <inheritdoc/>
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
         public InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
@@ -234,7 +234,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected IObservable<object?> GetParentDataContext(AvaloniaObject target)
+        private IObservable<object?> GetParentDataContext(AvaloniaObject target)
         {
             // The DataContext is based on the visual parent and not the logical parent: this may
             // seem counter intuitive considering the fact that property inheritance works on the logical

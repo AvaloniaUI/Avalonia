@@ -774,7 +774,7 @@ namespace Avalonia
         /// Computes the <see cref="HasMirrorTransform"/> value according to the 
         /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
         /// </summary>
-        public virtual void InvalidateMirrorTransform()
+        protected internal virtual void InvalidateMirrorTransform()
         {
             var flowDirection = this.FlowDirection;
             var parentFlowDirection = FlowDirection.LeftToRight;

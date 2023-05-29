@@ -339,7 +339,7 @@ namespace Avalonia.Controls.UnitTests
                 _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
     }
 }

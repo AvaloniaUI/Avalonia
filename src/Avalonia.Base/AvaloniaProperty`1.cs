@@ -70,7 +70,7 @@ namespace Avalonia
 
         private protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         private protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)

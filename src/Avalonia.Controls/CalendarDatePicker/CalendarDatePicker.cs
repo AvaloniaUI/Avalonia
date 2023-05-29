@@ -26,8 +26,8 @@ namespace Avalonia.Controls
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public partial class CalendarDatePicker : TemplatedControl
     {
-        protected const string pcPressed    = ":pressed";
-        protected const string pcFlyoutOpen = ":flyout-open";
+        private const string pcPressed    = ":pressed";
+        private const string pcFlyoutOpen = ":flyout-open";
 
         private const string ElementTextBox = "PART_TextBox";
         private const string ElementButton = "PART_Button";
