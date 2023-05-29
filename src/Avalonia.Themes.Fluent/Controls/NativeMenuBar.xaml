@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="using:Avalonia.Themes.Fluent">
+                    xmlns:local="using:Avalonia.Themes.Fluent"
+                    x:ClassModifier="internal">
   <local:IBitmapToImageConverter x:Key="AvaloniaThemesFluentNativeMenuBarIBitmapToImageConverter"/>
   <ControlTheme x:Key="{x:Type NativeMenuBar}" TargetType="NativeMenuBar">
     <Setter Property="Template">
