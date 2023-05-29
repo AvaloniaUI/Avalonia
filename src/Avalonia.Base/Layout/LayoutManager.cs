@@ -28,10 +28,12 @@ namespace Avalonia.Layout
         private bool _queued;
         private bool _running;
         private int _totalPassCount;
+        private Action _invokeOnRender;
 
         public LayoutManager(ILayoutRoot owner)
         {
             _owner = owner as Layoutable ?? throw new ArgumentNullException(nameof(owner));
+            _invokeOnRender = ExecuteQueuedLayoutPass;
         }
 
         public virtual event EventHandler? LayoutUpdated;
@@ -345,7 +347,7 @@ namespace Avalonia.Layout
             if (!_queued && !_running)
             {
                 _queued = true;
-                MediaContext.Instance.QueueLayoutPass(this);
+                MediaContext.Instance.BeginInvokeOnRender(_invokeOnRender);
             }
         }
 
