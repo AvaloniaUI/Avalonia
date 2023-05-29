@@ -38,7 +38,7 @@ namespace Avalonia.iOS
 
             _topLevel.Prepare();
 
-            _topLevel.Renderer.Start();
+            _topLevel.StartRendering();
 
             var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
