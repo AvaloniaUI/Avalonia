@@ -478,7 +478,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         this.BringIntoView(_caretBounds);
                     },
-                    DispatcherPriority.Render);
+                    DispatcherPriority.AfterRender);
             }
         }
 

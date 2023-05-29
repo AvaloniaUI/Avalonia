@@ -5,7 +5,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="UInt32"/> properties.
     /// </summary>
-    public class UInt32Animator : Animator<UInt32>
+    internal class UInt32Animator : Animator<UInt32>
     {
         const double maxVal = (double)UInt32.MaxValue;
 

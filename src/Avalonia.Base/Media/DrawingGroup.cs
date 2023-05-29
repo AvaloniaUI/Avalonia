@@ -8,7 +8,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public class DrawingGroup : Drawing
+    public sealed class DrawingGroup : Drawing
     {
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);

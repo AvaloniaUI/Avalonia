@@ -3,7 +3,7 @@
     /// <summary>
     /// Animator that handles <see cref="bool"/> properties.
     /// </summary>
-    public class BoolAnimator : Animator<bool>
+    internal class BoolAnimator : Animator<bool>
     {
         /// <inheritdocs/>
         public override bool Interpolate(double progress, bool oldValue, bool newValue)

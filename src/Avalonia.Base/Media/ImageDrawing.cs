@@ -5,7 +5,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Draws an image within a region defined by a <see cref="Rect"/>.
     /// </summary>
-    public class ImageDrawing : Drawing
+    public sealed class ImageDrawing : Drawing
     {
         /// <summary>
         /// Defines the <see cref="ImageSource"/> property.

@@ -200,7 +200,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Paint()
             {
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
                 var s = _parent.ClientSize;
                 _parent.Paint?.Invoke(new Rect(0, 0, s.Width, s.Height));
             }
@@ -243,7 +243,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);
             }
             
             void IAvnWindowBaseEvents.LostFocus()
@@ -365,13 +365,7 @@ namespace Avalonia.Native
             _native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
-            {
-                RenderOnlyOnRenderThread = false
-            };
-        }
+        public Compositor Compositor => AvaloniaNativePlatform.Compositor;
 
         public virtual void Dispose()
         {

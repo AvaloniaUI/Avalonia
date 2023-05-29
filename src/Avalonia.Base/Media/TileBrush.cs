@@ -41,6 +41,11 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class TileBrush : Brush, ITileBrush
     {
+        internal TileBrush()
+        {
+            
+        }
+        
         /// <summary>
         /// Defines the <see cref="AlignmentX"/> property.
         /// </summary>

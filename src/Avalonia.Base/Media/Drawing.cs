@@ -5,6 +5,11 @@
     /// </summary>
     public abstract class Drawing : AvaloniaObject
     {
+        internal Drawing()
+        {
+            
+        }
+        
         /// <summary>
         /// Draws this drawing to the given <see cref="DrawingContext"/>.
         /// </summary>

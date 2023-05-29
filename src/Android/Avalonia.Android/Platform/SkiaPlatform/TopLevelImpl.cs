@@ -103,9 +103,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
-
+        public Compositor Compositor => AndroidPlatform.Compositor;
+        
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;

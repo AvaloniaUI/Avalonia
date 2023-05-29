@@ -7,7 +7,7 @@ namespace Avalonia.Animation;
 /// <summary>
 /// Converts string values to <see cref="Spring"/> values.
 /// </summary>
-public class SpringTypeConverter : TypeConverter
+internal class SpringTypeConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
     {

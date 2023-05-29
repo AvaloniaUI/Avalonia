@@ -3,18 +3,21 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Reactive;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding to a property on a control's templated parent.
     /// </summary>
-    public class TemplateBinding : SingleSubscriberObservableBase<object?>,
+    public class TemplateBinding : IObservable<object?>,
         IBinding,
         IDescription,
         IAvaloniaSubject<object?>,
-        ISetterValue
+        ISetterValue,
+        IDisposable
     {
+        private IObserver<object?>? _observer;
         private bool _isSetterValue;
         private StyledElement? _target;
         private Type? _targetType;
@@ -27,6 +30,28 @@ namespace Avalonia.Data
         public TemplateBinding(AvaloniaProperty property)
         {
             Property = property;
+        }
+
+        public IDisposable Subscribe(IObserver<object?> observer)
+        {
+            _ = observer ?? throw new ArgumentNullException(nameof(observer));
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_observer != null)
+            {
+                throw new InvalidOperationException("The observable can only be subscribed once.");
+            }
+
+            _observer = observer;
+            Subscribed();
+
+            return this;
+        }
+
+        public virtual void Dispose()
+        {
+            Unsubscribed();
+            _observer = null;
         }
 
         /// <inheritdoc/>
@@ -111,7 +136,7 @@ namespace Avalonia.Data
         /// <inheritdoc/>
         void ISetterValue.Initialize(SetterBase setter) => _isSetterValue = true;
 
-        protected override void Subscribed()
+        private void Subscribed()
         {
             TemplatedParentChanged();
 
@@ -121,7 +146,7 @@ namespace Avalonia.Data
             }
         }
 
-        protected override void Unsubscribed()
+        private void Unsubscribed()
         {
             if (_target?.TemplatedParent is { } templatedParent)
             {
@@ -147,12 +172,12 @@ namespace Avalonia.Data
                     value = Converter.Convert(value, _targetType ?? typeof(object), ConverterParameter, CultureInfo.CurrentCulture);
                 }
 
-                PublishNext(value);
+                _observer?.OnNext(value);
                 _hasProducedValue = true;
             }
             else if (_hasProducedValue)
             {
-                PublishNext(AvaloniaProperty.UnsetValue);
+                _observer?.OnNext(AvaloniaProperty.UnsetValue);
                 _hasProducedValue = false;
             }
         }

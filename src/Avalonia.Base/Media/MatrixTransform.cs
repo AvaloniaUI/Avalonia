@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Transforms an <see cref="Visual"/> according to a <see cref="Matrix"/>.
     /// </summary>
-    public class MatrixTransform : Transform
+    public sealed class MatrixTransform : Transform
     {
         /// <summary>
         /// Defines the <see cref="Matrix"/> property.

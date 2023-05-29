@@ -32,10 +32,7 @@ using Avalonia.Rendering.Composition;
                 Dispatcher.UIThread.Post(() => _inputQueue.HandleEvent(e), DispatcherPriority.Send ));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
-        }
+        public Compositor Compositor => LinuxFramebufferPlatform.Compositor;
 
         public void Dispose()
         {

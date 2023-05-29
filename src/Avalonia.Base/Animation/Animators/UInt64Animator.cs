@@ -5,7 +5,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="UInt64"/> properties.
     /// </summary>
-    public class UInt64Animator : Animator<UInt64>
+    internal class UInt64Animator : Animator<UInt64>
     {
         const double maxVal = (double)UInt64.MaxValue;
 

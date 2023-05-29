@@ -24,7 +24,7 @@ namespace Avalonia.Headless
                 var st = Stopwatch.StartNew();
                 _forceTick = () => tick(st.Elapsed);
 
-                var timer = new DispatcherTimer(DispatcherPriority.Render)
+                var timer = new DispatcherTimer(DispatcherPriority.UiThreadRender)
                 {
                     Interval = TimeSpan.FromSeconds(1.0 / _framesPerSecond),
                     Tag = "HeadlessRenderTimer"
@@ -69,11 +69,10 @@ namespace Avalonia.Headless
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
+            Compositor = new Compositor( null);
         }
 
         /// <summary>
