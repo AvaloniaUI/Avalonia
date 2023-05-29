@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -168,7 +168,7 @@ namespace Avalonia.Controls.UnitTests
 
                 bool opened = false;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     opened = true;
                 };
@@ -221,7 +221,7 @@ namespace Avalonia.Controls.UnitTests
 
                 int closedCount = 0;
 
-                sut.MenuClosed += (sender, args) =>
+                sut.Closed += (sender, args) =>
                 {
                     closedCount++;
                 };
@@ -259,7 +259,7 @@ namespace Avalonia.Controls.UnitTests
                 var tracker = 0;
 
                 var c = new ContextMenu();
-                c.ContextMenuClosing += (s, e) =>
+                c.Closing += (s, e) =>
                 {
                     tracker++;
                     e.Cancel = true;
@@ -431,7 +431,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 new Window { Content = target };
 
-                sut.ContextMenuOpening += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Opening += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 _mouse.Click(target, MouseButton.Right);
 
@@ -575,7 +575,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = PreparedWindow(target);
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
-                sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Closing += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 window.Show();
 

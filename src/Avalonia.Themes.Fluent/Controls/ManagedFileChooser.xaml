@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dialogs="using:Avalonia.Dialogs"
-        xmlns:internal="using:Avalonia.Dialogs.Internal">
+        xmlns:internal="using:Avalonia.Dialogs.Internal"
+        x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20" Width="800" Height="500">
       <dialogs:ManagedFileChooser/>

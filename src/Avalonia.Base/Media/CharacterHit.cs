@@ -19,6 +19,7 @@ namespace Avalonia.Media
         /// <param name="firstCharacterIndex">Index of the first character that got hit.</param>
         /// <param name="trailingLength">In the case of a leading edge, this value is 0. In the case of a trailing edge,
         /// this value is the number of code points until the next valid caret position.</param>
+        [DebuggerStepThrough]
         public CharacterHit(int firstCharacterIndex, int trailingLength = 0)
         {
             FirstCharacterIndex = firstCharacterIndex;
