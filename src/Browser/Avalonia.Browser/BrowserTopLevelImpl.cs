@@ -187,9 +187,7 @@ namespace Avalonia.Browser
 
         }
 
-        public Compositor Compositor { get; } = new(
-            AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-            AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
+        public Compositor Compositor { get; } = new(AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
 
         public void Invalidate(Rect rect)
         {
