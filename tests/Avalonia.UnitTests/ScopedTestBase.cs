@@ -2,9 +2,11 @@ using System;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Xunit;
 
 namespace Avalonia.UnitTests;
 
+[Collection("Scoped Not Parallel")]
 public class ScopedTestBase : IDisposable
 {
     private readonly IDisposable _scope;
