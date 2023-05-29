@@ -43,13 +43,20 @@ partial class MediaContext
             if (_scheduleCommitOnLastCompositionBatchCompletion)
             {
                 _scheduleCommitOnLastCompositionBatchCompletion = false;
-                CommitCompositorsWithThrottling();
+                if (!CommitCompositorsWithThrottling())
+                    ScheduleRenderForAnimationsIfNeeded();
+
             }
             // Check if there are active animations and schedule the next render
-            else if(_clock.HasSubscriptions) 
-                ScheduleRender(false);
+            else
+                ScheduleRenderForAnimationsIfNeeded();
         }
+    }
 
+    void ScheduleRenderForAnimationsIfNeeded()
+    {
+        if (_clock.HasSubscriptions) 
+            ScheduleRender(false);
     }
 
     /// <summary>
