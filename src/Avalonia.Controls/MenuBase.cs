@@ -25,16 +25,16 @@ namespace Avalonia.Controls
                 o => o.IsOpen);
 
         /// <summary>
-        /// Defines the <see cref="MenuOpened"/> event.
+        /// Defines the <see cref="Opened"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> MenuOpenedEvent =
-            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuOpened), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="MenuClosed"/> event.
+        /// Defines the <see cref="Closed"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> MenuClosedEvent =
-            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuClosed), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
 
         private bool _isOpen;
 
@@ -68,8 +68,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsOpen
         {
-            get { return _isOpen; }
-            protected set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
+            get => _isOpen;
+            protected set => SetAndRaise(IsOpenProperty, ref _isOpen, value);
         }
 
         /// <inheritdoc/>
@@ -105,19 +105,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is opened.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? MenuOpened
+        public event EventHandler<RoutedEventArgs>? Opened
         {
-            add { AddHandler(MenuOpenedEvent, value); }
-            remove { RemoveHandler(MenuOpenedEvent, value); }
+            add => AddHandler(OpenedEvent, value);
+            remove => RemoveHandler(OpenedEvent, value);
         }
 
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is closed.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? MenuClosed
+        public event EventHandler<RoutedEventArgs>? Closed
         {
-            add { AddHandler(MenuClosedEvent, value); }
-            remove { RemoveHandler(MenuClosedEvent, value); }
+            add => AddHandler(ClosedEvent, value);
+            remove => RemoveHandler(ClosedEvent, value);
         }
 
         /// <summary>

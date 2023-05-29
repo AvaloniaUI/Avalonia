@@ -336,7 +336,7 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
             
         }

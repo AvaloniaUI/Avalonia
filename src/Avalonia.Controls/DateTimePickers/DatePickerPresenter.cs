@@ -367,11 +367,11 @@ namespace Avalonia.Controls
             var dt = Date;
             if (DayVisible)
             {
+                _daySelector.FormatDate = dt.Date;
                 var maxDays = _calendar.GetDaysInMonth(dt.Year, dt.Month);
                 _daySelector.MaximumValue = maxDays;
                 _daySelector.MinimumValue = 1;
                 _daySelector.SelectedValue = dt.Day;
-                _daySelector.FormatDate = dt.Date;
             }
 
             if (MonthVisible)

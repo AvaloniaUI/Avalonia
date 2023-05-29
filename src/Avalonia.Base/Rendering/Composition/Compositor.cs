@@ -66,16 +66,14 @@ namespace Avalonia.Rendering.Composition
         /// Creates a new compositor on a specified render loop that would use a particular GPU
         /// </summary>
         [PrivateApi]
-        public Compositor(IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false) 
+        public Compositor(IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
             : this(RenderLoop.LocatorAutoInstance, gpu, useUiThreadForSynchronousCommits)
         {
-            
         }
-        
-        internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false) 
+
+        internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
             : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false)
         {
-            
         }
 
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
