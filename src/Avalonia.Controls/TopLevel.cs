@@ -487,6 +487,9 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 
+        /// <inheritdoc />
+        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {

@@ -1,4 +1,5 @@
 using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Input
 {
@@ -17,9 +18,17 @@ namespace Avalonia.Input
         /// Gets focus manager of the root.
         /// </summary>
         /// <remarks>
-        /// Focus manager can be null only if application wasn't initialized yet.
+        /// Focus manager can be null only if window wasn't initialized yet.
         /// </remarks>
         IFocusManager? FocusManager { get; }
+        
+        /// <summary>
+        /// Represents a contract for accessing platform-specific settings and information.
+        /// </summary>
+        /// <remarks>
+        /// Focus manager can be null only if window wasn't initialized yet.
+        /// </remarks>
+        IPlatformSettings? PlatformSettings { get; }
         
         /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
