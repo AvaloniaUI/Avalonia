@@ -96,7 +96,7 @@ namespace Avalonia.Rendering
                     }
 
                     using (context.PushTransform(m))
-                    using (context.PushOpacity(opacity, bounds))
+                    using (context.PushOpacity(opacity))
                     using (clipToBounds
 #pragma warning disable CS0618 // Type or member is obsolete
                         ? visual is IVisualWithRoundRectClip roundClipVisual

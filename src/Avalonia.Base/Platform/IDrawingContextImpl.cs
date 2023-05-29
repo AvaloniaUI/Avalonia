@@ -132,7 +132,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="opacity">The opacity.</param>
         /// <param name="bounds">where to apply the opacity.</param>
-        void PushOpacity(double opacity, Rect bounds);
+        void PushOpacity(double opacity, Rect? bounds);
 
         /// <summary>
         /// Pops the latest pushed opacity value.
