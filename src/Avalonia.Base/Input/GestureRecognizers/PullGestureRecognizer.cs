@@ -3,12 +3,11 @@ using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
-    public class PullGestureRecognizer : AvaloniaObject, IGestureRecognizer
+    public class PullGestureRecognizer : GestureRecognizer
     {
         internal static int MinPullDetectionSize = 50;
 
         private IInputElement? _target;
-        private IGestureRecognizerActionsDispatcher? _actions;
         private Point _initialPosition;
         private int _gestureId;
         private IPointer? _tracking;
@@ -26,7 +25,7 @@ namespace Avalonia.Input
             set => SetValue(PullDirectionProperty, value);
         }
 
-        public IInputElement? Target => _target;
+        public override IInputElement? Target => _target;
 
         public PullGestureRecognizer(PullDirection pullDirection)
         {
@@ -35,13 +34,12 @@ namespace Avalonia.Input
 
         public PullGestureRecognizer() { }
 
-        public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
+        public override void Initialize(IInputElement target)
         {
             _target = target;
-            _actions = actions;
         }
 
-        public void PointerCaptureLost(IPointer pointer)
+        public override void PointerCaptureLost(IPointer pointer)
         {
             if (_tracking == pointer)
             {
@@ -49,12 +47,12 @@ namespace Avalonia.Input
             }
         }
 
-        public void PointerMoved(PointerEventArgs e)
+        public override void PointerMoved(PointerEventArgs e)
         {
             if (_tracking == e.Pointer && _target is Visual visual)
             {
                 var currentPosition = e.GetPosition(visual);
-                _actions!.Capture(e.Pointer, this);
+                Capture(e.Pointer);
                 e.PreventGestureRecognition();
 
                 Vector delta = default;
@@ -94,7 +92,7 @@ namespace Avalonia.Input
             }
         }
 
-        public void PointerPressed(PointerPressedEventArgs e)
+        public override void PointerPressed(PointerPressedEventArgs e)
         {
             if (_target != null && _target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
@@ -129,7 +127,7 @@ namespace Avalonia.Input
             }
         }
 
-        public void PointerReleased(PointerReleasedEventArgs e)
+        public override void PointerReleased(PointerReleasedEventArgs e)
         {
             if (_tracking == e.Pointer && _pullInProgress)
             {

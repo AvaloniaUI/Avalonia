@@ -2,10 +2,9 @@
 
 namespace Avalonia.Input
 {
-    public class PinchGestureRecognizer : AvaloniaObject, IGestureRecognizer
+    public class PinchGestureRecognizer : GestureRecognizer
     {
         private IInputElement? _target;
-        private IGestureRecognizerActionsDispatcher? _actions;
         private float _initialDistance;
         private IPointer? _firstContact;
         private Point _firstPoint;
@@ -13,12 +12,11 @@ namespace Avalonia.Input
         private Point _secondPoint;
         private Point _origin;
 
-        public IInputElement? Target => _target;
+        public override IInputElement? Target => _target;
 
-        public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
+        public override void Initialize(IInputElement target)
         {
             _target = target;
-            _actions = actions;
         }
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -31,12 +29,12 @@ namespace Avalonia.Input
             PointerReleased(e);
         }
 
-        public void PointerCaptureLost(IPointer pointer)
+        public override void PointerCaptureLost(IPointer pointer)
         {
             RemoveContact(pointer);
         }
 
-        public void PointerMoved(PointerEventArgs e)
+        public override void PointerMoved(PointerEventArgs e)
         {
             if (_target != null && _target is Visual visual)
             {
@@ -67,7 +65,7 @@ namespace Avalonia.Input
             }
         }
 
-        public void PointerPressed(PointerPressedEventArgs e)
+        public override void PointerPressed(PointerPressedEventArgs e)
         {
             if (_target != null && _target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
@@ -94,13 +92,13 @@ namespace Avalonia.Input
 
                     _origin = new Point((_firstPoint.X + _secondPoint.X) / 2.0f, (_firstPoint.Y + _secondPoint.Y) / 2.0f);
 
-                    _actions!.Capture(_firstContact, this);
-                    _actions!.Capture(_secondContact, this);
+                    Capture(_firstContact);
+                    Capture(_secondContact);
                 }
             }
         }
 
-        public void PointerReleased(PointerReleasedEventArgs e)
+        public override void PointerReleased(PointerReleasedEventArgs e)
         {
             RemoveContact(e.Pointer);
         }

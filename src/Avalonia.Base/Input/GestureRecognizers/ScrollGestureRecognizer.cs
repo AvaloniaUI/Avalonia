@@ -4,7 +4,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Input.GestureRecognizers
 {
-    public class ScrollGestureRecognizer : AvaloniaObject, IGestureRecognizer
+    public class ScrollGestureRecognizer : GestureRecognizer
     {
         // Pixels per second speed that is considered to be the stop of inertial scroll
         internal const double InertialScrollSpeedEnd = 5;
@@ -19,7 +19,6 @@ namespace Avalonia.Input.GestureRecognizers
         private Point _trackedRootPoint;
         private IPointer? _tracking;
         private IInputElement? _target;
-        private IGestureRecognizerActionsDispatcher? _actions;
         private int _gestureId;
         private Point _pointerPressedPoint;
         private VelocityTracker? _velocityTracker;
@@ -93,15 +92,14 @@ namespace Avalonia.Input.GestureRecognizers
             set => SetAndRaise(ScrollStartDistanceProperty, ref _scrollStartDistance, value);
         }
 
-        public IInputElement? Target => _target;
+        public override IInputElement? Target => _target;
 
-        public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
+        public override void Initialize(IInputElement target)
         {
             _target = target;
-            _actions = actions;
         }
         
-        public void PointerPressed(PointerPressedEventArgs e)
+        public override void PointerPressed(PointerPressedEventArgs e)
         {
             if (e.Pointer.IsPrimary && 
                 (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
@@ -112,8 +110,8 @@ namespace Avalonia.Input.GestureRecognizers
                 _trackedRootPoint = _pointerPressedPoint = e.GetPosition((Visual?)_target);
             }
         }
-        
-        public void PointerMoved(PointerEventArgs e)
+
+        public override void PointerMoved(PointerEventArgs e)
         {
             if (e.Pointer == _tracking)
             {
@@ -133,7 +131,7 @@ namespace Avalonia.Input.GestureRecognizers
                             _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? ScrollStartDistance : -ScrollStartDistance),
                             _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? ScrollStartDistance : -ScrollStartDistance));
 
-                        _actions!.Capture(e.Pointer, this);
+                        Capture(e.Pointer);
 
                         e.PreventGestureRecognition();
                     }
@@ -153,7 +151,7 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
 
-        public void PointerCaptureLost(IPointer pointer)
+        public override void PointerCaptureLost(IPointer pointer)
         {
             if (pointer == _tracking) EndGesture();
         }
@@ -173,7 +171,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
 
-        public void PointerReleased(PointerReleasedEventArgs e)
+        public override void PointerReleased(PointerReleasedEventArgs e)
         {
             if (e.Pointer == _tracking && _scrolling)
             {
