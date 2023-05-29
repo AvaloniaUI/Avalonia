@@ -108,14 +108,11 @@ namespace Avalonia.Input
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
         {
-            IInputElement? source;
-            if (pointer.CapturedGestureRecognizer is IGestureRecognizer gestureRecognizer)
+            if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
             {
-                source = gestureRecognizer.Target ?? hitTest;
-
-                if (source != null)
+                if (gestureRecognizer.Target != null)
                 {
-                    var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, pointer, (Visual)root,
+                    var e = new PointerEventArgs(InputElement.PointerMovedEvent, gestureRecognizer.Target, pointer, (Visual)root,
                         p, timestamp, properties, inputModifiers, intermediatePoints);
                     gestureRecognizer.PointerMoved(e);
 
@@ -123,7 +120,7 @@ namespace Avalonia.Input
                 }
             }
 
-            source = pointer.Captured ?? hitTest;
+            var source = pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
@@ -141,14 +138,11 @@ namespace Avalonia.Input
             IInputElement root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest)
         {
-            IInputElement? source;
-            if (pointer.CapturedGestureRecognizer is IGestureRecognizer gestureRecognizer)
+            if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
             {
-                source = gestureRecognizer.Target ?? hitTest;
-
-                if (source != null)
+                if (gestureRecognizer.Target != null)
                 {
-                    var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
+                    var e = new PointerReleasedEventArgs(gestureRecognizer.Target, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
                     _lastMouseDownButton);
                     gestureRecognizer.PointerReleased(e);
 
@@ -156,7 +150,7 @@ namespace Avalonia.Input
                 }
             }
 
-            source = pointer.Captured ?? hitTest;
+            var source = pointer.Captured ?? hitTest;
 
             if (source is not null)
             {

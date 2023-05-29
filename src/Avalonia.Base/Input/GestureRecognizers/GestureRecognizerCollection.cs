@@ -6,26 +6,26 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Input.GestureRecognizers
 {
-    public class GestureRecognizerCollection : IReadOnlyCollection<IGestureRecognizer>, IGestureRecognizerActionsDispatcher
+    public class GestureRecognizerCollection : IReadOnlyCollection<GestureRecognizer>
     {
         private readonly IInputElement _inputElement;
-        private List<IGestureRecognizer>? _recognizers;
+        private List<GestureRecognizer>? _recognizers;
 
         public GestureRecognizerCollection(IInputElement inputElement)
         {
             _inputElement = inputElement;
         }
 
-        public void Add(IGestureRecognizer recognizer)
+        public void Add(GestureRecognizer recognizer)
         {
             if (_recognizers == null)
             {
                 // We initialize the collection when the first recognizer is added
-                _recognizers = new List<IGestureRecognizer>();
+                _recognizers = new List<GestureRecognizer>();
             }
 
             _recognizers.Add(recognizer);
-            recognizer.Initialize(_inputElement, this);
+            recognizer.Initialize(_inputElement);
 
             // Hacks to make bindings work
 
@@ -38,15 +38,14 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
 
-        static readonly List<IGestureRecognizer> s_Empty = new List<IGestureRecognizer>();
+        static readonly List<GestureRecognizer> s_Empty = new List<GestureRecognizer>();
 
-        public IEnumerator<IGestureRecognizer> GetEnumerator()
+        public IEnumerator<GestureRecognizer> GetEnumerator()
             => _recognizers?.GetEnumerator() ?? s_Empty.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public int Count => _recognizers?.Count ?? 0;
-
 
         internal bool HandlePointerPressed(PointerPressedEventArgs e)
         {
@@ -91,19 +90,5 @@ namespace Avalonia.Input.GestureRecognizers
             }
             return e.Handled;
         }
-
-        void IGestureRecognizerActionsDispatcher.Capture(IPointer pointer, IGestureRecognizer recognizer)
-        {
-            var p = pointer as Pointer;
-
-            p?.CaptureGestureRecognizer(recognizer);
-
-            foreach (var r in _recognizers!)
-            {
-                if (r != recognizer)
-                    r.PointerCaptureLost(pointer);
-            }
-        }
-
     }
 }

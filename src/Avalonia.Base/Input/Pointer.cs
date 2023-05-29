@@ -77,7 +77,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the gesture recognizer that is currently capturing by the pointer, if any.
         /// </summary>
-        internal IGestureRecognizer? CapturedGestureRecognizer { get; private set; }
+        internal GestureRecognizer? CapturedGestureRecognizer { get; private set; }
 
         public void Dispose()
         {
@@ -89,7 +89,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="gestureRecognizer">The gesture recognizer.</param>
         /// </remarks>
-        internal void CaptureGestureRecognizer(IGestureRecognizer? gestureRecognizer)
+        internal void CaptureGestureRecognizer(GestureRecognizer? gestureRecognizer)
         {
             if (CapturedGestureRecognizer != gestureRecognizer)
                 CapturedGestureRecognizer?.PointerCaptureLost(this);
