@@ -174,18 +174,13 @@ namespace Avalonia.Controls
         /// </remarks>
         public double Percentage
         {
-            get { return _percentage; }
+            get => _percentage;
             private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
         }
 
         static ProgressBar()
         {
             ValueProperty.OverrideMetadata<ProgressBar>(new(defaultBindingMode: BindingMode.OneWay));
-            ValueProperty.Changed.AddClassHandler<ProgressBar>((x, _) => x.UpdateIndicatorWhenPropChanged());
-            MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, _) => x.UpdateIndicatorWhenPropChanged());
-            MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, _) => x.UpdateIndicatorWhenPropChanged());
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, _) => x.UpdateIndicatorWhenPropChanged());
-            OrientationProperty.Changed.AddClassHandler<ProgressBar>((x, _) => x.UpdateIndicatorWhenPropChanged());
         }
 
         /// <summary>
@@ -251,6 +246,15 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property == ValueProperty ||
+                change.Property == MinimumProperty ||
+                change.Property == MaximumProperty ||
+                change.Property == IsIndeterminateProperty ||
+                change.Property == OrientationProperty)
+            {
+                UpdateIndicator();
+            }
+
             if (change.Property == IsIndeterminateProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<bool>(), null);
@@ -286,57 +290,50 @@ namespace Avalonia.Controls
             // Gets the size of the parent indicator container
             var barSize = _indicator?.VisualParent?.Bounds.Size ?? Bounds.Size;
 
-            if (_indicator != null)
+            if (_indicator == null) return;
+            if (IsIndeterminate)
             {
-                if (IsIndeterminate)
+                // Pulled from ModernWPF.
+
+                var dim = Orientation == Orientation.Horizontal ? barSize.Width : barSize.Height;
+                var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
+                var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
+
+                TemplateSettings.ContainerWidth = barIndicatorWidth;
+                TemplateSettings.Container2Width = barIndicatorWidth2;
+
+                TemplateSettings.ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
+                TemplateSettings.ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
+
+                TemplateSettings.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
+                TemplateSettings.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
+
+                TemplateSettings.IndeterminateStartingOffset = -dim;
+                TemplateSettings.IndeterminateEndingOffset = dim;
+            }
+            else
+            {
+                var percent = Math.Abs(Maximum - Minimum) < double.Epsilon ?
+                    1.0 :
+                    (Value - Minimum) / (Maximum - Minimum);
+
+                // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
+                // Indicator size calculation should consider the ProgressBar's Padding property setting
+                if (Orientation == Orientation.Horizontal)
                 {
-                    // Pulled from ModernWPF.
-
-                    var dim = Orientation == Orientation.Horizontal ? barSize.Width : barSize.Height;
-                    var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
-                    var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
-
-                    TemplateSettings.ContainerWidth = barIndicatorWidth;
-                    TemplateSettings.Container2Width = barIndicatorWidth2;
-
-                    TemplateSettings.ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
-                    TemplateSettings.ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
-
-                    TemplateSettings.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
-                    TemplateSettings.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
-
-                    TemplateSettings.IndeterminateStartingOffset = -dim;  
-                    TemplateSettings.IndeterminateEndingOffset = dim;
+                    _indicator.Width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
+                    _indicator.Height = double.NaN;
                 }
                 else
                 {
-                    var percent = Math.Abs(Maximum - Minimum) < double.Epsilon ?
-                        1.0 :
-                        (Value - Minimum) / (Maximum - Minimum);
-
-                    // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
-                    // Indicator size calculation should consider the ProgressBar's Padding property setting
-                    if (Orientation == Orientation.Horizontal)
-                    {
-                        _indicator.Width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
-                        _indicator.Height = double.NaN;
-                    }
-                    else
-                    {
-                        _indicator.Width = double.NaN;
-                        _indicator.Height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) *
-                                            percent;
-                    }
-
-
-                    Percentage = percent * 100;
+                    _indicator.Width = double.NaN;
+                    _indicator.Height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) *
+                                        percent;
                 }
-            }
-        }
 
-        private void UpdateIndicatorWhenPropChanged()
-        {
-            UpdateIndicator();
+
+                Percentage = percent * 100;
+            }
         }
 
         private void UpdatePseudoClasses(
