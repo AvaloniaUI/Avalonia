@@ -32,6 +32,9 @@ namespace Avalonia.Controls
             private double _container2AnimationStartPosition;
             private double _container2AnimationEndPosition;
 
+            /// <summary>
+            /// Defines the <see cref="ContainerAnimationStartPosition"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double>
                 ContainerAnimationStartPositionProperty =
                     AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
@@ -39,6 +42,9 @@ namespace Avalonia.Controls
                         p => p.ContainerAnimationStartPosition,
                         (p, o) => p.ContainerAnimationStartPosition = o);
 
+            /// <summary>
+            /// Defines the <see cref="ContainerAnimationEndPosition"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double>
                 ContainerAnimationEndPositionProperty =
                     AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
@@ -46,6 +52,9 @@ namespace Avalonia.Controls
                         p => p.ContainerAnimationEndPosition,
                         (p, o) => p.ContainerAnimationEndPosition = o);
 
+            /// <summary>
+            /// Defines the <see cref="Container2AnimationStartPosition"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double>
                 Container2AnimationStartPositionProperty =
                     AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
@@ -53,6 +62,9 @@ namespace Avalonia.Controls
                         p => p.Container2AnimationStartPosition,
                         (p, o) => p.Container2AnimationStartPosition = o);
 
+            /// <summary>
+            /// Defines the <see cref="Container2AnimationEndPosition"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double>
                 Container2AnimationEndPositionProperty =
                     AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
@@ -60,24 +72,57 @@ namespace Avalonia.Controls
                         p => p.Container2AnimationEndPosition,
                         (p, o) => p.Container2AnimationEndPosition = o);
 
+            /// <summary>
+            /// Defines the <see cref="Container2Width"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double> Container2WidthProperty =
                 AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
                     nameof(Container2Width),
                     p => p.Container2Width,
                     (p, o) => p.Container2Width = o);
 
+            /// <summary>
+            /// Defines the <see cref="ContainerWidth"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double> ContainerWidthProperty =
                 AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
                     nameof(ContainerWidth),
                     p => p.ContainerWidth,
                     (p, o) => p.ContainerWidth = o);
 
+            /// <summary>
+            /// Defines the <see cref="IndeterminateStartingOffset"/> property.
+            /// </summary>
             public static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
                 AvaloniaProperty.Register<ProgressBarTemplateSettings, double>(nameof(IndeterminateStartingOffset));
 
+            /// <summary>
+            /// Defines the <see cref="IndeterminateEndingOffset"/> property.
+            /// </summary>
             public static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
                 AvaloniaProperty.Register<ProgressBarTemplateSettings, double>(nameof(IndeterminateEndingOffset));
 
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's width.
+            /// </summary>
+            public double ContainerWidth
+            {
+                get => _containerWidth;
+                set => SetAndRaise(ContainerWidthProperty, ref _containerWidth, value);
+            }
+            
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's width.
+            /// </summary>
+            public double Container2Width
+            {
+                get => _container2Width;
+                set => SetAndRaise(Container2WidthProperty, ref _container2Width, value);
+            }
+
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's start position when animated.
+            /// </summary>
             public double ContainerAnimationStartPosition
             {
                 get => _containerAnimationStartPosition;
@@ -85,43 +130,46 @@ namespace Avalonia.Controls
                     value);
             }
 
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's end position when animated.
+            /// </summary>
             public double ContainerAnimationEndPosition
             {
                 get => _containerAnimationEndPosition;
                 set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
             }
 
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's start position when animated.
+            /// </summary>
             public double Container2AnimationStartPosition
             {
                 get => _container2AnimationStartPosition;
                 set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition,
                     value);
             }
-
-            public double Container2Width
-            {
-                get => _container2Width;
-                set => SetAndRaise(Container2WidthProperty, ref _container2Width, value);
-            }
-
-            public double ContainerWidth
-            {
-                get => _containerWidth;
-                set => SetAndRaise(ContainerWidthProperty, ref _containerWidth, value);
-            }
-
+            
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's end position when animated.
+            /// </summary>
             public double Container2AnimationEndPosition
             {
                 get => _container2AnimationEndPosition;
                 set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
             }
 
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Simple"/>  to define the starting point of its indeterminate animation.
+            /// </summary>
             public double IndeterminateStartingOffset
             {
                 get => GetValue(IndeterminateStartingOffsetProperty);
                 set => SetValue(IndeterminateStartingOffsetProperty, value);
             }
 
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Simple"/> to define the ending point of its indeterminate animation.
+            /// </summary>
             public double IndeterminateEndingOffset
             {
                 get => GetValue(IndeterminateEndingOffsetProperty);
