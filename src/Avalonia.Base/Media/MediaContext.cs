@@ -24,7 +24,6 @@ internal partial class MediaContext : ICompositorScheduler
     private readonly Dictionary<Compositor, Batch> _pendingCompositionBatches = new();
     private record  TopLevelInfo(Compositor Compositor, CompositingRenderer Renderer, ILayoutManager LayoutManager);
     private readonly HashSet<LayoutManager> _queuedLayoutManagers = new();
-    public static bool InputMarkerEnabled = true;
 
     private Dictionary<object, TopLevelInfo> _topLevels = new();
 
@@ -67,18 +66,16 @@ internal partial class MediaContext : ICompositorScheduler
         
         var priority = DispatcherPriority.Render;
         
-        if (InputMarkerEnabled)
+        if (_inputMarkerOp == null)
         {
-            if (_inputMarkerOp == null)
-            {
-                _inputMarkerOp = Dispatcher.UIThread.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
-                _inputMarkerAddedAt = _time.Elapsed;
-            }
-            else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
-            {
-                priority = DispatcherPriority.Input;
-            }
+            _inputMarkerOp = Dispatcher.UIThread.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
+            _inputMarkerAddedAt = _time.Elapsed;
         }
+        else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
+        {
+            priority = DispatcherPriority.Input;
+        }
+        
 
         _nextRenderOp = Dispatcher.UIThread.InvokeAsync(_render, priority);
     }
