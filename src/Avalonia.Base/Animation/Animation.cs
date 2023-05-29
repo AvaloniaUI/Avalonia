@@ -359,7 +359,8 @@ namespace Avalonia.Animation
             return new CompositeDisposable(subscriptions);
         }
 
-        public Task RunAsync(Animatable control) => RunAsync(control, null);
+        public Task RunAsync(Animatable control, CancellationToken cancellationToken = default) =>
+            RunAsync(control, null, cancellationToken);
         
         /// <inheritdoc/>
         internal Task RunAsync(Animatable control, IClock? clock)
