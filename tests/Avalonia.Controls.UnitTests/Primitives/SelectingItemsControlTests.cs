@@ -2141,7 +2141,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.RaiseEvent(new TextInputEventArgs
                 {
                     RoutedEvent = InputElement.TextInputEvent,
-                    Device = KeyboardDevice.Instance, 
                     Text = "Foo"
                 });
 
@@ -2152,7 +2151,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.RaiseEvent(new TextInputEventArgs
                 {
                     RoutedEvent = InputElement.TextInputEvent, 
-                    Device = KeyboardDevice.Instance, 
                     Text = "Foo"
                 });
 

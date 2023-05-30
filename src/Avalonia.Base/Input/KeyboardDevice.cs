@@ -192,7 +192,6 @@ namespace Avalonia.Input
                         KeyEventArgs ev = new KeyEventArgs
                         {
                             RoutedEvent = routedEvent,
-                            Device = this,
                             Key = keyInput.Key,
                             KeyModifiers = keyInput.Modifiers.ToKeyModifiers(),
                             Source = element,
@@ -241,7 +240,6 @@ namespace Avalonia.Input
             {
                 var ev = new TextInputEventArgs()
                 {
-                    Device = this,
                     Text = text.Text,
                     Source = element,
                     RoutedEvent = InputElement.TextInputEvent
