@@ -2,12 +2,8 @@
   <PropertyGroup>
     <TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <ExtrasEnableImplicitWinFormsReferences>true</ExtrasEnableImplicitWinFormsReferences>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <UseDirect3D9>true</UseDirect3D9>
     <PackageId>Avalonia.Win32.Interoperability</PackageId>
   </PropertyGroup>
 

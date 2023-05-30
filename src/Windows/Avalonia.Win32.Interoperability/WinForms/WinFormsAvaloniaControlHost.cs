@@ -52,7 +52,7 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
         _root = new();
         _root.Content = _content;
         _root.Prepare();
-        _root.Renderer.Start();
+        _root.StartRendering();
         _root.GotFocus += RootGotFocus;
 
         FixPosition();
@@ -64,6 +64,7 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     /// <inheritdoc />
     protected override void OnHandleDestroyed(EventArgs e)
     {
+        _root?.StopRendering();
         _root?.Dispose();
         _root = null;
         base.OnHandleDestroyed(e);
