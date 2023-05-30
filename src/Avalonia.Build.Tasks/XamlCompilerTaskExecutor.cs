@@ -401,8 +401,7 @@ namespace Avalonia.Build.Tasks
                             contextClass,
                             document.PopulateMethod,
                             document.BuildMethod,
-                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
-                                document.IsPublic),
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, true),
                             (closureName, closureBaseType) =>
                                 populateBuilder.DefineSubType(closureBaseType, closureName, false),
                             (closureName, returnType, parameterTypes) =>
