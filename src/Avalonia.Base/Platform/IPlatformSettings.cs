@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -36,6 +37,11 @@ namespace Avalonia.Platform
         /// Holding duration between pointer press and when event is fired.
         /// </summary>
         TimeSpan HoldWaitDuration { get; }
+        
+        /// <summary>
+        /// Get a configuration for platform-specific hotkeys in an Avalonia application.
+        /// </summary>
+        PlatformHotkeyConfiguration HotkeyConfiguration { get; }
         
         /// <summary>
         /// Gets current system color values including dark mode and accent colors.

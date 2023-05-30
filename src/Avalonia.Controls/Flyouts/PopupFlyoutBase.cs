@@ -9,6 +9,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -392,7 +393,7 @@ namespace Avalonia.Controls.Primitives
                 && IsOpen
                 && Target?.ContextFlyout == this)
             {
-                var keymap = PlatformHotkeyConfiguration.Instance;
+                var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {

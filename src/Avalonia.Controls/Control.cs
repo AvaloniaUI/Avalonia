@@ -480,7 +480,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = PlatformHotkeyConfiguration.Instance?.OpenContextMenu;
+                var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {

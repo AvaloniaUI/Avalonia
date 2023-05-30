@@ -1,7 +1,9 @@
 ﻿using System;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Platform
 {
@@ -30,7 +32,10 @@ namespace Avalonia.Platform
         public virtual TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
 
         public virtual TimeSpan HoldWaitDuration => TimeSpan.FromMilliseconds(300);
-        
+
+        public PlatformHotkeyConfiguration HotkeyConfiguration =>
+            AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+
         public virtual PlatformColorValues GetColorValues()
         {
             return new PlatformColorValues

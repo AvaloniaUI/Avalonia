@@ -8,15 +8,6 @@ namespace Avalonia.Input.Platform
     /// </summary>
     public sealed class PlatformHotkeyConfiguration
     {
-        /// <summary>
-        /// Retrieves shared static instance of PlatformHotkeyConfiguration. 
-        /// </summary>
-        /// <remarks>
-        /// Return value might be null, when application wasn't yet initialized.
-        /// </remarks>
-        public static PlatformHotkeyConfiguration? Instance =>
-            AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-        
         [PrivateApi]
         public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {

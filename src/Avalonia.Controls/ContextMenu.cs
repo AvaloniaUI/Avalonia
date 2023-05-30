@@ -405,7 +405,7 @@ namespace Avalonia.Controls
         {
             if (IsOpen)
             {
-                var keymap = PlatformHotkeyConfiguration.Instance;
+                var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true
                     && !CancelClosing())

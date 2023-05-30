@@ -250,7 +250,7 @@ namespace Avalonia.Controls
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
                 {
-                    var keymap = PlatformHotkeyConfiguration.Instance?.Back;
+                    var keymap = PlatformSettings?.HotkeyConfiguration.Back;
 
                     if (keymap != null)
                     {
