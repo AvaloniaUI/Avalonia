@@ -744,9 +744,9 @@ namespace Avalonia.Controls.Primitives
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Color> ColorProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.HsvColor> HsvColorProperty;
         protected bool ignorePropertyChanged;
-        public static readonly Avalonia.StyledProperty<bool> IsAlphaMaxForcedProperty;
+        public static readonly Avalonia.StyledProperty<bool> IsAlphaVisibleProperty;
+        public static readonly Avalonia.StyledProperty<bool> IsPerceptiveProperty;
         public static readonly Avalonia.StyledProperty<bool> IsRoundingEnabledProperty;
-        public static readonly Avalonia.StyledProperty<bool> IsSaturationValueMaxForcedProperty;
         protected const string pcDarkSelector = ":dark-selector";
         protected const string pcLightSelector = ":light-selector";
         public ColorSlider() { }
@@ -754,9 +754,9 @@ namespace Avalonia.Controls.Primitives
         public Avalonia.Controls.ColorComponent ColorComponent { get { throw null; } set { } }
         public Avalonia.Controls.ColorModel ColorModel { get { throw null; } set { } }
         public Avalonia.Media.HsvColor HsvColor { get { throw null; } set { } }
-        public bool IsAlphaMaxForced { get { throw null; } set { } }
+        public bool IsAlphaVisible { get { throw null; } set { } }
+        public bool IsPerceptive { get { throw null; } set { } }
         public bool IsRoundingEnabled { get { throw null; } set { } }
-        public bool IsSaturationValueMaxForced { get { throw null; } set { } }
         public event System.EventHandler<Avalonia.Controls.ColorChangedEventArgs>? ColorChanged { add { } remove { } }
         protected virtual void OnColorChanged(Avalonia.Controls.ColorChangedEventArgs e) { }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }

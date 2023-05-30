@@ -20,13 +20,6 @@ namespace Avalonia
 }
 namespace Avalonia.Diagnostics
 {
-    public static partial class DevTools
-    {
-        public static System.IDisposable Attach(Avalonia.Controls.TopLevel root, Avalonia.Diagnostics.DevToolsOptions options) { throw null; }
-        public static System.IDisposable Attach(Avalonia.Controls.TopLevel root, Avalonia.Input.KeyGesture gesture) { throw null; }
-        public static System.IDisposable Open(Avalonia.Controls.TopLevel root) { throw null; }
-        public static System.IDisposable Open(Avalonia.Controls.TopLevel root, Avalonia.Diagnostics.DevToolsOptions options) { throw null; }
-    }
     public partial class DevToolsOptions
     {
         public DevToolsOptions() { }
@@ -45,17 +38,6 @@ namespace Avalonia.Diagnostics
     public static partial class VisualTreeDebug
     {
         public static string PrintVisualTree(Avalonia.Visual visual) { throw null; }
-    }
-}
-namespace Avalonia.Diagnostics.Models
-{
-    public partial class ConsoleContext
-    {
-        internal ConsoleContext() { }
-        public readonly string help;
-        public dynamic? e { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public dynamic? root { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public object clear() { throw null; }
     }
 }
 namespace Avalonia.Diagnostics.Screenshots
@@ -94,55 +76,6 @@ namespace CompiledAvaloniaXaml
         {
             public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
             public NamespaceInfo:/Diagnostics/Controls/ThicknessEditor.axaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/ConsoleView.xaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/ConsoleView.xaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/ControlDetailsView.xaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/ControlDetailsView.xaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/EventsPageView.xaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/EventsPageView.xaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/LayoutExplorerView.axaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/LayoutExplorerView.axaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/MainView.xaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/MainView.xaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/MainWindow.xaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/MainWindow.xaml() { }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
-            public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
-        }
-        public partial class NamespaceInfo:/Diagnostics/Views/TreePageView.xaml : Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider
-        {
-            public static Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider Singleton;
-            public NamespaceInfo:/Diagnostics/Views/TreePageView.xaml() { }
             public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> XmlNamespaces { get { throw null; } }
             public virtual System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Avalonia.Markup.Xaml.XamlIl.Runtime.AvaloniaXamlIlXmlNamespaceInfo>> get_XmlNamespaces() { throw null; }
         }

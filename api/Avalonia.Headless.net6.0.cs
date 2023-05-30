@@ -22,6 +22,24 @@ namespace Avalonia.Headless
         public AvaloniaHeadlessPlatformOptions() { }
         public bool UseHeadlessDrawing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false)]
+    public sealed partial class AvaloniaTestApplicationAttribute : System.Attribute
+    {
+        public AvaloniaTestApplicationAttribute([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicMethods | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicMethods | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] System.Type appBuilderEntryPointType) { }
+        public System.Type AppBuilderEntryPointType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+    }
+    [Avalonia.Metadata.UnstableAttribute("This API is experimental and might be unstable. Use on your risk. API might or might not be changed in a minor update.")]
+    public sealed partial class HeadlessUnitTestSession : System.IDisposable
+    {
+        internal HeadlessUnitTestSession() { }
+        public System.Threading.Tasks.Task Dispatch(System.Action action, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.Task<TResult> Dispatch<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> action, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.Task<TResult> Dispatch<TResult>(System.Func<TResult> action, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public void Dispose() { }
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute("Trimming", "IL2072", Justification="AvaloniaTestApplicationAttribute attribute should preserve type information.")]
+        public static Avalonia.Headless.HeadlessUnitTestSession GetOrStartForAssembly(System.Reflection.Assembly? assembly) { throw null; }
+        public static Avalonia.Headless.HeadlessUnitTestSession StartNew([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicMethods | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicMethods | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] System.Type entryPointType) { throw null; }
+    }
     public static partial class HeadlessWindowExtensions
     {
         public static Avalonia.Media.Imaging.WriteableBitmap? CaptureRenderedFrame(this Avalonia.Controls.TopLevel topLevel) { throw null; }

@@ -58,26 +58,26 @@ namespace Avalonia.ReactiveUI
         object? ReactiveUI.IViewFor.ViewModel { get { throw null; } set { } }
         public TViewModel? ViewModel { get { throw null; } set { } }
     }
-    public partial class RoutedViewHost : Avalonia.Controls.TransitioningContentControl, Avalonia.INamed, Avalonia.Styling.IStyleable, ReactiveUI.IActivatableView, Splat.IEnableLogger
+    public partial class RoutedViewHost : Avalonia.Controls.TransitioningContentControl, ReactiveUI.IActivatableView, Splat.IEnableLogger
     {
         public static readonly Avalonia.StyledProperty<object?> DefaultContentProperty;
         public static readonly Avalonia.StyledProperty<ReactiveUI.RoutingState?> RouterProperty;
         public static readonly Avalonia.StyledProperty<string?> ViewContractProperty;
         public RoutedViewHost() { }
-        System.Type Avalonia.Styling.IStyleable.StyleKey { get { throw null; } }
         public object? DefaultContent { get { throw null; } set { } }
         public ReactiveUI.RoutingState? Router { get { throw null; } set { } }
+        protected override System.Type StyleKeyOverride { get { throw null; } }
         public string? ViewContract { get { throw null; } set { } }
         public ReactiveUI.IViewLocator? ViewLocator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
-    public partial class ViewModelViewHost : Avalonia.Controls.TransitioningContentControl, Avalonia.INamed, Avalonia.Styling.IStyleable, ReactiveUI.IActivatableView, ReactiveUI.IViewFor, Splat.IEnableLogger
+    public partial class ViewModelViewHost : Avalonia.Controls.TransitioningContentControl, ReactiveUI.IActivatableView, ReactiveUI.IViewFor, Splat.IEnableLogger
     {
         public static readonly Avalonia.StyledProperty<object?> DefaultContentProperty;
         public static readonly Avalonia.StyledProperty<string?> ViewContractProperty;
         public static readonly Avalonia.AvaloniaProperty<object?> ViewModelProperty;
         public ViewModelViewHost() { }
-        System.Type Avalonia.Styling.IStyleable.StyleKey { get { throw null; } }
         public object? DefaultContent { get { throw null; } set { } }
+        protected override System.Type StyleKeyOverride { get { throw null; } }
         public string? ViewContract { get { throw null; } set { } }
         public ReactiveUI.IViewLocator? ViewLocator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public object? ViewModel { get { throw null; } set { } }

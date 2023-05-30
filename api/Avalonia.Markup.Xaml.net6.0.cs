@@ -17,10 +17,6 @@ namespace Avalonia.Markup.Xaml
         public static void Load(object obj) { }
         [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("AvaloniaXamlLoader.Load(uri, baseUri) dynamically loads referenced assembly with Avalonia resources.")]
         public static object Load(System.Uri uri, System.Uri? baseUri = null) { throw null; }
-        public partial interface IRuntimeXamlLoader
-        {
-            object Load(Avalonia.Markup.Xaml.RuntimeXamlLoaderDocument document, Avalonia.Markup.Xaml.RuntimeXamlLoaderConfiguration configuration);
-        }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property)]
     public sealed partial class ConstructorArgumentAttribute : System.Attribute
@@ -289,9 +285,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPathBuilder StreamTask<T>() { throw null; }
         public Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPathBuilder TypeCast<T>() { throw null; }
         public Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPathBuilder VisualAncestor(System.Type ancestorType, int level) { throw null; }
-    }
-    public partial interface ICompiledBindingPathElement
-    {
     }
     public static partial class PropertyInfoAccessorFactory
     {

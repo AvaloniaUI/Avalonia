@@ -40,11 +40,6 @@ namespace Avalonia.Win32
             DirectX11 = 1,
         }
     }
-    public static partial class PlatformConstants
-    {
-        public const string CursorHandleType = "HCURSOR";
-        public const string WindowHandleType = "HWND";
-    }
 }
 namespace Avalonia.Win32.DirectX
 {

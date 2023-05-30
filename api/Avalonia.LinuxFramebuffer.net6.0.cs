@@ -149,7 +149,6 @@ namespace Avalonia.LinuxFramebuffer.Output
     {
         public DrmResources(int fd, bool connectorsForceProbe = false) { }
         public System.Collections.Generic.List<Avalonia.LinuxFramebuffer.Output.DrmConnector> Connectors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public void Dump() { }
     }
     public partial interface IGlOutputBackend : Avalonia.LinuxFramebuffer.Output.IOutputBackend
     {

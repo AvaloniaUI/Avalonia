@@ -11,13 +11,14 @@ namespace Avalonia
 {
     public partial class AttachedProperty<TValue> : Avalonia.StyledProperty<TValue>
     {
-        public AttachedProperty(string name, System.Type ownerType, Avalonia.StyledPropertyMetadata<TValue> metadata, bool inherits = false, System.Func<TValue, bool>? validate = null) : base (default(string), default(System.Type), default(Avalonia.StyledPropertyMetadata<TValue>), default(bool), default(System.Func<TValue, bool>), default(System.Action<Avalonia.AvaloniaObject, bool>)) { }
+        internal AttachedProperty() { }
         public new Avalonia.AttachedProperty<TValue> AddOwner<TOwner>(Avalonia.StyledPropertyMetadata<TValue>? metadata = null) where TOwner : Avalonia.AvaloniaObject { throw null; }
     }
     public partial class AvaloniaInternalException : System.Exception
     {
         public AvaloniaInternalException(string message) { }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class AvaloniaLocator : Avalonia.IAvaloniaDependencyResolver
     {
         public AvaloniaLocator() { }
@@ -39,7 +40,7 @@ namespace Avalonia
             public Avalonia.AvaloniaLocator ToTransient<TImpl>() where TImpl : class, TService, new() { throw null; }
         }
     }
-    public partial class AvaloniaObject : Avalonia.Diagnostics.IAvaloniaObjectDebug, System.ComponentModel.INotifyPropertyChanged
+    public partial class AvaloniaObject : System.ComponentModel.INotifyPropertyChanged
     {
         public AvaloniaObject() { }
         protected internal Avalonia.AvaloniaObject? InheritanceParent { get { throw null; } set { } }
@@ -47,7 +48,6 @@ namespace Avalonia
         public Avalonia.Data.IBinding this[Avalonia.Data.IndexerDescriptor binding] { get { throw null; } set { } }
         public event System.EventHandler<Avalonia.AvaloniaPropertyChangedEventArgs>? PropertyChanged { add { } remove { } }
         event System.ComponentModel.PropertyChangedEventHandler? System.ComponentModel.INotifyPropertyChanged.PropertyChanged { add { } remove { } }
-        System.Delegate[]? Avalonia.Diagnostics.IAvaloniaObjectDebug.GetPropertyChangedSubscribers() { throw null; }
         public System.IDisposable Bind(Avalonia.AvaloniaProperty property, System.IObservable<object?> source, Avalonia.Data.BindingPriority priority = Avalonia.Data.BindingPriority.LocalValue) { throw null; }
         public System.IDisposable Bind<T>(Avalonia.DirectPropertyBase<T> property, System.IObservable<Avalonia.Data.BindingValue<T>> source) { throw null; }
         public System.IDisposable Bind<T>(Avalonia.DirectPropertyBase<T> property, System.IObservable<object?> source) { throw null; }
@@ -102,9 +102,8 @@ namespace Avalonia
     }
     public abstract partial class AvaloniaProperty : Avalonia.Data.Core.IPropertyInfo, System.IEquatable<Avalonia.AvaloniaProperty>
     {
+        internal AvaloniaProperty() { }
         public static readonly object UnsetValue;
-        protected AvaloniaProperty(Avalonia.AvaloniaProperty source, System.Type ownerType, Avalonia.AvaloniaPropertyMetadata? metadata) { }
-        protected AvaloniaProperty(string name, System.Type valueType, System.Type ownerType, Avalonia.AvaloniaPropertyMetadata metadata, System.Action<Avalonia.AvaloniaObject, bool>? notifying = null) { }
         bool Avalonia.Data.Core.IPropertyInfo.CanGet { get { throw null; } }
         bool Avalonia.Data.Core.IPropertyInfo.CanSet { get { throw null; } }
         public System.IObservable<Avalonia.AvaloniaPropertyChangedEventArgs> Changed { get { throw null; } }
@@ -113,37 +112,26 @@ namespace Avalonia
         public bool IsDirect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsReadOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public System.Action<Avalonia.AvaloniaObject, bool>? Notifying { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Type OwnerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Type PropertyType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         object? Avalonia.Data.Core.IPropertyInfo.Get(object target) { throw null; }
         void Avalonia.Data.Core.IPropertyInfo.Set(object target, object? value) { }
         public Avalonia.Data.IndexerDescriptor Bind() { throw null; }
-        internal abstract Avalonia.PropertyStore.EffectiveValue CreateEffectiveValue(Avalonia.AvaloniaObject o);
         public bool Equals(Avalonia.AvaloniaProperty? other) { throw null; }
         public override bool Equals(object? obj) { throw null; }
-        protected abstract System.IObservable<Avalonia.AvaloniaPropertyChangedEventArgs> GetChanged();
         public override int GetHashCode() { throw null; }
         public Avalonia.AvaloniaPropertyMetadata GetMetadata(System.Type type) { throw null; }
         public Avalonia.AvaloniaPropertyMetadata GetMetadata<T>() where T : Avalonia.AvaloniaObject { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit convertion methods are required for type conversion.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit conversion methods are required for type conversion.")]
         public bool IsValidValue(object? value) { throw null; }
         public static bool operator ==(Avalonia.AvaloniaProperty? a, Avalonia.AvaloniaProperty? b) { throw null; }
         public static bool operator !=(Avalonia.AvaloniaProperty? a, Avalonia.AvaloniaProperty? b) { throw null; }
         public static Avalonia.Data.IndexerDescriptor operator !(Avalonia.AvaloniaProperty property) { throw null; }
         public static Avalonia.Data.IndexerDescriptor operator ~(Avalonia.AvaloniaProperty property) { throw null; }
-        protected void OverrideMetadata(System.Type type, Avalonia.AvaloniaPropertyMetadata metadata) { }
         public static Avalonia.AttachedProperty<TValue> RegisterAttached<THost, TValue>(string name, System.Type ownerType, TValue defaultValue = null, bool inherits = false, Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.OneWay, System.Func<TValue, bool>? validate = null, System.Func<Avalonia.AvaloniaObject, TValue, TValue>? coerce = null) where THost : Avalonia.AvaloniaObject { throw null; }
         public static Avalonia.AttachedProperty<TValue> RegisterAttached<TOwner, THost, TValue>(string name, TValue defaultValue = null, bool inherits = false, Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.OneWay, System.Func<TValue, bool>? validate = null, System.Func<Avalonia.AvaloniaObject, TValue, TValue>? coerce = null) where THost : Avalonia.AvaloniaObject { throw null; }
         public static Avalonia.DirectProperty<TOwner, TValue> RegisterDirect<TOwner, TValue>(string name, System.Func<TOwner, TValue> getter, System.Action<TOwner, TValue>? setter = null, TValue unsetValue = null, Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.OneWay, bool enableDataValidation = false) where TOwner : Avalonia.AvaloniaObject { throw null; }
         public static Avalonia.StyledProperty<TValue> Register<TOwner, TValue>(string name, TValue defaultValue = null, bool inherits = false, Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.OneWay, System.Func<TValue, bool>? validate = null, System.Func<Avalonia.AvaloniaObject, TValue, TValue>? coerce = null, bool enableDataValidation = false) where TOwner : Avalonia.AvaloniaObject { throw null; }
-        internal abstract System.IDisposable RouteBind(Avalonia.AvaloniaObject o, System.IObservable<object?> source, Avalonia.Data.BindingPriority priority);
-        internal abstract void RouteClearValue(Avalonia.AvaloniaObject o);
-        internal abstract void RouteCoerceDefaultValue(Avalonia.AvaloniaObject o);
-        internal abstract object? RouteGetBaseValue(Avalonia.AvaloniaObject o);
-        internal abstract object? RouteGetValue(Avalonia.AvaloniaObject o);
-        internal abstract void RouteSetCurrentValue(Avalonia.AvaloniaObject o, object? value);
-        internal abstract System.IDisposable? RouteSetValue(Avalonia.AvaloniaObject o, object? value, Avalonia.Data.BindingPriority priority);
         public override string ToString() { throw null; }
     }
     public abstract partial class AvaloniaPropertyChangedEventArgs : System.EventArgs
@@ -174,10 +162,6 @@ namespace Avalonia
         public static (T oldValue, T newValue) GetOldAndNewValue<T>(this Avalonia.AvaloniaPropertyChangedEventArgs e) { throw null; }
         public static T GetOldValue<T>(this Avalonia.AvaloniaPropertyChangedEventArgs e) { throw null; }
     }
-    public static partial class AvaloniaPropertyExtensions
-    {
-        public static bool CanValueAffectRender(this Avalonia.AvaloniaProperty property) { throw null; }
-    }
     public abstract partial class AvaloniaPropertyMetadata
     {
         public AvaloniaPropertyMetadata(Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.Default, bool? enableDataValidation = default(bool?)) { }
@@ -207,12 +191,8 @@ namespace Avalonia
     }
     public abstract partial class AvaloniaProperty<TValue> : Avalonia.AvaloniaProperty
     {
-        protected AvaloniaProperty(Avalonia.AvaloniaProperty<TValue> source, System.Type ownerType, Avalonia.AvaloniaPropertyMetadata? metadata) : base (default(string), default(System.Type), default(System.Type), default(Avalonia.AvaloniaPropertyMetadata), default(System.Action<Avalonia.AvaloniaObject, bool>)) { }
-        protected AvaloniaProperty(string name, System.Type ownerType, Avalonia.AvaloniaPropertyMetadata metadata, System.Action<Avalonia.AvaloniaObject, bool>? notifying = null) : base (default(string), default(System.Type), default(System.Type), default(Avalonia.AvaloniaPropertyMetadata), default(System.Action<Avalonia.AvaloniaObject, bool>)) { }
+        internal AvaloniaProperty() { }
         public new System.IObservable<Avalonia.AvaloniaPropertyChangedEventArgs<TValue>> Changed { get { throw null; } }
-        protected override System.IObservable<Avalonia.AvaloniaPropertyChangedEventArgs> GetChanged() { throw null; }
-        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute("Trimming", "IL2026", Justification="Implicit convertion methods might be removed by the linker. We don't have a reliable way to prevent it, except converting everything in compile time when possible.")]
-        protected Avalonia.Data.BindingValue<object?> TryConvert(object? value) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct CornerRadius : System.IEquatable<Avalonia.CornerRadius>
@@ -236,13 +216,10 @@ namespace Avalonia
     }
     public abstract partial class DirectPropertyBase<TValue> : Avalonia.AvaloniaProperty<TValue>
     {
-        protected DirectPropertyBase(Avalonia.DirectPropertyBase<TValue> source, System.Type ownerType, Avalonia.AvaloniaPropertyMetadata metadata) : base (default(string), default(System.Type), default(Avalonia.AvaloniaPropertyMetadata), default(System.Action<Avalonia.AvaloniaObject, bool>)) { }
-        protected DirectPropertyBase(string name, System.Type ownerType, Avalonia.AvaloniaPropertyMetadata metadata) : base (default(string), default(System.Type), default(Avalonia.AvaloniaPropertyMetadata), default(System.Action<Avalonia.AvaloniaObject, bool>)) { }
+        internal DirectPropertyBase() { }
         public System.Type Owner { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public new Avalonia.DirectPropertyMetadata<TValue> GetMetadata(System.Type type) { throw null; }
         public TValue GetUnsetValue(System.Type type) { throw null; }
-        internal abstract TValue InvokeGetter(Avalonia.AvaloniaObject instance);
-        internal abstract void InvokeSetter(Avalonia.AvaloniaObject instance, Avalonia.Data.BindingValue<TValue> value);
         public void OverrideMetadata(System.Type type, Avalonia.DirectPropertyMetadata<TValue> metadata) { }
         public void OverrideMetadata<T>(Avalonia.DirectPropertyMetadata<TValue> metadata) where T : Avalonia.AvaloniaObject { }
     }
@@ -256,17 +233,12 @@ namespace Avalonia
     }
     public partial class DirectProperty<TOwner, TValue> : Avalonia.DirectPropertyBase<TValue> where TOwner : Avalonia.AvaloniaObject
     {
-        public DirectProperty(string name, System.Func<TOwner, TValue> getter, System.Action<TOwner, TValue>? setter, Avalonia.DirectPropertyMetadata<TValue> metadata) : base (default(string), default(System.Type), default(Avalonia.AvaloniaPropertyMetadata)) { }
+        internal DirectProperty() { }
         public System.Func<TOwner, TValue> Getter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Action<TOwner, TValue>? Setter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.DirectProperty<TNewOwner, TValue> AddOwnerWithDataValidation<TNewOwner>(System.Func<TNewOwner, TValue> getter, System.Action<TNewOwner, TValue> setter, TValue unsetValue = null, Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.Default, bool enableDataValidation = false) where TNewOwner : Avalonia.AvaloniaObject { throw null; }
         public Avalonia.DirectProperty<TNewOwner, TValue> AddOwner<TNewOwner>(System.Func<TNewOwner, TValue> getter, System.Action<TNewOwner, TValue>? setter = null, TValue unsetValue = null, Avalonia.Data.BindingMode defaultBindingMode = Avalonia.Data.BindingMode.Default, bool enableDataValidation = false) where TNewOwner : Avalonia.AvaloniaObject { throw null; }
     }
-    public static partial class EnumExtensions
-    {
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool HasAllFlags<T>(this T value, T flags) where T : struct { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool HasAnyFlag<T>(this T value, T flags) where T : struct { throw null; }
-    }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IAvaloniaDependencyResolver
     {
         object? GetService(System.Type t);
@@ -295,6 +267,7 @@ namespace Avalonia
     {
         object? DefaultValue { get; }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public static partial class LocatorExtensions
     {
         public static object GetRequiredService(this Avalonia.IAvaloniaDependencyResolver resolver, System.Type t) { throw null; }
@@ -714,7 +687,6 @@ namespace Avalonia
         Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.LogicalTree.ILogical> Avalonia.LogicalTree.ILogical.LogicalChildren { get { throw null; } }
         Avalonia.LogicalTree.ILogical? Avalonia.LogicalTree.ILogical.LogicalParent { get { throw null; } }
         Avalonia.Collections.IAvaloniaReadOnlyList<string> Avalonia.Styling.IStyleable.Classes { get { throw null; } }
-        System.Type Avalonia.Styling.IStyleable.StyleKey { get { throw null; } }
         bool Avalonia.Styling.IStyleHost.IsStylesInitialized { get { throw null; } }
         Avalonia.Styling.IStyleHost? Avalonia.Styling.IStyleHost.StylingParent { get { throw null; } }
         public Avalonia.Controls.Classes Classes { get { throw null; } }
@@ -725,6 +697,8 @@ namespace Avalonia
         public Avalonia.StyledElement? Parent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected Avalonia.Controls.IPseudoClasses PseudoClasses { get { throw null; } }
         public Avalonia.Controls.IResourceDictionary Resources { get { throw null; } set { } }
+        public System.Type StyleKey { get { throw null; } }
+        protected virtual System.Type StyleKeyOverride { get { throw null; } }
         public Avalonia.Styling.Styles Styles { get { throw null; } }
         public Avalonia.AvaloniaObject? TemplatedParent { get { throw null; } }
         public Avalonia.Styling.ControlTheme? Theme { get { throw null; } set { } }
@@ -747,7 +721,6 @@ namespace Avalonia
         public virtual void EndInit() { }
         protected void InitializeIfNeeded() { }
         protected virtual void LogicalChildrenCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) { }
-        protected virtual void NotifyChildResourcesChanged(Avalonia.Controls.ResourcesChangedEventArgs e) { }
         protected virtual void OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs e) { }
         protected virtual void OnDataContextBeginUpdate() { }
         protected virtual void OnDataContextChanged(System.EventArgs e) { }
@@ -772,7 +745,7 @@ namespace Avalonia
     }
     public partial class StyledProperty<TValue> : Avalonia.AvaloniaProperty<TValue>
     {
-        public StyledProperty(string name, System.Type ownerType, Avalonia.StyledPropertyMetadata<TValue> metadata, bool inherits = false, System.Func<TValue, bool>? validate = null, System.Action<Avalonia.AvaloniaObject, bool>? notifying = null) : base (default(string), default(System.Type), default(Avalonia.AvaloniaPropertyMetadata), default(System.Action<Avalonia.AvaloniaObject, bool>)) { }
+        internal StyledProperty() { }
         public System.Func<TValue, bool>? ValidateValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.StyledProperty<TValue> AddOwner<TOwner>(Avalonia.StyledPropertyMetadata<TValue>? metadata = null) where TOwner : Avalonia.AvaloniaObject { throw null; }
         public TValue CoerceValue(Avalonia.AvaloniaObject instance, TValue baseValue) { throw null; }
@@ -884,7 +857,6 @@ namespace Avalonia
         public Avalonia.Media.IEffect? Effect { get { throw null; } set { } }
         public Avalonia.Media.FlowDirection FlowDirection { get { throw null; } set { } }
         public bool HasMirrorTransform { get { throw null; } protected set { } }
-        public bool HasNonUniformZIndexChildren { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsEffectivelyVisible { get { throw null; } }
         public bool IsVisible { get { throw null; } set { } }
         public double Opacity { get { throw null; } set { } }
@@ -898,7 +870,7 @@ namespace Avalonia
         public event System.EventHandler<Avalonia.VisualTreeAttachmentEventArgs>? DetachedFromVisualTree { add { } remove { } }
         protected static void AffectsRender<T>(params Avalonia.AvaloniaProperty[] properties) where T : Avalonia.Visual { }
         public static Avalonia.Media.FlowDirection GetFlowDirection(Avalonia.Visual visual) { throw null; }
-        public virtual void InvalidateMirrorTransform() { }
+        protected internal virtual void InvalidateMirrorTransform() { }
         public void InvalidateVisual() { }
         protected override void LogicalChildrenCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) { }
         protected virtual void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e) { }
@@ -928,16 +900,12 @@ namespace Avalonia.Animation
 {
     public partial class Animatable : Avalonia.AvaloniaObject
     {
-        public static readonly Avalonia.StyledProperty<Avalonia.Animation.IClock> ClockProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Animation.Transitions?> TransitionsProperty;
         public Animatable() { }
-        public Avalonia.Animation.IClock Clock { get { throw null; } set { } }
         public Avalonia.Animation.Transitions? Transitions { get { throw null; } set { } }
-        protected void DisableTransitions() { }
-        protected void EnableTransitions() { }
         protected sealed override void OnPropertyChangedCore(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
     }
-    public partial class Animation : Avalonia.AvaloniaObject, Avalonia.Animation.IAnimation
+    public sealed partial class Animation : Avalonia.AvaloniaObject, Avalonia.Animation.IAnimation
     {
         public static readonly Avalonia.DirectProperty<Avalonia.Animation.Animation, System.TimeSpan> DelayBetweenIterationsProperty;
         public static readonly Avalonia.DirectProperty<Avalonia.Animation.Animation, System.TimeSpan> DelayProperty;
@@ -958,65 +926,18 @@ namespace Avalonia.Animation
         public Avalonia.Animation.IterationCount IterationCount { get { throw null; } set { } }
         public Avalonia.Animation.PlaybackDirection PlaybackDirection { get { throw null; } set { } }
         public double SpeedRatio { get { throw null; } set { } }
-        public System.IDisposable Apply(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> match, System.Action? onComplete) { throw null; }
-        public static (System.Type Type, System.Func<Avalonia.Animation.IAnimator> Factory)? GetAnimator(Avalonia.Animation.IAnimationSetter setter) { throw null; }
-        public static void RegisterAnimator<TAnimator>(System.Func<Avalonia.AvaloniaProperty, bool> condition) where TAnimator : Avalonia.Animation.IAnimator, new() { }
-        public System.Threading.Tasks.Task RunAsync(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock = null) { throw null; }
-        public System.Threading.Tasks.Task RunAsync(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static void SetAnimator(Avalonia.Animation.IAnimationSetter setter, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicMethods | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] System.Type value) { }
+        public System.Threading.Tasks.Task RunAsync(Avalonia.Animation.Animatable control, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static void SetAnimator(Avalonia.Animation.IAnimationSetter setter, Avalonia.Animation.CustomAnimatorBase value) { }
     }
-    public abstract partial class AnimatorDrivenTransition<T, TAnimator> : Avalonia.Animation.Transition<T> where TAnimator : Avalonia.Animation.Animators.Animator<T>, new()
-    {
-        protected AnimatorDrivenTransition() { }
-        public override System.IObservable<T> DoTransition(System.IObservable<double> progress, T oldValue, T newValue) { throw null; }
-    }
-    public partial class AnimatorKeyFrame : Avalonia.AvaloniaObject
-    {
-        public static readonly Avalonia.DirectProperty<Avalonia.Animation.AnimatorKeyFrame, object?> ValueProperty;
-        public AnimatorKeyFrame() { }
-        public AnimatorKeyFrame(System.Type? animatorType, System.Func<Avalonia.Animation.IAnimator>? animatorFactory, Avalonia.Animation.Cue cue) { }
-        public AnimatorKeyFrame(System.Type? animatorType, System.Func<Avalonia.Animation.IAnimator>? animatorFactory, Avalonia.Animation.Cue cue, Avalonia.Animation.KeySpline? keySpline) { }
-        public System.Func<Avalonia.Animation.IAnimator>? AnimatorFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public System.Type? AnimatorType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Animation.Cue Cue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Animation.KeySpline? KeySpline { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.AvaloniaProperty? Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public object? Value { get { throw null; } set { } }
-        public System.IDisposable BindSetter(Avalonia.Animation.IAnimationSetter setter, Avalonia.Animation.Animatable targetControl) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Convertion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
-        public T GetTypedValue<T>() { throw null; }
-    }
-    public partial class AnimatorTransitionObservable<T, TAnimator> : Avalonia.Animation.TransitionObservableBase<T> where TAnimator : Avalonia.Animation.Animators.Animator<T>
-    {
-        public AnimatorTransitionObservable(TAnimator animator, System.IObservable<double> progress, Avalonia.Animation.Easings.Easing easing, T oldValue, T newValue) : base (default(System.IObservable<double>), default(Avalonia.Animation.Easings.Easing)) { }
-        protected override T ProduceValue(double progress) { throw null; }
-    }
-    public partial class BoxShadowsTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.Media.BoxShadows, Avalonia.Animation.Animators.BoxShadowsAnimator>
+    public partial class BoxShadowsTransition : Avalonia.Animation.Transition<Avalonia.Media.BoxShadows>
     {
         public BoxShadowsTransition() { }
     }
     public partial class BrushTransition : Avalonia.Animation.Transition<Avalonia.Media.IBrush?>
     {
         public BrushTransition() { }
-        public override System.IObservable<Avalonia.Media.IBrush?> DoTransition(System.IObservable<double> progress, Avalonia.Media.IBrush? oldValue, Avalonia.Media.IBrush? newValue) { throw null; }
     }
-    public partial class Clock : Avalonia.Animation.ClockBase
-    {
-        public Clock() { }
-        public Clock(Avalonia.Animation.IClock parent) { }
-        public static Avalonia.Animation.IClock GlobalClock { get { throw null; } }
-        protected override void Stop() { }
-    }
-    public partial class ClockBase : Avalonia.Animation.IClock, System.IObservable<System.TimeSpan>
-    {
-        protected ClockBase() { }
-        protected bool HasSubscriptions { get { throw null; } }
-        public Avalonia.Animation.PlayState PlayState { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        protected void Pulse(System.TimeSpan systemTime) { }
-        protected virtual void Stop() { }
-        public System.IDisposable Subscribe(System.IObserver<System.TimeSpan> observer) { throw null; }
-    }
-    public partial class ColorTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.Media.Color, Avalonia.Animation.Animators.ColorAnimator>
+    public partial class ColorTransition : Avalonia.Animation.Transition<Avalonia.Media.Color>
     {
         public ColorTransition() { }
     }
@@ -1027,7 +948,7 @@ namespace Avalonia.Animation
         public System.Collections.Generic.List<Avalonia.Animation.IPageTransition> PageTransitions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Threading.Tasks.Task Start(Avalonia.Visual? from, Avalonia.Visual? to, bool forward, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public partial class CornerRadiusTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.CornerRadius, Avalonia.Animation.Animators.CornerRadiusAnimator>
+    public partial class CornerRadiusTransition : Avalonia.Animation.Transition<Avalonia.CornerRadius>
     {
         public CornerRadiusTransition() { }
     }
@@ -1069,14 +990,24 @@ namespace Avalonia.Animation
         public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType) { throw null; }
         public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value) { throw null; }
     }
-    public partial class DoubleTransition : Avalonia.Animation.AnimatorDrivenTransition<double, Avalonia.Animation.Animators.DoubleAnimator>
+    public abstract partial class CustomAnimatorBase
+    {
+        protected CustomAnimatorBase() { }
+        internal abstract System.Type WrapperType { get; }
+        internal abstract Avalonia.Animation.IAnimator CreateWrapper();
+    }
+    public abstract partial class CustomAnimatorBase<T> : Avalonia.Animation.CustomAnimatorBase
+    {
+        protected CustomAnimatorBase() { }
+        public abstract T Interpolate(double progress, T oldValue, T newValue);
+    }
+    public partial class DoubleTransition : Avalonia.Animation.Transition<double>
     {
         public DoubleTransition() { }
     }
     public partial class EffectTransition : Avalonia.Animation.Transition<Avalonia.Media.IEffect?>
     {
         public EffectTransition() { }
-        public override System.IObservable<Avalonia.Media.IEffect?> DoTransition(System.IObservable<double> progress, Avalonia.Media.IEffect? oldValue, Avalonia.Media.IEffect? newValue) { throw null; }
     }
     public enum FillMode
     {
@@ -1085,38 +1016,22 @@ namespace Avalonia.Animation
         Backward = 2,
         Both = 3,
     }
-    public partial class FloatTransition : Avalonia.Animation.AnimatorDrivenTransition<float, Avalonia.Animation.Animators.FloatAnimator>
+    public partial class FloatTransition : Avalonia.Animation.Transition<float>
     {
         public FloatTransition() { }
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IAnimation
     {
-        System.IDisposable Apply(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> match, System.Action? onComplete = null);
-        System.Threading.Tasks.Task RunAsync(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock clock, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IAnimationSetter
     {
         Avalonia.AvaloniaProperty? Property { get; set; }
         object? Value { get; set; }
     }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IAnimator : System.Collections.Generic.ICollection<Avalonia.Animation.AnimatorKeyFrame>, System.Collections.Generic.IEnumerable<Avalonia.Animation.AnimatorKeyFrame>, System.Collections.Generic.IList<Avalonia.Animation.AnimatorKeyFrame>, System.Collections.IEnumerable
-    {
-        Avalonia.AvaloniaProperty? Property { get; set; }
-        System.IDisposable? Apply(Avalonia.Animation.Animation animation, Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> match, System.Action? onComplete);
-    }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IClock : System.IObservable<System.TimeSpan>
-    {
-        Avalonia.Animation.PlayState PlayState { get; set; }
-    }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IGlobalClock : Avalonia.Animation.IClock, System.IObservable<System.TimeSpan>
-    {
-    }
-    public partial class IntegerTransition : Avalonia.Animation.AnimatorDrivenTransition<int, Avalonia.Animation.Animators.Int32Animator>
+    public partial class IntegerTransition : Avalonia.Animation.Transition<int>
     {
         public IntegerTransition() { }
     }
@@ -1155,12 +1070,12 @@ namespace Avalonia.Animation
         Infinite = 1,
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface ITransition
     {
         Avalonia.AvaloniaProperty Property { get; set; }
-        System.IDisposable Apply(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock clock, object? oldValue, object? newValue);
     }
-    public partial class KeyFrame : Avalonia.AvaloniaObject
+    public sealed partial class KeyFrame : Avalonia.AvaloniaObject
     {
         public KeyFrame() { }
         public Avalonia.Animation.Cue Cue { get { throw null; } set { } }
@@ -1169,13 +1084,13 @@ namespace Avalonia.Animation
         [Avalonia.Metadata.ContentAttribute]
         public Avalonia.Collections.AvaloniaList<Avalonia.Animation.IAnimationSetter> Setters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-    public partial class KeyFrames : Avalonia.Collections.AvaloniaList<Avalonia.Animation.KeyFrame>
+    public sealed partial class KeyFrames : Avalonia.Collections.AvaloniaList<Avalonia.Animation.KeyFrame>
     {
         public KeyFrames() { }
         public KeyFrames(System.Collections.Generic.IEnumerable<Avalonia.Animation.KeyFrame> items) { }
     }
     [System.ComponentModel.TypeConverterAttribute(typeof(Avalonia.Animation.KeySplineTypeConverter))]
-    public partial class KeySpline : Avalonia.AvaloniaObject
+    public sealed partial class KeySpline : Avalonia.AvaloniaObject
     {
         public KeySpline() { }
         public KeySpline(double x1, double y1, double x2, double y2) { }
@@ -1222,21 +1137,13 @@ namespace Avalonia.Animation
         Pause = 1,
         Stop = 2,
     }
-    public partial class PointTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.Point, Avalonia.Animation.Animators.PointAnimator>
+    public partial class PointTransition : Avalonia.Animation.Transition<Avalonia.Point>
     {
         public PointTransition() { }
     }
-    public partial class RelativePointTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.RelativePoint, Avalonia.Animation.Animators.RelativePointAnimator>
+    public partial class RelativePointTransition : Avalonia.Animation.Transition<Avalonia.RelativePoint>
     {
         public RelativePointTransition() { }
-    }
-    public partial class RenderLoopClock : Avalonia.Animation.ClockBase, Avalonia.Animation.IClock, Avalonia.Animation.IGlobalClock, Avalonia.Rendering.IRenderLoopTask, System.IObservable<System.TimeSpan>
-    {
-        public RenderLoopClock() { }
-        bool Avalonia.Rendering.IRenderLoopTask.NeedsUpdate { get { throw null; } }
-        void Avalonia.Rendering.IRenderLoopTask.Render() { }
-        void Avalonia.Rendering.IRenderLoopTask.Update(System.TimeSpan time) { }
-        protected override void Stop() { }
     }
     public partial class Rotate3DTransition : Avalonia.Animation.PageSlide
     {
@@ -1245,48 +1152,19 @@ namespace Avalonia.Animation
         public double? Depth { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task Start(Avalonia.Visual? from, Avalonia.Visual? to, bool forward, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public partial class SizeTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.Size, Avalonia.Animation.Animators.SizeAnimator>
+    public partial class SizeTransition : Avalonia.Animation.Transition<Avalonia.Size>
     {
         public SizeTransition() { }
     }
-    [System.ComponentModel.TypeConverterAttribute(typeof(Avalonia.Animation.SpringTypeConverter))]
-    public partial class Spring
-    {
-        public Spring() { }
-        public Spring(double mass, double stiffness, double damping, double initialVelocity) { }
-        public double Damping { get { throw null; } set { } }
-        public double InitialVelocity { get { throw null; } set { } }
-        public double Mass { get { throw null; } set { } }
-        public double Stiffness { get { throw null; } set { } }
-        public double GetSpringProgress(double linearProgress) { throw null; }
-        public static Avalonia.Animation.Spring Parse(string value, System.Globalization.CultureInfo? culture) { throw null; }
-    }
-    public partial class SpringTypeConverter : System.ComponentModel.TypeConverter
-    {
-        public SpringTypeConverter() { }
-        public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType) { throw null; }
-        public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value) { throw null; }
-    }
-    public partial class ThicknessTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.Thickness, Avalonia.Animation.Animators.ThicknessAnimator>
+    public partial class ThicknessTransition : Avalonia.Animation.Transition<Avalonia.Thickness>
     {
         public ThicknessTransition() { }
     }
     public partial class TransformOperationsTransition : Avalonia.Animation.Transition<Avalonia.Media.ITransform>
     {
         public TransformOperationsTransition() { }
-        public override System.IObservable<Avalonia.Media.ITransform> DoTransition(System.IObservable<double> progress, Avalonia.Media.ITransform oldValue, Avalonia.Media.ITransform newValue) { throw null; }
     }
-    public abstract partial class TransitionObservableBase<T> : Avalonia.Reactive.SingleSubscriberObservableBase<T>, System.IObserver<double>
-    {
-        protected TransitionObservableBase(System.IObservable<double> progress, Avalonia.Animation.Easings.Easing easing) { }
-        protected abstract T ProduceValue(double progress);
-        protected override void Subscribed() { }
-        void System.IObserver<double>.OnCompleted() { }
-        void System.IObserver<double>.OnError(System.Exception error) { }
-        void System.IObserver<double>.OnNext(double value) { }
-        protected override void Unsubscribed() { }
-    }
-    public partial class Transitions : Avalonia.Collections.AvaloniaList<Avalonia.Animation.ITransition>
+    public sealed partial class Transitions : Avalonia.Collections.AvaloniaList<Avalonia.Animation.ITransition>
     {
         public Transitions() { }
     }
@@ -1299,183 +1177,11 @@ namespace Avalonia.Animation
         public Avalonia.Animation.Easings.Easing Easing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.CodeAnalysis.DisallowNullAttribute]
         public Avalonia.AvaloniaProperty? Property { get { throw null; } set { } }
-        public virtual System.IDisposable Apply(Avalonia.Animation.Animatable control, Avalonia.Animation.IClock clock, object? oldValue, object? newValue) { throw null; }
-        public abstract System.IObservable<T> DoTransition(System.IObservable<double> progress, T oldValue, T newValue);
+        internal abstract System.IObservable<T> DoTransition(System.IObservable<double> progress, T oldValue, T newValue);
     }
-    public partial class VectorTransition : Avalonia.Animation.AnimatorDrivenTransition<Avalonia.Vector, Avalonia.Animation.Animators.VectorAnimator>
+    public partial class VectorTransition : Avalonia.Animation.Transition<Avalonia.Vector>
     {
         public VectorTransition() { }
-    }
-}
-namespace Avalonia.Animation.Animators
-{
-    public abstract partial class Animator<T> : Avalonia.Collections.AvaloniaList<Avalonia.Animation.AnimatorKeyFrame>, Avalonia.Animation.IAnimator, System.Collections.Generic.ICollection<Avalonia.Animation.AnimatorKeyFrame>, System.Collections.Generic.IEnumerable<Avalonia.Animation.AnimatorKeyFrame>, System.Collections.Generic.IList<Avalonia.Animation.AnimatorKeyFrame>, System.Collections.IEnumerable
-    {
-        public Animator() { }
-        public Avalonia.AvaloniaProperty? Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public virtual System.IDisposable? Apply(Avalonia.Animation.Animation animation, Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> match, System.Action? onComplete) { throw null; }
-        public virtual System.IDisposable BindAnimation(Avalonia.Animation.Animatable control, System.IObservable<T> instance) { throw null; }
-        public abstract T Interpolate(double progress, T oldValue, T newValue);
-        protected T InterpolationHandler(double animationTime, T neutralValue) { throw null; }
-    }
-    public partial class BaseBrushAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.IBrush?>
-    {
-        public BaseBrushAnimator() { }
-        public override System.IDisposable? Apply(Avalonia.Animation.Animation animation, Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> match, System.Action? onComplete) { throw null; }
-        public override Avalonia.Media.IBrush? Interpolate(double progress, Avalonia.Media.IBrush? oldValue, Avalonia.Media.IBrush? newValue) { throw null; }
-        public static void RegisterBrushAnimator<TAnimator>(System.Func<System.Type, bool> condition) where TAnimator : Avalonia.Animation.IAnimator, new() { }
-    }
-    public partial class BlurEffectAnimator : Avalonia.Animation.Animators.EffectAnimatorBase<Avalonia.Media.IBlurEffect>
-    {
-        public BlurEffectAnimator() { }
-        protected override Avalonia.Media.IBlurEffect Interpolate(double progress, Avalonia.Media.IBlurEffect oldValue, Avalonia.Media.IBlurEffect newValue) { throw null; }
-    }
-    public partial class BoolAnimator : Avalonia.Animation.Animators.Animator<bool>
-    {
-        public BoolAnimator() { }
-        public override bool Interpolate(double progress, bool oldValue, bool newValue) { throw null; }
-    }
-    public partial class BoxShadowAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.BoxShadow>
-    {
-        public BoxShadowAnimator() { }
-        public override Avalonia.Media.BoxShadow Interpolate(double progress, Avalonia.Media.BoxShadow oldValue, Avalonia.Media.BoxShadow newValue) { throw null; }
-    }
-    public partial class BoxShadowsAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.BoxShadows>
-    {
-        public BoxShadowsAnimator() { }
-        public override Avalonia.Media.BoxShadows Interpolate(double progress, Avalonia.Media.BoxShadows oldValue, Avalonia.Media.BoxShadows newValue) { throw null; }
-    }
-    public partial class ByteAnimator : Avalonia.Animation.Animators.Animator<byte>
-    {
-        public ByteAnimator() { }
-        public override byte Interpolate(double progress, byte oldValue, byte newValue) { throw null; }
-    }
-    public partial class ColorAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.Color>
-    {
-        public ColorAnimator() { }
-        public override Avalonia.Media.Color Interpolate(double progress, Avalonia.Media.Color oldValue, Avalonia.Media.Color newValue) { throw null; }
-    }
-    public partial class CornerRadiusAnimator : Avalonia.Animation.Animators.Animator<Avalonia.CornerRadius>
-    {
-        public CornerRadiusAnimator() { }
-        public override Avalonia.CornerRadius Interpolate(double progress, Avalonia.CornerRadius oldValue, Avalonia.CornerRadius newValue) { throw null; }
-    }
-    public partial class DecimalAnimator : Avalonia.Animation.Animators.Animator<decimal>
-    {
-        public DecimalAnimator() { }
-        public override decimal Interpolate(double progress, decimal oldValue, decimal newValue) { throw null; }
-    }
-    public partial class DoubleAnimator : Avalonia.Animation.Animators.Animator<double>
-    {
-        public DoubleAnimator() { }
-        public override double Interpolate(double progress, double oldValue, double newValue) { throw null; }
-    }
-    public partial class DropShadowEffectAnimator : Avalonia.Animation.Animators.EffectAnimatorBase<Avalonia.Media.IDropShadowEffect>
-    {
-        public DropShadowEffectAnimator() { }
-        protected override Avalonia.Media.IDropShadowEffect Interpolate(double progress, Avalonia.Media.IDropShadowEffect oldValue, Avalonia.Media.IDropShadowEffect newValue) { throw null; }
-    }
-    public partial class EffectAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.IEffect?>
-    {
-        public EffectAnimator() { }
-        public override System.IDisposable? Apply(Avalonia.Animation.Animation animation, Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> match, System.Action? onComplete) { throw null; }
-        public static void EnsureRegistered() { }
-        public override Avalonia.Media.IEffect? Interpolate(double progress, Avalonia.Media.IEffect? oldValue, Avalonia.Media.IEffect? newValue) { throw null; }
-    }
-    public abstract partial class EffectAnimatorBase<T> : Avalonia.Animation.Animators.Animator<Avalonia.Media.IEffect?> where T : class, Avalonia.Media.IEffect?
-    {
-        protected EffectAnimatorBase() { }
-        public override System.IDisposable BindAnimation(Avalonia.Animation.Animatable control, System.IObservable<Avalonia.Media.IEffect?> instance) { throw null; }
-        public override Avalonia.Media.IEffect? Interpolate(double progress, Avalonia.Media.IEffect? oldValue, Avalonia.Media.IEffect? newValue) { throw null; }
-        protected abstract T Interpolate(double progress, T oldValue, T newValue);
-    }
-    public partial class FloatAnimator : Avalonia.Animation.Animators.Animator<float>
-    {
-        public FloatAnimator() { }
-        public override float Interpolate(double progress, float oldValue, float newValue) { throw null; }
-    }
-    public partial class GradientBrushAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.IGradientBrush?>
-    {
-        public GradientBrushAnimator() { }
-        public override System.IDisposable BindAnimation(Avalonia.Animation.Animatable control, System.IObservable<Avalonia.Media.IGradientBrush?> instance) { throw null; }
-        public override Avalonia.Media.IGradientBrush? Interpolate(double progress, Avalonia.Media.IGradientBrush? oldValue, Avalonia.Media.IGradientBrush? newValue) { throw null; }
-    }
-    public partial class Int16Animator : Avalonia.Animation.Animators.Animator<short>
-    {
-        public Int16Animator() { }
-        public override short Interpolate(double progress, short oldValue, short newValue) { throw null; }
-    }
-    public partial class Int32Animator : Avalonia.Animation.Animators.Animator<int>
-    {
-        public Int32Animator() { }
-        public override int Interpolate(double progress, int oldValue, int newValue) { throw null; }
-    }
-    public partial class Int64Animator : Avalonia.Animation.Animators.Animator<long>
-    {
-        public Int64Animator() { }
-        public override long Interpolate(double progress, long oldValue, long newValue) { throw null; }
-    }
-    public partial class ISolidColorBrushAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.ISolidColorBrush?>
-    {
-        public ISolidColorBrushAnimator() { }
-        public override System.IDisposable BindAnimation(Avalonia.Animation.Animatable control, System.IObservable<Avalonia.Media.ISolidColorBrush?> instance) { throw null; }
-        public override Avalonia.Media.ISolidColorBrush? Interpolate(double progress, Avalonia.Media.ISolidColorBrush? oldValue, Avalonia.Media.ISolidColorBrush? newValue) { throw null; }
-    }
-    public partial class PointAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Point>
-    {
-        public PointAnimator() { }
-        public override Avalonia.Point Interpolate(double progress, Avalonia.Point oldValue, Avalonia.Point newValue) { throw null; }
-    }
-    public partial class RectAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Rect>
-    {
-        public RectAnimator() { }
-        public override Avalonia.Rect Interpolate(double progress, Avalonia.Rect oldValue, Avalonia.Rect newValue) { throw null; }
-    }
-    public partial class RelativePointAnimator : Avalonia.Animation.Animators.Animator<Avalonia.RelativePoint>
-    {
-        public RelativePointAnimator() { }
-        public override Avalonia.RelativePoint Interpolate(double progress, Avalonia.RelativePoint oldValue, Avalonia.RelativePoint newValue) { throw null; }
-    }
-    public partial class SizeAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Size>
-    {
-        public SizeAnimator() { }
-        public override Avalonia.Size Interpolate(double progress, Avalonia.Size oldValue, Avalonia.Size newValue) { throw null; }
-    }
-    public partial class ThicknessAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Thickness>
-    {
-        public ThicknessAnimator() { }
-        public override Avalonia.Thickness Interpolate(double progress, Avalonia.Thickness oldValue, Avalonia.Thickness newValue) { throw null; }
-    }
-    public partial class TransformAnimator : Avalonia.Animation.Animators.Animator<double>
-    {
-        public TransformAnimator() { }
-        public override System.IDisposable? Apply(Avalonia.Animation.Animation animation, Avalonia.Animation.Animatable control, Avalonia.Animation.IClock? clock, System.IObservable<bool> obsMatch, System.Action? onComplete) { throw null; }
-        public override double Interpolate(double p, double o, double n) { throw null; }
-    }
-    public partial class TransformOperationsAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Media.Transformation.TransformOperations>
-    {
-        public TransformOperationsAnimator() { }
-        public override Avalonia.Media.Transformation.TransformOperations Interpolate(double progress, Avalonia.Media.Transformation.TransformOperations oldValue, Avalonia.Media.Transformation.TransformOperations newValue) { throw null; }
-    }
-    public partial class UInt16Animator : Avalonia.Animation.Animators.Animator<ushort>
-    {
-        public UInt16Animator() { }
-        public override ushort Interpolate(double progress, ushort oldValue, ushort newValue) { throw null; }
-    }
-    public partial class UInt32Animator : Avalonia.Animation.Animators.Animator<uint>
-    {
-        public UInt32Animator() { }
-        public override uint Interpolate(double progress, uint oldValue, uint newValue) { throw null; }
-    }
-    public partial class UInt64Animator : Avalonia.Animation.Animators.Animator<ulong>
-    {
-        public UInt64Animator() { }
-        public override ulong Interpolate(double progress, ulong oldValue, ulong newValue) { throw null; }
-    }
-    public partial class VectorAnimator : Avalonia.Animation.Animators.Animator<Avalonia.Vector>
-    {
-        public VectorAnimator() { }
-        public override Avalonia.Vector Interpolate(double progress, Avalonia.Vector oldValue, Avalonia.Vector newValue) { throw null; }
     }
 }
 namespace Avalonia.Animation.Easings
@@ -1590,6 +1296,7 @@ namespace Avalonia.Animation.Easings
         public ExponentialEaseOut() { }
         public override double Ease(double progress) { throw null; }
     }
+    [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IEasing
     {
         double Ease(double progress);
@@ -1673,7 +1380,6 @@ namespace Avalonia.Animation.Easings
     public partial class SpringEasing : Avalonia.Animation.Easings.Easing
     {
         public SpringEasing() { }
-        public SpringEasing(Avalonia.Animation.Spring keySpline) { }
         public SpringEasing(double mass = 0, double stiffness = 0, double damping = 0, double initialVelocity = 0) { }
         public double Damping { get { throw null; } set { } }
         public double InitialVelocity { get { throw null; } set { } }
@@ -1724,7 +1430,7 @@ namespace Avalonia.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         public bool TryGetValue(TKey key, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out TValue value) { throw null; }
     }
-    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Convertion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Conversion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
     public partial class AvaloniaListConverter<T> : System.ComponentModel.TypeConverter
     {
         public AvaloniaListConverter() { }
@@ -1737,7 +1443,7 @@ namespace Avalonia.Collections
         public static System.IDisposable ForEachItem<T>(this Avalonia.Collections.IAvaloniaReadOnlyList<T> collection, System.Action<T> added, System.Action<T> removed, System.Action reset, bool weakSubscription = false) { throw null; }
         public static System.IDisposable TrackItemPropertyChanged<T>(this Avalonia.Collections.IAvaloniaReadOnlyList<T> collection, System.Action<System.Tuple<object?, System.ComponentModel.PropertyChangedEventArgs>> callback) { throw null; }
     }
-    public partial class AvaloniaList<T> : Avalonia.Collections.IAvaloniaList<T>, Avalonia.Collections.IAvaloniaReadOnlyList<T>, Avalonia.Diagnostics.INotifyCollectionChangedDebug, System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList, System.Collections.Specialized.INotifyCollectionChanged, System.ComponentModel.INotifyPropertyChanged
+    public partial class AvaloniaList<T> : Avalonia.Collections.IAvaloniaList<T>, Avalonia.Collections.IAvaloniaReadOnlyList<T>, System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList, System.Collections.Specialized.INotifyCollectionChanged, System.ComponentModel.INotifyPropertyChanged
     {
         public AvaloniaList() { }
         public AvaloniaList(System.Collections.Generic.IEnumerable<T> items) { }
@@ -1759,7 +1465,6 @@ namespace Avalonia.Collections
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged { add { } remove { } }
         public virtual void Add(T item) { }
         public virtual void AddRange(System.Collections.Generic.IEnumerable<T> items) { }
-        System.Delegate[]? Avalonia.Diagnostics.INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() { throw null; }
         public virtual void Clear() { }
         public bool Contains(T item) { throw null; }
         public void CopyTo(T[] array, int arrayIndex) { }
@@ -1830,203 +1535,8 @@ namespace Avalonia.Collections
         Remove = 1,
     }
 }
-namespace Avalonia.Collections.Pooled
-{
-    public enum ClearMode
-    {
-        Auto = 0,
-        Always = 1,
-        Never = 2,
-    }
-    public partial interface IReadOnlyPooledList<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.IEnumerable
-    {
-        System.ReadOnlySpan<T> Span { get; }
-    }
-    [System.Diagnostics.DebuggerDisplayAttribute("Count = {Count}")]
-    public partial class PooledList<T> : Avalonia.Collections.Pooled.IReadOnlyPooledList<T>, System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList, System.IDisposable, System.Runtime.Serialization.IDeserializationCallback
-    {
-        public PooledList() { }
-        public PooledList(Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledList(Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(System.Collections.Generic.IEnumerable<T> collection) { }
-        public PooledList(System.Collections.Generic.IEnumerable<T> collection, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledList(System.Collections.Generic.IEnumerable<T> collection, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(System.Collections.Generic.IEnumerable<T> collection, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(int capacity) { }
-        public PooledList(int capacity, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledList(int capacity, Avalonia.Collections.Pooled.ClearMode clearMode, bool sizeToCapacity) { }
-        public PooledList(int capacity, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(int capacity, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool, bool sizeToCapacity) { }
-        public PooledList(int capacity, bool sizeToCapacity) { }
-        public PooledList(int capacity, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(int capacity, System.Buffers.ArrayPool<T> customPool, bool sizeToCapacity) { }
-        public PooledList(System.ReadOnlySpan<T> span) { }
-        public PooledList(System.ReadOnlySpan<T> span, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledList(System.ReadOnlySpan<T> span, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(System.ReadOnlySpan<T> span, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(T[] array) { }
-        public PooledList(T[] array, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledList(T[] array, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledList(T[] array, System.Buffers.ArrayPool<T> customPool) { }
-        System.ReadOnlySpan<T> Avalonia.Collections.Pooled.IReadOnlyPooledList<T>.Span { get { throw null; } }
-        public int Capacity { get { throw null; } set { } }
-        public Avalonia.Collections.Pooled.ClearMode ClearMode { get { throw null; } }
-        public int Count { get { throw null; } }
-        public T this[int index] { get { throw null; } set { } }
-        public System.Span<T> Span { get { throw null; } }
-        bool System.Collections.Generic.ICollection<T>.IsReadOnly { get { throw null; } }
-        int System.Collections.ICollection.Count { get { throw null; } }
-        bool System.Collections.ICollection.IsSynchronized { get { throw null; } }
-        object System.Collections.ICollection.SyncRoot { get { throw null; } }
-        bool System.Collections.IList.IsFixedSize { get { throw null; } }
-        bool System.Collections.IList.IsReadOnly { get { throw null; } }
-        object? System.Collections.IList.this[int index] { get { throw null; } set { } }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Add(T item) { }
-        public void AddRange(System.Collections.Generic.IEnumerable<T> collection) { }
-        public void AddRange(System.ReadOnlySpan<T> span) { }
-        public void AddRange(T[] array) { }
-        public System.Span<T> AddSpan(int count) { throw null; }
-        public System.Collections.ObjectModel.ReadOnlyCollection<T> AsReadOnly() { throw null; }
-        public int BinarySearch(int index, int count, T item, System.Collections.Generic.IComparer<T>? comparer) { throw null; }
-        public int BinarySearch(T item) { throw null; }
-        public int BinarySearch(T item, System.Collections.Generic.IComparer<T> comparer) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Clear() { }
-        public bool Contains(T item) { throw null; }
-        public Avalonia.Collections.Pooled.PooledList<TOutput> ConvertAll<TOutput>(System.Func<T, TOutput> converter) { throw null; }
-        public void CopyTo(System.Span<T> span) { }
-        public virtual void Dispose() { }
-        public bool Exists(System.Func<T, bool> match) { throw null; }
-        public Avalonia.Collections.Pooled.PooledList<T> FindAll(System.Func<T, bool> match) { throw null; }
-        public int FindIndex(System.Func<T, bool> match) { throw null; }
-        public int FindIndex(int startIndex, System.Func<T, bool> match) { throw null; }
-        public int FindIndex(int startIndex, int count, System.Func<T, bool> match) { throw null; }
-        public int FindLastIndex(System.Func<T, bool> match) { throw null; }
-        public int FindLastIndex(int startIndex, System.Func<T, bool> match) { throw null; }
-        public int FindLastIndex(int startIndex, int count, System.Func<T, bool> match) { throw null; }
-        public void ForEach(System.Action<T> action) { }
-        public Avalonia.Collections.Pooled.PooledList<T>.Enumerator GetEnumerator() { throw null; }
-        public System.Span<T> GetRange(int index, int count) { throw null; }
-        public int IndexOf(T item) { throw null; }
-        public int IndexOf(T item, int index) { throw null; }
-        public int IndexOf(T item, int index, int count) { throw null; }
-        public void Insert(int index, T item) { }
-        public void InsertRange(int index, System.Collections.Generic.IEnumerable<T> collection) { }
-        public void InsertRange(int index, System.ReadOnlySpan<T> span) { }
-        public void InsertRange(int index, T[] array) { }
-        public System.Span<T> InsertSpan(int index, int count) { throw null; }
-        public int LastIndexOf(T item) { throw null; }
-        public int LastIndexOf(T item, int index) { throw null; }
-        public int LastIndexOf(T item, int index, int count) { throw null; }
-        public bool Remove(T item) { throw null; }
-        public int RemoveAll(System.Func<T, bool> match) { throw null; }
-        public void RemoveAt(int index) { }
-        public void RemoveRange(int index, int count) { }
-        public void Reverse() { }
-        public void Reverse(int index, int count) { }
-        public void Sort() { }
-        public void Sort(System.Collections.Generic.IComparer<T> comparer) { }
-        public void Sort(System.Func<T?, T?, int> comparison) { }
-        public void Sort(int index, int count, System.Collections.Generic.IComparer<T>? comparer) { }
-        void System.Collections.Generic.ICollection<T>.CopyTo(T[] array, int arrayIndex) { }
-        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
-        void System.Collections.ICollection.CopyTo(System.Array array, int arrayIndex) { }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        int System.Collections.IList.Add(object? item) { throw null; }
-        bool System.Collections.IList.Contains(object? item) { throw null; }
-        int System.Collections.IList.IndexOf(object? item) { throw null; }
-        void System.Collections.IList.Insert(int index, object? item) { }
-        void System.Collections.IList.Remove(object? item) { }
-        void System.Runtime.Serialization.IDeserializationCallback.OnDeserialization(object? sender) { }
-        public T[] ToArray() { throw null; }
-        public void TrimExcess() { }
-        public bool TrueForAll(System.Func<T, bool> match) { throw null; }
-        public bool TryFind(System.Func<T, bool> match, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out T result) { throw null; }
-        public bool TryFindLast(System.Func<T, bool> match, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out T result) { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<T>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private T _current;
-            private object _dummy;
-            private int _dummyPrimitive;
-            public T Current { get { throw null; } }
-            object? System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            void System.Collections.IEnumerator.Reset() { }
-        }
-    }
-    [System.Diagnostics.DebuggerDisplayAttribute("Count = {Count}")]
-    public partial class PooledStack<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.IDisposable, System.Runtime.Serialization.IDeserializationCallback
-    {
-        public PooledStack() { }
-        public PooledStack(Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledStack(Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(System.Collections.Generic.IEnumerable<T> enumerable) { }
-        public PooledStack(System.Collections.Generic.IEnumerable<T> enumerable, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledStack(System.Collections.Generic.IEnumerable<T> enumerable, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(System.Collections.Generic.IEnumerable<T> enumerable, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(int capacity) { }
-        public PooledStack(int capacity, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledStack(int capacity, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(int capacity, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(System.ReadOnlySpan<T> span) { }
-        public PooledStack(System.ReadOnlySpan<T> span, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledStack(System.ReadOnlySpan<T> span, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(System.ReadOnlySpan<T> span, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(T[] array) { }
-        public PooledStack(T[] array, Avalonia.Collections.Pooled.ClearMode clearMode) { }
-        public PooledStack(T[] array, Avalonia.Collections.Pooled.ClearMode clearMode, System.Buffers.ArrayPool<T> customPool) { }
-        public PooledStack(T[] array, System.Buffers.ArrayPool<T> customPool) { }
-        public Avalonia.Collections.Pooled.ClearMode ClearMode { get { throw null; } }
-        public int Count { get { throw null; } }
-        bool System.Collections.ICollection.IsSynchronized { get { throw null; } }
-        object System.Collections.ICollection.SyncRoot { get { throw null; } }
-        public void Clear() { }
-        public bool Contains(T item) { throw null; }
-        public void CopyTo(System.Span<T> span) { }
-        public void CopyTo(T[] array, int arrayIndex) { }
-        public void Dispose() { }
-        public Avalonia.Collections.Pooled.PooledStack<T>.Enumerator GetEnumerator() { throw null; }
-        public T Peek() { throw null; }
-        public T Pop() { throw null; }
-        public void Push(T item) { }
-        public int RemoveWhere(System.Func<T, bool> match) { throw null; }
-        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
-        void System.Collections.ICollection.CopyTo(System.Array array, int arrayIndex) { }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        void System.Runtime.Serialization.IDeserializationCallback.OnDeserialization(object? sender) { }
-        public T[] ToArray() { throw null; }
-        public void TrimExcess() { }
-        public bool TryPeek([System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out T result) { throw null; }
-        public bool TryPop([System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out T result) { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<T>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private T _currentElement;
-            private object _dummy;
-            private int _dummyPrimitive;
-            public T Current { get { throw null; } }
-            object? System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            void System.Collections.IEnumerator.Reset() { }
-        }
-    }
-}
 namespace Avalonia.Controls
 {
-    public partial class ChildNameScope : Avalonia.Controls.INameScope
-    {
-        public ChildNameScope(Avalonia.Controls.INameScope parentScope) { }
-        public bool IsCompleted { get { throw null; } }
-        public void Complete() { }
-        public Avalonia.Utilities.SynchronousCompletionAsyncResult<object?> DoFindAsync(string name) { throw null; }
-        public object? Find(string name) { throw null; }
-        public Avalonia.Utilities.SynchronousCompletionAsyncResult<object?> FindAsync(string name) { throw null; }
-        public void Register(string name, object element) { }
-    }
     public partial class Classes : Avalonia.Collections.AvaloniaList<string>, Avalonia.Controls.IPseudoClasses
     {
         public Classes() { }
@@ -2321,9 +1831,9 @@ namespace Avalonia.Data
         public bool Equals(Avalonia.Data.BindingValue<T> other) { throw null; }
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override bool Equals(object obj) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit convertion methods are required for type conversion.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit conversion methods are required for type conversion.")]
         public static Avalonia.Data.BindingValue<T> FromUntyped(object? value) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit convertion methods are required for type conversion.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit conversion methods are required for type conversion.")]
         public static Avalonia.Data.BindingValue<T> FromUntyped(object? value, System.Type targetType) { throw null; }
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override int GetHashCode() { throw null; }
@@ -2356,12 +1866,6 @@ namespace Avalonia.Data
     public partial interface IBinding
     {
         Avalonia.Data.InstancedBinding? Initiate(Avalonia.AvaloniaObject target, Avalonia.AvaloniaProperty? targetProperty, object? anchor = null, bool enableDataValidation = false);
-    }
-    public partial class IndexerBinding : Avalonia.Data.IBinding
-    {
-        public IndexerBinding(Avalonia.AvaloniaObject source, Avalonia.AvaloniaProperty property, Avalonia.Data.BindingMode mode) { }
-        public Avalonia.AvaloniaProperty Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Data.InstancedBinding? Initiate(Avalonia.AvaloniaObject target, Avalonia.AvaloniaProperty? targetProperty, object? anchor = null, bool enableDataValidation = false) { throw null; }
     }
     public partial class IndexerDescriptor : Avalonia.IDescription, System.IObservable<object?>
     {
@@ -2420,6 +1924,24 @@ namespace Avalonia.Data
         public Avalonia.Data.Optional<object?> ToObject() { throw null; }
         public override string ToString() { throw null; }
     }
+    public partial class TemplateBinding : Avalonia.Data.IBinding, Avalonia.IDescription, Avalonia.Styling.ISetterValue, System.IDisposable, System.IObservable<object?>, System.IObserver<object?>
+    {
+        public TemplateBinding() { }
+        public TemplateBinding(Avalonia.AvaloniaProperty property) { }
+        public Avalonia.Data.Converters.IValueConverter? Converter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? ConverterParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Description { get { throw null; } }
+        public Avalonia.Data.BindingMode Mode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Avalonia.AvaloniaProperty? Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        void Avalonia.Styling.ISetterValue.Initialize(Avalonia.Styling.SetterBase setter) { }
+        public virtual void Dispose() { }
+        public Avalonia.Data.InstancedBinding? Initiate(Avalonia.AvaloniaObject target, Avalonia.AvaloniaProperty? targetProperty, object? anchor = null, bool enableDataValidation = false) { throw null; }
+        public Avalonia.Data.IBinding ProvideValue() { throw null; }
+        public System.IDisposable Subscribe(System.IObserver<object?> observer) { throw null; }
+        void System.IObserver<object?>.OnCompleted() { }
+        void System.IObserver<object?>.OnError(System.Exception error) { }
+        void System.IObserver<object?>.OnNext(object? value) { }
+    }
 }
 namespace Avalonia.Data.Converters
 {
@@ -2429,7 +1951,7 @@ namespace Avalonia.Data.Converters
         public static readonly Avalonia.Data.Converters.IValueConverter Not;
         public static readonly Avalonia.Data.Converters.IMultiValueConverter Or;
     }
-    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Convertion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Conversion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
     public partial class DefaultValueConverter : Avalonia.Data.Converters.IValueConverter
     {
         public static readonly Avalonia.Data.Converters.DefaultValueConverter Instance;
@@ -2503,10 +2025,6 @@ namespace Avalonia.Data.Core
         public System.Type PropertyType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public object? Get(object target) { throw null; }
         public void Set(object target, object? value) { }
-    }
-    public static partial class CommonPropertyNames
-    {
-        public const string IndexerName = "Item";
     }
     public partial class EnsureTypePropertyPathElement : Avalonia.Data.Core.IPropertyPathElement
     {
@@ -2655,6 +2173,13 @@ namespace Avalonia.Data.Core.Plugins
 }
 namespace Avalonia.Diagnostics
 {
+    public partial class AppliedStyle
+    {
+        internal AppliedStyle() { }
+        public bool HasActivator { get { throw null; } }
+        public bool IsActive { get { throw null; } }
+        public Avalonia.Styling.StyleBase Style { get { throw null; } }
+    }
     public static partial class AvaloniaObjectExtensions
     {
         public static Avalonia.Diagnostics.AvaloniaPropertyValue GetDiagnostic(this Avalonia.AvaloniaObject o, Avalonia.AvaloniaProperty property) { throw null; }
@@ -2668,45 +2193,23 @@ namespace Avalonia.Diagnostics
         public Avalonia.AvaloniaProperty Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public object? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-    public partial interface IAvaloniaObjectDebug
-    {
-        System.Delegate[]? GetPropertyChangedSubscribers();
-    }
-    public partial interface INotifyCollectionChangedDebug
-    {
-        System.Delegate[]? GetCollectionChangedSubscribers();
-    }
     public static partial class StyledElementExtensions
     {
         public static Avalonia.Diagnostics.StyleDiagnostics GetStyleDiagnostics(this Avalonia.StyledElement styledElement) { throw null; }
     }
     public partial class StyleDiagnostics
     {
-        public StyleDiagnostics(System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyleInstance> appliedStyles) { }
-        public System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyleInstance> AppliedStyles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public StyleDiagnostics(System.Collections.Generic.IReadOnlyList<Avalonia.Diagnostics.AppliedStyle> appliedStyles) { }
+        public System.Collections.Generic.IReadOnlyList<Avalonia.Diagnostics.AppliedStyle> AppliedStyles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Avalonia.Input
 {
-    public partial class AccessKeyHandler : Avalonia.Input.IAccessKeyHandler
-    {
-        public static readonly Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> AccessKeyPressedEvent;
-        public AccessKeyHandler() { }
-        public Avalonia.Input.IMainMenu? MainMenu { get { throw null; } set { } }
-        protected virtual void OnKeyDown(object? sender, Avalonia.Input.KeyEventArgs e) { }
-        protected virtual void OnPreviewKeyDown(object? sender, Avalonia.Input.KeyEventArgs e) { }
-        protected virtual void OnPreviewKeyUp(object? sender, Avalonia.Input.KeyEventArgs e) { }
-        protected virtual void OnPreviewPointerPressed(object? sender, Avalonia.Input.PointerEventArgs e) { }
-        public void Register(char accessKey, Avalonia.Input.IInputElement element) { }
-        public void SetOwner(Avalonia.Input.IInputRoot owner) { }
-        public void Unregister(Avalonia.Input.IInputElement element) { }
-    }
     public partial class Cursor : System.IDisposable
     {
         public static readonly Avalonia.Input.Cursor Default;
         public Cursor(Avalonia.Input.StandardCursorType cursorType) { }
-        public Cursor(Avalonia.Media.Imaging.IBitmap cursor, Avalonia.PixelPoint hotSpot) { }
-        public Avalonia.Platform.ICursorImpl PlatformImpl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Cursor(Avalonia.Media.Imaging.Bitmap cursor, Avalonia.PixelPoint hotSpot) { }
         public void Dispose() { }
         public static Avalonia.Input.Cursor Parse(string s) { throw null; }
         public override string ToString() { throw null; }
@@ -2746,6 +2249,7 @@ namespace Avalonia.Input
         public static bool GetAllowDrop(Avalonia.Interactivity.Interactive interactive) { throw null; }
         public static void SetAllowDrop(Avalonia.Interactivity.Interactive interactive, bool value) { }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class DragDropDevice : Avalonia.Input.IInputDevice, Avalonia.Input.Raw.IDragDropDevice
     {
         public static readonly Avalonia.Input.DragDropDevice Instance;
@@ -2769,17 +2273,18 @@ namespace Avalonia.Input
         public Avalonia.Input.KeyModifiers KeyModifiers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.Point GetPosition(Avalonia.Visual relativeTo) { throw null; }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class FocusManager : Avalonia.Input.IFocusManager
     {
         public FocusManager() { }
-        public Avalonia.Input.IInputElement? Current { get { throw null; } }
-        public static Avalonia.Input.IFocusManager? Instance { get { throw null; } }
         public Avalonia.Input.IFocusScope? Scope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public void Focus(Avalonia.Input.IInputElement? control, Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { }
-        public Avalonia.Input.IInputElement? GetFocusedElement(Avalonia.Input.IInputElement e) { throw null; }
+        public void ClearFocus() { }
+        public bool Focus(Avalonia.Input.IInputElement? control, Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { throw null; }
+        public Avalonia.Input.IInputElement? GetFocusedElement() { throw null; }
+        public Avalonia.Input.IInputElement? GetFocusedElement(Avalonia.Input.IFocusScope scope) { throw null; }
         public static bool GetIsFocusScope(Avalonia.Input.IInputElement e) { throw null; }
         public void RemoveFocusScope(Avalonia.Input.IFocusScope scope) { }
-        public void SetFocusedElement(Avalonia.Input.IFocusScope scope, Avalonia.Input.IInputElement? element, Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { }
+        public bool SetFocusedElement(Avalonia.Input.IFocusScope scope, Avalonia.Input.IInputElement? element, Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { throw null; }
         public void SetFocusScope(Avalonia.Input.IFocusScope scope) { }
     }
     public static partial class Gestures
@@ -2830,14 +2335,6 @@ namespace Avalonia.Input
         Completed = 1,
         Cancelled = 2,
     }
-    [Avalonia.Metadata.UnstableAttribute]
-    public partial interface IAccessKeyHandler
-    {
-        Avalonia.Input.IMainMenu? MainMenu { get; set; }
-        void Register(char accessKey, Avalonia.Input.IInputElement element);
-        void SetOwner(Avalonia.Input.IInputRoot owner);
-        void Unregister(Avalonia.Input.IInputElement element);
-    }
     public partial interface ICloseable
     {
         event System.EventHandler? Closed;
@@ -2862,16 +2359,16 @@ namespace Avalonia.Input
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IFocusManager
     {
-        Avalonia.Input.IInputElement? Current { get; }
-        Avalonia.Input.IFocusScope? Scope { get; }
-        void Focus(Avalonia.Input.IInputElement? control, Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None);
-        void RemoveFocusScope(Avalonia.Input.IFocusScope scope);
-        void SetFocusScope(Avalonia.Input.IFocusScope scope);
+        [Avalonia.Metadata.UnstableAttribute("This API might be removed in 11.x minor updates. Please consider focusing another element instead of removing focus at all for better UX.")]
+        void ClearFocus();
+        Avalonia.Input.IInputElement? GetFocusedElement();
     }
+    [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IFocusScope
     {
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IInputDevice
     {
         void ProcessRawEvent(Avalonia.Input.Raw.RawInputEventArgs ev);
@@ -2901,11 +2398,12 @@ namespace Avalonia.Input
         event System.EventHandler<Avalonia.Input.PointerWheelEventArgs>? PointerWheelChanged;
         event System.EventHandler<Avalonia.Input.TextInputEventArgs>? TextInput;
         void AddHandler(Avalonia.Interactivity.RoutedEvent routedEvent, System.Delegate handler, Avalonia.Interactivity.RoutingStrategies routes = Avalonia.Interactivity.RoutingStrategies.Bubble | Avalonia.Interactivity.RoutingStrategies.Direct, bool handledEventsToo = false);
-        void Focus();
+        bool Focus(Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None);
         void RaiseEvent(Avalonia.Interactivity.RoutedEventArgs e);
         void RemoveHandler(Avalonia.Interactivity.RoutedEvent routedEvent, System.Delegate handler);
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IInputManager
     {
         System.IObservable<Avalonia.Input.Raw.RawInputEventArgs> PostProcess { get; }
@@ -2916,30 +2414,22 @@ namespace Avalonia.Input
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IInputRoot : Avalonia.Input.IInputElement
     {
-        Avalonia.Input.IAccessKeyHandler AccessKeyHandler { get; }
+        Avalonia.Input.IFocusManager? FocusManager { get; }
         Avalonia.Input.IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
+        Avalonia.Platform.IPlatformSettings? PlatformSettings { get; }
         Avalonia.Input.IInputElement? PointerOverElement { get; set; }
         bool ShowAccessKeys { get; set; }
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IKeyboardDevice : Avalonia.Input.IInputDevice, System.ComponentModel.INotifyPropertyChanged
+    public partial interface IKeyboardDevice : Avalonia.Input.IInputDevice
     {
-        Avalonia.Input.IInputElement? FocusedElement { get; }
-        void SetFocusedElement(Avalonia.Input.IInputElement? element, Avalonia.Input.NavigationMethod method, Avalonia.Input.KeyModifiers modifiers);
     }
     [Avalonia.Metadata.UnstableAttribute]
     public partial interface IKeyboardNavigationHandler
     {
         void Move(Avalonia.Input.IInputElement element, Avalonia.Input.NavigationDirection direction, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None);
+        [Avalonia.Metadata.PrivateApiAttribute]
         void SetOwner(Avalonia.Input.IInputRoot owner);
-    }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IMainMenu
-    {
-        bool IsOpen { get; }
-        event System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>? MenuClosed;
-        void Close();
-        void Open();
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IMouseDevice : Avalonia.Input.IInputDevice, Avalonia.Input.IPointerDevice
@@ -3008,7 +2498,7 @@ namespace Avalonia.Input
         public event System.EventHandler<Avalonia.Input.TappedEventArgs>? Tapped { add { } remove { } }
         public event System.EventHandler<Avalonia.Input.TextInputEventArgs>? TextInput { add { } remove { } }
         public event System.EventHandler<Avalonia.Input.TextInput.TextInputMethodClientRequestedEventArgs>? TextInputMethodClientRequested { add { } remove { } }
-        public void Focus() { }
+        public bool Focus(Avalonia.Input.NavigationMethod method = Avalonia.Input.NavigationMethod.Unspecified, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { throw null; }
         protected override void OnAttachedToVisualTreeCore(Avalonia.VisualTreeAttachmentEventArgs e) { }
         protected override void OnDetachedFromVisualTreeCore(Avalonia.VisualTreeAttachmentEventArgs e) { }
         protected virtual void OnGotFocus(Avalonia.Input.GotFocusEventArgs e) { }
@@ -3031,15 +2521,6 @@ namespace Avalonia.Input
         public static System.Collections.Generic.IEnumerable<Avalonia.Input.IInputElement> GetInputElementsAt(this Avalonia.Input.IInputElement element, Avalonia.Point p) { throw null; }
         public static Avalonia.Input.IInputElement? InputHitTest(this Avalonia.Input.IInputElement element, Avalonia.Point p) { throw null; }
         public static Avalonia.Input.IInputElement? InputHitTest(this Avalonia.Input.IInputElement element, Avalonia.Point p, System.Func<Avalonia.Visual, bool> filter) { throw null; }
-    }
-    public partial class InputManager : Avalonia.Input.IInputManager
-    {
-        public InputManager() { }
-        public static Avalonia.Input.IInputManager? Instance { get { throw null; } }
-        public System.IObservable<Avalonia.Input.Raw.RawInputEventArgs> PostProcess { get { throw null; } }
-        public System.IObservable<Avalonia.Input.Raw.RawInputEventArgs> PreProcess { get { throw null; } }
-        public System.IObservable<Avalonia.Input.Raw.RawInputEventArgs> Process { get { throw null; } }
-        public void ProcessInput(Avalonia.Input.Raw.RawInputEventArgs e) { }
     }
     public partial class InputMethod
     {
@@ -3285,13 +2766,13 @@ namespace Avalonia.Input
         public Avalonia.Input.KeyGesture Gesture { get { throw null; } set { } }
         public void TryHandle(Avalonia.Input.KeyEventArgs args) { }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class KeyboardDevice : Avalonia.Input.IInputDevice, Avalonia.Input.IKeyboardDevice, System.ComponentModel.INotifyPropertyChanged
     {
         public KeyboardDevice() { }
         public Avalonia.Input.IInputElement? FocusedElement { get { throw null; } }
         public Avalonia.Input.IFocusManager? FocusManager { get { throw null; } }
         public Avalonia.Input.IInputManager? InputManager { get { throw null; } }
-        public static Avalonia.Input.IKeyboardDevice? Instance { get { throw null; } }
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged { add { } remove { } }
         public void ProcessRawEvent(Avalonia.Input.Raw.RawInputEventArgs e) { }
         protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberNameAttribute] string propertyName = "") { }
@@ -3312,12 +2793,13 @@ namespace Avalonia.Input
         public static void SetTabNavigation(Avalonia.Input.InputElement element, Avalonia.Input.KeyboardNavigationMode value) { }
         public static void SetTabOnceActiveElement(Avalonia.Input.InputElement element, Avalonia.Input.IInputElement? value) { }
     }
-    public partial class KeyboardNavigationHandler : Avalonia.Input.IKeyboardNavigationHandler
+    [Avalonia.Metadata.UnstableAttribute]
+    public sealed partial class KeyboardNavigationHandler : Avalonia.Input.IKeyboardNavigationHandler
     {
         public KeyboardNavigationHandler() { }
         public static Avalonia.Input.IInputElement? GetNext(Avalonia.Input.IInputElement element, Avalonia.Input.NavigationDirection direction) { throw null; }
-        public void Move(Avalonia.Input.IInputElement element, Avalonia.Input.NavigationDirection direction, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { }
-        protected virtual void OnKeyDown(object? sender, Avalonia.Input.KeyEventArgs e) { }
+        public void Move(Avalonia.Input.IInputElement? element, Avalonia.Input.NavigationDirection direction, Avalonia.Input.KeyModifiers keyModifiers = Avalonia.Input.KeyModifiers.None) { }
+        [Avalonia.Metadata.PrivateApiAttribute]
         public void SetOwner(Avalonia.Input.IInputRoot owner) { }
     }
     public enum KeyboardNavigationMode
@@ -3375,6 +2857,7 @@ namespace Avalonia.Input
         XButton1 = 4,
         XButton2 = 5,
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class MouseDevice : Avalonia.Input.IInputDevice, Avalonia.Input.IMouseDevice, Avalonia.Input.IPointerDevice, System.IDisposable
     {
         public MouseDevice(Avalonia.Input.Pointer? pointer = null) { }
@@ -3408,6 +2891,7 @@ namespace Avalonia.Input
         Directional = 2,
         Pointer = 3,
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class PenDevice : Avalonia.Input.IInputDevice, Avalonia.Input.IPenDevice, Avalonia.Input.IPointerDevice, System.IDisposable
     {
         public PenDevice() { }
@@ -3678,6 +3162,7 @@ namespace Avalonia.Input
         public Avalonia.Input.IKeyboardDevice? Device { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string? Text { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class TouchDevice : Avalonia.Input.IInputDevice, Avalonia.Input.IPointerDevice, System.IDisposable
     {
         public TouchDevice() { }
@@ -3756,14 +3241,17 @@ namespace Avalonia.Input.Platform
     {
         System.Threading.Tasks.Task<Avalonia.Input.DragDropEffects> DoDragDrop(Avalonia.Input.PointerEventArgs triggerEvent, Avalonia.Input.IDataObject data, Avalonia.Input.DragDropEffects allowedEffects);
     }
-    public partial class PlatformHotkeyConfiguration
+    public sealed partial class PlatformHotkeyConfiguration
     {
+        [Avalonia.Metadata.PrivateApiAttribute]
         public PlatformHotkeyConfiguration() { }
+        [Avalonia.Metadata.PrivateApiAttribute]
         public PlatformHotkeyConfiguration(Avalonia.Input.KeyModifiers commandModifiers, Avalonia.Input.KeyModifiers selectionModifiers = Avalonia.Input.KeyModifiers.Shift, Avalonia.Input.KeyModifiers wholeWordTextActionModifiers = Avalonia.Input.KeyModifiers.Control) { }
         public System.Collections.Generic.List<Avalonia.Input.KeyGesture> Back { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Avalonia.Input.KeyModifiers CommandModifiers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.List<Avalonia.Input.KeyGesture> Copy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.List<Avalonia.Input.KeyGesture> Cut { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public static Avalonia.Input.Platform.PlatformHotkeyConfiguration? Instance { get { throw null; } }
         public System.Collections.Generic.List<Avalonia.Input.KeyGesture> MoveCursorToTheEndOfDocument { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.List<Avalonia.Input.KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.List<Avalonia.Input.KeyGesture> MoveCursorToTheEndOfLine { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -3787,6 +3275,7 @@ namespace Avalonia.Input.Raw
     public partial interface IDragDropDevice : Avalonia.Input.IInputDevice
     {
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawDragEvent : Avalonia.Input.Raw.RawInputEventArgs
     {
         public RawDragEvent(Avalonia.Input.Raw.IDragDropDevice inputDevice, Avalonia.Input.Raw.RawDragEventType type, Avalonia.Input.IInputRoot root, Avalonia.Point location, Avalonia.Input.IDataObject data, Avalonia.Input.DragDropEffects effects, Avalonia.Input.RawInputModifiers modifiers) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot)) { }
@@ -3803,6 +3292,7 @@ namespace Avalonia.Input.Raw
         DragLeave = 2,
         Drop = 3,
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawInputEventArgs : System.EventArgs
     {
         public RawInputEventArgs(Avalonia.Input.IInputDevice device, ulong timestamp, Avalonia.Input.IInputRoot root) { }
@@ -3811,6 +3301,7 @@ namespace Avalonia.Input.Raw
         public Avalonia.Input.IInputRoot Root { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public ulong Timestamp { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawKeyEventArgs : Avalonia.Input.Raw.RawInputEventArgs
     {
         public RawKeyEventArgs(Avalonia.Input.IKeyboardDevice device, ulong timestamp, Avalonia.Input.IInputRoot root, Avalonia.Input.Raw.RawKeyEventType type, Avalonia.Input.Key key, Avalonia.Input.RawInputModifiers modifiers) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot)) { }
@@ -3823,11 +3314,13 @@ namespace Avalonia.Input.Raw
         KeyDown = 0,
         KeyUp = 1,
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawMouseWheelEventArgs : Avalonia.Input.Raw.RawPointerEventArgs
     {
         public RawMouseWheelEventArgs(Avalonia.Input.IInputDevice device, ulong timestamp, Avalonia.Input.IInputRoot root, Avalonia.Point position, Avalonia.Vector delta, Avalonia.Input.RawInputModifiers inputModifiers) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot), default(Avalonia.Input.Raw.RawPointerEventType), default(Avalonia.Point), default(Avalonia.Input.RawInputModifiers)) { }
         public Avalonia.Vector Delta { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawPointerEventArgs : Avalonia.Input.Raw.RawInputEventArgs
     {
         public RawPointerEventArgs(Avalonia.Input.IInputDevice device, ulong timestamp, Avalonia.Input.IInputRoot root, Avalonia.Input.Raw.RawPointerEventType type, Avalonia.Input.Raw.RawPointerPoint point, Avalonia.Input.RawInputModifiers inputModifiers) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot)) { }
@@ -3863,11 +3356,13 @@ namespace Avalonia.Input.Raw
         Rotate = 19,
         Swipe = 20,
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawPointerGestureEventArgs : Avalonia.Input.Raw.RawPointerEventArgs
     {
         public RawPointerGestureEventArgs(Avalonia.Input.IInputDevice device, ulong timestamp, Avalonia.Input.IInputRoot root, Avalonia.Input.Raw.RawPointerEventType gestureType, Avalonia.Point position, Avalonia.Vector delta, Avalonia.Input.RawInputModifiers inputModifiers) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot), default(Avalonia.Input.Raw.RawPointerEventType), default(Avalonia.Point), default(Avalonia.Input.RawInputModifiers)) { }
         public Avalonia.Vector Delta { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct RawPointerPoint : System.IEquatable<Avalonia.Input.Raw.RawPointerPoint>
     {
@@ -3891,17 +3386,20 @@ namespace Avalonia.Input.Raw
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override string ToString() { throw null; }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawSizeEventArgs : System.EventArgs
     {
         public RawSizeEventArgs(Avalonia.Size size) { }
         public RawSizeEventArgs(double width, double height) { }
         public Avalonia.Size Size { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawTextInputEventArgs : Avalonia.Input.Raw.RawInputEventArgs
     {
         public RawTextInputEventArgs(Avalonia.Input.IKeyboardDevice device, ulong timestamp, Avalonia.Input.IInputRoot root, string text) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot)) { }
         public string Text { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class RawTouchEventArgs : Avalonia.Input.Raw.RawPointerEventArgs
     {
         public RawTouchEventArgs(Avalonia.Input.IInputDevice device, ulong timestamp, Avalonia.Input.IInputRoot root, Avalonia.Input.Raw.RawPointerEventType type, Avalonia.Input.Raw.RawPointerPoint point, Avalonia.Input.RawInputModifiers inputModifiers, long rawPointerId) : base (default(Avalonia.Input.IInputDevice), default(ulong), default(Avalonia.Input.IInputRoot), default(Avalonia.Input.Raw.RawPointerEventType), default(Avalonia.Point), default(Avalonia.Input.RawInputModifiers)) { }
@@ -4057,7 +3555,6 @@ namespace Avalonia.Interactivity
     public partial class Interactive : Avalonia.Layout.Layoutable
     {
         public Interactive() { }
-        protected internal virtual Avalonia.Interactivity.Interactive? InteractiveParent { get { throw null; } }
         public void AddHandler(Avalonia.Interactivity.RoutedEvent routedEvent, System.Delegate handler, Avalonia.Interactivity.RoutingStrategies routes = Avalonia.Interactivity.RoutingStrategies.Bubble | Avalonia.Interactivity.RoutingStrategies.Direct, bool handledEventsToo = false) { }
         public void AddHandler<TEventArgs>(Avalonia.Interactivity.RoutedEvent<TEventArgs> routedEvent, System.EventHandler<TEventArgs>? handler, Avalonia.Interactivity.RoutingStrategies routes = Avalonia.Interactivity.RoutingStrategies.Bubble | Avalonia.Interactivity.RoutingStrategies.Direct, bool handledEventsToo = false) where TEventArgs : Avalonia.Interactivity.RoutedEventArgs { }
         protected Avalonia.Interactivity.EventRoute BuildEventRoute(Avalonia.Interactivity.RoutedEvent e) { throw null; }
@@ -4136,21 +3633,9 @@ namespace Avalonia.Layout
         Avalonia.Size AllocatedSize { get; }
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface ILayoutManager : System.IDisposable
-    {
-        event System.EventHandler LayoutUpdated;
-        void ExecuteInitialLayoutPass();
-        void ExecuteLayoutPass();
-        void InvalidateArrange(Avalonia.Layout.Layoutable control);
-        void InvalidateMeasure(Avalonia.Layout.Layoutable control);
-        void RegisterEffectiveViewportListener(Avalonia.Layout.Layoutable control);
-        void UnregisterEffectiveViewportListener(Avalonia.Layout.Layoutable control);
-    }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface ILayoutRoot
     {
         Avalonia.Size ClientSize { get; }
-        Avalonia.Layout.ILayoutManager LayoutManager { get; }
         double LayoutScaling { get; }
     }
     public partial class Layoutable : Avalonia.Visual
@@ -4198,6 +3683,7 @@ namespace Avalonia.Layout
         protected virtual void OnMeasureInvalidated() { }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
         protected sealed override void OnVisualParentChanged(Avalonia.Visual? oldParent, Avalonia.Visual? newParent) { }
+        public void UpdateLayout() { }
     }
     public static partial class LayoutExtensions
     {
@@ -4222,18 +3708,6 @@ namespace Avalonia.Layout
     {
         public static Avalonia.Rect? GetPreviousArrangeBounds(Avalonia.Layout.Layoutable control) { throw null; }
         public static Avalonia.Size? GetPreviousMeasureConstraint(Avalonia.Layout.Layoutable control) { throw null; }
-    }
-    public partial class LayoutManager : Avalonia.Layout.ILayoutManager, System.IDisposable
-    {
-        public LayoutManager(Avalonia.Layout.ILayoutRoot owner) { }
-        public virtual event System.EventHandler? LayoutUpdated { add { } remove { } }
-        void Avalonia.Layout.ILayoutManager.RegisterEffectiveViewportListener(Avalonia.Layout.Layoutable control) { }
-        void Avalonia.Layout.ILayoutManager.UnregisterEffectiveViewportListener(Avalonia.Layout.Layoutable control) { }
-        public void Dispose() { }
-        public virtual void ExecuteInitialLayoutPass() { }
-        public virtual void ExecuteLayoutPass() { }
-        public virtual void InvalidateArrange(Avalonia.Layout.Layoutable control) { }
-        public virtual void InvalidateMeasure(Avalonia.Layout.Layoutable control) { }
     }
     public enum Orientation
     {
@@ -4315,13 +3789,6 @@ namespace Avalonia.Logging
         public static bool operator !=(Avalonia.Logging.ParametrizedLogger left, Avalonia.Logging.ParametrizedLogger right) { throw null; }
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override string ToString() { throw null; }
-    }
-    public partial class TraceLogSink : Avalonia.Logging.ILogSink
-    {
-        public TraceLogSink(Avalonia.Logging.LogEventLevel minimumLevel, System.Collections.Generic.IList<string>? areas = null) { }
-        public bool IsEnabled(Avalonia.Logging.LogEventLevel level, string area) { throw null; }
-        public void Log(Avalonia.Logging.LogEventLevel level, string area, object? source, string messageTemplate) { }
-        public void Log(Avalonia.Logging.LogEventLevel level, string area, object? source, string messageTemplate, params object?[] propertyValues) { }
     }
 }
 namespace Avalonia.LogicalTree
@@ -4421,7 +3888,6 @@ namespace Avalonia.Media
         public double RotationAngle { get { throw null; } set { } }
         public Avalonia.Size Size { get { throw null; } set { } }
         public Avalonia.Media.SweepDirection SweepDirection { get { throw null; } set { } }
-        protected internal override void ApplyTo(Avalonia.Media.StreamGeometryContext ctx) { }
         public override string ToString() { throw null; }
     }
     public enum BaselineAlignment
@@ -4444,10 +3910,9 @@ namespace Avalonia.Media
         public Avalonia.Point Point1 { get { throw null; } set { } }
         public Avalonia.Point Point2 { get { throw null; } set { } }
         public Avalonia.Point Point3 { get { throw null; } set { } }
-        protected internal override void ApplyTo(Avalonia.Media.StreamGeometryContext ctx) { }
         public override string ToString() { throw null; }
     }
-    public partial class BlurEffect : Avalonia.Media.Effect, Avalonia.Media.IAffectsRender, Avalonia.Media.IBlurEffect, Avalonia.Media.IEffect, Avalonia.Media.IMutableEffect
+    public sealed partial class BlurEffect : Avalonia.Media.Effect, Avalonia.Media.IBlurEffect, Avalonia.Media.IEffect, Avalonia.Media.IMutableEffect
     {
         public static readonly Avalonia.StyledProperty<double> RadiusProperty;
         public BlurEffect() { }
@@ -4511,13 +3976,13 @@ namespace Avalonia.Media
         public static readonly Avalonia.StyledProperty<Avalonia.RelativePoint> TransformOriginProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.ITransform?> TransformProperty;
         protected Brush() { }
+        internal abstract System.Func<Avalonia.Rendering.Composition.Compositor, Avalonia.Rendering.Composition.Server.ServerCompositionSimpleBrush> Factory { get; }
         public double Opacity { get { throw null; } set { } }
         public Avalonia.Media.ITransform? Transform { get { throw null; } set { } }
         public Avalonia.RelativePoint TransformOrigin { get { throw null; } set { } }
-        public event System.EventHandler? Invalidated { add { } remove { } }
-        protected static void AffectsRender<T>(params Avalonia.AvaloniaProperty[] properties) where T : Avalonia.Media.Brush { }
+        protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
+        protected virtual void OnUnreferencedFromCompositor(Avalonia.Rendering.Composition.Compositor c) { }
         public static Avalonia.Media.IBrush Parse(string s) { throw null; }
-        protected void RaiseInvalidated(System.EventArgs e) { }
     }
     public partial class BrushConverter : System.ComponentModel.TypeConverter
     {
@@ -4685,6 +4150,7 @@ namespace Avalonia.Media
     public readonly partial struct CharacterHit : System.IEquatable<Avalonia.Media.CharacterHit>
     {
         private readonly int _dummyPrimitive;
+        [System.Diagnostics.DebuggerStepThroughAttribute]
         public CharacterHit(int firstCharacterIndex, int trailingLength = 0) { throw null; }
         public int FirstCharacterIndex { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public int TrailingLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
@@ -4714,10 +4180,8 @@ namespace Avalonia.Media
         public static Avalonia.Media.Color Parse(System.ReadOnlySpan<char> s) { throw null; }
         public static Avalonia.Media.Color Parse(string s) { throw null; }
         public Avalonia.Media.HslColor ToHsl() { throw null; }
-        public static Avalonia.Media.HslColor ToHsl(Avalonia.Media.Color color) { throw null; }
         public static Avalonia.Media.HslColor ToHsl(byte red, byte green, byte blue, byte alpha = (byte)255) { throw null; }
         public Avalonia.Media.HsvColor ToHsv() { throw null; }
-        public static Avalonia.Media.HsvColor ToHsv(Avalonia.Media.Color color) { throw null; }
         public static Avalonia.Media.HsvColor ToHsv(byte red, byte green, byte blue, byte alpha = (byte)255) { throw null; }
         public override string ToString() { throw null; }
         public uint ToUInt32() { throw null; }
@@ -4896,7 +4360,7 @@ namespace Avalonia.Media
         public Avalonia.RelativePoint Center { get { throw null; } set { } }
         public override Avalonia.Media.IImmutableBrush ToImmutable() { throw null; }
     }
-    public partial class DashStyle : Avalonia.Animation.Animatable, Avalonia.Media.IAffectsRender, Avalonia.Media.IDashStyle
+    public sealed partial class DashStyle : Avalonia.Animation.Animatable, Avalonia.Media.IDashStyle
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Collections.AvaloniaList<double>?> DashesProperty;
         public static readonly Avalonia.StyledProperty<double> OffsetProperty;
@@ -4909,23 +4373,23 @@ namespace Avalonia.Media
         public Avalonia.Collections.AvaloniaList<double>? Dashes { get { throw null; } set { } }
         public static Avalonia.Media.IDashStyle Dot { get { throw null; } }
         public double Offset { get { throw null; } set { } }
-        public event System.EventHandler? Invalidated { add { } remove { } }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
         public Avalonia.Media.Immutable.ImmutableDashStyle ToImmutable() { throw null; }
     }
     public abstract partial class Drawing : Avalonia.AvaloniaObject
     {
-        protected Drawing() { }
-        public abstract void Draw(Avalonia.Media.DrawingContext context);
+        internal Drawing() { }
+        public void Draw(Avalonia.Media.DrawingContext context) { }
         public abstract Avalonia.Rect GetBounds();
     }
-    public partial class DrawingBrush : Avalonia.Media.TileBrush, Avalonia.Media.IAffectsRender, Avalonia.Media.IBrush, Avalonia.Media.ISceneBrush, Avalonia.Media.ITileBrush
+    public sealed partial class DrawingBrush : Avalonia.Media.TileBrush, Avalonia.Media.IBrush, Avalonia.Media.ISceneBrush, Avalonia.Media.ITileBrush
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Drawing?> DrawingProperty;
         public DrawingBrush() { }
         public DrawingBrush(Avalonia.Media.Drawing visual) { }
         public Avalonia.Media.Drawing? Drawing { get { throw null; } set { } }
         Avalonia.Media.ISceneBrushContent? Avalonia.Media.ISceneBrush.CreateContent() { throw null; }
+        protected override void OnUnreferencedFromCompositor(Avalonia.Rendering.Composition.Compositor c) { }
     }
     public sealed partial class DrawingCollection : Avalonia.Collections.AvaloniaList<Avalonia.Media.Drawing>
     {
@@ -4966,8 +4430,8 @@ namespace Avalonia.Media
         protected abstract void PushClipCore(Avalonia.RoundedRect rect);
         public Avalonia.Media.DrawingContext.PushedState PushGeometryClip(Avalonia.Media.Geometry clip) { throw null; }
         protected abstract void PushGeometryClipCore(Avalonia.Media.Geometry clip);
-        public Avalonia.Media.DrawingContext.PushedState PushOpacity(double opacity, Avalonia.Rect bounds) { throw null; }
-        protected abstract void PushOpacityCore(double opacity, Avalonia.Rect bounds);
+        public Avalonia.Media.DrawingContext.PushedState PushOpacity(double opacity) { throw null; }
+        protected abstract void PushOpacityCore(double opacity);
         public Avalonia.Media.DrawingContext.PushedState PushOpacityMask(Avalonia.Media.IBrush mask, Avalonia.Rect bounds) { throw null; }
         protected abstract void PushOpacityMaskCore(Avalonia.Media.IBrush mask, Avalonia.Rect bounds);
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
@@ -5002,7 +4466,7 @@ namespace Avalonia.Media
             public override string ToString() { throw null; }
         }
     }
-    public partial class DrawingGroup : Avalonia.Media.Drawing
+    public sealed partial class DrawingGroup : Avalonia.Media.Drawing
     {
         public static readonly Avalonia.DirectProperty<Avalonia.Media.DrawingGroup, Avalonia.Media.DrawingCollection> ChildrenProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Geometry?> ClipGeometryProperty;
@@ -5016,11 +4480,10 @@ namespace Avalonia.Media
         public double Opacity { get { throw null; } set { } }
         public Avalonia.Media.IBrush? OpacityMask { get { throw null; } set { } }
         public Avalonia.Media.Transform? Transform { get { throw null; } set { } }
-        public override void Draw(Avalonia.Media.DrawingContext context) { }
         public override Avalonia.Rect GetBounds() { throw null; }
         public Avalonia.Media.DrawingContext Open() { throw null; }
     }
-    public partial class DrawingImage : Avalonia.AvaloniaObject, Avalonia.Media.IAffectsRender, Avalonia.Media.IImage
+    public partial class DrawingImage : Avalonia.AvaloniaObject, Avalonia.Media.IImage
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Drawing?> DrawingProperty;
         public DrawingImage() { }
@@ -5033,7 +4496,7 @@ namespace Avalonia.Media
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
         protected void RaiseInvalidated(System.EventArgs e) { }
     }
-    public partial class DropShadowDirectionEffect : Avalonia.Media.DropShadowEffectBase, Avalonia.Media.IAffectsRender, Avalonia.Media.IDropShadowEffect, Avalonia.Media.IEffect, Avalonia.Media.IMutableEffect
+    public sealed partial class DropShadowDirectionEffect : Avalonia.Media.DropShadowEffectBase, Avalonia.Media.IDropShadowEffect, Avalonia.Media.IEffect, Avalonia.Media.IMutableEffect
     {
         public static readonly Avalonia.StyledProperty<double> DirectionProperty;
         public static readonly Avalonia.StyledProperty<double> ShadowDepthProperty;
@@ -5044,7 +4507,7 @@ namespace Avalonia.Media
         public double ShadowDepth { get { throw null; } set { } }
         public Avalonia.Media.IImmutableEffect ToImmutable() { throw null; }
     }
-    public partial class DropShadowEffect : Avalonia.Media.DropShadowEffectBase, Avalonia.Media.IAffectsRender, Avalonia.Media.IDropShadowEffect, Avalonia.Media.IEffect, Avalonia.Media.IMutableEffect
+    public sealed partial class DropShadowEffect : Avalonia.Media.DropShadowEffectBase, Avalonia.Media.IDropShadowEffect, Avalonia.Media.IEffect, Avalonia.Media.IMutableEffect
     {
         public static readonly Avalonia.StyledProperty<double> OffsetXProperty;
         public static readonly Avalonia.StyledProperty<double> OffsetYProperty;
@@ -5069,9 +4532,9 @@ namespace Avalonia.Media
         Antialias = (byte)1,
         Aliased = (byte)2,
     }
-    public partial class Effect : Avalonia.Animation.Animatable, Avalonia.Media.IAffectsRender
+    public partial class Effect : Avalonia.Animation.Animatable
     {
-        public Effect() { }
+        internal Effect() { }
         public event System.EventHandler? Invalidated { add { } remove { } }
         protected static void AffectsRender<T>(params Avalonia.AvaloniaProperty[] properties) where T : Avalonia.Media.Effect { }
         public static Avalonia.Media.IEffect Parse(string s) { throw null; }
@@ -5102,7 +4565,7 @@ namespace Avalonia.Media
         public override Avalonia.Media.Geometry Clone() { throw null; }
         protected override Avalonia.Platform.IGeometryImpl? CreateDefiningGeometry() { throw null; }
     }
-    public partial class ExperimentalAcrylicMaterial : Avalonia.AvaloniaObject, Avalonia.Media.IAffectsRender, Avalonia.Media.IExperimentalAcrylicMaterial, Avalonia.Media.IMutableExperimentalAcrylicMaterial
+    public partial class ExperimentalAcrylicMaterial : Avalonia.AvaloniaObject, Avalonia.Media.IExperimentalAcrylicMaterial, Avalonia.Media.IMutableExperimentalAcrylicMaterial
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.AcrylicBackgroundSource> BackgroundSourceProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Color> FallbackColorProperty;
@@ -5301,7 +4764,7 @@ namespace Avalonia.Media
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Transform?> TransformProperty;
         protected Geometry() { }
         public Avalonia.Rect Bounds { get { throw null; } }
-        public Avalonia.Platform.IGeometryImpl? PlatformImpl { get { throw null; } }
+        public double ContourLength { get { throw null; } }
         public Avalonia.Media.Transform? Transform { get { throw null; } set { } }
         public event System.EventHandler? Changed { add { } remove { } }
         protected static void AffectsGeometry(params Avalonia.AvaloniaProperty[] properties) { }
@@ -5313,6 +4776,9 @@ namespace Avalonia.Media
         protected void InvalidateGeometry() { }
         public static Avalonia.Media.Geometry Parse(string s) { throw null; }
         public bool StrokeContains(Avalonia.Media.IPen pen, Avalonia.Point point) { throw null; }
+        public bool TryGetPointAndTangentAtDistance(double distance, out Avalonia.Point point, out Avalonia.Point tangent) { throw null; }
+        public bool TryGetPointAtDistance(double distance, out Avalonia.Point point) { throw null; }
+        public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Avalonia.Media.Geometry? segmentGeometry) { throw null; }
     }
     public sealed partial class GeometryCollection : Avalonia.Collections.AvaloniaList<Avalonia.Media.Geometry>
     {
@@ -5327,7 +4793,7 @@ namespace Avalonia.Media
         Xor = 2,
         Exclude = 3,
     }
-    public partial class GeometryDrawing : Avalonia.Media.Drawing
+    public sealed partial class GeometryDrawing : Avalonia.Media.Drawing
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.IBrush?> BrushProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Geometry?> GeometryProperty;
@@ -5337,7 +4803,6 @@ namespace Avalonia.Media
         [Avalonia.Metadata.ContentAttribute]
         public Avalonia.Media.Geometry? Geometry { get { throw null; } set { } }
         public Avalonia.Media.IPen? Pen { get { throw null; } set { } }
-        public override void Draw(Avalonia.Media.DrawingContext context) { }
         public override Avalonia.Rect GetBounds() { throw null; }
     }
     public partial class GeometryGroup : Avalonia.Media.Geometry
@@ -5391,9 +4856,9 @@ namespace Avalonia.Media
         public double FontRenderingEmSize { get { throw null; } set { } }
         public System.Collections.Generic.IReadOnlyList<Avalonia.Media.TextFormatting.GlyphInfo> GlyphInfos { get { throw null; } set { } }
         public Avalonia.Media.IGlyphTypeface GlyphTypeface { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Avalonia.Rect InkBounds { get { throw null; } }
         public bool IsLeftToRight { get { throw null; } }
         public Avalonia.Media.GlyphRunMetrics Metrics { get { throw null; } }
-        public Avalonia.Utilities.IRef<Avalonia.Platform.IGlyphRunImpl> PlatformImpl { get { throw null; } }
         public Avalonia.Media.Geometry BuildGeometry() { throw null; }
         public void Dispose() { }
         public int FindGlyphIndex(int characterIndex) { throw null; }
@@ -5403,15 +4868,15 @@ namespace Avalonia.Media
         public System.Collections.Generic.IReadOnlyList<float> GetIntersections(float lowerLimit, float upperLimit) { throw null; }
         public Avalonia.Media.CharacterHit GetNextCaretCharacterHit(Avalonia.Media.CharacterHit characterHit) { throw null; }
         public Avalonia.Media.CharacterHit GetPreviousCaretCharacterHit(Avalonia.Media.CharacterHit characterHit) { throw null; }
+        public Avalonia.Media.IImmutableGlyphRunReference? TryCreateImmutableGlyphRunReference() { throw null; }
     }
-    public partial class GlyphRunDrawing : Avalonia.Media.Drawing
+    public sealed partial class GlyphRunDrawing : Avalonia.Media.Drawing
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.IBrush?> ForegroundProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.GlyphRun?> GlyphRunProperty;
         public GlyphRunDrawing() { }
         public Avalonia.Media.IBrush? Foreground { get { throw null; } set { } }
         public Avalonia.Media.GlyphRun? GlyphRun { get { throw null; } set { } }
-        public override void Draw(Avalonia.Media.DrawingContext context) { }
         public override Avalonia.Rect GetBounds() { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -5439,15 +4904,16 @@ namespace Avalonia.Media
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override string ToString() { throw null; }
     }
-    public abstract partial class GradientBrush : Avalonia.Media.Brush, Avalonia.Media.IAffectsRender, Avalonia.Media.IBrush, Avalonia.Media.IGradientBrush
+    public abstract partial class GradientBrush : Avalonia.Media.Brush, Avalonia.Media.IBrush, Avalonia.Media.IGradientBrush
     {
+        internal GradientBrush() { }
         public static readonly Avalonia.StyledProperty<Avalonia.Media.GradientStops> GradientStopsProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.GradientSpreadMethod> SpreadMethodProperty;
-        public GradientBrush() { }
         System.Collections.Generic.IReadOnlyList<Avalonia.Media.IGradientStop> Avalonia.Media.IGradientBrush.GradientStops { get { throw null; } }
         [Avalonia.Metadata.ContentAttribute]
         public Avalonia.Media.GradientStops GradientStops { get { throw null; } set { } }
         public Avalonia.Media.GradientSpreadMethod SpreadMethod { get { throw null; } set { } }
+        protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
         public abstract Avalonia.Media.IImmutableBrush ToImmutable();
     }
     public enum GradientSpreadMethod
@@ -5489,8 +4955,9 @@ namespace Avalonia.Media
         public static explicit operator Avalonia.Media.Color (Avalonia.Media.HslColor hslColor) { throw null; }
         public static bool operator !=(Avalonia.Media.HslColor left, Avalonia.Media.HslColor right) { throw null; }
         public static Avalonia.Media.HslColor Parse(string s) { throw null; }
+        public Avalonia.Media.HsvColor ToHsv() { throw null; }
+        public static Avalonia.Media.HsvColor ToHsv(double hue, double saturation, double lightness, double alpha = 1) { throw null; }
         public Avalonia.Media.Color ToRgb() { throw null; }
-        public static Avalonia.Media.Color ToRgb(Avalonia.Media.HslColor hslColor) { throw null; }
         public static Avalonia.Media.Color ToRgb(double hue, double saturation, double lightness, double alpha = 1) { throw null; }
         public override string ToString() { throw null; }
         public static bool TryParse(string? s, out Avalonia.Media.HslColor hslColor) { throw null; }
@@ -5514,15 +4981,12 @@ namespace Avalonia.Media
         public static explicit operator Avalonia.Media.Color (Avalonia.Media.HsvColor hsvColor) { throw null; }
         public static bool operator !=(Avalonia.Media.HsvColor left, Avalonia.Media.HsvColor right) { throw null; }
         public static Avalonia.Media.HsvColor Parse(string s) { throw null; }
+        public Avalonia.Media.HslColor ToHsl() { throw null; }
+        public static Avalonia.Media.HslColor ToHsl(double hue, double saturation, double value, double alpha = 1) { throw null; }
         public Avalonia.Media.Color ToRgb() { throw null; }
-        public static Avalonia.Media.Color ToRgb(Avalonia.Media.HsvColor hsvColor) { throw null; }
         public static Avalonia.Media.Color ToRgb(double hue, double saturation, double value, double alpha = 1) { throw null; }
         public override string ToString() { throw null; }
         public static bool TryParse(string? s, out Avalonia.Media.HsvColor hsvColor) { throw null; }
-    }
-    public partial interface IAffectsRender
-    {
-        event System.EventHandler Invalidated;
     }
     public partial interface IBlurEffect : Avalonia.Media.IEffect
     {
@@ -5556,6 +5020,7 @@ namespace Avalonia.Media
         double OffsetY { get; }
         double Opacity { get; }
     }
+    [Avalonia.Metadata.NotClientImplementableAttribute]
     [System.ComponentModel.TypeConverterAttribute(typeof(Avalonia.Media.EffectConverter))]
     public partial interface IEffect
     {
@@ -5607,12 +5072,19 @@ namespace Avalonia.Media
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IImageBrush : Avalonia.Media.IBrush, Avalonia.Media.ITileBrush
     {
-        Avalonia.Media.Imaging.IBitmap? Source { get; }
+        Avalonia.Media.IImageBrushSource? Source { get; }
+    }
+    [Avalonia.Metadata.NotClientImplementableAttribute]
+    public partial interface IImageBrushSource
+    {
     }
     public partial interface IImmutableBrush : Avalonia.Media.IBrush
     {
     }
     public partial interface IImmutableEffect : Avalonia.Media.IEffect, System.IEquatable<Avalonia.Media.IEffect>
+    {
+    }
+    public partial interface IImmutableGlyphRunReference : System.IDisposable
     {
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
@@ -5625,22 +5097,21 @@ namespace Avalonia.Media
         Avalonia.RelativePoint EndPoint { get; }
         Avalonia.RelativePoint StartPoint { get; }
     }
-    public partial class ImageBrush : Avalonia.Media.TileBrush, Avalonia.Media.IAffectsRender, Avalonia.Media.IBrush, Avalonia.Media.IImageBrush, Avalonia.Media.ITileBrush
+    public sealed partial class ImageBrush : Avalonia.Media.TileBrush, Avalonia.Media.IBrush, Avalonia.Media.IImageBrush, Avalonia.Media.ITileBrush
     {
-        public static readonly Avalonia.StyledProperty<Avalonia.Media.Imaging.IBitmap?> SourceProperty;
+        public static readonly Avalonia.StyledProperty<Avalonia.Media.IImageBrushSource?> SourceProperty;
         public ImageBrush() { }
-        public ImageBrush(Avalonia.Media.Imaging.IBitmap? source) { }
-        public Avalonia.Media.Imaging.IBitmap? Source { get { throw null; } set { } }
+        public ImageBrush(Avalonia.Media.IImageBrushSource? source) { }
+        public Avalonia.Media.IImageBrushSource? Source { get { throw null; } set { } }
         public Avalonia.Media.IImmutableBrush ToImmutable() { throw null; }
     }
-    public partial class ImageDrawing : Avalonia.Media.Drawing
+    public sealed partial class ImageDrawing : Avalonia.Media.Drawing
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.IImage?> ImageSourceProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Rect> RectProperty;
         public ImageDrawing() { }
         public Avalonia.Media.IImage? ImageSource { get { throw null; } set { } }
         public Avalonia.Rect Rect { get { throw null; } set { } }
-        public override void Draw(Avalonia.Media.DrawingContext context) { }
         public override Avalonia.Rect GetBounds() { throw null; }
     }
     public sealed partial class ImmediateDrawingContext : Avalonia.Platform.IOptionalFeatureProvider, System.IDisposable
@@ -5649,10 +5120,10 @@ namespace Avalonia.Media
         public Avalonia.Matrix CurrentTransform { get { throw null; } }
         public Avalonia.Platform.IDrawingContextImpl PlatformImpl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Dispose() { }
-        public void DrawBitmap(Avalonia.Media.Imaging.IBitmap source, Avalonia.Rect rect) { }
-        public void DrawBitmap(Avalonia.Media.Imaging.IBitmap source, Avalonia.Rect sourceRect, Avalonia.Rect destRect) { }
+        public void DrawBitmap(Avalonia.Media.Imaging.Bitmap source, Avalonia.Rect rect) { }
+        public void DrawBitmap(Avalonia.Media.Imaging.Bitmap source, Avalonia.Rect sourceRect, Avalonia.Rect destRect) { }
         public void DrawEllipse(Avalonia.Media.IImmutableBrush? brush, Avalonia.Media.Immutable.ImmutablePen? pen, Avalonia.Point center, double radiusX, double radiusY) { }
-        public void DrawGlyphRun(Avalonia.Media.IImmutableBrush foreground, Avalonia.Utilities.IRef<Avalonia.Platform.IGlyphRunImpl> glyphRun) { }
+        public void DrawGlyphRun(Avalonia.Media.IImmutableBrush foreground, Avalonia.Media.IImmutableGlyphRunReference glyphRun) { }
         public void DrawLine(Avalonia.Media.Immutable.ImmutablePen pen, Avalonia.Point p1, Avalonia.Point p2) { }
         public void DrawRectangle(Avalonia.Media.IImmutableBrush? brush, Avalonia.Media.Immutable.ImmutablePen? pen, Avalonia.Rect rect, double radiusX = 0, double radiusY = 0, Avalonia.Media.BoxShadows boxShadows = default(Avalonia.Media.BoxShadows)) { }
         public void DrawRectangle(Avalonia.Media.Immutable.ImmutablePen pen, Avalonia.Rect rect, float cornerRadius = 0f) { }
@@ -5741,11 +5212,11 @@ namespace Avalonia.Media
         public static bool operator ==(Avalonia.Media.ImmutableExperimentalAcrylicMaterial left, Avalonia.Media.ImmutableExperimentalAcrylicMaterial right) { throw null; }
         public static bool operator !=(Avalonia.Media.ImmutableExperimentalAcrylicMaterial left, Avalonia.Media.ImmutableExperimentalAcrylicMaterial right) { throw null; }
     }
-    public partial interface IMutableEffect : Avalonia.Media.IAffectsRender, Avalonia.Media.IEffect
+    public partial interface IMutableEffect : Avalonia.Media.IEffect
     {
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IMutableExperimentalAcrylicMaterial : Avalonia.Media.IAffectsRender, Avalonia.Media.IExperimentalAcrylicMaterial
+    public partial interface IMutableExperimentalAcrylicMaterial : Avalonia.Media.IExperimentalAcrylicMaterial
     {
         Avalonia.Media.IExperimentalAcrylicMaterial ToImmutable();
     }
@@ -5797,6 +5268,7 @@ namespace Avalonia.Media
         Avalonia.Media.Stretch Stretch { get; }
         Avalonia.Media.TileMode TileMode { get; }
     }
+    [Avalonia.Metadata.NotClientImplementableAttribute]
     [System.ComponentModel.TypeConverterAttribute(typeof(Avalonia.Media.TransformConverter))]
     public partial interface ITransform
     {
@@ -5827,14 +5299,13 @@ namespace Avalonia.Media
         public static readonly Avalonia.StyledProperty<Avalonia.Point> PointProperty;
         public LineSegment() { }
         public Avalonia.Point Point { get { throw null; } set { } }
-        protected internal override void ApplyTo(Avalonia.Media.StreamGeometryContext ctx) { }
         public override string ToString() { throw null; }
     }
     public static partial class MaterialExtensions
     {
         public static Avalonia.Media.IExperimentalAcrylicMaterial ToImmutable(this Avalonia.Media.IExperimentalAcrylicMaterial material) { throw null; }
     }
-    public partial class MatrixTransform : Avalonia.Media.Transform
+    public sealed partial class MatrixTransform : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Matrix> MatrixProperty;
         public MatrixTransform() { }
@@ -5888,7 +5359,7 @@ namespace Avalonia.Media
     public abstract partial class PathSegment : Avalonia.AvaloniaObject
     {
         protected PathSegment() { }
-        protected internal abstract void ApplyTo(Avalonia.Media.StreamGeometryContext ctx);
+        internal abstract void ApplyTo(Avalonia.Media.StreamGeometryContext ctx);
     }
     public sealed partial class PathSegments : Avalonia.Collections.AvaloniaList<Avalonia.Media.PathSegment>
     {
@@ -5911,7 +5382,6 @@ namespace Avalonia.Media
         public Avalonia.Media.PenLineJoin LineJoin { get { throw null; } set { } }
         public double MiterLimit { get { throw null; } set { } }
         public double Thickness { get { throw null; } set { } }
-        public event System.EventHandler? Invalidated { add { } remove { } }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
         public Avalonia.Media.Immutable.ImmutablePen ToImmutable() { throw null; }
     }
@@ -5945,7 +5415,6 @@ namespace Avalonia.Media
         public PolyLineSegment() { }
         public PolyLineSegment(System.Collections.Generic.IEnumerable<Avalonia.Point> points) { }
         public System.Collections.Generic.IList<Avalonia.Point> Points { get { throw null; } set { } }
-        protected internal override void ApplyTo(Avalonia.Media.StreamGeometryContext ctx) { }
         public override string ToString() { throw null; }
     }
     public sealed partial class QuadraticBezierSegment : Avalonia.Media.PathSegment
@@ -5955,7 +5424,6 @@ namespace Avalonia.Media
         public QuadraticBezierSegment() { }
         public Avalonia.Point Point1 { get { throw null; } set { } }
         public Avalonia.Point Point2 { get { throw null; } set { } }
-        protected internal override void ApplyTo(Avalonia.Media.StreamGeometryContext ctx) { }
         public override string ToString() { throw null; }
     }
     public sealed partial class RadialGradientBrush : Avalonia.Media.GradientBrush, Avalonia.Media.IBrush, Avalonia.Media.IGradientBrush, Avalonia.Media.IRadialGradientBrush
@@ -6008,7 +5476,7 @@ namespace Avalonia.Media
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override string ToString() { throw null; }
     }
-    public partial class Rotate3DTransform : Avalonia.Media.Transform
+    public sealed partial class Rotate3DTransform : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<double> AngleXProperty;
         public static readonly Avalonia.StyledProperty<double> AngleYProperty;
@@ -6029,7 +5497,7 @@ namespace Avalonia.Media
         public override Avalonia.Matrix Value { get { throw null; } }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
     }
-    public partial class RotateTransform : Avalonia.Media.Transform
+    public sealed partial class RotateTransform : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<double> AngleProperty;
         public static readonly Avalonia.StyledProperty<double> CenterXProperty;
@@ -6042,7 +5510,7 @@ namespace Avalonia.Media
         public double CenterY { get { throw null; } set { } }
         public override Avalonia.Matrix Value { get { throw null; } }
     }
-    public partial class ScaleTransform : Avalonia.Media.Transform
+    public sealed partial class ScaleTransform : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<double> ScaleXProperty;
         public static readonly Avalonia.StyledProperty<double> ScaleYProperty;
@@ -6053,7 +5521,7 @@ namespace Avalonia.Media
         public override Avalonia.Matrix Value { get { throw null; } }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
     }
-    public partial class SkewTransform : Avalonia.Media.Transform
+    public sealed partial class SkewTransform : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<double> AngleXProperty;
         public static readonly Avalonia.StyledProperty<double> AngleYProperty;
@@ -6064,7 +5532,7 @@ namespace Avalonia.Media
         public override Avalonia.Matrix Value { get { throw null; } }
         protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) { }
     }
-    public partial class SolidColorBrush : Avalonia.Media.Brush, Avalonia.Media.IAffectsRender, Avalonia.Media.IBrush, Avalonia.Media.ISolidColorBrush
+    public sealed partial class SolidColorBrush : Avalonia.Media.Brush, Avalonia.Media.IBrush, Avalonia.Media.ISolidColorBrush
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Color> ColorProperty;
         public SolidColorBrush() { }
@@ -6252,13 +5720,13 @@ namespace Avalonia.Media
     }
     public abstract partial class TileBrush : Avalonia.Media.Brush, Avalonia.Media.IBrush, Avalonia.Media.ITileBrush
     {
+        internal TileBrush() { }
         public static readonly Avalonia.StyledProperty<Avalonia.Media.AlignmentX> AlignmentXProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.AlignmentY> AlignmentYProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.RelativeRect> DestinationRectProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.RelativeRect> SourceRectProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Stretch> StretchProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.Media.TileMode> TileModeProperty;
-        protected TileBrush() { }
         public Avalonia.Media.AlignmentX AlignmentX { get { throw null; } set { } }
         public Avalonia.Media.AlignmentY AlignmentY { get { throw null; } set { } }
         public Avalonia.RelativeRect DestinationRect { get { throw null; } set { } }
@@ -6276,7 +5744,7 @@ namespace Avalonia.Media
     }
     public abstract partial class Transform : Avalonia.Animation.Animatable, Avalonia.Media.IMutableTransform, Avalonia.Media.ITransform
     {
-        protected Transform() { }
+        internal Transform() { }
         public abstract Avalonia.Matrix Value { get; }
         public event System.EventHandler? Changed { add { } remove { } }
         public static Avalonia.Media.Transform Parse(string s) { throw null; }
@@ -6294,7 +5762,7 @@ namespace Avalonia.Media
     {
         public static Avalonia.Media.Immutable.ImmutableTransform ToImmutable(this Avalonia.Media.ITransform transform) { throw null; }
     }
-    public partial class TransformGroup : Avalonia.Media.Transform
+    public sealed partial class TransformGroup : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.Transforms> ChildrenProperty;
         public TransformGroup() { }
@@ -6306,7 +5774,7 @@ namespace Avalonia.Media
     {
         public Transforms() { }
     }
-    public partial class TranslateTransform : Avalonia.Media.Transform
+    public sealed partial class TranslateTransform : Avalonia.Media.Transform
     {
         public static readonly Avalonia.StyledProperty<double> XProperty;
         public static readonly Avalonia.StyledProperty<double> YProperty;
@@ -6383,13 +5851,14 @@ namespace Avalonia.Media
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public override string ToString() { throw null; }
     }
-    public partial class VisualBrush : Avalonia.Media.TileBrush, Avalonia.Media.IAffectsRender, Avalonia.Media.IBrush, Avalonia.Media.ISceneBrush, Avalonia.Media.ITileBrush
+    public sealed partial class VisualBrush : Avalonia.Media.TileBrush, Avalonia.Media.IBrush, Avalonia.Media.ISceneBrush, Avalonia.Media.ITileBrush
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Visual?> VisualProperty;
         public VisualBrush() { }
         public VisualBrush(Avalonia.Visual visual) { }
         public Avalonia.Visual? Visual { get { throw null; } set { } }
         Avalonia.Media.ISceneBrushContent? Avalonia.Media.ISceneBrush.CreateContent() { throw null; }
+        protected override void OnUnreferencedFromCompositor(Avalonia.Rendering.Composition.Compositor c) { }
     }
 }
 namespace Avalonia.Media.Fonts
@@ -6482,21 +5951,18 @@ namespace Avalonia.Media.Fonts
 }
 namespace Avalonia.Media.Imaging
 {
-    public partial class Bitmap : Avalonia.Media.IImage, Avalonia.Media.Imaging.IBitmap, System.IDisposable
+    public partial class Bitmap : Avalonia.Media.IImage, Avalonia.Media.IImageBrushSource, System.IDisposable
     {
         protected Bitmap(Avalonia.Platform.IBitmapImpl impl) { }
         public Bitmap(Avalonia.Platform.PixelFormat format, Avalonia.Platform.AlphaFormat alphaFormat, System.IntPtr data, Avalonia.PixelSize size, Avalonia.Vector dpi, int stride) { }
-        public Bitmap(Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl> impl) { }
         public Bitmap(System.IO.Stream stream) { }
         public Bitmap(string fileName) { }
         public Avalonia.Vector Dpi { get { throw null; } }
         public virtual Avalonia.Platform.PixelFormat? Format { get { throw null; } }
         public Avalonia.PixelSize PixelSize { get { throw null; } }
-        public Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl> PlatformImpl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.Size Size { get { throw null; } }
         void Avalonia.Media.IImage.Draw(Avalonia.Media.DrawingContext context, Avalonia.Rect sourceRect, Avalonia.Rect destRect) { }
         public virtual void CopyPixels(Avalonia.PixelRect sourceRect, System.IntPtr buffer, int bufferSize, int stride) { }
-        protected internal void CopyPixelsCore(Avalonia.PixelRect sourceRect, System.IntPtr buffer, int bufferSize, int stride, Avalonia.Platform.ILockedFramebuffer fb) { }
         public Avalonia.Media.Imaging.Bitmap CreateScaledBitmap(Avalonia.PixelSize destinationSize, Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality) { throw null; }
         public static Avalonia.Media.Imaging.Bitmap DecodeToHeight(System.IO.Stream stream, int height, Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality) { throw null; }
         public static Avalonia.Media.Imaging.Bitmap DecodeToWidth(System.IO.Stream stream, int width, Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality) { throw null; }
@@ -6528,7 +5994,7 @@ namespace Avalonia.Media.Imaging
         MediumQuality = (byte)3,
         HighQuality = (byte)4,
     }
-    public partial class CroppedBitmap : Avalonia.AvaloniaObject, Avalonia.Media.IAffectsRender, Avalonia.Media.IImage, System.IDisposable
+    public partial class CroppedBitmap : Avalonia.AvaloniaObject, Avalonia.Media.IImage, System.IDisposable
     {
         public static readonly Avalonia.StyledProperty<Avalonia.Media.IImage?> SourceProperty;
         public static readonly Avalonia.StyledProperty<Avalonia.PixelRect> SourceRectProperty;
@@ -6541,20 +6007,10 @@ namespace Avalonia.Media.Imaging
         public virtual void Dispose() { }
         public void Draw(Avalonia.Media.DrawingContext context, Avalonia.Rect sourceRect, Avalonia.Rect destRect) { }
     }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IBitmap : Avalonia.Media.IImage, System.IDisposable
-    {
-        Avalonia.Vector Dpi { get; }
-        Avalonia.PixelSize PixelSize { get; }
-        Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl> PlatformImpl { get; }
-        void Save(System.IO.Stream stream, int? quality = default(int?));
-        void Save(string fileName, int? quality = default(int?));
-    }
     public partial class RenderTargetBitmap : Avalonia.Media.Imaging.Bitmap
     {
         public RenderTargetBitmap(Avalonia.PixelSize pixelSize) : base (default(string)) { }
         public RenderTargetBitmap(Avalonia.PixelSize pixelSize, Avalonia.Vector dpi) : base (default(string)) { }
-        public new Avalonia.Utilities.IRef<Avalonia.Platform.IRenderTargetBitmapImpl> PlatformImpl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.Media.DrawingContext CreateDrawingContext() { throw null; }
         public override void Dispose() { }
         public void Render(Avalonia.Visual visual) { }
@@ -6661,7 +6117,6 @@ namespace Avalonia.Media.Immutable
     }
     public abstract partial class ImmutableTileBrush : Avalonia.Media.IBrush, Avalonia.Media.IImmutableBrush, Avalonia.Media.ITileBrush
     {
-        protected ImmutableTileBrush(Avalonia.Media.AlignmentX alignmentX, Avalonia.Media.AlignmentY alignmentY, Avalonia.RelativeRect destinationRect, double opacity, Avalonia.Media.Immutable.ImmutableTransform? transform, Avalonia.RelativePoint transformOrigin, Avalonia.RelativeRect sourceRect, Avalonia.Media.Stretch stretch, Avalonia.Media.TileMode tileMode) { }
         protected ImmutableTileBrush(Avalonia.Media.ITileBrush source) { }
         public Avalonia.Media.AlignmentX AlignmentX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.Media.AlignmentY AlignmentY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
@@ -6838,15 +6293,22 @@ namespace Avalonia.Media.TextFormatting
     }
     public partial class TextLayout : System.IDisposable
     {
-        public TextLayout(Avalonia.Media.TextFormatting.ITextSource textSource, Avalonia.Media.TextFormatting.TextParagraphProperties paragraphProperties, Avalonia.Media.TextTrimming? textTrimming = null, double maxWidth = 1.0 / 0.0, double maxHeight = 1.0 / 0.0, double lineHeight = 0.0 / 0.0, double letterSpacing = 0, int maxLines = 0) { }
+        public TextLayout(Avalonia.Media.TextFormatting.ITextSource textSource, Avalonia.Media.TextFormatting.TextParagraphProperties paragraphProperties, Avalonia.Media.TextTrimming? textTrimming = null, double maxWidth = 1.0 / 0.0, double maxHeight = 1.0 / 0.0, int maxLines = 0) { }
         public TextLayout(string? text, Avalonia.Media.Typeface typeface, double fontSize, Avalonia.Media.IBrush? foreground, Avalonia.Media.TextAlignment textAlignment = Avalonia.Media.TextAlignment.Left, Avalonia.Media.TextWrapping textWrapping = Avalonia.Media.TextWrapping.NoWrap, Avalonia.Media.TextTrimming? textTrimming = null, Avalonia.Media.TextDecorationCollection? textDecorations = null, Avalonia.Media.FlowDirection flowDirection = Avalonia.Media.FlowDirection.LeftToRight, double maxWidth = 1.0 / 0.0, double maxHeight = 1.0 / 0.0, double lineHeight = 0.0 / 0.0, double letterSpacing = 0, int maxLines = 0, System.Collections.Generic.IReadOnlyList<Avalonia.Utilities.ValueSpan<Avalonia.Media.TextFormatting.TextRunProperties>>? textStyleOverrides = null) { }
-        public Avalonia.Rect Bounds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double LetterSpacing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double LineHeight { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public double Baseline { get { throw null; } }
+        public double Extent { get { throw null; } }
+        public double Height { get { throw null; } }
+        public double LetterSpacing { get { throw null; } }
+        public double LineHeight { get { throw null; } }
         public double MaxHeight { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public int MaxLines { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public double MaxWidth { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public double OverhangAfter { get { throw null; } }
+        public double OverhangLeading { get { throw null; } }
+        public double OverhangTrailing { get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<Avalonia.Media.TextFormatting.TextLine> TextLines { get { throw null; } }
+        public double Width { get { throw null; } }
+        public double WidthIncludingTrailingWhitespace { get { throw null; } }
         public void Dispose() { }
         public void Draw(Avalonia.Media.DrawingContext context, Avalonia.Point origin) { }
         public int GetLineIndexFromCharacterIndex(int charIndex, bool trailingEdge) { throw null; }
@@ -6904,15 +6366,18 @@ namespace Avalonia.Media.TextFormatting
     public readonly partial struct TextLineMetrics : System.IEquatable<Avalonia.Media.TextFormatting.TextLineMetrics>
     {
         private readonly int _dummyPrimitive;
-        public TextLineMetrics(bool hasOverflowed, double height, int newlineLength, double start, double textBaseline, int trailingWhitespaceLength, double width, double widthIncludingTrailingWhitespace) { throw null; }
-        public bool HasOverflowed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double Height { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public int NewlineLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double Start { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double TextBaseline { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public int TrailingWhitespaceLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double Width { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public double WidthIncludingTrailingWhitespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public double Extent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool HasOverflowed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double Height { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int NewlineLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double OverhangAfter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double OverhangLeading { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double OverhangTrailing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double Start { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double TextBaseline { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int TrailingWhitespaceLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double Width { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public double WidthIncludingTrailingWhitespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
         public bool Equals(Avalonia.Media.TextFormatting.TextLineMetrics other) { throw null; }
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
@@ -7662,10 +7127,6 @@ namespace Avalonia.Media.Transformation
             public override string ToString() { throw null; }
         }
     }
-    public static partial class TransformParser
-    {
-        public static Avalonia.Media.Transformation.TransformOperations Parse(string s) { throw null; }
-    }
 }
 namespace Avalonia.Metadata
 {
@@ -7729,7 +7190,7 @@ namespace Avalonia.Metadata
     {
         public NotClientImplementableAttribute() { }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Interface)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Constructor | System.AttributeTargets.Field | System.AttributeTargets.Interface | System.AttributeTargets.Method | System.AttributeTargets.Property | System.AttributeTargets.Struct)]
     public sealed partial class PrivateApiAttribute : System.Attribute
     {
         public PrivateApiAttribute() { }
@@ -7799,6 +7260,7 @@ namespace Avalonia.Platform
         NoPreference = 0,
         High = 1,
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class DefaultPlatformSettings : Avalonia.Platform.IPlatformSettings
     {
         public DefaultPlatformSettings() { }
@@ -7831,7 +7293,7 @@ namespace Avalonia.Platform
         (System.IO.Stream stream, System.Reflection.Assembly assembly) OpenAndGetAssembly(System.Uri uri, System.Uri? baseUri = null);
         void SetDefaultAssembly(System.Reflection.Assembly assembly);
     }
-    [Avalonia.Metadata.UnstableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IBitmapImpl : System.IDisposable
     {
         Avalonia.Vector Dpi { get; }
@@ -7857,11 +7319,11 @@ namespace Avalonia.Platform
         Avalonia.Matrix Transform { get; set; }
         void Clear(Avalonia.Media.Color color);
         Avalonia.Platform.IDrawingContextLayerImpl CreateLayer(Avalonia.Size size);
-        void DrawBitmap(Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl> source, Avalonia.Media.IBrush opacityMask, Avalonia.Rect opacityMaskRect, Avalonia.Rect destRect);
-        void DrawBitmap(Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl> source, double opacity, Avalonia.Rect sourceRect, Avalonia.Rect destRect);
+        void DrawBitmap(Avalonia.Platform.IBitmapImpl source, Avalonia.Media.IBrush opacityMask, Avalonia.Rect opacityMaskRect, Avalonia.Rect destRect);
+        void DrawBitmap(Avalonia.Platform.IBitmapImpl source, double opacity, Avalonia.Rect sourceRect, Avalonia.Rect destRect);
         void DrawEllipse(Avalonia.Media.IBrush? brush, Avalonia.Media.IPen? pen, Avalonia.Rect rect);
         void DrawGeometry(Avalonia.Media.IBrush? brush, Avalonia.Media.IPen? pen, Avalonia.Platform.IGeometryImpl geometry);
-        void DrawGlyphRun(Avalonia.Media.IBrush? foreground, Avalonia.Utilities.IRef<Avalonia.Platform.IGlyphRunImpl> glyphRun);
+        void DrawGlyphRun(Avalonia.Media.IBrush? foreground, Avalonia.Platform.IGlyphRunImpl glyphRun);
         void DrawLine(Avalonia.Media.IPen? pen, Avalonia.Point p1, Avalonia.Point p2);
         void DrawRectangle(Avalonia.Media.IBrush? brush, Avalonia.Media.IPen? pen, Avalonia.RoundedRect rect, Avalonia.Media.BoxShadows boxShadows = default(Avalonia.Media.BoxShadows));
         object? GetFeature(System.Type t);
@@ -7872,7 +7334,7 @@ namespace Avalonia.Platform
         void PushClip(Avalonia.Rect clip);
         void PushClip(Avalonia.RoundedRect clip);
         void PushGeometryClip(Avalonia.Platform.IGeometryImpl clip);
-        void PushOpacity(double opacity, Avalonia.Rect bounds);
+        void PushOpacity(double opacity, Avalonia.Rect? bounds);
         void PushOpacityMask(Avalonia.Media.IBrush mask, Avalonia.Rect bounds);
     }
     public partial interface IDrawingContextImplWithEffects
@@ -7885,6 +7347,7 @@ namespace Avalonia.Platform
         bool CanBlit { get; }
         void Blit(Avalonia.Platform.IDrawingContextImpl context);
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IDrawingContextWithAcrylicLikeSupport
     {
         void DrawRectangle(Avalonia.Media.IExperimentalAcrylicMaterial material, Avalonia.RoundedRect rect);
@@ -7959,10 +7422,6 @@ namespace Avalonia.Platform
         System.IntPtr GetNSViewRetained();
         System.IntPtr GetNSWindowRetained();
     }
-    public partial interface IModuleEnvironmentChecker
-    {
-        bool IsCompatible { get; }
-    }
     public partial interface IOptionalFeatureProvider
     {
         object? TryGetFeature(System.Type featureType);
@@ -8001,7 +7460,7 @@ namespace Avalonia.Platform
         Avalonia.Platform.IGeometryImpl CreateCombinedGeometry(Avalonia.Media.GeometryCombineMode combineMode, Avalonia.Platform.IGeometryImpl g1, Avalonia.Platform.IGeometryImpl g2);
         Avalonia.Platform.IGeometryImpl CreateEllipseGeometry(Avalonia.Rect rect);
         Avalonia.Platform.IGeometryImpl CreateGeometryGroup(Avalonia.Media.FillRule fillRule, System.Collections.Generic.IReadOnlyList<Avalonia.Platform.IGeometryImpl> children);
-        Avalonia.Platform.IGlyphRunImpl CreateGlyphRun(Avalonia.Media.IGlyphTypeface glyphTypeface, double fontRenderingEmSize, System.Collections.Generic.IReadOnlyList<Avalonia.Media.TextFormatting.GlyphInfo> glyphInfos, Avalonia.Point baselineOrigin, Avalonia.Rect bounds);
+        Avalonia.Platform.IGlyphRunImpl CreateGlyphRun(Avalonia.Media.IGlyphTypeface glyphTypeface, double fontRenderingEmSize, System.Collections.Generic.IReadOnlyList<Avalonia.Media.TextFormatting.GlyphInfo> glyphInfos, Avalonia.Point baselineOrigin);
         Avalonia.Platform.IGeometryImpl CreateLineGeometry(Avalonia.Point p1, Avalonia.Point p2);
         Avalonia.Platform.IGeometryImpl CreateRectangleGeometry(Avalonia.Rect rect);
         Avalonia.Platform.IRenderTargetBitmapImpl CreateRenderTargetBitmap(Avalonia.PixelSize size, Avalonia.Vector dpi);
@@ -8041,7 +7500,7 @@ namespace Avalonia.Platform
     public partial interface IPlatformRenderInterfaceImportedSemaphore : Avalonia.Platform.IPlatformRenderInterfaceImportedObject, System.IDisposable
     {
     }
-    [Avalonia.Metadata.UnstableAttribute]
+    [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IPlatformSettings
     {
         System.TimeSpan HoldWaitDuration { get; }
@@ -8051,7 +7510,7 @@ namespace Avalonia.Platform
         System.TimeSpan GetDoubleTapTime(Avalonia.Input.PointerType type);
         Avalonia.Size GetTapSize(Avalonia.Input.PointerType type);
     }
-    [Avalonia.Metadata.UnstableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IPlatformThreadingInterface
     {
         bool CurrentThreadIsLoopThread { get; }
@@ -8064,6 +7523,7 @@ namespace Avalonia.Platform
         Avalonia.Platform.PixelFormat? Format { get; }
         Avalonia.Platform.ILockedFramebuffer Lock();
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IRenderTarget : System.IDisposable
     {
         bool IsCorrupted { get; }
@@ -8304,19 +7764,10 @@ namespace Avalonia.Platform.Interop
         public DynamicLibraryLoaderException(string message) { }
         public DynamicLibraryLoaderException(string message, System.Exception innerException) { }
     }
-    [Avalonia.Metadata.UnstableAttribute]
     public partial interface IDynamicLibraryLoader
     {
         System.IntPtr GetProcAddress(System.IntPtr dll, string proc, bool optional);
         System.IntPtr LoadLibrary(string dll);
-    }
-    public partial class Utf8Buffer : System.Runtime.InteropServices.SafeHandle
-    {
-        public Utf8Buffer(string? s) : base (default(System.IntPtr), default(bool)) { }
-        public int ByteLen { get { throw null; } }
-        public override bool IsInvalid { get { throw null; } }
-        protected override bool ReleaseHandle() { throw null; }
-        public static string? StringFromPtr(System.IntPtr s) { throw null; }
     }
 }
 namespace Avalonia.Platform.Storage
@@ -8410,10 +7861,6 @@ namespace Avalonia.Platform.Storage
         System.Threading.Tasks.Task<Avalonia.Platform.Storage.IStorageFolder?> TryGetFolderFromPathAsync(System.Uri folderPath);
         System.Threading.Tasks.Task<Avalonia.Platform.Storage.IStorageFolder?> TryGetWellKnownFolderAsync(Avalonia.Platform.Storage.WellKnownFolder wellKnownFolder);
     }
-    public partial class NameCollisionOption
-    {
-        public NameCollisionOption() { }
-    }
     public partial class PickerOptions
     {
         public PickerOptions() { }
@@ -8456,20 +7903,10 @@ namespace Avalonia.Reactive
         public void OnError(System.Exception error) { }
         public void OnNext(T value) { }
     }
-    public abstract partial class SingleSubscriberObservableBase<T> : System.IDisposable, System.IObservable<T>
-    {
-        protected SingleSubscriberObservableBase() { }
-        public virtual void Dispose() { }
-        protected void PublishCompleted() { }
-        protected void PublishError(System.Exception error) { }
-        protected void PublishNext(T value) { }
-        public System.IDisposable Subscribe(System.IObserver<T> observer) { throw null; }
-        protected abstract void Subscribed();
-        protected abstract void Unsubscribed();
-    }
 }
 namespace Avalonia.Rendering
 {
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class DefaultRenderTimer : Avalonia.Rendering.IRenderTimer
     {
         public DefaultRenderTimer(int framesPerSecond) { }
@@ -8484,71 +7921,19 @@ namespace Avalonia.Rendering
     {
         bool HitTest(Avalonia.Point point);
     }
-    [Avalonia.Metadata.UnstableAttribute]
-    public partial interface IDeferredRendererLock
-    {
-        System.IDisposable? TryLock();
-    }
-    public partial interface IRenderer : System.IDisposable
-    {
-        Avalonia.Rendering.RendererDiagnostics Diagnostics { get; }
-        event System.EventHandler<Avalonia.Rendering.SceneInvalidatedEventArgs>? SceneInvalidated;
-        void AddDirty(Avalonia.Visual visual);
-        System.Collections.Generic.IEnumerable<Avalonia.Visual> HitTest(Avalonia.Point p, Avalonia.Visual root, System.Func<Avalonia.Visual, bool> filter);
-        Avalonia.Visual? HitTestFirst(Avalonia.Point p, Avalonia.Visual root, System.Func<Avalonia.Visual, bool> filter);
-        void Paint(Avalonia.Rect rect);
-        void RecalculateChildren(Avalonia.Visual visual);
-        void Resized(Avalonia.Size size);
-        void Start();
-        void Stop();
-        System.Threading.Tasks.ValueTask<object?> TryGetRenderInterfaceFeature(System.Type featureType);
-    }
-    public partial interface IRendererWithCompositor : Avalonia.Rendering.IRenderer, System.IDisposable
-    {
-        Avalonia.Rendering.Composition.Compositor Compositor { get; }
-    }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface IRenderLoop
-    {
-        bool RunsInBackground { get; }
-        void Add(Avalonia.Rendering.IRenderLoopTask i);
-        void Remove(Avalonia.Rendering.IRenderLoopTask i);
-    }
-    public partial interface IRenderLoopTask
-    {
-        bool NeedsUpdate { get; }
-        void Render();
-        void Update(System.TimeSpan time);
-    }
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IRenderRoot
     {
         Avalonia.Size ClientSize { get; }
-        Avalonia.Rendering.IRenderer Renderer { get; }
         double RenderScaling { get; }
         Avalonia.Point PointToClient(Avalonia.PixelPoint point);
         Avalonia.PixelPoint PointToScreen(Avalonia.Point point);
     }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial interface IRenderTimer
     {
         bool RunsInBackground { get; }
         event System.Action<System.TimeSpan> Tick;
-    }
-    [Avalonia.Metadata.UnstableAttribute]
-    public partial interface IVisualBrushInitialize
-    {
-        void EnsureInitialized();
-    }
-    public partial class ManagedDeferredRendererLock : Avalonia.Utilities.DisposableLock, Avalonia.Rendering.IDeferredRendererLock
-    {
-        public ManagedDeferredRendererLock() { }
-    }
-    public partial class RendererBase
-    {
-        public RendererBase(bool useManualFpsCounting = false) { }
-        protected void FpsTick() { }
-        protected void RenderFps(Avalonia.Media.DrawingContext context, Avalonia.Rect clientRect, int? layerCount) { }
     }
     [System.FlagsAttribute]
     public enum RendererDebugOverlays
@@ -8566,39 +7951,19 @@ namespace Avalonia.Rendering
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged { add { } remove { } }
         protected virtual void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args) { }
     }
-    public partial class RenderLoop : Avalonia.Rendering.IRenderLoop
-    {
-        public RenderLoop() { }
-        public RenderLoop(Avalonia.Rendering.IRenderTimer timer, Avalonia.Threading.IDispatcher dispatcher) { }
-        public bool RunsInBackground { get { throw null; } }
-        protected Avalonia.Rendering.IRenderTimer Timer { get { throw null; } }
-        public void Add(Avalonia.Rendering.IRenderLoopTask i) { }
-        public void Remove(Avalonia.Rendering.IRenderLoopTask i) { }
-    }
-    public partial class SceneInvalidatedEventArgs : System.EventArgs
-    {
-        public SceneInvalidatedEventArgs(Avalonia.Rendering.IRenderRoot root, Avalonia.Rect dirtyRect) { }
-        public Avalonia.Rect DirtyRect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Rendering.IRenderRoot RenderRoot { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-    }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class SleepLoopRenderTimer : Avalonia.Rendering.IRenderTimer
     {
         public SleepLoopRenderTimer(int fps) { }
         public bool RunsInBackground { get { throw null; } }
         public event System.Action<System.TimeSpan> Tick { add { } remove { } }
     }
+    [Avalonia.Metadata.PrivateApiAttribute]
     public partial class UiThreadRenderTimer : Avalonia.Rendering.DefaultRenderTimer
     {
         public UiThreadRenderTimer(int framesPerSecond) : base (default(int)) { }
         public override bool RunsInBackground { get { throw null; } }
         protected override System.IDisposable StartCore(System.Action<System.TimeSpan> tick) { throw null; }
-    }
-    public partial class ZIndexComparer : System.Collections.Generic.IComparer<Avalonia.Visual>
-    {
-        public static readonly System.Comparison<Avalonia.Visual> ComparisonInstance;
-        public static readonly Avalonia.Rendering.ZIndexComparer Instance;
-        public ZIndexComparer() { }
-        public int Compare(Avalonia.Visual? x, Avalonia.Visual? y) { throw null; }
     }
 }
 namespace Avalonia.Rendering.Composition
@@ -8614,24 +7979,6 @@ namespace Avalonia.Rendering.Composition
         public ColorKeyFrameAnimation(Avalonia.Rendering.Composition.Compositor compositor) { }
         public void InsertKeyFrame(float normalizedProgressKey, Avalonia.Media.Color value) { }
         public void InsertKeyFrame(float normalizedProgressKey, Avalonia.Media.Color value, Avalonia.Animation.Easings.IEasing easingFunction) { }
-    }
-    public partial class CompositingRenderer : Avalonia.Rendering.IRenderer, Avalonia.Rendering.IRendererWithCompositor, System.IDisposable
-    {
-        public CompositingRenderer(Avalonia.Rendering.IRenderRoot root, Avalonia.Rendering.Composition.Compositor compositor, System.Func<System.Collections.Generic.IEnumerable<object>> surfaces) { }
-        public Avalonia.Rendering.Composition.Compositor Compositor { get { throw null; } }
-        public Avalonia.Rendering.RendererDiagnostics Diagnostics { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public bool RenderOnlyOnRenderThread { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public event System.EventHandler<Avalonia.Rendering.SceneInvalidatedEventArgs>? SceneInvalidated { add { } remove { } }
-        public void AddDirty(Avalonia.Visual visual) { }
-        public void Dispose() { }
-        public System.Collections.Generic.IEnumerable<Avalonia.Visual> HitTest(Avalonia.Point p, Avalonia.Visual? root, System.Func<Avalonia.Visual, bool>? filter) { throw null; }
-        public Avalonia.Visual? HitTestFirst(Avalonia.Point p, Avalonia.Visual root, System.Func<Avalonia.Visual, bool>? filter) { throw null; }
-        public void Paint(Avalonia.Rect rect) { }
-        public void RecalculateChildren(Avalonia.Visual visual) { }
-        public void Resized(Avalonia.Size size) { }
-        public void Start() { }
-        public void Stop() { }
-        public System.Threading.Tasks.ValueTask<object?> TryGetRenderInterfaceFeature(System.Type featureType) { throw null; }
     }
     public enum CompositionBlendMode
     {
@@ -8687,9 +8034,10 @@ namespace Avalonia.Rendering.Composition
         public abstract void OnRender(Avalonia.Media.ImmediateDrawingContext drawingContext);
         protected void RegisterForNextAnimationFrameUpdate() { }
     }
-    public partial class CompositionDrawingSurface : Avalonia.Rendering.Composition.CompositionSurface
+    public partial class CompositionDrawingSurface : Avalonia.Rendering.Composition.CompositionSurface, System.IDisposable
     {
         internal CompositionDrawingSurface() { }
+        public new void Dispose() { }
         ~CompositionDrawingSurface() { }
         public System.Threading.Tasks.Task UpdateAsync(Avalonia.Rendering.Composition.ICompositionImportedGpuImage image) { throw null; }
         public System.Threading.Tasks.Task UpdateWithKeyedMutexAsync(Avalonia.Rendering.Composition.ICompositionImportedGpuImage image, uint acquireIndex, uint releaseIndex) { throw null; }
@@ -8714,13 +8062,13 @@ namespace Avalonia.Rendering.Composition
         Wrap = 1,
         Mirror = 2,
     }
-    public abstract partial class CompositionObject : System.IDisposable
+    public abstract partial class CompositionObject
     {
         internal CompositionObject() { }
         public Avalonia.Rendering.Composition.Compositor Compositor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.Rendering.Composition.Animations.ImplicitAnimationCollection? ImplicitAnimations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsDisposed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public void Dispose() { }
+        protected internal void Dispose() { }
         protected void RegisterForSerialization() { }
         public void StartAnimation(string propertyName, Avalonia.Rendering.Composition.Animations.CompositionAnimation animation) { }
         public void StartAnimationGroup(Avalonia.Rendering.Composition.Animations.ICompositionAnimationBase grp) { }
@@ -8766,18 +8114,6 @@ namespace Avalonia.Rendering.Composition
         internal CompositionSurfaceVisual() { }
         public Avalonia.Rendering.Composition.CompositionSurface? Surface { get { throw null; } set { } }
     }
-    public partial class CompositionTarget : Avalonia.Rendering.Composition.CompositionObject
-    {
-        internal CompositionTarget() { }
-        public Avalonia.Rendering.RendererDebugOverlays DebugOverlays { get { throw null; } set { } }
-        public bool IsEnabled { get { throw null; } set { } }
-        public Avalonia.Rendering.Composition.CompositionVisual? Root { get { throw null; } set { } }
-        public double Scaling { get { throw null; } set { } }
-        public Avalonia.Size Size { get { throw null; } set { } }
-        public void RequestRedraw() { }
-        public Avalonia.Collections.Pooled.PooledList<Avalonia.Rendering.Composition.CompositionVisual>? TryHitTest(Avalonia.Point point, Avalonia.Rendering.Composition.CompositionVisual? root, System.Func<Avalonia.Rendering.Composition.CompositionVisual, bool>? filter) { throw null; }
-        public Avalonia.Point? TryTransformToVisual(Avalonia.Rendering.Composition.CompositionVisual visual, Avalonia.Point point) { throw null; }
-    }
     [System.FlagsAttribute]
     public enum CompositionTileMode
     {
@@ -8799,9 +8135,7 @@ namespace Avalonia.Rendering.Composition
         public float Opacity { get { throw null; } set { } }
         public Avalonia.Media.IBrush? OpacityMask { get { throw null; } set { } }
         public System.Numerics.Quaternion Orientation { get { throw null; } set { } }
-        public Avalonia.Rendering.Composition.CompositionVisual? Parent { get { throw null; } }
         public Avalonia.Media.RenderOptions RenderOptions { get { throw null; } set { } }
-        public Avalonia.Rendering.Composition.CompositionTarget? Root { get { throw null; } }
         public float RotationAngle { get { throw null; } set { } }
         public System.Numerics.Vector3 Scale { get { throw null; } set { } }
         public System.Numerics.Vector2 Size { get { throw null; } set { } }
@@ -8833,11 +8167,11 @@ namespace Avalonia.Rendering.Composition
     }
     public partial class Compositor
     {
-        public Compositor(Avalonia.Rendering.IRenderLoop loop, Avalonia.Platform.IPlatformGraphics? gpu) { }
+        [Avalonia.Metadata.PrivateApiAttribute]
+        public Compositor(Avalonia.Platform.IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false) { }
         public Avalonia.Rendering.Composition.Animations.CompositionAnimationGroup CreateAnimationGroup() { throw null; }
         public Avalonia.Rendering.Composition.BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation() { throw null; }
         public Avalonia.Rendering.Composition.ColorKeyFrameAnimation CreateColorKeyFrameAnimation() { throw null; }
-        public Avalonia.Rendering.Composition.CompositionTarget CreateCompositionTarget(System.Func<System.Collections.Generic.IEnumerable<object>> surfaces) { throw null; }
         public Avalonia.Rendering.Composition.CompositionContainerVisual CreateContainerVisual() { throw null; }
         public Avalonia.Rendering.Composition.CompositionCustomVisual CreateCustomVisual(Avalonia.Rendering.Composition.CompositionCustomVisualHandler handler) { throw null; }
         public Avalonia.Rendering.Composition.CompositionDrawingSurface CreateDrawingSurface() { throw null; }
@@ -9051,23 +8385,6 @@ namespace Avalonia.Rendering.SceneGraph
         void Render(Avalonia.Media.ImmediateDrawingContext context);
     }
 }
-namespace Avalonia.Rendering.Utilities
-{
-    public partial class TileBrushCalculator
-    {
-        public TileBrushCalculator(Avalonia.Media.ITileBrush brush, Avalonia.Size contentSize, Avalonia.Size targetSize) { }
-        public TileBrushCalculator(Avalonia.Media.TileMode tileMode, Avalonia.Media.Stretch stretch, Avalonia.Media.AlignmentX alignmentX, Avalonia.Media.AlignmentY alignmentY, Avalonia.RelativeRect sourceRect, Avalonia.RelativeRect destinationRect, Avalonia.Size contentSize, Avalonia.Size targetSize) { }
-        public Avalonia.Rect DestinationRect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Rect IntermediateClip { get { throw null; } }
-        public Avalonia.Size IntermediateSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Matrix IntermediateTransform { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public bool IsValid { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public bool NeedsIntermediate { get { throw null; } }
-        public Avalonia.Rect SourceRect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public static Avalonia.Matrix CalculateIntermediateTransform(Avalonia.Media.TileMode tileMode, Avalonia.Rect sourceRect, Avalonia.Rect destinationRect, Avalonia.Vector scale, Avalonia.Vector translate, out Avalonia.Rect drawRect) { throw null; }
-        public static Avalonia.Vector CalculateTranslate(Avalonia.Media.AlignmentX alignmentX, Avalonia.Media.AlignmentY alignmentY, Avalonia.Rect sourceRect, Avalonia.Rect destinationRect, Avalonia.Vector scale) { throw null; }
-    }
-}
 namespace Avalonia.Styling
 {
     public partial class ControlTheme : Avalonia.Styling.StyleBase
@@ -9084,28 +8401,24 @@ namespace Avalonia.Styling
         event System.Action<System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyle>>? GlobalStylesAdded;
         event System.Action<System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyle>>? GlobalStylesRemoved;
     }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
-    public partial interface ISetter
-    {
-        Avalonia.Styling.ISetterInstance Instance(Avalonia.Styling.IStyleInstance styleInstance, Avalonia.StyledElement target);
-    }
     [Avalonia.Metadata.UnstableAttribute]
     public partial interface ISetterInstance
     {
     }
     public partial interface ISetterValue
     {
-        void Initialize(Avalonia.Styling.ISetter setter);
+        void Initialize(Avalonia.Styling.SetterBase setter);
     }
     [Avalonia.Metadata.NotClientImplementableAttribute]
     public partial interface IStyle : Avalonia.Controls.IResourceNode
     {
         System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyle> Children { get; }
     }
-    [Avalonia.Metadata.NotClientImplementableAttribute]
+    [System.ObsoleteAttribute("This interface may be removed in 12.0. Use StyledElement, or override StyledElement.StyleKeyOverride to override the StyleKey for a class.")]
     public partial interface IStyleable : Avalonia.INamed
     {
         Avalonia.Collections.IAvaloniaReadOnlyList<string> Classes { get; }
+        [System.ObsoleteAttribute("Override StyledElement.StyleKeyOverride instead.")]
         System.Type StyleKey { get; }
         Avalonia.AvaloniaObject? TemplatedParent { get; }
     }
@@ -9118,13 +8431,6 @@ namespace Avalonia.Styling
         void StylesAdded(System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyle> styles);
         void StylesRemoved(System.Collections.Generic.IReadOnlyList<Avalonia.Styling.IStyle> styles);
     }
-    [Avalonia.Metadata.UnstableAttribute]
-    public partial interface IStyleInstance
-    {
-        bool HasActivator { get; }
-        bool IsActive { get; }
-        Avalonia.Styling.IStyle Source { get; }
-    }
     public partial interface ITemplate
     {
         object? Build();
@@ -9134,71 +8440,17 @@ namespace Avalonia.Styling
         Avalonia.Styling.ThemeVariant ActualThemeVariant { get; }
         event System.EventHandler? ActualThemeVariantChanged;
     }
-    public partial class NthChildSelector : Avalonia.Styling.Selector
-    {
-        public NthChildSelector(Avalonia.Styling.Selector? previous, int step, int offset) { }
-        protected internal NthChildSelector(Avalonia.Styling.Selector? previous, int step, int offset, bool reversed) { }
-        public override bool InTemplate { get { throw null; } }
-        public override bool IsCombinator { get { throw null; } }
-        public int Offset { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public int Step { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public override System.Type? TargetType { get { throw null; } }
-        protected override Avalonia.Styling.SelectorMatch Evaluate(Avalonia.StyledElement control, Avalonia.Styling.IStyle? parent, bool subscribe) { throw null; }
-        protected override Avalonia.Styling.Selector? MovePrevious() { throw null; }
-        protected override Avalonia.Styling.Selector? MovePreviousOrParent() { throw null; }
-        public override string ToString(Avalonia.Styling.Style? owner) { throw null; }
-    }
-    public partial class NthLastChildSelector : Avalonia.Styling.NthChildSelector
-    {
-        public NthLastChildSelector(Avalonia.Styling.Selector? previous, int step, int offset) : base (default(Avalonia.Styling.Selector), default(int), default(int), default(bool)) { }
-    }
     public abstract partial class Selector
     {
         protected Selector() { }
-        public abstract bool InTemplate { get; }
-        public abstract bool IsCombinator { get; }
-        public abstract System.Type? TargetType { get; }
-        protected abstract Avalonia.Styling.SelectorMatch Evaluate(Avalonia.StyledElement control, Avalonia.Styling.IStyle? parent, bool subscribe);
-        public Avalonia.Styling.SelectorMatch Match(Avalonia.StyledElement control, Avalonia.Styling.IStyle? parent = null, bool subscribe = true) { throw null; }
-        protected abstract Avalonia.Styling.Selector? MovePrevious();
-        protected abstract Avalonia.Styling.Selector? MovePreviousOrParent();
+        internal abstract bool InTemplate { get; }
+        internal abstract bool IsCombinator { get; }
+        internal abstract System.Type? TargetType { get; }
+        private protected abstract Avalonia.Styling.SelectorMatch Evaluate(Avalonia.StyledElement control, Avalonia.Styling.IStyle? parent, bool subscribe);
+        private protected abstract Avalonia.Styling.Selector? MovePrevious();
+        private protected abstract Avalonia.Styling.Selector? MovePreviousOrParent();
         public override string ToString() { throw null; }
         public abstract string ToString(Avalonia.Styling.Style? owner);
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct SelectorMatch : System.IEquatable<Avalonia.Styling.SelectorMatch>
-    {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public static readonly Avalonia.Styling.SelectorMatch AlwaysThisInstance;
-        public static readonly Avalonia.Styling.SelectorMatch AlwaysThisType;
-        public static readonly Avalonia.Styling.SelectorMatch NeverThisInstance;
-        public static readonly Avalonia.Styling.SelectorMatch NeverThisType;
-        public SelectorMatch(Avalonia.Styling.Activators.IStyleActivator match) { throw null; }
-        public SelectorMatch(Avalonia.Styling.SelectorMatchResult result) { throw null; }
-        public Avalonia.Styling.Activators.IStyleActivator? Activator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public bool IsMatch { get { throw null; } }
-        public Avalonia.Styling.SelectorMatchResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Avalonia.Styling.SelectorMatch And(in Avalonia.Styling.SelectorMatch other) { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public bool Equals(Avalonia.Styling.SelectorMatch other) { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public override bool Equals(object obj) { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public override int GetHashCode() { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public static bool operator ==(Avalonia.Styling.SelectorMatch left, Avalonia.Styling.SelectorMatch right) { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public static bool operator !=(Avalonia.Styling.SelectorMatch left, Avalonia.Styling.SelectorMatch right) { throw null; }
-        public override string ToString() { throw null; }
-    }
-    public enum SelectorMatchResult
-    {
-        NeverThisType = 0,
-        NeverThisInstance = 1,
-        Sometimes = 2,
-        AlwaysThisInstance = 3,
-        AlwaysThisType = 4,
     }
     public static partial class Selectors
     {
@@ -9206,7 +8458,7 @@ namespace Avalonia.Styling
         public static Avalonia.Styling.Selector Class(this Avalonia.Styling.Selector? previous, string name) { throw null; }
         public static Avalonia.Styling.Selector Descendant(this Avalonia.Styling.Selector? previous) { throw null; }
         public static Avalonia.Styling.Selector Is(this Avalonia.Styling.Selector? previous, System.Type type) { throw null; }
-        public static Avalonia.Styling.Selector Is<T>(this Avalonia.Styling.Selector? previous) where T : Avalonia.Styling.IStyleable { throw null; }
+        public static Avalonia.Styling.Selector Is<T>(this Avalonia.Styling.Selector? previous) where T : Avalonia.StyledElement { throw null; }
         public static Avalonia.Styling.Selector Name(this Avalonia.Styling.Selector? previous, string name) { throw null; }
         public static Avalonia.Styling.Selector Nesting(this Avalonia.Styling.Selector? previous) { throw null; }
         public static Avalonia.Styling.Selector Not(this Avalonia.Styling.Selector? previous, Avalonia.Styling.Selector argument) { throw null; }
@@ -9214,14 +8466,14 @@ namespace Avalonia.Styling
         public static Avalonia.Styling.Selector NthChild(this Avalonia.Styling.Selector? previous, int step, int offset) { throw null; }
         public static Avalonia.Styling.Selector NthLastChild(this Avalonia.Styling.Selector? previous, int step, int offset) { throw null; }
         public static Avalonia.Styling.Selector OfType(this Avalonia.Styling.Selector? previous, System.Type type) { throw null; }
-        public static Avalonia.Styling.Selector OfType<T>(this Avalonia.Styling.Selector? previous) where T : Avalonia.Styling.IStyleable { throw null; }
+        public static Avalonia.Styling.Selector OfType<T>(this Avalonia.Styling.Selector? previous) where T : Avalonia.StyledElement { throw null; }
         public static Avalonia.Styling.Selector Or(params Avalonia.Styling.Selector[] selectors) { throw null; }
         public static Avalonia.Styling.Selector Or(System.Collections.Generic.IReadOnlyList<Avalonia.Styling.Selector> selectors) { throw null; }
         public static Avalonia.Styling.Selector PropertyEquals(this Avalonia.Styling.Selector? previous, Avalonia.AvaloniaProperty property, object? value) { throw null; }
         public static Avalonia.Styling.Selector PropertyEquals<T>(this Avalonia.Styling.Selector? previous, Avalonia.AvaloniaProperty<T> property, object? value) { throw null; }
         public static Avalonia.Styling.Selector Template(this Avalonia.Styling.Selector previous) { throw null; }
     }
-    public partial class Setter : Avalonia.Animation.IAnimationSetter, Avalonia.Styling.ISetter, Avalonia.Styling.ISetterInstance
+    public partial class Setter : Avalonia.Styling.SetterBase, Avalonia.Animation.IAnimationSetter, Avalonia.Styling.ISetterInstance
     {
         public Setter() { }
         public Setter(Avalonia.AvaloniaProperty property, object? value) { }
@@ -9230,9 +8482,12 @@ namespace Avalonia.Styling
         [Avalonia.Metadata.ContentAttribute]
         [Avalonia.Metadata.DependsOnAttribute("Property")]
         public object? Value { get { throw null; } set { } }
-        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute("Trimming", "IL2026", Justification="Implicit convertion methods might be removed by the linker. We don't have a reliable way to prevent it, except converting everything in compile time when possible.")]
-        Avalonia.Styling.ISetterInstance Avalonia.Styling.ISetter.Instance(Avalonia.Styling.IStyleInstance instance, Avalonia.StyledElement target) { throw null; }
         public override string ToString() { throw null; }
+    }
+    public abstract partial class SetterBase
+    {
+        protected SetterBase() { }
+        internal abstract Avalonia.Styling.ISetterInstance Instance(Avalonia.Styling.IStyleInstance styleInstance, Avalonia.StyledElement target);
     }
     public partial class Style : Avalonia.Styling.StyleBase
     {
@@ -9251,10 +8506,10 @@ namespace Avalonia.Styling
         public Avalonia.Controls.IResourceHost? Owner { get { throw null; } }
         public Avalonia.Styling.IStyle? Parent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Avalonia.Controls.IResourceDictionary Resources { get { throw null; } set { } }
-        public System.Collections.Generic.IList<Avalonia.Styling.ISetter> Setters { get { throw null; } }
+        public System.Collections.Generic.IList<Avalonia.Styling.SetterBase> Setters { get { throw null; } }
         public event System.EventHandler? OwnerChanged { add { } remove { } }
-        public void Add(Avalonia.Styling.ISetter setter) { }
         public void Add(Avalonia.Styling.IStyle style) { }
+        public void Add(Avalonia.Styling.SetterBase setter) { }
         void Avalonia.Controls.IResourceProvider.AddOwner(Avalonia.Controls.IResourceHost owner) { }
         void Avalonia.Controls.IResourceProvider.RemoveOwner(Avalonia.Controls.IResourceHost owner) { }
         public bool TryGetResource(object key, Avalonia.Styling.ThemeVariant? themeVariant, out object? result) { throw null; }
@@ -9322,22 +8577,6 @@ namespace Avalonia.Styling
         public ThemeVariantTypeConverter() { }
         public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType) { throw null; }
         public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value) { throw null; }
-    }
-}
-namespace Avalonia.Styling.Activators
-{
-    [Avalonia.Metadata.UnstableAttribute]
-    public partial interface IStyleActivator : System.IDisposable
-    {
-        bool IsSubscribed { get; }
-        bool GetIsActive();
-        void Subscribe(Avalonia.Styling.Activators.IStyleActivatorSink sink);
-        void Unsubscribe(Avalonia.Styling.Activators.IStyleActivatorSink sink);
-    }
-    [Avalonia.Metadata.UnstableAttribute]
-    public partial interface IStyleActivatorSink
-    {
-        void OnNext(bool value);
     }
 }
 namespace Avalonia.Threading
@@ -9480,8 +8719,11 @@ namespace Avalonia.Threading
     {
         private readonly int _dummyPrimitive;
         public static readonly Avalonia.Threading.DispatcherPriority ApplicationIdle;
+        [Avalonia.Metadata.PrivateApiAttribute]
+        public static readonly Avalonia.Threading.DispatcherPriority AsyncRenderTargetResize;
         public static readonly Avalonia.Threading.DispatcherPriority Background;
-        public static readonly Avalonia.Threading.DispatcherPriority Composition;
+        [Avalonia.Metadata.PrivateApiAttribute]
+        public static readonly Avalonia.Threading.DispatcherPriority BeforeRender;
         public static readonly Avalonia.Threading.DispatcherPriority ContextIdle;
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ObsoleteAttribute("WPF compatibility")]
@@ -9490,14 +8732,14 @@ namespace Avalonia.Threading
         public static readonly Avalonia.Threading.DispatcherPriority Inactive;
         public static readonly Avalonia.Threading.DispatcherPriority Input;
         public static readonly Avalonia.Threading.DispatcherPriority Invalid;
-        public static readonly Avalonia.Threading.DispatcherPriority Layout;
         public static readonly Avalonia.Threading.DispatcherPriority Loaded;
         public static readonly Avalonia.Threading.DispatcherPriority MaxValue;
         public static readonly Avalonia.Threading.DispatcherPriority Normal;
-        public static readonly Avalonia.Threading.DispatcherPriority PreComposition;
         public static readonly Avalonia.Threading.DispatcherPriority Render;
         public static readonly Avalonia.Threading.DispatcherPriority Send;
         public static readonly Avalonia.Threading.DispatcherPriority SystemIdle;
+        [Avalonia.Metadata.PrivateApiAttribute]
+        public static readonly Avalonia.Threading.DispatcherPriority UiThreadRender;
         public int Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public int CompareTo(Avalonia.Threading.DispatcherPriority other) { throw null; }
         public bool Equals(Avalonia.Threading.DispatcherPriority other) { throw null; }
@@ -9598,12 +8840,6 @@ namespace Avalonia.Utilities
         public System.ReadOnlySpan<char> TakeWhile(System.Func<char, bool> condition) { throw null; }
         public System.ReadOnlySpan<char> TryPeek(int count) { throw null; }
     }
-    public partial class DisposableLock
-    {
-        public DisposableLock() { }
-        public System.IDisposable Lock() { throw null; }
-        public System.IDisposable? TryLock() { throw null; }
-    }
     public static partial class IdentifierParser
     {
         public static System.ReadOnlySpan<char> ParseIdentifier(this ref Avalonia.Utilities.CharacterReader r) { throw null; }
@@ -9620,54 +8856,6 @@ namespace Avalonia.Utilities
         public void Dispose() { }
         public bool MoveNext() { throw null; }
         public void Reset() { }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public partial struct InlineDictionary<TKey, TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable, System.IEquatable<Avalonia.Utilities.InlineDictionary<TKey, TValue>> where TKey : class where TValue : class
-    {
-        private TValue _value;
-        private object _dummy;
-        private int _dummyPrimitive;
-        public TValue this[TKey key] { get { throw null; } set { } }
-        public void Add(TKey key, TValue value) { }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public bool Equals(Avalonia.Utilities.InlineDictionary<TKey, TValue> other) { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public override bool Equals(object obj) { throw null; }
-        public TValue GetAndRemove(TKey key) { throw null; }
-        public Avalonia.Utilities.InlineDictionary<TKey, TValue>.Enumerator GetEnumerator() { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public override int GetHashCode() { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public static bool operator ==(Avalonia.Utilities.InlineDictionary<TKey, TValue> left, Avalonia.Utilities.InlineDictionary<TKey, TValue> right) { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public static bool operator !=(Avalonia.Utilities.InlineDictionary<TKey, TValue> left, Avalonia.Utilities.InlineDictionary<TKey, TValue> right) { throw null; }
-        public bool Remove(TKey key) { throw null; }
-        public void Set(TKey key, TValue value) { }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<TKey, TValue>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        public override string ToString() { throw null; }
-        public bool TryGetAndRemoveValue(TKey key, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out TValue value) { throw null; }
-        public bool TryGetValue(TKey key, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out TValue value) { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            public Enumerator(Avalonia.Utilities.InlineDictionary<TKey, TValue> parent) { throw null; }
-            public System.Collections.Generic.KeyValuePair<TKey, TValue> Current { get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            public void Reset() { }
-        }
-    }
-    public partial interface IRef<out T> : System.IDisposable where T : class
-    {
-        T Item { get; }
-        int RefCount { get; }
-        Avalonia.Utilities.IRef<T> Clone();
-        Avalonia.Utilities.IRef<TResult> CloneAs<TResult>() where TResult : class;
     }
     public partial interface IWeakEventSubscriber<in TEventArgs> where TEventArgs : System.EventArgs
     {
@@ -9705,36 +8893,6 @@ namespace Avalonia.Utilities
         public static bool LessThanOrClose(double value1, double value2) { throw null; }
         public static bool LessThanOrClose(float value1, float value2) { throw null; }
         public static double Turn2Rad(double angle) { throw null; }
-    }
-    public partial class NonPumpingLockHelper
-    {
-        public NonPumpingLockHelper() { }
-        public static System.IDisposable? Use() { throw null; }
-        public partial interface IHelperImpl
-        {
-            int Wait(System.IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout);
-        }
-    }
-    public static partial class RefCountable
-    {
-        public static Avalonia.Utilities.IRef<T> CreateUnownedNotClonable<T>(T item) where T : class { throw null; }
-        public static Avalonia.Utilities.IRef<T> Create<T>(T item) where T : class, System.IDisposable { throw null; }
-    }
-    public partial class SingleOrDictionary<TKey, TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable where TKey : notnull
-    {
-        public SingleOrDictionary() { }
-        public System.Collections.Generic.IEnumerable<TValue> Values { get { throw null; } }
-        public void Add(TKey key, TValue value) { }
-        public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<TKey, TValue>> GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        public bool TryGetValue(TKey key, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out TValue value) { throw null; }
-    }
-    public partial class SingleOrQueue<T>
-    {
-        public SingleOrQueue() { }
-        public bool Empty { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public T Dequeue() { throw null; }
-        public void Enqueue(T value) { }
     }
     public static partial class SpanHelpers
     {
@@ -9816,33 +8974,19 @@ namespace Avalonia.Utilities
         public static bool AcceptsNull(System.Type type) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool AcceptsNull<T>() { throw null; }
         public static bool CanCast<T>(object? value) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit convertion methods are required for type conversion.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit conversion methods are required for type conversion.")]
         public static object? ConvertImplicitOrDefault(object? value, System.Type type) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit convertion methods are required for type conversion.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit conversion methods are required for type conversion.")]
         public static T ConvertImplicit<T>(object? value) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Convertion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Conversion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
         public static object? ConvertOrDefault(object? value, System.Type type, System.Globalization.CultureInfo culture) { throw null; }
         [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute("Trimming", "IL2067", Justification="We don't care about public ctors for the value types, and always return null for the ref types.")]
         public static object? Default(System.Type type) { throw null; }
         public static bool IsNumeric(System.Type type) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Convertion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Conversion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.")]
         public static bool TryConvert(System.Type to, object? value, System.Globalization.CultureInfo? culture, out object? result) { throw null; }
-        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit convertion methods are required for type conversion.")]
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Implicit conversion methods are required for type conversion.")]
         public static bool TryConvertImplicit(System.Type to, object? value, out object? result) { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public ref partial struct ValueSingleOrList<T>
-    {
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        private T _Single_k__BackingField;
-        private object _dummy;
-        private int _dummyPrimitive;
-        public bool HasList { get { throw null; } }
-        public bool IsSingle { get { throw null; } }
-        public System.Collections.Generic.List<T> List { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public T Single { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public void Add(T value) { }
-        public bool Remove(T value) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ValueSpan<T> : System.IEquatable<Avalonia.Utilities.ValueSpan<T>>
@@ -9899,18 +9043,6 @@ namespace Avalonia.Utilities
         public void Subscribe(TSender target, Avalonia.Utilities.IWeakEventSubscriber<TEventArgs> subscriber) { }
         public void Unsubscribe(TSender target, Avalonia.Utilities.IWeakEventSubscriber<TEventArgs> subscriber) { }
     }
-    public partial class WeakTimer
-    {
-        public WeakTimer(Avalonia.Utilities.WeakTimer.IWeakTimerSubscriber subscriber) { }
-        public System.TimeSpan Interval { get { throw null; } set { } }
-        public void Start() { }
-        public static Avalonia.Utilities.WeakTimer StartWeakTimer(Avalonia.Utilities.WeakTimer.IWeakTimerSubscriber subscriber, System.TimeSpan interval) { throw null; }
-        public void Stop() { }
-        public partial interface IWeakTimerSubscriber
-        {
-            bool Tick();
-        }
-    }
 }
 namespace Avalonia.Visuals.Platform
 {
@@ -9932,14 +9064,6 @@ namespace Avalonia.VisualTree
     public partial interface IHostedVisualTreeRoot
     {
         Avalonia.Visual? Host { get; }
-    }
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-    [System.ObsoleteAttribute("Internal API, will be removed in future versions, you've been warned")]
-    public partial interface IVisualWithRoundRectClip
-    {
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        [System.ObsoleteAttribute("Internal API, will be removed in future versions, you've been warned")]
-        Avalonia.CornerRadius ClipToBoundsRadius { get; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct TransformedBounds : System.IEquatable<Avalonia.VisualTree.TransformedBounds>
