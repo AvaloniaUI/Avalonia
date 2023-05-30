@@ -274,6 +274,14 @@ namespace Avalonia.Headless
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyUp, key, modifiers));
         }
 
+        void IHeadlessWindow.TextInput(string text)
+        {
+            if (InputRoot == null)
+                return;
+
+            Input?.Invoke(new RawTextInputEventArgs(_keyboard, 0, InputRoot, text));
+        }
+
         void IHeadlessWindow.MouseDown(Point point, MouseButton button, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,

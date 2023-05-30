@@ -11,6 +11,7 @@ namespace Avalonia.Headless
         WriteableBitmap? GetLastRenderedFrame();
         void KeyPress(Key key, RawInputModifiers modifiers);
         void KeyRelease(Key key, RawInputModifiers modifiers);
+        void TextInput(string text);
         void MouseDown(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseMove(Point point, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseUp(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
