@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Emit;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -127,7 +126,6 @@ namespace Avalonia.Controls
                 if (_viewport.Size == default)
                     return DesiredSize;
 
-
                 if (viewport.viewportIsDisjunct)
                     _realizedElements.RecycleAllElements(_recycleElement);
 
@@ -188,25 +186,36 @@ namespace Avalonia.Controls
             var width = finalSize.Width / _columns;
             var height = finalSize.Height / _rows;
 
-            for (var i = _measuredViewport.anchorIndex; i < Children.Count; i++)
+            foreach (var child in _realizedElements!.Elements)
             {
-                if (i > _measuredViewport.lastIndex)
-                    break;
-
-                var child = Children[i];
-                if (!child.IsVisible)
+                while (true)
                 {
-                    continue;
-                }
+                    if (child is not null)
+                    {
+                        var coord = new Vector(x, y);
 
-                child.Arrange(new Rect(x * width, y * height, width, height));
+                        x++;
 
-                x++;
+                        if (x >= _columns)
+                        {
+                            x = 0;
+                            y++;
+                        }
 
-                if (x >= _columns)
-                {
-                    x = 0;
-                    y++;
+                        if (IsCoordVisible(coord, _measuredViewport.anchorCoord, _measuredViewport.endCoord))
+                        {
+                            child.Arrange(new Rect(coord.X * width, coord.Y * height, width, height));
+
+                            _scrollViewer?.RegisterAnchorCandidate(child);
+
+                            break;
+                        }
+
+                        if (coord == new Vector(_columns - 1, _rows - 1))
+                            break;
+                    }
+                    else
+                        break;
                 }
             }
 
@@ -268,7 +277,13 @@ namespace Avalonia.Controls
 
         private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+                return;
+
+            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
+            _unrealizedFocusedElement = null;
+            _unrealizedFocusedIndex = -1;
         }
 
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
@@ -301,7 +316,8 @@ namespace Avalonia.Controls
             Debug.Assert(items.Count > 0);
 
             var index = viewport.anchorIndex;
-            var lastIndex = index;
+            _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
+            _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElement);
 
             // Start at the anchor element and move forwards, realizing elements.
             do
@@ -322,22 +338,29 @@ namespace Avalonia.Controls
 
                 _lastEstimatedElementSize = size;
 
-                lastIndex = index;
+                // Calculate the last index and coordinates again, as the first child size is known.
+                if (index == 0)
+                {
+                    (_, int last, _, var lastCoord) = _measureElements.GetOrEstimateAnchorElementForViewport(_viewport.TopLeft, _viewport.BottomRight, items.Count, ref _lastEstimatedElementSize);
+                    viewport.lastIndex = last;
+                    viewport.endCoord = lastCoord;
+                }
+
                 ++index;
-            } while (index < items.Count);
-
-            // Store the last index for the desired size calculation.
-            viewport.lastIndex = lastIndex;
-
-            // We can now recycle elements before the first element.
-            _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
+            } while (index < items.Count && index <= viewport.lastIndex);
         }
 
         private bool IsIndexVisible(int index, Vector start, Vector end)
         {
-            var div = Math.DivRem(index, _columns, out var rem);
+            var div = Math.DivRem(index + FirstColumn, _columns, out var rem);
             var coord = new Vector(rem, div);
 
+            return coord.X >= start.X && coord.Y >= start.Y &&
+                coord.X <= end.X && coord.Y <= end.Y;
+        }
+
+        private bool IsCoordVisible(Vector coord, Vector start, Vector end)
+        {
             return coord.X >= start.X && coord.Y >= start.Y &&
                 coord.X <= end.X && coord.Y <= end.Y;
         }
@@ -356,7 +379,7 @@ namespace Avalonia.Controls
 
             // Get or estimate the anchor element from which to start realization.
             var itemCount = items?.Count ?? 0;
-            var (anchorIndex, anchor, end) = _realizedElements.GetOrEstimateAnchorElementForViewport(
+            var (anchorIndex, lastIndex, anchor, end) = _realizedElements.GetOrEstimateAnchorElementForViewport(
                 viewportStart,
                 viewportEnd,
                 itemCount,
@@ -374,6 +397,7 @@ namespace Avalonia.Controls
                 viewportEnd = viewportEnd,
                 viewportIsDisjunct = disjunct,
                 endCoord = end,
+                lastIndex = lastIndex
             };
         }
 
@@ -598,7 +622,7 @@ namespace Avalonia.Controls
                 _scrollToIndex = index;
 
                 // Get the expected position of the elment and put it in place.
-                var anchor = _realizedElements.GetOrEstimateElementU(index);
+                var anchor = _realizedElements.GetElementCoord(index);
                 var rect = new Rect(anchor.X, anchor.Y, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height);
                 _scrollToElement.Arrange(rect);
 
@@ -666,9 +690,51 @@ namespace Avalonia.Controls
 
             if (count == 0 || from is not Control fromControl)
                 return null;
+
             var fromIndex = from != null ? IndexFromContainer(fromControl) : -1;
             var toIndex = fromIndex;
-            // implement
+
+            switch (direction)
+            {
+                case NavigationDirection.First:
+                    toIndex = 0;
+                    break;
+                case NavigationDirection.Last:
+                    toIndex = count - 1;
+                    break;
+                case NavigationDirection.Next:
+                    ++toIndex;
+                    break;
+                case NavigationDirection.Previous:
+                    --toIndex;
+                    break;
+                case NavigationDirection.Left:                    
+                        --toIndex;
+                    break;
+                case NavigationDirection.Right:
+                        ++toIndex;
+                    break;
+                case NavigationDirection.Up:
+                        toIndex -= _columns;
+                    break;
+                case NavigationDirection.Down:
+                        toIndex += _columns;
+                    break;
+                default:
+                    return null;
+            }
+
+            if (fromIndex == toIndex)
+                return from;
+
+            if (wrap)
+            {
+                if (toIndex < 0)
+                    toIndex = count - 1;
+                else if (toIndex >= count)
+                    toIndex = 0;
+            }
+
             return ScrollIntoView(toIndex);
         }
 

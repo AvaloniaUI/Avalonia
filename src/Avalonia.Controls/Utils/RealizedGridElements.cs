@@ -95,7 +95,7 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Gets or estimates the index and start U position of the anchor element for the
+        /// Gets or estimates the index and grid position of the anchor element for the
         /// specified viewport.
         /// </summary>
         /// <param name="viewportStart">The position of the start of the viewport.</param>
@@ -105,22 +105,23 @@ namespace Avalonia.Controls.Utils
         /// <returns>
         /// A tuple containing:
         /// - The index of the anchor element, or -1 if an anchor could not be determined
-        /// - The U position of the start of the anchor element, if determined
+        /// - The index of the last visible element
+        /// - The position of the anchor on the grid
+        /// - The position of the last visible element on the grid
         /// </returns>
         /// <remarks>
         /// This method tries to find an existing element in the specified viewport from which
         /// element realization can start. Failing that it estimates the first element in the
         /// viewport.
         /// </remarks>
-        public (int index, Vector coord, Vector lastCoord) GetOrEstimateAnchorElementForViewport(
+        public (int index, int last, Vector coord, Vector lastCoord) GetOrEstimateAnchorElementForViewport(
             Point viewportStart,
             Point viewportEnd,
             int itemCount,
             ref Size estimatedElementSize)
         {
-            // We have no elements, nothing to do here.
-            if (itemCount <= 0)
-                return (-1, Vector.Zero, Vector.Zero);
+            if (itemCount <= 0 || ColumnCount == 0 || RowCount == 0)
+                return (-1, -1, Vector.Zero, Vector.Zero);
 
             if (_sizes is not null)
             {
@@ -133,20 +134,23 @@ namespace Avalonia.Controls.Utils
             var MaxWidth = ColumnCount * estimatedElementSize.Width;
             var MaxHeight = RowCount * estimatedElementSize.Height;
 
-            var x = Math.Min((int)(Math.Min(viewportStart.X, MaxWidth) / estimatedElementSize.Width), ColumnCount);
-            var y = Math.Min((int)(Math.Min(viewportStart.Y, MaxHeight) / estimatedElementSize.Height), RowCount);
+            var x = Math.Min((int)(Math.Min(viewportStart.X, MaxWidth) / estimatedElementSize.Width), ColumnCount - 1);
+            var y = Math.Min((int)(Math.Min(viewportStart.Y, MaxHeight) / estimatedElementSize.Height), RowCount - 1);
 
-            var lastY = Math.Min((int)(Math.Min(viewportEnd.Y, MaxHeight) / estimatedElementSize.Height), RowCount);
-            var lastX = lastY > 0 ? ColumnCount : Math.Min((int)(Math.Min(viewportEnd.X, MaxWidth) / estimatedElementSize.Width), ColumnCount);
+            var lastY = Math.Min((int)(Math.Min(viewportEnd.Y, MaxHeight) / estimatedElementSize.Height), RowCount - 1);
+            var lastX = Math.Min((int)(Math.Min(viewportEnd.X, MaxWidth) / estimatedElementSize.Width), ColumnCount - 1);
 
-            return (Math.Max(y * ColumnCount + x - FirstColumn, 0), new Vector(x, y), new Vector(lastX, lastY));
+            return (Math.Max(y * ColumnCount + x - FirstColumn, 0), 
+                MathUtilities.Clamp(lastY * ColumnCount + lastX - FirstColumn, 0, itemCount), 
+                new Vector(x, y), 
+                new Vector(lastY > 0 ? ColumnCount : lastX, lastY));
         }
 
         /// <summary>
-        /// Gets the position of the element with the requested index on the primary axis, if realized.
+        /// Gets the grid position of the element with the requested index.
         /// </summary>
         /// <returns>
-        /// The position of the element, or NaN if the element is not realized.
+        /// The position of the element kn the grid.
         /// </returns>
         public Vector GetElementCoord(int index)
         {
@@ -154,11 +158,6 @@ namespace Avalonia.Controls.Utils
 
             return new Vector(rem, div);
 
-        }
-
-        public Vector GetOrEstimateElementU(int index)
-        {
-           return GetElementCoord(index);
         }
 
         /// <summary>
@@ -275,8 +274,7 @@ namespace Avalonia.Controls.Utils
                 _sizes!.RemoveRange(start, end - start);
 
                 // If the remove started before and ended within our realized elements, then our new
-                // first index will be the index where the remove started. Mark StartU as unstable
-                // because we can't rely on it now to estimate element heights.
+                // first index will be the index where the remove started. 
                 if (startIndex <= 0 && end < last)
                 {
                     _firstIndex = first = index;
