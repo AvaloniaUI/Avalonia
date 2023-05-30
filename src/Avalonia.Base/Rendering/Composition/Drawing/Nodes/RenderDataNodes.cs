@@ -182,11 +182,10 @@ class RenderDataGeometryClipNode : RenderDataPushNode
 class RenderDataOpacityNode : RenderDataPushNode
 {
     public double Opacity { get; set; }
-    public Rect BoundsRect { get; set; }
     public override void Push(ref RenderDataNodeRenderContext context)
     {
         if (Opacity != 1)
-            context.Context.PushOpacity(Opacity, BoundsRect);
+            context.Context.PushOpacity(Opacity, null);
     }
 
     public override void Pop(ref RenderDataNodeRenderContext context)

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class GridSplitterTests
+    public class GridSplitterTests : ScopedTestBase
     {
         public GridSplitterTests()
         {

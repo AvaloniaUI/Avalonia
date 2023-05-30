@@ -10,7 +10,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="SolidColorBrush"/> values. 
     /// </summary>
-    public class ISolidColorBrushAnimator : Animator<ISolidColorBrush?>
+    internal class ISolidColorBrushAnimator : Animator<ISolidColorBrush?>
     {
         private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
 

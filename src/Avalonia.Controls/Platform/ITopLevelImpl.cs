@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Platform
 {
@@ -72,10 +73,9 @@ namespace Avalonia.Platform
         Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         /// <summary>
-        /// Creates a new renderer for the toplevel.
+        /// Gets the compositor that's compatible with the toplevel
         /// </summary>
-        /// <param name="root">The toplevel.</param>
-        IRenderer CreateRenderer(IRenderRoot root);
+        Compositor Compositor { get; }
 
         /// <summary>
         /// Sets the <see cref="IInputRoot"/> for the toplevel.
@@ -117,7 +117,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.
         /// </summary>
-        void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel);
+        void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels);
 
         /// <summary>
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.

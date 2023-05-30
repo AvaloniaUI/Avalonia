@@ -7,7 +7,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="Point"/> properties.
     /// </summary>
-    public class PointAnimator : Animator<Point>
+    internal class PointAnimator : Animator<Point>
     {
         public override Point Interpolate(double progress, Point oldValue, Point newValue)
         { 

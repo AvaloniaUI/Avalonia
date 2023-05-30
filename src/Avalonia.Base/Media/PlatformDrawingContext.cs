@@ -76,8 +76,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
     protected override void PushGeometryClipCore(Geometry clip) =>
         _impl.PushGeometryClip(clip.PlatformImpl ?? throw new ArgumentException());
 
-    protected override void PushOpacityCore(double opacity, Rect bounds) => 
-        _impl.PushOpacity(opacity, bounds);
+    protected override void PushOpacityCore(double opacity) => 
+        _impl.PushOpacity(opacity, null);
 
     protected override void PushOpacityMaskCore(IBrush mask, Rect bounds) =>
         _impl.PushOpacityMask(mask, bounds);

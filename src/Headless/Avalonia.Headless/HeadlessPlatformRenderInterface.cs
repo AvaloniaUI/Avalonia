@@ -457,7 +457,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity, Rect rect)
+            public void PushOpacity(double opacity, Rect? rect)
             {
 
             }

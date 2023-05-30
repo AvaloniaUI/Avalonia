@@ -117,6 +117,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor UriConstructor { get; }
         public IXamlType Style { get; }
         public IXamlType ControlTheme { get; }
+        public IXamlType WindowTransparencyLevel { get; }
+        public IXamlType IReadOnlyListOfT { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -199,6 +201,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
             ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
+            WindowTransparencyLevel = cfg.TypeSystem.GetType("Avalonia.Controls.WindowTransparencyLevel");
 
             (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
             {
@@ -260,6 +263,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
             Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
+            IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
         }
     }
 

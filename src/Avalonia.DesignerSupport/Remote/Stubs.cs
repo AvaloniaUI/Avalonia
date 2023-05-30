@@ -69,10 +69,8 @@ namespace Avalonia.DesignerSupport.Remote
             public bool RunsInBackground => false;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root,
-                new Compositor(new RenderLoop(new DummyRenderTimer(), Dispatcher.UIThread), null), () => Surfaces);
-        
+        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+
         public void Dispose()
         {
         }
@@ -179,13 +177,13 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public bool IsClientAreaExtendedToDecorations { get; }
 

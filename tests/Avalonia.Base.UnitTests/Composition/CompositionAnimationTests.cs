@@ -78,8 +78,9 @@ public class CompositionAnimationTests
     [Theory]
     public void GenericCheck(AnimationData data)
     {
+        using var scope = AvaloniaLocator.EnterScope();
         var compositor =
-            new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer(), new DummyDispatcher()), null);
+            new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer()), null);
         var target = compositor.CreateSolidColorVisual();
         var ani = new ScalarKeyFrameAnimation(null);
         foreach (var frame in data.Frames)

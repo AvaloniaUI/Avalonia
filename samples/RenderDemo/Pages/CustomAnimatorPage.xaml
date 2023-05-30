@@ -11,10 +11,18 @@
           <Style.Animations>
             <Animation Duration="0:0:1" IterationCount="Infinite">
               <KeyFrame Cue="0%">
-                <Setter Property="Text" Value="" Animation.Animator="{x:Type pages:CustomStringAnimator}"/>
+                <Setter Property="Text" Value="">
+                  <Animation.Animator>
+                    <pages:CustomStringAnimator/>
+                  </Animation.Animator>
+                </Setter>
               </KeyFrame>
               <KeyFrame Cue="100%">
-                <Setter Property="Text" Value="0123456789" Animation.Animator="{x:Type pages:CustomStringAnimator}"/>
+                <Setter Property="Text" Value="0123456789" >
+                  <Animation.Animator>
+                    <pages:CustomStringAnimator/>
+                  </Animation.Animator>
+                </Setter>
               </KeyFrame>
             </Animation>
           </Style.Animations>

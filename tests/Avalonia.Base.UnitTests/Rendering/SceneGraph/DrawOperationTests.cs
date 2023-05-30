@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {  
-    public class DrawOperationTests
+    public class DrawOperationTests : ScopedTestBase
     {
 
         class TestContext
@@ -22,11 +22,9 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             private readonly Compositor _compositor;
             public RenderDataDrawingContext Context { get; }
 
-            public TestContext()
+            public TestContext(CompositorTestServices services)
             {
-                _compositor = new Compositor(new RenderLoop(
-                    new CompositorTestServices.ManualRenderTimer(),
-                    new Dispatcher(new NullDispatcherImpl())), null);
+                _compositor = services.Compositor;
                 Context = new RenderDataDrawingContext(_compositor);
             }
 
@@ -46,10 +44,17 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             }
         }
 
+        private CompositorTestServices _services = new();
+        public override void Dispose()
+        {
+            _services.Dispose();
+            base.Dispose();
+        }
+
         [Fact]
         public void Empty_Bounds_Remain_Empty()
         {
-            var ctx = new TestContext();
+            var ctx = new TestContext(_services);
             ctx.Context.DrawRectangle(Brushes.Black, null, default);
             
             Assert.Null(ctx.GetBounds());
@@ -72,7 +77,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             double expectedWidth,
             double expectedHeight)
         {
-            var ctx = new TestContext();
+            var ctx = new TestContext(_services);
             using (ctx.Context.PushTransform(Matrix.CreateScale(scaleX, scaleY)))
                 ctx.Context.DrawRectangle(null, new ImmutablePen(Brushes.Black, penThickness), new Rect(x, y, width, height));
 
@@ -84,7 +89,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         {
             var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
 
-            var ctx = new TestContext();
+            var ctx = new TestContext(_services);
             ctx.Context.DrawBitmap(bitmap, 1, new Rect(1, 1, 1, 1), new Rect(1, 1, 1, 1));
             var renderData = ctx.Context.GetRenderResults()!;
             Assert.Equal(2, bitmap.RefCount);
@@ -112,7 +117,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         [Fact]
         public void HitTest_On_Geometry_Node_With_Zero_Transform_Does_Not_Throw()
         {
-            var ctx = new TestContext();
+            var ctx = new TestContext(_services);
             using (ctx.Context.PushTransform(new Matrix()))
                 ctx.Context.DrawGeometry(Brushes.Black, null, Mock.Of<IGeometryImpl>());
             Assert.False(ctx.Context.GetRenderResults()!.HitTest(default));
@@ -121,11 +126,24 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         [Fact]
         public void HitTest_RectangleNode_With_Transform_Hits()
         {
-            var ctx = new TestContext();
+            var ctx = new TestContext(_services);
             using (ctx.Context.PushTransform(Matrix.CreateTranslation(20, 20)))
                 ctx.Context.DrawRectangle(Brushes.Black, null, new RoundedRect(new Rect(0, 0, 10, 10)));
 
             Assert.True(ctx.Context.GetRenderResults()!.HitTest(new Point(25, 25)));
+        }
+        
+        [Fact]
+        public void Empty_Push_Pop_Sequence_Produces_No_Results()
+        {
+            var ctx = new TestContext(_services);
+            using (ctx.Context.PushTransform(Matrix.CreateTranslation(20, 20)))
+            using (ctx.Context.PushOpacity(1))
+            {
+
+            }
+
+            Assert.Null(ctx.Context.GetRenderResults());
         }
     }
 }

@@ -182,6 +182,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Scrolled_ScrollViewer_Determines_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -207,6 +208,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Moving_Parent_Updates_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -234,6 +236,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Translate_Transform_Doesnt_Affect_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -256,6 +259,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Translate_Transform_On_Parent_Affects_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();
@@ -286,6 +290,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task Rotate_Transform_On_Parent_Affects_EffectiveViewport()
         {
+            using var scope = AvaloniaLocator.EnterScope();
             await RunOnUIThread.Execute(async () =>
             {
                 var root = CreateRoot();

@@ -79,12 +79,19 @@ internal class RenderDataDrawingContext : DrawingContext
 
         if (!(parent.Node is T))
             throw new InvalidOperationException("Invalid Pop operation");
-        
-        foreach(var item in _currentItemList!)
-            parent.Node.Children.Add(item);
-        _currentItemList.Clear();
-        s_listPool.ReturnAndSetNull(ref _currentItemList);
+
+        var removeLastPush = true;
+        if (_currentItemList != null)
+        {
+            removeLastPush = _currentItemList.Count == 0;
+            foreach (var item in _currentItemList)
+                parent.Node.Children.Add(item);
+            _currentItemList.Clear();
+            s_listPool.ReturnAndSetNull(ref _currentItemList);
+        }
         _currentItemList = parent.Items;
+        if (removeLastPush)
+            _currentItemList.RemoveAt(_currentItemList.Count - 1);
     }
 
     void AddResource(object? resource)
@@ -177,7 +184,10 @@ internal class RenderDataDrawingContext : DrawingContext
         });
     }
 
-    public override void Custom(ICustomDrawOperation custom) => Add(new RenderDataCustomNode());
+    public override void Custom(ICustomDrawOperation custom) => Add(new RenderDataCustomNode
+    {
+        Operation = custom
+    });
 
     public override void DrawGlyphRun(IBrush? foreground, GlyphRun? glyphRun)
     {
@@ -212,15 +222,14 @@ internal class RenderDataDrawingContext : DrawingContext
             });
     }
 
-    protected override void PushOpacityCore(double opacity, Rect bounds)
+    protected override void PushOpacityCore(double opacity)
     {
         if (opacity == 1)
             Push();
         else
             Push(new RenderDataOpacityNode
             {
-                Opacity = opacity,
-                BoundsRect = bounds
+                Opacity = opacity
             });
     }
 

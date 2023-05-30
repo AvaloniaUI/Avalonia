@@ -3,7 +3,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
-    public class TransformGroup : Transform
+    public sealed class TransformGroup : Transform
     {
         /// <summary>
         /// Defines the <see cref="Children"/> property.

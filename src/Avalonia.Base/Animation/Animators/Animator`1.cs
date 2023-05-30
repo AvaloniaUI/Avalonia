@@ -11,7 +11,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Base class for <see cref="Animator{T}"/> objects
     /// </summary>
-    public abstract class Animator<T> : AvaloniaList<AnimatorKeyFrame>, IAnimator
+    internal abstract class Animator<T> : AvaloniaList<AnimatorKeyFrame>, IAnimator
     {
         /// <summary>
         /// List of type-converted keyframes.

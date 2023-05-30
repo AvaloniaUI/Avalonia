@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -133,7 +134,8 @@
                              IsVisible="False"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
-                  <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                  <ScrollViewer Name="PART_ScrollViewer"
+                                HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                                 IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                                 AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"

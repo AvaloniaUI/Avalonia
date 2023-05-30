@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Animation.Easings
 {
     /// <summary>
     /// Defines the interface for easing classes.
     /// </summary>
+    [NotClientImplementable]
     public interface IEasing
     {
         /// <summary>

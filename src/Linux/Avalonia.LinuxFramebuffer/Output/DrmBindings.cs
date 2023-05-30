@@ -115,7 +115,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         }
 
-        public void Dump()
+        internal void Dump()
         {
             void Print(int off, string s)
             {

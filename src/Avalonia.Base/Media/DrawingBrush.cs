@@ -12,7 +12,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="Drawing"/>.
     /// </summary>
-    public class DrawingBrush : TileBrush, ISceneBrush
+    public sealed class DrawingBrush : TileBrush, ISceneBrush
     {
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
@@ -60,7 +60,7 @@ namespace Avalonia.Media
 
         private InlineDictionary<Compositor, CompositionRenderDataSceneBrushContent?> _renderDataDictionary;
 
-        protected override void OnReferencedFromCompositor(Compositor c)
+        private protected override void OnReferencedFromCompositor(Compositor c)
         {
             _renderDataDictionary.Add(c, CreateServerContent(c));
             base.OnReferencedFromCompositor(c);

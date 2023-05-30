@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ListBoxTests
+    public class ListBoxTests : ScopedTestBase
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
 

@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Scale an <see cref="Visual"/>.
     /// </summary>
-    public class ScaleTransform : Transform
+    public sealed class ScaleTransform : Transform
     {
         /// <summary>
         /// Defines the <see cref="ScaleX"/> property.

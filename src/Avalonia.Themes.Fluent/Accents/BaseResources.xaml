@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
-                    xmlns:converters="using:Avalonia.Controls.Converters">
+                    xmlns:converters="using:Avalonia.Controls.Converters"
+                    x:ClassModifier="internal">
   <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>
   <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 

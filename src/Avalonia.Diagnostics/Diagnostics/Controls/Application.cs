@@ -60,15 +60,6 @@ namespace Avalonia.Diagnostics.Controls
             _application.DataTemplates;
 
         /// <summary>
-        /// Gets the application's focus manager.
-        /// </summary>
-        /// <value>
-        /// The application's focus manager.
-        /// </value>
-        public Input.IFocusManager? FocusManager =>
-            _application.FocusManager;
-
-        /// <summary>
         /// Gets the application's input manager.
         /// </summary>
         /// <value>

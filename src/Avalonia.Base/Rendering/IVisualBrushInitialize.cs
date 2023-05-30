@@ -8,7 +8,7 @@ namespace Avalonia.Rendering
     /// <see cref="VisualBrush"/>.
     /// </summary>
     [Unstable]
-    public interface IVisualBrushInitialize
+    internal interface IVisualBrushInitialize
     {
         /// <summary>
         /// Ensures that the control is ready to use as the visual in a visual brush.

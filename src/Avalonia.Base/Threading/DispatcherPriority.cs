@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Metadata;
 
 namespace Avalonia.Threading
 {
@@ -79,29 +80,39 @@ namespace Avalonia.Threading
         public static readonly DispatcherPriority Loaded = new(Default + 1);
 
         /// <summary>
+        /// A special priority for platforms with UI render timer or for forced full rasterization requests
+        /// </summary>
+        [PrivateApi]
+        public static readonly DispatcherPriority UiThreadRender = new(Loaded + 1);
+
+        /// <summary>
+        /// A special priority to synchronize native control host positions, IME, etc
+        /// We should probably have a better API for that, so the priority is internal
+        /// </summary>
+        internal static readonly DispatcherPriority AfterRender = new(UiThreadRender + 1);
+        
+        /// <summary>
         /// The job will be processed with the same priority as render.
         /// </summary>
-        public static readonly DispatcherPriority Render = new(Loaded + 1);
-
+        public static readonly DispatcherPriority Render = new(AfterRender + 1);
+        
         /// <summary>
-        /// The job will be processed with the same priority as composition updates.
+        /// A special platform hook for jobs to be executed before the normal render cycle
         /// </summary>
-        public static readonly DispatcherPriority Composition = new(Render + 1);
-
+        [PrivateApi]
+        public static readonly DispatcherPriority BeforeRender = new(Render + 1);
+        
         /// <summary>
-        /// The job will be processed with before composition updates.
+        /// A special priority for platforms that resize the render target in asynchronous-ish matter,
+        /// should be changed into event grouping in the platform backend render
         /// </summary>
-        public static readonly DispatcherPriority PreComposition = new(Composition + 1);
-
-        /// <summary>
-        /// The job will be processed with the same priority as layout.
-        /// </summary>
-        public static readonly DispatcherPriority Layout = new(PreComposition + 1);
-
+        [PrivateApi]
+        public static readonly DispatcherPriority AsyncRenderTargetResize = new(BeforeRender + 1);
+        
         /// <summary>
         /// The job will be processed with the same priority as data binding.
         /// </summary>
-        [Obsolete("WPF compatibility"), EditorBrowsable(EditorBrowsableState.Never)] public static readonly DispatcherPriority DataBind = new(Layout);
+        [Obsolete("WPF compatibility"), EditorBrowsable(EditorBrowsableState.Never)] public static readonly DispatcherPriority DataBind = new(Render);
         
         /// <summary>
         /// The job will be processed with normal priority.
@@ -183,12 +194,16 @@ namespace Avalonia.Threading
                 return nameof(Default);
             if (this == Loaded)
                 return nameof(Loaded);
+            if (this == UiThreadRender)
+                return nameof(UiThreadRender);
+            if (this == AfterRender)
+                return nameof(AfterRender);
             if (this == Render)
                 return nameof(Render);
-            if (this == Composition)
-                return nameof(Composition);
-            if (this == PreComposition)
-                return nameof(PreComposition);
+            if (this == BeforeRender)
+                return nameof(BeforeRender);
+            if (this == AsyncRenderTargetResize)
+                return nameof(AsyncRenderTargetResize);
             if (this == DataBind)
                 return nameof(DataBind);
             if (this == Normal)
