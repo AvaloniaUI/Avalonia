@@ -24,9 +24,9 @@ namespace Avalonia.Controls.Utils
         }
 
         public static KeyModifiers GetPlatformCtrlOrCmdKeyModifier()
-        {                
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-            return keymap?.CommandModifiers ?? KeyModifiers.Control;
+        {
+            var keymap = PlatformHotkeyConfiguration.Instance;
+            return keymap.CommandModifiers;
         }
     }
 }

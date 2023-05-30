@@ -1,12 +1,14 @@
 ﻿using System;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// A default implementation of <see cref="IPlatformSettings"/> for platforms.
     /// </summary>
+    [PrivateApi]
     public class DefaultPlatformSettings : IPlatformSettings
     {
         public virtual Size GetTapSize(PointerType type)

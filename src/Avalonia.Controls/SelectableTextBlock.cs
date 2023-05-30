@@ -198,7 +198,7 @@ namespace Avalonia.Controls
 
             var handled = false;
             var modifiers = e.KeyModifiers;
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = PlatformHotkeyConfiguration.Instance!;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 

@@ -4,7 +4,11 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
-    [Unstable]
+    /// <summary>
+    /// The <see cref="IPlatformSettings"/> interface represents a contract for accessing platform-specific settings and information.
+    /// Some of these settings might be changed by used globally in the OS in runtime.
+    /// </summary>
+    [NotClientImplementable]
     public interface IPlatformSettings
     {
         /// <summary>
