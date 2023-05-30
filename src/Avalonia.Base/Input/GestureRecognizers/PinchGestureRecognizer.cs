@@ -4,20 +4,12 @@ namespace Avalonia.Input
 {
     public class PinchGestureRecognizer : GestureRecognizer
     {
-        private IInputElement? _target;
         private float _initialDistance;
         private IPointer? _firstContact;
         private Point _firstPoint;
         private IPointer? _secondContact;
         private Point _secondPoint;
         private Point _origin;
-
-        public override IInputElement? Target => _target;
-
-        public override void Initialize(IInputElement target)
-        {
-            _target = target;
-        }
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -36,7 +28,7 @@ namespace Avalonia.Input
 
         public override void PointerMoved(PointerEventArgs e)
         {
-            if (_target != null && _target is Visual visual)
+            if (Target != null && Target is Visual visual)
             {
                 if(_firstContact == e.Pointer)
                 {
@@ -58,7 +50,7 @@ namespace Avalonia.Input
                     var scale = distance / _initialDistance;
 
                     var pinchEventArgs = new PinchEventArgs(scale, _origin);
-                    _target?.RaiseEvent(pinchEventArgs);
+                    Target?.RaiseEvent(pinchEventArgs);
 
                     e.Handled = pinchEventArgs.Handled;
                 }
@@ -67,7 +59,7 @@ namespace Avalonia.Input
 
         public override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (_target != null && _target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 if (_firstContact == null)
                 {
@@ -118,7 +110,7 @@ namespace Avalonia.Input
 
                     _secondContact = null;
                 }
-                _target?.RaiseEvent(new PinchEndedEventArgs());
+                Target?.RaiseEvent(new PinchEndedEventArgs());
             }
         }
 
