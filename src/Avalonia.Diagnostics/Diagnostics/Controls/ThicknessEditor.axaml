@@ -1,6 +1,7 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Avalonia.Diagnostics.Controls">
+        xmlns:controls="using:Avalonia.Diagnostics.Controls"
+        x:ClassModifier="internal">
 
     <Styles.Resources>
         <SolidColorBrush x:Key="HighlightBorderBrush" Color="CornflowerBlue" />
