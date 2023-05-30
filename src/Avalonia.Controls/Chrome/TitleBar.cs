@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Reactive;
+﻿using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
@@ -48,6 +47,19 @@ namespace Avalonia.Controls.Chrome
             if (VisualRoot is Window window)
             {
                 _captionButtons?.Attach(window);
+
+                PointerPressed += (_, args) =>
+                {
+                    switch (args.ClickCount)
+                    {
+                        case 1:
+                            window.BeginMoveDrag(args);
+                            break;
+                        case 2:
+                            window.WindowState = window.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
+                            break;
+                    }
+                };
 
                 UpdateSize(window);
             }

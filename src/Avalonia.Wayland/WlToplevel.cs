@@ -88,11 +88,6 @@ namespace Avalonia.Wayland
                 _toplevelDecoration = _platform.ZxdgDecorationManager.GetToplevelDecoration(_xdgToplevel);
                 _toplevelDecoration.Events = this;
             }
-            else
-            {
-                IsClientAreaExtendedToDecorations = true;
-                ExtendClientAreaToDecorationsChanged?.Invoke(IsClientAreaExtendedToDecorations);
-            }
 
             if (_platform.ZxdgExporter is not null)
             {
@@ -108,11 +103,13 @@ namespace Avalonia.Wayland
 
         public override void Hide()
         {
-            base.Hide();
+            WlSurface.Attach(null, 0, 0);
             _xdgToplevel?.Dispose();
             _xdgToplevel = null;
             _toplevelDecoration?.Dispose();
             _toplevelDecoration = null;
+            WlSurface.Commit();
+            _platform.WlDisplay.Roundtrip();
         }
 
         public void SetTitle(string? title)
@@ -239,7 +236,7 @@ namespace Avalonia.Wayland
 
         public void OnConfigure(ZxdgToplevelDecorationV1 eventSender, ZxdgToplevelDecorationV1.ModeEnum mode)
         {
-            PendingState.NeedsWindowDecoration = mode == ZxdgToplevelDecorationV1.ModeEnum.ClientSide;
+            PendingState.HasWindowDecorations = mode == ZxdgToplevelDecorationV1.ModeEnum.ServerSide;
         }
 
         public void OnHandle(ZxdgExportedV2 eventSender, string handle)
@@ -266,9 +263,9 @@ namespace Avalonia.Wayland
 
         protected override void ApplyConfigure()
         {
-            if (PendingState.NeedsWindowDecoration != IsClientAreaExtendedToDecorations)
+            if (PendingState.HasWindowDecorations != !IsClientAreaExtendedToDecorations)
             {
-                IsClientAreaExtendedToDecorations = PendingState.NeedsWindowDecoration;
+                IsClientAreaExtendedToDecorations = !PendingState.HasWindowDecorations;
                 ExtendClientAreaToDecorationsChanged?.Invoke(IsClientAreaExtendedToDecorations);
             }
 

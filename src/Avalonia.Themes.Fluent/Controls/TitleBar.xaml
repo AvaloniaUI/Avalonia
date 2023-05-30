@@ -21,8 +21,7 @@
                    VerticalAlignment="Top" />
             <Panel x:Name="PART_Container">
               <Border x:Name="PART_Background"
-                      Background="{TemplateBinding Background}"
-                      IsHitTestVisible="False"/>
+                      Background="{TemplateBinding Background}" />
               <CaptionButtons x:Name="PART_CaptionButtons"
                               VerticalAlignment="Top" 
                               HorizontalAlignment="Right"

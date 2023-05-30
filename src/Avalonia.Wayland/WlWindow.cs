@@ -5,9 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 using Avalonia.Wayland.Egl;
 using Avalonia.Wayland.Framebuffer;
 using NWayland.Protocols.FractionalScaleV1;
@@ -40,8 +38,9 @@ namespace Avalonia.Wayland
             public uint ConfigureSerial;
             public PixelSize Size;
             public PixelSize Bounds;
+            public PixelPoint Position;
             public WindowState WindowState;
-            public bool NeedsWindowDecoration;
+            public bool HasWindowDecorations;
             public bool Activated;
         }
 
@@ -85,15 +84,17 @@ namespace Avalonia.Wayland
 
         public Size? FrameSize => null;
 
-        public PixelPoint Position { get; protected set; }
+        public PixelPoint Position => AppliedState.Position;
 
         public double RenderScaling { get; private set; } = 1;
 
         public double DesktopScaling => RenderScaling;
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => default;
+
+        public Compositor Compositor => _platform.Compositor;
 
         public IScreenImpl Screen => _platform.WlScreens;
 
@@ -121,15 +122,13 @@ namespace Avalonia.Wayland
 
         internal IInputRoot? InputRoot { get; private set; }
 
-        internal WlWindow? Parent { get; set; }
-
         internal WlSurface WlSurface { get; }
 
         internal XdgSurface XdgSurface { get; }
 
         internal WlOutput? WlOutput { get; private set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
+        protected WlWindow? Parent { get; set; }
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
@@ -141,13 +140,16 @@ namespace Avalonia.Wayland
 
         public IPopupImpl CreatePopup() => new WlPopup(_platform, this);
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (transparencyLevel == TransparencyLevel)
-                return;
-            TransparencyLevel = transparencyLevel;
-            ApplyTransparencyLevel(transparencyLevel);
-            TransparencyLevelChanged?.Invoke(transparencyLevel);
+            foreach (var transparencyLevel in transparencyLevels)
+            {
+                if (!TryApplyTransparencyLevel(transparencyLevel))
+                    continue;
+                TransparencyLevel = transparencyLevel;
+                TransparencyLevelChanged?.Invoke(transparencyLevel);
+                break;
+            }
         }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
@@ -158,12 +160,7 @@ namespace Avalonia.Wayland
             _platform.WlDisplay.Roundtrip();
         }
 
-        public virtual void Hide()
-        {
-            WlSurface.Attach(null, 0, 0);
-            WlSurface.Commit();
-            _platform.WlDisplay.Roundtrip();
-        }
+        public abstract void Hide();
 
         public void Activate() { }
 
@@ -182,7 +179,7 @@ namespace Avalonia.Wayland
         {
             _frameCallback!.Dispose();
             _frameCallback = null;
-            Dispatcher.UIThread.Post(DoPaint, DispatcherPriority.Render);
+            DoPaint();
         }
 
         public void OnEnter(WlSurface eventSender, WlOutput output)
@@ -211,8 +208,8 @@ namespace Avalonia.Wayland
 
             lock (_resizeLock)
             {
-                ApplyConfigure();
                 XdgSurface.AckConfigure(serial);
+                ApplyConfigure();
             }
         }
 
@@ -237,15 +234,6 @@ namespace Avalonia.Wayland
             Closed?.Invoke();
         }
 
-        internal void RequestFrame()
-        {
-            if (_frameCallback is not null)
-                return;
-            DoPaint();
-            _frameCallback = WlSurface.Frame();
-            _frameCallback.Events = this;
-        }
-
         protected virtual void ApplyConfigure()
         {
             if (AppliedState.Size != PendingState.Size)
@@ -264,8 +252,11 @@ namespace Avalonia.Wayland
             }
             else if (_didResize)
             {
-                RequestFrame();
-                WlSurface.Commit();
+                if (_frameCallback is not null)
+                    return;
+                _frameCallback = WlSurface.Frame();
+                _frameCallback.Events = this;
+                DoPaint();
             }
         }
 
@@ -276,7 +267,8 @@ namespace Avalonia.Wayland
                 if (_didResize)
                 {
                     Resized?.Invoke(ClientSize, WindowResizeReason.Application);
-                    ApplyTransparencyLevel(TransparencyLevel);
+                    _wpViewport?.SetDestination(AppliedState.Size.Width, AppliedState.Size.Height);
+                    TryApplyTransparencyLevel(TransparencyLevel);
                     _didResize = false;
                 }
 
@@ -284,34 +276,40 @@ namespace Avalonia.Wayland
             }
         }
 
-        private void ApplyTransparencyLevel(WindowTransparencyLevel transparencyLevel)
+        private bool TryApplyTransparencyLevel(WindowTransparencyLevel transparencyLevel)
         {
-            switch (transparencyLevel)
+            if (transparencyLevel == TransparencyLevel)
+                return false;
+
+            if (transparencyLevel == WindowTransparencyLevel.None)
             {
-                case WindowTransparencyLevel.None:
-                {
-                    _platform.KdeKwinBlurManager?.Unset(WlSurface);
-                    using var region = _platform.WlCompositor.CreateRegion();
-                    region.Add(0, 0, AppliedState.Size.Width, AppliedState.Size.Height);
-                    WlSurface.SetOpaqueRegion(region);
-                    break;
-                }
-                case WindowTransparencyLevel.Transparent:
-                    _platform.KdeKwinBlurManager?.Unset(WlSurface);
-                    WlSurface.SetOpaqueRegion(null);
-                    break;
-                case >= WindowTransparencyLevel.Blur when _platform.KdeKwinBlurManager is not null:
-                {
-                    _blur?.Dispose();
-                    WlSurface.SetOpaqueRegion(null);
-                    using var region = _platform.WlCompositor.CreateRegion();
-                    region.Add(0, 0, AppliedState.Size.Width, AppliedState.Size.Height);
-                    _blur = _platform.KdeKwinBlurManager.Create(WlSurface);
-                    _blur.SetRegion(region);
-                    _blur.Commit();
-                    break;
-                }
+                _platform.KdeKwinBlurManager?.Unset(WlSurface);
+                using var region = _platform.WlCompositor.CreateRegion();
+                region.Add(0, 0, AppliedState.Size.Width, AppliedState.Size.Height);
+                WlSurface.SetOpaqueRegion(region);
+                return true;
             }
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                _platform.KdeKwinBlurManager?.Unset(WlSurface);
+                WlSurface.SetOpaqueRegion(null);
+                return true;
+            }
+
+            if (transparencyLevel == WindowTransparencyLevel.Blur && _platform.KdeKwinBlurManager is not null)
+            {
+                _blur?.Dispose();
+                WlSurface.SetOpaqueRegion(null);
+                using var region = _platform.WlCompositor.CreateRegion();
+                region.Add(0, 0, AppliedState.Size.Width, AppliedState.Size.Height);
+                _blur = _platform.KdeKwinBlurManager.Create(WlSurface);
+                _blur.SetRegion(region);
+                _blur.Commit();
+                return true;
+            }
+
+            return false;
         }
     }
 }

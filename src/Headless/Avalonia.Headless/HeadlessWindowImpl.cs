@@ -336,6 +336,11 @@ namespace Avalonia.Headless
             
         }
 
+        public void SetIsLightDismissEnabledHint(bool enabled)
+        {
+            
+        }
+
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
             

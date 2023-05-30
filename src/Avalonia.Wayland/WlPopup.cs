@@ -44,9 +44,8 @@ namespace Avalonia.Wayland
 
         public override void Hide()
         {
-            base.Hide();
-            _xdgPopup?.Dispose();
-            _xdgPopup = null;
+            //_xdgPopup?.Dispose();
+            //_xdgPopup = null;
         }
 
         public void Update(PopupPositionerParameters parameters)
@@ -63,10 +62,10 @@ namespace Avalonia.Wayland
 
         public void OnConfigure(XdgPopup eventSender, int x, int y, int width, int height)
         {
+            PendingState.Position = new PixelPoint(x, y);
             var size = new PixelSize(width, height);
             if (size != default)
                 PendingState.Size = size;
-            Position = new PixelPoint(x, y);
         }
 
         public void OnPopupDone(XdgPopup eventSender)
@@ -77,7 +76,7 @@ namespace Avalonia.Wayland
             Input?.Invoke(args);
         }
 
-        public void OnRepositioned(XdgPopup eventSender, uint token) => PositionChanged?.Invoke(Position);
+        public void OnRepositioned(XdgPopup eventSender, uint token) => PositionChanged?.Invoke(AppliedState.Position);
 
         public override object? TryGetFeature(Type featureType)
         {

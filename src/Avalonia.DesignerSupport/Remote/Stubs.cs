@@ -183,6 +183,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetIsLightDismissEnabledHint(bool enabled)
+        {
+        }
+
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public bool IsClientAreaExtendedToDecorations { get; }

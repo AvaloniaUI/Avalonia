@@ -17,6 +17,7 @@
           <VisualLayerManager>
             <VisualLayerManager.ChromeOverlayLayer>
               <TitleBar />
+              <ResizeBorders />
             </VisualLayerManager.ChromeOverlayLayer>
             <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"

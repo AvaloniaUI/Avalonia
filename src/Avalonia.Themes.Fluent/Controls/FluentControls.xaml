@@ -51,6 +51,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ResizeBorders.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />

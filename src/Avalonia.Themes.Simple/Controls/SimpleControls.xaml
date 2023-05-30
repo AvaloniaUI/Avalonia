@@ -23,6 +23,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Carousel.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CaptionButtons.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TitleBar.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ResizeBorders.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TextBox.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/AutoCompleteBox.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DataValidationErrors.xaml" />

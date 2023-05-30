@@ -12,7 +12,6 @@ using Avalonia.Wayland;
 using NWayland.Protocols.FractionalScaleV1;
 using NWayland.Protocols.Plasma.Blur;
 using NWayland.Protocols.PointerGesturesUnstableV1;
-using NWayland.Protocols.TextInputUnstableV3;
 using NWayland.Protocols.Viewporter;
 using NWayland.Protocols.Wayland;
 using NWayland.Protocols.XdgActivationV1;
@@ -42,7 +41,6 @@ namespace Avalonia.Wayland
             WpFractionalScaleManager = WlRegistryHandler.Bind(WpFractionalScaleManagerV1.BindFactory, WpFractionalScaleManagerV1.InterfaceName, WpFractionalScaleManagerV1.InterfaceVersion);
             ZxdgDecorationManager = WlRegistryHandler.Bind(ZxdgDecorationManagerV1.BindFactory, ZxdgDecorationManagerV1.InterfaceName, ZxdgDecorationManagerV1.InterfaceVersion);
             ZxdgExporter = WlRegistryHandler.Bind(ZxdgExporterV2.BindFactory, ZxdgExporterV2.InterfaceName, ZxdgExporterV2.InterfaceVersion);
-            ZwpTextInput = WlRegistryHandler.Bind(ZwpTextInputManagerV3.BindFactory, ZwpTextInputManagerV3.InterfaceName, ZwpTextInputManagerV3.InterfaceVersion);
             ZwpPointerGestures = WlRegistryHandler.Bind(ZwpPointerGesturesV1.BindFactory, ZwpPointerGesturesV1.InterfaceName, ZwpPointerGesturesV1.InterfaceVersion);
             KdeKwinBlurManager = WlRegistryHandler.Bind(OrgKdeKwinBlurManager.BindFactory, OrgKdeKwinBlurManager.InterfaceName, OrgKdeKwinBlurManager.InterfaceVersion);
 
@@ -53,7 +51,6 @@ namespace Avalonia.Wayland
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new WlPlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<ICursorFactory>().ToConstant(new WlCursorFactory(this))
@@ -65,9 +62,6 @@ namespace Avalonia.Wayland
 
             WlScreens = new WlScreens(this);
             WlInputDevice = new WlInputDevice(this);
-
-            if (ZwpTextInput is not null)
-                WlTextInputMethod = new WlTextInputMethod(this);
 
             WlDisplay.Roundtrip();
 
@@ -91,7 +85,7 @@ namespace Avalonia.Wayland
                     AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(platformGraphics);
             }
 
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
+            Compositor = new Compositor(platformGraphics);
         }
 
         internal WaylandPlatformOptions Options { get; }
@@ -122,8 +116,6 @@ namespace Avalonia.Wayland
 
         internal ZxdgExporterV2? ZxdgExporter { get; }
 
-        internal ZwpTextInputManagerV3? ZwpTextInput { get; }
-
         internal ZwpPointerGesturesV1? ZwpPointerGestures { get; }
 
         internal OrgKdeKwinBlurManager? KdeKwinBlurManager { get; }
@@ -131,8 +123,6 @@ namespace Avalonia.Wayland
         internal WlScreens WlScreens { get; }
 
         internal WlInputDevice WlInputDevice { get; }
-
-        internal WlTextInputMethod? WlTextInputMethod { get; }
 
         public IWindowImpl CreateWindow() => new WlToplevel(this);
 
@@ -151,11 +141,9 @@ namespace Avalonia.Wayland
 
         public void Dispose()
         {
-            WlTextInputMethod?.Dispose();
             KdeKwinBlurManager?.Dispose();
             ZxdgDecorationManager?.Dispose();
             ZxdgExporter?.Dispose();
-            ZwpTextInput?.Dispose();
             ZwpPointerGestures?.Dispose();
             WlDataDeviceManager.Dispose();
             WlInputDevice.Dispose();
