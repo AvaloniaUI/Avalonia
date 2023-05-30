@@ -61,12 +61,19 @@ namespace Avalonia.Headless.Vnc
 
             session.KeyChanged += (_, args) =>
             {
+                bool isModifierKey = CheckKeyIsInputModifier(args);
+                if (isModifierKey)
+                    return;
+
                 Key? key = TranslateKey(args.Keysym);
                 if (key == null)
                     return;
 
-                //we only care about text input on key up
-                string? inputText = args.Pressed ? null : KeyToText(args.Keysym);
+                //we only care about text input on key up if not using Ctrl or Alt
+                string? inputText = args.Pressed || _keyState.HasFlag(RawInputModifiers.Control) || _keyState.HasFlag(RawInputModifiers.Alt)
+                    ? null 
+                    : KeyToText(args.Keysym);
+
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (args.Pressed)
