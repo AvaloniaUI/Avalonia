@@ -74,7 +74,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = (ContentPresenter)button.Presenter;
+                var presenter = button.Presenter;
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -108,7 +108,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = (ContentPresenter)button.Presenter;
+                var presenter = button.Presenter;
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -139,7 +139,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = (ContentPresenter)button.Presenter;
+                var presenter = button.Presenter;
                 Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
 
                 var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
@@ -173,7 +173,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = (ContentPresenter)button.Presenter;
+                var presenter = button.Presenter;
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -207,7 +207,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = (ContentPresenter)button.Presenter;
+                var presenter = button.Presenter;
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -238,7 +238,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = (ContentPresenter)button.Presenter;
+                var presenter = button.Presenter;
                 Assert.Equal("Foo", presenter.Content);
 
                 var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);

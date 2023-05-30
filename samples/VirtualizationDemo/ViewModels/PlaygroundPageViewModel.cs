@@ -24,19 +24,19 @@ public class PlaygroundPageViewModel : ViewModelBase
 
     public bool Multiple
     {
-        get => _selectionMode.HasAnyFlag(SelectionMode.Multiple);
+        get => _selectionMode.HasFlag(SelectionMode.Multiple);
         set => SetSelectionMode(SelectionMode.Multiple, value);
     }
 
     public bool Toggle
     {
-        get => _selectionMode.HasAnyFlag(SelectionMode.Toggle);
+        get => _selectionMode.HasFlag(SelectionMode.Toggle);
         set => SetSelectionMode(SelectionMode.Toggle, value);
     }
 
     public bool AlwaysSelected
     {
-        get => _selectionMode.HasAnyFlag(SelectionMode.AlwaysSelected);
+        get => _selectionMode.HasFlag(SelectionMode.AlwaysSelected);
         set => SetSelectionMode(SelectionMode.AlwaysSelected, value);
     }
 

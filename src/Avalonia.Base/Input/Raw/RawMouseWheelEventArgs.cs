@@ -1,6 +1,9 @@
 
+using Avalonia.Metadata;
+
 namespace Avalonia.Input.Raw
 {
+    [PrivateApi]
     public class RawMouseWheelEventArgs : RawPointerEventArgs
     {
         public RawMouseWheelEventArgs(

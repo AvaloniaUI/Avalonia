@@ -1,10 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
 
-public class CompositionDrawingSurface : CompositionSurface
+public class CompositionDrawingSurface : CompositionSurface, IDisposable
 {
     internal new ServerCompositionDrawingSurface Server => (ServerCompositionDrawingSurface)base.Server!;
     internal CompositionDrawingSurface(Compositor compositor) : base(compositor, new ServerCompositionDrawingSurface(compositor.Server))
@@ -57,4 +58,6 @@ public class CompositionDrawingSurface : CompositionSurface
     {
         Dispatcher.UIThread.Post(Dispose);
     }
+
+    public new void Dispose() => base.Dispose();
 }

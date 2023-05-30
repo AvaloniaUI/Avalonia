@@ -387,13 +387,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
-                window.LayoutManager.ExecuteLayoutPass();
+                window.UpdateLayout();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
-                window.LayoutManager.ExecuteLayoutPass();
+                window.UpdateLayout();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }
@@ -402,6 +402,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Style_Can_Use_NthChild_Selector_With_ItemsRepeater()
         {
+            GC.KeepAlive(typeof(ItemsRepeater));
+            
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = @"

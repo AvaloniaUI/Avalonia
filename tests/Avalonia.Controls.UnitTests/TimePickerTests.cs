@@ -2,6 +2,7 @@
 using System.Linq;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Headless;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -99,10 +100,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            fontManagerImpl: new MockFontManagerImpl(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl(),
-            renderInterface: new MockPlatformRenderInterface());
+            textShaperImpl: new HeadlessTextShaperStub(),
+            renderInterface: new HeadlessPlatformRenderInterface());
 
         private static IControlTemplate CreateTemplate()
         {

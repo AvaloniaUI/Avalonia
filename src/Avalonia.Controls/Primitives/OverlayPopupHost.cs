@@ -29,6 +29,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
         public void SetChild(Control? control)
         {
             Content = control;
@@ -51,7 +52,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        protected internal override Interactive? InteractiveParent => Parent as Interactive;
+        internal override Interactive? InteractiveParent => Parent as Interactive;
 
         /// <inheritdoc />
         public void Dispose() => Hide();
@@ -123,7 +124,7 @@ namespace Avalonia.Controls.Primitives
             {
                 OverlayLayer.SetLeft(this, _lastRequestedPosition.X);
                 OverlayLayer.SetTop(this, _lastRequestedPosition.Y);
-            }, DispatcherPriority.Layout);
+            }, DispatcherPriority.Render);
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;

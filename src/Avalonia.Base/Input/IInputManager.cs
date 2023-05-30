@@ -8,7 +8,7 @@ namespace Avalonia.Input
     /// Receives input from the windowing subsystem and dispatches it to interested parties
     /// for processing.
     /// </summary>
-    [NotClientImplementable]
+    [NotClientImplementable, PrivateApi]
     public interface IInputManager
     {
         /// <summary>

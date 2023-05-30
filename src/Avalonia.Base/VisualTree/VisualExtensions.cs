@@ -305,7 +305,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.Renderer.HitTestFirst(rootPoint.Value, visual, filter);
+                return root.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
             }
 
             return null;
@@ -354,7 +354,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.Renderer.HitTest(rootPoint.Value, visual, filter);
+                return root.HitTester.HitTest(rootPoint.Value, visual, filter);
             }
 
             return Enumerable.Empty<Visual>();

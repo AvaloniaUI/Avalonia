@@ -21,8 +21,9 @@ namespace Avalonia.Controls
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
-        public const string pcDropdownOpen = ":dropdownopen";
-        public const string pcPressed = ":pressed";
+        internal const string pcDropdownOpen = ":dropdownopen";
+        internal const string pcPressed = ":pressed";
+
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
@@ -164,7 +165,7 @@ namespace Avalonia.Controls
             UpdateSelectionBoxItem(SelectedItem);
         }
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
             UpdateFlowDirection();
@@ -230,8 +231,7 @@ namespace Avalonia.Controls
                 var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
                 {
-                    FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
-                    e.Handled = true;
+                    e.Handled = firstChild.Focus(NavigationMethod.Directional);
                 }
             }
         }
@@ -360,19 +360,6 @@ namespace Avalonia.Controls
             TryFocusSelectedItem();
 
             _subscriptionsOnOpen.Clear();
-
-            var toplevel = TopLevel.GetTopLevel(this);
-            if (toplevel != null)
-            {
-                toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
-                {
-                    //eat wheel scroll event outside dropdown popup while it's open
-                    if (IsDropDownOpen && (ev.Source as Visual)?.GetVisualRoot() == toplevel)
-                    {
-                        ev.Handled = true;
-                    }
-                }, Interactivity.RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
-            }
 
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
 

@@ -136,7 +136,7 @@ namespace IntegrationTestApp
                 Name = "TransparentWindow",
                 SystemDecorations = SystemDecorations.None,
                 Background = Brushes.Transparent,
-                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Width = 200,
                 Height = 200,
@@ -202,7 +202,7 @@ namespace IntegrationTestApp
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
 
-            foreach (var window in lifetime.Windows)
+            foreach (var window in lifetime.Windows.ToArray())
             {
                 window.Activate();
             }
@@ -212,7 +212,7 @@ namespace IntegrationTestApp
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
 
-            foreach (var window in lifetime.Windows)
+            foreach (var window in lifetime.Windows.ToArray())
             {
                 window.Show();
                 if (window.WindowState == WindowState.Minimized)

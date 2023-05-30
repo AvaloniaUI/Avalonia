@@ -10,7 +10,7 @@ namespace Avalonia.Media.Imaging
     /// <summary>
     /// Holds a bitmap image.
     /// </summary>
-    public class Bitmap : IBitmap
+    public class Bitmap : IBitmap, IImageBrushSource
     {
         private bool _isTranscoded;
         /// <summary>
@@ -72,7 +72,7 @@ namespace Avalonia.Media.Imaging
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
         /// <param name="impl">A platform-specific bitmap implementation.</param>
-        public Bitmap(IRef<IBitmapImpl> impl)
+        internal Bitmap(IRef<IBitmapImpl> impl)
         {
             PlatformImpl = impl.Clone();
         }
@@ -139,7 +139,9 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        public IRef<IBitmapImpl> PlatformImpl { get; }
+        internal IRef<IBitmapImpl> PlatformImpl { get; }
+
+        IRef<IBitmapImpl> IBitmap.PlatformImpl => PlatformImpl;
 
         /// <summary>
         /// Saves the bitmap to a file.
@@ -171,7 +173,7 @@ namespace Avalonia.Media.Imaging
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
 
-        protected internal unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
+        private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
             ILockedFramebuffer fb)
         {
             if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))
@@ -237,5 +239,7 @@ namespace Avalonia.Media.Imaging
         {
             return AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
+
+        IRef<IBitmapImpl> IImageBrushSource.Bitmap => PlatformImpl;
     }
 }

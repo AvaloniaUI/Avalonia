@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -34,10 +35,13 @@ namespace Avalonia.Controls.Embedding.Offscreen
             public void TriggerTick() => Tick?.Invoke(St.Elapsed);
         }
 
+        public Compositor Compositor { get; }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, new Compositor(new RenderLoop(_manualRenderTimer, Dispatcher.UIThread), null),
-                () => Surfaces);
+        public OffscreenTopLevelImplBase()
+        {
+            Compositor = new Compositor(new RenderLoop(_manualRenderTimer), null, false,
+                MediaContext.Instance, false);
+        }
 
         public abstract IEnumerable<object> Surfaces { get; }
 
@@ -89,9 +93,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action? LostFocus { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public IPopupImpl? CreatePopup() => null;
         

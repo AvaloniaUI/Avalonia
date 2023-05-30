@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -10,6 +11,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Manages focus for the application.
     /// </summary>
+    [PrivateApi]
     public class FocusManager : IFocusManager
     {
         /// <summary>
@@ -29,15 +31,12 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        /// <summary>
-        /// Gets the instance of the <see cref="IFocusManager"/>.
-        /// </summary>
-        public static IFocusManager? Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
+        private IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        public IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
+        public IInputElement? GetFocusedElement() => Current;
 
         /// <summary>
         /// Gets the current focus scope.
@@ -54,7 +53,7 @@ namespace Avalonia.Input
         /// <param name="control">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
         /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
-        public void Focus(
+        public bool Focus(
             IInputElement? control, 
             NavigationMethod method = NavigationMethod.Unspecified,
             KeyModifiers keyModifiers = KeyModifiers.None)
@@ -67,7 +66,7 @@ namespace Avalonia.Input
                 if (scope != null)
                 {
                     Scope = scope;
-                    SetFocusedElement(scope, control, method, keyModifiers);
+                    return SetFocusedElement(scope, control, method, keyModifiers);
                 }
             }
             else if (Current != null)
@@ -79,28 +78,29 @@ namespace Avalonia.Input
                         _focusScopes.TryGetValue(scope, out var element) &&
                         element != null)
                     {
-                        Focus(element, method);
-                        return;
+                        return Focus(element, method);
                     }
                 }
 
                 if (Scope is object)
                 {
                     // Couldn't find a focus scope, clear focus.
-                    SetFocusedElement(Scope, null);
+                    return SetFocusedElement(Scope, null);
                 }
             }
+
+            return false;
         }
 
-        public IInputElement? GetFocusedElement(IInputElement e)
+        public void ClearFocus()
         {
-            if (e is IFocusScope scope)
-            {
-                _focusScopes.TryGetValue(scope, out var result);
-                return result;
-            }
+            Focus(null);
+        }
 
-            return null;
+        public IInputElement? GetFocusedElement(IFocusScope scope)
+        {
+            _focusScopes.TryGetValue(scope, out var result);
+            return result;
         }
 
         /// <summary>
@@ -114,13 +114,18 @@ namespace Avalonia.Input
         /// If the specified scope is the current <see cref="Scope"/> then the keyboard focus
         /// will change.
         /// </remarks>
-        public void SetFocusedElement(
+        public bool SetFocusedElement(
             IFocusScope scope,
             IInputElement? element,
             NavigationMethod method = NavigationMethod.Unspecified,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
+
+            if (element is not null && !CanFocus(element))
+            {
+                return false;
+            }
 
             if (_focusScopes.TryGetValue(scope, out var existingElement))
             {
@@ -139,6 +144,8 @@ namespace Avalonia.Input
             {
                 KeyboardDevice.Instance?.SetFocusedElement(element, method, keyModifiers);
             }
+
+            return true;
         }
 
         /// <summary>
@@ -180,6 +187,20 @@ namespace Avalonia.Input
 
         public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
 
+        /// <summary>
+        /// Public API customers should use TopLevel.GetTopLevel(control).FocusManager.
+        /// But since we have split projects, we can't access TopLevel from Avalonia.Base.
+        /// That's why we need this helper method instead.
+        /// </summary>
+        internal static FocusManager? GetFocusManager(IInputElement? element)
+        {
+            // Element might not be a visual, and not attached to the root.
+            // But IFocusManager is always expected to be a FocusManager. 
+            return (FocusManager?)((element as Visual)?.VisualRoot as IInputRoot)?.FocusManager
+                   // In our unit tests some elements might not have a root. Remove when we migrate to headless tests.
+                ?? (FocusManager?)AvaloniaLocator.Current.GetService<IFocusManager>();
+        }
+        
         /// <summary>
         /// Checks if the specified element can be focused.
         /// </summary>
@@ -232,7 +253,7 @@ namespace Avalonia.Input
                 {
                     if (element is IInputElement inputElement && CanFocus(inputElement))
                     {
-                        Instance?.Focus(inputElement, NavigationMethod.Pointer, ev.KeyModifiers);
+                        inputElement.Focus(NavigationMethod.Pointer, ev.KeyModifiers);
 
                         break;
                     }
@@ -242,6 +263,6 @@ namespace Avalonia.Input
             }
         }
 
-        private static bool IsVisible(IInputElement e) => (e as Visual)?.IsVisible ?? true;
+        private static bool IsVisible(IInputElement e) => (e as Visual)?.IsEffectivelyVisible ?? true;
     }
 }

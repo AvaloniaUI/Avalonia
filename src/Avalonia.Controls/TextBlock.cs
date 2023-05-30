@@ -144,8 +144,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TextBlock, InlineCollection?>(
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
-        protected TextLayout? _textLayout;
-        protected Size _constraint;
+        private TextLayout? _textLayout;
+        private Size _constraint;
         private IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -555,7 +555,7 @@ namespace Avalonia.Controls
         }
 
         // Workaround to seal Render method, we need to make so because AccessText was overriding Render method which is sealed now.
-        internal protected virtual void RenderCore(DrawingContext context)
+        private protected virtual void RenderCore(DrawingContext context)
         {
             var background = Background;
 
@@ -567,7 +567,7 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
             var top = padding.Top;
-            var textHeight = TextLayout.Bounds.Height;
+            var textHeight = TextLayout.Height;
 
             if (Bounds.Height < textHeight)
             {
@@ -588,7 +588,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin);
+            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
         }
 
         private bool _clearTextInternal;
@@ -639,8 +639,7 @@ namespace Avalonia.Controls
                 TextTrimming,
                 _constraint.Width,
                 _constraint.Height,
-                maxLines: MaxLines,
-                lineHeight: LineHeight);
+                MaxLines);
         }
 
         /// <summary>
@@ -702,7 +701,9 @@ namespace Avalonia.Controls
                 }
             }
 
-            return TextLayout.Bounds.Size.Inflate(padding);
+            var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+
+            return new Size(width, TextLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -827,7 +828,7 @@ namespace Avalonia.Controls
             InvalidateTextLayout();
         }
 
-        protected readonly record struct SimpleTextSource : ITextSource
+        private readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
             private readonly TextRunProperties _defaultProperties;

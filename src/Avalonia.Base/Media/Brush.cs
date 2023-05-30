@@ -4,6 +4,10 @@ using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
 using Avalonia.Reactive;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
@@ -11,7 +15,7 @@ namespace Avalonia.Media
     /// Describes how an area is painted.
     /// </summary>
     [TypeConverter(typeof(BrushConverter))]
-    public abstract class Brush : Animatable, IBrush
+    public abstract class Brush : Animatable, IBrush, ICompositionRenderResource<IBrush>, ICompositorSerializable
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
@@ -30,14 +34,10 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<RelativePoint> TransformOriginProperty =
             AvaloniaProperty.Register<Brush, RelativePoint>(nameof(TransformOrigin));
-
-        /// <inheritdoc/>
-        public event EventHandler? Invalidated;
-
+        
         static Brush()
         {
             Animation.Animation.RegisterAnimator<BaseBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
-            AffectsRender<Brush>(OpacityProperty, TransformProperty);
         }
 
         /// <summary>
@@ -92,31 +92,57 @@ namespace Avalonia.Media
 
             throw new FormatException($"Invalid brush string: '{s}'.");
         }
-
-        /// <summary>
-        /// Marks a property as affecting the brush's visual representation.
-        /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// After a call to this method in a brush's static constructor, any change to the
-        /// property will cause the <see cref="Invalidated"/> event to be raised on the brush.
-        /// </remarks>
-        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
-            where T : Brush
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
-                static e => (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty));
+            if (change.Property == TransformProperty) 
+                _resource.ProcessPropertyChangeNotification(change);
 
-            foreach (var property in properties)
-            {
-                property.Changed.Subscribe(invalidateObserver);
-            }
+            RegisterForSerialization();
+            
+            base.OnPropertyChanged(change);
+        }
+        
+        private protected void RegisterForSerialization() =>
+            _resource.RegisterForInvalidationOnAllCompositors(this);
+
+        private CompositorResourceHolder<ServerCompositionSimpleBrush> _resource;
+
+        IBrush ICompositionRenderResource<IBrush>.GetForCompositor(Compositor c) => _resource.GetForCompositor(c);
+
+        internal abstract Func<Compositor, ServerCompositionSimpleBrush> Factory { get; }
+
+        void ICompositionRenderResource.AddRefOnCompositor(Compositor c)
+        {
+            if (_resource.CreateOrAddRef(c, this, out _, Factory))
+                OnReferencedFromCompositor(c);
         }
 
-        /// <summary>
-        /// Raises the <see cref="Invalidated"/> event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
+        private protected virtual void OnReferencedFromCompositor(Compositor c)
+        {
+            if (Transform is ICompositionRenderResource<ITransform> resource)
+                resource.AddRefOnCompositor(c);
+        }
+
+        void ICompositionRenderResource.ReleaseOnCompositor(Compositor c)
+        {
+            if(_resource.Release(c))
+                OnUnreferencedFromCompositor(c);
+        }
+        
+        protected virtual void OnUnreferencedFromCompositor(Compositor c)
+        {
+            if (Transform is ICompositionRenderResource<ITransform> resource)
+                resource.ReleaseOnCompositor(c);
+        }
+
+        SimpleServerObject? ICompositorSerializable.TryGetServer(Compositor c) => _resource.TryGetForCompositor(c);
+
+        private protected virtual void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            ServerCompositionSimpleBrush.SerializeAllChanges(writer, Opacity, TransformOrigin, Transform.GetServer(c));
+        }
+        
+        void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer) => SerializeChanges(c, writer);
     }
 }

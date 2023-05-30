@@ -5,7 +5,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="byte"/> properties.
     /// </summary>
-    public class ByteAnimator : Animator<byte>
+    internal class ByteAnimator : Animator<byte>
     {
         const double maxVal = (double)byte.MaxValue;
 

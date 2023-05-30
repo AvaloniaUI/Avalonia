@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -47,9 +48,9 @@
                     Data="M2048 2048v-819h-205v469l-1493 -1493h469v-205h-819v819h205v-469l1493 1493h-469v205h819z" />
             </Viewbox>
           </Button>
-          <Button x:Name="PART_MinimiseButton"
+          <Button x:Name="PART_MinimizeButton"
                   Theme="{StaticResource FluentCaptionButton}"
-                  AutomationProperties.Name="Minimise">
+                  AutomationProperties.Name="Minimize">
             <Viewbox Width="11" Margin="2">
               <Path Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"
@@ -58,7 +59,7 @@
           </Button>
           <Button x:Name="PART_RestoreButton"
                   Theme="{StaticResource FluentCaptionButton}"
-                  AutomationProperties.Name="Maximise">
+                  AutomationProperties.Name="Maximize">
             <Viewbox Width="11" Margin="2">
               <Viewbox.RenderTransform>
                 <RotateTransform Angle="-90" />
@@ -93,7 +94,7 @@
     <Style Selector="^:fullscreen /template/ Button#PART_RestoreButton">
       <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="^:fullscreen /template/ Button#PART_MinimiseButton">
+    <Style Selector="^:fullscreen /template/ Button#PART_MinimizeButton">
       <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="^ /template/ Button#PART_RestoreButton:disabled">

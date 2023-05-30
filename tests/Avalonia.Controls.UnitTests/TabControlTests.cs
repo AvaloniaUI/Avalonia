@@ -5,8 +5,10 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -270,28 +272,28 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            ((ContentPresenter)target.ContentPart).UpdateChild();
-            dataContext = ((Control)target.ContentPart).DataContext;
+            target.ContentPart.UpdateChild();
+            dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
 
@@ -365,12 +367,33 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
 
             ApplyTemplate(target);
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart.UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
             Assert.Equal("bar", content.Tag);
             Assert.Same(target, content.GetLogicalParent());
             Assert.Single(target.GetLogicalChildren(), content);
+        }
+
+        [Fact]
+        public void SelectedContentTemplate_Updates_After_New_ContentTemplate()
+        {
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                ItemsSource = new[] { "Foo" },
+            };
+            var root = new TestRoot(target);
+
+            ApplyTemplate(target);
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+
+            Assert.Equal(null, Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
+
+            target.ContentTemplate = new FuncDataTemplate<string>((x, _) =>
+                    new TextBlock { Tag = "bar", Text = x });
+
+            Assert.Equal("bar", Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
         }
 
         [Fact]
@@ -413,6 +436,117 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Tab_Navigation_Should_Move_To_First_TabItem_When_No_Anchor_Element_Selected()
+        {
+            var services = TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice());
+            using var app = UnitTestApplication.Start(services);
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    new TabItem { Header = "foo" },
+                    new TabItem { Header = "bar" },
+                    new TabItem { Header = "baz" },
+                }
+            };
+
+            var button = new Button
+            {
+                Content = "Button",
+                [DockPanel.DockProperty] = Dock.Top,
+            };
+
+            var root = new TestRoot
+            {
+                Child = new DockPanel
+                {
+                    Children =
+                    {
+                        button,
+                        target,
+                    }
+                }
+            };
+
+            var navigation = new KeyboardNavigationHandler();
+            navigation.SetOwner(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            RaiseKeyEvent(button, Key.Tab);
+
+            var item = target.ContainerFromIndex(0);
+            Assert.Same(item, root.FocusManager.GetFocusedElement());
+        }
+
+        [Fact]
+        public void Tab_Navigation_Should_Move_To_Anchor_TabItem()
+        {
+            var services = TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice());
+            using var app = UnitTestApplication.Start(services);
+
+            var target = new TestTabControl
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    new TabItem { Header = "foo" },
+                    new TabItem { Header = "bar" },
+                    new TabItem { Header = "baz" },
+                }
+            };
+
+            var button = new Button
+            {
+                Content = "Button",
+                [DockPanel.DockProperty] = Dock.Top,
+            };
+
+            var root = new TestRoot
+            {
+                Width = 1000,
+                Height = 1000,
+                Child = new DockPanel
+                {
+                    Children =
+                    {
+                        button,
+                        target,
+                    }
+                }
+            };
+
+            var navigation = new KeyboardNavigationHandler();
+            navigation.SetOwner(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            button.Focus();
+            target.Selection.AnchorIndex = 1;
+            RaiseKeyEvent(button, Key.Tab);
+
+            var item = target.ContainerFromIndex(1);
+            Assert.Same(item, root.FocusManager.GetFocusedElement());
+
+            RaiseKeyEvent(item, Key.Tab);
+
+            Assert.Same(button, root.FocusManager.GetFocusedElement());
+
+            target.Selection.AnchorIndex = 2;
+            RaiseKeyEvent(button, Key.Tab);
+
+            item = target.ContainerFromIndex(2);
+            Assert.Same(item, root.FocusManager.GetFocusedElement());
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -452,6 +586,16 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(target.DesiredSize));
         }
 
+        private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
+        }
+
         private static void ApplyTemplate(TabControl target)
         {
             target.ApplyTemplate();
@@ -464,7 +608,7 @@ namespace Avalonia.Controls.UnitTests
 
                 tabItem.ApplyTemplate();
 
-                ((ContentPresenter)tabItem.Presenter).UpdateChild();
+                tabItem.Presenter.UpdateChild();
             }
 
             target.ContentPart.ApplyTemplate();
@@ -478,6 +622,12 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public string Value { get; }
+        }
+
+        private class TestTabControl : TabControl
+        {
+            protected override Type StyleKeyOverride => typeof(TabControl);
+            public new ISelectionModel Selection => base.Selection;
         }
     }
 }

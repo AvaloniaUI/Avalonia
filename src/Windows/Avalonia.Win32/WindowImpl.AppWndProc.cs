@@ -594,7 +594,6 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_PAINT:
                     {
                         using (NonPumpingSyncContext.Use(NonPumpingWaitHelperImpl.Instance))
-                        using (_rendererLock.Lock())
                         {
                             if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                             {
@@ -616,12 +615,6 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_SIZE:
                     {
-                        using (NonPumpingSyncContext.Use(NonPumpingWaitHelperImpl.Instance))
-                        using (_rendererLock.Lock())
-                        {
-                            // Do nothing here, just block until the pending frame render is completed on the render thread
-                        }
-
                         var size = (SizeCommand)wParam;
 
                         if (Resized != null &&
@@ -837,11 +830,8 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
                 }
             }
-
-            using (_rendererLock.Lock())
-            {
-                return DefWindowProc(hWnd, msg, wParam, lParam);
-            }
+            
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         private Lazy<IReadOnlyList<RawPointerPoint>?>? CreateLazyIntermediatePoints(POINTER_INFO info)

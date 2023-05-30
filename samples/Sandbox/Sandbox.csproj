@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
+<!--    <AvaloniaXamlIlDebuggerLaunch>true</AvaloniaXamlIlDebuggerLaunch>-->
   </PropertyGroup>
 
   <ItemGroup>

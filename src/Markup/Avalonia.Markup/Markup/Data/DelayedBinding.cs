@@ -18,7 +18,7 @@ namespace Avalonia.Markup.Data
     /// is applied to the property before the properties on the `Binding` object are set. Looking 
     /// at WPF it uses a similar mechanism for bindings that come from XAML.
     /// </remarks>
-    public static class DelayedBinding
+    internal static class DelayedBinding
     {
         private static readonly ConditionalWeakTable<StyledElement, List<Entry>> _entries = new();
 

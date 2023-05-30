@@ -34,8 +34,8 @@ namespace Avalonia.Controls
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public class Button : ContentControl, ICommandSource, IClickableControl
     {
-        protected const string pcPressed    = ":pressed";
-        protected const string pcFlyoutOpen = ":flyout-open";
+        private const string pcPressed    = ":pressed";
+        private const string pcFlyoutOpen = ":flyout-open";
 
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.

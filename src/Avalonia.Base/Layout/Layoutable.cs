@@ -206,6 +206,15 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Executes a layout pass.
+        /// </summary>
+        /// <remarks>
+        /// You should not usually need to call this method explictly, the layout manager will
+        /// schedule layout passes itself.
+        /// </remarks>
+        public void UpdateLayout() => (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager?.ExecuteLayoutPass();
+
+        /// <summary>
         /// Gets or sets the width of the element.
         /// </summary>
         public double Width

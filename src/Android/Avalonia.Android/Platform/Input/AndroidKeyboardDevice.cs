@@ -5,8 +5,9 @@ using Avalonia.Input;
 
 namespace Avalonia.Android.Platform.Input
 {
-    internal class AndroidKeyboardDevice : KeyboardDevice, IKeyboardDevice {
-    private static readonly Dictionary<Keycode, Key> KeyDic = new Dictionary<Keycode, Key>
+    internal class AndroidKeyboardDevice : KeyboardDevice, IKeyboardDevice
+    {
+        private static readonly Dictionary<Keycode, Key> KeyDic = new Dictionary<Keycode, Key>
      {
          //   { Keycode.Cancel?, Key.Cancel },
             { Keycode.Del, Key.Back },
@@ -15,7 +16,7 @@ namespace Avalonia.Android.Platform.Input
             { Keycode.Clear, Key.Clear },
             { Keycode.Enter, Key.Return },
             { Keycode.MediaPause, Key.Pause },
-            //{ Keycode.?, Key.CapsLock }
+            { Keycode.CapsLock, Key.CapsLock },
             //{ Keycode.?, Key.HangulMode }
             //{ Keycode.?, Key.JunjaMode }
             //{ Keycode.?, Key.FinalMode }
@@ -28,8 +29,8 @@ namespace Avalonia.Android.Platform.Input
             { Keycode.Space, Key.Space },
             { Keycode.PageUp, Key.Prior },
             { Keycode.PageDown, Key.PageDown },
-           // { Keycode.end?, Key.End },
-            { Keycode.Home, Key.Home },
+            { Keycode.MoveEnd, Key.End },
+            { Keycode.MoveHome, Key.Home },
             { Keycode.DpadLeft, Key.Left },
             { Keycode.DpadUp, Key.Up },
             { Keycode.DpadRight, Key.Right },
@@ -37,20 +38,20 @@ namespace Avalonia.Android.Platform.Input
            // { Keycode.ButtonSelect?, Key.Select },
            // { Keycode.print?, Key.Print },
             //{ Keycode.execute?, Key.Execute },
-           // { Keycode.snap, Key.Snapshot }
+            //{ Keycode.snap?, Key.Snapshot }
             { Keycode.Insert, Key.Insert },
             { Keycode.ForwardDel, Key.Delete },
-            //{ Keycode.help, Key.Help },
-            //{ Keycode.?, Key.D0 }
-            //{ Keycode.?, Key.D1 }
-            //{ Keycode.?, Key.D2 }
-            //{ Keycode.?, Key.D3 }
-            //{ Keycode.?, Key.D4 }
-            //{ Keycode.?, Key.D5 }
-            //{ Keycode.?, Key.D6 }
-            //{ Keycode.?, Key.D7 }
-            //{ Keycode.?, Key.D8 }
-            //{ Keycode.?, Key.D9 }
+            { Keycode.Help, Key.Help },
+            { Keycode.Num0, Key.D0 },
+            { Keycode.Num1, Key.D1 },
+            { Keycode.Num2, Key.D2 },
+            { Keycode.Num3, Key.D3 },
+            { Keycode.Num4, Key.D4 },
+            { Keycode.Num5, Key.D5 },
+            { Keycode.Num6, Key.D6 },
+            { Keycode.Num7, Key.D7 },
+            { Keycode.Num8, Key.D8 },
+            { Keycode.Num9, Key.D9 },
             { Keycode.A, Key.A },
             { Keycode.B, Key.B },
             { Keycode.C, Key.C },
@@ -106,22 +107,22 @@ namespace Avalonia.Android.Platform.Input
             //{ Keycode.?, Key.LWin }
             //{ Keycode.?, Key.RWin }
             //{ Keycode.?, Key.Apps }
-            //{ Keycode.?, Key.Sleep }
-            //{ Keycode.?, Key.NumPad0 }
-            //{ Keycode.?, Key.NumPad1 }
-            //{ Keycode.?, Key.NumPad2 }
-            //{ Keycode.?, Key.NumPad3 }
-            //{ Keycode.?, Key.NumPad4 }
-            //{ Keycode.?, Key.NumPad5 }
-            //{ Keycode.?, Key.NumPad6 }
-            //{ Keycode.?, Key.NumPad7 }
-            //{ Keycode.?, Key.NumPad8 }
-            //{ Keycode.?, Key.NumPad9 }
+            { Keycode.Sleep, Key.Sleep },
+            { Keycode.Numpad0, Key.NumPad0 },
+            { Keycode.Numpad1, Key.NumPad1 },
+            { Keycode.Numpad2, Key.NumPad2 },
+            { Keycode.Numpad3, Key.NumPad3 },
+            { Keycode.Numpad4, Key.NumPad4 },
+            { Keycode.Numpad5, Key.NumPad5 },
+            { Keycode.Numpad6, Key.NumPad6 },
+            { Keycode.Numpad7, Key.NumPad7 },
+            { Keycode.Numpad8, Key.NumPad8 },
+            { Keycode.Numpad9, Key.NumPad9 },
             { Keycode.NumpadMultiply, Key.Multiply },
             { Keycode.NumpadAdd, Key.Add },
             { Keycode.NumpadComma, Key.Separator },
             { Keycode.NumpadSubtract, Key.Subtract },
-            //{ Keycode.numpaddecimal?, Key.Decimal }
+            { Keycode.NumpadDot, Key.Decimal },
             { Keycode.NumpadDivide, Key.Divide },
             { Keycode.F1, Key.F1 },
             { Keycode.F2, Key.F2 },
@@ -147,14 +148,14 @@ namespace Avalonia.Android.Platform.Input
             //{ Keycode.R2, Key.F22 },
             //{ Keycode.F23, Key.F23 },
             //{ Keycode.R4, Key.F24 },
-           // { Keycode.numpad, Key.NumLock }
+            { Keycode.NumLock, Key.NumLock },
             { Keycode.ScrollLock, Key.Scroll },
             { Keycode.ShiftLeft, Key.LeftShift },
-            //{ Keycode.?, Key.RightShift }
-            //{ Keycode.?, Key.LeftCtrl }
-            //{ Keycode.?, Key.RightCtrl }
-            //{ Keycode.?, Key.LeftAlt }
-            //{ Keycode.?, Key.RightAlt }
+            { Keycode.ShiftRight, Key.RightShift },
+            { Keycode.CtrlLeft, Key.LeftCtrl },
+            { Keycode.CtrlRight, Key.RightCtrl },
+            { Keycode.AltLeft, Key.LeftAlt },
+            { Keycode.AltRight, Key.RightAlt },
             //{ Keycode.?, Key.BrowserBack }
             //{ Keycode.?, Key.BrowserForward }
             //{ Keycode.?, Key.BrowserRefresh }
@@ -163,28 +164,30 @@ namespace Avalonia.Android.Platform.Input
             //{ Keycode.?, Key.BrowserFavorites }
             //{ Keycode.?, Key.BrowserHome }
             //{ Keycode.?, Key.VolumeMute }
-            //{ Keycode.?, Key.VolumeDown }
-            //{ Keycode.?, Key.VolumeUp }
-            //{ Keycode.?, Key.MediaNextTrack }
-            //{ Keycode.?, Key.MediaPreviousTrack }
-            //{ Keycode.?, Key.MediaStop }
-            //{ Keycode.?, Key.MediaPlayPause }
+            { Keycode.VolumeDown, Key.VolumeDown },
+            { Keycode.VolumeUp, Key.VolumeUp },
+            { Keycode.MediaNext, Key.MediaNextTrack },
+            { Keycode.MediaPrevious, Key.MediaPreviousTrack },
+            { Keycode.MediaStop, Key.MediaStop },
+            { Keycode.MediaPlayPause, Key.MediaPlayPause },
             //{ Keycode.?, Key.LaunchMail }
             //{ Keycode.?, Key.SelectMedia }
             //{ Keycode.?, Key.LaunchApplication1 }
             //{ Keycode.?, Key.LaunchApplication2 }
-            //{ Keycode.?, Key.OemSemicolon }
-            //{ Keycode.?, Key.OemPlus }
-            //{ Keycode.?, Key.OemComma }
-            //{ Keycode.?, Key.OemMinus }
-            //{ Keycode.?, Key.OemPeriod }
+            { Keycode.Semicolon, Key.OemSemicolon },
+            { Keycode.Plus, Key.OemPlus },
+            { Keycode.Comma, Key.OemComma },
+            { Keycode.Minus, Key.OemMinus },
+            { Keycode.Period, Key.OemPeriod },
             //{ Keycode.?, Key.Oem2 }
-            //{ Keycode.?, Key.OemTilde }
+            { Keycode.Grave, Key.OemTilde },
             //{ Keycode.?, Key.AbntC1 }
             //{ Keycode.?, Key.AbntC2 }
-            //{ Keycode.?, Key.Oem4 }
             //{ Keycode.?, Key.OemPipe }
-            //{ Keycode.?, Key.OemCloseBrackets }
+            { Keycode.Apostrophe, Key.OemQuotes },
+            { Keycode.Slash, Key.OemQuestion },
+            { Keycode.LeftBracket, Key.OemOpenBrackets },
+            { Keycode.RightBracket, Key.OemCloseBrackets },
             //{ Keycode.?, Key.Oem7 }
             //{ Keycode.?, Key.Oem8 }
             //{ Keycode.?, Key.Oem102 }
@@ -200,17 +203,18 @@ namespace Avalonia.Android.Platform.Input
             //{ Keycode.?, Key.DbeEnterWordRegisterMode }
             //{ Keycode.?, Key.DbeEnterImeConfigureMode }
             //{ Keycode.?, Key.EraseEof }
-            //{ Keycode.?, Key.Play }
+            { Keycode.MediaPlay, Key.Play },
             //{ Keycode.?, Key.Zoom }
             //{ Keycode.?, Key.NoName }
             //{ Keycode.?, Key.DbeEnterDialogConversionMode }
             //{ Keycode.?, Key.OemClear }
             //{ Keycode.?, Key.DeadCharProcessed }
+            { Keycode.Backslash, Key.OemBackslash }
         };
 
-    internal static Key ConvertKey(Keycode key) {
-      Key result;
-      return KeyDic.TryGetValue(key, out result) ? result : Key.None;
+        internal static Key ConvertKey(Keycode key)
+        {
+            return KeyDic.TryGetValue(key, out var result) ? result : Key.None;
+        }
     }
-  }
 }

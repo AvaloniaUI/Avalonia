@@ -1,5 +1,6 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Rendering.SceneGraph;
 using Xunit;
 
@@ -18,8 +19,12 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [InlineData(0, 101, false)]
         public void FillOnly_HitTest(double x, double y, bool inside)
         {
-            var ellipseNode = new EllipseNode(Matrix.Identity, Brushes.Black, null, new Rect(0,0, 100, 100));
-
+            var ellipseNode = new RenderDataEllipseNode()
+            {
+                Rect = new Rect(0, 0, 100, 100),
+                ServerBrush = Brushes.Black
+            };
+            
             var point = new Point(x, y);
 
             Assert.True(ellipseNode.HitTest(point) == inside);
@@ -37,7 +42,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [InlineData(0, 101, false)]
         public void StrokeOnly_HitTest(double x, double y, bool inside)
         {
-            var ellipseNode = new EllipseNode(Matrix.Identity, null, new ImmutablePen(Brushes.Black, 2), new Rect(0, 0, 100, 100));
+            var pen = new ImmutablePen(Brushes.Black, 2);
+            var ellipseNode = new RenderDataEllipseNode()
+            {
+                Rect = new Rect(0, 0, 100, 100),
+                ServerPen =  pen,
+                ClientPen = pen
+            };
 
             var point = new Point(x, y);
 

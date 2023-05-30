@@ -81,12 +81,6 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
         }
 
-        
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new CompositingRenderer(root, Win32Platform.Compositor, () => _surfaces);
-        }
-
         public void Dispose()
         {
             _ttl.Closed?.Invoke();
@@ -128,7 +122,7 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
 
-
+        public Compositor Compositor => Win32Platform.Compositor;
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
         Point ITopLevelImpl.PointToClient(PixelPoint point) => PointFromScreen(point.ToWpfPoint()).ToAvaloniaPoint();
@@ -141,13 +135,13 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
-            if (state.HasAllFlags(ModifierKeys.Windows))
+            if (state.HasFlag(ModifierKeys.Windows))
                 rv |= RawInputModifiers.Meta;
-            if (state.HasAllFlags(ModifierKeys.Alt))
+            if (state.HasFlag(ModifierKeys.Alt))
                 rv |= RawInputModifiers.Alt;
-            if (state.HasAllFlags(ModifierKeys.Control))
+            if (state.HasFlag(ModifierKeys.Control))
                 rv |= RawInputModifiers.Control;
-            if (state.HasAllFlags(ModifierKeys.Shift))
+            if (state.HasFlag(ModifierKeys.Shift))
                 rv |= RawInputModifiers.Shift;
             if (e != null)
             {
@@ -247,9 +241,9 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public IPopupImpl CreatePopup() => null;
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 

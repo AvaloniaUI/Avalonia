@@ -21,20 +21,21 @@ namespace Avalonia.Headless
             private Action? _forceTick; 
             protected override IDisposable StartCore(Action<TimeSpan> tick)
             {
-                bool cancelled = false;
                 var st = Stopwatch.StartNew();
                 _forceTick = () => tick(st.Elapsed);
-                DispatcherTimer.Run(() =>
+
+                var timer = new DispatcherTimer(DispatcherPriority.UiThreadRender)
                 {
-                    if (cancelled)
-                        return false;
-                    tick(st.Elapsed);
-                    return !cancelled;
-                }, TimeSpan.FromSeconds(1.0 / _framesPerSecond), DispatcherPriority.Render);
+                    Interval = TimeSpan.FromSeconds(1.0 / _framesPerSecond),
+                    Tag = "HeadlessRenderTimer"
+                };
+                timer.Tick += (s, e) => tick(st.Elapsed);
+                timer.Start();
+
                 return Disposable.Create(() =>
                 {
                     _forceTick = null;
-                    cancelled = true;
+                    timer.Stop();
                 });
             }
 
@@ -68,11 +69,10 @@ namespace Avalonia.Headless
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
+            Compositor = new Compositor( null);
         }
 
         /// <summary>

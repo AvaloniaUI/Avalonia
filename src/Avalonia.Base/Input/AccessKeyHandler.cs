@@ -9,7 +9,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles access keys for a window.
     /// </summary>
-    public class AccessKeyHandler : IAccessKeyHandler
+    internal class AccessKeyHandler : IAccessKeyHandler
     {
         /// <summary>
         /// Defines the AccessKeyPressed attached event.
@@ -65,14 +65,14 @@ namespace Avalonia.Input
             {
                 if (_mainMenu != null)
                 {
-                    _mainMenu.MenuClosed -= MainMenuClosed;
+                    _mainMenu.Closed -= MainMenuClosed;
                 }
 
                 _mainMenu = value;
 
                 if (_mainMenu != null)
                 {
-                    _mainMenu.MenuClosed += MainMenuClosed;
+                    _mainMenu.Closed += MainMenuClosed;
                 }
             }
         }
@@ -141,9 +141,11 @@ namespace Avalonia.Input
 
                 if (MainMenu == null || !MainMenu.IsOpen)
                 {
+                    var focusManager = FocusManager.GetFocusManager(e.Source as IInputElement);
+                    
                     // TODO: Use FocusScopes to store the current element and restore it when context menu is closed.
                     // Save currently focused input element.
-                    _restoreFocusElement = FocusManager.Instance?.Current;
+                    _restoreFocusElement = focusManager?.GetFocusedElement();
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").

@@ -13,7 +13,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents the sequence of dashes and gaps that will be applied by a <see cref="Pen"/>.
     /// </summary>
-    public class DashStyle : Animatable, IDashStyle, IAffectsRender
+    public sealed class DashStyle : Animatable, IDashStyle
     {
         /// <summary>
         /// Defines the <see cref="Dashes"/> property.
@@ -104,7 +104,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the dash style changes.
         /// </summary>
-        public event EventHandler? Invalidated;
+        internal event EventHandler? Invalidated;
 
         /// <summary>
         /// Returns an immutable clone of the <see cref="DashStyle"/>.

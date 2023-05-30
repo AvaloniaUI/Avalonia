@@ -208,7 +208,7 @@ namespace Avalonia.PropertyStore
             IsOverridenCurrentValue = isOverriddenCurrentValue;
             IsCoercedDefaultValue = isCoercedDefaultValue;
 
-            if (_uncommon?._coerce is { } coerce)
+            if (!isCoercedDefaultValue && _uncommon?._coerce is { } coerce)
                 v = coerce(owner.Owner, value);
 
             if (priority <= Priority)
@@ -262,7 +262,8 @@ namespace Avalonia.PropertyStore
             if (_uncommon?._coerce is { } coerce)
             {
                 v = coerce(owner.Owner, value);
-                bv = coerce(owner.Owner, baseValue);
+                if (priority != basePriority)
+                    bv = coerce(owner.Owner, baseValue);
             }
 
             if (!EqualityComparer<T>.Default.Equals(Value, v))

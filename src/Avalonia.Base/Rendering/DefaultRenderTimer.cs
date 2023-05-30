@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering
@@ -10,6 +11,7 @@ namespace Avalonia.Rendering
     /// This class may be overridden by platform implementations to use a specialized timer
     /// implementation.
     /// </remarks>
+    [PrivateApi]
     public class DefaultRenderTimer : IRenderTimer
     {
         private IRuntimePlatform? _runtime;

@@ -267,7 +267,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.KeyDown(item.Object, e);
 
                 parentItem.Verify(x => x.Close());
-                parentItem.Verify(x => x.Focus());
+                parentItem.Verify(x => x.Focus(It.IsAny<NavigationMethod>(), It.IsAny<KeyModifiers>()));
                 Assert.True(e.Handled);
             }
 
@@ -351,7 +351,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.KeyDown(item.Object, e);
 
                 parentItem.Verify(x => x.Close());
-                parentItem.Verify(x => x.Focus());
+                parentItem.Verify(x => x.Focus(It.IsAny<NavigationMethod>(), It.IsAny<KeyModifiers>()));
                 Assert.True(e.Handled);
             }
 
@@ -554,7 +554,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var contextMenu = Mock.Of<IMenu>(x => x.MoveSelection(NavigationDirection.Down, true) == true);
                 var e = new KeyEventArgs { Key = Key.Down, Source = contextMenu };
 
-                target.Attach(contextMenu);
+                target.AttachCore(contextMenu);
                 target.KeyDown(contextMenu, e);
 
                 Mock.Get(contextMenu).Verify(x => x.MoveSelection(NavigationDirection.Down, true));

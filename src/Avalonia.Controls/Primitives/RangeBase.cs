@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -42,7 +43,23 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 10);
 
         /// <summary>
-        /// Gets or sets the minimum value.
+        /// Defines the <see cref="ValueChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RangeBaseValueChangedEventArgs> ValueChangedEvent =
+            RoutedEvent.Register<RangeBase, RangeBaseValueChangedEventArgs>(
+                nameof(ValueChanged), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Occurs when the <see cref="Value"/> property changes.
+        /// </summary>
+        public event EventHandler<RangeBaseValueChangedEventArgs>? ValueChanged
+        {
+            add => AddHandler(ValueChangedEvent, value);
+            remove => RemoveHandler(ValueChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the minimum possible value.
         /// </summary>
         public double Minimum
         {
@@ -65,7 +82,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the maximum value.
+        /// Gets or sets the maximum possible value.
         /// </summary>
         public double Maximum
         {
@@ -104,18 +121,25 @@ namespace Avalonia.Controls.Primitives
                 : sender.GetValue(ValueProperty);
         }
 
+        /// <summary>
+        /// Gets or sets the small increment value added or subtracted from the <see cref="Value"/>.
+        /// </summary>
         public double SmallChange
         {
             get => GetValue(SmallChangeProperty);
             set => SetValue(SmallChangeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the large increment value added or subtracted from the <see cref="Value"/>.
+        /// </summary>
         public double LargeChange
         {
             get => GetValue(LargeChangeProperty);
             set => SetValue(LargeChangeProperty, value);
         }
 
+        /// <inheritdoc/>
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -124,6 +148,7 @@ namespace Avalonia.Controls.Primitives
             CoerceValue(ValueProperty);
         }
 
+        /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -135,6 +160,14 @@ namespace Avalonia.Controls.Primitives
             else if (change.Property == MaximumProperty)
             {
                 OnMaximumChanged();
+            }
+            else if (change.Property == ValueProperty)
+            {
+                var valueChangedEventArgs = new RangeBaseValueChangedEventArgs(
+                    change.GetOldValue<double>(),
+                    change.GetNewValue<double>(),
+                    ValueChangedEvent);
+                RaiseEvent(valueChangedEventArgs);
             }
         }
 

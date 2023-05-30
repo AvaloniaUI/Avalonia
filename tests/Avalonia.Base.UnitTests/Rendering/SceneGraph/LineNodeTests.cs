@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Rendering.SceneGraph;
 using Xunit;
 
@@ -7,11 +8,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
     public class LineNodeTests
     {
+        static RenderDataLineNode LineNode(IPen pen, Point p1, Point p2) => new RenderDataLineNode
+        {
+            P1 = p1,
+            P2 = p2,
+            ServerPen = pen,
+            ClientPen = pen
+        };
+        
         [Fact]
         public void HitTest_Should_Be_True()
         {
-            var lineNode = new LineNode(
-                Matrix.Identity,
+            var lineNode = LineNode(
                 new Pen(Brushes.Black, 3),
                 new Point(15, 10),
                 new Point(150, 73));
@@ -35,8 +43,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void HitTest_Should_Be_False()
         {
-            var lineNode = new LineNode(
-                Matrix.Identity,
+            var lineNode = LineNode(
                 new Pen(Brushes.Black, 3),
                 new Point(15, 10),
                 new Point(150, 73));

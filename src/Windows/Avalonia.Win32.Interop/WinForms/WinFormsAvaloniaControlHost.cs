@@ -22,7 +22,7 @@ namespace Avalonia.Win32.Embedding
             UnmanagedMethods.SetParent(WindowHandle, Handle);
             _root.Prepare();
             if (_root.IsFocused)
-                FocusManager.Instance.Focus(null);
+                _root.FocusManager.ClearFocus();
             _root.GotFocus += RootGotFocus;
 
             FixPosition();

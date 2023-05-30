@@ -9,7 +9,7 @@ namespace Avalonia.Utilities
     /// <remarks>
     /// Once more than value has been added to this storage it will switch to using <see cref="List"/> internally.
     /// </remarks>
-    public ref struct ValueSingleOrList<T>
+    internal ref struct ValueSingleOrList<T>
     {
         private bool _isSingleSet;
 

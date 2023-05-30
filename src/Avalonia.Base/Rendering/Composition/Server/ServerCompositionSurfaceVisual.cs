@@ -13,7 +13,7 @@ internal partial class ServerCompositionSurfaceVisual
         var bmp = Surface.Bitmap.Item;
 
         //TODO: add a way to always render the whole bitmap instead of just assuming 96 DPI
-        canvas.DrawBitmap(Surface.Bitmap, 1, new Rect(bmp.PixelSize.ToSize(1)), new Rect(
+        canvas.DrawBitmap(Surface.Bitmap.Item, 1, new Rect(bmp.PixelSize.ToSize(1)), new Rect(
             new Size(Size.X, Size.Y)));
     }
 

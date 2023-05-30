@@ -41,9 +41,9 @@ namespace Avalonia.Win32
 
         internal static void ProcWnd(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.ContainsKey(wParam.ToInt32()))
+            if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.TryGetValue(wParam.ToInt32(), out var value))
             {
-                s_trayIcons[wParam.ToInt32()].WndProc(hWnd, msg, wParam, lParam);
+                value.WndProc(hWnd, msg, wParam, lParam);
             }
 
             if (msg == WM_TASKBARCREATED)
@@ -147,7 +147,7 @@ namespace Avalonia.Win32
                 SystemDecorations = SystemDecorations.None,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,
-                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
                     ItemsSource = menuItems
@@ -170,9 +170,9 @@ namespace Avalonia.Win32
             WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024,
         }
 
-        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable
+        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter
         {
-            Type IStyleable.StyleKey => typeof(MenuFlyoutPresenter);
+            protected override Type StyleKeyOverride => typeof(MenuFlyoutPresenter);
 
             public override void Close()
             {

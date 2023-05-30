@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -57,15 +56,6 @@ namespace Avalonia.FreeDesktop
             WatchAsync();
         }
 
-        private void InitializeSNWService()
-        {
-            if (_connection is null || _isDisposed)
-                return;
-
-            _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
-            _serviceConnected = true;
-        }
-
         private async void WatchAsync()
         {
             try
@@ -84,13 +74,13 @@ namespace Avalonia.FreeDesktop
 
         private void OnNameChange(string? newOwner)
         {
-            if (_isDisposed)
+            if (_isDisposed || _connection is null)
                 return;
 
             if (!_serviceConnected & newOwner is not null)
             {
                 _serviceConnected = true;
-                InitializeSNWService();
+                _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
 
                 DestroyTrayIcon();
 
@@ -182,8 +172,11 @@ namespace Avalonia.FreeDesktop
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed)
+            if (_isDisposed || !_serviceConnected)
+            {
+                _isVisible = visible;
                 return;
+            }
 
             switch (visible)
             {

@@ -29,7 +29,7 @@ namespace Avalonia.Collections.Pooled
     [DebuggerTypeProxy(typeof(StackDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class PooledStack<T> : IEnumerable<T>, ICollection, IReadOnlyCollection<T>, IDisposable, IDeserializationCallback
+    internal class PooledStack<T> : IEnumerable<T>, ICollection, IReadOnlyCollection<T>, IDisposable, IDeserializationCallback
     {
         [NonSerialized]
         private ArrayPool<T> _pool;
@@ -596,7 +596,7 @@ namespace Avalonia.Collections.Pooled
 
         private static bool ShouldClear(ClearMode mode)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1_OR_GREATER
             return mode == ClearMode.Always
                 || (mode == ClearMode.Auto && RuntimeHelpers.IsReferenceOrContainsReferences<T>());
 #else

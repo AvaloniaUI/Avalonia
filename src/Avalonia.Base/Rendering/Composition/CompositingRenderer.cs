@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.VisualTree;
 
 // Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
@@ -16,12 +17,11 @@ namespace Avalonia.Rendering.Composition;
 /// <summary>
 /// A renderer that utilizes <see cref="Avalonia.Rendering.Composition.Compositor"/> to render the visual tree 
 /// </summary>
-public class CompositingRenderer : IRendererWithCompositor
+internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 {
     private readonly IRenderRoot _root;
     private readonly Compositor _compositor;
-    private readonly CompositionDrawingContext _recorder = new();
-    private readonly DrawingContext _recordingContext;
+    private readonly RenderDataDrawingContext _recorder;
     private readonly HashSet<Visual> _dirty = new();
     private readonly HashSet<Visual> _recalculateChildren = new();
     private readonly Action _update;
@@ -32,11 +32,6 @@ public class CompositingRenderer : IRendererWithCompositor
 
     internal CompositionTarget CompositionTarget { get; }
     
-    /// <summary>
-    /// Asks the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered.
-    /// </summary>
-    public bool RenderOnlyOnRenderThread { get; set; } = true;
-
     /// <inheritdoc/>
     public RendererDiagnostics Diagnostics { get; }
 
@@ -55,7 +50,7 @@ public class CompositingRenderer : IRendererWithCompositor
     {
         _root = root;
         _compositor = compositor;
-        _recordingContext = _recorder;
+        _recorder = new(compositor);
         CompositionTarget = compositor.CreateCompositionTarget(surfaces);
         CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;
@@ -276,10 +271,16 @@ public class CompositingRenderer : IRendererWithCompositor
 
             comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
 
-            _recorder.BeginUpdate(comp.DrawList);
-            visual.Render(_recordingContext);
-            comp.DrawList = _recorder.EndUpdate();
-
+            try
+            {
+                visual.Render(_recorder);
+                comp.DrawList = _recorder.GetRenderResults();
+            }
+            finally
+            {
+                _recorder.Reset();
+            }
+            
             SyncChildren(visual);
         }
         foreach(var v in _recalculateChildren)
@@ -297,6 +298,9 @@ public class CompositingRenderer : IRendererWithCompositor
         await batchCompletion;
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
     }
+
+    public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>
+        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, rect));
     
     private void Update()
     {
@@ -326,10 +330,7 @@ public class CompositingRenderer : IRendererWithCompositor
 
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
-            Compositor.Commit().Wait();
-        else
-            CompositionTarget.ImmediateUIThreadRender();
+        MediaContext.Instance.ImmediateRenderRequested(CompositionTarget);
     }
 
     /// <inheritdoc />
@@ -349,6 +350,8 @@ public class CompositingRenderer : IRendererWithCompositor
     public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
         => Compositor.TryGetRenderInterfaceFeature(featureType);
 
+    public bool IsDisposed => _isDisposed;
+    
     /// <inheritdoc />
     public void Dispose()
     {
@@ -361,11 +364,7 @@ public class CompositingRenderer : IRendererWithCompositor
         SceneInvalidated = null;
 
         Stop();
-        CompositionTarget.Dispose();
-        
-        // Wait for the composition batch to be applied and rendered to guarantee that
-        // render target is not used anymore and can be safely disposed
-        if (Compositor.Loop.RunsInBackground)
-            _compositor.Commit().Wait();
+
+        MediaContext.Instance.SyncDisposeCompositionTarget(CompositionTarget);
     }
 }

@@ -21,7 +21,7 @@ namespace Avalonia.Media.Immutable
         /// How the source rectangle will be stretched to fill the destination rect.
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
-        protected ImmutableTileBrush(
+        private protected ImmutableTileBrush(
             AlignmentX alignmentX,
             AlignmentY alignmentY,
             RelativeRect destinationRect,

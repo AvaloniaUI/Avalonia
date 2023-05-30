@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Shapes;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Platform;
 using BenchmarkDotNet.Attributes;
@@ -21,9 +22,9 @@ namespace Avalonia.Benchmarks.Rendering
             _lineFill = new Line { Fill = new SolidColorBrush() };
             _lineFillAndStroke = new Line { Stroke = new SolidColorBrush(), Fill = new SolidColorBrush() };
 
-            _drawingContext = new PlatformDrawingContext(new NullDrawingContextImpl(), true);
+            _drawingContext = new PlatformDrawingContext(new HeadlessPlatformRenderInterface.HeadlessDrawingContextStub(), true);
 
-            AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new NullRenderingPlatform());
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface());
         }
 
         [Benchmark]

@@ -6,12 +6,14 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -884,7 +886,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "ABC",
                     MaxLines = 1,
-                    AcceptsReturn= true
+                    AcceptsReturn = true
                 };
 
                 var impl = CreateMockTopLevelImpl();
@@ -896,7 +898,10 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.ApplyTemplate();
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
+                target.ApplyTemplate();
                 target.Measure(Size.Infinity);
+
+                var initialHeight = target.DesiredSize.Height;
 
                 topLevel.Clipboard?.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
 
@@ -905,7 +910,10 @@ namespace Avalonia.Controls.UnitTests
 
                 RaiseTextEvent(target, Environment.NewLine);
 
-                Assert.Equal("ABC", target.Text);
+                target.InvalidateMeasure();
+                target.Measure(Size.Infinity);
+
+                Assert.Equal(initialHeight, target.DesiredSize.Height);
             }
         }
 
@@ -1104,19 +1112,23 @@ namespace Avalonia.Controls.UnitTests
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl(),
-            fontManagerImpl: new MockFontManagerImpl());
+            textShaperImpl: new HeadlessTextShaperStub(),
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            renderInterface: new MockPlatformRenderInterface(),
-            textShaperImpl: new MockTextShaperImpl(), 
-            fontManagerImpl: new MockFontManagerImpl());
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            textShaperImpl: new HeadlessTextShaperStub(), 
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
-                new TextPresenter
+            new ScrollViewer
+            {
+                Name = "Part_ScrollViewer",
+                Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTests.CreateTemplate),
+                Content = new TextPresenter
                 {
                     Name = "PART_TextPresenter",
                     [!!TextPresenter.TextProperty] = new Binding
@@ -1133,7 +1145,8 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     }
-                }.RegisterInNameScope(scope));
+                }.RegisterInNameScope(scope)
+            }.RegisterInNameScope(scope));
         }
 
         private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
@@ -1208,14 +1221,13 @@ namespace Avalonia.Controls.UnitTests
                 _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
         {
             var clipboard = new Mock<ITopLevelImpl>();
-            clipboard.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(RendererMocks.CreateRenderer().Object);
+            clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
                 .Returns(new ClipboardStub());
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);

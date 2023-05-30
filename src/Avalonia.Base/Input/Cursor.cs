@@ -55,12 +55,12 @@ namespace Avalonia.Input
         {
         }
 
-        public Cursor(IBitmap cursor, PixelPoint hotSpot)
+        public Cursor(Bitmap cursor, PixelPoint hotSpot)
             : this(GetCursorFactory().CreateCursor(cursor.PlatformImpl.Item, hotSpot), "BitmapCursor")
         {
         }
 
-        public ICursorImpl PlatformImpl { get; }
+        internal ICursorImpl PlatformImpl { get; }
 
         public void Dispose() => PlatformImpl.Dispose();
 

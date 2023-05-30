@@ -20,13 +20,12 @@ namespace Avalonia.Direct2D1.Media
         private SharpDX.DirectWrite.GlyphRun? _glyphRun;
 
         public GlyphRunImpl(IGlyphTypeface glyphTypeface, double fontRenderingEmSize,
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             _glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
 
             FontRenderingEmSize = fontRenderingEmSize;
             BaselineOrigin = baselineOrigin;
-            Bounds = bounds;
 
             var glyphCount = glyphInfos.Count;
 
@@ -62,6 +61,12 @@ namespace Avalonia.Direct2D1.Media
                     AscenderOffset = (float)y
                 };
             }
+
+            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
+
+            var height = glyphTypeface.Metrics.LineSpacing * scale;
+
+            Bounds = new Rect(baselineOrigin.X, 0, width, height);
         }
 
         public SharpDX.DirectWrite.GlyphRun GlyphRun

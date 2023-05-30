@@ -127,9 +127,9 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
+            using (var d2d = ((BitmapImpl)source).GetDirect2DBitmap(_deviceContext))
             {
                 var interpolationMode = GetInterpolationMode(RenderOptions.BitmapInterpolationMode);
 
@@ -149,6 +149,7 @@ namespace Avalonia.Direct2D1.Media
         {
             switch (interpolationMode)
             {
+                case BitmapInterpolationMode.Unspecified:
                 case BitmapInterpolationMode.LowQuality:
                     return InterpolationMode.Linear;
                 case BitmapInterpolationMode.MediumQuality:
@@ -156,7 +157,6 @@ namespace Avalonia.Direct2D1.Media
                 case BitmapInterpolationMode.HighQuality:
                     return InterpolationMode.HighQualityCubic;
                 case BitmapInterpolationMode.None:
-                case BitmapInterpolationMode.Unspecified:
                     return InterpolationMode.NearestNeighbor;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
@@ -200,11 +200,11 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             var interpolationMode = GetInterpolationMode(RenderOptions.BitmapInterpolationMode);
 
-            using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
+            using (var d2dSource = ((BitmapImpl)source).GetDirect2DBitmap(_deviceContext))
             using (var sourceBrush = new BitmapBrush1(_deviceContext, d2dSource.Value, new BitmapBrushProperties1 { InterpolationMode = interpolationMode }))
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
             using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(Direct2D1Platform.Direct2D1Factory, destRect.ToDirect2D()))
@@ -395,15 +395,15 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IGlyphRunImpl glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Item.Bounds.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
             {
-                var immutableGlyphRun = (GlyphRunImpl)glyphRun.Item;
+                var immutableGlyphRun = (GlyphRunImpl)glyphRun;
 
                 var dxGlyphRun = immutableGlyphRun.GlyphRun;
 
-                _renderTarget.DrawGlyphRun(glyphRun.Item.BaselineOrigin.ToSharpDX(), dxGlyphRun,
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), dxGlyphRun,
                     brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
@@ -454,16 +454,25 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity.</param>
         /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public void PushOpacity(double opacity, Rect bounds)
+        public void PushOpacity(double opacity, Rect? bounds)
         {
             if (opacity < 1)
             {
+                if(bounds == null || bounds == default(Rect))
+                {
+                    bounds = new Rect(0, 0, _renderTarget.PixelSize.Width, _renderTarget.PixelSize.Height);
+                }
+
                 var parameters = new LayerParameters
                 {
-                    ContentBounds = bounds.ToDirect2D(),
                     MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
-                    Opacity = (float)opacity,
+                    Opacity = (float)opacity
                 };
+
+                if(bounds.HasValue)
+                {
+                    parameters.ContentBounds = bounds.Value.ToDirect2D();
+                }
 
                 var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
                 _deviceContext.PushLayer(ref parameters, layer);
@@ -522,12 +531,12 @@ namespace Avalonia.Direct2D1.Media
                 // there is no Direct2D implementation of Conic Gradients so use Radial as a stand-in
                 return new SolidColorBrushImpl(conicGradientBrush, _deviceContext);
             }
-            else if (imageBrush?.Source != null)
+            else if (imageBrush?.Source?.Bitmap != null)
             {
                 return new ImageBrushImpl(
                     imageBrush,
                     _deviceContext,
-                    (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
+                    (BitmapImpl)imageBrush.Source.Bitmap.Item,
                     destinationSize);
             }
             else if (sceneBrush != null || sceneBrushContent != null)

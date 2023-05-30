@@ -293,6 +293,23 @@ namespace Avalonia.Controls
             return TreeItemFromContainer(this, container);
         }
 
+        private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsViewCollectionChanged(sender, e);
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var i in e.OldItems!)
+                        SelectedItems.Remove(i);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    SelectedItems.Clear();
+                    break;
+            }
+        }
+
         /// <summary>
         /// Subscribes to the <see cref="SelectedItems"/> CollectionChanged event, if any.
         /// </summary>
@@ -543,8 +560,7 @@ namespace Avalonia.Controls
 
                     if (next != null)
                     {
-                        FocusManager.Instance?.Focus(next, NavigationMethod.Directional);
-                        e.Handled = true;
+                        e.Handled = next.Focus(NavigationMethod.Directional);
                     }
                 }
                 else

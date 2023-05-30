@@ -45,9 +45,6 @@ namespace Avalonia.Benchmarks.Themes
         private static IDisposable CreateApp()
         {
             var services = new TestServices(
-                renderInterface: new NullRenderingPlatform(),
-                dispatcherImpl: new NullThreadingPlatform(),
-                standardCursorFactory: new NullCursorFactory(),
                 theme: () => LoadFluentTheme());
 
             return UnitTestApplication.Start(services);

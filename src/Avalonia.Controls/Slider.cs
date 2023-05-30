@@ -86,10 +86,10 @@ namespace Avalonia.Controls
             TickBar.TicksProperty.AddOwner<Slider>();
 
         // Slider required parts
-        protected bool _isDragging;
-        protected Track? _track;
-        protected Button? _decreaseButton;
-        protected Button? _increaseButton;
+        private bool _isDragging;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
         private IDisposable? _decreaseButtonPressDispose;
         private IDisposable? _decreaseButtonReleaseDispose;
         private IDisposable? _increaseButtonSubscription;
@@ -180,6 +180,16 @@ namespace Avalonia.Controls
             get { return GetValue(TickPlacementProperty); }
             set { SetValue(TickPlacementProperty, value); }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Slider"/> is currently being dragged.
+        /// </summary>
+        protected bool IsDragging => _isDragging;
+
+        /// <summary>
+        /// Gets the <see cref="Track"/> part of the <see cref="Slider"/>.
+        /// </summary>
+        protected Track? Track => _track;
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

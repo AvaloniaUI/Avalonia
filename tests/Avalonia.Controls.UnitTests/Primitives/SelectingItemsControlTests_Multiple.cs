@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -1347,12 +1348,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
                     focusManager: new FocusManager(),
-                    fontManagerImpl: new MockFontManagerImpl(),
+                    fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
-                    renderInterface: new MockPlatformRenderInterface(),
-                    textShaperImpl: new MockTextShaperImpl()));
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HeadlessTextShaperStub()));
         }
 
         private class TestSelector : SelectingItemsControl
@@ -1391,9 +1392,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public void Toggle(int index) => UpdateSelection(index, true, false, true);
         }
 
-        private class TestSelectorWithContainers : TestSelector, IStyleable
+        private class TestSelectorWithContainers : TestSelector
         {
-            Type IStyleable.StyleKey => typeof(TestSelector);
+            protected override Type StyleKeyOverride => typeof(TestSelector);
 
             protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
@@ -9,12 +11,9 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics
 {
-    public static class DevTools
+    internal static class DevTools
     {
-        private static readonly Dictionary<AvaloniaObject, MainWindow> s_open =
-            new Dictionary<AvaloniaObject, MainWindow>();
-
-        private static bool s_attachedToApplication;
+        private static readonly Dictionary<IDevToolsTopLevelGroup, MainWindow> s_open = new();
 
         public static IDisposable Attach(TopLevel root, KeyGesture gesture)
         {
@@ -26,11 +25,6 @@ namespace Avalonia.Diagnostics
 
         public static IDisposable Attach(TopLevel root, DevToolsOptions options)
         {
-            if (s_attachedToApplication == true)
-            {
-                throw new ArgumentException("DevTools already attached to application", nameof(root));
-            }
-
             void PreviewKeyDown(object? sender, KeyEventArgs e)
             {
                 if (options.Gesture.Matches(e))
@@ -39,109 +33,116 @@ namespace Avalonia.Diagnostics
                 }
             }
 
-            return root.AddDisposableHandler(
+            return (root ?? throw new ArgumentNullException(nameof(root))).AddDisposableHandler(
                 InputElement.KeyDownEvent,
                 PreviewKeyDown,
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root) => 
-            Open(Application.Current,new DevToolsOptions(),root as Window);
+        public static IDisposable Open(TopLevel root, DevToolsOptions options) =>
+             Open(new SingleViewTopLevelGroup(root), options, root as Window, null);
 
-        public static IDisposable Open(TopLevel root, DevToolsOptions options) => 
-            Open(Application.Current, options, root as Window);
+        internal static IDisposable Open(IDevToolsTopLevelGroup group, DevToolsOptions options) =>
+            Open(group, options, null, null);
 
-        private static void DevToolsClosed(object? sender, EventArgs e)
+        internal static IDisposable Attach(Application application, DevToolsOptions options)
         {
-            var window = (MainWindow)sender!;
-            window.Closed -= DevToolsClosed;
-            if (window.Root is Controls.Application host)
-            {
-                s_open.Remove(host.Instance);
-            }
-            else
-            {
-                s_open.Remove(window.Root!);
-            }
-        }
-
-        internal static IDisposable Attach(Application? application, DevToolsOptions options, Window? owner = null)
-        {
-            if (application is null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
             var openedDisposable = new SerialDisposableValue();
             var result = new CompositeDisposable(2);
             result.Add(openedDisposable);
-            
-            // Skip if call on Design Mode
-            if (!Avalonia.Controls.Design.IsDesignMode
-                && !s_attachedToApplication)
-            {
 
+            // Skip if call on Design Mode
+            if (!Design.IsDesignMode)
+            {
                 var lifeTime = application.ApplicationLifetime
-                    as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime;
+                    as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
 
                 if (lifeTime is null)
                 {
-                    throw new ArgumentNullException(nameof(Application.ApplicationLifetime));
+                    throw new ArgumentNullException(nameof(application), "DevTools can only attach to applications that support IClassicDesktopStyleApplicationLifetime.");
                 }
 
-                if (application.InputManager is { })
+                if (application.InputManager is not null)
                 {
-                    s_attachedToApplication = true;
-
                     result.Add(application.InputManager.PreProcess.Subscribe(e =>
                     {
+                        var owner = lifeTime.MainWindow;
+
                         if (e is RawKeyEventArgs keyEventArgs
                             && keyEventArgs.Type == RawKeyEventType.KeyUp
                             && options.Gesture.Matches(keyEventArgs))
                         {
-                            openedDisposable.Disposable = Open(application, options, owner);
+                            openedDisposable.Disposable =
+                                Open(new ClassicDesktopStyleApplicationLifetimeTopLevelGroup(lifeTime), options,
+                                    owner, application);
+                            e.Handled = true;
                         }
                     }));
-
                 }
             }
             return result;
         }
 
-        private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
+        private static IDisposable Open(IDevToolsTopLevelGroup topLevelGroup, DevToolsOptions options,
+            Window? owner, Application? app)
         {
-            var focussedControl = KeyboardDevice.Instance?.FocusedElement as Control;
-            if (application is null)
+            var focusedControl = owner?.FocusManager?.GetFocusedElement() as Control;
+            AvaloniaObject root = topLevelGroup switch
             {
-                throw new ArgumentNullException(nameof(application));
+                ClassicDesktopStyleApplicationLifetimeTopLevelGroup gr => new Controls.Application(gr, app ?? Application.Current!),
+                SingleViewTopLevelGroup gr => gr.Items.First(),
+                _ => new Controls.TopLevelGroup(topLevelGroup)
+            };
+
+            // If single static toplevel is already visible in another devtools window, focus it.
+            if (s_open.TryGetValue(topLevelGroup, out var mainWindow))
+            {
+                mainWindow.Activate();
+                mainWindow.SelectedControl(focusedControl);
+                return Disposable.Empty;
             }
-            if (s_open.TryGetValue(application, out var window))
+            if (topLevelGroup.Items.Count == 1 && topLevelGroup.Items is not INotifyCollectionChanged)
             {
-                window.Activate();
-                window.SelectedControl(focussedControl);
+                var singleTopLevel = topLevelGroup.Items.First();
+                
+                foreach (var group in s_open)
+                {
+                    if (group.Key.Items.Contains(singleTopLevel))
+                    {
+                        group.Value.Activate();
+                        group.Value.SelectedControl(focusedControl);
+                        return Disposable.Empty;
+                    }
+                }
+            }
+            
+            var window = new MainWindow
+            {
+                Root = root,
+                Width = options.Size.Width,
+                Height = options.Size.Height,
+                Tag = topLevelGroup
+            };
+            window.SetOptions(options);
+            window.SelectedControl(focusedControl);
+            window.Closed += DevToolsClosed;
+            s_open.Add(topLevelGroup, window);
+            if (options.ShowAsChildWindow && owner is not null)
+            {
+                window.Show(owner);
             }
             else
             {
-                window = new MainWindow
-                {
-                    Root = new Controls.Application(application),
-                    Width = options.Size.Width,
-                    Height = options.Size.Height,
-                };
-                window.SetOptions(options);
-                window.SelectedControl(focussedControl);
-                window.Closed += DevToolsClosed;
-                s_open.Add(application, window);
-                if (options.ShowAsChildWindow && owner is { })
-                {
-                    window.Show(owner);
-                }
-                else
-                {
-                    window.Show();
-                }
+                window.Show();
             }
-            return Disposable.Create(() => window?.Close());
+            return Disposable.Create(() => window.Close());
+        }
+
+        private static void DevToolsClosed(object? sender, EventArgs e)
+        {
+            var window = (MainWindow)sender!;
+            window.Closed -= DevToolsClosed;
+            s_open.Remove((IDevToolsTopLevelGroup)window.Tag!);
         }
     }
 }

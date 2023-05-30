@@ -208,7 +208,7 @@ namespace Avalonia.Diagnostics.ViewModels
             var classes = string.Concat(visual.Classes
                 .Where(c => !c.StartsWith(":"))
                 .Select(c => '.' + c));
-            var typeName = ((IStyleable)visual).StyleKey.Name;
+            var typeName = StyledElement.GetStyleKey(visual);
 
             return $"{typeName}{name}{classes}";
         } 

@@ -3,9 +3,11 @@ using System.Runtime.CompilerServices;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
+    [PrivateApi]
     public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
         private IInputElement? _focusedElement;
@@ -13,7 +15,7 @@ namespace Avalonia.Input
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public static IKeyboardDevice? Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+        internal static KeyboardDevice? Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>() as KeyboardDevice;
 
         public IInputManager? InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
 

@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Media
 {
-    public class GlyphRunDrawing : Drawing
+    public sealed class GlyphRunDrawing : Drawing
     {
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
             AvaloniaProperty.Register<GlyphRunDrawing, IBrush?>(nameof(Foreground));
@@ -20,7 +20,7 @@
             set => SetValue(GlyphRunProperty, value);
         }
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             if (GlyphRun == null)
             {

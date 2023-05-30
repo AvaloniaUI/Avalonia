@@ -23,7 +23,139 @@ namespace Avalonia.Base.UnitTests.Input
 
                 target.Focus();
 
-                Assert.Same(target, FocusManager.Instance.Current);
+                Assert.Same(target, root.FocusManager.GetFocusedElement());
+            }
+        }
+        
+        [Fact]
+        public void Invisible_Controls_Should_Not_Receive_Focus()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button() { IsVisible = false}
+                };
+                
+                Assert.Null(root.FocusManager.GetFocusedElement());
+
+                target.Focus();
+                
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+        
+        [Fact]
+        public void Effectively_Invisible_Controls_Should_Not_Receive_Focus()
+        {
+            var target = new Button();
+            Panel container;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Panel
+                    {
+                        IsVisible = false,
+                        Children = { target }
+                    }
+                };
+                
+                Assert.Null(root.FocusManager.GetFocusedElement());
+
+                target.Focus();
+                
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Trying_To_Focus_Invisible_Control_Should_Not_Change_Focus()
+        {
+            Button first;
+            Button second;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    { 
+                        Children =
+                        {
+                            (first = new Button()),
+                            (second = new Button() { IsVisible = false}),
+                        }
+                    }
+                };
+
+                first.Focus();
+
+                Assert.Same(first, root.FocusManager.GetFocusedElement());
+
+                second.Focus();
+
+                Assert.Same(first, root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Disabled_Controls_Should_Not_Receive_Focus()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button() { IsEnabled = false }
+                };
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+
+                target.Focus();
+
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Effectively_Disabled_Controls_Should_Not_Receive_Focus()
+        {
+            var target = new Button();
+            Panel container;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Panel
+                    {
+                        IsEnabled = false,
+                        Children = { target }
+                    }
+                };
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+
+                target.Focus();
+
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsKeyboardFocusWithin);
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -55,6 +187,90 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Hidden()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button()
+                };
+
+                target.Focus();
+                target.IsVisible = false;
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact(Skip = "Need to implement IsEffectivelyVisible change notifications.")]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Effectively_Hidden()
+        {
+            Border container;
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Border
+                    {
+                        Child = target = new Button(),
+                    }
+                };
+
+                target.Focus();
+                container.IsVisible = false;
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Disabled()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button()
+                };
+
+                target.Focus();
+                target.IsEnabled = false;
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Be_Cleared_When_Control_Is_Effectively_Disabled()
+        {
+            Border container;
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = container = new Border
+                    {
+                        Child = target = new Button(),
+                    }
+                };
+
+                target.Focus();
+                container.IsEnabled = false;
+
+                Assert.Null(root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
         public void Focus_Should_Be_Cleared_When_Control_Is_Removed_From_VisualTree()
         {
             Button target;
@@ -69,7 +285,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
                 root.Child = null;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -78,8 +294,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -96,13 +312,13 @@ namespace Avalonia.Base.UnitTests.Input
                 target2.ApplyTemplate();
 
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus"));
                 Assert.False(target2.IsFocused);
                 Assert.False(target2.Classes.Contains(":focus"));
 
-                FocusManager.Instance?.Focus(target2, NavigationMethod.Tab);
+                target2.Focus(NavigationMethod.Tab);
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus"));
                 Assert.True(target2.IsFocused);
@@ -115,8 +331,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -132,19 +348,19 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-visible"));
                 Assert.False(target2.IsFocused);
                 Assert.False(target2.Classes.Contains(":focus-visible"));
 
-                FocusManager.Instance?.Focus(target2, NavigationMethod.Tab);
+                target2.Focus(NavigationMethod.Tab);
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-visible"));
                 Assert.True(target2.IsFocused);
                 Assert.True(target2.Classes.Contains(":focus-visible"));
 
-                FocusManager.Instance?.Focus(target1, NavigationMethod.Directional);
+                target1.Focus(NavigationMethod.Directional);
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-visible"));
                 Assert.False(target2.IsFocused);
@@ -157,8 +373,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -174,7 +390,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -190,8 +406,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var panel1 = new Panel { Children = { target1 } };
                 var panel2 = new Panel { Children = { target2 } };
                 var root = new TestRoot
@@ -209,7 +425,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -220,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root.Classes.Contains(":focus-within"));
                 Assert.True(root.IsKeyboardFocusWithin);
                 
-                FocusManager.Instance?.Focus(target2);
+                target2.Focus();
                 
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
@@ -245,8 +461,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 var root = new TestRoot
                 {
                     Child = new StackPanel
@@ -262,7 +478,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -290,8 +506,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
-                var target1 = new Decorator();
-                var target2 = new Decorator();
+                var target1 = new Decorator { Focusable = true };
+                var target2 = new Decorator { Focusable = true };
                 
                 var root1 = new TestRoot
                 {
@@ -318,7 +534,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -329,7 +545,7 @@ namespace Avalonia.Base.UnitTests.Input
 
                 Assert.Equal(KeyboardDevice.Instance.FocusedElement, target1);
                 
-                FocusManager.Instance?.Focus(target2);
+                target2.Focus();
                 
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
@@ -362,9 +578,9 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 target.Focus();
-                FocusManager.Instance.Focus(null);
+                root.FocusManager.ClearFocus();
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
     }

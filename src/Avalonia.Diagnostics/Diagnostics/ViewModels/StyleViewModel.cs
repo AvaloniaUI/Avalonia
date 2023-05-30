@@ -5,11 +5,11 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class StyleViewModel : ViewModelBase
     {
-        private readonly IStyleInstance _styleInstance;
+        private readonly AppliedStyle _styleInstance;
         private bool _isActive;
         private bool _isVisible;
 
-        public StyleViewModel(IStyleInstance styleInstance, string name, List<SetterViewModel> setters)
+        public StyleViewModel(AppliedStyle styleInstance, string name, List<SetterViewModel> setters)
         {
             _styleInstance = styleInstance;
             IsVisible = true;

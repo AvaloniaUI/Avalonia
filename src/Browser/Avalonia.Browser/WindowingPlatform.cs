@@ -41,7 +41,6 @@ namespace Avalonia.Browser
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())

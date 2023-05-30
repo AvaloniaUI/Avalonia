@@ -11,7 +11,7 @@ namespace Avalonia.Animation
     /// Defines a KeyFrame that is used for
     /// <see cref="Animator{T}"/> objects.
     /// </summary>
-    public class AnimatorKeyFrame : AvaloniaObject
+    internal class AnimatorKeyFrame : AvaloniaObject
     {
         public static readonly DirectProperty<AnimatorKeyFrame, object?> ValueProperty =
             AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object?>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
@@ -67,7 +67,7 @@ namespace Avalonia.Animation
             }
         }
 
-        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
         public T GetTypedValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConv = TypeDescriptor.GetConverter(typeof(T));
