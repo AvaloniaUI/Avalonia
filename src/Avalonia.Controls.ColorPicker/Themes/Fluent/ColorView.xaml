@@ -4,7 +4,8 @@
                     xmlns:converters="using:Avalonia.Controls.Converters"
                     xmlns:primitives="using:Avalonia.Controls.Primitives"
                     xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
-                    xmlns:globalization="using:System.Globalization">
+                    xmlns:globalization="using:System.Globalization"
+                    x:ClassModifier="internal">
 
   <pc:ContrastBrushConverter x:Key="ContrastBrushConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
