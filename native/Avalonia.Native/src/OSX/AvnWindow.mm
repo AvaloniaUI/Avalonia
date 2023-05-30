@@ -512,7 +512,7 @@
     if (![self automationPeer]->IsRootProvider())
         return nil;
     auto clientPoint = [self convertPointFromScreen:point];
-    auto localPoint = [self translateLocalPoint:ToAvnPoint(clientPoint)];
+    auto localPoint = [[self view] translateLocalPoint:ToAvnPoint(clientPoint)];
     auto hit = [self automationPeer]->RootProvider_GetPeerFromPoint(localPoint);
     return [AvnAccessibilityElement acquire:hit];
 }
