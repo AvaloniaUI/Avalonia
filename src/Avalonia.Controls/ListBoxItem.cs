@@ -90,7 +90,7 @@ namespace Avalonia.Controls
                 e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right)
             {
                 var point = e.GetCurrentPoint(this);
-                var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                var settings = TopLevel.GetTopLevel(e.Source as Visual)?.PlatformSettings;
                 var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                 var tapRect = new Rect(_pointerDownPoint, new Size())
                     .Inflate(new Thickness(tapSize.Width, tapSize.Height));
