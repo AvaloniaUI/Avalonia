@@ -181,7 +181,7 @@ namespace Avalonia
         public IApplicationLifetime? ApplicationLifetime { get; set; }
 
         /// <summary>
-        /// Represents a contract for accessing platform-specific settings and information.
+        /// Represents a contract for accessing global platform-specific settings.
         /// </summary>
         /// <remarks>
         /// PlatformSettings can be null only if application wasn't initialized yet.

@@ -23,7 +23,7 @@ namespace Avalonia.Input
         IFocusManager? FocusManager { get; }
         
         /// <summary>
-        /// Represents a contract for accessing platform-specific settings and information.
+        /// Represents a contract for accessing top-level platform-specific settings.
         /// </summary>
         /// <remarks>
         /// PlatformSettings can be null only if window wasn't initialized yet.
