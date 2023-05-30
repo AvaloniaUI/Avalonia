@@ -58,6 +58,8 @@ namespace Avalonia.Input
         /// </summary>
         public ulong Timestamp { get; }
 
+        internal bool IsGestureRecognitionSkipped { get; private set; }
+
         /// <summary>
         /// Gets a value that indicates which key modifiers were active at the time that the pointer event was initiated.
         /// </summary>
@@ -119,6 +121,14 @@ namespace Avalonia.Input
 
             points[points.Length - 1] = GetCurrentPoint(relativeTo);
             return points;
+        }
+
+        /// <summary>
+        /// Prevents this event from being handled by other gesture recognizers in the route
+        /// </summary>
+        public void PreventGestureRecognition()
+        {
+            IsGestureRecognitionSkipped = true;
         }
 
         /// <summary>

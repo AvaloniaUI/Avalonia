@@ -5,6 +5,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Input.GestureRecognizers;
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
@@ -158,6 +159,18 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
+            if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+            {
+                if(gestureRecognizer.Target != null)
+                {
+                    var e = new PointerEventArgs(InputElement.PointerMovedEvent, gestureRecognizer.Target, _pointer, (Visual)root,
+                        p, timestamp, properties, inputModifiers, intermediatePoints);
+                    gestureRecognizer.PointerMoved(e);
+
+                    return e.Handled;
+                }
+            }
+
             var source = _pointer.Captured ?? hitTest;
 
             if (source is object)
@@ -169,6 +182,7 @@ namespace Avalonia.Input
                 return e.Handled;
             }
 
+
             return false;
         }
 
@@ -177,6 +191,18 @@ namespace Avalonia.Input
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
+            
+            if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+            {
+                if (gestureRecognizer.Target != null)
+                {
+                    var e = new PointerReleasedEventArgs(gestureRecognizer.Target, _pointer, (Visual)root, p, timestamp, props, inputModifiers,
+                    _lastMouseDownButton);
+                    gestureRecognizer.PointerReleased(e);
+
+                    return e.Handled;
+                }
+            }
 
             var source = _pointer.Captured ?? hitTest;
 
@@ -187,6 +213,7 @@ namespace Avalonia.Input
 
                 source?.RaiseEvent(e);
                 _pointer.Capture(null);
+                _pointer.CaptureGestureRecognizer(null);
                 _lastMouseDownButton = default;
                 return e.Handled;
             }
