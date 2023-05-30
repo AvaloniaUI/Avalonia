@@ -4,10 +4,10 @@
     {
         protected internal IInputElement? Target { get; internal set; }
 
-        public abstract void PointerPressed(PointerPressedEventArgs e);
-        public abstract void PointerReleased(PointerReleasedEventArgs e);
-        public abstract void PointerMoved(PointerEventArgs e);
-        public abstract void PointerCaptureLost(IPointer pointer);
+        protected internal abstract void PointerPressed(PointerPressedEventArgs e);
+        protected internal abstract void PointerReleased(PointerReleasedEventArgs e);
+        protected internal abstract void PointerMoved(PointerEventArgs e);
+        protected internal abstract void PointerCaptureLost(IPointer pointer);
 
         protected void Capture(IPointer pointer)
         {
