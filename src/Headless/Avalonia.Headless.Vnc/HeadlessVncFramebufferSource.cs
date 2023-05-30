@@ -47,6 +47,14 @@ namespace Avalonia.Headless.Vnc
                     foreach (var btn in CheckedButtons)
                         if (!_previousButtons.HasFlag(btn) && buttons.HasFlag(btn))
                             Window?.MouseDown(pt, TranslateButton(btn), modifiers);
+
+
+                    if (buttons == VncButton.ScrollUp)
+                        Window?.MouseWheel(pt, Vector.One, modifiers);
+
+                    else if (buttons == VncButton.ScrollDown)
+                        Window?.MouseWheel(pt, Vector.One.Negate(), modifiers);
+
                     _previousButtons = buttons;
                 }, DispatcherPriority.Input);
             };
