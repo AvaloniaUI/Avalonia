@@ -41,6 +41,5 @@
     <AdditionalFiles Include="DBusXml/StatusNotifierItem.xml" DBusGeneratorMode="Handler" />
   </ItemGroup>
 
-  <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\ApiListing.props" />
 </Project>
