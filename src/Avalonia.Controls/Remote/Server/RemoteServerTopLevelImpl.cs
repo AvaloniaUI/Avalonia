@@ -41,13 +41,7 @@ namespace Avalonia.Controls.Remote.Server
 
             KeyboardDevice = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             QueueNextRender();
-        }
-
-        IRenderer ITopLevelImpl.CreateRenderer(IRenderRoot root)
-        {
-            var r = (IRendererWithCompositor)base.CreateRenderer(root);
-            r.Compositor.AfterCommit += QueueNextRender;
-            return r;
+            Compositor.AfterCommit += QueueNextRender;
         }
 
         private static RawPointerEventType GetAvaloniaEventType(ProtocolMouseButton button, bool pressed)

@@ -28,7 +28,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public partial class SelectingItemsControlTests
+    public partial class SelectingItemsControlTests : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
 

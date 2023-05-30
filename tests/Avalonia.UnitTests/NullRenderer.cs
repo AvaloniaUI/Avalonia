@@ -12,7 +12,12 @@ public sealed class NullRenderer : IRenderer
 {
     public RendererDiagnostics Diagnostics { get; } = new();
 
-    public event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
+    event EventHandler<SceneInvalidatedEventArgs>? IRenderer.SceneInvalidated
+    {
+        add { }
+        remove { }
+    }
+
 
     public NullRenderer()
     {

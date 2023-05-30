@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -25,6 +25,7 @@ using Avalonia.Win32.WinRT.Composition;
 using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
+using System.Diagnostics;
 
 namespace Avalonia.Win32
 {
@@ -70,7 +71,6 @@ namespace Avalonia.Win32
         private readonly TouchDevice _touchDevice;
         private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
-        private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly object? _gl;
         private readonly bool _wmPointerEnabled;
@@ -98,6 +98,7 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         private bool _ignoreWmChar;
+        private WindowTransparencyLevel _transparencyLevel;
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
@@ -128,7 +129,6 @@ namespace Avalonia.Win32
                 IsResizable = true,
                 Decorations = SystemDecorations.Full
             };
-            _rendererLock = new ManagedDeferredRendererLock();
 
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
@@ -182,6 +182,7 @@ namespace Avalonia.Win32
             _storageProvider = new Win32StorageProvider(this);
 
             _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
+            _transparencyLevel = _isUsingComposition ? WindowTransparencyLevel.Transparent : WindowTransparencyLevel.None;
             s_instances.Add(this);
         }
 
@@ -315,7 +316,18 @@ namespace Avalonia.Win32
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         protected IntPtr Hwnd => _hwnd;
 
@@ -346,82 +358,132 @@ namespace Avalonia.Win32
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            TransparencyLevel = EnableBlur(transparencyLevel);
-        }
+            var windowsVersion = Win32Platform.WindowsVersion;
 
-        private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
-        {
-            if (Win32Platform.WindowsVersion.Major >= 6)
+            foreach (var level in transparencyLevels)
             {
-                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
-                {
-                    return WindowTransparencyLevel.None;
-                }
-                else if (Win32Platform.WindowsVersion.Major >= 10)
-                {
-                    return Win10EnableBlur(transparencyLevel);
-                }
-                else if (Win32Platform.WindowsVersion.Minor >= 2)
-                {
-                    return Win8xEnableBlur(transparencyLevel);
-                }
-                else
-                {
-                    return Win7EnableBlur(transparencyLevel);
-                }
+                if (!IsSupported(level, windowsVersion))
+                    continue;
+                if (level == TransparencyLevel)
+                    return;
+                if (level == WindowTransparencyLevel.Transparent)
+                    SetTransparencyTransparent(windowsVersion);
+                else if (level == WindowTransparencyLevel.Blur)
+                    SetTransparencyBlur(windowsVersion);
+                else if (level == WindowTransparencyLevel.AcrylicBlur)
+                    SetTransparencyAcrylicBlur(windowsVersion);
+                else if (level == WindowTransparencyLevel.Mica)
+                    SetTransparencyMica(windowsVersion);
+
+                TransparencyLevel = level;
+                return;
+            }
+
+            // If we get here, we didn't find a supported level. Use the defualt of Transparent or
+            // None, depending on whether composition is enabled.
+            if (_isUsingComposition)
+            {
+                SetTransparencyTransparent(windowsVersion);
+                TransparencyLevel = WindowTransparencyLevel.Transparent;
             }
             else
             {
-                return WindowTransparencyLevel.None;
+                TransparencyLevel = WindowTransparencyLevel.None;
             }
         }
 
-        private WindowTransparencyLevel Win7EnableBlur(WindowTransparencyLevel transparencyLevel)
+        private bool IsSupported(WindowTransparencyLevel level, Version windowsVersion)
         {
-            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            // Only None is suppported when composition is disabled.
+            if (!_isUsingComposition)
+                return level == WindowTransparencyLevel.None;
+
+            // When composition is enabled, None is not supported because the backing visual always
+            // has an alpha channel
+            if (level == WindowTransparencyLevel.None)
+                return false;
+
+            // Transparent only supported on Windows 8+.
+            if (level == WindowTransparencyLevel.Transparent)
+                return windowsVersion >= PlatformConstants.Windows8;
+
+            // Blur only supported on Windows 8 and lower.
+            if (level == WindowTransparencyLevel.Blur)
+                return windowsVersion < PlatformConstants.Windows10;
+
+            // Acrylic is supported on Windows >= 10.0.15063.
+            if (level == WindowTransparencyLevel.AcrylicBlur)
+                return windowsVersion >= WinUiCompositionShared.MinAcrylicVersion;
+
+            // Mica is supported on Windows >= 10.0.22000.
+            if (level == WindowTransparencyLevel.Mica)
+                return windowsVersion >= WinUiCompositionShared.MinHostBackdropVersion;
+
+            return false;
+        }
+
+        private void SetTransparencyTransparent(Version windowsVersion)
+        {
+            // Transparent only supported with composition on Windows 8+.
+            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows8)
+                return;
+
+            if (windowsVersion < PlatformConstants.Windows10)
             {
-                transparencyLevel = WindowTransparencyLevel.Blur;
+                // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
+                // Windows 10, hence using ACCENT_ENABLE_BLURBEHIND to disable blurbehind  ¯\_(ツ)_/¯.
+                // Hey, I'm just porting what was here before.
+                SetAccentState(AccentState.ACCENT_ENABLE_BLURBEHIND);
+                var blurInfo = new DWM_BLURBEHIND(false);
+                DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
             }
 
-            var blurInfo = new DWM_BLURBEHIND(false);
+            SetUseHostBackdropBrush(false);
+            _blurHost?.SetBlur(BlurEffect.None);
+        }
 
-            if (transparencyLevel == WindowTransparencyLevel.Blur)
-            {
-                blurInfo = new DWM_BLURBEHIND(true);
-            }
+        private void SetTransparencyBlur(Version windowsVersion)
+        {
+            // Blur only supported with composition on Windows 8 and lower.
+            if (!_isUsingComposition || windowsVersion >= PlatformConstants.Windows10)
+                return;
 
+            // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
+            // Windows 10.
+            SetAccentState(AccentState.ACCENT_DISABLED);
+            var blurInfo = new DWM_BLURBEHIND(true);
             DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
-
-            if (transparencyLevel == WindowTransparencyLevel.Transparent)
-            {
-                return WindowTransparencyLevel.None;
-            }
-            else
-            {
-                return transparencyLevel;
-            }
         }
 
-        private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
+        private void SetTransparencyAcrylicBlur(Version windowsVersion)
+        {
+            // Acrylic blur only supported with composition on Windows >= 10.0.15063.
+            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinAcrylicVersion)
+                return;
+
+            SetUseHostBackdropBrush(true);
+            _blurHost?.SetBlur(BlurEffect.Acrylic);
+        }
+
+        private void SetTransparencyMica(Version windowsVersion)
+        {
+            // Mica only supported with composition on Windows >= 10.0.22000.
+            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
+                return;
+
+            SetUseHostBackdropBrush(false);
+            _blurHost?.SetBlur(BlurEffect.Mica);
+        }
+
+        private void SetAccentState(AccentState state)
         {
             var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf<AccentPolicy>();
+            var accentStructSize = Marshal.SizeOf(accent);
 
-            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
-            {
-                transparencyLevel = WindowTransparencyLevel.Blur;
-            }
-
-            if (transparencyLevel == WindowTransparencyLevel.Transparent)
-            {
-                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-            }
-            else
-            {
-                accent.AccentState = AccentState.ACCENT_DISABLED;
-            }
+            //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
+            accent.AccentState = state;
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
@@ -432,98 +494,18 @@ namespace Avalonia.Win32
             data.Data = accentPtr;
 
             SetWindowCompositionAttribute(_hwnd, ref data);
-
             Marshal.FreeHGlobal(accentPtr);
-
-            if (transparencyLevel >= WindowTransparencyLevel.Blur)
-            {
-                Win7EnableBlur(transparencyLevel);
-            }
-
-            return transparencyLevel;
         }
 
-        private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
+        private void SetUseHostBackdropBrush(bool useHostBackdropBrush)
         {
-            if (_isUsingComposition)
+            if (Win32Platform.WindowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
+                return;
+
+            unsafe
             {
-                var effect = transparencyLevel switch
-                {
-                    WindowTransparencyLevel.Mica => BlurEffect.Mica,
-                    WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
-                    WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
-                    _ => BlurEffect.None
-                };
-
-                if (Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion)
-                {
-                    unsafe
-                    {
-                        int pvUseBackdropBrush = effect == BlurEffect.Acrylic ? 1 : 0;
-                        DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
-                    }
-                }
-
-                if (Win32Platform.WindowsVersion < WinUiCompositionShared.MinHostBackdropVersion && effect == BlurEffect.Mica)
-                {
-                    effect = BlurEffect.Acrylic;
-                }
-
-                _blurHost?.SetBlur(effect);
-
-                return transparencyLevel;
-            }
-            else
-            {
-                bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
-
-                var accent = new AccentPolicy();
-                var accentStructSize = Marshal.SizeOf<AccentPolicy>();
-
-                if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
-                {
-                    transparencyLevel = WindowTransparencyLevel.Blur;
-                }
-
-                switch (transparencyLevel)
-                {
-                    default:
-                    case WindowTransparencyLevel.None:
-                        accent.AccentState = AccentState.ACCENT_DISABLED;
-                        break;
-
-                    case WindowTransparencyLevel.Transparent:
-                        accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
-                        break;
-
-                    case WindowTransparencyLevel.Blur:
-                        accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-                        break;
-
-                    case WindowTransparencyLevel.AcrylicBlur:
-                    case WindowTransparencyLevel.ForceAcrylicBlur: // hack-force acrylic.
-                    case WindowTransparencyLevel.Mica:
-                        accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
-                        transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                        break;
-                }
-
-                accent.AccentFlags = 2;
-                accent.GradientColor = 0x01000000;
-
-                var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-                Marshal.StructureToPtr(accent, accentPtr, false);
-
-                var data = new WindowCompositionAttributeData();
-                data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
-                data.SizeOfData = accentStructSize;
-                data.Data = accentPtr;
-
-                SetWindowCompositionAttribute(_hwnd, ref data);
-
-                Marshal.FreeHGlobal(accentPtr);
-
-                return transparencyLevel;
+                var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
+                DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
             }
         }
 
@@ -585,8 +567,7 @@ namespace Avalonia.Win32
             _maxSize = maxSize;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
+        public Compositor Compositor => Win32Platform.Compositor;
 
         public void Resize(Size value, WindowResizeReason reason)
         {
@@ -1498,7 +1479,7 @@ namespace Avalonia.Win32
             public void Dispose() => _owner._resizeReason = _restore;
         }
 
-        private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
+        private class WindowImplPlatformHandle : INativePlatformHandleSurface
         {
             private readonly WindowImpl _owner;
             public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;

@@ -31,77 +31,157 @@ namespace Avalonia.Controls
             private double _containerAnimationEndPosition;
             private double _container2AnimationStartPosition;
             private double _container2AnimationEndPosition;
+            private double _indeterminateStartingOffset;
+            private double _indeterminateEndingOffset;
 
-            public static readonly DirectProperty<ProgressBarTemplateSettings, double> ContainerAnimationStartPositionProperty =
-           AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
-               nameof(ContainerAnimationStartPosition),
-               p => p.ContainerAnimationStartPosition,
-               (p, o) => p.ContainerAnimationStartPosition = o, 0d);
+            /// <summary>
+            /// Defines the <see cref="ContainerAnimationStartPosition"/> property.
+            /// </summary>
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double>
+                ContainerAnimationStartPositionProperty =
+                    AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                        nameof(ContainerAnimationStartPosition),
+                        p => p.ContainerAnimationStartPosition,
+                        (p, o) => p.ContainerAnimationStartPosition = o);
 
-            public static readonly DirectProperty<ProgressBarTemplateSettings, double> ContainerAnimationEndPositionProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
-                    nameof(ContainerAnimationEndPosition),
-                    p => p.ContainerAnimationEndPosition,
-                    (p, o) => p.ContainerAnimationEndPosition = o, 0d);
+            /// <summary>
+            /// Defines the <see cref="ContainerAnimationEndPosition"/> property.
+            /// </summary>
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double>
+                ContainerAnimationEndPositionProperty =
+                    AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                        nameof(ContainerAnimationEndPosition),
+                        p => p.ContainerAnimationEndPosition,
+                        (p, o) => p.ContainerAnimationEndPosition = o);
 
-            public static readonly DirectProperty<ProgressBarTemplateSettings, double> Container2AnimationStartPositionProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
-                    nameof(Container2AnimationStartPosition),
-                    p => p.Container2AnimationStartPosition,
-                    (p, o) => p.Container2AnimationStartPosition = o, 0d);
+            /// <summary>
+            /// Defines the <see cref="Container2AnimationStartPosition"/> property.
+            /// </summary>
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double>
+                Container2AnimationStartPositionProperty =
+                    AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                        nameof(Container2AnimationStartPosition),
+                        p => p.Container2AnimationStartPosition,
+                        (p, o) => p.Container2AnimationStartPosition = o);
 
-            public static readonly DirectProperty<ProgressBarTemplateSettings, double> Container2AnimationEndPositionProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
-                    nameof(Container2AnimationEndPosition),
-                    p => p.Container2AnimationEndPosition,
-                    (p, o) => p.Container2AnimationEndPosition = o);
+            /// <summary>
+            /// Defines the <see cref="Container2AnimationEndPosition"/> property.
+            /// </summary>
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double>
+                Container2AnimationEndPositionProperty =
+                    AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                        nameof(Container2AnimationEndPosition),
+                        p => p.Container2AnimationEndPosition,
+                        (p, o) => p.Container2AnimationEndPosition = o);
 
+            /// <summary>
+            /// Defines the <see cref="Container2Width"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double> Container2WidthProperty =
                 AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
                     nameof(Container2Width),
                     p => p.Container2Width,
                     (p, o) => p.Container2Width = o);
 
+            /// <summary>
+            /// Defines the <see cref="ContainerWidth"/> property.
+            /// </summary>
             public static readonly DirectProperty<ProgressBarTemplateSettings, double> ContainerWidthProperty =
                 AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
                     nameof(ContainerWidth),
                     p => p.ContainerWidth,
                     (p, o) => p.ContainerWidth = o);
 
-            public double ContainerAnimationStartPosition
-            {
-                get => _containerAnimationStartPosition;
-                set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition, value);
-            }
+            /// <summary>
+            /// Defines the <see cref="IndeterminateStartingOffset"/> property.
+            /// </summary>
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double> IndeterminateStartingOffsetProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                    nameof(IndeterminateStartingOffset),
+                    p => p.IndeterminateStartingOffset,
+                    (p, o) => p.IndeterminateStartingOffset = o);
+            
+            /// <summary>
+            /// Defines the <see cref="IndeterminateEndingOffset"/> property.
+            /// </summary>
+            public static readonly DirectProperty<ProgressBarTemplateSettings, double> IndeterminateEndingOffsetProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateSettings, double>(
+                    nameof(IndeterminateEndingOffset),
+                    p => p.IndeterminateEndingOffset,
+                    (p, o) => p.IndeterminateEndingOffset = o);
 
-            public double ContainerAnimationEndPosition
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's width.
+            /// </summary>
+            public double ContainerWidth
             {
-                get => _containerAnimationEndPosition;
-                set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
+                get => _containerWidth;
+                set => SetAndRaise(ContainerWidthProperty, ref _containerWidth, value);
             }
-
-            public double Container2AnimationStartPosition
-            {
-                get => _container2AnimationStartPosition;
-                set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
-            }
-
+            
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's width.
+            /// </summary>
             public double Container2Width
             {
                 get => _container2Width;
                 set => SetAndRaise(Container2WidthProperty, ref _container2Width, value);
             }
 
-            public double ContainerWidth
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's start position when animated.
+            /// </summary>
+            public double ContainerAnimationStartPosition
             {
-                get => _containerWidth;
-                set => SetAndRaise(ContainerWidthProperty, ref _containerWidth, value);
+                get => _containerAnimationStartPosition;
+                set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition,
+                    value);
             }
 
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the first indeterminate indicator's end position when animated.
+            /// </summary>
+            public double ContainerAnimationEndPosition
+            {
+                get => _containerAnimationEndPosition;
+                set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
+            }
+
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's start position when animated.
+            /// </summary>
+            public double Container2AnimationStartPosition
+            {
+                get => _container2AnimationStartPosition;
+                set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition,
+                    value);
+            }
+            
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Fluent"/> to define the second indeterminate indicator's end position when animated.
+            /// </summary>
             public double Container2AnimationEndPosition
             {
                 get => _container2AnimationEndPosition;
                 set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
+            }
+
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Simple"/>  to define the starting point of its indeterminate animation.
+            /// </summary>
+            public double IndeterminateStartingOffset
+            {
+                get => _indeterminateStartingOffset;
+                set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+            }
+            
+            /// <summary>
+            /// Used by <see cref="Avalonia.Themes.Simple"/> to define the ending point of its indeterminate animation.
+            /// </summary>
+            public double IndeterminateEndingOffset
+            {
+                get => _indeterminateEndingOffset;
+                set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
             }
         }
 
@@ -131,7 +211,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
+            AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation));
 
         /// <summary>
         /// Defines the <see cref="Percentage"/> property.
@@ -142,18 +222,6 @@ namespace Avalonia.Controls
                 o => o.Percentage);
 
         /// <summary>
-        /// Defines the <see cref="IndeterminateStartingOffset"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
-            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateStartingOffset));
-
-        /// <summary>
-        /// Defines the <see cref="IndeterminateEndingOffset"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
-            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateEndingOffset));
-
-        /// <summary>
         /// Gets the overall percentage complete of the progress 
         /// </summary>
         /// <remarks>
@@ -162,30 +230,13 @@ namespace Avalonia.Controls
         /// </remarks>
         public double Percentage
         {
-            get { return _percentage; }
+            get => _percentage;
             private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
-        }
-
-        public double IndeterminateStartingOffset
-        {
-            get => GetValue(IndeterminateStartingOffsetProperty);
-            set => SetValue(IndeterminateStartingOffsetProperty, value);
-        }
-
-        public double IndeterminateEndingOffset
-        {
-            get => GetValue(IndeterminateEndingOffsetProperty);
-            set => SetValue(IndeterminateEndingOffsetProperty, value);
         }
 
         static ProgressBar()
         {
             ValueProperty.OverrideMetadata<ProgressBar>(new(defaultBindingMode: BindingMode.OneWay));
-            ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
-            MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
-            MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
-            OrientationProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 
         /// <summary>
@@ -251,6 +302,15 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property == ValueProperty ||
+                change.Property == MinimumProperty ||
+                change.Property == MaximumProperty ||
+                change.Property == IsIndeterminateProperty ||
+                change.Property == OrientationProperty)
+            {
+                UpdateIndicator();
+            }
+
             if (change.Property == IsIndeterminateProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<bool>(), null);
@@ -286,64 +346,50 @@ namespace Avalonia.Controls
             // Gets the size of the parent indicator container
             var barSize = _indicator?.VisualParent?.Bounds.Size ?? Bounds.Size;
 
-            if (_indicator != null)
+            if (_indicator == null) return;
+            if (IsIndeterminate)
             {
-                if (IsIndeterminate)
+                // Pulled from ModernWPF.
+
+                var dim = Orientation == Orientation.Horizontal ? barSize.Width : barSize.Height;
+                var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
+                var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
+
+                TemplateSettings.ContainerWidth = barIndicatorWidth;
+                TemplateSettings.Container2Width = barIndicatorWidth2;
+
+                TemplateSettings.ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
+                TemplateSettings.ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
+
+                TemplateSettings.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
+                TemplateSettings.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
+
+                TemplateSettings.IndeterminateStartingOffset = -dim;
+                TemplateSettings.IndeterminateEndingOffset = dim;
+            }
+            else
+            {
+                var percent = Math.Abs(Maximum - Minimum) < double.Epsilon ?
+                    1.0 :
+                    (Value - Minimum) / (Maximum - Minimum);
+
+                // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
+                // Indicator size calculation should consider the ProgressBar's Padding property setting
+                if (Orientation == Orientation.Horizontal)
                 {
-                    // Pulled from ModernWPF.
-
-                    var dim = Orientation == Orientation.Horizontal ? barSize.Width : barSize.Height;
-                    var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
-                    var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
-
-                    TemplateSettings.ContainerWidth = barIndicatorWidth;
-                    TemplateSettings.Container2Width = barIndicatorWidth2;
-
-                    TemplateSettings.ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
-                    TemplateSettings.ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
-
-                    TemplateSettings.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
-                    TemplateSettings.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
-
-                    // Remove these properties when we switch to fluent as default and removed the old one.
-                    SetCurrentValue(IndeterminateStartingOffsetProperty,-dim);
-                    SetCurrentValue(IndeterminateEndingOffsetProperty,dim);
-
-                    var padding = Padding;
-                    var rectangle = new RectangleGeometry(
-                        new Rect(
-                            padding.Left,
-                            padding.Top,
-                            barSize.Width - (padding.Right + padding.Left),
-                            barSize.Height - (padding.Bottom + padding.Top)
-                            ));
+                    _indicator.Width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
+                    _indicator.Height = double.NaN;
                 }
                 else
                 {
-                    double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
-
-                    // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
-                    // Indicator size calculation should consider the ProgressBar's Padding property setting
-                    if (Orientation == Orientation.Horizontal)
-                    {
-                        _indicator.Width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
-                        _indicator.Height = double.NaN;
-                    }
-                    else
-                    {
-                        _indicator.Width = double.NaN;
-                        _indicator.Height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) * percent;
-                    }
-
-
-                    Percentage = percent * 100;
+                    _indicator.Width = double.NaN;
+                    _indicator.Height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) *
+                                        percent;
                 }
-            }
-        }
 
-        private void UpdateIndicatorWhenPropChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            UpdateIndicator();
+
+                Percentage = percent * 100;
+            }
         }
 
         private void UpdatePseudoClasses(
@@ -355,11 +401,9 @@ namespace Avalonia.Controls
                 PseudoClasses.Set(":indeterminate", isIndeterminate.Value);
             }
 
-            if (o.HasValue)
-            {
-                PseudoClasses.Set(":vertical", o == Orientation.Vertical);
-                PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
-            }
+            if (!o.HasValue) return;
+            PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+            PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
     }
 }

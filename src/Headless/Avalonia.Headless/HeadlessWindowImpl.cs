@@ -53,8 +53,7 @@ namespace Avalonia.Headless
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor!, () => Surfaces);
+        public Compositor Compositor => AvaloniaHeadlessPlatform.Compositor!;
 
         public void Invalidate(Rect rect)
         {
@@ -337,12 +336,7 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetIsLightDismissEnabledHint(bool enabled)
-        {
-            
-        }
-
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
             
         }

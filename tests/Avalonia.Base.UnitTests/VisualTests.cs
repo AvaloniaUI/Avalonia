@@ -150,7 +150,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Attaching_To_Visual_Tree_Should_Invalidate_Visual()
         {
-            var renderer = RendererMocks.CreateRenderer();
+            var renderer = new Mock<IRenderer>();
             var child = new Decorator();
             var root = new TestRoot
             {

@@ -13,7 +13,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents the sequence of dashes and gaps that will be applied by a <see cref="Pen"/>.
     /// </summary>
-    public class DashStyle : Animatable, IDashStyle
+    public sealed class DashStyle : Animatable, IDashStyle
     {
         /// <summary>
         /// Defines the <see cref="Dashes"/> property.

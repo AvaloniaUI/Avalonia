@@ -42,7 +42,7 @@ public abstract class DropShadowEffectBase : Effect
     }
 }
 
-public class DropShadowEffect : DropShadowEffectBase, IDropShadowEffect, IMutableEffect
+public sealed class DropShadowEffect : DropShadowEffectBase, IDropShadowEffect, IMutableEffect
 {
     public static readonly StyledProperty<double> OffsetXProperty = AvaloniaProperty.Register<DropShadowEffect, double>(
         nameof(OffsetX), 3.5355);
@@ -76,7 +76,7 @@ public class DropShadowEffect : DropShadowEffectBase, IDropShadowEffect, IMutabl
 /// <summary>
 /// This class is compatible with WPF's DropShadowEffect and provides Direction and ShadowDepth properties instead of OffsetX/OffsetY
 /// </summary>
-public class DropShadowDirectionEffect : DropShadowEffectBase, IDirectionDropShadowEffect, IMutableEffect
+public sealed class DropShadowDirectionEffect : DropShadowEffectBase, IDirectionDropShadowEffect, IMutableEffect
 {
     public static readonly StyledProperty<double> ShadowDepthProperty =
         AvaloniaProperty.Register<DropShadowDirectionEffect, double>(

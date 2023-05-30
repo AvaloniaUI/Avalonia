@@ -1,3 +1,5 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input.Raw
 {
     public enum RawKeyEventType
@@ -6,6 +8,7 @@ namespace Avalonia.Input.Raw
         KeyUp
     }
 
+    [PrivateApi]
     public class RawKeyEventArgs : RawInputEventArgs
     {
         public RawKeyEventArgs(

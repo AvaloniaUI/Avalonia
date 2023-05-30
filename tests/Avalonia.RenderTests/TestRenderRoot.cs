@@ -1,6 +1,7 @@
 using Avalonia.Rendering;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Platform;
 
@@ -15,7 +16,9 @@ namespace Avalonia.Direct2D1.RenderTests
     {
         private readonly IRenderTarget _renderTarget;
         public Size ClientSize { get; private set; }
-        public IRenderer Renderer { get; private set; }
+        internal IRenderer Renderer { get; private set; }
+        IRenderer IRenderRoot.Renderer => Renderer;
+        IHitTester IRenderRoot.HitTester => new NullHitTester();
         public double RenderScaling { get; }
 
         public TestRenderRoot(double scaling, IRenderTarget renderTarget)
@@ -23,8 +26,15 @@ namespace Avalonia.Direct2D1.RenderTests
             _renderTarget = renderTarget;
             RenderScaling = scaling;
         }
+        
+        class NullHitTester : IHitTester
+        {
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
 
-        public void Initialize(IRenderer renderer, Control child)
+            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
+        }
+
+        internal void Initialize(IRenderer renderer, Control child)
         {
             Renderer = renderer;
             Child = child;

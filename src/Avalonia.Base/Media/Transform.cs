@@ -21,6 +21,11 @@ namespace Avalonia.Media
                 typeof(ITransform).IsAssignableFrom(prop.OwnerType));
         }
 
+        internal Transform()
+        {
+            
+        }
+
         /// <summary>
         /// Raised when the transform changes.
         /// </summary>

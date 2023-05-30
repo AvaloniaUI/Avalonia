@@ -118,7 +118,7 @@ namespace Avalonia.Media
                 OnReferencedFromCompositor(c);
         }
 
-        protected virtual void OnReferencedFromCompositor(Compositor c)
+        private protected virtual void OnReferencedFromCompositor(Compositor c)
         {
             if (Transform is ICompositionRenderResource<ITransform> resource)
                 resource.AddRefOnCompositor(c);

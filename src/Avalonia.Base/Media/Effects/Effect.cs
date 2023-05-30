@@ -90,4 +90,9 @@ public class Effect : Animatable, IAffectsRender
     {
         EffectAnimator.EnsureRegistered();
     }
+
+    internal Effect()
+    {
+        
+    }
 }

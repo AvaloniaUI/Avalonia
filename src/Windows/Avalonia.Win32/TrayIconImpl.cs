@@ -147,7 +147,7 @@ namespace Avalonia.Win32
                 SystemDecorations = SystemDecorations.None,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,
-                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
                     ItemsSource = menuItems

@@ -10,13 +10,13 @@ namespace Avalonia.Animation
     /// Provides base for observables implementing transitions.
     /// </summary>
     /// <typeparam name="T">Type of the transitioned value.</typeparam>
-    public abstract class TransitionObservableBase<T> : SingleSubscriberObservableBase<T>, IObserver<double>
+    internal abstract class TransitionObservableBase<T> : SingleSubscriberObservableBase<T>, IObserver<double>
     {
-        private readonly Easing _easing;
+        private readonly IEasing _easing;
         private readonly IObservable<double> _progress;
         private IDisposable? _progressSubscription;
 
-        protected TransitionObservableBase(IObservable<double> progress, Easing easing)
+        protected TransitionObservableBase(IObservable<double> progress, IEasing easing)
         {
             _progress = progress;
             _easing = easing;

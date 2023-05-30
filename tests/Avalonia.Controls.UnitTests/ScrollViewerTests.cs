@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ScrollViewerTests
+    public class ScrollViewerTests : ScopedTestBase
     {
         private readonly MouseTestHelper _mouse = new();
 

@@ -4,6 +4,7 @@ using Moq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Controls;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.UnitTests
 {
@@ -27,8 +28,8 @@ namespace Avalonia.UnitTests
             var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(() => RendererMocks.CreateRenderer().Object);
+            var compositor = RendererMocks.CreateDummyCompositor();
+            windowImpl.Setup(x => x.Compositor).Returns(compositor);
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
@@ -97,8 +98,8 @@ namespace Avalonia.UnitTests
             var positioner = new ManagedPopupPositioner(positionerHelper);
 
             popupImpl.SetupAllProperties();
-            popupImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(() => RendererMocks.CreateRenderer().Object);
+            var compositor = RendererMocks.CreateDummyCompositor();
+            popupImpl.Setup(x => x.Compositor).Returns(compositor);
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
