@@ -10,8 +10,6 @@
 #include "WindowImpl.h"
 #include "KeyTransform.h"
 
-@class AvnAccessibilityElement;
-
 @interface AvnView : NSView<NSTextInputClient, NSDraggingDestination, AvnTextInputMethodDelegate>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
@@ -21,5 +19,6 @@
 
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;
+-(void) raiseAccessibilityChildrenChanged;
 + (AvnPoint)toAvnPoint:(CGPoint)p;
 @end

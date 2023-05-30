@@ -35,6 +35,13 @@
     bool _isExtended;
     bool _isTransitioningToFullScreen;
     AvnMenu* _menu;
+    IAvnAutomationPeer* _automationPeer;
+    AutomationNode* _automationNode;
+}
+
+-(AvnView* _Nullable) view
+{
+    return _parent->View;
 }
 
 -(void) setIsExtended:(bool)value;
@@ -492,5 +499,45 @@
     _parent = nullptr;
 }
 
-@end
+- (id _Nullable) accessibilityFocusedUIElement
+{
+    if (![self automationPeer]->IsRootProvider())
+        return nil;
+    auto focusedPeer = [self automationPeer]->RootProvider_GetFocus();
+    return [AvnAccessibilityElement acquire:focusedPeer];
+}
 
+- (id _Nullable) accessibilityHitTest:(NSPoint)point
+{
+    if (![self automationPeer]->IsRootProvider())
+        return nil;
+    auto clientPoint = [self convertPointFromScreen:point];
+    auto localPoint = [self translateLocalPoint:ToAvnPoint(clientPoint)];
+    auto hit = [self automationPeer]->RootProvider_GetPeerFromPoint(localPoint);
+    return [AvnAccessibilityElement acquire:hit];
+}
+
+- (IAvnAutomationPeer* _Nonnull) automationPeer
+{
+    if (_automationPeer == nullptr)
+    {
+        _automationPeer = _parent->BaseEvents->GetAutomationPeer();
+        _automationNode = new AutomationNode(self);
+        _automationPeer->SetNode(_automationNode);
+    }
+    
+    return _automationPeer;
+}
+
+- (void)raiseChildrenChanged
+{
+    [_parent->View raiseAccessibilityChildrenChanged];
+}
+
+- (void)raiseFocusChanged
+{
+    id focused = [self accessibilityFocusedUIElement];
+    NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
+}
+
+@end

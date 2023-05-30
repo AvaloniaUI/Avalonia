@@ -3,63 +3,7 @@
 #include "AvnString.h"
 #include "INSWindowHolder.h"
 #include "AvnView.h"
-
-@interface AvnAccessibilityElement (Events)
-- (void) raiseChildrenChanged;
-@end
-
-@interface AvnRootAccessibilityElement : AvnAccessibilityElement
-- (AvnView *) ownerView;
-- (AvnRootAccessibilityElement *) initWithPeer:(IAvnAutomationPeer *) peer owner:(AvnView*) owner;
-- (void) raiseFocusChanged;
-@end
-
-class AutomationNode : public ComSingleObject<IAvnAutomationNode, &IID_IAvnAutomationNode>
-{
-public:
-    FORWARD_IUNKNOWN()
-
-    AutomationNode(AvnAccessibilityElement* owner)
-    {
-        _owner = owner;
-    }
-    
-    AvnAccessibilityElement* GetOwner()
-    {
-        return _owner;
-    }
-    
-    virtual void Dispose() override
-    {
-        _owner = nil;
-    }
-    
-    virtual void ChildrenChanged () override
-    {
-        [_owner raiseChildrenChanged];
-    }
-    
-    virtual void PropertyChanged (AvnAutomationProperty property) override
-    {
-        switch (property)
-        {
-            case TextProvider_SelectionChanged:
-                NSAccessibilityPostNotification(_owner, NSAccessibilitySelectedTextChangedNotification);
-                break;
-            default:
-                // Nothing to do.
-                break;
-        }
-    }
-    
-    virtual void FocusChanged () override
-    {
-        [(AvnRootAccessibilityElement*)_owner raiseFocusChanged];
-    }
-    
-private:
-    __strong AvnAccessibilityElement* _owner;
-};
+#include "WindowInterfaces.h"
 
 @implementation AvnAccessibilityElement
 {
@@ -68,7 +12,7 @@ private:
     NSMutableArray* _children;
 }
 
-+ (AvnAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
++ (id)acquire:(IAvnAutomationPeer *)peer
 {
     if (peer == nullptr)
         return nil;
@@ -83,7 +27,7 @@ private:
         auto window = peer->RootProvider_GetWindow();
         auto holder = dynamic_cast<INSWindowHolder*>(window);
         auto view = holder->GetNSView();
-        return [[AvnRootAccessibilityElement alloc] initWithPeer:peer owner:view];
+        return [view window];
     }
     else
     {
@@ -262,25 +206,8 @@ private:
 
 - (NSRect)accessibilityFrame
 {
-    id topLevel = [self accessibilityTopLevelUIElement];
-    auto result = NSZeroRect;
-
-    if ([topLevel isKindOfClass:[AvnRootAccessibilityElement class]])
-    {
-        auto root = (AvnRootAccessibilityElement*)topLevel;
-        auto view = [root ownerView];
-        
-        if (view)
-        {
-            auto window = [view window];
-            auto bounds = ToNSRect(_peer->GetBoundingRectangle());
-            auto windowBounds = [view convertRect:bounds toView:nil];
-            auto screenBounds = [window convertRectToScreen:windowBounds];
-            result = screenBounds;
-        }
-    }
-
-    return result;
+    auto bounds = _peer->GetBoundingRectangle();
+    return [self rectToScreen:bounds];
 }
 
 - (id)accessibilityParent
@@ -397,24 +324,31 @@ private:
 
 - (NSRect)accessibilityFrameForRange:(NSRange)range
 {
-    id topLevel = [self accessibilityTopLevelUIElement];
-
-    if (_peer->IsTextProvider() && [topLevel isKindOfClass:[AvnRootAccessibilityElement class]])
+    if (_peer->IsTextProvider())
     {
-        auto root = (AvnRootAccessibilityElement*)topLevel;
-        auto view = [root ownerView];
-        
-        if (view)
-        {
-            auto window = [view window];
-            auto bounds = ToNSRect(_peer->TextProvider_GetBounds((int)range.location, (int)range.length));
-            auto windowBounds = [view convertRect:bounds toView:nil];
-            auto screenBounds = [window convertRectToScreen:windowBounds];
-            return screenBounds;
-        }
+        auto bounds = _peer->TextProvider_GetBounds((int)range.location, (int)range.length);
+        return [self rectToScreen:bounds];
     }
     
     return [super accessibilityFrameForRange:range];
+}
+
+- (NSRect)rectToScreen:(AvnRect)rect
+{
+    id topLevel = [self accessibilityTopLevelUIElement];
+
+    if (![topLevel isKindOfClass:[AvnWindow class]])
+        return NSZeroRect;
+        
+    auto window = (AvnWindow*)topLevel;
+    auto view = [window view];
+
+    if (view == nil)
+        return NSZeroRect;
+    
+    auto nsRect = ToNSRect(rect);
+    auto windowRect = [view convertRect:nsRect toView:nil];
+    return [window convertRectToScreen:windowRect];
 }
 
 - (NSInteger)accessibilityInsertionPointLineNumber
@@ -517,8 +451,17 @@ private:
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
 
-- (void)raisePropertyChanged
+- (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
+    switch (property)
+    {
+        case TextProvider_SelectionChanged:
+            NSAccessibilityPostNotification(self, NSAccessibilitySelectedTextChangedNotification);
+            break;
+        default:
+            // Nothing to do.
+            break;
+    }
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused
@@ -555,63 +498,3 @@ private:
 
 @end
 
-@implementation AvnRootAccessibilityElement
-{
-    AvnView* _owner;
-}
-
-- (AvnRootAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer owner:(AvnView *)owner
-{
-    self = [super initWithPeer:peer];
-    _owner = owner;
-
-    // Seems we need to raise a focus changed notification here if we have focus
-    auto focusedPeer = [self peer]->RootProvider_GetFocus();
-    id focused = [AvnAccessibilityElement acquire:focusedPeer];
-
-    if (focused)
-        NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
-    
-    return self;
-}
-
-- (AvnView *)ownerView
-{
-    return _owner;
-}
-
-- (id)accessibilityFocusedUIElement
-{
-    auto focusedPeer = [self peer]->RootProvider_GetFocus();
-    return [AvnAccessibilityElement acquire:focusedPeer];
-}
-
-- (id)accessibilityHitTest:(NSPoint)point
-{
-    auto clientPoint = [[_owner window] convertPointFromScreen:point];
-    auto localPoint = [_owner translateLocalPoint:ToAvnPoint(clientPoint)];
-    auto hit = [self peer]->RootProvider_GetPeerFromPoint(localPoint);
-    return [AvnAccessibilityElement acquire:hit];
-}
-
-- (id)accessibilityParent
-{
-    return _owner;
-}
-
-- (void)raiseFocusChanged
-{
-    id focused = [self accessibilityFocusedUIElement];
-    NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
-}
-
-// Although this method is marked as deprecated we get runtime warnings if we don't handle it.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)accessibilityPerformAction:(NSAccessibilityActionName)action
-{
-    [_owner accessibilityPerformAction:action];
-}
-#pragma clang diagnostic pop
-
-@end

@@ -6,8 +6,10 @@
 #pragma once
 
 #import <AppKit/AppKit.h>
+#include "automation.h"
 
 @class AvnMenu;
+struct IAvnAutomationPeer;
 
 @protocol AvnWindowProtocol
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
@@ -16,6 +18,7 @@
 -(void) showAppMenuOnly;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(AvnMenu* _Nullable)menu;
+-(IAvnAutomationPeer* _Nonnull) automationPeer;
 
 -(double) getExtendedTitleBarHeight;
 -(void) setIsExtended:(bool)value;
