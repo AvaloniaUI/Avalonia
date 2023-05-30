@@ -138,7 +138,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         {
             var ctx = new TestContext(_services);
             using (ctx.Context.PushTransform(Matrix.CreateTranslation(20, 20)))
-            using (ctx.Context.PushOpacity(1, default))
+            using (ctx.Context.PushOpacity(1))
             {
 
             }
