@@ -26,7 +26,7 @@ namespace Avalonia.Input
         /// Represents a contract for accessing platform-specific settings and information.
         /// </summary>
         /// <remarks>
-        /// Focus manager can be null only if window wasn't initialized yet.
+        /// PlatformSettings can be null only if window wasn't initialized yet.
         /// </remarks>
         IPlatformSettings? PlatformSettings { get; }
         
