@@ -6,8 +6,6 @@ namespace Avalonia.Input
     public class PullGestureRecognizer : GestureRecognizer
     {
         internal static int MinPullDetectionSize = 50;
-
-        private IInputElement? _target;
         private Point _initialPosition;
         private int _gestureId;
         private IPointer? _tracking;
@@ -25,19 +23,12 @@ namespace Avalonia.Input
             set => SetValue(PullDirectionProperty, value);
         }
 
-        public override IInputElement? Target => _target;
-
         public PullGestureRecognizer(PullDirection pullDirection)
         {
             PullDirection = pullDirection;
         }
 
         public PullGestureRecognizer() { }
-
-        public override void Initialize(IInputElement target)
-        {
-            _target = target;
-        }
 
         public override void PointerCaptureLost(IPointer pointer)
         {
@@ -49,7 +40,7 @@ namespace Avalonia.Input
 
         public override void PointerMoved(PointerEventArgs e)
         {
-            if (_tracking == e.Pointer && _target is Visual visual)
+            if (_tracking == e.Pointer && Target is Visual visual)
             {
                 var currentPosition = e.GetPosition(visual);
                 Capture(e.Pointer);
@@ -86,7 +77,7 @@ namespace Avalonia.Input
 
                 _pullInProgress = true;
                 var pullEventArgs = new PullGestureEventArgs(_gestureId, delta, PullDirection);
-                _target?.RaiseEvent(pullEventArgs);
+                Target?.RaiseEvent(pullEventArgs);
 
                 e.Handled = pullEventArgs.Handled;
             }
@@ -94,7 +85,7 @@ namespace Avalonia.Input
 
         public override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (_target != null && _target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 var position = e.GetPosition(visual);
 
@@ -141,7 +132,7 @@ namespace Avalonia.Input
             _initialPosition = default;
             _pullInProgress = false;
 
-            _target?.RaiseEvent(new PullGestureEndedEventArgs(_gestureId, PullDirection));
+            Target?.RaiseEvent(new PullGestureEndedEventArgs(_gestureId, PullDirection));
         }
     }
 }

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Avalonia.Input.GestureRecognizers
+﻿namespace Avalonia.Input.GestureRecognizers
 {
     public abstract class GestureRecognizer : StyledElement
     {
-        public abstract IInputElement? Target { get; }
-        public abstract void Initialize(IInputElement target);
+        protected internal IInputElement? Target { get; internal set; }
+
         public abstract void PointerPressed(PointerPressedEventArgs e);
         public abstract void PointerReleased(PointerReleasedEventArgs e);
         public abstract void PointerMoved(PointerEventArgs e);

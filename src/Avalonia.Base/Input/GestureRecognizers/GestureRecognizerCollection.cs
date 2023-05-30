@@ -25,7 +25,7 @@ namespace Avalonia.Input.GestureRecognizers
             }
 
             _recognizers.Add(recognizer);
-            recognizer.Initialize(_inputElement);
+            recognizer.Target = _inputElement;
 
             // Hacks to make bindings work
 
