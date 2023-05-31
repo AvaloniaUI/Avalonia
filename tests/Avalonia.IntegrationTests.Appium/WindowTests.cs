@@ -417,10 +417,8 @@ namespace Avalonia.IntegrationTests.Appium
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
-                // but in the meantime use the `parent::' selector to return the parent "real" window. 
                 return _session.FindElementByXPath(
-                    $"XCUIElementTypeWindow//*[@identifier='{identifier}']/parent::XCUIElementTypeWindow");
+                    $"XCUIElementTypeWindow[@identifier='{identifier}']");
             }
             else
             {
