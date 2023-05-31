@@ -60,9 +60,9 @@ namespace Avalonia.FreeDesktop
         {
             try
             {
-                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item2));
+                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item1, x.Item3));
                 var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
-                OnNameChange(nameOwner);
+                OnNameChange("org.kde.StatusNotifierWatcher", nameOwner);
             }
             catch
             {
@@ -72,9 +72,9 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private void OnNameChange(string? newOwner)
+        private void OnNameChange(string name, string? newOwner)
         {
-            if (_isDisposed || _connection is null)
+            if (_isDisposed || _connection is null || name != "org.kde.StatusNotifierWatcher")
                 return;
 
             if (!_serviceConnected & newOwner is not null)
