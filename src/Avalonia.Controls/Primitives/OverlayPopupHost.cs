@@ -120,11 +120,11 @@ namespace Avalonia.Controls.Primitives
         void IManagedPopupPositionerPopup.MoveAndResize(Point devicePoint, Size virtualSize)
         {
             _lastRequestedPosition = devicePoint;
-            Dispatcher.UIThread.Post(() =>
+            MediaContext.Instance.BeginInvokeOnRender(() =>
             {
-                OverlayLayer.SetLeft(this, _lastRequestedPosition.X);
-                OverlayLayer.SetTop(this, _lastRequestedPosition.Y);
-            }, DispatcherPriority.Render);
+                Canvas.SetLeft(this, _lastRequestedPosition.X);
+                Canvas.SetTop(this, _lastRequestedPosition.Y);
+            });
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;

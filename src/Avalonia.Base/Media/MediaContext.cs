@@ -212,7 +212,12 @@ internal partial class MediaContext : ICompositorScheduler
         }
         while (count > 0);
     }
-    
+
+    /// <summary>
+    /// Executes the <param name="callback">callback</param> in the layout pass that will occur
+    /// immediately before the next rendered frame.
+    /// </summary>
+    /// <param name="callback">Code to execute.</param>
     public void BeginInvokeOnRender(Action callback)
     {
         if (_invokeOnRenderCallbacks == null)
