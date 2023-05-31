@@ -25,6 +25,7 @@
 #include "AvnView.h"
 #include "WindowInterfaces.h"
 #include "PopupImpl.h"
+#include "AvnString.h"
 
 @implementation CLASS_NAME
 {
@@ -515,6 +516,11 @@
     auto localPoint = [[self view] translateLocalPoint:ToAvnPoint(clientPoint)];
     auto hit = [self automationPeer]->RootProvider_GetPeerFromPoint(localPoint);
     return [AvnAccessibilityElement acquire:hit];
+}
+
+- (NSString *)accessibilityIdentifier
+{
+    return GetNSStringAndRelease([self automationPeer]->GetAutomationId());
 }
 
 - (IAvnAutomationPeer* _Nonnull) automationPeer
