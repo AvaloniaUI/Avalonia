@@ -17,5 +17,6 @@
       <ReferencePath Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
       <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
     </ItemGroup>
+    <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may not work on all platforms. Set AvaloniaAccessUnstablePrivateApis to False to disable this warning." />
   </Target>
 </Project>
