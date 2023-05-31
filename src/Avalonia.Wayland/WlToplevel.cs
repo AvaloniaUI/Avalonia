@@ -104,6 +104,8 @@ namespace Avalonia.Wayland
         public override void Hide()
         {
             WlSurface.Attach(null, 0, 0);
+            _exportedToplevel?.Dispose();
+            _exportedToplevel = null;
             _xdgToplevel?.Dispose();
             _xdgToplevel = null;
             _toplevelDecoration?.Dispose();
