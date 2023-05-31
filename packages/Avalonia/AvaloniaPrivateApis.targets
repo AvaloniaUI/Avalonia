@@ -1,7 +1,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <FrameworkToUse Condition="@(ReferencesToRemove.First().Contains('net6.0')">net6.0</FrameworkToUse>
-    <FrameworkToUse Condition="@(ReferencesToRemove.First().Contains('netstandard2.0')">netstandard2.0</FrameworkToUse>
+    <FrameworkToUse>net6.0</FrameworkToUse>
+    <FrameworkToUse Condition="$(TargetFramework.StartsWith('net4')) == 'true' or $(TargetFramework.StartsWith('net5')) == 'true' or $(TargetFramework.StartsWith('netsta')) == 'true' or $(TargetFramework.StartsWith('netcore')) == 'true'">netstandard2.0</FrameworkToUse>
   </PropertyGroup>
   <Target Name="RemoveAvaloniaRefAssemblies" AfterTargets="ResolveTargetingPackAssets" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
     <ItemGroup>
@@ -13,9 +13,9 @@
   </Target>
   <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
     <ItemGroup>
-      <Reference Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
-      <ReferencePath Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
-      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
+      <Reference Include="$(MSBuildThisFileDirectory)/lib/$(FrameworkToUse)/*.dll"/>
+      <ReferencePath Include="$(MSBuildThisFileDirectory)/lib/$(FrameworkToUse)/*.dll"/>
+      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/lib/$(FrameworkToUse)/*.dll"/>
     </ItemGroup>
     <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may not work on all platforms. Set AvaloniaAccessUnstablePrivateApis to False to disable this warning." />
   </Target>
