@@ -515,7 +515,11 @@
     auto clientPoint = [self convertPointFromScreen:point];
     auto localPoint = [[self view] translateLocalPoint:ToAvnPoint(clientPoint)];
     auto hit = [self automationPeer]->RootProvider_GetPeerFromPoint(localPoint);
-    return [AvnAccessibilityElement acquire:hit];
+    
+    if (hit != nullptr)
+        return [AvnAccessibilityElement acquire:hit];
+    else
+        return [super accessibilityHitTest:point];
 }
 
 - (NSString *)accessibilityIdentifier
