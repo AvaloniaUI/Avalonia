@@ -43,7 +43,7 @@ namespace Avalonia.Input
         PenBarrelButton = 2048
     }
 
-    [NotClientImplementable]
+    [PrivateApi]
     public interface IKeyboardDevice : IInputDevice
     {
     }
