@@ -163,26 +163,17 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
-            if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
-            {
-                if(gestureRecognizer.Target != null)
-                {
-                    var e = new PointerEventArgs(InputElement.PointerMovedEvent, gestureRecognizer.Target, _pointer, (Visual)root,
-                        p, timestamp, properties, inputModifiers, intermediatePoints);
-                    gestureRecognizer.PointerMoved(e);
-
-                    return e.Handled;
-                }
-            }
-
-            var source = _pointer.Captured ?? hitTest;
+            var source = _pointer.CapturedGestureRecognizer?.Target ?? _pointer.Captured ?? hitTest;
 
             if (source is object)
             {
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)root,
                     p, timestamp, properties, inputModifiers, intermediatePoints);
 
-                source.RaiseEvent(e);
+                if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                    gestureRecognizer.PointerMovedInternal(e);
+                else
+                    source.RaiseEvent(e);
                 return e.Handled;
             }
 
@@ -195,27 +186,18 @@ namespace Avalonia.Input
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
-            
-            if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
-            {
-                if (gestureRecognizer.Target != null)
-                {
-                    var e = new PointerReleasedEventArgs(gestureRecognizer.Target, _pointer, (Visual)root, p, timestamp, props, inputModifiers,
-                    _lastMouseDownButton);
-                    gestureRecognizer.PointerReleased(e);
 
-                    return e.Handled;
-                }
-            }
-
-            var source = _pointer.Captured ?? hitTest;
+            var source = _pointer.CapturedGestureRecognizer?.Target ?? _pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
                 var e = new PointerReleasedEventArgs(source, _pointer, (Visual)root, p, timestamp, props, inputModifiers,
                     _lastMouseDownButton);
 
-                source?.RaiseEvent(e);
+                if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                    gestureRecognizer.PointerReleasedInternal(e);
+                else
+                    source?.RaiseEvent(e);
                 _pointer.Capture(null);
                 _pointer.CaptureGestureRecognizer(null);
                 _lastMouseDownButton = default;

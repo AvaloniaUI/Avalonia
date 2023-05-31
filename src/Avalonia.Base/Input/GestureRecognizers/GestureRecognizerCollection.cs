@@ -53,7 +53,7 @@ namespace Avalonia.Input.GestureRecognizers
                 return false;
             foreach (var r in _recognizers)
             {
-                r.PointerPressed(e);
+                r.PointerPressedInternal(e);
             }
 
             return e.Handled;
@@ -70,7 +70,7 @@ namespace Avalonia.Input.GestureRecognizers
                 if (pointer?.CapturedGestureRecognizer != null)
                     break;
 
-                r.PointerReleased(e);
+                r.PointerReleasedInternal(e);
             }
             return e.Handled;
         }
@@ -86,7 +86,7 @@ namespace Avalonia.Input.GestureRecognizers
                 if (pointer?.CapturedGestureRecognizer != null)
                     break;
 
-                r.PointerMoved(e);
+                r.PointerMovedInternal(e);
             }
             return e.Handled;
         }

@@ -21,12 +21,12 @@ namespace Avalonia.Input
             PointerReleased(e);
         }
 
-        protected internal override void PointerCaptureLost(IPointer pointer)
+        protected override void PointerCaptureLost(IPointer pointer)
         {
             RemoveContact(pointer);
         }
 
-        protected internal override void PointerMoved(PointerEventArgs e)
+        protected override void PointerMoved(PointerEventArgs e)
         {
             if (Target != null && Target is Visual visual)
             {
@@ -57,7 +57,7 @@ namespace Avalonia.Input
             }
         }
 
-        protected internal override void PointerPressed(PointerPressedEventArgs e)
+        protected override void PointerPressed(PointerPressedEventArgs e)
         {
             if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
@@ -90,7 +90,7 @@ namespace Avalonia.Input
             }
         }
 
-        protected internal override void PointerReleased(PointerReleasedEventArgs e)
+        protected override void PointerReleased(PointerReleasedEventArgs e)
         {
             RemoveContact(e.Pointer);
         }

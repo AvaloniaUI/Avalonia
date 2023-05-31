@@ -103,7 +103,7 @@ namespace Avalonia.Input
                             keyModifier, MouseButton.Left);
                     if (gestureTarget != null)
                     {
-                        pointer?.CapturedGestureRecognizer?.PointerReleased(e);
+                        pointer?.CapturedGestureRecognizer?.PointerReleasedInternal(e);
                     }
                     else
                     {
@@ -132,7 +132,7 @@ namespace Avalonia.Input
 
                 if (gestureTarget != null)
                 {
-                    pointer?.CapturedGestureRecognizer?.PointerMoved(e);
+                    pointer?.CapturedGestureRecognizer?.PointerMovedInternal(e);
                 }
                 else
                 {

@@ -91,7 +91,7 @@ namespace Avalonia.Input.GestureRecognizers
             set => SetAndRaise(ScrollStartDistanceProperty, ref _scrollStartDistance, value);
         }
 
-        protected internal override void PointerPressed(PointerPressedEventArgs e)
+        protected override void PointerPressed(PointerPressedEventArgs e)
         {
             if (e.Pointer.IsPrimary && 
                 (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
@@ -103,7 +103,7 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
 
-        protected internal override void PointerMoved(PointerEventArgs e)
+        protected override void PointerMoved(PointerEventArgs e)
         {
             if (e.Pointer == _tracking)
             {
@@ -143,7 +143,7 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
 
-        protected internal override void PointerCaptureLost(IPointer pointer)
+        protected override void PointerCaptureLost(IPointer pointer)
         {
             if (pointer == _tracking) EndGesture();
         }
@@ -163,7 +163,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
 
-        protected internal override void PointerReleased(PointerReleasedEventArgs e)
+        protected override void PointerReleased(PointerReleasedEventArgs e)
         {
             if (e.Pointer == _tracking && _scrolling)
             {

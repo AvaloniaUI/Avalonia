@@ -30,7 +30,7 @@ namespace Avalonia.UnitTests
             var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
                 Timestamp(), PointerPointProperties.None, modifiers);
             if (_pointer.CapturedGestureRecognizer != null)
-                _pointer.CapturedGestureRecognizer.PointerMoved(e);
+                _pointer.CapturedGestureRecognizer.PointerMovedInternal(e);
             else
                 target.RaiseEvent(e);
 
@@ -45,7 +45,7 @@ namespace Avalonia.UnitTests
                 modifiers, MouseButton.None);
 
             if (_pointer.CapturedGestureRecognizer != null)
-                _pointer.CapturedGestureRecognizer.PointerReleased(e);
+                _pointer.CapturedGestureRecognizer.PointerReleasedInternal(e);
             else
                 source.RaiseEvent(e);
 
