@@ -1,19 +1,4 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\AvaloniaBuildTasks.targets"/>
-
-  <Target Name="RemoveAvaloniaRefAssemblies" AfterTargets="ResolveTargetingPackAssets" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
-    <ItemGroup>
-      <ReferencesToRemove Include="@(Reference)" Condition="'%(Reference.NuGetPackageId)' == 'Avalonia'" />
-    </ItemGroup>
-    <ItemGroup>
-      <Reference Remove="@(ReferencesToRemove)" />
-    </ItemGroup>
-  </Target>
-  <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
-    <ItemGroup>
-      <Reference Include="$(MSBuildThisFileDirectory)/lib/net6.0/*.dll"/>
-      <ReferencePath Include="$(MSBuildThisFileDirectory)/lib/net6.0/*.dll"/>
-      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/lib/net6.0/*.dll"/>
-    </ItemGroup>
-  </Target>
+  <Import Project="$(MSBuildThisFileDirectory)\AvaloniaPrivateApis.targets" />
 </Project>

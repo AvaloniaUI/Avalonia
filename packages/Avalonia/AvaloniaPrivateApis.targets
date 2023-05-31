@@ -1,0 +1,21 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FrameworkToUse Condition="@(ReferencesToRemove.First().Contains('net6.0')">net6.0</FrameworkToUse>
+    <FrameworkToUse Condition="@(ReferencesToRemove.First().Contains('netstandard2.0')">netstandard2.0</FrameworkToUse>
+  </PropertyGroup>
+  <Target Name="RemoveAvaloniaRefAssemblies" AfterTargets="ResolveTargetingPackAssets" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
+    <ItemGroup>
+      <ReferencesToRemove Include="@(Reference)" Condition="'%(Reference.NuGetPackageId)' == 'Avalonia'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Remove="@(ReferencesToRemove)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
+    <ItemGroup>
+      <Reference Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
+      <ReferencePath Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
+      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/lib/@(FrameworkToUse)/*.dll"/>
+    </ItemGroup>
+  </Target>
+</Project>
