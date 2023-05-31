@@ -148,8 +148,8 @@ namespace Avalonia.Wayland
             }
             else
             {
-                _xdgToplevel?.SetMinSize((int)ClientSize.Width, (int)ClientSize.Height);
-                _xdgToplevel?.SetMaxSize((int)ClientSize.Width, (int)ClientSize.Height);
+                _xdgToplevel?.SetMinSize(AppliedState.Size.Width, AppliedState.Size.Height);
+                _xdgToplevel?.SetMaxSize(AppliedState.Size.Width, AppliedState.Size.Height);
             }
         }
 
