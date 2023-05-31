@@ -67,7 +67,7 @@ namespace Avalonia.DesignerSupport.Remote
                 Height = clientSize.Height
             });
             ClientSize = clientSize;
-            RenderIfNeeded();
+            RenderAndSendFrameIfNeeded();
         }
 
         public void Move(PixelPoint point)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -11,7 +10,6 @@ using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 using Key = Avalonia.Input.Key;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
@@ -20,28 +18,29 @@ using ProtocolMouseButton = Avalonia.Remote.Protocol.Input.MouseButton;
 namespace Avalonia.Controls.Remote.Server
 {
     [Unstable]
-    internal class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface, ITopLevelImpl
+    internal partial class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface, ITopLevelImpl
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
-        private LockedFramebuffer? _framebuffer;
         private readonly object _lock = new();
+        private readonly Action _sendLastFrameIfNeeded;
+        private readonly Action _renderAndSendFrameIfNeeded;
+        private Framebuffer _framebuffer = Framebuffer.Empty;
         private long _lastSentFrame = -1;
         private long _lastReceivedFrame = -1;
         private long _nextFrameNumber = 1;
         private ClientViewportAllocatedMessage? _pendingAllocation;
-        private bool _queuedNextRender;
-        private bool _inRender;
-        private Vector _dpi = new Vector(96, 96);
-        private ProtocolPixelFormat[]? _supportedFormats;
+        private Vector _dpi = new(96, 96);
+        private ProtocolPixelFormat? _format;
 
         public RemoteServerTopLevelImpl(IAvaloniaRemoteTransportConnection transport)
         {
+            _sendLastFrameIfNeeded = SendLastFrameIfNeeded;
+            _renderAndSendFrameIfNeeded = RenderAndSendFrameIfNeeded;
+
             _transport = transport;
             _transport.OnMessage += OnMessage;
 
             KeyboardDevice = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
-            QueueNextRender();
-            Compositor.AfterCommit += QueueNextRender;
         }
 
         private static RawPointerEventType GetAvaloniaEventType(ProtocolMouseButton button, bool pressed)
@@ -118,23 +117,23 @@ namespace Avalonia.Controls.Remote.Server
                     {
                         _lastReceivedFrame = Math.Max(lastFrame.SequenceId, _lastReceivedFrame);
                     }
-                    Dispatcher.UIThread.Post(RenderIfNeeded);
+                    Dispatcher.UIThread.Post(_sendLastFrameIfNeeded);
                 }
-                if(obj is ClientRenderInfoMessage renderInfo)
+                if (obj is ClientRenderInfoMessage renderInfo)
                 {
-                    lock(_lock)
+                    lock (_lock)
                     {
                         _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
-                        _queuedNextRender = true;
                     }
-                    
-                    Dispatcher.UIThread.Post(RenderIfNeeded);
+                    Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
                 }
                 if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
                 {
                     lock (_lock)
-                        _supportedFormats = supportedFormats.Formats;
-                    Dispatcher.UIThread.Post(RenderIfNeeded);
+                    {
+                        _format = TryGetValidPixelFormat(supportedFormats.Formats);
+                    }
+                    Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
                 }
                 if (obj is MeasureViewportMessage measure)
                     Dispatcher.UIThread.Post(() =>
@@ -161,7 +160,7 @@ namespace Avalonia.Controls.Remote.Server
                                 }
                                 _dpi = new Vector(allocation.DpiX, allocation.DpiY);
                                 ClientSize = new Size(allocation.Width, allocation.Height);
-                                RenderIfNeeded();
+                                RenderAndSendFrameIfNeeded();
                             });
 
                         _pendingAllocation = allocated;
@@ -250,10 +249,24 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
+        private static ProtocolPixelFormat? TryGetValidPixelFormat(ProtocolPixelFormat[]? formats)
+        {
+            if (formats is not null)
+            {
+                foreach (var format in formats)
+                {
+                    if (format is >= 0 and <= ProtocolPixelFormat.MaxValue)
+                        return format;
+                }
+            }
+
+            return null;
+        }
+
         protected void SetDpi(Vector dpi)
         {
             _dpi = dpi;
-            RenderIfNeeded();
+            RenderAndSendFrameIfNeeded();
         }
 
         protected virtual Size Measure(Size constraint)
@@ -265,88 +278,63 @@ namespace Avalonia.Controls.Remote.Server
 
         public override IEnumerable<object> Surfaces => new[] { this };
 
-        private FrameMessage RenderFrame(int width, int height, ProtocolPixelFormat? format)
+        private Framebuffer GetOrCreateFramebuffer()
         {
-            var scalingX = _dpi.X / 96.0;
-            var scalingY = _dpi.Y / 96.0;
-
-            width = (int)(width * scalingX);
-            height = (int)(height * scalingY);
-
-            var fmt = format ?? ProtocolPixelFormat.Rgba8888;
-            var bpp = fmt == ProtocolPixelFormat.Rgb565 ? 2 : 4;
-            var data = new byte[width * height * bpp];
-            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-            try
+            lock (_lock)
             {
-                if (width > 0 && height > 0)
-                {
-                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, new((PixelFormatEnum)fmt),
-                        null);
-                    Paint?.Invoke(new Rect(0, 0, width, height));
-                }
+                if (_format is not { } format)
+                    _framebuffer = Framebuffer.Empty;
+                else if (_framebuffer.Format != format || _framebuffer.ClientSize != ClientSize || _framebuffer.Dpi != _dpi)
+                    _framebuffer = new Framebuffer(format, ClientSize, _dpi);
+
+                return _framebuffer;
             }
-            finally
-            {
-                _framebuffer = null;
-                handle.Free();
-            }
-            return new FrameMessage
-            {
-                Data = data,
-                Format = fmt,
-                Width = width,
-                Height = height,
-                Stride = width * bpp,
-                DpiX = _dpi.X,
-                DpiY = _dpi.Y
-            };
         }
 
         public ILockedFramebuffer Lock()
-        {
-            if (_framebuffer == null)
-                throw new InvalidOperationException("Paint was not requested, wait for Paint event");
-            return _framebuffer;
-        }
+            => GetOrCreateFramebuffer().Lock(_sendLastFrameIfNeeded);
 
-        protected void RenderIfNeeded()
+        private void SendLastFrameIfNeeded()
         {
+            if (IsDisposed)
+                return;
+
+            Framebuffer framebuffer;
+            long sequenceId;
+
             lock (_lock)
             {
-                if (_lastReceivedFrame != _lastSentFrame || !_queuedNextRender || _supportedFormats == null)
+                // Ideally we should only send a frame if its status is Rendered: since the renderer might not be
+                // initialized at the start, we're sending black frames in this case. However, this was the historical
+                // behavior and some external programs are depending on receiving a frame asap.
+                if (_lastReceivedFrame != _lastSentFrame || _framebuffer.GetStatus() == FrameStatus.CopiedToMessage)
                     return;
 
-            }
-
-            var format = ProtocolPixelFormat.Rgba8888;
-            foreach(var fmt in _supportedFormats)
-                if (fmt <= ProtocolPixelFormat.MaxValue)
-                {
-                    format = fmt;
-                    break;
-                }
-
-            _inRender = true;
-            var frame = RenderFrame((int) ClientSize.Width, (int) ClientSize.Height, format);
-            lock (_lock)
-            {
+                framebuffer = _framebuffer;
                 _lastSentFrame = _nextFrameNumber++;
-                frame.SequenceId = _lastSentFrame;
-                _queuedNextRender = false;
+                sequenceId = _lastSentFrame;
             }
-            _inRender = false;
-            _transport.Send(frame);
+
+            _transport.Send(framebuffer.ToMessage(sequenceId));
         }
 
-        private void QueueNextRender()
+        protected void RenderAndSendFrameIfNeeded()
         {
-            if (!_inRender && !IsDisposed)
+            if (IsDisposed)
+                return;
+
+            lock (_lock)
             {
-                _queuedNextRender = true;
-                DispatcherTimer.RunOnce(RenderIfNeeded, TimeSpan.FromMilliseconds(2), DispatcherPriority.Background);
+                if (_lastReceivedFrame != _lastSentFrame || _format is null)
+                    return;
             }
+
+            var framebuffer = GetOrCreateFramebuffer();
+
+            if (framebuffer.Stride > 0)
+                Paint?.Invoke(new Rect(framebuffer.ClientSize));
+
+            SendLastFrameIfNeeded();
         }
 
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
