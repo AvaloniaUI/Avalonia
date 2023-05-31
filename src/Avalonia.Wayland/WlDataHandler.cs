@@ -224,9 +224,6 @@ namespace Avalonia.Wayland
                         case nameof(DataFormats.Files):
                             _wlDataSource.Offer(MimeTypes.UriList);
                             break;
-                        default:
-                            _wlDataSource.Offer(format);
-                            break;
                     }
                 }
             }

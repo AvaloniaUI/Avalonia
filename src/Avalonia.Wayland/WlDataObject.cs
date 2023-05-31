@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using NWayland.Protocols.Wayland;
 
 namespace Avalonia.Wayland
@@ -11,7 +12,6 @@ namespace Avalonia.Wayland
     internal sealed class WlDataObject : IDataObject, IDisposable, WlDataOffer.IEvents
     {
         private readonly AvaloniaWaylandPlatform _platform;
-        private readonly Dictionary<string, object?> _cache;
 
         private const int BufferSize = 1024;
 
@@ -21,7 +21,6 @@ namespace Avalonia.Wayland
             WlDataOffer = wlDataOffer;
             WlDataOffer.Events = this;
             MimeTypes = new List<string>();
-            _cache = new Dictionary<string, object?>();
         }
 
         internal WlDataOffer WlDataOffer { get; }
@@ -34,106 +33,50 @@ namespace Avalonia.Wayland
 
         public IEnumerable<string> GetDataFormats()
         {
-            foreach (var mimeType in MimeTypes)
-            {
-                switch (mimeType)
-                {
-                    case Wayland.MimeTypes.Text:
-                    case Wayland.MimeTypes.TextUtf8:
-                        yield return DataFormats.Text;
-                        break;
-                    case Wayland.MimeTypes.UriList:
-                        yield return DataFormats.Files;
-                        break;
-                    default:
-                        yield return mimeType;
-                        break;
-                }
-            }
+            if (MimeTypes.Contains(Wayland.MimeTypes.Text) || MimeTypes.Contains(Wayland.MimeTypes.TextUtf8))
+                yield return DataFormats.Text;
+            if (MimeTypes.Contains(Wayland.MimeTypes.UriList))
+                yield return DataFormats.Files;
         }
 
         public bool Contains(string dataFormat) => dataFormat switch
             {
                 nameof(DataFormats.Text) => MimeTypes.Contains(Wayland.MimeTypes.Text) || MimeTypes.Contains(Wayland.MimeTypes.TextUtf8),
                 nameof(DataFormats.Files) => MimeTypes.Contains(Wayland.MimeTypes.UriList),
-                _ => MimeTypes.Contains(dataFormat)
+                _ => false
             };
 
         public string? GetText()
         {
-            if (_cache.TryGetValue(DataFormats.Text, out var text))
-                return text as string;
             var mimeType = MimeTypes.FirstOrDefault(static x => x is Wayland.MimeTypes.Text) ?? MimeTypes.FirstOrDefault(static x => x is Wayland.MimeTypes.TextUtf8);
             if (mimeType is null)
                 return null;
+
             var fd = Receive(mimeType);
             var result = fd < 0 ? null : ReceiveText(fd);
-            _cache.Add(DataFormats.Text, result);
             return result;
         }
 
-        public IEnumerable<string>? GetFileNames()
+        public IEnumerable<IStorageItem>? GetFileNames()
         {
-            if (_cache.TryGetValue(DataFormats.Files, out var fileNames))
-                return fileNames as IEnumerable<string>;
             if (!MimeTypes.Contains(Wayland.MimeTypes.UriList))
                 return null;
+
             var fd = Receive(Wayland.MimeTypes.UriList);
-            var result = fd < 0 ? null : ReceiveText(fd).Split('\n');
-            _cache.Add(DataFormats.Files, result);
-            return result;
+            var text = fd < 0 ? null : ReceiveText(fd);
+            return text?
+                .Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(static x => StorageProviderHelpers.TryCreateBclStorageItem(new Uri(x).LocalPath))
+                .Where(static x => x is not null)!;
         }
 
-        public unsafe object? Get(string dataFormat)
-        {
-            switch (dataFormat)
+        public object? Get(string dataFormat) =>
+            dataFormat switch
             {
-                case nameof(DataFormats.Text):
-                    return GetText();
-                case nameof(DataFormats.Files):
-                    return GetFileNames();
-            }
-
-            if (_cache.TryGetValue(dataFormat, out var obj))
-                return obj;
-
-            if (!MimeTypes.Contains(dataFormat))
-                return null;
-
-            var fd = Receive(dataFormat);
-            if (fd < 0)
-                return null;
-
-#if NET5_0_OR_GREATER
-            var buffer = stackalloc byte[BufferSize];
-            var ms = new MemoryStream();
-            while (true)
-            {
-                var read = LibC.read(fd, (IntPtr)buffer, BufferSize);
-                if (read <= 0)
-                    break;
-                ms.Write(new ReadOnlySpan<byte>(buffer, BufferSize));
-            }
-#else
-            var buffer = new byte[BufferSize];
-            var ms = new MemoryStream();
-            fixed (byte* ptr = buffer)
-            {
-                while (true)
-                {
-                    var read = LibC.read(fd, (IntPtr)ptr, BufferSize);
-                    if (read <= 0)
-                        break;
-                    ms.Write(buffer, 0, read);
-                }
-            }
-#endif
-
-            LibC.close(fd);
-            var result = ms.ToArray();
-            _cache.Add(dataFormat, result);
-            return result;
-        }
+                nameof(DataFormats.Text) => GetText(),
+                nameof(DataFormats.Files) => GetFileNames(),
+                _ => null
+            };
 
         public void OnOffer(WlDataOffer eventSender, string mimeType) => MimeTypes.Add(mimeType);
 
