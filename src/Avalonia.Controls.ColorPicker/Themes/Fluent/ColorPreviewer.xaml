@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:pc="using:Avalonia.Controls.Primitives.Converters">
+                    xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
+                    x:ClassModifier="internal">
 
   <pc:AccentColorConverter x:Key="AccentColorConverter" />
   <x:Double x:Key="ColorPreviewerAccentSectionWidth">80</x:Double>

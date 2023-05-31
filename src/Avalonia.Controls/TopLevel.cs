@@ -250,7 +250,7 @@ namespace Avalonia.Controls
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
                 {
-                    var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Back;
+                    var keymap = PlatformSettings?.HotkeyConfiguration.Back;
 
                     if (keymap != null)
                     {
@@ -391,7 +391,7 @@ namespace Avalonia.Controls
         /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
+        public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
 
         /// <summary>
         /// Gets the renderer for the window.
@@ -487,6 +487,9 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 
+        /// <inheritdoc />
+        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {

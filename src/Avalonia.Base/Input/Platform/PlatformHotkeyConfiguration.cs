@@ -1,16 +1,20 @@
 using System.Collections.Generic;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
-    public class PlatformHotkeyConfiguration
+    /// <summary>
+    /// The PlatformHotkeyConfiguration class represents a configuration for platform-specific hotkeys in an Avalonia application. 
+    /// </summary>
+    public sealed class PlatformHotkeyConfiguration
     {
+        [PrivateApi]
         public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {
 
         }
 
+        [PrivateApi]
         public PlatformHotkeyConfiguration(KeyModifiers commandModifiers,
             KeyModifiers selectionModifiers = KeyModifiers.Shift,
             KeyModifiers wholeWordTextActionModifiers = KeyModifiers.Control)

@@ -16,9 +16,9 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
-        internal IRenderer Renderer { get; }
+        public IRenderer Renderer { get; }
         
-        internal IHitTester HitTester { get; }
+        public IHitTester HitTester { get; }
 
         /// <summary>
         /// The scaling factor to use in rendering.

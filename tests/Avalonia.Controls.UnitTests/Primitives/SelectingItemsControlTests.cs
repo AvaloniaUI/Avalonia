@@ -1234,7 +1234,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
                 var container = target.ContainerFromIndex(1)!;
@@ -1258,7 +1258,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = items,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
                 _helper.Down(target.Presenter.Panel.Children[1]);
@@ -1355,7 +1355,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
                 _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
@@ -1373,7 +1373,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
                 _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
@@ -2141,7 +2141,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.RaiseEvent(new TextInputEventArgs
                 {
                     RoutedEvent = InputElement.TextInputEvent,
-                    Device = KeyboardDevice.Instance, 
                     Text = "Foo"
                 });
 
@@ -2152,7 +2151,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.RaiseEvent(new TextInputEventArgs
                 {
                     RoutedEvent = InputElement.TextInputEvent, 
-                    Device = KeyboardDevice.Instance, 
                     Text = "Foo"
                 });
 

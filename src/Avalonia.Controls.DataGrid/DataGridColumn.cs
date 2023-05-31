@@ -703,7 +703,7 @@ namespace Avalonia.Controls
         public void ClearSort()
         {
             //InvokeProcessSort is already validating if sorting is possible
-            _headerCell?.InvokeProcessSort(KeyboardHelper.GetPlatformCtrlOrCmdKeyModifier());
+            _headerCell?.InvokeProcessSort(KeyboardHelper.GetPlatformCtrlOrCmdKeyModifier(OwningGrid));
         }
 
         /// <summary>

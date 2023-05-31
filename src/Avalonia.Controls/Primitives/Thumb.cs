@@ -113,6 +113,8 @@ namespace Avalonia.Controls.Primitives
 
             PseudoClasses.Add(":pressed");
 
+            e.PreventGestureRecognition();
+
             RaiseEvent(ev);
         }
 
