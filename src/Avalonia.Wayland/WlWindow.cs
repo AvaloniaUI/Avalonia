@@ -144,6 +144,8 @@ namespace Avalonia.Wayland
         {
             foreach (var transparencyLevel in transparencyLevels)
             {
+                if (transparencyLevel == TransparencyLevel)
+                    return;
                 if (!TryApplyTransparencyLevel(transparencyLevel))
                     continue;
                 TransparencyLevel = transparencyLevel;
@@ -278,9 +280,6 @@ namespace Avalonia.Wayland
 
         private bool TryApplyTransparencyLevel(WindowTransparencyLevel transparencyLevel)
         {
-            if (transparencyLevel == TransparencyLevel)
-                return false;
-
             if (transparencyLevel == WindowTransparencyLevel.None)
             {
                 _platform.KdeKwinBlurManager?.Unset(WlSurface);
