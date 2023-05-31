@@ -135,7 +135,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{86C53C40
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.LinuxFramebuffer", "src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj", "{854568D5-13D1-4B4F-B50D-534DC7EFD3C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Win32.Interop", "src\Windows\Avalonia.Win32.Interop\Avalonia.Win32.Interop.csproj", "{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Win32.Interoperability", "src\Windows\Avalonia.Win32.Interoperability\Avalonia.Win32.Interoperability.csproj", "{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Skia.RenderTests", "tests\Avalonia.Skia.RenderTests\Avalonia.Skia.RenderTests.csproj", "{E1582370-37B3-403C-917F-8209551B1634}"
 EndProject
@@ -251,6 +251,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generators.Sandbox", "samples\Generators.Sandbox\Generators.Sandbox.csproj", "{A82AD1BC-EBE6-4FC3-A13B-D52A50297533}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppWithoutLifetime", "samples\AppWithoutLifetime\AppWithoutLifetime.csproj", "{F8928267-688E-4A51-989C-612A72446D33}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeAreaDemo", "samples\SafeAreaDemo\SafeAreaDemo.csproj", "{6B60A970-D5D2-49C2-8BAB-F9C7973B74B6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeAreaDemo.Android", "samples\SafeAreaDemo.Android\SafeAreaDemo.Android.csproj", "{22E3BC08-EAF7-4889-BDC4-B4D3046C4E2D}"

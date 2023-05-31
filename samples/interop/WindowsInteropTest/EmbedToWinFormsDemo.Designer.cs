@@ -1,4 +1,4 @@
-﻿using Avalonia.Win32.Embedding;
+﻿using Avalonia.Win32.Interoperability;
 
 namespace WindowsInteropTest
 {
