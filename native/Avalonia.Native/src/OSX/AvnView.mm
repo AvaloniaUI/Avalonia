@@ -777,7 +777,7 @@
     return _accessibilityChildren;
 }
 
-- (void)raiseChildrenChanged
+- (void)raiseAccessibilityChildrenChanged
 {
     auto changed = _accessibilityChildren ? [NSMutableSet setWithArray:_accessibilityChildren] : [NSMutableSet set];
 
