@@ -111,45 +111,38 @@ namespace Avalonia.Controls.Remote.Server
         {
             lock (_lock)
             {
-                if (obj is FrameReceivedMessage lastFrame)
+                switch (obj)
                 {
-                    lock (_lock)
-                    {
+                    case FrameReceivedMessage lastFrame:
                         _lastReceivedFrame = Math.Max(lastFrame.SequenceId, _lastReceivedFrame);
-                    }
-                    Dispatcher.UIThread.Post(_sendLastFrameIfNeeded);
-                }
-                if (obj is ClientRenderInfoMessage renderInfo)
-                {
-                    lock (_lock)
-                    {
+                        Dispatcher.UIThread.Post(_sendLastFrameIfNeeded);
+                        break;
+
+                    case ClientRenderInfoMessage renderInfo:
                         _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
-                    }
-                    Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
-                }
-                if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
-                {
-                    lock (_lock)
-                    {
+                        Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
+                        break;
+
+                    case ClientSupportedPixelFormatsMessage supportedFormats:
                         _format = TryGetValidPixelFormat(supportedFormats.Formats);
-                    }
-                    Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
-                }
-                if (obj is MeasureViewportMessage measure)
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        var m = Measure(new Size(measure.Width, measure.Height));
-                        _transport.Send(new MeasureViewportMessage
+                        Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
+                        break;
+
+                    case MeasureViewportMessage measure:
+                        Dispatcher.UIThread.Post(() =>
                         {
-                            Width = m.Width,
-                            Height = m.Height
+                            var m = Measure(new Size(measure.Width, measure.Height));
+                            _transport.Send(new MeasureViewportMessage
+                            {
+                                Width = m.Width,
+                                Height = m.Height
+                            });
                         });
-                    });
-                if (obj is ClientViewportAllocatedMessage allocated)
-                {
-                    lock (_lock)
-                    {
+                        break;
+
+                    case ClientViewportAllocatedMessage allocated:
                         if (_pendingAllocation == null)
+                        {
                             Dispatcher.UIThread.Post(() =>
                             {
                                 ClientViewportAllocatedMessage allocation;
@@ -158,93 +151,95 @@ namespace Avalonia.Controls.Remote.Server
                                     allocation = _pendingAllocation!;
                                     _pendingAllocation = null;
                                 }
+
                                 _dpi = new Vector(allocation.DpiX, allocation.DpiY);
                                 ClientSize = new Size(allocation.Width, allocation.Height);
                                 RenderAndSendFrameIfNeeded();
                             });
+                        }
 
                         _pendingAllocation = allocated;
-                    }
-                }
-                if(obj is PointerMovedEventMessage pointer)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        Input?.Invoke(new RawPointerEventArgs(
-                            MouseDevice, 
-                            0, 
-                            InputRoot!, 
-                            RawPointerEventType.Move, 
-                            new Point(pointer.X, pointer.Y), 
-                            GetAvaloniaRawInputModifiers(pointer.Modifiers)));
-                    }, DispatcherPriority.Input);
-                }
-                if(obj is PointerPressedEventMessage pressed)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        Input?.Invoke(new RawPointerEventArgs(
-                            MouseDevice,
-                            0,
-                            InputRoot!,
-                            GetAvaloniaEventType(pressed.Button, true),
-                            new Point(pressed.X, pressed.Y),
-                            GetAvaloniaRawInputModifiers(pressed.Modifiers)));
-                    }, DispatcherPriority.Input);
-                }
-                if (obj is PointerReleasedEventMessage released)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        Input?.Invoke(new RawPointerEventArgs(
-                            MouseDevice,
-                            0,
-                            InputRoot!,
-                            GetAvaloniaEventType(released.Button, false),
-                            new Point(released.X, released.Y),
-                            GetAvaloniaRawInputModifiers(released.Modifiers)));
-                    }, DispatcherPriority.Input);
-                }
-                if(obj is ScrollEventMessage scroll)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        Input?.Invoke(new RawMouseWheelEventArgs(
-                            MouseDevice,
-                            0,
-                            InputRoot!,
-                            new Point(scroll.X, scroll.Y),
-                            new Vector(scroll.DeltaX, scroll.DeltaY),
-                            GetAvaloniaRawInputModifiers(scroll.Modifiers)));
-                    }, DispatcherPriority.Input);
-                }
-                if(obj is KeyEventMessage key)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+                        break;
 
-                        Input?.Invoke(new RawKeyEventArgs(
-                            KeyboardDevice,
-                            0,
-                            InputRoot!,
-                            key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                            (Key)key.Key,
-                            GetAvaloniaRawInputModifiers(key.Modifiers)));
-                    }, DispatcherPriority.Input);
-                }
-                if(obj is TextInputEventMessage text)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+                    case PointerMovedEventMessage pointer:
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Input?.Invoke(new RawPointerEventArgs(
+                                MouseDevice,
+                                0,
+                                InputRoot!,
+                                RawPointerEventType.Move,
+                                new Point(pointer.X, pointer.Y),
+                                GetAvaloniaRawInputModifiers(pointer.Modifiers)));
+                        }, DispatcherPriority.Input);
+                        break;
 
-                        Input?.Invoke(new RawTextInputEventArgs(
-                            KeyboardDevice,
-                            0,
-                            InputRoot!,
-                            text.Text));
-                    }, DispatcherPriority.Input);
+                    case PointerPressedEventMessage pressed:
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Input?.Invoke(new RawPointerEventArgs(
+                                MouseDevice,
+                                0,
+                                InputRoot!,
+                                GetAvaloniaEventType(pressed.Button, true),
+                                new Point(pressed.X, pressed.Y),
+                                GetAvaloniaRawInputModifiers(pressed.Modifiers)));
+                        }, DispatcherPriority.Input);
+                        break;
+
+                    case PointerReleasedEventMessage released:
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Input?.Invoke(new RawPointerEventArgs(
+                                MouseDevice,
+                                0,
+                                InputRoot!,
+                                GetAvaloniaEventType(released.Button, false),
+                                new Point(released.X, released.Y),
+                                GetAvaloniaRawInputModifiers(released.Modifiers)));
+                        }, DispatcherPriority.Input);
+                        break;
+
+                    case ScrollEventMessage scroll:
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Input?.Invoke(new RawMouseWheelEventArgs(
+                                MouseDevice,
+                                0,
+                                InputRoot!,
+                                new Point(scroll.X, scroll.Y),
+                                new Vector(scroll.DeltaX, scroll.DeltaY),
+                                GetAvaloniaRawInputModifiers(scroll.Modifiers)));
+                        }, DispatcherPriority.Input);
+                        break;
+
+                    case KeyEventMessage key:
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
+                            Input?.Invoke(new RawKeyEventArgs(
+                                KeyboardDevice,
+                                0,
+                                InputRoot!,
+                                key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
+                                (Key)key.Key,
+                                GetAvaloniaRawInputModifiers(key.Modifiers)));
+                        }, DispatcherPriority.Input);
+                        break;
+
+                    case TextInputEventMessage text:
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
+                            Input?.Invoke(new RawTextInputEventArgs(
+                                KeyboardDevice,
+                                0,
+                                InputRoot!,
+                                text.Text));
+                        }, DispatcherPriority.Input);
+                        break;
                 }
             }
         }
