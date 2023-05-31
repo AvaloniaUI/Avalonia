@@ -10,16 +10,33 @@ namespace Avalonia.Headless.Vnc
 {
     public class HeadlessVncFramebufferSource : IVncFramebufferSource
     {
-        public Window Window { get; set; }
+        private Window? _window;
+        public Window? Window 
+        {
+            get => _window;
+            set
+            {
+                lock (_lock)
+                    _window = value;
+            }
+        }
+
         private object _lock = new object();
-        public VncFramebuffer _framebuffer = new VncFramebuffer("Avalonia", 1, 1, VncPixelFormat.RGB32);
+        public VncFramebuffer _framebuffer;
+        private readonly bool _resizeBufferIfContentSizeChanges;
 
         private VncButton _previousButtons;
         private RawInputModifiers _keyState;
 
-        public HeadlessVncFramebufferSource(VncServerSession session, Window window)
+        public HeadlessVncFramebufferSource(VncServerSession session, Window window, bool resizeSessionIfContentSizeChanges)
         {
             Window = window;
+            _resizeBufferIfContentSizeChanges = resizeSessionIfContentSizeChanges;
+            _framebuffer = new VncFramebuffer("Avalonia", 
+                (int)Math.Ceiling(window.ClientSize.Width), 
+                (int)Math.Ceiling(window.ClientSize.Height),
+                VncPixelFormat.RGB32);
+
             session.PointerChanged += (_, args) =>
             {
                 var pt = new Point(args.X, args.Y);
@@ -339,15 +356,19 @@ namespace Avalonia.Headless.Vnc
         {
             lock (_lock)
             {
-                using (var bmpRef = Window.GetLastRenderedFrame())
+                using (var bmpRef = Window?.GetLastRenderedFrame())
                 {
                     if (bmpRef == null)
                         return _framebuffer;
+
                     var bmp = bmpRef;
-                    if (bmp.PixelSize.Width != _framebuffer.Width || bmp.PixelSize.Height != _framebuffer.Height)
+                    bool sizeChanged = bmp.PixelSize.Width != _framebuffer.Width || bmp.PixelSize.Height != _framebuffer.Height;
+                    if (sizeChanged)
                     {
-                        _framebuffer = new VncFramebuffer("Avalonia", bmp.PixelSize.Width, bmp.PixelSize.Height,
-                            VncPixelFormat.RGB32);
+                        if (!_resizeBufferIfContentSizeChanges)
+                            throw new InvalidOperationException("The frame buffer size cannot be changed after a connection is made but the window size has been changed");
+                        else
+                            _framebuffer = new VncFramebuffer("Avalonia", bmp.PixelSize.Width, bmp.PixelSize.Height, VncPixelFormat.RGB32);
                     }
 
                     var buffer = _framebuffer.GetBuffer();

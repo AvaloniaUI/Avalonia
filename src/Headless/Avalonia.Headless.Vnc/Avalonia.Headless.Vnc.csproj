@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Avalonia.Desktop\Avalonia.Desktop.csproj" />
       <ProjectReference Include="..\Avalonia.Headless\Avalonia.Headless.csproj" />
       <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.21" />
     </ItemGroup>

@@ -38,7 +38,7 @@ namespace Avalonia.Headless
             _frameBufferFormat = frameBufferFormat;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             Closed?.Invoke();
             _lastRenderedFrame?.Dispose();
@@ -46,7 +46,7 @@ namespace Avalonia.Headless
         }
 
         public Size ClientSize { get; set; }
-        public Size? FrameSize => null;
+        public Size? FrameSize { get; set; }
         public double RenderScaling { get; } = 1;
         public double DesktopScaling => RenderScaling;
         public IEnumerable<object> Surfaces { get; }
@@ -61,7 +61,7 @@ namespace Avalonia.Headless
         {
         }
 
-        public void SetInputRoot(IInputRoot inputRoot)
+        public virtual void SetInputRoot(IInputRoot inputRoot)
         {
             InputRoot = inputRoot;
         }
@@ -80,7 +80,7 @@ namespace Avalonia.Headless
         public Action? Closed { get; set; }
         public IMouseDevice MouseDevice { get; }
 
-        public void Show(bool activate, bool isDialog)
+        public virtual void Show(bool activate, bool isDialog)
         {
             if (activate)
                 Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);

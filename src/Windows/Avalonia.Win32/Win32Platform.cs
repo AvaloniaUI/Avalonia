@@ -18,6 +18,7 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Win32;
 
 namespace Avalonia
 {
@@ -30,6 +31,13 @@ namespace Avalonia
                     AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions()),
                 "Win32");
         }
+
+        public static AppBuilder UseWin32MountedVolumeInfoProvider(this AppBuilder builder) =>
+            builder.AfterPlatformServicesSetup(_ => 
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IMountedVolumeInfoProvider>().ToSingleton<WindowsMountedVolumeInfoProvider>();
+            });
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Native;
 
 namespace Avalonia
@@ -23,6 +24,13 @@ namespace Avalonia
 
             return builder;
         }
+
+        public static AppBuilder UseAvaloniaNativeMountedVolumeInfoProvider(this AppBuilder builder) =>
+            builder.AfterPlatformServicesSetup(_ =>
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
+            });
     }
 
     /// <summary>

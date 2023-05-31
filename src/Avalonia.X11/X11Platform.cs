@@ -297,6 +297,13 @@ namespace Avalonia
 
         public static void InitializeX11Platform(X11PlatformOptions options = null) =>
             new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions());
+
+        public static AppBuilder UseX11MountedVolumeInfoProvider(this AppBuilder builder) =>
+            builder.AfterPlatformServicesSetup(_ =>
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IMountedVolumeInfoProvider>().ToSingleton<LinuxMountedVolumeInfoProvider>();
+            });
     }
 
 }
