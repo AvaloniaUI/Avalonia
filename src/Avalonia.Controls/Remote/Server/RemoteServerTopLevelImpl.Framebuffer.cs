@@ -19,17 +19,18 @@ namespace Avalonia.Controls.Remote.Server
 
         private sealed class Framebuffer
         {
-            public static Framebuffer Empty { get; } =
-                new(ProtocolPixelFormat.Rgba8888, default, new Vector(96.0, 96.0));
+            public static Framebuffer Empty { get; } = new(ProtocolPixelFormat.Rgba8888, default, 1.0);
 
+            private readonly double _dpi;
+            private readonly PixelSize _frameSize;
             private readonly object _dataLock = new();
             private readonly byte[] _data; // for rendering only
             private readonly byte[] _dataCopy; // for messages only
             private FrameStatus _status = FrameStatus.NotRendered;
 
-            public Framebuffer(ProtocolPixelFormat format, Size clientSize, Vector dpi)
+            public Framebuffer(ProtocolPixelFormat format, Size clientSize, double renderScaling)
             {
-                var frameSize = PixelSize.FromSizeWithDpi(clientSize, dpi);
+                var frameSize = PixelSize.FromSize(clientSize, renderScaling);
                 if (frameSize.Width <= 0 || frameSize.Height <= 0)
                     frameSize = PixelSize.Empty;
 
@@ -37,10 +38,11 @@ namespace Avalonia.Controls.Remote.Server
                 var stride = frameSize.Width * bpp;
                 var dataLength = Math.Max(0, stride * frameSize.Height);
 
+                _dpi = renderScaling * 96.0;
+                _frameSize = frameSize;
                 Format = format;
-                FrameSize = frameSize;
                 ClientSize = clientSize;
-                Dpi = dpi;
+                RenderScaling = renderScaling;
 
                 (Stride, _data, _dataCopy) = dataLength > 0 ?
                     (stride, new byte[dataLength], new byte[dataLength]) :
@@ -51,9 +53,7 @@ namespace Avalonia.Controls.Remote.Server
 
             public Size ClientSize { get; }
 
-            public Vector Dpi { get; }
-
-            public PixelSize FrameSize { get; }
+            public double RenderScaling { get; }
 
             public int Stride { get; }
 
@@ -72,9 +72,9 @@ namespace Avalonia.Controls.Remote.Server
                 {
                     return new LockedFramebuffer(
                         handle.AddrOfPinnedObject(),
-                        FrameSize,
+                        _frameSize,
                         Stride,
-                        Dpi,
+                        new Vector(_dpi, _dpi),
                         new PlatformPixelFormat((PixelFormatEnum)Format),
                         () =>
                         {
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Remote.Server
                 }
             }
 
-            /// <remarks>The returned message must be kept around, as it contains a shared buffer.</remarks>
+            /// <remarks>The returned message must NOT be kept around, as it contains a shared buffer.</remarks>
             public FrameMessage ToMessage(long sequenceId)
             {
                 lock (_dataLock)
@@ -104,11 +104,11 @@ namespace Avalonia.Controls.Remote.Server
                     SequenceId = sequenceId,
                     Data = _dataCopy,
                     Format = Format,
-                    Width = FrameSize.Width,
-                    Height = FrameSize.Height,
+                    Width = _frameSize.Width,
+                    Height = _frameSize.Height,
                     Stride = Stride,
-                    DpiX = Dpi.X,
-                    DpiY = Dpi.Y
+                    DpiX = _dpi,
+                    DpiY = _dpi
                 };
             }
         }

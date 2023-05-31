@@ -29,7 +29,6 @@ namespace Avalonia.Controls.Remote.Server
         private long _lastReceivedFrame = -1;
         private long _nextFrameNumber = 1;
         private ClientViewportAllocatedMessage? _pendingAllocation;
-        private Vector _dpi = new(96, 96);
         private ProtocolPixelFormat? _format;
 
         public RemoteServerTopLevelImpl(IAvaloniaRemoteTransportConnection transport)
@@ -119,8 +118,11 @@ namespace Avalonia.Controls.Remote.Server
                         break;
 
                     case ClientRenderInfoMessage renderInfo:
-                        _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
-                        Dispatcher.UIThread.Post(_renderAndSendFrameIfNeeded);
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            RenderScaling = renderInfo.DpiX / 96.0;
+                            RenderAndSendFrameIfNeeded();
+                        });
                         break;
 
                     case ClientSupportedPixelFormatsMessage supportedFormats:
@@ -152,7 +154,7 @@ namespace Avalonia.Controls.Remote.Server
                                     _pendingAllocation = null;
                                 }
 
-                                _dpi = new Vector(allocation.DpiX, allocation.DpiY);
+                                RenderScaling = allocation.DpiX / 96.0;
                                 ClientSize = new Size(allocation.Width, allocation.Height);
                                 RenderAndSendFrameIfNeeded();
                             });
@@ -258,12 +260,6 @@ namespace Avalonia.Controls.Remote.Server
             return null;
         }
 
-        protected void SetDpi(Vector dpi)
-        {
-            _dpi = dpi;
-            RenderAndSendFrameIfNeeded();
-        }
-
         protected virtual Size Measure(Size constraint)
         {
             var l = (Layoutable) InputRoot!;
@@ -279,8 +275,8 @@ namespace Avalonia.Controls.Remote.Server
             {
                 if (_format is not { } format)
                     _framebuffer = Framebuffer.Empty;
-                else if (_framebuffer.Format != format || _framebuffer.ClientSize != ClientSize || _framebuffer.Dpi != _dpi)
-                    _framebuffer = new Framebuffer(format, ClientSize, _dpi);
+                else if (_framebuffer.Format != format || _framebuffer.ClientSize != ClientSize || _framebuffer.RenderScaling != RenderScaling)
+                    _framebuffer = new Framebuffer(format, ClientSize, RenderScaling);
 
                 return _framebuffer;
             }
