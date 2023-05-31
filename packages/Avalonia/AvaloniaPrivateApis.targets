@@ -18,5 +18,7 @@
       <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
     </ItemGroup>
     <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may be depending on APIs which may change or be removed in future versions of Avalonia. Set AvaloniaAccessUnstablePrivateApis to 'False' to disable this warning." />
+    <Error Condition="'$(IsPackable.ToLowerInvariant())' == 'true' and '$(AvaloniaAccessUnstablePrivateApis)' == 'true' and '$(Avalonia_I_Want_To_Use_Private_Apis_In_Nuget_Package_And_Promise_To_Pin_The_Exact_Avalonia_Version_In_Package_Dependency)' != 'true'"
+           Text="It seems that you are using private APIs in a nuget package, please follow this guide https://github.com/AvaloniaUI/Avalonia/wiki/Using-private-apis-in-nuget-packages" />
   </Target>
 </Project>
