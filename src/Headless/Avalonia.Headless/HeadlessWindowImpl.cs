@@ -114,6 +114,9 @@ namespace Avalonia.Headless
         public Size MaxClientSize { get; } = new Size(1920, 1280);
         public void Resize(Size clientSize, WindowResizeReason reason)
         {
+            if (clientSize == ClientSize)
+                return;
+
             // Emulate X11 behavior here
             if (IsPopup)
                 DoResize(clientSize);
