@@ -1045,7 +1045,7 @@ namespace Avalonia.Controls.UnitTests
             var data = CreateTestTreeData();
             var target = CreateTarget(data: data, multiSelect: true);
             var rootNode = data[0];
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
             var selectAllGesture = keymap.SelectAll.First();
 
             var keyEvent = new KeyEventArgs
@@ -1075,7 +1075,7 @@ namespace Avalonia.Controls.UnitTests
             ClickContainer(fromContainer, KeyModifiers.None);
             ClickContainer(toContainer, KeyModifiers.Shift);
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
             var selectAllGesture = keymap.SelectAll.First();
 
             var keyEvent = new KeyEventArgs
@@ -1105,7 +1105,7 @@ namespace Avalonia.Controls.UnitTests
             ClickContainer(fromContainer, KeyModifiers.None);
             ClickContainer(toContainer, KeyModifiers.Shift);
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
             var selectAllGesture = keymap.SelectAll.First();
 
             var keyEvent = new KeyEventArgs

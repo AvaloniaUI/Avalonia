@@ -34,7 +34,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
@@ -60,7 +60,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
                 SelectionChangedEventArgs receivedArgs = null;
 
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[1]);
                 _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
                 _helper.Click(target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
@@ -152,7 +152,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[1]);
                 _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
 
@@ -183,7 +183,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[3]);
                 _helper.Click(target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
 
@@ -211,7 +211,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[3]);
                 _helper.Click(target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
 
@@ -239,7 +239,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[0]);
                 _helper.Click(target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
 
@@ -266,7 +266,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
                 SelectionChangedEventArgs receivedArgs = null;
 
@@ -319,7 +319,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[0]);
 
                 Assert.Equal(new[] { "Foo" }, target.SelectedItems);
@@ -414,7 +414,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 _helper.Click(target.Presenter.Panel.Children[0]);
                 _helper.Click(target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Shift);
 
@@ -444,7 +444,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
                 _helper.Click(target.Presenter.Panel.Children[0]);
                 _helper.Click(target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Shift);
@@ -471,7 +471,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
                 _helper.Click(target.Presenter.Panel.Children[0]);
                 _helper.Click(target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Control);
