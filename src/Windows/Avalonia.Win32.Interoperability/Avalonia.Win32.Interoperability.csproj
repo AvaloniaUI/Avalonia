@@ -1,20 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
-    <ExtrasEnableImplicitWinFormsReferences>true</ExtrasEnableImplicitWinFormsReferences>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <UseDirect3D9>true</UseDirect3D9>
     <PackageId>Avalonia.Win32.Interoperability</PackageId>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
-    <ProjectReference Include="..\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\..\build\SharpDX.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 </Project>

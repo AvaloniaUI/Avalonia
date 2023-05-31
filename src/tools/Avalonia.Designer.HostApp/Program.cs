@@ -8,7 +8,7 @@ namespace Avalonia.Designer.HostApp
 {
     class Program
     {
-#if NET461
+#if NETFRAMEWORK
         private static string s_appDir;
         
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

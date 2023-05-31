@@ -14,11 +14,11 @@
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
     <ProjectReference Remove="samples/*.Blazor/*.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
-    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
-    <ProjectReference Remove="samples/interop/**/*.*proj" />
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
+  </ItemGroup>
+  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
+    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interoperability/Avalonia.Win32.Interoperability.csproj" />
+    <ProjectReference Remove="samples/interop/**/*.*proj" />
   </ItemGroup>
 
   <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
