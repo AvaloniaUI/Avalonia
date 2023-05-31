@@ -1,8 +1,4 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <FrameworkToUse>net6.0</FrameworkToUse>
-    <FrameworkToUse Condition="$(TargetFramework.StartsWith('net4')) == 'true' or $(TargetFramework.StartsWith('net5')) == 'true' or $(TargetFramework.StartsWith('netsta')) == 'true' or $(TargetFramework.StartsWith('netcore')) == 'true'">netstandard2.0</FrameworkToUse>
-  </PropertyGroup>
   <Target Name="RemoveAvaloniaRefAssemblies" AfterTargets="ResolveTargetingPackAssets" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
     <ItemGroup>
       <ReferencesToRemove Include="@(Reference)" Condition="'%(Reference.NuGetPackageId)' == 'Avalonia'" />
@@ -12,9 +8,13 @@
     </ItemGroup>
   </Target>
   <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
+    <PropertyGroup>
+      <AvaloniaUnstableApiFrameworkToUse>net6.0</AvaloniaUnstableApiFrameworkToUse>
+      <AvaloniaUnstableApiFrameworkToUse Condition="$(TargetFramework.StartsWith('net4')) == 'true' or $(TargetFramework.StartsWith('net5')) == 'true' or $(TargetFramework.StartsWith('netsta')) == 'true' or $(TargetFramework.StartsWith('netcore')) == 'true'">netstandard2.0</AvaloniaUnstableApiFrameworkToUse>
+    </PropertyGroup>
     <ItemGroup>
-      <Reference Include="$(MSBuildThisFileDirectory)/../lib/$(FrameworkToUse)/*.dll"/>
-      <ReferencePath Include="$(MSBuildThisFileDirectory)/../lib/$(FrameworkToUse)/*.dll"/>
+      <Reference Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
+      <ReferencePath Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
       <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/../lib/$(FrameworkToUse)/*.dll"/>
     </ItemGroup>
     <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may be depending on APIs which may change or be removed in future versions of Avalonia. Set AvaloniaAccessUnstablePrivateApis to 'False' to disable this warning." />
