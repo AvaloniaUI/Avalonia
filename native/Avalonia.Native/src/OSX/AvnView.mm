@@ -777,6 +777,23 @@
     return _accessibilityChildren;
 }
 
+- (id _Nullable) accessibilityHitTest:(NSPoint)point
+{
+    if (![[self window] isKindOfClass:[AvnWindow class]])
+        return self;
+    
+    auto window = (AvnWindow*)[self window];
+    auto peer = [window automationPeer];
+
+    if (!peer->IsRootProvider())
+        return nil;
+
+    auto clientPoint = [window convertPointFromScreen:point];
+    auto localPoint = [self translateLocalPoint:ToAvnPoint(clientPoint)];
+    auto hit = peer->RootProvider_GetPeerFromPoint(localPoint);
+    return [AvnAccessibilityElement acquire:hit];
+}
+
 - (void)raiseAccessibilityChildrenChanged
 {
     auto changed = _accessibilityChildren ? [NSMutableSet setWithArray:_accessibilityChildren] : [NSMutableSet set];

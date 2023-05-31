@@ -508,20 +508,6 @@
     return [AvnAccessibilityElement acquire:focusedPeer];
 }
 
-- (id _Nullable) accessibilityHitTest:(NSPoint)point
-{
-    if (![self automationPeer]->IsRootProvider())
-        return nil;
-    auto clientPoint = [self convertPointFromScreen:point];
-    auto localPoint = [[self view] translateLocalPoint:ToAvnPoint(clientPoint)];
-    auto hit = [self automationPeer]->RootProvider_GetPeerFromPoint(localPoint);
-    
-    if (hit != nullptr)
-        return [AvnAccessibilityElement acquire:hit];
-    else
-        return [super accessibilityHitTest:point];
-}
-
 - (NSString * _Nullable)accessibilityIdentifier
 {
     return GetNSStringAndRelease([self automationPeer]->GetAutomationId());
