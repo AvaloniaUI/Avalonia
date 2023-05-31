@@ -522,7 +522,7 @@
         return [super accessibilityHitTest:point];
 }
 
-- (NSString *)accessibilityIdentifier
+- (NSString * _Nullable)accessibilityIdentifier
 {
     return GetNSStringAndRelease([self automationPeer]->GetAutomationId());
 }
