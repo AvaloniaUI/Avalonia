@@ -13,9 +13,9 @@
   </Target>
   <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis)'=='True'">
     <ItemGroup>
-      <Reference Include="$(MSBuildThisFileDirectory)/lib/$(FrameworkToUse)/*.dll"/>
-      <ReferencePath Include="$(MSBuildThisFileDirectory)/lib/$(FrameworkToUse)/*.dll"/>
-      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/lib/$(FrameworkToUse)/*.dll"/>
+      <Reference Include="$(MSBuildThisFileDirectory)/../lib/$(FrameworkToUse)/*.dll"/>
+      <ReferencePath Include="$(MSBuildThisFileDirectory)/../lib/$(FrameworkToUse)/*.dll"/>
+      <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/../lib/$(FrameworkToUse)/*.dll"/>
     </ItemGroup>
     <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may be depending on APIs which may change or be removed in future versions of Avalonia. Set AvaloniaAccessUnstablePrivateApis to 'False' to disable this warning." />
   </Target>
