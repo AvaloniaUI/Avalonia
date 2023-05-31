@@ -59,12 +59,13 @@ internal class BclStorageFile : IStorageBookmarkFile
 
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult<Stream>(FileInfo.OpenRead());
+        var stream = new FileStream(FileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
+        return Task.FromResult<Stream>(stream);
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult<Stream>(FileInfo.OpenWrite());
+        return Task.FromResult<Stream>(File.Create(FileInfo.FullName));
     }
 
     public virtual Task<string?> SaveBookmarkAsync()
