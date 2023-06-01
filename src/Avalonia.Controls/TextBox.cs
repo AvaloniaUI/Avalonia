@@ -15,7 +15,6 @@ using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
 using Avalonia.Threading;
 
@@ -1214,6 +1213,34 @@ namespace Avalonia.Controls
                 selection = true;
                 handled = true;
             }
+            else if (Match(keymap.PageLeft))
+            {
+                MovePageLeft();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageRight))
+            {
+                MovePageRight();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageUp))
+            {
+                MovePageUp();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageDown))
+            {
+                MovePageDown();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
             else
             {
                 bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers);
@@ -1403,8 +1430,6 @@ namespace Avalonia.Controls
                 !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
-
-                var oldIndex = CaretIndex;
 
                 _presenter.MoveCaretToPoint(point);
 
@@ -1736,6 +1761,25 @@ namespace Avalonia.Controls
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
+        }
+
+        private void MovePageRight()
+        {
+            _scrollViewer?.PageRight();
+        }
+
+        private void MovePageLeft()
+        {
+            _scrollViewer?.PageLeft();
+        }
+        private void MovePageUp()
+        {
+            _scrollViewer?.PageUp();
+        }
+
+        private void MovePageDown()
+        {
+            _scrollViewer?.PageDown();
         }
 
         /// <summary>
