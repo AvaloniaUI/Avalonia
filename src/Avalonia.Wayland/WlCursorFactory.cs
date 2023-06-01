@@ -27,7 +27,7 @@ namespace Avalonia.Wayland
             {
                 if (_wlCursorCache.TryGetValue(cursorType, out var wlCursor))
                     return wlCursor;
-                foreach (var name in _standardCursorNames[cursorType])
+                foreach (var name in s_standardCursorNames[cursorType])
                 {
                     var cursor = LibWaylandCursor.wl_cursor_theme_get_cursor(_theme, name);
                     if (cursor is null)
@@ -46,7 +46,7 @@ namespace Avalonia.Wayland
         public void Dispose() => LibWaylandCursor.wl_cursor_theme_destroy(_theme);
 
         // https://github.com/qt/qtwayland/blob/dev/src/client/qwaylandcursor.cpp
-        private static readonly Dictionary<StandardCursorType, string[]> _standardCursorNames = new()
+        private static readonly Dictionary<StandardCursorType, string[]> s_standardCursorNames = new()
         {
             { StandardCursorType.Arrow, new[] { "left_ptr", "default", "top_left_arrow" } },
             { StandardCursorType.UpArrow, new [] { "up_arrow" } },
