@@ -17,7 +17,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Automation.Peers;
 using Avalonia.Threading;
-using Avalonia.Collections;
 
 namespace Avalonia.Controls
 {
