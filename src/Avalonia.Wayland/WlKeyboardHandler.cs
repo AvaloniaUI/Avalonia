@@ -52,7 +52,7 @@ namespace Avalonia.Wayland
 
         public void OnKeymap(WlKeyboard eventSender, WlKeyboard.KeymapFormatEnum format, int fd, uint size)
         {
-            var map = LibC.mmap(IntPtr.Zero, new IntPtr(size), MemoryProtection.PROT_READ, SharingType.MAP_PRIVATE, fd, IntPtr.Zero);
+            var map = LibC.mmap(IntPtr.Zero, (int)size, MemoryProtection.PROT_READ, SharingType.MAP_PRIVATE, fd, 0);
             if (map == new IntPtr(-1))
             {
                 LibC.close(fd);
@@ -60,7 +60,7 @@ namespace Avalonia.Wayland
             }
 
             var keymap = LibXkbCommon.xkb_keymap_new_from_string(_xkbContext, map, (uint)format, 0);
-            LibC.munmap(map, new IntPtr(size));
+            LibC.munmap(map, (int)size);
             LibC.close(fd);
 
             if (keymap == IntPtr.Zero)

@@ -110,7 +110,6 @@ namespace Avalonia.Wayland
             _xdgToplevel = null;
             _toplevelDecoration?.Dispose();
             _toplevelDecoration = null;
-            WlSurface.Commit();
             _platform.WlDisplay.Roundtrip();
         }
 

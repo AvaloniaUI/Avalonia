@@ -77,7 +77,7 @@ namespace Avalonia.Wayland
 
         public IPlatformHandle Handle => null!;
 
-        public Size MaxAutoSizeHint => AppliedState.Bounds != default ? AppliedState.Bounds.ToSize(RenderScaling) : Size.Infinity;
+        public Size MaxAutoSizeHint => AppliedState.Bounds != default ? AppliedState.Bounds.ToSize(1) : Size.Infinity;
 
         public Size ClientSize => AppliedState.Size.ToSize(RenderScaling);
 
@@ -221,6 +221,7 @@ namespace Avalonia.Wayland
 
         public virtual void Dispose()
         {
+            Closed?.Invoke();
             _platform.WlScreens.RemoveWindow(this);
             _blur?.Dispose();
             _frameCallback?.Dispose();
@@ -229,7 +230,6 @@ namespace Avalonia.Wayland
             _wpFractionalScale?.Dispose();
             XdgSurface.Dispose();
             WlSurface.Dispose();
-            Closed?.Invoke();
         }
 
         protected virtual void ApplyConfigure()

@@ -44,8 +44,8 @@ namespace Avalonia.Wayland
 
         public override void Hide()
         {
-            //_xdgPopup?.Dispose();
-            //_xdgPopup = null;
+            // TODO: Hide() is called before Dispose(), which means this wl_popup would be destroyed before possible child popups, which is a protocol violation.
+            // We just wait for Dispose() to call Close that first closes all child popups.
         }
 
         public void Update(PopupPositionerParameters parameters)

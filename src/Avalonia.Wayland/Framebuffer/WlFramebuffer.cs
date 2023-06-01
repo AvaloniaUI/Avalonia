@@ -9,14 +9,14 @@ namespace Avalonia.Wayland.Framebuffer
         private readonly WlSurface _wlSurface;
         private readonly WlBuffer _wlBuffer;
 
-        public WlFramebuffer(WlSurface wlSurface, WlBuffer wlBuffer, IntPtr address, PixelSize size, int stride)
+        public WlFramebuffer(WlSurface wlSurface, WlBuffer wlBuffer, IntPtr address, PixelSize size, int stride, double scale)
         {
             _wlSurface = wlSurface;
             _wlBuffer = wlBuffer;
             Address = address;
             Size = size;
             RowBytes = stride;
-            Dpi = new Vector(96, 96);
+            Dpi = new Vector(96, 96) * scale;
             Format = PixelFormat.Bgra8888;
         }
 

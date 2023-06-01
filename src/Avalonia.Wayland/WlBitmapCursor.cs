@@ -26,7 +26,7 @@ namespace Avalonia.Wayland
             _fd = FdHelper.CreateAnonymousFile(_size, "wayland-shm");
             if (_fd == -1)
                 throw new WaylandPlatformException("Failed to create FrameBuffer.");
-            _data = LibC.mmap(IntPtr.Zero, new IntPtr(_size), MemoryProtection.PROT_READ | MemoryProtection.PROT_WRITE, SharingType.MAP_SHARED, _fd, IntPtr.Zero);
+            _data = LibC.mmap(IntPtr.Zero, _size, MemoryProtection.PROT_READ | MemoryProtection.PROT_WRITE, SharingType.MAP_SHARED, _fd, 0);
             _wlShmPool= platform.WlShm.CreatePool(_fd, _size);
             _wlBuffer = _wlShmPool.CreateBuffer(0, cursor.PixelSize.Width, cursor.PixelSize.Height, _stride, WlShm.FormatEnum.Argb8888);
             var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
@@ -45,7 +45,7 @@ namespace Avalonia.Wayland
             _wlBuffer.Dispose();
             _wlShmPool.Dispose();
             if (_data != IntPtr.Zero)
-                LibC.munmap(_data, new IntPtr(_size));
+                LibC.munmap(_data, _size);
             if (_fd != -1)
                 LibC.close(_fd);
         }
