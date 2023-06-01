@@ -371,14 +371,16 @@ namespace Avalonia.Media.TextFormatting
 
                 IndexedTextRun currentIndexedRun = _indexedTextRuns[i];
 
-                while(currentIndexedRun.TextSourceCharacterIndex != currentPosition)
+                while (currentIndexedRun.TextSourceCharacterIndex != currentPosition)
                 {
-                    if(i + 1 < _indexedTextRuns.Count)
+                    if (i + 1 == _indexedTextRuns.Count)
                     {
-                        i++;
-
-                        currentIndexedRun = _indexedTextRuns[i];
+                        break;
                     }
+
+                    i++;
+
+                    currentIndexedRun = _indexedTextRuns[i];
                 }
 
                 return currentIndexedRun;
@@ -604,12 +606,14 @@ namespace Avalonia.Media.TextFormatting
 
                 while (currentIndexedRun.TextSourceCharacterIndex != currentPosition)
                 {
-                    if (i + 1 < _indexedTextRuns.Count)
+                    if (i + 1 == _indexedTextRuns.Count)
                     {
-                        i++;
-
-                        currentIndexedRun = _indexedTextRuns[i];
+                        break;
                     }
+
+                    i++;
+
+                    currentIndexedRun = _indexedTextRuns[i];
                 }
 
                 return currentIndexedRun;

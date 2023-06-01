@@ -9,6 +9,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
@@ -1072,7 +1073,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
-        public void Should_GetTextBounds_BiDi()
+        public void Should_GetTextBounds_Bidi()
         {
             var text = "אבגדה 12345 ABCDEF אבגדה";
 
@@ -1113,6 +1114,31 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(71.165859375, bounds[0].Rectangle.Left);
 
                 bounds = textLine.GetTextBounds(0, 25);
+
+                Assert.Equal(5, bounds.Count);
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_Bidi_2()
+        {
+            var text = "אבג ABC אבג 123";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var bounds = textLine.GetTextBounds(0, text.Length);
 
                 Assert.Equal(5, bounds.Count);
 
