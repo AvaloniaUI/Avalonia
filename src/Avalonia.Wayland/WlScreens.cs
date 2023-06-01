@@ -109,6 +109,8 @@ namespace Avalonia.Wayland
 
             public void OnDone(WlOutput eventSender)
             {
+                if (Screen is not null)
+                    _screens.Remove(Screen);
                 Screen = new Screen(_scaling, new PixelRect(_position, _size), new PixelRect(_position, _size), false);
                 _screens.Add(Screen);
             }
