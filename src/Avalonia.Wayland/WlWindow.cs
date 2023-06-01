@@ -25,7 +25,6 @@ namespace Avalonia.Wayland
         private readonly WpFractionalScaleV1? _wpFractionalScale;
         private readonly object _resizeLock = new();
 
-        private bool _didResize;
         private WlCallback? _frameCallback;
         private OrgKdeKwinBlur? _blur;
 
@@ -171,10 +170,7 @@ namespace Avalonia.Wayland
         public void Resize(Size clientSize, WindowResizeReason reason = WindowResizeReason.Application)
         {
             if (!DidReceiveInitialConfigure && clientSize != default)
-            {
                 PendingState.Size = PixelSize.FromSize(clientSize, RenderScaling);
-                _didResize = true;
-            }
         }
 
         public void OnDone(WlCallback eventSender, uint callbackData)
@@ -238,8 +234,7 @@ namespace Avalonia.Wayland
 
         protected virtual void ApplyConfigure()
         {
-            if (AppliedState.Size != PendingState.Size)
-                _didResize = true;
+            bool didResize = AppliedState.Size != PendingState.Size;
 
             AppliedState = PendingState;
 
@@ -248,11 +243,10 @@ namespace Avalonia.Wayland
                 // Emulate Window 7+'s default window size behavior in case no explicit size was set. If no configure_bounds event was send, fall back to a hardcoded size.
                 if (AppliedState.Size == default)
                     AppliedState.Size = new PixelSize(Math.Max((int)(AppliedState.Bounds.Width * 0.75), 300), Math.Max((int)(AppliedState.Bounds.Height * 0.7), 200));
-
                 DidReceiveInitialConfigure = true;
                 DoPaint();
             }
-            else if (_didResize)
+            else if (didResize)
             {
                 if (_frameCallback is not null)
                     return;
@@ -266,14 +260,9 @@ namespace Avalonia.Wayland
         {
             lock (_resizeLock)
             {
-                if (_didResize)
-                {
-                    Resized?.Invoke(ClientSize, WindowResizeReason.Application);
-                    _wpViewport?.SetDestination(AppliedState.Size.Width, AppliedState.Size.Height);
-                    TryApplyTransparencyLevel(TransparencyLevel);
-                    _didResize = false;
-                }
-
+                Resized?.Invoke(ClientSize, WindowResizeReason.Application);
+                _wpViewport?.SetDestination(AppliedState.Size.Width, AppliedState.Size.Height);
+                TryApplyTransparencyLevel(TransparencyLevel);
                 Paint?.Invoke(default);
             }
         }

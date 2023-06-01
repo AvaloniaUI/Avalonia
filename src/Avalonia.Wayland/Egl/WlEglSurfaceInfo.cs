@@ -14,7 +14,7 @@ namespace Avalonia.Wayland.Egl
 
         public IntPtr Handle { get; set; }
 
-        public PixelSize Size => WlWindow.AppliedState.Size;
+        public PixelSize Size => new((int)Math.Round(WlWindow.AppliedState.Size.Width * WlWindow.RenderScaling, MidpointRounding.AwayFromZero), (int)Math.Round(WlWindow.AppliedState.Size.Height * WlWindow.RenderScaling, MidpointRounding.AwayFromZero));
 
         public double Scaling => WlWindow.RenderScaling;
     }
