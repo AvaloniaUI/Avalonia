@@ -129,8 +129,12 @@ namespace Avalonia.Wayland
 
         private unsafe void DrainPipe()
         {
-            var buffer = 0;
-            while (LibC.read(_sigRead, new IntPtr(&buffer), 4) > 0) { }
+            lock (_lock)
+            {
+                var buffer = 0;
+                while (LibC.read(_sigRead, new IntPtr(&buffer), 4) > 0) { }
+                _wakeupRequested = false;
+            }
         }
 
         private void CheckSignaled()
