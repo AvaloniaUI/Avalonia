@@ -19,6 +19,7 @@ using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
 using Avalonia.Threading;
 using Avalonia.Platform;
+using Avalonia.Collections;
 
 namespace Avalonia.Controls
 {
@@ -1240,6 +1241,34 @@ namespace Avalonia.Controls
                 selection = true;
                 handled = true;
             }
+            else if (Match(keymap.PageLeft))
+            {
+                MovePageLeft();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageRight))
+            {
+                MovePageRight();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageUp))
+            {
+                MovePageUp();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageDown))
+            {
+                MovePageDown();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
             else
             {
                 bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers);
@@ -1753,6 +1782,69 @@ namespace Avalonia.Controls
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
+        }
+
+        private void MovePageRight()
+        {
+            ScrollViewer? childScrollviewer = FetchChildScrollViewer(10, 0, this.VisualChildren);
+            if (childScrollviewer == null)
+            {
+                return;
+            }
+            childScrollviewer.PageRight();
+        }
+
+        private void MovePageLeft()
+        {
+            ScrollViewer? childScrollviewer = FetchChildScrollViewer(10, 0, this.VisualChildren);
+            if (childScrollviewer == null)
+            {
+                return;
+            }
+            childScrollviewer.PageLeft();
+        }
+        private void MovePageUp()
+        {
+            ScrollViewer? childScrollviewer = FetchChildScrollViewer(10, 0, this.VisualChildren);
+            if (childScrollviewer == null)
+            {
+                return;
+            }
+            childScrollviewer.PageUp();
+        }
+
+        private void MovePageDown()
+        {
+            ScrollViewer? childScrollviewer = FetchChildScrollViewer(10, 0, this.VisualChildren);
+            if (childScrollviewer == null)
+            {
+                return;
+            }
+            childScrollviewer.PageDown();
+        }
+
+        private ScrollViewer? FetchChildScrollViewer(in int maxSearchDepth, int currentSearchDepth, IAvaloniaList<Visual> visualChildren)
+        {
+            foreach(Visual innerChild in visualChildren)
+            {
+                if(innerChild is ScrollViewer)
+                {
+                    return (ScrollViewer?)innerChild;
+                }
+                else
+                {
+                    if (currentSearchDepth < maxSearchDepth)
+                    {
+                        ScrollViewer? innerScrollViewer = FetchChildScrollViewer(maxSearchDepth, currentSearchDepth + 1, innerChild.VisualChildren);
+                        if (innerScrollViewer != null)
+                        {
+                            return innerScrollViewer;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
