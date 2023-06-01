@@ -5,11 +5,18 @@
     /// </summary>
     public abstract class Drawing : AvaloniaObject
     {
+        internal Drawing()
+        {
+            
+        }
+        
         /// <summary>
         /// Draws this drawing to the given <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public abstract void Draw(DrawingContext context);
+        public void Draw(DrawingContext context) => DrawCore(context);
+
+        internal abstract void DrawCore(DrawingContext context);
 
         /// <summary>
         /// Gets the drawing's bounding rectangle.

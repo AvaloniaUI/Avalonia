@@ -28,6 +28,15 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [Fact]
+        public void EffectivelyDisabledButton()
+        {
+            var button = _session.FindElementByAccessibilityId("EffectivelyDisabledButton");
+
+            Assert.Equal("Effectively Disabled Button", button.Text);
+            Assert.False(button.Enabled);
+        }
+
+        [Fact]
         public void BasicButton()
         {
             var button = _session.FindElementByAccessibilityId("BasicButton");

@@ -35,7 +35,7 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
+        void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -44,7 +44,7 @@ namespace Avalonia.Platform
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
+        void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -94,7 +94,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun);
+        void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
@@ -132,7 +132,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="opacity">The opacity.</param>
         /// <param name="bounds">where to apply the opacity.</param>
-        void PushOpacity(double opacity, Rect bounds);
+        void PushOpacity(double opacity, Rect? bounds);
 
         /// <summary>
         /// Pops the latest pushed opacity value.

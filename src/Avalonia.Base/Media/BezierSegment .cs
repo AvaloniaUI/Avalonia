@@ -56,7 +56,7 @@ namespace Avalonia.Media
             set { SetValue(Point3Property, value); }
         }
 
-        protected internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(StreamGeometryContext ctx)
         {
             ctx.CubicBezierTo(Point1, Point2, Point3);
         }

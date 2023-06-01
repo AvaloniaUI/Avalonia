@@ -2,7 +2,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Animation.Animators
 {
-    public class BoxShadowsAnimator :  Animator<BoxShadows>
+    internal class BoxShadowsAnimator : Animator<BoxShadows>
     {
         private static readonly BoxShadowAnimator s_boxShadowAnimator = new BoxShadowAnimator();
         public override BoxShadows Interpolate(double progress, BoxShadows oldValue, BoxShadows newValue)

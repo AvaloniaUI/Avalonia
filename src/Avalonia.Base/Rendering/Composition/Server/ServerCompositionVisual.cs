@@ -58,7 +58,7 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PushEffect(Effect);
             
             if (Opacity != 1)
-                canvas.PushOpacity(Opacity, boundsRect);
+                canvas.PushOpacity(Opacity, ClipToBounds ? boundsRect : null);
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
             if (Clip != null) 

@@ -7,8 +7,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Interface for Animator objects
     /// </summary>
-    [NotClientImplementable]
-    public interface IAnimator : IList<AnimatorKeyFrame>
+    internal interface IAnimator : IList<AnimatorKeyFrame>
     {
         /// <summary>
         /// The target property.

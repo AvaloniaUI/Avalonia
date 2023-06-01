@@ -155,6 +155,8 @@ namespace Avalonia.Media
         /// </summary>
         public Rect Bounds => new Rect(new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
 
+        public Rect InkBounds => PlatformImpl.Item.Bounds;
+
         /// <summary>
         /// 
         /// </summary>
@@ -214,7 +216,7 @@ namespace Avalonia.Media
         /// <summary>
         /// The platform implementation of the <see cref="GlyphRun"/>.
         /// </summary>
-        public IRef<IGlyphRunImpl> PlatformImpl
+        internal IRef<IGlyphRunImpl> PlatformImpl
             => _platformImpl ??= CreateGlyphRunImpl();
 
         /// <summary>
@@ -728,7 +730,7 @@ namespace Avalonia.Media
                             clusterLength++;
                             i--;
 
-                            if(characterIndex >= 0)
+                            if (characterIndex >= 0)
                             {
                                 codepoint = Codepoint.ReadAt(charactersSpan, characterIndex, out characterLength);
 
@@ -827,8 +829,7 @@ namespace Avalonia.Media
                 GlyphTypeface,
                 FontRenderingEmSize,
                 GlyphInfos,
-                BaselineOrigin,
-                Bounds);
+                BaselineOrigin);
 
             _platformImpl = RefCountable.Create(platformImpl);
 
@@ -851,5 +852,8 @@ namespace Avalonia.Media
         {
             return PlatformImpl.Item.GetIntersections(lowerLimit, upperLimit);
         }
+
+        public IImmutableGlyphRunReference? TryCreateImmutableGlyphRunReference()
+            => new ImmutableGlyphRunReference(PlatformImpl.Clone());
     }
 }

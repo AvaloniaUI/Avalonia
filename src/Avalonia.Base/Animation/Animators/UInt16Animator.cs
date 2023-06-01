@@ -5,7 +5,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="UInt16"/> properties.
     /// </summary>
-    public class UInt16Animator : Animator<UInt16>
+    internal class UInt16Animator : Animator<UInt16>
     {
         const double maxVal = (double)UInt16.MaxValue;
 

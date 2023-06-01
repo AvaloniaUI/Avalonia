@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
@@ -53,12 +54,12 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.Clear(color);
     }
 
-    public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+    public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
     {
         _impl.DrawBitmap(source, opacity, sourceRect, destRect);
     }
 
-    public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+    public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
     {
         _impl.DrawBitmap(source, opacityMask, opacityMaskRect, destRect);
     }
@@ -83,7 +84,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.DrawEllipse(brush, pen, rect);
     }
 
-    public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+    public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
     {
         _impl.DrawGlyphRun(foreground, glyphRun);
     }
@@ -108,7 +109,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.PopClip();
     }
 
-    public void PushOpacity(double opacity, Rect bounds)
+    public void PushOpacity(double opacity, Rect? bounds)
     {
         _impl.PushOpacity(opacity, bounds);
     }
@@ -145,6 +146,8 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     {
         if (_impl is IDrawingContextWithAcrylicLikeSupport acrylic) 
             acrylic.DrawRectangle(material, rect);
+        else
+            _impl.DrawRectangle(new ImmutableSolidColorBrush(material.FallbackColor), null, rect);
     }
 
     public void PushEffect(IEffect effect)

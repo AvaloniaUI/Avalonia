@@ -341,7 +341,7 @@ namespace Avalonia.Controls.Presenters
             var top = 0d;
             var left = 0.0;
 
-            var textHeight = TextLayout.Bounds.Height;
+            var textHeight = TextLayout.Height;
 
             if (Bounds.Height < textHeight)
             {
@@ -478,7 +478,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         this.BringIntoView(_caretBounds);
                     },
-                    DispatcherPriority.Render);
+                    DispatcherPriority.AfterRender);
             }
         }
 
@@ -571,14 +571,14 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
-            var measuredSize = TextLayout.Bounds.Size;
+            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
 
-            return measuredSize;
+            return new Size(textWidth, TextLayout.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var textWidth = Math.Ceiling(TextLayout.Bounds.Width);
+            var textWidth = Math.Ceiling(TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing);
 
             if (finalSize.Width < textWidth)
             {

@@ -95,8 +95,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var fmt = Create(input, fontSize);
 
-            Assert.Equal(expWidth, fmt.Bounds.Width, 2);
-            Assert.Equal(expHeight, fmt.Bounds.Height, 2);
+            Assert.Equal(expWidth, fmt.WidthIncludingTrailingWhitespace, 2);
+            Assert.Equal(expHeight, fmt.Height, 2);
         }
 
         [Theory]
@@ -253,8 +253,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 Assert.Equal(exr.Height, r.Height, 2);
             }
         }
-        
-         [Fact]
+
+        [Fact]
         public async Task TextLayout_Basic()
         {
             // Skip test on OSX: text rendering is subtly different.
@@ -274,7 +274,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 Background = Brushes.White,
                 Child = new DrawnControl(c =>
                 {
-                    var textRect = t.Bounds;
+                    var textRect = new Rect(0, 0, t.WidthIncludingTrailingWhitespace, t.Height);
                     var bounds = new Rect(0, 0, 200, 200);
                     var rect = bounds.CenterRect(textRect);
                     c.DrawRectangle(Brushes.Yellow, null, rect);
@@ -306,7 +306,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 Background = Brushes.White,
                 Child = new DrawnControl(c =>
                 {
-                    var textRect = t.Bounds;
+                    var textRect = new Rect(0, 0, t.WidthIncludingTrailingWhitespace, t.Height);
                     var bounds = new Rect(0, 0, 200, 200);
                     var rect = bounds.CenterRect(textRect);
                     var rotate = Matrix.CreateTranslation(-100, -100) *

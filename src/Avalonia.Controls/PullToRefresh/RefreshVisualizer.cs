@@ -193,7 +193,7 @@ namespace Avalonia.Controls
                         UpdateContent();
                     };
 
-                    Content = _content;
+                    SetCurrentValue(ContentProperty, _content);
                 }
                 else
                 {
@@ -238,7 +238,6 @@ namespace Avalonia.Controls
                             visualizerVisual.Offset = IsPullDirectionVertical ?
                                 new Vector3(visualizerVisual.Offset.X, 0, 0) :
                                 new Vector3(0, visualizerVisual.Offset.Y, 0);
-                            visual.Offset = default;
                             _content.InvalidateMeasure();
                             break;
                         case RefreshVisualizerState.Interacting:
@@ -451,8 +450,6 @@ namespace Avalonia.Controls
 
                 _interactionRatioSubscription = RefreshInfoProvider.GetObservable(RefreshInfoProvider.InteractionRatioProperty)
                     .Subscribe(InteractionRatioObserver);
-
-                var visual = RefreshInfoProvider.Visual;
 
                 _executingRatio = RefreshInfoProvider.ExecutionRatio;
             }

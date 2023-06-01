@@ -472,7 +472,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -694,7 +694,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -727,7 +727,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -760,7 +760,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }

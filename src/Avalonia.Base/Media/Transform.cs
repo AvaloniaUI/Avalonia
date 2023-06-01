@@ -2,6 +2,10 @@ using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
@@ -9,12 +13,17 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a transform on an <see cref="Visual"/>.
     /// </summary>
-    public abstract class Transform : Animatable, IMutableTransform
+    public abstract class Transform : Animatable, IMutableTransform, ICompositionRenderResource<ITransform>, ICompositorSerializable
     {
         static Transform()
         {
             Animation.Animation.RegisterAnimator<TransformAnimator>(prop =>
                 typeof(ITransform).IsAssignableFrom(prop.OwnerType));
+        }
+
+        internal Transform()
+        {
+            
         }
 
         /// <summary>
@@ -62,5 +71,19 @@ namespace Avalonia.Media
         {
             return Value.ToString();
         }
+
+        private CompositorResourceHolder<ServerCompositionSimpleTransform> _resource;
+        ITransform ICompositionRenderResource<ITransform>.GetForCompositor(Compositor c) => _resource.GetForCompositor(c);
+        SimpleServerObject? ICompositorSerializable.TryGetServer(Compositor c) => _resource.TryGetForCompositor(c);
+        
+        void ICompositionRenderResource.AddRefOnCompositor(Compositor c)
+        {
+            _resource.CreateOrAddRef(c, this, out _, static (cc) => new ServerCompositionSimpleTransform(cc.Server));
+        }
+
+        void ICompositionRenderResource.ReleaseOnCompositor(Compositor c) => _resource.Release(c);
+        
+        void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer) =>
+            ServerCompositionSimpleTransform.SerializeAllChanges(writer, Value);
     }
 }

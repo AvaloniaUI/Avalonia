@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -10,6 +11,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Constructing TextBounds object
         /// </summary>
+        [DebuggerStepThrough]
         internal TextBounds(Rect bounds, FlowDirection flowDirection, IList<TextRunBounds> runBounds)
         {
             Rectangle = bounds;

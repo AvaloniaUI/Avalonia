@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class WindowIcon
     {
-        public WindowIcon(IBitmap bitmap)
+        public WindowIcon(Bitmap bitmap)
         {
             PlatformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformIconLoader>().LoadIcon(bitmap.PlatformImpl.Item);
         }
@@ -24,7 +24,7 @@ namespace Avalonia.Controls
             PlatformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformIconLoader>().LoadIcon(stream);
         }
 
-        public IWindowIconImpl PlatformImpl { get; }
+        internal IWindowIconImpl PlatformImpl { get; }
 
         public void Save(Stream stream) => PlatformImpl.Save(stream);
     }

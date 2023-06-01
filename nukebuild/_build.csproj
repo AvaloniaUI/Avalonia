@@ -35,6 +35,12 @@
 	<EmbeddedResource Include="../build/avalonia.snk"></EmbeddedResource>
     <Compile Remove="il-repack\ILRepack\Application.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\dirs.proj">
+      <Link>dirs.proj</Link>
+    </Content>
+  </ItemGroup>
     
     
 

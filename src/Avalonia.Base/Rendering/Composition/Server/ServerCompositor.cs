@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.Composition.Server
     /// 2) triggers animation ticks
     /// 3) asks composition targets to render themselves
     /// </summary>
-    internal class ServerCompositor : IRenderLoopTask
+    internal partial class ServerCompositor : IRenderLoopTask
     {
         private readonly IRenderLoop _renderLoop;
 
@@ -35,6 +35,7 @@ namespace Avalonia.Rendering.Composition.Server
         private object _lock = new object();
         private Thread? _safeThread;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
+        internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
 
@@ -56,7 +57,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
-        List<Batch> _reusableToCompleteList = new();
+        List<Batch> _reusableToNotifyProcessedList = new();
+        List<Batch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
             while (true)
@@ -79,8 +81,14 @@ namespace Avalonia.Rendering.Composition.Server
                             ReadServerJobs(stream);
                             continue;
                         }
+
+                        if (readObject == RenderThreadDisposeStartMarker)
+                        {
+                            ReadDisposeJobs(stream);
+                            continue;
+                        }
                         
-                        var target = (ServerObject)readObject!;
+                        var target = (SimpleServerObject)readObject!;
                         target.DeserializeChanges(stream, batch);
 #if DEBUG_COMPOSITOR_SERIALIZATION
                         if (stream.ReadObject() != BatchStreamDebugMarkers.ObjectEndMarker)
@@ -93,7 +101,7 @@ namespace Avalonia.Rendering.Composition.Server
                     }
                 }
 
-                _reusableToCompleteList.Add(batch);
+                _reusableToNotifyProcessedList.Add(batch);
                 LastBatchId = batch.SequenceId;
             }
         }
@@ -103,6 +111,16 @@ namespace Avalonia.Rendering.Composition.Server
             object? readObject;
             while ((readObject = reader.ReadObject()) != RenderThreadJobsEndMarker)
                 _receivedJobQueue.Enqueue((Action)readObject!);
+        }
+
+        void ReadDisposeJobs(BatchStreamReader reader)
+        {
+            var count = reader.Read<int>();
+            while (count > 0)
+            {
+                (reader.ReadObject() as IDisposable)?.Dispose();
+                count--;
+            }
         }
 
         void ExecuteServerJobs()
@@ -118,17 +136,23 @@ namespace Avalonia.Rendering.Composition.Server
                 }
         }
 
-        void CompletePendingBatches()
+        void NotifyBatchesProcessed()
         {
-            foreach(var batch in _reusableToCompleteList)
-                batch.Complete();
-            _reusableToCompleteList.Clear();
+            foreach (var batch in _reusableToNotifyProcessedList) 
+                batch.NotifyProcessed();
+
+            foreach (var batch in _reusableToNotifyProcessedList)
+                _reusableToNotifyRenderedList.Add(batch);
+
+            _reusableToNotifyProcessedList.Clear();
         }
-
-        bool IRenderLoopTask.NeedsUpdate => false;
-
-        void IRenderLoopTask.Update(TimeSpan time)
+        
+        void NotifyBatchesRendered()
         {
+            foreach (var batch in _reusableToNotifyRenderedList) 
+                batch.NotifyRendered();
+
+            _reusableToNotifyRenderedList.Clear();
         }
 
         public void Render()
@@ -142,8 +166,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
                 finally
                 {
+                    NotifyBatchesRendered();
                     _safeThread = null;
                 }
+                
             }
         }
         
@@ -151,7 +177,7 @@ namespace Avalonia.Rendering.Composition.Server
         {
             UpdateServerTime();
             ApplyPendingBatches();
-            CompletePendingBatches();
+            NotifyBatchesProcessed();
             
             foreach(var animation in _clockItems)
                 _clockItemsToUpdate.Add(animation);
@@ -160,6 +186,8 @@ namespace Avalonia.Rendering.Composition.Server
                 animation.OnTick();
             
             _clockItemsToUpdate.Clear();
+
+            ApplyEnqueuedRenderResourceChanges();
             
             try
             {

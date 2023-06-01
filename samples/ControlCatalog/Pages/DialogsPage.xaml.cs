@@ -307,7 +307,7 @@ namespace ControlCatalog.Pages
             Content:
             ";
 
-                        resultText += await ReadTextFromFile(file, 10000);
+                        resultText += await ReadTextFromFile(file, 500);
                     }
 
                     openedFileContent.Text = resultText;

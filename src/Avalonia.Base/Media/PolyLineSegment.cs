@@ -44,7 +44,7 @@ namespace Avalonia.Media
             Points = new Points(points);
         }
 
-        protected internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(StreamGeometryContext ctx)
         {
             var points = Points;
             if (points.Count > 0)

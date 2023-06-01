@@ -60,7 +60,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
         }
@@ -77,7 +77,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
@@ -87,7 +87,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var inputRoot = e.Root as IInputRoot;
+            var inputRoot = e.Root as TopLevel;
 
             if (inputRoot?.AccessKeyHandler != null)
             {

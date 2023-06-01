@@ -7,7 +7,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="Size"/> properties.
     /// </summary>
-    public class SizeAnimator : Animator<Size>
+    internal class SizeAnimator : Animator<Size>
     {
         public override Size Interpolate(double progress, Size oldValue, Size newValue)
         {

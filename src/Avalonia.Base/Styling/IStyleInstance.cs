@@ -5,8 +5,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Represents a <see cref="Style"/> that has been instanced on a control.
     /// </summary>
-    [Unstable]
-    public interface IStyleInstance
+    internal interface IStyleInstance
     {
         /// <summary>
         /// Gets the source style.

@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <inheritdoc/>
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             if (setter is Setter s && s.Property == ContextFlyoutProperty)
             {
@@ -440,6 +440,12 @@ namespace Avalonia.Controls
             return new NoneAutomationPeer(this);
         }
 
+        internal AutomationPeer? GetAutomationPeer()
+        {
+            VerifyAccess();
+            return _automationPeer;
+        }
+
         internal AutomationPeer GetOrCreateAutomationPeer()
         {
             VerifyAccess();
@@ -474,7 +480,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.OpenContextMenu;
+                var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {

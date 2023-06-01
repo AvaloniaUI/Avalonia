@@ -10,8 +10,8 @@ namespace Avalonia.Themes.Fluent
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value != null && value is IBitmap bm)
-                return new Image { Source=bm };
+            if (value != null && value is Bitmap bm)
+                return new Image { Source = bm };
                 
             return null;
         }

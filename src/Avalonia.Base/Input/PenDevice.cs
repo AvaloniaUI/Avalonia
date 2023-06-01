@@ -2,8 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
+
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
@@ -11,6 +16,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Represents a pen/stylus device.
     /// </summary>
+    [PrivateApi]
     public class PenDevice : IPenDevice, IDisposable
     {
         private readonly Dictionary<long, Pointer> _pointers = new();
@@ -78,19 +84,23 @@ namespace Avalonia.Input
             if (source != null)
             {
                 pointer.Capture(source);
-                var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                var doubleClickTime = settings?.GetDoubleTapTime(PointerType.Pen).TotalMilliseconds ?? 500;
-                var doubleClickSize = settings?.GetDoubleTapSize(PointerType.Pen) ?? new Size(4, 4);
-
-                if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
+                var settings = ((IInputRoot?)(source as Interactive)?.GetVisualRoot())?.PlatformSettings;
+                if (settings is not null)
                 {
-                    _clickCount = 0;
+                    var doubleClickTime = settings.GetDoubleTapTime(PointerType.Pen).TotalMilliseconds;
+                    var doubleClickSize = settings.GetDoubleTapSize(PointerType.Pen);
+
+                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
+                    {
+                        _clickCount = 0;
+                    }
+
+                    ++_clickCount;
+                    _lastClickTime = timestamp;
+                    _lastClickRect = new Rect(p, new Size())
+                        .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                 }
 
-                ++_clickCount;
-                _lastClickTime = timestamp;
-                _lastClickRect = new Rect(p, new Size())
-                    .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                 _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
                 var e = new PointerPressedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
                 source.RaiseEvent(e);
@@ -105,14 +115,17 @@ namespace Avalonia.Input
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
         {
-            var source = pointer.Captured ?? hitTest;
+            var source = pointer.CapturedGestureRecognizer?.Target ?? pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, pointer, (Visual)root,
                     p, timestamp, properties, inputModifiers, intermediatePoints);
 
-                source.RaiseEvent(e);
+                if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                    gestureRecognizer.PointerMovedInternal(e);
+                else
+                    source.RaiseEvent(e);
                 return e.Handled;
             }
 
@@ -123,15 +136,19 @@ namespace Avalonia.Input
             IInputElement root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest)
         {
-            var source = pointer.Captured ?? hitTest;
+            var source = pointer.CapturedGestureRecognizer?.Target ?? pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
                 var e = new PointerReleasedEventArgs(source, pointer, (Visual)root, p, timestamp, properties, inputModifiers,
                     _lastMouseDownButton);
 
-                source.RaiseEvent(e);
+                if (pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                    gestureRecognizer.PointerReleasedInternal(e);
+                else
+                    source.RaiseEvent(e);
                 pointer.Capture(null);
+                pointer.CaptureGestureRecognizer(null);
                 _lastMouseDownButton = default;
                 return e.Handled;
             }

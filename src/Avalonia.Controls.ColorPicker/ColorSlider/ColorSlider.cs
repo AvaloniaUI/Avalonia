@@ -52,8 +52,7 @@ namespace Avalonia.Controls.Primitives
             // This means under a certain alpha threshold, neither a white or black selector thumb
             // should be shown and instead the default slider thumb color should be used instead.
             if (Color.A < 128 &&
-                (IsAlphaMaxForced == false ||
-                 ColorComponent == ColorComponent.Alpha))
+                (IsAlphaVisible || ColorComponent == ColorComponent.Alpha))
             {
                 PseudoClasses.Set(pcDarkSelector, false);
                 PseudoClasses.Set(pcLightSelector, false);
@@ -64,11 +63,11 @@ namespace Avalonia.Controls.Primitives
 
                 if (ColorModel == ColorModel.Hsva)
                 {
-                    perceivedColor = GetEquivalentBackgroundColor(HsvColor).ToRgb();
+                    perceivedColor = GetPerceptiveBackgroundColor(HsvColor).ToRgb();
                 }
                 else
                 {
-                    perceivedColor = GetEquivalentBackgroundColor(Color);
+                    perceivedColor = GetPerceptiveBackgroundColor(Color);
                 }
 
                 if (ColorHelper.GetRelativeLuminance(perceivedColor) <= 0.5)
@@ -99,16 +98,16 @@ namespace Avalonia.Controls.Primitives
             int pixelWidth;
             int pixelHeight;
 
-            if (base._track != null)
+            if (base.Track != null)
             {
-                pixelWidth = Convert.ToInt32(base._track.Bounds.Width * scale);
-                pixelHeight = Convert.ToInt32(base._track.Bounds.Height * scale);
+                pixelWidth = Convert.ToInt32(base.Track.Bounds.Width * scale);
+                pixelHeight = Convert.ToInt32(base.Track.Bounds.Height * scale);
             }
             else
             {
                 // As a fallback, attempt to calculate using the overall control size
                 // This shouldn't happen as a track is a required template part of a slider
-                // However, if it does, the spectrum will still be shown
+                // However, if it does, the spectrum gradient will still be shown
                 pixelWidth = Convert.ToInt32(Bounds.Width * scale);
                 pixelHeight = Convert.ToInt32(Bounds.Height * scale);
             }
@@ -122,8 +121,8 @@ namespace Avalonia.Controls.Primitives
                     ColorModel,
                     ColorComponent,
                     HsvColor,
-                    IsAlphaMaxForced,
-                    IsSaturationValueMaxForced);
+                    IsAlphaVisible,
+                    IsPerceptive);
 
                 if (_backgroundBitmap != null)
                 {
@@ -316,40 +315,35 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="hsvColor">The actual color to get the equivalent background color for.</param>
         /// <returns>The equivalent, perceived background color.</returns>
-        private HsvColor GetEquivalentBackgroundColor(HsvColor hsvColor)
+        private HsvColor GetPerceptiveBackgroundColor(HsvColor hsvColor)
         {
             var component = ColorComponent;
-            var isAlphaMaxForced = IsAlphaMaxForced;
-            var isSaturationValueMaxForced = IsSaturationValueMaxForced;
+            var isAlphaVisible = IsAlphaVisible;
+            var isPerceptive = IsPerceptive;
 
-            if (isAlphaMaxForced &&
+            if (isAlphaVisible == false &&
                 component != ColorComponent.Alpha)
             {
                 hsvColor = new HsvColor(1.0, hsvColor.H, hsvColor.S, hsvColor.V);
             }
 
-            switch (component)
+            if (isPerceptive)
             {
-                case ColorComponent.Component1:
-                    return new HsvColor(
-                        hsvColor.A,
-                        hsvColor.H,
-                        isSaturationValueMaxForced ? 1.0 : hsvColor.S,
-                        isSaturationValueMaxForced ? 1.0 : hsvColor.V);
-                case ColorComponent.Component2:
-                    return new HsvColor(
-                        hsvColor.A,
-                        hsvColor.H,
-                        hsvColor.S,
-                        isSaturationValueMaxForced ? 1.0 : hsvColor.V);
-                case ColorComponent.Component3:
-                    return new HsvColor(
-                        hsvColor.A,
-                        hsvColor.H,
-                        isSaturationValueMaxForced ? 1.0 : hsvColor.S,
-                        hsvColor.V);
-                default:
-                    return hsvColor;
+                switch (component)
+                {
+                    case ColorComponent.Component1:
+                        return new HsvColor(hsvColor.A, hsvColor.H, 1.0, 1.0);
+                    case ColorComponent.Component2:
+                        return new HsvColor(hsvColor.A, hsvColor.H, hsvColor.S, 1.0);
+                    case ColorComponent.Component3:
+                        return new HsvColor(hsvColor.A, hsvColor.H, 1.0, hsvColor.V);
+                    default:
+                        return hsvColor;
+                }
+            }
+            else
+            {
+                return hsvColor;
             }
         }
 
@@ -359,18 +353,36 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="rgbColor">The actual color to get the equivalent background color for.</param>
         /// <returns>The equivalent, perceived background color.</returns>
-        private Color GetEquivalentBackgroundColor(Color rgbColor)
+        private Color GetPerceptiveBackgroundColor(Color rgbColor)
         {
             var component = ColorComponent;
-            var isAlphaMaxForced = IsAlphaMaxForced;
+            var isAlphaVisible = IsAlphaVisible;
+            var isPerceptive = IsPerceptive;
 
-            if (isAlphaMaxForced &&
+            if (isAlphaVisible == false &&
                 component != ColorComponent.Alpha)
             {
                 rgbColor = new Color(255, rgbColor.R, rgbColor.G, rgbColor.B);
             }
 
-            return rgbColor;
+            if (isPerceptive)
+            {
+                switch (component)
+                {
+                    case ColorComponent.Component1:
+                        return new Color(rgbColor.A, rgbColor.R, 0, 0);
+                    case ColorComponent.Component2:
+                        return new Color(rgbColor.A, 0, rgbColor.G, 0);
+                    case ColorComponent.Component3:
+                        return new Color(rgbColor.A, 0, 0, rgbColor.B);
+                    default:
+                        return rgbColor;
+                }
+            }
+            else
+            {
+                return rgbColor;
+            }
         }
 
         /// <inheritdoc/>
@@ -401,8 +413,8 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ColorComponentProperty ||
                      change.Property == ColorModelProperty ||
-                     change.Property == IsAlphaMaxForcedProperty ||
-                     change.Property == IsSaturationValueMaxForcedProperty)
+                     change.Property == IsAlphaVisibleProperty ||
+                     change.Property == IsPerceptiveProperty)
             {
                 ignorePropertyChanged = true;
 

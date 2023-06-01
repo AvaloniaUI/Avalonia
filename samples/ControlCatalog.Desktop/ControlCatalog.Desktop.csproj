@@ -4,10 +4,17 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net461</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationManifest>../ControlCatalog.NetCore/app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ControlCatalog.NetCore\NativeControls\Win\*.cs" Link="NativeControls\*" />
   </ItemGroup>
 
   <Import Project="..\..\build\SampleApp.props" />

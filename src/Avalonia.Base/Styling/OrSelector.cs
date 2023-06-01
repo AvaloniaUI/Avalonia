@@ -36,13 +36,13 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public override bool InTemplate => false;
+        internal override bool InTemplate => false;
 
         /// <inheritdoc/>
-        public override bool IsCombinator => false;
+        internal override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override Type? TargetType => _targetType ??= EvaluateTargetType();
+        internal override Type? TargetType => _targetType ??= EvaluateTargetType();
 
         /// <inheritdoc/>
         public override string ToString(Style? owner)
@@ -55,7 +55,7 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
@@ -94,8 +94,8 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector? MovePrevious() => null;
-        protected override Selector? MovePreviousOrParent() => null;
+        private protected override Selector? MovePrevious() => null;
+        private protected override Selector? MovePreviousOrParent() => null;
 
         internal override void ValidateNestingSelector(bool inControlTheme)
         {

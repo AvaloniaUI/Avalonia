@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
     /// </summary>
-    public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable, IScrollAnchorProvider
+    public class ScrollContentPresenter : ContentPresenter, IScrollable, IScrollAnchorProvider
     {
         private const double EdgeDetectionTolerance = 0.1;
 
@@ -302,7 +302,7 @@ namespace Avalonia.Controls.Presenters
         /// <remarks>
         /// This method is automatically called when the control is attached to a visual tree.
         /// </remarks>
-        protected internal virtual void AttachToScrollViewer()
+        internal void AttachToScrollViewer()
         {
             var owner = this.FindAncestorOfType<ScrollViewer>();
 

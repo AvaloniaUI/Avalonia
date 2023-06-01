@@ -23,7 +23,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TreeViewTests
+    public class TreeViewTests : ScopedTestBase
     {
         private readonly MouseTestHelper _mouse = new();
 
@@ -725,6 +725,86 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Removing_Selected_Root_Item_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+
+            target.SelectedItem = item;
+
+            data.RemoveAt(0);
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Resetting_Root_Items_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+
+            target.SelectedItem = item;
+
+            data.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Removing_Selected_Child_Item_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0].Children[1];
+
+            target.SelectedItem = item;
+
+            data[0].Children.RemoveAt(1);
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Replacing_Selected_Child_Item_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0].Children[1];
+
+            target.SelectedItem = item;
+
+            data[0].Children[1] = new Node();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Clearing_Child_Items_Should_Clear_Selection()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0].Children[1];
+
+            target.SelectedItem = item;
+
+            data[0].Children.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
         public void SelectedItem_Should_Be_Valid_When_SelectedItemChanged_Event_Raised()
         {
             using var app = Start();
@@ -889,7 +969,6 @@ namespace Avalonia.Controls.UnitTests
         public void Keyboard_Navigation_Should_Move_To_Last_Selected_Node()
         {
             using var app = Start();
-            var focus = FocusManager.Instance!;
             var navigation = AvaloniaLocator.Current.GetRequiredService<IKeyboardNavigationHandler>();
             var data = CreateTestTreeData();
 
@@ -904,6 +983,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children = { target, button },
             });
+            var focus = root.FocusManager;
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             ExpandAll(target);
@@ -914,20 +994,19 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedItem = item;
             node.Focus();
-            Assert.Same(node, focus.Current);
+            Assert.Same(node, focus.GetFocusedElement());
 
-            navigation.Move(focus.Current!, NavigationDirection.Next);
-            Assert.Same(button, focus.Current);
+            navigation.Move(focus.GetFocusedElement()!, NavigationDirection.Next);
+            Assert.Same(button, focus.GetFocusedElement());
 
-            navigation.Move(focus.Current!, NavigationDirection.Next);
-            Assert.Same(node, focus.Current);
+            navigation.Move(focus.GetFocusedElement()!, NavigationDirection.Next);
+            Assert.Same(node, focus.GetFocusedElement());
         }
 
         [Fact]
         public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
         {
             using var app = Start();
-            var focus = FocusManager.Instance!;
             var data = CreateTestTreeData();
 
             var selectedNode = new Node { Value = "Out of Tree Selected Item" };
@@ -945,6 +1024,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children = { target, button },
             });
+            var focus = root.FocusManager;
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             ExpandAll(target);
@@ -955,7 +1035,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedItem = selectedNode;
             node.Focus();
-            Assert.Same(node, focus.Current);
+            Assert.Same(node, focus.GetFocusedElement());
         }
 
         [Fact]
@@ -965,7 +1045,7 @@ namespace Avalonia.Controls.UnitTests
             var data = CreateTestTreeData();
             var target = CreateTarget(data: data, multiSelect: true);
             var rootNode = data[0];
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
             var selectAllGesture = keymap.SelectAll.First();
 
             var keyEvent = new KeyEventArgs
@@ -995,7 +1075,7 @@ namespace Avalonia.Controls.UnitTests
             ClickContainer(fromContainer, KeyModifiers.None);
             ClickContainer(toContainer, KeyModifiers.Shift);
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
             var selectAllGesture = keymap.SelectAll.First();
 
             var keyEvent = new KeyEventArgs
@@ -1025,7 +1105,7 @@ namespace Avalonia.Controls.UnitTests
             ClickContainer(fromContainer, KeyModifiers.None);
             ClickContainer(toContainer, KeyModifiers.Shift);
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
             var selectAllGesture = keymap.SelectAll.First();
 
             var keyEvent = new KeyEventArgs

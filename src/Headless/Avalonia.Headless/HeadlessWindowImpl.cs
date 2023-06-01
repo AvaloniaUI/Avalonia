@@ -24,9 +24,10 @@ namespace Avalonia.Headless
         private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
+        private readonly PixelFormat _frameBufferFormat;
         public bool IsPopup { get; }
 
-        public HeadlessWindowImpl(bool isPopup)
+        public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
         {
             IsPopup = isPopup;
             Surfaces = new object[] { this };
@@ -34,6 +35,7 @@ namespace Avalonia.Headless
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             MouseDevice = new MouseDevice(_mousePointer);
             ClientSize = new Size(1024, 768);
+            _frameBufferFormat = frameBufferFormat;
         }
 
         public void Dispose()
@@ -53,8 +55,7 @@ namespace Avalonia.Headless
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor!, () => Surfaces);
+        public Compositor Compositor => AvaloniaHeadlessPlatform.Compositor!;
 
         public void Invalidate(Rect rect)
         {
@@ -202,7 +203,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, PixelFormat.Rgba8888, AlphaFormat.Premul);
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _frameBufferFormat, AlphaFormat.Premul);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {
@@ -275,6 +276,14 @@ namespace Avalonia.Headless
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyUp, key, modifiers));
         }
 
+        void IHeadlessWindow.TextInput(string text)
+        {
+            if (InputRoot == null)
+                return;
+
+            Input?.Invoke(new RawTextInputEventArgs(_keyboard, 0, InputRoot, text));
+        }
+
         void IHeadlessWindow.MouseDown(Point point, MouseButton button, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot!,
@@ -337,7 +346,7 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
             
         }

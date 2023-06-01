@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:pc="using:Avalonia.Controls.Primitives.Converters">
+                    xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
+                    x:ClassModifier="internal">
 
   <pc:AccentColorConverter x:Key="AccentColorConverter" />
   <x:Double x:Key="ColorPreviewerAccentSectionWidth">80</x:Double>
@@ -8,7 +9,9 @@
 
   <ControlTheme x:Key="{x:Type ColorPreviewer}"
                 TargetType="ColorPreviewer">
-    <Setter Property="Height" Value="70" />
+    <Setter Property="Height" Value="50" />
+    <!-- The preview color drop shadow is allowed to extend outside the control bounds -->
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="CornerRadius" Value="0" />
     <Setter Property="Template">
       <ControlTemplate TargetType="{x:Type ColorPreviewer}">
@@ -21,7 +24,6 @@
                   Height="{StaticResource ColorPreviewerAccentSectionHeight}"
                   Width="{StaticResource ColorPreviewerAccentSectionWidth}"
                   ColumnDefinitions="*,*"
-                  Margin="0,0,-10,0"
                   VerticalAlignment="Center">
               <Border Grid.Column="0"
                       Grid.ColumnSpan="2"
@@ -43,7 +45,6 @@
                   Height="{StaticResource ColorPreviewerAccentSectionHeight}"
                   Width="{StaticResource ColorPreviewerAccentSectionWidth}"
                   ColumnDefinitions="*,*"
-                  Margin="-10,0,0,0"
                   VerticalAlignment="Center">
               <Border Grid.Column="0"
                       Grid.ColumnSpan="2"
@@ -64,10 +65,8 @@
             <Border Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    Background="Transparent"
                     BoxShadow="0 0 10 2 #BF000000"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    Margin="10">
+                    CornerRadius="{TemplateBinding CornerRadius}">
               <Panel>
                 <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
                         CornerRadius="{TemplateBinding CornerRadius}" />
@@ -82,8 +81,7 @@
           <Border CornerRadius="{TemplateBinding CornerRadius}"
                   IsVisible="{TemplateBinding IsAccentColorsVisible, Converter={x:Static BoolConverters.Not}}"
                   HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  Margin="0,10,0,10">
+                  VerticalAlignment="Stretch">
             <Panel>
               <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
                       CornerRadius="{TemplateBinding CornerRadius}" />

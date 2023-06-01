@@ -70,8 +70,8 @@ namespace Avalonia.Controls
         private ScrollViewer? _scrollViewer;
         private Rect _viewport = s_invalidViewport;
         private Dictionary<object, Stack<Control>>? _recyclePool;
-        private Control? _unrealizedFocusedElement;
-        private int _unrealizedFocusedIndex = -1;
+        private Control? _focusedElement;
+        private int _focusedIndex = -1;
 
         public VirtualizingStackPanel()
         {
@@ -265,12 +265,14 @@ namespace Avalonia.Controls
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
         {
             var count = Items.Count;
+            var fromControl = from as Control;
 
-            if (count == 0 || from is not Control fromControl)
+            if (count == 0 || 
+                fromControl is null && direction is not NavigationDirection.First or NavigationDirection.Last)
                 return null;
 
             var horiz = Orientation == Orientation.Horizontal;
-            var fromIndex = from != null ? IndexFromContainer(fromControl) : -1;
+            var fromIndex = fromControl != null ? IndexFromContainer(fromControl) : -1;
             var toIndex = fromIndex;
 
             switch (direction)
@@ -330,20 +332,31 @@ namespace Avalonia.Controls
         {
             if (index < 0 || index >= Items.Count)
                 return null;
-            if (_realizedElements?.GetElement(index) is { } realized)
+            if (_scrollToIndex == index)
+                return _scrollToElement;
+            if (_focusedIndex == index)
+                return _focusedElement;
+            if (GetRealizedElement(index) is { } realized)
                 return realized;
             if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
                 return c;
             return null;
         }
 
-        protected internal override int IndexFromContainer(Control container) => _realizedElements?.GetIndex(container) ?? -1;
+        protected internal override int IndexFromContainer(Control container)
+        {
+            if (container == _scrollToElement)
+                return _scrollToIndex;
+            if (container == _focusedElement)
+                return _focusedIndex;
+            return _realizedElements?.GetIndex(container) ?? -1;
+        }
 
         protected internal override Control? ScrollIntoView(int index)
         {
             var items = Items;
 
-            if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null)
+            if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null || !IsEffectivelyVisible)
                 return null;
 
             if (GetRealizedElement(index) is Control element)
@@ -355,16 +368,19 @@ namespace Avalonia.Controls
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                _scrollToElement = GetOrCreateElement(items, index);
-                _scrollToElement.Measure(Size.Infinity);
-                _scrollToIndex = index;
+                var scrollToElement = GetOrCreateElement(items, index);
+                scrollToElement.Measure(Size.Infinity);
 
                 // Get the expected position of the elment and put it in place.
                 var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
                 var rect = Orientation == Orientation.Horizontal ?
-                    new Rect(anchorU, 0, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height) :
-                    new Rect(0, anchorU, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height);
-                _scrollToElement.Arrange(rect);
+                    new Rect(anchorU, 0, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height) :
+                    new Rect(0, anchorU, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height);
+                scrollToElement.Arrange(rect);
+
+                // Store the element and index so that they can be used in the layout pass.
+                _scrollToElement = scrollToElement;
+                _scrollToIndex = index;
 
                 // If the item being brought into view was added since the last layout pass then
                 // our bounds won't be updated, so any containing scroll viewers will not have an
@@ -378,7 +394,7 @@ namespace Avalonia.Controls
                 }
 
                 // Try to bring the item into view.
-                _scrollToElement.BringIntoView();
+                scrollToElement.BringIntoView();
 
                 // If the viewport does not contain the item to scroll to, set _isWaitingForViewportUpdate:
                 // this should cause the following chain of events:
@@ -397,10 +413,9 @@ namespace Avalonia.Controls
                     root.LayoutManager.ExecuteLayoutPass();
                 }
 
-                var result = _scrollToElement;
                 _scrollToElement = null;
                 _scrollToIndex = -1;
-                return result;
+                return scrollToElement;
             }
 
             return null;
@@ -563,32 +578,46 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
-            var e = GetRealizedElement(index);
+            if ((GetRealizedElement(index) ??
+                 GetRealizedElement(index, ref _focusedIndex, ref _focusedElement) ??
+                 GetRealizedElement(index, ref _scrollToIndex, ref _scrollToElement)) is { } realized)
+                return realized;
 
-            if (e is null)
+            var item = items[index];
+            var generator = ItemContainerGenerator!;
+
+            if (generator.NeedsContainer(item, index, out var recycleKey))
             {
-                var item = items[index];
-                var generator = ItemContainerGenerator!;
-
-                if (generator.NeedsContainer(item, index, out var recycleKey))
-                {
-                    e = GetRecycledElement(item, index, recycleKey) ??
-                        CreateElement(item, index, recycleKey);
-                }
-                else
-                {
-                    e = GetItemAsOwnContainer(item, index);
-                }
+                return GetRecycledElement(item, index, recycleKey) ??
+                       CreateElement(item, index, recycleKey);
             }
-
-            return e;
+            else
+            {
+                return GetItemAsOwnContainer(item, index);
+            }
         }
 
         private Control? GetRealizedElement(int index)
         {
-            if (_scrollToIndex == index)
-                return _scrollToElement;
             return _realizedElements?.GetElement(index);
+        }
+
+        private static Control? GetRealizedElement(
+            int index,
+            ref int specialIndex,
+            ref Control? specialElement)
+        {
+            if (specialIndex == index)
+            {
+                Debug.Assert(specialElement is not null);
+
+                var result = specialElement;
+                specialIndex = -1;
+                specialElement = null;
+                return result;
+            }
+
+            return null;
         }
 
         private Control GetItemAsOwnContainer(object? item, int index)
@@ -618,15 +647,6 @@ namespace Avalonia.Controls
                 return null;
 
             var generator = ItemContainerGenerator!;
-
-            if (_unrealizedFocusedIndex == index && _unrealizedFocusedElement is not null)
-            {
-                var element = _unrealizedFocusedElement;
-                _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-                _unrealizedFocusedElement = null;
-                _unrealizedFocusedIndex = -1;
-                return element;
-            }
 
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
@@ -662,17 +682,20 @@ namespace Avalonia.Controls
             _scrollViewer?.UnregisterAnchorCandidate(element);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
-            Debug.Assert(recycleKey is not null);
 
-            if (recycleKey == s_itemIsItsOwnContainer)
+            if (recycleKey is null)
+            {
+                RemoveInternalChild(element);
+            }
+            else if (recycleKey == s_itemIsItsOwnContainer)
             {
                 element.IsVisible = false;
             }
             else if (element.IsKeyboardFocusWithin)
             {
-                _unrealizedFocusedElement = element;
-                _unrealizedFocusedIndex = index;
-                _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
+                _focusedElement = element;
+                _focusedIndex = index;
+                _focusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
             }
             else
             {
@@ -687,9 +710,8 @@ namespace Avalonia.Controls
             Debug.Assert(ItemContainerGenerator is not null);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
-            Debug.Assert(recycleKey is not null);
-
-            if (recycleKey == s_itemIsItsOwnContainer)
+            
+            if (recycleKey is null || recycleKey == s_itemIsItsOwnContainer)
             {
                 RemoveInternalChild(element);
             }
@@ -742,13 +764,13 @@ namespace Avalonia.Controls
 
         private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
         {
-            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+            if (_focusedElement is null || sender != _focusedElement)
                 return;
 
-            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
-            _unrealizedFocusedElement = null;
-            _unrealizedFocusedIndex = -1;
+            _focusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+            RecycleElement(_focusedElement, _focusedIndex);
+            _focusedElement = null;
+            _focusedIndex = -1;
         }
 
         /// <inheritdoc/>

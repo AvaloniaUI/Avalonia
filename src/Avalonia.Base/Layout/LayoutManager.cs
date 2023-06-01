@@ -2,8 +2,9 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Logging;
+using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -15,6 +16,7 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
+    [PrivateApi]
     public class LayoutManager : ILayoutManager, IDisposable
     {
         private const int MaxPasses = 10;
@@ -22,17 +24,17 @@ namespace Avalonia.Layout
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
         private readonly List<Layoutable> _toArrangeAfterMeasure = new();
-        private readonly Action _executeLayoutPass;
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
         private bool _disposed;
         private bool _queued;
         private bool _running;
         private int _totalPassCount;
+        private Action _invokeOnRender;
 
         public LayoutManager(ILayoutRoot owner)
         {
             _owner = owner as Layoutable ?? throw new ArgumentNullException(nameof(owner));
-            _executeLayoutPass = ExecuteQueuedLayoutPass;
+            _invokeOnRender = ExecuteQueuedLayoutPass;
         }
 
         public virtual event EventHandler? LayoutUpdated;
@@ -99,7 +101,7 @@ namespace Avalonia.Layout
             QueueLayoutPass();
         }
 
-        private void ExecuteQueuedLayoutPass()
+        internal void ExecuteQueuedLayoutPass()
         {
             if (!_queued)
             {
@@ -346,7 +348,7 @@ namespace Avalonia.Layout
             if (!_queued && !_running)
             {
                 _queued = true;
-                Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
+                MediaContext.Instance.BeginInvokeOnRender(_invokeOnRender);
             }
         }
 

@@ -24,7 +24,7 @@ namespace Avalonia.Headless
                 var st = Stopwatch.StartNew();
                 _forceTick = () => tick(st.Elapsed);
 
-                var timer = new DispatcherTimer(DispatcherPriority.Render)
+                var timer = new DispatcherTimer(DispatcherPriority.UiThreadRender)
                 {
                     Interval = TimeSpan.FromSeconds(1.0 / _framesPerSecond),
                     Tag = "HeadlessRenderTimer"
@@ -51,11 +51,16 @@ namespace Avalonia.Headless
 
         private class HeadlessWindowingPlatform : IWindowingPlatform
         {
-            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false);
+            readonly PixelFormat _frameBufferFormat;
+            public HeadlessWindowingPlatform(PixelFormat frameBufferFormat)
+            {
+                _frameBufferFormat = frameBufferFormat;
+            }
+            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false, _frameBufferFormat);
 
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
-            public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
+            public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true, _frameBufferFormat);
 
             public ITrayIconImpl? CreateTrayIcon() => null;
         }
@@ -69,11 +74,10 @@ namespace Avalonia.Headless
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
-                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
+                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
+            Compositor = new Compositor( null);
         }
 
         /// <summary>
@@ -93,6 +97,7 @@ namespace Avalonia.Headless
     public class AvaloniaHeadlessPlatformOptions
     {
         public bool UseHeadlessDrawing { get; set; } = true;
+        public PixelFormat FrameBufferFormat { get; set; } = PixelFormat.Rgba8888;
     }
 
     public static class AvaloniaHeadlessPlatformExtensions

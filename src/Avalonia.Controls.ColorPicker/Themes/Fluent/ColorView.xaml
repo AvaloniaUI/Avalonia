@@ -4,7 +4,8 @@
                     xmlns:converters="using:Avalonia.Controls.Converters"
                     xmlns:primitives="using:Avalonia.Controls.Primitives"
                     xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
-                    xmlns:globalization="using:System.Globalization">
+                    xmlns:globalization="using:System.Globalization"
+                    x:ClassModifier="internal">
 
   <pc:ContrastBrushConverter x:Key="ContrastBrushConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
@@ -360,8 +361,8 @@
                 <primitives:ColorSlider x:Name="ColorSpectrumThirdComponentSlider"
                                         AutomationProperties.Name="Third Component"
                                         Grid.Column="0"
-                                        IsAlphaMaxForced="True"
-                                        IsSaturationValueMaxForced="False"
+                                        IsAlphaVisible="False"
+                                        IsPerceptive="True"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
                                         ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
@@ -737,15 +738,32 @@
             </TabItem>
           </TabControl>
           <!-- Previewer -->
-          <!-- Note that top/bottom margins have -5 to remove for drop shadow padding -->
+          <!-- Note that the drop shadow is allowed to extend past the control bounds -->
           <primitives:ColorPreviewer Grid.Row="1"
                                      HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                      IsAccentColorsVisible="{TemplateBinding IsAccentColorsVisible}"
-                                     Margin="12,-5,12,7"
+                                     Margin="12,0,12,12"
                                      IsVisible="{TemplateBinding IsColorPreviewVisible}" />
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <!--
+    <Style Selector="^ /template/ primitives|ColorSlider#ColorSpectrumThirdComponentSlider[ColorComponent=Component1]">
+      <Setter Property="IsPerceptive" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ primitives|ColorSlider#Component1Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ primitives|ColorSlider#Component2Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ primitives|ColorSlider#Component3Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    -->
+
   </ControlTheme>
 
 </ResourceDictionary>

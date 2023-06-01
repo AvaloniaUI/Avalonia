@@ -108,7 +108,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         }
 
         var relativeName = "Build:" + assetPath.Substring(assemblyNameSeparator);
-        var buildMethod = avaResType.FindMethod(m => m.Name == relativeName);
+        var buildMethod = avaResType.FindMethod(m => m.Name == relativeName && m.IsPublic);
         if (buildMethod is not null)
         {
             return FromMethod(context, buildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly, additionalProperties);
@@ -119,7 +119,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         }
 
         return context.ParseError(
-            $"Unable to resolve XAML resource \"{assetPathUri}\" in the \"{assembly}\" assembly.",
+            $"Unable to resolve XAML resource \"{assetPathUri}\" in the \"{assembly}\" assembly. Make sure this file exists and is public.",
             sourceUriNode, node);
     }
 

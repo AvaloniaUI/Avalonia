@@ -3,7 +3,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Utilities
 {
-    public class NonPumpingLockHelper
+    internal class NonPumpingLockHelper
     {
         public interface IHelperImpl
         {

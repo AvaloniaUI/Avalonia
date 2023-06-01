@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// Represents a drawing operation that combines 
     /// a geometry with and brush and/or pen to produce rendered content.
     /// </summary>
-    public class GeometryDrawing : Drawing
+    public sealed class GeometryDrawing : Drawing
     {
         // Adding the Pen's stroke thickness here could yield wrong results due to transforms.
         private static readonly IPen s_boundsPen = new ImmutablePen(Colors.Black.ToUInt32(), 0);
@@ -58,7 +58,7 @@ namespace Avalonia.Media
             set => SetValue(PenProperty, value);
         }
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             if (Geometry != null)
             {

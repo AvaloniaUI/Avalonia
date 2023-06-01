@@ -10,15 +10,14 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Changing_Source_Raises_Invalidated()
         {
-            var bitmap1 = Mock.Of<IBitmap>();
-            var bitmap2 = Mock.Of<IBitmap>();
+            var bitmap1 = Mock.Of<IImageBrushSource>();
+            var bitmap2 = Mock.Of<IImageBrushSource>();
             var target = new ImageBrush(bitmap1);
-            var raised = false;
-
-            target.Invalidated += (s, e) => raised = true;
-            target.Source = bitmap2;
-
-            Assert.True(raised);
+            
+            RenderResourceTestHelper.AssertResourceInvalidation(target, () =>
+            {
+                target.Source = bitmap2;
+            });
         }
     }
 }

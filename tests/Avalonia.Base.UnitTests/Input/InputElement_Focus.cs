@@ -23,7 +23,7 @@ namespace Avalonia.Base.UnitTests.Input
 
                 target.Focus();
 
-                Assert.Same(target, FocusManager.Instance.Current);
+                Assert.Same(target, root.FocusManager.GetFocusedElement());
             }
         }
         
@@ -39,14 +39,14 @@ namespace Avalonia.Base.UnitTests.Input
                     Child = target = new Button() { IsVisible = false}
                 };
                 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
 
                 target.Focus();
                 
                 Assert.False(target.IsFocused);
                 Assert.False(target.IsKeyboardFocusWithin);
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
         
@@ -67,14 +67,14 @@ namespace Avalonia.Base.UnitTests.Input
                     }
                 };
                 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
 
                 target.Focus();
                 
                 Assert.False(target.IsFocused);
                 Assert.False(target.IsKeyboardFocusWithin);
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -100,11 +100,11 @@ namespace Avalonia.Base.UnitTests.Input
 
                 first.Focus();
 
-                Assert.Same(first, FocusManager.Instance.Current);
+                Assert.Same(first, root.FocusManager.GetFocusedElement());
 
                 second.Focus();
 
-                Assert.Same(first, FocusManager.Instance.Current);
+                Assert.Same(first, root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -120,14 +120,14 @@ namespace Avalonia.Base.UnitTests.Input
                     Child = target = new Button() { IsEnabled = false }
                 };
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
 
                 target.Focus();
 
                 Assert.False(target.IsFocused);
                 Assert.False(target.IsKeyboardFocusWithin);
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -148,14 +148,14 @@ namespace Avalonia.Base.UnitTests.Input
                     }
                 };
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
 
                 target.Focus();
 
                 Assert.False(target.IsFocused);
                 Assert.False(target.IsKeyboardFocusWithin);
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -201,7 +201,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
                 target.IsVisible = false;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -224,7 +224,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
                 container.IsVisible = false;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -243,7 +243,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
                 target.IsEnabled = false;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -266,7 +266,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
                 container.IsEnabled = false;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -285,7 +285,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
                 root.Child = null;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
 
@@ -312,13 +312,13 @@ namespace Avalonia.Base.UnitTests.Input
                 target2.ApplyTemplate();
 
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus"));
                 Assert.False(target2.IsFocused);
                 Assert.False(target2.Classes.Contains(":focus"));
 
-                FocusManager.Instance?.Focus(target2, NavigationMethod.Tab);
+                target2.Focus(NavigationMethod.Tab);
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus"));
                 Assert.True(target2.IsFocused);
@@ -348,19 +348,19 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-visible"));
                 Assert.False(target2.IsFocused);
                 Assert.False(target2.Classes.Contains(":focus-visible"));
 
-                FocusManager.Instance?.Focus(target2, NavigationMethod.Tab);
+                target2.Focus(NavigationMethod.Tab);
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-visible"));
                 Assert.True(target2.IsFocused);
                 Assert.True(target2.Classes.Contains(":focus-visible"));
 
-                FocusManager.Instance?.Focus(target1, NavigationMethod.Directional);
+                target1.Focus(NavigationMethod.Directional);
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-visible"));
                 Assert.False(target2.IsFocused);
@@ -390,7 +390,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -425,7 +425,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -436,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root.Classes.Contains(":focus-within"));
                 Assert.True(root.IsKeyboardFocusWithin);
                 
-                FocusManager.Instance?.Focus(target2);
+                target2.Focus();
                 
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
@@ -478,7 +478,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -534,7 +534,7 @@ namespace Avalonia.Base.UnitTests.Input
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
-                FocusManager.Instance?.Focus(target1);
+                target1.Focus();
                 Assert.True(target1.IsFocused);
                 Assert.True(target1.Classes.Contains(":focus-within"));
                 Assert.True(target1.IsKeyboardFocusWithin);
@@ -545,7 +545,7 @@ namespace Avalonia.Base.UnitTests.Input
 
                 Assert.Equal(KeyboardDevice.Instance.FocusedElement, target1);
                 
-                FocusManager.Instance?.Focus(target2);
+                target2.Focus();
                 
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
@@ -578,9 +578,9 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 target.Focus();
-                FocusManager.Instance.Focus(null);
+                root.FocusManager.ClearFocus();
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
     }

@@ -5,8 +5,11 @@ using System.ComponentModel;
 
 using Avalonia.Animation.Animators;
 using Avalonia.Collections;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
@@ -29,18 +32,12 @@ namespace Avalonia.Media
 
         private IDisposable? _gradientStopsSubscription;
 
-        static GradientBrush()
-        {
-            GradientStopsProperty.Changed.Subscribe(GradientStopsChanged);
-            AffectsRender<LinearGradientBrush>(SpreadMethodProperty);
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientBrush"/> class.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", 
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
-        public GradientBrush()
+        internal GradientBrush()
         {
             this.GradientStops = new GradientStops();
         }
@@ -63,37 +60,46 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         IReadOnlyList<IGradientStop> IGradientBrush.GradientStops => GradientStops;
 
-        private static void GradientStopsChanged(AvaloniaPropertyChangedEventArgs e)
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (e.Sender is GradientBrush brush)
+            if (change.Property == GradientStopsProperty)
             {
-                var oldValue = (GradientStops?)e.OldValue;
-                var newValue = (GradientStops?)e.NewValue;
+                var (oldValue, newValue) = change.GetOldAndNewValue<GradientStops?>();
 
                 if (oldValue != null)
                 {
-                    oldValue.CollectionChanged -= brush.GradientStopsChanged;
-                    brush._gradientStopsSubscription?.Dispose();
+                    oldValue.CollectionChanged -= GradientStopsChanged;
+                    _gradientStopsSubscription?.Dispose();
                 }
 
                 if (newValue != null)
                 {
-                    newValue.CollectionChanged += brush.GradientStopsChanged;
-                    brush._gradientStopsSubscription = newValue.TrackItemPropertyChanged(brush.GradientStopChanged);
+                    newValue.CollectionChanged += GradientStopsChanged;
+                    _gradientStopsSubscription = newValue.TrackItemPropertyChanged(GradientStopChanged);
                 }
-
-                brush.RaiseInvalidated(EventArgs.Empty);
             }
+            base.OnPropertyChanged(change);
         }
 
         private void GradientStopsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            RaiseInvalidated(EventArgs.Empty);
+            RegisterForSerialization();
         }
 
         private void GradientStopChanged(Tuple<object?, PropertyChangedEventArgs> e)
         {
-            RaiseInvalidated(EventArgs.Empty);
+            RegisterForSerialization();
+        }
+
+        private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            base.SerializeChanges(c, writer);
+            writer.Write(SpreadMethod);
+            writer.Write(GradientStops.Count);
+            foreach (var stop in GradientStops) 
+                // TODO: Technically it allocates, so it would be better to sync stops individually
+                writer.WriteObject(new ImmutableGradientStop(stop.Offset, stop.Color));
         }
 
         public abstract IImmutableBrush ToImmutable();

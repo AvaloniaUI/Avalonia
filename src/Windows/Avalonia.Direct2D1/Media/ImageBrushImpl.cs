@@ -99,7 +99,7 @@ namespace Avalonia.Direct2D1.Media
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect);
+                context.DrawBitmap(bitmap, 1, rect, rect);
                 context.PopClip();
             }
 

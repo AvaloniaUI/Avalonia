@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.Composition
     /// <summary>
     /// Represents the composition output (e. g. a window, embedded control, entire screen)
     /// </summary>
-    public partial class CompositionTarget
+    internal partial class CompositionTarget
     {
         partial void OnRootChanged()
         {
@@ -122,14 +122,5 @@ namespace Avalonia.Rendering.Composition
         /// Registers the composition target for explicit redraw
         /// </summary>
         public void RequestRedraw() => RegisterForSerialization();
-
-        /// <summary>
-        /// Performs composition directly on the UI thread 
-        /// </summary>
-        internal void ImmediateUIThreadRender()
-        {
-            Compositor.Commit();
-            Compositor.Server.Render();
-        }
     }
 }

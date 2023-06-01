@@ -21,7 +21,7 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly ServerCompositor _compositor;
         private readonly Func<IEnumerable<object>> _surfaces;
-        private readonly DiagnosticTextRenderer _diagnosticTextRenderer;
+        private readonly DiagnosticTextRenderer? _diagnosticTextRenderer;
         private static long s_nextId = 1;
         private IRenderTarget? _renderTarget;
         private FpsCounter? _fpsCounter;
@@ -42,17 +42,17 @@ namespace Avalonia.Rendering.Composition.Server
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
 
-        private FpsCounter FpsCounter
-            => _fpsCounter ??= new FpsCounter(_diagnosticTextRenderer);
+        private FpsCounter? FpsCounter
+            => _fpsCounter ??= _diagnosticTextRenderer != null ? new FpsCounter(_diagnosticTextRenderer) : null;
 
-        private FrameTimeGraph LayoutTimeGraph
+        private FrameTimeGraph? LayoutTimeGraph
             => _layoutTimeGraph ??= CreateTimeGraph("Layout");
 
-        private FrameTimeGraph RenderTimeGraph
+        private FrameTimeGraph? RenderTimeGraph
             => _renderTimeGraph ??= CreateTimeGraph("Render");
 
         public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
-            DiagnosticTextRenderer diagnosticTextRenderer)
+            DiagnosticTextRenderer? diagnosticTextRenderer)
             : base(compositor)
         {
             _compositor = compositor;
@@ -61,8 +61,12 @@ namespace Avalonia.Rendering.Composition.Server
             Id = Interlocked.Increment(ref s_nextId);
         }
 
-        private FrameTimeGraph CreateTimeGraph(string title)
-            => new(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, _diagnosticTextRenderer);
+        private FrameTimeGraph? CreateTimeGraph(string title)
+        {
+            if (_diagnosticTextRenderer == null)
+                return null;
+            return new FrameTimeGraph(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, _diagnosticTextRenderer);
+        }
 
         partial void OnIsEnabledChanged()
         {
@@ -102,7 +106,7 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0)
             {
-                LayoutTimeGraph.AddFrameValue(LastLayoutPassTiming.Elapsed.TotalMilliseconds);
+                LayoutTimeGraph?.AddFrameValue(LastLayoutPassTiming.Elapsed.TotalMilliseconds);
             }
         }
 
@@ -179,7 +183,7 @@ namespace Avalonia.Rendering.Composition.Server
                 if (_layer.CanBlit)
                     _layer.Blit(targetContext);
                 else
-                    targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
+                    targetContext.DrawBitmap(_layer, 1,
                         new Rect(_layerSize),
                         new Rect(Size));
 
@@ -188,7 +192,7 @@ namespace Avalonia.Rendering.Composition.Server
                     if (captureTiming)
                     {
                         var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
-                        RenderTimeGraph.AddFrameValue(elapsed.TotalMilliseconds);
+                        RenderTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
                     }
 
                     DrawOverlays(targetContext);
@@ -220,14 +224,16 @@ namespace Avalonia.Rendering.Composition.Server
                     (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
                     Compositor.BatchObjectPool.ArraySize *
                     IntPtr.Size), false);
-                FpsCounter.RenderFps(targetContext,
+                FpsCounter?.RenderFps(targetContext,
                     FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}"));
             }
 
             var top = 0.0;
 
-            void DrawTimeGraph(FrameTimeGraph graph)
+            void DrawTimeGraph(FrameTimeGraph? graph)
             {
+                if (graph == null)
+                    return;
                 top += 8.0;
                 targetContext.Transform = Matrix.CreateTranslation(Size.Width - graph.Size.Width - 8.0, top);
                 graph.Render(targetContext);

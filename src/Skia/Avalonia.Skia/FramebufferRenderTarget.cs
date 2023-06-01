@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -54,8 +53,7 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                DisableTextLcdRendering = true
+                Dpi = framebuffer.Dpi
             };
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);

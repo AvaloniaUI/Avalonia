@@ -9,6 +9,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -250,14 +251,14 @@ namespace Avalonia.Controls.Primitives
                 // Try and focus content inside Flyout
                 if (Popup.Child.Focusable)
                 {
-                    FocusManager.Instance?.Focus(Popup.Child);
+                    Popup.Child.Focus();
                 }
                 else
                 {
                     var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
                     if (nextFocus != null)
                     {
-                        FocusManager.Instance?.Focus(nextFocus);
+                        nextFocus.Focus();
                     }
                 }
             }
@@ -392,7 +393,7 @@ namespace Avalonia.Controls.Primitives
                 && IsOpen
                 && Target?.ContextFlyout == this)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {

@@ -3,7 +3,10 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Animation
 {
-    public class Clock : ClockBase
+    // Note: this class was always broken: it subscribes to the global clock immediately even it if
+    // doesn't actually have subscriptions
+    
+    internal class Clock : ClockBase
     {
         public static IClock GlobalClock => AvaloniaLocator.Current.GetRequiredService<IGlobalClock>();
 

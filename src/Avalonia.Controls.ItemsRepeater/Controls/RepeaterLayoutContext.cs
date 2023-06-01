@@ -53,8 +53,8 @@ namespace Avalonia.Controls
         {
             return _owner.GetElementImpl(
                 index,
-                options.HasAllFlags(ElementRealizationOptions.ForceCreate),
-                options.HasAllFlags(ElementRealizationOptions.SuppressAutoRecycle));
+                options.HasFlag(ElementRealizationOptions.ForceCreate),
+                options.HasFlag(ElementRealizationOptions.SuppressAutoRecycle));
         }
 
         protected override object GetItemAtCore(int index) => _owner.ItemsSourceView!.GetAt(index)!;

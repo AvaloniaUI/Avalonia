@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -31,7 +32,10 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
         {
             if (e is not null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnForwardKey failed: {e}");
                 return;
+            }
 
             var state = (IBusModifierMask)k.state;
             KeyModifiers mods = default;
@@ -54,7 +58,10 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         private void OnCommitText(Exception? e, DBusVariantItem variantItem)
         {
             if (e is not null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
                 return;
+            }
 
             if (variantItem.Value is DBusStructItem { Count: >= 3 } structItem && structItem[2] is DBusStringItem stringItem)
                 FireCommit(stringItem.Value);

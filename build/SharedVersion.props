@@ -4,7 +4,7 @@
     <Product>Avalonia</Product>
     <Version>11.0.999</Version>
     <Authors>Avalonia Team</Authors>
-    <Copyright>Copyright 2022 &#169; The AvaloniaUI Project</Copyright>
+    <Copyright>Copyright 2013-$([System.DateTime]::Now.ToString(`yyyy`)) &#169; The AvaloniaUI Project</Copyright>
     <PackageProjectUrl>https://avaloniaui.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
