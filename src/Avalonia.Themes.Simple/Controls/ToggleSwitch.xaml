@@ -150,11 +150,6 @@
       <Setter Property="Margin" Value="0" />
     </Style>
 
-    <!--  Dragging State  -->
-    <Style Selector="^:dragging /template/ Grid#PART_MovingKnobs">
-      <Setter Property="Transitions" Value="{x:Null}"/>
-    </Style>
-
     <!-- PointerOverState -->
     <Style Selector="^:pointerover /template/ Border#OuterBorder">
       <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighColor}" />
