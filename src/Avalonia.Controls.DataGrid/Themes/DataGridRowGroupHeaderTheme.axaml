@@ -1,0 +1,90 @@
+﻿<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:collections="clr-namespace:Avalonia.Collections"
+              xmlns:themes="clr-namespace:Avalonia.Controls.Themes"
+              TargetType="DataGridRowGroupHeader"
+              x:Class="Avalonia.Controls.Themes.DataGridRowGroupHeaderTheme">
+  <Setter Property="Foreground" Value="{DynamicResource DataGridRowGroupHeaderForegroundBrush}" />
+  <Setter Property="Background" Value="{DynamicResource DataGridRowGroupHeaderBackgroundBrush}" />
+  <Setter Property="FontSize" Value="15" />
+  <Setter Property="MinHeight" Value="32" />
+  <Setter Property="Template">
+    <ControlTemplate x:DataType="collections:DataGridCollectionViewGroup">
+      <DataGridFrozenGrid Name="PART_Root"
+                          Background="{TemplateBinding Background}"
+                          MinHeight="{TemplateBinding MinHeight}"
+                          ColumnDefinitions="Auto,Auto,Auto,Auto,*"
+                          RowDefinitions="*,Auto">
+
+        <Rectangle Name="PART_IndentSpacer"
+                   Grid.Column="1" />
+        <ToggleButton Name="PART_ExpanderButton"
+                      Grid.Column="2"
+                      Width="12"
+                      Height="12"
+                      Margin="12,0,0,0"
+                      Theme="{x:Static themes:DataGridRowGroupExpanderButtonTheme.Instance}"
+                      BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{TemplateBinding CornerRadius}"
+                      IsTabStop="False"
+                      Foreground="{TemplateBinding Foreground}" />
+
+        <StackPanel Grid.Column="3"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="12,0,0,0">
+          <TextBlock Name="PART_PropertyNameElement"
+                     Margin="4,0,0,0"
+                     IsVisible="{TemplateBinding IsPropertyNameVisible}"
+                     Foreground="{TemplateBinding Foreground}" />
+          <TextBlock Margin="4,0,0,0"
+                     Text="{Binding Key}"
+                     Foreground="{TemplateBinding Foreground}" />
+          <TextBlock Name="PART_ItemCountElement"
+                     Margin="4,0,0,0"
+                     IsVisible="{TemplateBinding IsItemCountVisible}"
+                     Foreground="{TemplateBinding Foreground}" />
+        </StackPanel>
+
+        <Rectangle x:Name="CurrencyVisual"
+                   Grid.ColumnSpan="5"
+                   IsVisible="False"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   Fill="Transparent"
+                   IsHitTestVisible="False"
+                   Stroke="{DynamicResource DataGridCurrencyVisualPrimaryBrush}"
+                   StrokeThickness="1" />
+        <Grid x:Name="FocusVisual"
+              Grid.ColumnSpan="5"
+              IsVisible="False"
+              IsHitTestVisible="False">
+          <Rectangle HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     Fill="Transparent"
+                     IsHitTestVisible="False"
+                     Stroke="{DynamicResource DataGridCellFocusVisualPrimaryBrush}"
+                     StrokeThickness="2" />
+          <Rectangle Margin="2"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     Fill="Transparent"
+                     IsHitTestVisible="False"
+                     Stroke="{DynamicResource DataGridCellFocusVisualSecondaryBrush}"
+                     StrokeThickness="1" />
+        </Grid>
+
+        <DataGridRowHeader Name="PART_RowHeader"
+                           Grid.RowSpan="2"
+                           DataGridFrozenGrid.IsFrozen="True" />
+
+        <Rectangle x:Name="PART_BottomGridLine"
+                   Grid.Row="1"
+                   Grid.ColumnSpan="5"
+                   Height="1" />
+      </DataGridFrozenGrid>
+    </ControlTemplate>
+  </Setter>
+</ControlTheme>

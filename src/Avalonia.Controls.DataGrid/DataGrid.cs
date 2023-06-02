@@ -25,6 +25,7 @@ using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Themes;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Styling;
 using Avalonia.Reactive;
@@ -1404,6 +1405,8 @@ namespace Avalonia.Controls
         {
             get { return _selectedItems as IList; }
         }
+
+        protected override ControlTheme ControlThemeOverride => DataGridTheme.Instance;
 
         internal DataGridColumnCollection ColumnsInternal
         {

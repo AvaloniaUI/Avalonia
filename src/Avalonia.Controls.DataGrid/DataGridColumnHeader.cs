@@ -15,6 +15,8 @@ using System;
 using Avalonia.Controls.Utils;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Themes;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -104,6 +106,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override ControlTheme ControlThemeOverride => DataGridColumnHeaderTheme.Instance;
+        
         internal DataGridColumn OwningColumn
         {
             get;

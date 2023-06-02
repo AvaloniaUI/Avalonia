@@ -12,9 +12,9 @@
         <TextBlock Text="{Binding}"/>
       </StackPanel>
     </DataTemplate>
-    <ControlTheme x:Key="GdpCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}" x:DataType="local:Country">
-      <Setter Property="Background" Value="{Binding Path=GDP, Mode=OneWay, Converter={StaticResource GDPConverter}}" />
-    </ControlTheme>
+    <!-- <ControlTheme x:Key="GdpCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}" x:DataType="local:Country"> -->
+    <!--   <Setter Property="Background" Value="{Binding Path=GDP, Mode=OneWay, Converter={StaticResource GDPConverter}}" /> -->
+    <!-- </ControlTheme> -->
   </UserControl.Resources>
   <Grid RowDefinitions="Auto,Auto,*">
     <StackPanel Orientation="Vertical" Spacing="4" Grid.Row="0">
@@ -39,29 +39,28 @@
               <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" x:DataType="local:Country" />
               <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*"
-                                  CellTheme="{StaticResource GdpCell}"
                                   MinWidth="200"
                                   IsVisible="{Binding #ShowGDP.IsChecked}"
                                   x:DataType="local:Country" />
             </DataGrid.Columns>
-            <DataGrid.CellTheme>
-              <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                <ControlTheme.Children>
-                  <Style Selector="^:nth-child(1)">
-                    <Setter Property="FontWeight" Value="Bold" />
-                  </Style>
-                </ControlTheme.Children>
-              </ControlTheme>
-            </DataGrid.CellTheme>
-            <DataGrid.ColumnHeaderTheme>
-              <ControlTheme TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                <ControlTheme.Children>
-                  <Style Selector="^:nth-child(1)">
-                    <Setter Property="FontWeight" Value="Bold" />
-                  </Style>
-                </ControlTheme.Children>
-              </ControlTheme>
-            </DataGrid.ColumnHeaderTheme>
+            <!-- <DataGrid.CellTheme> -->
+            <!--   <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}"> -->
+            <!--     <ControlTheme.Children> -->
+            <!--       <Style Selector="^:nth-child(1)"> -->
+            <!--         <Setter Property="FontWeight" Value="Bold" /> -->
+            <!--       </Style> -->
+            <!--     </ControlTheme.Children> -->
+            <!--   </ControlTheme> -->
+            <!-- </DataGrid.CellTheme> -->
+            <!-- <DataGrid.ColumnHeaderTheme> -->
+            <!--   <ControlTheme TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}"> -->
+            <!--     <ControlTheme.Children> -->
+            <!--       <Style Selector="^:nth-child(1)"> -->
+            <!--         <Setter Property="FontWeight" Value="Bold" /> -->
+            <!--       </Style> -->
+            <!--     </ControlTheme.Children> -->
+            <!--   </ControlTheme> -->
+            <!-- </DataGrid.ColumnHeaderTheme> -->
           </DataGrid>
         </DockPanel>
       </TabItem>
@@ -74,20 +73,20 @@
             <DataGridTextColumn DisplayIndex="2" Header="Area" Binding="{Binding Area}" Width="3*" x:DataType="local:Country" />
             <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" x:DataType="local:Country" />
           </DataGrid.Columns>
-          <DataGrid.RowTheme>
-            <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-              <ControlTheme.Children>
-                <Style Selector="^:nth-child(5n+3)">
-                  <Setter Property="Foreground" Value="Red" />
-                  <Setter Property="FontWeight" Value="Bold" />
-                </Style>
-                <Style Selector="^:nth-last-child(5n+1)">
-                  <Setter Property="Foreground" Value="Blue" />
-                  <Setter Property="FontWeight" Value="Bold" />
-                </Style>
-              </ControlTheme.Children>
-            </ControlTheme>
-          </DataGrid.RowTheme>
+          <!-- <DataGrid.RowTheme> -->
+          <!--   <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}"> -->
+          <!--     <ControlTheme.Children> -->
+          <!--       <Style Selector="^:nth-child(5n+3)"> -->
+          <!--         <Setter Property="Foreground" Value="Red" /> -->
+          <!--         <Setter Property="FontWeight" Value="Bold" /> -->
+          <!--       </Style> -->
+          <!--       <Style Selector="^:nth-last-child(5n+1)"> -->
+          <!--         <Setter Property="Foreground" Value="Blue" /> -->
+          <!--         <Setter Property="FontWeight" Value="Bold" /> -->
+          <!--       </Style> -->
+          <!--     </ControlTheme.Children> -->
+          <!--   </ControlTheme> -->
+          <!-- </DataGrid.RowTheme> -->
         </DataGrid>
       </TabItem>
       <TabItem x:Name="EditableTab" Header="Editable">

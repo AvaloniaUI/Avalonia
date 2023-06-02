@@ -1,0 +1,78 @@
+﻿<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              TargetType="DataGridRow"
+              x:Class="Avalonia.Controls.Themes.DataGridRowTheme">
+  <Setter Property="Background" Value="{Binding $parent[DataGrid].RowBackground}" />
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border x:Name="RowBorder"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}">
+        <DataGridFrozenGrid Name="PART_Root"
+                            ColumnDefinitions="Auto,*"
+                            RowDefinitions="*,Auto,Auto">
+          <Rectangle Name="BackgroundRectangle"
+                     Grid.Row="0" Grid.Column="0"
+                     Fill="{DynamicResource DataGridRowBackgroundBrush}"
+                     Grid.RowSpan="2"
+                     Grid.ColumnSpan="2" />
+          <Rectangle x:Name="InvalidVisualElement"
+                     Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                     Opacity="0"
+                     Fill="{DynamicResource DataGridRowInvalidBrush}" />
+
+          <DataGridRowHeader Name="PART_RowHeader"
+                             Grid.RowSpan="3" Grid.Row="0" Grid.Column="0"
+                             DataGridFrozenGrid.IsFrozen="True" />
+          <DataGridCellsPresenter Name="PART_CellsPresenter"
+                                  Grid.Column="1" Grid.Row="0"
+                                  DataGridFrozenGrid.IsFrozen="True" />
+          <DataGridDetailsPresenter Name="PART_DetailsPresenter"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Background="{DynamicResource DataGridDetailsPresenterBackgroundBrush}" />
+          <Rectangle Name="PART_BottomGridLine"
+                     Grid.Row="2"
+                     Grid.Column="1"
+                     Height="1"
+                     HorizontalAlignment="Stretch" />
+
+        </DataGridFrozenGrid>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+
+  <Style Selector="^:invalid">
+    <Style Selector="^ /template/ Rectangle#InvalidVisualElement">
+      <Setter Property="Opacity" Value="0.4" />
+    </Style>
+    <Style Selector="^ /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+  </Style>
+
+  <Style Selector="^:pointerover /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Opacity" Value="0.6" />
+  </Style>
+
+  <Style Selector="^:selected">
+    <Style Selector="^ /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundBrush}" />
+      <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundOpacity}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundBrush}" />
+      <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundOpacity}" />
+    </Style>
+    <Style Selector="^:focus /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedBackgroundBrush}" />
+      <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedBackgroundOpacity}" />
+    </Style>
+    <Style Selector="^:pointerover:focus /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundBrush}" />
+      <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundOpacity}" />
+    </Style>
+  </Style>
+</ControlTheme>

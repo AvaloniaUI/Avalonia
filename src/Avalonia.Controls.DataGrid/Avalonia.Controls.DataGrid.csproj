@@ -21,4 +21,19 @@
     <InternalsVisibleTo Include="Avalonia.Controls.DataGrid.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Themes\DataGridRowHeaderTheme.axaml.cs">
+      <DependentUpon>DataGridRowHeaderTheme.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Themes\DataGridRowGroupExpanderButtonTheme.axaml.cs">
+      <DependentUpon>DataGridRowGroupExpanderButtonTheme.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Themes\DataGridRowGroupHeaderTheme.axaml.cs">
+      <DependentUpon>DataGridRowGroupHeaderTheme.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

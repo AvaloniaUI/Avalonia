@@ -7,6 +7,8 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Media;
 using System.Diagnostics;
+using Avalonia.Controls.Themes;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -49,6 +51,8 @@ namespace Avalonia.Controls.Primitives
         {
             AddHandler(PointerPressedEvent, DataGridRowHeader_PointerPressed, handledEventsToo: true);
         }
+        
+        protected override ControlTheme ControlThemeOverride => DataGridRowHeaderTheme.Instance;
 
         internal Control Owner
         {

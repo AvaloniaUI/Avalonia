@@ -1,0 +1,28 @@
+﻿<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              TargetType="ToggleButton"
+              x:Class="Avalonia.Controls.Themes.DataGridRowGroupExpanderButtonTheme">
+  <ControlTheme.Resources>
+    <StreamGeometry x:Key="DataGridRowGroupHeaderIconClosedPath">M515 93l930 931l-930 931l90 90l1022 -1021l-1022 -1021z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridRowGroupHeaderIconOpenedPath">M109 486 19 576 1024 1581 2029 576 1939 486 1024 1401z</StreamGeometry>
+  </ControlTheme.Resources>
+
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Width="12"
+              Height="12"
+              Background="Transparent"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <Path Fill="{TemplateBinding Foreground}"
+              Data="{StaticResource DataGridRowGroupHeaderIconClosedPath}"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              Stretch="Uniform" />
+      </Border>
+    </ControlTemplate>
+  </Setter>
+  <Style Selector="^:checked /template/ Path">
+    <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconOpenedPath}" />
+  </Style>
+</ControlTheme>

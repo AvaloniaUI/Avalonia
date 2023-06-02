@@ -6,7 +6,10 @@
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Themes;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -35,6 +38,7 @@ namespace Avalonia.Controls
                 (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
             FocusableProperty.OverrideDefaultValue<DataGridCell>(true);
             IsTabStopProperty.OverrideDefaultValue<DataGridCell>(false);
+            BackgroundProperty.OverrideDefaultValue<DataGridCell>(Brushes.Transparent);
         }
         public DataGridCell()
         { }
@@ -45,6 +49,8 @@ namespace Avalonia.Controls
             internal set { SetAndRaise(IsValidProperty, ref _isValid, value); }
         }
 
+        protected override ControlTheme ControlThemeOverride => DataGridCellTheme.Instance;
+        
         internal DataGridColumn OwningColumn
         {
             get => _owningColumn;

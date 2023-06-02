@@ -10,7 +10,9 @@ using Avalonia.Input;
 using Avalonia.Media;
 using System;
 using System.Diagnostics;
+using Avalonia.Controls.Themes;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -116,6 +118,8 @@ namespace Avalonia.Controls
         {
             AddHandler(InputElement.PointerPressedEvent, (s, e) => DataGridRowGroupHeader_PointerPressed(e), handledEventsToo: true);
         }
+
+        protected override ControlTheme ControlThemeOverride => DataGridRowGroupHeaderTheme.Instance;
 
         internal DataGridRowHeader HeaderCell
         {
