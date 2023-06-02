@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using Avalonia.Animation;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -42,6 +43,10 @@ namespace Avalonia.Controls
                     x.UpdateKnobPos(x.IsChecked.Value);
                 }
             });
+            KnobTransitionsProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
+            {
+                x.AssignTransitions();
+            });
         }
 
         /// <summary>
@@ -67,6 +72,8 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IDataTemplate?> OnContentTemplateProperty =
             AvaloniaProperty.Register<ToggleSwitch, IDataTemplate?>(nameof(OnContentTemplate));
+
+        public static readonly StyledProperty<Transitions> KnobTransitionsProperty = AvaloniaProperty.Register<ToggleSwitch, Transitions>(nameof(KnobTransitions));
 
         /// <summary>
         /// Gets or Sets the Content that is displayed when in the On State.
@@ -115,6 +122,14 @@ namespace Avalonia.Controls
             get { return GetValue(OnContentTemplateProperty); }
             set { SetValue(OnContentTemplateProperty, value); }
         }
+
+        public Transitions KnobTransitions
+        {
+            get { return GetValue(KnobTransitionsProperty); }
+            set { SetValue(KnobTransitionsProperty, value); }
+        }
+
+        
 
         private void OffContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -176,8 +191,23 @@ namespace Avalonia.Controls
             {
                 UpdateKnobPos(IsChecked.Value);
             }
+            
         }
-        
+
+        protected override void OnLoaded()
+        {
+            base.OnLoaded();
+            AssignTransitions();
+        }
+
+        private void AssignTransitions()
+        {
+            if (_knobsPanel != null)
+            {
+                _knobsPanel.Transitions = KnobTransitions;
+            }
+        }
+
         private void KnobsPanel_PointerPressed(object? sender, Input.PointerPressedEventArgs e)
         {
             _switchStartPoint = e.GetPosition(_switchKnob);
