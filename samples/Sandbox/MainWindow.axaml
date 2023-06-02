@@ -1,4 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
+  <DockPanel >
+
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom">
+      <Button x:Name="ButtonAnimate">Animate!</Button>
+    </StackPanel>
+
+    <Canvas x:Name="SampleCanvas">
+      <Border x:Name="FancyBorder" Background="Crimson" BorderThickness="3" BorderBrush="Aqua">
+
+      </Border>
+    </Canvas>
+
+
+  </DockPanel>
 </Window>
