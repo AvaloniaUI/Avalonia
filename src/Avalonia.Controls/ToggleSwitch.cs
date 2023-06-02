@@ -230,7 +230,7 @@ namespace Avalonia.Controls
                 _knobsPanel!.ClearValue(Canvas.LeftProperty);
 
                 PseudoClasses.Set(":dragging", false);
-
+  
                 if (shouldBecomeChecked == IsChecked)
                 {
                     UpdateKnobPos(shouldBecomeChecked);
@@ -239,6 +239,7 @@ namespace Avalonia.Controls
                 {
                     SetCurrentValue(IsCheckedProperty, shouldBecomeChecked);
                 }
+                UpdateKnobTransitions();
             }
             else
             {
@@ -254,6 +255,10 @@ namespace Avalonia.Controls
         {
             if (_knobsPanelPressed)
             {
+                if(_knobsPanel != null)
+                {
+                    _knobsPanel.Transitions = null;
+                }
                 var difference = e.GetPosition(_switchKnob) - _switchStartPoint;
 
                 if ((!_isDragging) && (System.Math.Abs(difference.X) > 3))
