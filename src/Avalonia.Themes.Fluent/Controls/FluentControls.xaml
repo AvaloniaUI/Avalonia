@@ -58,7 +58,6 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml" />
-                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DateTimePickerShared.xaml" />
@@ -75,6 +74,4 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>
-
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
 </Styles>
