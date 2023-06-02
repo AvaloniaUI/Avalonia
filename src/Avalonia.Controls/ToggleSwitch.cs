@@ -45,7 +45,7 @@ namespace Avalonia.Controls
             });
             KnobTransitionsProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
             {
-                x.AssignTransitions();
+                x.UpdateKnobTransitions();
             });
         }
 
@@ -73,7 +73,11 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate?> OnContentTemplateProperty =
             AvaloniaProperty.Register<ToggleSwitch, IDataTemplate?>(nameof(OnContentTemplate));
 
-        public static readonly StyledProperty<Transitions> KnobTransitionsProperty = AvaloniaProperty.Register<ToggleSwitch, Transitions>(nameof(KnobTransitions));
+        /// <summary>
+        /// Defines the <see cref="KnobTransitions"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transitions> KnobTransitionsProperty = 
+            AvaloniaProperty.Register<ToggleSwitch, Transitions>(nameof(KnobTransitions));
 
         /// <summary>
         /// Gets or Sets the Content that is displayed when in the On State.
@@ -123,6 +127,9 @@ namespace Avalonia.Controls
             set { SetValue(OnContentTemplateProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or Sets the <see cref="Transitions"/> of switching knob. 
+        /// </summary>
         public Transitions KnobTransitions
         {
             get { return GetValue(KnobTransitionsProperty); }
@@ -191,16 +198,15 @@ namespace Avalonia.Controls
             {
                 UpdateKnobPos(IsChecked.Value);
             }
-            
         }
 
         protected override void OnLoaded()
         {
             base.OnLoaded();
-            AssignTransitions();
+            UpdateKnobTransitions();
         }
 
-        private void AssignTransitions()
+        private void UpdateKnobTransitions()
         {
             if (_knobsPanel != null)
             {
