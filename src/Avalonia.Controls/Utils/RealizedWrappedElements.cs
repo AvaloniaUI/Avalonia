@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Utils
     {
         private int _firstIndex;
         private List<Control?>? _elements;
-        private List<UVSize>? _sizes;
+        private UVSize _size;
         private List<UVSize>? _positions;
         private UVSize _startUV;
         private bool _startUUnstable;
@@ -39,11 +39,6 @@ namespace Avalonia.Controls.Utils
         public IReadOnlyList<Control?> Elements => _elements ??= new List<Control?>();
 
         /// <summary>
-        /// Gets the sizes of the elements.
-        /// </summary>
-        public IReadOnlyList<UVSize> SizeUV => _sizes ??= new List<UVSize>();
-
-        /// <summary>
         /// Gets the positions of the elements.
         /// </summary>
         public IReadOnlyList<UVSize> PositionsUV => _positions ??= new List<UVSize>();
@@ -54,11 +49,17 @@ namespace Avalonia.Controls.Utils
         public UVSize StartUV => _startUV;
 
         /// <summary>
+        /// The size of the first realized element.
+        /// </summary>
+        public UVSize SizeUV => _size;
+
+
+        /// <summary>
         /// Adds a newly realized element to the collection.
         /// </summary>
         /// <param name="index">The index of the element.</param>
         /// <param name="element">The element.</param>
-        /// <param name="uv">The position of the elemnt.</param>
+        /// <param name="uv">The position of the element.</param>
         /// <param name="sizeUV">The size of the element.</param>
         public void Add(int index, Control element, UVSize uv, UVSize sizeUV)
         {
@@ -66,14 +67,13 @@ namespace Avalonia.Controls.Utils
                 throw new ArgumentOutOfRangeException(nameof(index));
 
             _elements ??= new List<Control?>();
-            _sizes ??= new List<UVSize>();
             _positions ??= new List<UVSize>();
             var size = sizeUV;
 
             if (Count == 0)
             {
                 _elements.Add(element);
-                _sizes.Add(size);
+                _size = size;
                 _positions.Add(uv);
                 _startUV = uv;
                 _firstIndex = index;
@@ -81,14 +81,14 @@ namespace Avalonia.Controls.Utils
             else if (index == LastIndex + 1)
             {
                 _elements.Add(element);
-                _sizes.Add(size);
+                _size = size;
                 _positions.Add(uv);
             }
             else if (index == FirstIndex - 1)
             {
                 --_firstIndex;
                 _elements.Insert(0, element);
-                _sizes.Insert(0, size);
+                _size = size;
                 _positions.Insert(0, uv);
                 _startUV = uv;
             }
@@ -143,12 +143,12 @@ namespace Avalonia.Controls.Utils
             if (MathUtilities.IsZero(viewportStart.U) && MathUtilities.IsZero(viewportStart.V))
                 return (0, new UVSize(viewportStart.Orientation));
 
-            if (_positions is not null && _sizes is not null && !_startUUnstable)
+            if (_positions is not null && !_startUUnstable)
             {
                 for (var i = 0; i < _positions.Count; ++i)
                 {
                     var position = _positions[i];
-                    var size = _sizes[i];
+                    var size = _size;
 
                     if (position.IsNaN)
                         break;
@@ -240,32 +240,7 @@ namespace Avalonia.Controls.Utils
         /// </returns>
         public UVSize? EstimateElementSize(Orientation orientation)
         {
-            var divisor = 0.0;
-            var u = 0.0;
-            var v = 0.0;
-
-            // Average the size of the realized elements.
-            if (_sizes is not null)
-            {
-                foreach (var size in _sizes)
-                {
-                    if (size.IsNaN)
-                        continue;
-                    u += size.U;
-                    v += size.V;
-                    ++divisor;
-                }
-            }
-
-            // We don't have any elements on which to base our estimate.
-            if (divisor == 0 || u == 0 || v == 0)
-                return null;
-
-            return new UVSize(orientation)
-            {
-                U = u / divisor,
-                V = v / divisor
-            };
+            return _size.IsNaN ? null : _size;
         }
 
         /// <summary>
@@ -320,7 +295,7 @@ namespace Avalonia.Controls.Utils
                     // The insertion point was within the realized elements, insert an empty space
                     // in _elements and _sizes.
                     _elements!.InsertMany(realizedIndex, null, count);
-                    _sizes!.InsertMany(realizedIndex, new UVSize(Orientation.Horizontal, double.NaN, double.NaN), count);
+                    _size = new UVSize(Orientation.Horizontal, double.NaN, double.NaN);
                     _positions!.InsertMany(realizedIndex, new UVSize(Orientation.Horizontal, double.NaN, double.NaN), count);
                 }
             }
@@ -381,7 +356,6 @@ namespace Avalonia.Controls.Utils
                 }
 
                 _elements.RemoveRange(start, end - start);
-                _sizes!.RemoveRange(start, end - start);
                 _positions!.RemoveRange(start, end - start);
 
                 // If the remove started before and ended within our realized elements, then our new
@@ -409,6 +383,7 @@ namespace Avalonia.Controls.Utils
         /// Recycles all elements in response to the source collection being reset.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
+        /// <param name="orientation">The orientation of the WrapPanel</param>
         public void ItemsReset(Action<Control> recycleElement, Orientation orientation)
         {
             if (_elements is null || _elements.Count == 0)
@@ -426,7 +401,7 @@ namespace Avalonia.Controls.Utils
             _firstIndex = 0;
             _startUV = new UVSize(orientation);
             _elements?.Clear();
-            _sizes?.Clear();
+            _size = new UVSize(orientation);
             _positions?.Clear();
         }
 
@@ -458,7 +433,6 @@ namespace Avalonia.Controls.Utils
                 }
 
                 _elements.RemoveRange(0, endIndex);
-                _sizes!.RemoveRange(0, endIndex);
                 _positions!.RemoveRange(0, endIndex);
                 _firstIndex = index;
             }
@@ -469,6 +443,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="index">The index in the source collection of new last element.</param>
         /// <param name="recycleElement">A method used to recycle elements.</param>
+        /// <param name="orientation">The orientation of the WrapPanel</param>
         public void RecycleElementsAfter(int index, Action<Control, int> recycleElement, Orientation orientation)
         {
             if (index >= LastIndex || _elements is null || _elements.Count == 0)
@@ -493,7 +468,6 @@ namespace Avalonia.Controls.Utils
                 }
 
                 _elements.RemoveRange(startIndex, _elements.Count - startIndex);
-                _sizes!.RemoveRange(startIndex, _sizes.Count - startIndex);
                 _positions!.RemoveRange(startIndex, _positions.Count - startIndex);
             }
         }
@@ -502,6 +476,7 @@ namespace Avalonia.Controls.Utils
         /// Recycles all realized elements.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
+        /// <param name="orientation">The orientation of the WrapPanel</param>
         public void RecycleAllElements(Action<Control, int> recycleElement, Orientation orientation)
         {
             if (_elements is null || _elements.Count == 0)
@@ -519,20 +494,21 @@ namespace Avalonia.Controls.Utils
             _firstIndex = 0;
             _startUV = new UVSize(orientation);
             _elements?.Clear();
-            _sizes?.Clear();
+            _size = new UVSize(orientation);
             _positions?.Clear();
         }
 
         /// <summary>
         /// Resets the element list and prepares it for reuse.
         /// </summary>
+        /// <param name="orientation">The orientation of the WrapPanel</param>
         public void ResetForReuse(Orientation orientation)
         {
             _firstIndex = 0;
             _startUV = new UVSize(orientation);
             _startUUnstable = false;
             _elements?.Clear();
-            _sizes?.Clear();
+            _size = new UVSize(orientation);
             _positions?.Clear();
         }
     }
