@@ -304,6 +304,8 @@ namespace Avalonia
         /// </remarks>
         protected virtual Type StyleKeyOverride => GetType();
 
+        protected virtual ControlTheme? ControlThemeOverride => null;
+
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
@@ -688,7 +690,7 @@ namespace Avalonia
                 if (this.TryFindResource(key, out var value) && value is ControlTheme t)
                     _implicitTheme = t;
                 else
-                    _implicitTheme = s_invalidTheme;
+                    _implicitTheme = ControlThemeOverride ?? s_invalidTheme;
             }
 
             if (_implicitTheme != s_invalidTheme)
