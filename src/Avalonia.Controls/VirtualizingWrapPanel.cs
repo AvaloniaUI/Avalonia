@@ -175,7 +175,7 @@ namespace Avalonia.Controls
 
                     if (e is not null)
                     {
-                        var sizeUV = _realizedElements.SizeUV[i];
+                        var sizeUV = _realizedElements.SizeUV;
                         var positionUV = _realizedElements.PositionsUV[i];
                         var rect = new Rect(positionUV.Width, positionUV.Height, sizeUV.Width, sizeUV.Height);
                         e.Arrange(rect);
@@ -335,7 +335,7 @@ namespace Avalonia.Controls
                 var viewport = _viewport != s_invalidViewport ? _viewport : EstimateViewport();
                 var viewportEnd = Orientation == Orientation.Horizontal ? new UVSize(Orientation, viewport.Right, viewport.Bottom) : new UVSize(Orientation, viewport.Bottom, viewport.Right);
 
-                // Get the expected position of the elment and put it in place.
+                // Get the expected position of the element and put it in place.
                 var anchorUV = _realizedElements.GetOrEstimateElementUV(index, ref _lastEstimatedElementSizeUV, viewportEnd);
                 size = new Size(isItemWidthSet ? itemWidth : _scrollToElement.DesiredSize.Width,
                     isItemHeightSet ? itemHeight : _scrollToElement.DesiredSize.Height);
@@ -529,6 +529,7 @@ namespace Avalonia.Controls
             var v = uv.V;
             double maxSizeV = 0;
             var size = new UVSize(Orientation);
+            bool firstChildMeasured = false;
 
             double itemWidth = ItemWidth;
             double itemHeight = ItemHeight;
@@ -552,12 +553,20 @@ namespace Avalonia.Controls
                     break;
                 }
 
+                if (firstChildMeasured)
+                    childConstraint = new Size(size.Width, size.Height);
+
                 var e = GetOrCreateElement(items, index);
                 e.Measure(childConstraint);
 
-                size = new UVSize(Orientation,
-                    isItemWidthSet ? itemWidth : e.DesiredSize.Width,
-                    isItemHeightSet ? itemHeight : e.DesiredSize.Height);
+                if (!firstChildMeasured)
+                {
+                    size = new UVSize(Orientation,
+                        isItemWidthSet ? itemWidth : e.DesiredSize.Width,
+                        isItemHeightSet ? itemHeight : e.DesiredSize.Height);
+
+                    firstChildMeasured = true;
+                }
 
                 maxSizeV = Math.Max(maxSizeV, size.V);
 
@@ -607,12 +616,22 @@ namespace Avalonia.Controls
                     break;
                 }
 
+                if (firstChildMeasured)
+                    childConstraint = new Size(size.Width, size.Height);
+
                 var e = GetOrCreateElement(items, index);
                 e.Measure(childConstraint);
 
-                size = new UVSize(Orientation,
-                    isItemWidthSet ? itemWidth : e.DesiredSize.Width,
-                    isItemHeightSet ? itemHeight : e.DesiredSize.Height);
+
+                if (!firstChildMeasured)
+                {
+                    size = new UVSize(Orientation,
+                        isItemWidthSet ? itemWidth : e.DesiredSize.Width,
+                        isItemHeightSet ? itemHeight : e.DesiredSize.Height);
+
+                    firstChildMeasured = true;
+                }
+
                 uv.U -= size.U;
 
                 // Test if the item will be moved to the previous row
