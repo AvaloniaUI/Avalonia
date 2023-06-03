@@ -16,12 +16,6 @@ namespace Avalonia.Media
         public Color Color { get; set; }
         public bool IsInset { get; set; }
 
-        static BoxShadow()
-        {
-            Animation.Animation.RegisterAnimator<BoxShadowAnimator>(prop =>
-                typeof(BoxShadow).IsAssignableFrom(prop.PropertyType));
-        }
-        
         public bool Equals(in BoxShadow other)
         {
             return OffsetX.Equals(other.OffsetX) && OffsetY.Equals(other.OffsetY) && Blur.Equals(other.Blur) && Spread.Equals(other.Spread) && Color.Equals(other.Color);
