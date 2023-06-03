@@ -15,13 +15,6 @@ namespace Avalonia
 #endif
     readonly struct CornerRadius : IEquatable<CornerRadius>
     {
-        static CornerRadius()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<CornerRadiusAnimator>(prop => typeof(CornerRadius).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         public CornerRadius(double uniformRadius)
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
