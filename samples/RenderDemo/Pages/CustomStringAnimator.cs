@@ -1,9 +1,10 @@
-﻿using Avalonia.Animation;
+﻿using System;
+using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 
 namespace RenderDemo.Pages
 {
-    public class CustomStringAnimator : CustomAnimatorBase<string>
+    public class CustomStringAnimator : InterpolatingAnimator<string>
     {
         public override string Interpolate(double progress, string oldValue, string newValue)
         {
