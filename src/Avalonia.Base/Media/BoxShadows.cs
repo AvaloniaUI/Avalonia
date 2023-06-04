@@ -10,12 +10,6 @@ namespace Avalonia.Media
         private readonly BoxShadow _first;
         private readonly BoxShadow[]? _list;
         public int Count { get; }
-
-        static BoxShadows()
-        {
-            Animation.Animation.RegisterAnimator<BoxShadowsAnimator>(prop =>
-                typeof(BoxShadows).IsAssignableFrom(prop.PropertyType));
-        }
         
         public BoxShadows(BoxShadow shadow)
         {
