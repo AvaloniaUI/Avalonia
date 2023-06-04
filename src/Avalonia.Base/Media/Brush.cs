@@ -34,11 +34,6 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<RelativePoint> TransformOriginProperty =
             AvaloniaProperty.Register<Brush, RelativePoint>(nameof(TransformOrigin));
-        
-        static Brush()
-        {
-            Animation.Animation.RegisterAnimator<BaseBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
-        }
 
         /// <summary>
         /// Gets or sets the opacity of the brush.
