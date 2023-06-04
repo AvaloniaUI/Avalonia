@@ -26,6 +26,7 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Avalonia.Win32
 {
@@ -82,6 +83,9 @@ namespace Avalonia.Win32
         private IntPtr _hwnd;
         private IInputRoot? _owner;
         private WindowProperties _windowProperties;
+        private IconImpl? _iconImpl;
+        private Icon? _bigIcon;
+        private Icon? _smallIcon;
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
@@ -732,11 +736,21 @@ namespace Avalonia.Win32
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            var impl = icon as IconImpl;
+            _iconImpl = icon as IconImpl;
+            RefreshIcon();
+        }
 
-            var hIcon = impl?.HIcon ?? IntPtr.Zero;
-            PostMessage(_hwnd, (int)WindowsMessage.WM_SETICON,
-                new IntPtr((int)Icons.ICON_BIG), hIcon);
+        private void RefreshIcon()
+        {
+            var smallIcon = _iconImpl?.LoadSmallIcon(DesktopScaling);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_SMALL, smallIcon?.Handle ?? default);
+            _smallIcon?.Dispose();
+            _smallIcon = smallIcon;
+
+            var bigIcon = _iconImpl?.LoadBigIcon(DesktopScaling);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_BIG, bigIcon?.Handle ?? default);
+            _bigIcon?.Dispose();
+            _bigIcon = bigIcon;
         }
 
         public void ShowTaskbarIcon(bool value)

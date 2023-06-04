@@ -247,14 +247,13 @@ namespace Avalonia.Win32
             try
             {
                 // new Icon() will work only if stream is an "ico" file.
-                return new IconImpl(new System.Drawing.Icon(stream));
+                return new IconImpl(stream);
             }
             catch (ArgumentException)
             {
                 // Fallback to Bitmap creation and converting into a windows icon. 
                 using var icon = new System.Drawing.Bitmap(stream);
-                var hIcon = icon.GetHicon();
-                return new IconImpl(System.Drawing.Icon.FromHandle(hIcon));
+                return new IconImpl(icon.GetHicon());
             }
         }
 

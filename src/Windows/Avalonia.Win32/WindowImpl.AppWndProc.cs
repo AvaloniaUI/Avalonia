@@ -131,6 +131,7 @@ namespace Avalonia.Win32
                         var dpi = ToInt32(wParam) & 0xffff;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                         _scaling = dpi / 96.0;
+                        RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
                         using (SetResizeReason(WindowResizeReason.DpiChange))
