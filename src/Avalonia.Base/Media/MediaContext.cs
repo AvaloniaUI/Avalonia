@@ -131,12 +131,11 @@ internal partial class MediaContext : ICompositorScheduler
         // We are doing several iterations when it happens
         for (var c = 0; c < 10; c++)
         {
-            _clock.HasNewSubscriptions = false;
             FireInvokeOnRenderCallbacks();
             
             if (_clock.HasNewSubscriptions)
             {
-                _clock.Pulse(now);
+                _clock.PulseNewSubscriptions();
                 continue;
             }
 

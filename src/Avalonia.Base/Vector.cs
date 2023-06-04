@@ -17,13 +17,6 @@ namespace Avalonia
 #endif
     readonly struct Vector : IEquatable<Vector>
     {
-        static Vector()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<VectorAnimator>(prop => typeof(Vector).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// The X component.
         /// </summary>
