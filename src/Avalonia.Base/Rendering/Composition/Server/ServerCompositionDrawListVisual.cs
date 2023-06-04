@@ -51,12 +51,12 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         base.RenderCore(canvas, currentTransformedClip);
     }
     
+    public void DependencyQueuedInvalidate(IServerRenderResource sender) => ValuesInvalidated();
+    
 #if DEBUG
     public override string ToString()
     {
         return UiVisual.GetType().ToString();
     }
-
-    public void DependencyQueuedInvalidate(IServerRenderResource sender) => ValuesInvalidated();
 #endif
 }
