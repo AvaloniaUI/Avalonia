@@ -476,7 +476,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>True if the value is valid, otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConversionRequiresUnreferencedCodeMessage)]
         public bool IsValidValue(object? value)
         {
             return TypeUtilities.TryConvertImplicit(PropertyType, value, out _);

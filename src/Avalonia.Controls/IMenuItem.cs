@@ -5,8 +5,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
     /// </summary>
-    [NotClientImplementable]
-    public interface IMenuItem : IMenuElement
+    internal interface IMenuItem : IMenuElement
     {
         /// <summary>
         /// Gets or sets a value that indicates whether the item has a submenu.

@@ -39,6 +39,9 @@ internal static partial class StorageHelper
 
     [JSImport("StorageItem.openRead", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject> OpenRead(JSObject item);
+    
+    [JSImport("StorageItem.createFromHandle", AvaloniaModule.StorageModuleName)]
+    public static partial JSObject? StorageItemFromHandle(JSObject handle);
 
     [JSImport("StorageItem.getItemsIterator", AvaloniaModule.StorageModuleName)]
     [return: JSMarshalAs<JSType.Object>]

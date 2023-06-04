@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                     DataGrid owningGrid = OwningGrid;
                     DataGridSortDescription newSort;
 
-                    KeyboardHelper.GetMetaKeyState(keyModifiers, out bool ctrl, out bool shift);
+                    KeyboardHelper.GetMetaKeyState(this, keyModifiers, out bool ctrl, out bool shift);
 
                     DataGridSortDescription sort = OwningColumn.GetSortDescription();
                     IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;

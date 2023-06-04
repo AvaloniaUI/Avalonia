@@ -8,6 +8,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -118,24 +119,12 @@ namespace Avalonia
         public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
-        /// Gets the application's focus manager.
-        /// </summary>
-        /// <value>
-        /// The application's focus manager.
-        /// </value>
-        public IFocusManager? FocusManager
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Gets the application's input manager.
         /// </summary>
         /// <value>
         /// The application's input manager.
         /// </value>
-        public InputManager? InputManager
+        internal InputManager? InputManager
         {
             get;
             private set;
@@ -191,6 +180,17 @@ namespace Avalonia
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime { get; set; }
 
+        /// <summary>
+        /// Represents a contract for accessing global platform-specific settings.
+        /// </summary>
+        /// <remarks>
+        /// PlatformSettings can be null only if application wasn't initialized yet.
+        /// <see cref="TopLevel"/>'s <see cref="TopLevel.PlatformSettings"/> is an equivalent API
+        /// which should always be preferred over a global one,
+        /// as specific top levels might have different settings set-up. 
+        /// </remarks>
+        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        
         event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
@@ -237,32 +237,32 @@ namespace Avalonia
         public virtual void RegisterServices()
         {
             AvaloniaSynchronizationContext.InstallIfNeeded();
-            FocusManager = new FocusManager();
+            var focusManager = new FocusManager();
             InputManager = new InputManager();
 
-            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
-            settings.ColorValuesChanged += OnColorValuesChanged;
-            OnColorValuesChanged(settings, settings.GetColorValues());
-            
+            if (PlatformSettings is { } settings)
+            {
+                settings.ColorValuesChanged += OnColorValuesChanged;
+                OnColorValuesChanged(settings, settings.GetColorValues());
+            }
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IAccessKeyHandler>().ToTransient<AccessKeyHandler>()
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
-                .Bind<IFocusManager>().ToConstant(FocusManager)
+                .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
-            
+
             // TODO: Fix this, for now we keep this behavior since someone might be relying on it in 0.9.x
             if (AvaloniaLocator.Current.GetService<IPlatformDragSource>() == null)
                 AvaloniaLocator.CurrentMutable
                     .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
 
-            var clock = new RenderLoopClock();
-            AvaloniaLocator.CurrentMutable
-                .Bind<IGlobalClock>().ToConstant(clock)
-                .GetService<IRenderLoop>()?.Add(clock);
+            AvaloniaLocator.CurrentMutable.Bind<IGlobalClock>()
+                .ToConstant(MediaContext.Instance.Clock);
         }
 
         public virtual void OnFrameworkInitializationCompleted()

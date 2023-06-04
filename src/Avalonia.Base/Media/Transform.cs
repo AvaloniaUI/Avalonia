@@ -15,10 +15,9 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class Transform : Animatable, IMutableTransform, ICompositionRenderResource<ITransform>, ICompositorSerializable
     {
-        static Transform()
+        internal Transform()
         {
-            Animation.Animation.RegisterAnimator<TransformAnimator>(prop =>
-                typeof(ITransform).IsAssignableFrom(prop.OwnerType));
+            
         }
 
         /// <summary>

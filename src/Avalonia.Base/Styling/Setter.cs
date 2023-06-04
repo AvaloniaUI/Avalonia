@@ -65,7 +65,7 @@ namespace Avalonia.Styling
 
         void IValueEntry.Unsubscribe() { }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         internal override ISetterInstance Instance(IStyleInstance instance, StyledElement target)
         {
             if (target is not AvaloniaObject ao)

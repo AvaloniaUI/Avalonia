@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Avalonia.Platform.Interop
 {
-    public class Utf8Buffer : SafeHandle
+    internal class Utf8Buffer : SafeHandle
     {
         private GCHandle _gcHandle;
         private byte[]? _data;

@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 
 namespace Avalonia.Platform
@@ -9,6 +10,7 @@ namespace Avalonia.Platform
     /// <remarks>
     /// The interface used for obtaining drawing context from surfaces you can render on.
     /// </remarks>
+    [PrivateApi]
     public interface IRenderTarget : IDisposable
     {
         /// <summary>

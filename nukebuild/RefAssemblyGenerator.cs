@@ -71,10 +71,10 @@ public class RefAssemblyGenerator
         foreach (var nested in type.NestedTypes)
             ProcessType(nested, obsoleteCtor);
 
-        var hideMethods = (type.IsInterface && type.Name.EndsWith("Impl"))
+        var hideMembers = (type.IsInterface && type.Name.EndsWith("Impl"))
                           || HasPrivateApi(type.CustomAttributes);
 
-        var injectMethod = hideMethods
+        var injectMethod = hideMembers
                            || type.CustomAttributes.Any(a =>
                                a.AttributeType.FullName == "Avalonia.Metadata.NotClientImplementableAttribute");
 
@@ -95,13 +95,42 @@ public class RefAssemblyGenerator
 
         foreach (var m in type.Methods)
         {
-            if (hideMethods || HasPrivateApi(m.CustomAttributes))
+            if (hideMembers || HasPrivateApi(m.CustomAttributes))
             {
-                var dflags = MethodAttributes.Public | MethodAttributes.Family | MethodAttributes.FamORAssem |
-                             MethodAttributes.FamANDAssem | MethodAttributes.Assembly;
-                m.Attributes = ((m.Attributes | dflags) ^ dflags) | MethodAttributes.Assembly;
+                HideMethod(m);
             }
             MarkAsUnstable(m, obsoleteCtor, forceUnstable);
+        }
+
+        foreach (var p in type.Properties)
+        {
+            if (HasPrivateApi(p.CustomAttributes))
+            {
+                if (p.SetMethod != null)
+                    HideMethod(p.SetMethod);
+                if (p.GetMethod != null)
+                    HideMethod(p.GetMethod);
+            }
+        }
+
+        foreach (var f in type.Fields)
+        {
+            if (hideMembers || HasPrivateApi(f.CustomAttributes))
+            {
+                var dflags = FieldAttributes.Public | FieldAttributes.Family | FieldAttributes.FamORAssem |
+                             FieldAttributes.FamANDAssem | FieldAttributes.Assembly;
+                f.Attributes = ((f.Attributes | dflags) ^ dflags) | FieldAttributes.Assembly;
+            }
+        }
+
+        foreach (var cl in type.NestedTypes)
+        {
+            ProcessType(cl, obsoleteCtor);
+            if (hideMembers)
+            {
+                var dflags = TypeAttributes.Public;
+                cl.Attributes = ((cl.Attributes | dflags) ^ dflags) | TypeAttributes.NotPublic;
+            }
         }
 
         foreach (var m in type.Properties)
@@ -110,6 +139,13 @@ public class RefAssemblyGenerator
             MarkAsUnstable(m, obsoleteCtor, forceUnstable);
     }
 
+    static void HideMethod(MethodDefinition m)
+    {
+        var dflags = MethodAttributes.Public | MethodAttributes.Family | MethodAttributes.FamORAssem |
+                     MethodAttributes.FamANDAssem | MethodAttributes.Assembly;
+        m.Attributes = ((m.Attributes | dflags) ^ dflags) | MethodAttributes.Assembly;
+    }
+    
     static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, ICustomAttribute unstableAttribute)
     {
         if (def.CustomAttributes.Any(a => a.AttributeType.FullName == "System.ObsoleteAttribute"))

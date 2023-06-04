@@ -76,7 +76,10 @@ namespace Avalonia.FreeDesktop.DBusIme
         private async void OnNameChange(Exception? e, (string ServiceName, string? OldOwner, string? NewOwner) args)
         {
             if (e is not null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnNameChange failed: {e}");
                 return;
+            }
 
             if (args.NewOwner is not null && _currentName is null)
             {

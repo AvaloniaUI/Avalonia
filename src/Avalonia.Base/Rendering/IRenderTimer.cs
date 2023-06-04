@@ -6,7 +6,7 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Defines the interface implemented by an application render timer.
     /// </summary>
-    [NotClientImplementable]
+    [PrivateApi]
     public interface IRenderTimer
     {
         /// <summary>

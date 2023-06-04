@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dialogs="using:Avalonia.Dialogs"
-        xmlns:internal="using:Avalonia.Dialogs.Internal">
+        xmlns:internal="using:Avalonia.Dialogs.Internal"
+        x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20" Width="800" Height="500">
       <dialogs:ManagedFileChooser/>
@@ -179,8 +180,8 @@
               </DockPanel>
               <CheckBox IsChecked="{Binding ShowHiddenFiles}" Content="Show hidden files" DockPanel.Dock="Left"/>
               <UniformGrid x:Name="Finalize" HorizontalAlignment="Right" Rows="1">
-                <Button Command="{Binding Ok}">OK</Button>
-                <Button Command="{Binding Cancel}">Cancel</Button>
+                <Button Command="{Binding Ok}" MinWidth="80">OK</Button>
+                <Button Command="{Binding Cancel}" MinWidth="80">Cancel</Button>
               </UniformGrid>
             </DockPanel>
           </DockPanel>
@@ -189,7 +190,6 @@
             <Grid DockPanel.Dock="Top" Margin="15 5 0 0" HorizontalAlignment="Stretch">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20" SharedSizeGroup="Icon" />
-                <ColumnDefinition Width="16" SharedSizeGroup="Splitter"  />
                 <ColumnDefinition Width="275" SharedSizeGroup="Name" />
                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                 <ColumnDefinition Width="200" SharedSizeGroup="Modified" />
@@ -197,6 +197,7 @@
                 <ColumnDefinition Width="150" SharedSizeGroup="Type" />
                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                 <ColumnDefinition Width="200" SharedSizeGroup="Size" />
+                <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
               </Grid.ColumnDefinitions>
               <Grid.Styles>
                 <Style Selector="GridSplitter">
@@ -210,14 +211,14 @@
                   </Setter>
                 </Style>
               </Grid.Styles>
-              <GridSplitter Grid.Column="1" />
-              <TextBlock Grid.Column="2" Text="Name" />
-              <GridSplitter Grid.Column="3" />
-              <TextBlock Grid.Column="4" Text="Date Modified" />
-              <GridSplitter Grid.Column="5" />
-              <TextBlock Grid.Column="6" Text="Type" />
-              <GridSplitter Grid.Column="7" />
-              <TextBlock Grid.Column="8" Text="Size" />
+              <TextBlock Grid.Column="1" Text="Name" />
+              <GridSplitter Grid.Column="2" />
+              <TextBlock Grid.Column="3" Text="Date Modified" />
+              <GridSplitter Grid.Column="4" />
+              <TextBlock Grid.Column="5" Text="Type" />
+              <GridSplitter Grid.Column="6" />
+              <TextBlock Grid.Column="7" Text="Size" />
+              <GridSplitter Grid.Column="8" />
             </Grid>
             <ListBox x:Name="PART_Files"
                 ItemsSource="{Binding Items}"
@@ -231,7 +232,6 @@
                   <Grid Background="Transparent">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition SharedSizeGroup="Icon" />
-                      <ColumnDefinition SharedSizeGroup="Splitter"  />
                       <ColumnDefinition SharedSizeGroup="Name" />
                       <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Modified" />
@@ -239,16 +239,17 @@
                       <ColumnDefinition SharedSizeGroup="Type" />
                       <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Size" />
+                      <ColumnDefinition SharedSizeGroup="Splitter" />
                     </Grid.ColumnDefinitions>
                     <Image Width="16" Height="16">
                       <Image.Source>
                         <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
                       </Image.Source>
                     </Image>
-                    <TextBlock Grid.Column="2" Text="{Binding DisplayName}"/>
-                    <TextBlock Grid.Column="4" Text="{Binding Modified}" />
-                    <TextBlock Grid.Column="6" Text="{Binding Type}" />
-                    <TextBlock Grid.Column="8">
+                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}"/>
+                    <TextBlock Grid.Column="3" Text="{Binding Modified}" />
+                    <TextBlock Grid.Column="5" Text="{Binding Type}" />
+                    <TextBlock Grid.Column="7" HorizontalAlignment="Right">
                       <TextBlock.Text>
                         <Binding Path="Size">
                           <Binding.Converter>

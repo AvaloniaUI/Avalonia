@@ -2,7 +2,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Animation.Animators
 {
-    public class BoxShadowAnimator : Animator<BoxShadow>
+    internal class BoxShadowAnimator : Animator<BoxShadow>
     {
         static ColorAnimator s_colorAnimator = new ColorAnimator();
         static DoubleAnimator s_doubleAnimator = new DoubleAnimator();

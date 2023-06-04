@@ -2,7 +2,7 @@
 
 namespace Avalonia.Input.Raw
 {
-    [NotClientImplementable]
+    [PrivateApi]
     public interface IDragDropDevice : IInputDevice
     {
     }

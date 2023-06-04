@@ -13,8 +13,8 @@ internal interface IServerRenderResourceObserver
 
 internal interface IServerRenderResource : IServerRenderResourceObserver
 {
-    void AddObserver(IServerRenderResource observer);
-    void RemoveObserver(IServerRenderResource observer);
+    void AddObserver(IServerRenderResourceObserver observer);
+    void RemoveObserver(IServerRenderResourceObserver observer);
     void QueuedInvalidate();
 }
 
@@ -23,7 +23,7 @@ internal class SimpleServerRenderResource : SimpleServerObject, IServerRenderRes
     private bool _pendingInvalidation;
     private bool _disposed;
     public bool IsDisposed => _disposed;
-    private RefCountingSmallDictionary<IServerRenderResource> _observers;
+    private RefCountingSmallDictionary<IServerRenderResourceObserver> _observers;
     
     public SimpleServerRenderResource(ServerCompositor compositor) : base(compositor)
     {
@@ -97,7 +97,7 @@ internal class SimpleServerRenderResource : SimpleServerObject, IServerRenderRes
         
     }
     
-    public void AddObserver(IServerRenderResource observer)
+    public void AddObserver(IServerRenderResourceObserver observer)
     {
         Debug.Assert(!_disposed);
         if(_disposed)
@@ -105,7 +105,7 @@ internal class SimpleServerRenderResource : SimpleServerObject, IServerRenderRes
         _observers.Add(observer);
     }
 
-    public void RemoveObserver(IServerRenderResource observer)
+    public void RemoveObserver(IServerRenderResourceObserver observer)
     {
         if (_disposed)
             return;

@@ -196,14 +196,14 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from false to true.
         /// </summary>
-        public event CancelEventHandler? ContextMenuOpening;
+        public event CancelEventHandler? Opening;
 
         /// <summary>
         /// Occurs when the value of the
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from true to false.
         /// </summary>
-        public event CancelEventHandler? ContextMenuClosing;
+        public event CancelEventHandler? Closing;
 
         /// <summary>
         /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
@@ -353,7 +353,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
@@ -394,7 +394,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
             
@@ -405,7 +405,7 @@ namespace Avalonia.Controls
         {
             if (IsOpen)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true
                     && !CancelClosing())
@@ -446,14 +446,14 @@ namespace Avalonia.Controls
         private bool CancelClosing()
         {
             var eventArgs = new CancelEventArgs();
-            ContextMenuClosing?.Invoke(this, eventArgs);
+            Closing?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
         }
 
         private bool CancelOpening()
         {
             var eventArgs = new CancelEventArgs();
-            ContextMenuOpening?.Invoke(this, eventArgs);
+            Opening?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
         }
     }

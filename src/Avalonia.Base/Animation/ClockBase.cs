@@ -3,7 +3,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Animation
 {
-    public class ClockBase : IClock
+    internal class ClockBase : IClock
     {
         private readonly ClockObservable _observable;
 

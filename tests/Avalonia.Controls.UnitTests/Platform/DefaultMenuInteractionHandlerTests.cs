@@ -2,6 +2,7 @@
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Moq;
@@ -554,7 +555,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var contextMenu = Mock.Of<IMenu>(x => x.MoveSelection(NavigationDirection.Down, true) == true);
                 var e = new KeyEventArgs { Key = Key.Down, Source = contextMenu };
 
-                target.Attach(contextMenu);
+                target.AttachCore(contextMenu);
                 target.KeyDown(contextMenu, e);
 
                 Mock.Get(contextMenu).Verify(x => x.MoveSelection(NavigationDirection.Down, true));

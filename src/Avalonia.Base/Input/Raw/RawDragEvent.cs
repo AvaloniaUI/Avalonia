@@ -1,7 +1,9 @@
 ﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
 {
+    [PrivateApi]
     public class RawDragEvent : RawInputEventArgs
     {
         public Point Location { get; set; }

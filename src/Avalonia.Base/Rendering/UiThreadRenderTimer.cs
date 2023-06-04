@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 
@@ -8,6 +9,7 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Render timer that ticks on UI thread. Useful for debugging or bootstrapping on new platforms 
     /// </summary>
+    [PrivateApi]
     public class UiThreadRenderTimer : DefaultRenderTimer
     {
         /// <summary>
@@ -32,7 +34,7 @@ namespace Avalonia.Rendering
                     return false;
                 tick(st.Elapsed);
                 return !cancelled;
-            }, TimeSpan.FromSeconds(1.0 / FramesPerSecond), DispatcherPriority.Render);
+            }, TimeSpan.FromSeconds(1.0 / FramesPerSecond), DispatcherPriority.UiThreadRender);
             return Disposable.Create(() => cancelled = true);
         }
     }

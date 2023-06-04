@@ -7,7 +7,7 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="Rect"/> properties.
     /// </summary>
-    public class RectAnimator : Animator<Rect>
+    internal class RectAnimator : Animator<Rect>
     {
         public override Rect Interpolate(double progress, Rect oldValue, Rect newValue)
         {

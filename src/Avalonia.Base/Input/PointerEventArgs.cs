@@ -58,6 +58,8 @@ namespace Avalonia.Input
         /// </summary>
         public ulong Timestamp { get; }
 
+        internal bool IsGestureRecognitionSkipped { get; private set; }
+
         /// <summary>
         /// Gets a value that indicates which key modifiers were active at the time that the pointer event was initiated.
         /// </summary>
@@ -69,6 +71,17 @@ namespace Avalonia.Input
                 return default;
             if (relativeTo == null)
                 return pt;
+
+            // If the visual the user passed in, is not connected to the same visual root
+            // (i.e. they called it for a control inside a popup.
+            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot) && relativeTo.VisualRoot is { })
+            {
+                // Convert to absolute screen coordinates.
+                var screenPt = _rootVisual.PointToScreen(pt);
+
+                // Convert to client co-ordinates of the visual inside the other visual root.
+                return relativeTo.PointToClient(screenPt);
+            }
 
             return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
@@ -108,6 +121,14 @@ namespace Avalonia.Input
 
             points[points.Length - 1] = GetCurrentPoint(relativeTo);
             return points;
+        }
+
+        /// <summary>
+        /// Prevents this event from being handled by other gesture recognizers in the route
+        /// </summary>
+        public void PreventGestureRecognition()
+        {
+            IsGestureRecognitionSkipped = true;
         }
 
         /// <summary>

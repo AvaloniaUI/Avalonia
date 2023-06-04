@@ -60,13 +60,9 @@ namespace Avalonia.Media.TextFormatting
 
             _textTrimming = textTrimming ?? TextTrimming.None;
 
-            LineHeight = lineHeight;
-
             MaxWidth = maxWidth;
 
             MaxHeight = maxHeight;
-
-            LetterSpacing = letterSpacing;
 
             MaxLines = maxLines;
 
@@ -81,8 +77,6 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textTrimming">The text trimming.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
-        /// <param name="lineHeight">The height of each line of text.</param>
-        /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
         public TextLayout(
             ITextSource textSource,
@@ -90,8 +84,6 @@ namespace Avalonia.Media.TextFormatting
             TextTrimming? textTrimming = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
-            double lineHeight = double.NaN,
-            double letterSpacing = 0,
             int maxLines = 0)
         {
             _textSource = textSource;
@@ -100,13 +92,9 @@ namespace Avalonia.Media.TextFormatting
 
             _textTrimming = textTrimming ?? TextTrimming.None;
 
-            LineHeight = lineHeight;
-
             MaxWidth = maxWidth;
 
             MaxHeight = maxHeight;
-
-            LetterSpacing = letterSpacing;
 
             MaxLines = maxLines;
 
@@ -120,7 +108,7 @@ namespace Avalonia.Media.TextFormatting
         /// A value of NaN (equivalent to an attribute value of "Auto") indicates that the line height
         /// is determined automatically from the current font characteristics. The default is NaN.
         /// </remarks>
-        public double LineHeight { get; }
+        public double LineHeight => _paragraphProperties.LineHeight;
 
         /// <summary>
         /// Gets the maximum width.
@@ -140,7 +128,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets the text spacing.
         /// </summary>
-        public double LetterSpacing { get; }
+        public double LetterSpacing  => _paragraphProperties.LetterSpacing;
 
         /// <summary>
         /// Gets the text lines.
@@ -495,7 +483,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="lineHeight">The height of each line of text.</param>
         /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
         /// <returns></returns>
-        private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
+        internal static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
             IBrush? foreground, TextAlignment textAlignment, TextWrapping textWrapping,
             TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight,
             double letterSpacing)

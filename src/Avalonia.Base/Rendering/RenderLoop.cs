@@ -14,33 +14,38 @@ namespace Avalonia.Rendering
     /// The render loop is responsible for advancing the animation timer and updating the scene
     /// graph for visible windows.
     /// </remarks>
-    public class RenderLoop : IRenderLoop
+    internal class RenderLoop : IRenderLoop
     {
-        private readonly IDispatcher _dispatcher;
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
-        private List<IRenderLoopTask> _updateItemsCopy = new List<IRenderLoopTask>();
         private IRenderTimer? _timer;
         private int _inTick;
         private int _inUpdate;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RenderLoop"/> class.
-        /// </summary>
-        public RenderLoop()
+        
+        public static IRenderLoop LocatorAutoInstance
         {
-            _dispatcher = Dispatcher.UIThread;
-        }
+            get
+            {
+                var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+                if (loop == null)
+                {
+                    var timer = AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
+                    AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>()
+                        .ToConstant(loop = new RenderLoop(timer));
+                }
 
+                return loop;
+            }
+        }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderLoop"/> class.
         /// </summary>
         /// <param name="timer">The render timer.</param>
         /// <param name="dispatcher">The UI thread dispatcher.</param>
-        public RenderLoop(IRenderTimer timer, IDispatcher dispatcher)
+        public RenderLoop(IRenderTimer timer)
         {
             _timer = timer;
-            _dispatcher = dispatcher;
         }
 
         /// <summary>
@@ -96,53 +101,13 @@ namespace Avalonia.Rendering
             {
                 try
                 {
-                    bool needsUpdate = false;
-
+                    
                     lock (_items)
                     {
                         _itemsCopy.Clear();
                         _itemsCopy.AddRange(_items);
                     }
                     
-                    foreach (IRenderLoopTask item in _itemsCopy)
-                    {
-                        if (item.NeedsUpdate)
-                        {
-                            needsUpdate = true;
-
-                            break;
-                        }
-                    }
-
-                    if (needsUpdate &&
-                        Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)
-                    {
-                        _dispatcher.Post(() =>
-                        {
-                            lock (_items)
-                            {
-                                _updateItemsCopy.Clear();
-                                _updateItemsCopy.AddRange(_items);
-                            }
-                            foreach (var item in _updateItemsCopy)
-                            {
-                                if (item.NeedsUpdate)
-                                {
-                                    try
-                                    {
-                                        item.Update(time);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Exception in render update: {Error}", ex);
-                                    }
-                                }
-                            }
-                            _updateItemsCopy.Clear();
-
-                            Interlocked.Exchange(ref _inUpdate, 0);
-                        }, DispatcherPriority.Render);
-                    }
 
                     for (int i = 0; i < _itemsCopy.Count; i++)
                     {

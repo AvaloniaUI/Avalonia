@@ -2,22 +2,14 @@
 
 namespace Avalonia.Input
 {
-    public class PinchGestureRecognizer : StyledElement, IGestureRecognizer
+    public class PinchGestureRecognizer : GestureRecognizer
     {
-        private IInputElement? _target;
-        private IGestureRecognizerActionsDispatcher? _actions;
         private float _initialDistance;
         private IPointer? _firstContact;
         private Point _firstPoint;
         private IPointer? _secondContact;
         private Point _secondPoint;
         private Point _origin;
-
-        public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
-        {
-            _target = target;
-            _actions = actions;
-        }
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -29,14 +21,14 @@ namespace Avalonia.Input
             PointerReleased(e);
         }
 
-        public void PointerCaptureLost(IPointer pointer)
+        protected override void PointerCaptureLost(IPointer pointer)
         {
             RemoveContact(pointer);
         }
 
-        public void PointerMoved(PointerEventArgs e)
+        protected override void PointerMoved(PointerEventArgs e)
         {
-            if (_target != null && _target is Visual visual)
+            if (Target != null && Target is Visual visual)
             {
                 if(_firstContact == e.Pointer)
                 {
@@ -58,16 +50,16 @@ namespace Avalonia.Input
                     var scale = distance / _initialDistance;
 
                     var pinchEventArgs = new PinchEventArgs(scale, _origin);
-                    _target?.RaiseEvent(pinchEventArgs);
+                    Target?.RaiseEvent(pinchEventArgs);
 
                     e.Handled = pinchEventArgs.Handled;
                 }
             }
         }
 
-        public void PointerPressed(PointerPressedEventArgs e)
+        protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (_target != null && _target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 if (_firstContact == null)
                 {
@@ -92,13 +84,13 @@ namespace Avalonia.Input
 
                     _origin = new Point((_firstPoint.X + _secondPoint.X) / 2.0f, (_firstPoint.Y + _secondPoint.Y) / 2.0f);
 
-                    _actions!.Capture(_firstContact, this);
-                    _actions!.Capture(_secondContact, this);
+                    Capture(_firstContact);
+                    Capture(_secondContact);
                 }
             }
         }
 
-        public void PointerReleased(PointerReleasedEventArgs e)
+        protected override void PointerReleased(PointerReleasedEventArgs e)
         {
             RemoveContact(e.Pointer);
         }
@@ -118,7 +110,7 @@ namespace Avalonia.Input
 
                     _secondContact = null;
                 }
-                _target?.RaiseEvent(new PinchEndedEventArgs());
+                Target?.RaiseEvent(new PinchEndedEventArgs());
             }
         }
 

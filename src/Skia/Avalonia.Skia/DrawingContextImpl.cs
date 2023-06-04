@@ -588,14 +588,21 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void PushOpacity(double opacity, Rect bounds)
+        public void PushOpacity(double opacity, Rect? bounds)
         {
             CheckLease();
 
             if(_useOpacitySaveLayer)
             {
-                var rect = bounds.ToSKRect();
-                Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity)});
+                if (bounds.HasValue)
+                {
+                    var rect = bounds.Value.ToSKRect();
+                    Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
+                }
+                else
+                {
+                    Canvas.SaveLayer(new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity) });
+                }
             }
             else
             {

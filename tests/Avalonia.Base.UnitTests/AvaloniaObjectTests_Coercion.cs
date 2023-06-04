@@ -125,6 +125,19 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void CoerceValue_Calls_Coerce_Callback_Only_Once()
+        {
+            var target = new Class1 { Foo = 99 };
+
+            target.MaxFoo = 50;
+            
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 99 }, target.CoerceFooInvocations);
+        }
+
+        [Fact]
         public void Coerced_Value_Can_Be_Restored_If_Limit_Changed()
         {
             var target = new Class1();
@@ -216,6 +229,18 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(20, target.Foo);
             Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Default_Value_Is_Coerced_Only_Once()
+        {
+            var target = new Class1();
+
+            target.MinFoo = 20;
+            target.CoerceFooInvocations.Clear();
+            target.CoerceValue(Class1.FooProperty);
+
+            Assert.Equal(new[] { 11 }, target.CoerceFooInvocations);
         }
 
         [Fact]
@@ -338,10 +363,12 @@ namespace Avalonia.Base.UnitTests
             public int MinFoo { get; set; } = 0;
             public int MaxFoo { get; set; } = 100;
 
+            public List<int> CoerceFooInvocations { get; } = new();
             public List<AvaloniaPropertyChangedEventArgs> CoreChanges { get; } = new();
 
             public static int CoerceFoo(AvaloniaObject instance, int value)
             {
+                (instance as Class1)?.CoerceFooInvocations.Add(value);
                 return instance is Class1 o ? 
                     Math.Clamp(value, o.MinFoo, o.MaxFoo) :
                     Math.Clamp(value, 0, 100);

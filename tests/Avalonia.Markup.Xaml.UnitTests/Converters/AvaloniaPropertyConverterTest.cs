@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
-    public class AvaloniaPropertyConverterTest
+    public class AvaloniaPropertyConverterTest : XamlTestBase
     {
         public AvaloniaPropertyConverterTest()
         {

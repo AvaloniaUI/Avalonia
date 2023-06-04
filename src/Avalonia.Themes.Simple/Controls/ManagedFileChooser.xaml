@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:dialogs="using:Avalonia.Dialogs"
-                    xmlns:internal="using:Avalonia.Dialogs.Internal">
+                    xmlns:internal="using:Avalonia.Dialogs.Internal"
+                    x:ClassModifier="internal">
   <DrawingGroup x:Key="LevelUp">
     <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
     <GeometryDrawing Brush="#FFF6F6F6"
@@ -49,7 +50,7 @@
                 TargetType="dialogs:ManagedFileChooser">
     <Setter Property="Template">
       <ControlTemplate x:DataType="internal:ManagedFileChooserViewModel">
-        <DockPanel>
+        <DockPanel Margin="5">
           <DockPanel Margin="0,0,0,5"
                      DockPanel.Dock="Top">
             <internal:ChildFitter Width="{Binding ElementName=Location, Path=Bounds.Height}"
@@ -93,8 +94,8 @@
                   <Setter Property="Margin" Value="4" />
                 </Style>
               </StackPanel.Styles>
-              <Button Command="{Binding Ok}">OK</Button>
-              <Button Command="{Binding Cancel}">Cancel</Button>
+              <Button Command="{Binding Ok}" MinWidth="60">OK</Button>
+              <Button Command="{Binding Cancel}" MinWidth="60">Cancel</Button>
             </StackPanel>
           </DockPanel>
 
@@ -136,7 +137,6 @@
                   DockPanel.Dock="Top">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20" SharedSizeGroup="Icon" />
-                <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                 <ColumnDefinition Width="400" SharedSizeGroup="Name" />
                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                 <ColumnDefinition Width="200" SharedSizeGroup="Modified" />
@@ -144,19 +144,45 @@
                 <ColumnDefinition Width="150" SharedSizeGroup="Type" />
                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                 <ColumnDefinition Width="200" SharedSizeGroup="Size" />
+                <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
               </Grid.ColumnDefinitions>
-              <GridSplitter Grid.Column="1" />
-              <TextBlock Grid.Column="2"
+              <TextBlock Grid.Column="1"
                          Text="Name" />
-              <GridSplitter Grid.Column="3" />
-              <TextBlock Grid.Column="4"
+              <GridSplitter Grid.Column="2"
+                            ResizeDirection="Columns"
+                            Background="Transparent" />
+              <Rectangle HorizontalAlignment="Left" Grid.Column="2" VerticalAlignment="Stretch" Width="1" Fill="{DynamicResource ThemeControlMidBrush}"/>
+              <TextBlock Grid.Column="3"
                          Text="Date Modified" />
-              <GridSplitter Grid.Column="5" />
-              <TextBlock Grid.Column="6"
+              <GridSplitter Grid.Column="4"
+                            ResizeDirection="Columns"
+                            Background="Transparent" />
+              <Rectangle HorizontalAlignment="Left"
+                         Grid.Column="4"
+                         VerticalAlignment="Stretch"
+                         Width="1"
+                         Fill="{DynamicResource ThemeControlMidBrush}"/>
+
+              <TextBlock Grid.Column="5"
                          Text="Type" />
-              <GridSplitter Grid.Column="7" />
-              <TextBlock Grid.Column="8"
+              <GridSplitter Grid.Column="6" ResizeDirection="Columns"
+                            Background="Transparent" />
+              <Rectangle HorizontalAlignment="Left"
+                         Grid.Column="6"
+                         VerticalAlignment="Stretch"
+                         Width="1"
+                         Fill="{DynamicResource ThemeControlMidBrush}"/>
+
+              <TextBlock Grid.Column="7"
                          Text="Size" />
+              <GridSplitter Grid.Column="8"
+                            ResizeDirection="Columns"
+                            Background="Transparent" />
+              <Rectangle HorizontalAlignment="Left"
+                         Grid.Column="8"
+                         VerticalAlignment="Stretch"
+                         Width="1"
+                         Fill="{DynamicResource ThemeControlMidBrush}"/>
             </Grid>
             <ListBox x:Name="PART_Files"
                      Margin="0,5"
@@ -169,7 +195,6 @@
                   <Grid Background="Transparent">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition SharedSizeGroup="Icon" />
-                      <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Name" />
                       <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Modified" />
@@ -177,19 +202,20 @@
                       <ColumnDefinition SharedSizeGroup="Type" />
                       <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Size" />
+                      <ColumnDefinition SharedSizeGroup="Splitter" />
                     </Grid.ColumnDefinitions>
                     <Image Grid.Column="0"
                            Width="16"
                            Height="16">
                       <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}" />
                     </Image>
-                    <TextBlock Grid.Column="2"
+                    <TextBlock Grid.Column="1"
                                Text="{Binding DisplayName}" />
-                    <TextBlock Grid.Column="4"
+                    <TextBlock Grid.Column="3"
                                Text="{Binding Modified}" />
-                    <TextBlock Grid.Column="6"
+                    <TextBlock Grid.Column="5"
                                Text="{Binding Type}" />
-                    <TextBlock Grid.Column="8">
+                    <TextBlock Grid.Column="7" HorizontalAlignment="Right">
                       <TextBlock.Text>
                         <Binding Path="Size">
                           <Binding.Converter>

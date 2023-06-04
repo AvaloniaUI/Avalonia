@@ -57,7 +57,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
-        List<Batch> _reusableToCompleteList = new();
+        List<Batch> _reusableToNotifyProcessedList = new();
+        List<Batch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
             while (true)
@@ -100,7 +101,7 @@ namespace Avalonia.Rendering.Composition.Server
                     }
                 }
 
-                _reusableToCompleteList.Add(batch);
+                _reusableToNotifyProcessedList.Add(batch);
                 LastBatchId = batch.SequenceId;
             }
         }
@@ -135,17 +136,23 @@ namespace Avalonia.Rendering.Composition.Server
                 }
         }
 
-        void CompletePendingBatches()
+        void NotifyBatchesProcessed()
         {
-            foreach(var batch in _reusableToCompleteList)
-                batch.Complete();
-            _reusableToCompleteList.Clear();
+            foreach (var batch in _reusableToNotifyProcessedList) 
+                batch.NotifyProcessed();
+
+            foreach (var batch in _reusableToNotifyProcessedList)
+                _reusableToNotifyRenderedList.Add(batch);
+
+            _reusableToNotifyProcessedList.Clear();
         }
-
-        bool IRenderLoopTask.NeedsUpdate => false;
-
-        void IRenderLoopTask.Update(TimeSpan time)
+        
+        void NotifyBatchesRendered()
         {
+            foreach (var batch in _reusableToNotifyRenderedList) 
+                batch.NotifyRendered();
+
+            _reusableToNotifyRenderedList.Clear();
         }
 
         public void Render()
@@ -159,8 +166,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
                 finally
                 {
+                    NotifyBatchesRendered();
                     _safeThread = null;
                 }
+                
             }
         }
         
@@ -168,7 +177,7 @@ namespace Avalonia.Rendering.Composition.Server
         {
             UpdateServerTime();
             ApplyPendingBatches();
-            CompletePendingBatches();
+            NotifyBatchesProcessed();
             
             foreach(var animation in _clockItems)
                 _clockItemsToUpdate.Add(animation);

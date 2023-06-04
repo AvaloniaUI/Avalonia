@@ -136,7 +136,7 @@ namespace IntegrationTestApp
                 Name = "TransparentWindow",
                 SystemDecorations = SystemDecorations.None,
                 Background = Brushes.Transparent,
-                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Width = 200,
                 Height = 200,

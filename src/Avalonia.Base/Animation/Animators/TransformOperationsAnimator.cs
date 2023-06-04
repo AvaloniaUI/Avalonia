@@ -4,7 +4,7 @@ using Avalonia.Media.Transformation;
 
 namespace Avalonia.Animation.Animators
 {
-    public class TransformOperationsAnimator : Animator<TransformOperations>
+    internal class TransformOperationsAnimator : Animator<TransformOperations>
     {
         public TransformOperationsAnimator()
         {

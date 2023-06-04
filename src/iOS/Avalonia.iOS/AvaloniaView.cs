@@ -38,7 +38,7 @@ namespace Avalonia.iOS
 
             _topLevel.Prepare();
 
-            _topLevel.Renderer.Start();
+            _topLevel.StartRendering();
 
             var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
@@ -110,9 +110,7 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) =>
-                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
-
+            public Compositor Compositor => Platform.Compositor;
 
             public void Invalidate(Rect rect)
             {
@@ -139,7 +137,7 @@ namespace Avalonia.iOS
                 return null;
             }
 
-            public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+            public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
             {
                 // No-op
             }
@@ -159,8 +157,8 @@ namespace Avalonia.iOS
 
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
-            public WindowTransparencyLevel TransparencyLevel { get; }
-            
+            public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
             {
                 // TODO adjust status bar depending on full screen mode.

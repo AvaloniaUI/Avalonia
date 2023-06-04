@@ -75,7 +75,6 @@ namespace Avalonia.X11
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
@@ -104,7 +103,7 @@ namespace Avalonia.X11
 
             var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+            Compositor = new Compositor(gl);
         }
 
         public IntPtr DeferredDisplay { get; set; }

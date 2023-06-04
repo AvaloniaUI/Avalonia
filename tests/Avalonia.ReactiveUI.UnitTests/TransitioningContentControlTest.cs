@@ -22,7 +22,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Content = "Foo"
             };
             target.ApplyTemplate();
-            ((ContentPresenter)target.Presenter).UpdateChild();
+            target.Presenter.UpdateChild();
 
             var child = ((Visual)target).GetVisualChildren().Single();
             Assert.IsType<Border>(child);

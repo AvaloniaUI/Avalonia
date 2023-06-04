@@ -2,7 +2,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
-    [NotClientImplementable]
+    [NotClientImplementable, PrivateApi]
     public interface IAnimationSetter
     {
         AvaloniaProperty? Property { get; set; }

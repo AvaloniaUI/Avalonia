@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 
 namespace Avalonia.VisualTree
 {
@@ -125,9 +128,9 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<Visual> GetVisualAncestors(this Visual visual)
         {
-            Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            v = v.VisualParent;
+            var v = visual.VisualParent;
 
             while (v != null)
             {
@@ -194,7 +197,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual and its ancestors.</returns>
         public static IEnumerable<Visual> GetSelfAndVisualAncestors(this Visual visual)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             yield return visual;
 
@@ -275,7 +278,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual at the requested point.</returns>
         public static Visual? GetVisualAt(this Visual visual, Point p)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualAt(p, x => x.IsVisible);
         }
@@ -292,7 +295,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual at the requested point.</returns>
         public static Visual? GetVisualAt(this Visual visual, Point p, Func<Visual, bool> filter)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             var root = visual.GetVisualRoot();
 
@@ -305,7 +308,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.Renderer.HitTestFirst(rootPoint.Value, visual, filter);
+                return root.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
             }
 
             return null;
@@ -321,7 +324,7 @@ namespace Avalonia.VisualTree
             this Visual visual,
             Point p)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
         }
@@ -341,7 +344,7 @@ namespace Avalonia.VisualTree
             Point p,
             Func<Visual, bool> filter)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             var root = visual.GetVisualRoot();
 
@@ -354,7 +357,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.Renderer.HitTest(rootPoint.Value, visual, filter);
+                return root.HitTester.HitTest(rootPoint.Value, visual, filter);
             }
 
             return Enumerable.Empty<Visual>();
@@ -435,7 +438,7 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static IRenderRoot? GetVisualRoot(this Visual visual)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual as IRenderRoot ?? visual.VisualRoot;
         }
