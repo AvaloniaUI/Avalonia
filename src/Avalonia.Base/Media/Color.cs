@@ -25,13 +25,6 @@ namespace Avalonia.Media
     {
         private const double byteToDouble = 1.0 / 255;
 
-        static Color()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// Gets the Alpha component of the color.
         /// </summary>
