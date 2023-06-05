@@ -6,10 +6,19 @@
       <TextBlock Classes="h2">Displays an image</TextBlock>
     </StackPanel>
 
-    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,*" Margin="64">
+    <UniformGrid Columns="2" Margin="64">
+      <UniformGrid.Styles>
+        <Style Selector="DockPanel">
+          <Setter Property="Margin" Value="16"/>
+        </Style>
+        <Style Selector="TextBlock.h3">
+          <Setter Property="Margin" Value="0 8"/>
+          <Setter Property="DockPanel.Dock" Value="Top"/>
+        </Style>
+      </UniformGrid.Styles>
       
-      <DockPanel Grid.Column="0" Grid.Row="1" Margin="16">
-        <TextBlock DockPanel.Dock="Top" Classes="h3" Margin="0 8">Bitmap</TextBlock>
+      <DockPanel>
+        <TextBlock Classes="h3">Bitmap</TextBlock>
         <ComboBox Name="bitmapStretch" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="BitmapStretchChanged">
           <ComboBoxItem>None</ComboBoxItem>
           <ComboBoxItem>Fill</ComboBoxItem>
@@ -20,8 +29,8 @@
                Source="/Assets/delicate-arch-896885_640.jpg"/>
       </DockPanel>
 
-      <DockPanel Grid.Column="1" Grid.Row="1" Margin="16">
-        <TextBlock DockPanel.Dock="Top" Classes="h3" Margin="0 8">Crop</TextBlock>
+      <DockPanel>
+        <TextBlock Classes="h3">Crop</TextBlock>
         <ComboBox Name="bitmapCrop" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="BitmapCropChanged">
           <ComboBoxItem>None</ComboBoxItem>
           <ComboBoxItem>Center</ComboBoxItem>
@@ -37,8 +46,8 @@
         </Image>
       </DockPanel>
 
-      <DockPanel Grid.Column="2" Grid.Row="1" Margin="16">
-        <TextBlock DockPanel.Dock="Top" Classes="h3" Margin="0 8">Drawing</TextBlock>
+      <DockPanel>
+        <TextBlock Classes="h3">Drawing</TextBlock>
         <ComboBox Name="drawingStretch" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="DrawingStretchChanged">
           <ComboBoxItem>None</ComboBoxItem>
           <ComboBoxItem>Fill</ComboBoxItem>
@@ -62,7 +71,15 @@
           </Image.Source>
         </Image>
       </DockPanel>
-    </Grid>
+
+      <DockPanel>
+        <TextBlock Classes="h3">Win32 Icon (<Run Text="{Binding #IconSizeSlider.Value}"/>px)</TextBlock>
+        <Slider DockPanel.Dock="Top" Name="IconSizeSlider" Minimum="16" Maximum="256" Value="32" TickFrequency="16" IsSnapToTickEnabled="True"/>
+        <Image Name="iconImage" Source="/Assets/test_icon.ico" Width="{Binding #IconSizeSlider.Value}" Height="{Binding #IconSizeSlider.Value}" 
+               ZIndex="-1" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+      </DockPanel>
+      
+    </UniformGrid>
     
   </DockPanel>
 </UserControl>

@@ -117,7 +117,14 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(Stream stream)
         {
-            return new ImmutableBitmap(stream);
+            var codec = SKCodec.Create(stream);
+
+            return codec?.EncodedFormat switch
+            {
+                null => throw new ArgumentException("Unrecognised image format", nameof(stream)),
+                SKEncodedImageFormat.Ico => new IconBitmap(codec),
+                _ => new ImmutableBitmap(codec),
+            };
         }
 
         public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
@@ -198,7 +205,7 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin);

@@ -15,17 +15,12 @@ namespace Avalonia.Skia
         private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
 
-        /// <summary>
-        /// Create immutable bitmap from given stream.
-        /// </summary>
-        /// <param name="stream">Stream containing encoded data.</param>
-        public ImmutableBitmap(Stream stream)
+        public ImmutableBitmap(SKCodec codec)
         {
-            using (var skiaStream = new SKManagedStream(stream))
+            using (codec)
             {
-                using (var data = SKData.Create(skiaStream))
-                    _bitmap = SKBitmap.Decode(data);
-                
+                _bitmap = SKBitmap.Decode(codec);
+
                 if (_bitmap == null)
                     throw new ArgumentException("Unable to load bitmap from provided data");
 
@@ -77,7 +72,7 @@ namespace Avalonia.Skia
 
                 if (_bitmap == null)
                     throw new ArgumentException("Unable to load bitmap from provided data");
-                
+
                 // now scale that to the size that we want
                 var realScale = horizontal ? ((double)info.Height / info.Width) : ((double)info.Width / info.Height);
 
@@ -99,7 +94,7 @@ namespace Avalonia.Skia
                     _bitmap.Dispose();
                     _bitmap = scaledBmp;
                 }
-                
+
                 _bitmap.SetImmutable();
 
                 _image = SKImage.FromBitmap(_bitmap);
