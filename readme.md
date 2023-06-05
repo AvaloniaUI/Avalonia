@@ -1,7 +1,7 @@
 ![Star our repo to show support](https://user-images.githubusercontent.com/552074/235945895-1b896994-a0b6-4e7c-a522-c5688c4ec1b9.png)
 ![Header](https://github.com/AvaloniaUI/Avalonia/assets/12531229/daef336b-90e6-4620-8c80-abbcd28d5599)
 
-**[📖 Dettails](https://github.com/AvaloniaUI/Avalonia/discussions/11593)** 
+**[📖 Details](https://github.com/AvaloniaUI/Avalonia/discussions/11593)** 
 **[📖 Porting Guide](https://github.com/AvaloniaUI/Avalonia/wiki/Avalonia-11-Porting-Guide)**
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
