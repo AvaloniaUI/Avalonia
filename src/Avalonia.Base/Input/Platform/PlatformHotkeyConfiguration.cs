@@ -1,16 +1,20 @@
 using System.Collections.Generic;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
-    public class PlatformHotkeyConfiguration
+    /// <summary>
+    /// The PlatformHotkeyConfiguration class represents a configuration for platform-specific hotkeys in an Avalonia application. 
+    /// </summary>
+    public sealed class PlatformHotkeyConfiguration
     {
+        [PrivateApi]
         public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {
 
         }
 
+        [PrivateApi]
         public PlatformHotkeyConfiguration(KeyModifiers commandModifiers,
             KeyModifiers selectionModifiers = KeyModifiers.Shift,
             KeyModifiers wholeWordTextActionModifiers = KeyModifiers.Control)
@@ -85,6 +89,22 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.Left, KeyModifiers.Alt)
             };
+            PageLeft = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageUp, KeyModifiers.Shift)
+            };
+            PageRight = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageDown, KeyModifiers.Shift)
+            };
+            PageUp = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageUp)
+            };
+            PageDown = new List<KeyGesture>
+            {
+                new KeyGesture(Key.PageDown)
+            };
         }
 
         public KeyModifiers CommandModifiers { get; set; }
@@ -106,5 +126,9 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { get; set; }
         public List<KeyGesture> OpenContextMenu { get; set; }
         public List<KeyGesture> Back { get; set; }
+        public List<KeyGesture> PageUp { get; set; }
+        public List<KeyGesture> PageDown { get; set; }
+        public List<KeyGesture> PageRight { get; set; }
+        public List<KeyGesture> PageLeft { get; set; }
     }
 }

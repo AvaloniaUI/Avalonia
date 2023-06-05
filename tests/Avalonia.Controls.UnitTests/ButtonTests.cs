@@ -3,9 +3,11 @@ using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -14,7 +16,7 @@ using MouseButton = Avalonia.Input.MouseButton;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ButtonTests
+    public class ButtonTests : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
         
@@ -139,11 +141,19 @@ namespace Avalonia.Controls.UnitTests
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
-
-            var target = new TestButton(renderer.Object)
+            
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+            
+            var root = new Window() { HitTesterOverride = renderer.Object };
+            var target = new Button()
             {
-                Bounds = new Rect(0, 0, 100, 100)
+                Width = 100,
+                Height = 100,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left
             };
+            root.Content = target;
+            root.Show();
 
             bool clicked = false;
 
@@ -165,16 +175,13 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
-            var renderer = new Mock<IHitTester>();
-
-            renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
-                .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
-
-            var target = new TestButton(renderer.Object)
+            var root = new TestRoot();
+            var target = new Button()
             {
-                Bounds = new Rect(0, 0, 100, 100)
+                Width = 100,
+                Height = 100
             };
+            root.Child = target;
 
             bool clicked = false;
 
@@ -203,12 +210,20 @@ namespace Avalonia.Controls.UnitTests
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
                     new Visual[] { r } : new Visual[0]);
-
-            var target = new TestButton(renderer.Object)
+            
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+            
+            var root = new Window() { HitTesterOverride = renderer.Object };
+            var target = new Button()
             {
-                Bounds = new Rect(0, 0, 100, 100),
+                Width = 100,
+                Height = 100,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
                 RenderTransform = new TranslateTransform { X = 100, Y = 0 }
             };
+            root.Content = target;
+            root.Show();
 
             //actual bounds of button should  be 100,0,100,100 x -> translated 100 pixels
             //so mouse with x=150 coordinates should trigger click
@@ -379,37 +394,6 @@ namespace Avalonia.Controls.UnitTests
         private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
-        }
-
-        private class TestButton : Button, IRenderRoot
-        {
-            public TestButton(IHitTester hit)
-            {
-                IsVisible = true;
-                HitTester = hit;
-                Renderer = new NullRenderer();
-            }
-
-            public new Rect Bounds
-            {
-                get => base.Bounds;
-                set => base.Bounds = value;
-            }
-
-            public Size ClientSize => throw new NotImplementedException();
-
-            public IRenderer Renderer { get; }
-            public IHitTester HitTester { get; }
-
-            public double RenderScaling => throw new NotImplementedException();
-
-            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
-
-            public void Invalidate(Rect rect) => throw new NotImplementedException();
-
-            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
-
-            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
         private void RaisePointerPressed(Button button, int clickCount, MouseButton mouseButton, Point position)

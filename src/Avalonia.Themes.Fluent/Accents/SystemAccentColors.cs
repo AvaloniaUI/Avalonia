@@ -16,18 +16,12 @@ internal class SystemAccentColors : IResourceProvider
     public const string AccentLight2Key = "SystemAccentColorLight2";
     public const string AccentLight3Key = "SystemAccentColorLight3";
     
-    private static readonly Color s_defaultSystemAccentColor = Color.FromRgb(0, 120, 215); 
-    private readonly IPlatformSettings? _platformSettings;
+    private static readonly Color s_defaultSystemAccentColor = Color.FromRgb(0, 120, 215);
     private bool _invalidateColors = true;
     private Color _systemAccentColor;
     private Color _systemAccentColorDark1, _systemAccentColorDark2, _systemAccentColorDark3;
     private Color _systemAccentColorLight1, _systemAccentColorLight2, _systemAccentColorLight3;
 
-    public SystemAccentColors()
-    {
-        _platformSettings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-    }
-    
     public bool HasResources => true;
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
@@ -96,10 +90,12 @@ internal class SystemAccentColors : IResourceProvider
             Owner = owner;
             OwnerChanged?.Invoke(this, EventArgs.Empty);
 
-            if (_platformSettings is not null)
+            if (GetFromOwner(owner) is { } platformSettings)
             {
-                _platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
+                platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
             }
+
+            _invalidateColors = true;
         }
     }
 
@@ -110,10 +106,12 @@ internal class SystemAccentColors : IResourceProvider
             Owner = null;
             OwnerChanged?.Invoke(this, EventArgs.Empty);
             
-            if (_platformSettings is not null)
+            if (GetFromOwner(owner) is { } platformSettings)
             {
-                _platformSettings.ColorValuesChanged -= PlatformSettingsOnColorValuesChanged;
+                platformSettings.ColorValuesChanged -= PlatformSettingsOnColorValuesChanged;
             }
+
+            _invalidateColors = true;
         }
     }
 
@@ -122,13 +120,25 @@ internal class SystemAccentColors : IResourceProvider
         if (_invalidateColors)
         {
             _invalidateColors = false;
+
+            var platformSettings = GetFromOwner(Owner);
             
-            _systemAccentColor = _platformSettings?.GetColorValues().AccentColor1 ?? s_defaultSystemAccentColor;
+            _systemAccentColor = platformSettings?.GetColorValues().AccentColor1 ?? s_defaultSystemAccentColor;
             (_systemAccentColorDark1,_systemAccentColorDark2, _systemAccentColorDark3,
                     _systemAccentColorLight1, _systemAccentColorLight2, _systemAccentColorLight3) = CalculateAccentShades(_systemAccentColor);
         }
     }
 
+    private static IPlatformSettings? GetFromOwner(IResourceHost? owner)
+    {
+        return owner switch
+        {
+            Application app => app.PlatformSettings,
+            Visual visual => TopLevel.GetTopLevel(visual)?.PlatformSettings,
+            _ => null
+        };
+    }
+    
     public static (Color d1, Color d2, Color d3, Color l1, Color l2, Color l3) CalculateAccentShades(Color accentColor)
     {
         // dark1step = (hslAccent.L - SystemAccentColorDark1.L) * 255
