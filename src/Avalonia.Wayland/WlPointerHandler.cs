@@ -19,12 +19,12 @@ namespace Avalonia.Wayland
         private readonly ZwpPointerGesturePinchV1? _zwpPointerGesturePinch;
         private readonly ZwpPointerGestureSwipeV1? _zwpPointerGestureSwipe;
 
-        private WlWindow? _pointerWindow;
         private Point _pointerPosition;
-        private WlCursor? _currentCursor;
         private int _currentCursorImageIndex;
+        private WlCursor? _currentCursor;
         private IDisposable? _pointerTimer;
 
+        private WlWindow? _pointerWindow;
         private WlWindow? _pinchGestureWindow;
         private WlWindow? _swipeGestureWindow;
 
@@ -54,40 +54,37 @@ namespace Avalonia.Wayland
             _wlInputDevice.Serial = serial;
             PointerSurfaceSerial = serial;
             _pointerWindow = _platform.WlScreens.WindowFromSurface(surface);
+            _pointerPosition = new Point((double)surfaceX, (double)surfaceY);
             if (_pointerWindow?.InputRoot is null)
                 return;
-            _pointerPosition = new Point((double)surfaceX, (double)surfaceY);
             var args = new RawPointerEventArgs(MouseDevice, 0, _pointerWindow.InputRoot, RawPointerEventType.Move, _pointerPosition, _wlInputDevice.RawInputModifiers);
-            _pointerWindow.Input?.Invoke(args);
+            _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_pointerWindow, args));
         }
 
         public void OnLeave(WlPointer eventSender, uint serial, WlSurface surface)
         {
             var window = _platform.WlScreens.WindowFromSurface(surface);
-            if (window == _pointerWindow)
-                _pointerWindow = null;
-            if (window?.InputRoot is null)
-                return;
+            _pointerWindow = null;
             _currentCursor = null;
             PointerSurfaceSerial = serial;
+            if (window?.InputRoot is null)
+                return;
             var args = new RawPointerEventArgs(MouseDevice, 0, window.InputRoot, RawPointerEventType.LeaveWindow, _pointerPosition, _wlInputDevice.RawInputModifiers);
-            window.Input?.Invoke(args);
+            _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(window, args));
         }
 
         public void OnMotion(WlPointer eventSender, uint time, WlFixed surfaceX, WlFixed surfaceY)
         {
+            _pointerPosition = new Point((double)surfaceX, (double)surfaceY);
             if (_pointerWindow?.InputRoot is null)
                 return;
-            _pointerPosition = new Point((double)surfaceX, (double)surfaceY);
             var args = new RawPointerEventArgs(MouseDevice, time, _pointerWindow.InputRoot, RawPointerEventType.Move, _pointerPosition, _wlInputDevice.RawInputModifiers);
-            _pointerWindow.Input?.Invoke(args);
+            _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_pointerWindow, args));
         }
 
         public void OnButton(WlPointer eventSender, uint serial, uint time, uint button, WlPointer.ButtonStateEnum state)
         {
             _wlInputDevice.Serial = serial;
-            if (_pointerWindow?.InputRoot is null)
-                return;
             RawPointerEventType type;
             switch (button)
             {
@@ -140,8 +137,10 @@ namespace Avalonia.Wayland
                     return;
             }
 
+            if (_pointerWindow?.InputRoot is null)
+                return;
             var args = new RawPointerEventArgs(MouseDevice, time, _pointerWindow.InputRoot, type, _pointerPosition, _wlInputDevice.RawInputModifiers);
-            _pointerWindow.Input?.Invoke(args);
+            _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_pointerWindow, args));
         }
 
         public void OnAxis(WlPointer eventSender, uint time, WlPointer.AxisEnum axis, WlFixed value)
@@ -152,7 +151,7 @@ namespace Avalonia.Wayland
             var scrollValue = -(double)value * scrollFactor;
             var delta = axis == WlPointer.AxisEnum.HorizontalScroll ? new Vector(scrollValue, 0) : new Vector(0, scrollValue);
             var args = new RawMouseWheelEventArgs(MouseDevice, time, _pointerWindow.InputRoot, _pointerPosition, delta, _wlInputDevice.RawInputModifiers);
-            _pointerWindow.Input?.Invoke(args);
+            _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_pointerWindow, args));
         }
 
         public void OnFrame(WlPointer eventSender) { }
@@ -182,13 +181,16 @@ namespace Avalonia.Wayland
             if (deltaMagnify != Vector.Zero)
             {
                 var magnifyArgs = new RawPointerGestureEventArgs(MouseDevice, time, _pinchGestureWindow.InputRoot, RawPointerEventType.Magnify, _pointerPosition, deltaMagnify, _wlInputDevice.RawInputModifiers);
-                _pinchGestureWindow.Input?.Invoke(magnifyArgs);
+                _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_pinchGestureWindow, magnifyArgs));
             }
 
             var rad = Math.PI / 180 * (double)rotation * (double)scale;
             var deltaRotation = new Vector(Math.Cos(rad), Math.Sin(rad));
-            var rotateArgs = new RawPointerGestureEventArgs(MouseDevice, time, _pinchGestureWindow.InputRoot, RawPointerEventType.Rotate, _pointerPosition, deltaRotation, _wlInputDevice.RawInputModifiers);
-            _pinchGestureWindow.Input?.Invoke(rotateArgs);
+            if (deltaRotation != Vector.Zero)
+            {
+                var rotateArgs = new RawPointerGestureEventArgs(MouseDevice, time, _pinchGestureWindow.InputRoot, RawPointerEventType.Rotate, _pointerPosition, deltaRotation, _wlInputDevice.RawInputModifiers);
+                _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_pinchGestureWindow, rotateArgs));
+            }
         }
 
         public void OnEnd(ZwpPointerGesturePinchV1 eventSender, uint serial, uint time, int cancelled)
@@ -208,7 +210,7 @@ namespace Avalonia.Wayland
                 return;
             var deltaSwipe = new Vector((double)dx, (double)dy);
             var args = new RawPointerGestureEventArgs(MouseDevice, time, _swipeGestureWindow.InputRoot, RawPointerEventType.Swipe, _pointerPosition, deltaSwipe, _wlInputDevice.RawInputModifiers);
-            _swipeGestureWindow.Input?.Invoke(args);
+            _platform.WlRawEventGrouper.HandleEvent(new RawPointerEventArgsWithWindow(_swipeGestureWindow, args));
         }
 
         public void OnEnd(ZwpPointerGestureSwipeV1 eventSender, uint serial, uint time, int cancelled)

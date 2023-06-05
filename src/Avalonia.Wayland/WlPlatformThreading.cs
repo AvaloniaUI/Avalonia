@@ -38,9 +38,9 @@ namespace Avalonia.Wayland
 
         public long Now => _clock.ElapsedMilliseconds;
 
-        public bool CanQueryPendingInput => false;
+        public bool CanQueryPendingInput => true;
 
-        public bool HasPendingInput => false;
+        public bool HasPendingInput => _platform.WlRawEventGrouper.HasJobs;
 
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
 
@@ -76,6 +76,12 @@ namespace Avalonia.Wayland
                             _platform.WlDisplay.ReadEvents();
                         else
                             _platform.WlDisplay.CancelRead();
+                    }
+
+                    while (_platform.WlRawEventGrouper.HasJobs)
+                    {
+                        CheckSignaled();
+                        _platform.WlRawEventGrouper.DispatchNext();
                     }
 
                     CheckSignaled();

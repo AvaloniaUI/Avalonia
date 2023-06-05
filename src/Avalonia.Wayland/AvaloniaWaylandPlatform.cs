@@ -62,6 +62,7 @@ namespace Avalonia.Wayland
 
             WlScreens = new WlScreens(this);
             WlInputDevice = new WlInputDevice(this);
+            WlRawEventGrouper = new WlRawEventGrouper();
 
             WlDisplay.Roundtrip();
 
@@ -124,6 +125,8 @@ namespace Avalonia.Wayland
 
         internal WlInputDevice WlInputDevice { get; }
 
+        internal WlRawEventGrouper WlRawEventGrouper { get; }
+
         public IWindowImpl CreateWindow() => new WlToplevel(this);
 
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
@@ -146,6 +149,7 @@ namespace Avalonia.Wayland
             ZxdgExporter?.Dispose();
             ZwpPointerGestures?.Dispose();
             WlDataDeviceManager.Dispose();
+            WlRawEventGrouper.Dispose();
             WlInputDevice.Dispose();
             WlScreens.Dispose();
             WlSeat.Dispose();
