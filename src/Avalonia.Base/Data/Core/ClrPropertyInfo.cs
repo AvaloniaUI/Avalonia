@@ -60,7 +60,8 @@ namespace Avalonia.Data.Core
             var target = Expression.Parameter(typeof(object), "target");
             return Expression.Lambda<Func<object, object>>(
                     Expression.Convert(Expression.Call(Expression.Convert(target, info.DeclaringType!), info.GetMethod),
-                        typeof(object)))
+                        typeof(object)),
+                    target)
                 .Compile();
         }
 
