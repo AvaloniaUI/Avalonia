@@ -51,7 +51,7 @@ namespace Avalonia.Input
                 pointer.Capture(hit);
             }
 
-            var target = pointer.Captured ?? args.Root;
+            var target = pointer.Captured ?? args.InputHitTestResult ?? args.Root;
             var gestureTarget = pointer.CapturedGestureRecognizer?.Target;
             var updateKind = args.Type.ToUpdateKind();
             var keyModifier = args.InputModifiers.ToKeyModifiers();
