@@ -14,7 +14,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     private bool _signaled;
     private readonly object _lock = new();
     private readonly Stopwatch _clock = Stopwatch.StartNew();
-    private TimeSpan? _nextTimer; 
+    private long? _nextTimerMs; 
     private readonly Thread _loopThread = Thread.CurrentThread;
 
     public interface IManagedDispatcherInputProvider
@@ -45,9 +45,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     {
         lock (_lock)
         {
-            _nextTimer = dueTimeInMs == null
-                ? null
-                : TimeSpan.FromMilliseconds(dueTimeInMs.Value);
+            _nextTimerMs = dueTimeInMs;
             if (!CurrentThreadIsLoopThread)
                 _wakeup.Set();
         }
@@ -80,10 +78,10 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             bool fireTimer = false;
             lock (_lock)
             {
-                if (_nextTimer < _clock.Elapsed)
+                if (_nextTimerMs.HasValue && _nextTimerMs.Value < _clock.ElapsedMilliseconds)
                 {
                     fireTimer = true;
-                    _nextTimer = null;
+                    _nextTimerMs = null;
                 }
             }
 
@@ -99,18 +97,18 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
                 continue;
             }
 
-            TimeSpan? nextTimer;
+            long? nextTimer;
             lock (_lock)
             {
-                nextTimer = _nextTimer;
+                nextTimer = _nextTimerMs;
             }
 
             if (nextTimer != null)
             {
-                var waitFor = nextTimer.Value - _clock.Elapsed;
-                if (waitFor.TotalMilliseconds < 1)
+                long waitFor = nextTimer.Value - _clock.ElapsedMilliseconds;
+                if (waitFor < 1 || waitFor > int.MaxValue)
                     continue;
-                _wakeup.WaitOne(waitFor);
+                _wakeup.WaitOne((int)waitFor);
             }
             else
                 _wakeup.WaitOne();
