@@ -19,17 +19,17 @@ namespace Avalonia.LinuxFramebuffer.Output
             _fixedInfo = fixedInfo;
             _varInfo = varInfo;
             _targetAddress = targetAddress;
-            Address = Marshal.AllocHGlobal(RowBytes * Size.Height);
+            //Address = Marhal.AllocHGlobal(RowBytes * Size.Height);
         }
         
 
         public void Dispose()
         {
-            if (Address != IntPtr.Zero)
-            {
-                Marshal.FreeHGlobal(Address);
-                Address = IntPtr.Zero;
-            }
+            //if (Address != IntPtr.Zero)
+            //{
+            //    Marshal.FreeHGlobal(Address);
+            //    Address = IntPtr.Zero;
+            //}
         }
 
         public ILockedFramebuffer Lock(Vector dpi)
@@ -37,7 +37,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             Monitor.Enter(_lock);
             try
             {
-                return new LockedFramebuffer(Address,
+                return new LockedFramebuffer(_targetAddress,
                     new PixelSize((int)_varInfo.xres, (int)_varInfo.yres),
                     (int)_fixedInfo.line_length, dpi,
                     _varInfo.bits_per_pixel == 16 ? PixelFormat.Rgb565
@@ -63,7 +63,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
         }
 
-        public IntPtr Address { get; private set; }
+        //public IntPtr Address { get; private set; }
         public PixelSize Size => new PixelSize((int)_varInfo.xres, (int) _varInfo.yres);
         public int RowBytes => (int) _fixedInfo.line_length;
     }
