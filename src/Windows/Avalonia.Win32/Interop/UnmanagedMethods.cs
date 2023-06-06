@@ -1442,6 +1442,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
 
+        [DllImport("shell32", CharSet = CharSet.Auto)]
+        public static extern nint SHAppBarMessage(AppBarMessage dwMessage, ref APPBARDATA lpData);
+
         [DllImport("user32.dll", EntryPoint = "SetClassLongPtrW", ExactSpelling = true)]
         private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
 
@@ -2441,6 +2444,24 @@ namespace Avalonia.Win32.Interop
             public IntPtr SetActiveAlt;
             public IntPtr MarkFullscreenWindow;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct APPBARDATA
+        {
+            private static readonly int s_size = Marshal.SizeOf(typeof(APPBARDATA));
+
+            public int cbSize;
+            public nint hWnd;
+            public uint uCallbackMessage;
+            public uint uEdge;
+            public RECT rc;
+            public int lParam;
+
+            public APPBARDATA()
+            {
+                cbSize = s_size;
+            }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -2531,6 +2552,12 @@ namespace Avalonia.Win32.Interop
         DELETE = 0x00000002,
         SETFOCUS = 0x00000003,
         SETVERSION = 0x00000004
+    }
+
+    internal enum AppBarMessage : uint
+    {
+        ABM_GETSTATE = 0x00000004,
+        ABM_GETTASKBARPOS = 0x00000005,
     }
 
     [Flags]

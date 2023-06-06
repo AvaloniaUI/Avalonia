@@ -18,6 +18,8 @@ namespace Avalonia.Win32
         private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
+        private static nint s_taskBarMonitor;
+
         private bool _iconAdded;
         private IconImpl? _iconImpl;
         private bool _iconStale;
@@ -30,6 +32,8 @@ namespace Avalonia.Win32
 
         public TrayIconImpl()
         {
+            FindTaskBarMonitor();
+
             _exporter = new Win32NativeToManagedMenuExporter();
 
             _uniqueId = ++s_nextUniqueId;
@@ -52,6 +56,7 @@ namespace Avalonia.Win32
                     }
                     break;
                 case (uint)WindowsMessage.WM_DISPLAYCHANGE:
+                    FindTaskBarMonitor();
                     foreach (var tray in s_trayIcons.Values)
                     {
                         if (tray._iconAdded)
@@ -64,6 +69,7 @@ namespace Avalonia.Win32
                 default:
                     if (msg == WM_TASKBARCREATED)
                     {
+                        FindTaskBarMonitor();
                         foreach (var tray in s_trayIcons.Values)
                         {
                             if (tray._iconAdded)
@@ -98,15 +104,22 @@ namespace Avalonia.Win32
             UpdateIcon(!_iconAdded);
         }
 
+        private static void FindTaskBarMonitor()
+        {
+            var taskBarData = new APPBARDATA();
+            if (SHAppBarMessage(AppBarMessage.ABM_GETTASKBARPOS, ref taskBarData) != 0)
+            {
+                s_taskBarMonitor = MonitorFromPoint(new() { X = taskBarData.rc.left, Y = taskBarData.rc.top }, MONITOR.MONITOR_DEFAULTTOPRIMARY);
+            }
+        }
+
         private void UpdateIcon(bool remove = false)
         {
             Icon? newIcon = null;
             if (_iconStale && _iconImpl is not null)
             {
-                var primaryMonitor = MonitorFromPoint(default, MONITOR.MONITOR_DEFAULTTOPRIMARY); // tray icons are only ever shown on the primary monitor
-
                 var scaling = 1.0;
-                if ((HRESULT)GetDpiForMonitor(primaryMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out var dpiY) == HRESULT.S_OK)
+                if ((HRESULT)GetDpiForMonitor(s_taskBarMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out var dpiY) == HRESULT.S_OK)
                 {
                     Debug.Assert(dpiX == dpiY);
                     scaling = dpiX / 96.0;
