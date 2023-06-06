@@ -432,7 +432,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (currentTextRun == null)
             {
-                return 0;
+                return Start;
             }
 
             var directionalWidth = 0.0;
