@@ -48,7 +48,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         try
                         {
                             NativeUnsafeMethods.ioctl(_fb, FbIoCtl.FBIO_WAITFORVSYNC, null);
-                            NativeUnsafeMethods.memcpy(_targetAddress, Address, new IntPtr(RowBytes * Size.Height));
+                            //NativeUnsafeMethods.memcpy(_targetAddress, Address, new IntPtr(RowBytes * Size.Height));
                         }
                         finally
                         {
