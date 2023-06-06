@@ -640,14 +640,14 @@ namespace Avalonia.Media.TextFormatting
 
             bool TryMergeWithLastBounds(TextBounds currentBounds, TextBounds lastBounds)
             {
-                if(currentBounds.FlowDirection != lastBounds.FlowDirection)
+                if (currentBounds.FlowDirection != lastBounds.FlowDirection)
                 {
                     return false;
                 }
 
-                if(currentBounds.Rectangle.Left == lastBounds.Rectangle.Right)
+                if (currentBounds.Rectangle.Left == lastBounds.Rectangle.Right)
                 {
-                    foreach(var runBounds in currentBounds.TextRunBounds)
+                    foreach (var runBounds in currentBounds.TextRunBounds)
                     {
                         lastBounds.TextRunBounds.Add(runBounds);
                     }
@@ -657,7 +657,7 @@ namespace Avalonia.Media.TextFormatting
                     return true;
                 }
 
-                if(currentBounds.Rectangle.Right == lastBounds.Rectangle.Left)
+                if (currentBounds.Rectangle.Right == lastBounds.Rectangle.Left)
                 {
                     for (int i = 0; i < currentBounds.TextRunBounds.Count; i++)
                     {
@@ -730,7 +730,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (coveredLength > 0)
                 {
-                    if(lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
+                    if (lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
                     {
                         currentBounds = lastBounds;
 
@@ -739,7 +739,7 @@ namespace Avalonia.Media.TextFormatting
                     else
                     {
                         result.Add(currentBounds);
-                    } 
+                    }
 
                     lastBounds = currentBounds;
 
@@ -1002,14 +1002,14 @@ namespace Avalonia.Media.TextFormatting
 
         public void FinalizeLine()
         {
+            _indexedTextRuns = BidiReorderer.Instance.BidiReorder(_textRuns, _paragraphProperties.FlowDirection, FirstTextSourceIndex);
+
             _textLineMetrics = CreateLineMetrics();
 
             if (_textLineBreak is null && _textRuns.Length > 1 && _textRuns[_textRuns.Length - 1] is TextEndOfLine textEndOfLine)
             {
                 _textLineBreak = new TextLineBreak(textEndOfLine);
-            }
-
-            _indexedTextRuns = BidiReorderer.Instance.BidiReorder(_textRuns, _paragraphProperties.FlowDirection, FirstTextSourceIndex);
+            }      
         }
 
         /// <summary>
