@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
-using Avalonia.Utilities;
 using Xunit;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
