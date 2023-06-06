@@ -1115,7 +1115,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 bounds = textLine.GetTextBounds(0, 25);
 
-                Assert.Equal(5, bounds.Count);
+                Assert.Equal(4, bounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
             }
@@ -1140,9 +1140,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var bounds = textLine.GetTextBounds(0, text.Length);
 
-                Assert.Equal(5, bounds.Count);
+                Assert.Equal(4, bounds.Count);
 
-                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+                var right = bounds.Last().Rectangle.Right;
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, right);
             }
         }
 
