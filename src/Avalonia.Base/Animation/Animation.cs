@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
 using Avalonia.Data;
 using Avalonia.Metadata;
@@ -16,7 +13,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public sealed class Animation : AvaloniaObject, IAnimation
+    public sealed partial class Animation : AvaloniaObject, IAnimation
     {
         /// <summary>
         /// Defines the <see cref="Duration"/> property.
@@ -191,60 +188,6 @@ namespace Avalonia.Animation
             if (s_animators.TryGetValue(setter, out var type))
             {
                 return type;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value of the Animator attached property for a setter.
-        /// </summary>
-        /// <param name="setter">The animation setter.</param>
-        /// <param name="value">The property animator value.</param>
-        public static void SetAnimator(IAnimationSetter setter, CustomAnimatorBase value)
-        {
-            s_animators[setter] = (value.WrapperType, value.CreateWrapper);
-        }
-
-        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator, Func<IAnimator> Factory)> Animators = new()
-        {
-            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator), () => new BoolAnimator() ),
-            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator), () => new ByteAnimator() ),
-            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator), () => new Int16Animator() ),
-            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator), () => new Int32Animator() ),
-            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator), () => new Int64Animator() ),
-            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator), () => new UInt16Animator() ),
-            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator), () => new UInt32Animator() ),
-            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator), () => new UInt64Animator() ),
-            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator), () => new FloatAnimator() ),
-            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator), () => new DoubleAnimator() ),
-            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator), () => new DecimalAnimator() ),
-        };
-
-        /// <summary>
-        /// Registers a <see cref="Animator{T}"/> that can handle
-        /// a value type that matches the specified condition.
-        /// </summary>
-        /// <param name="condition">
-        /// The condition to which the <see cref="Animator{T}"/>
-        /// is to be activated and used.
-        /// </param>
-        /// <typeparam name="TAnimator">
-        /// The type of the animator to instantiate.
-        /// </typeparam>
-        internal static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
-            where TAnimator : IAnimator, new()
-        {
-            Animators.Insert(0, (condition, typeof(TAnimator), () => new TAnimator()));
-        }
-
-        private static (Type Type, Func<IAnimator> Factory)? GetAnimatorType(AvaloniaProperty property)
-        {
-            foreach (var (condition, type, factory) in Animators)
-            {
-                if (condition(property))
-                {
-                    return (type, factory);
-                }
             }
             return null;
         }
