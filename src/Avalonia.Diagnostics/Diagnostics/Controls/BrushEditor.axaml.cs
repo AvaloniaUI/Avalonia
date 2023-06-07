@@ -14,12 +14,11 @@ namespace Avalonia.Diagnostics.Controls
     partial class BrushEditor : TemplatedControl
     {
         private readonly EventHandler<RoutedEventArgs> clearHandler;
-        private Button? _cleraButton = default;
+        private Button? _clearButton = default;
         private readonly ColorView _colorView = new()
         {
             HexInputAlphaPosition = AlphaComponentPosition.Leading, // Always match XAML
         };
-
 
         public BrushEditor()
         {
@@ -33,12 +32,12 @@ namespace Avalonia.Diagnostics.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            if (_cleraButton is not null)
+            if (_clearButton is not null)
             {
-                _cleraButton.Click -= clearHandler;
+                _clearButton.Click -= clearHandler;
             }
-            _cleraButton = e.NameScope.Find<Button>("PART_ClearButton");
-            if (_cleraButton is Button button)
+            _clearButton = e.NameScope.Find<Button>("PART_ClearButton");
+            if (_clearButton is Button button)
             {
                 button.Click += clearHandler;
             }
