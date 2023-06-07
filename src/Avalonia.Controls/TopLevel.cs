@@ -46,7 +46,7 @@ namespace Avalonia.Controls
         IStyleHost,
         ILogicalRoot,
         ITextInputMethodRoot,
-        IScreenSizeProvider
+        IMediaProviderHost
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -129,6 +129,7 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
+        private IMediaProvider? _mediaProvider;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
         
         /// <summary>
@@ -478,6 +479,13 @@ namespace Avalonia.Controls
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
             ?? new NoopStorageProvider();
+        
+        /// <summary>
+        /// Media service for querying screen size and device capabilities.
+        /// </summary>
+        public IMediaProvider MediaProvider => _mediaProvider
+            ??= PlatformImpl?.TryGetFeature<IMediaProvider>()
+            ?? new VisualMediaProvider(this);
 
         public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
 
@@ -563,16 +571,6 @@ namespace Avalonia.Controls
             {
                 var newThemeVariant = change.GetNewValue<ThemeVariant?>() ?? ThemeVariant.Default;
                 PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)newThemeVariant ?? PlatformThemeVariant.Light);
-            }
-            else if (change.Property == BoundsProperty)
-            {
-                var oldValue = change.GetOldValue<Rect>();
-                var newValue = change.GetNewValue<Rect>();
-
-                if (oldValue.Size != newValue.Size)
-                {
-                    ScreenSizeChanged?.Invoke(this, EventArgs.Empty);
-                }
             }
         }
         
@@ -833,17 +831,5 @@ namespace Avalonia.Controls
                 _layoutManager.LayoutPassTimed = null;
             }
         }
-
-        public double GetScreenWidth()
-        {
-            return Bounds.Size.Width;
-        }
-
-        public double GetScreenHeight()
-        {
-            return Bounds.Size.Height;
-        }
-
-        public event EventHandler? ScreenSizeChanged;
     }
 }

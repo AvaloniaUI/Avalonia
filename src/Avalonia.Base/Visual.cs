@@ -11,6 +11,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -29,7 +30,7 @@ namespace Avalonia
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     [UsableDuringInitialization]
-    public class Visual : StyledElement, ITopLevelScreenSizeProvider
+    public class Visual : StyledElement
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -513,8 +514,6 @@ namespace Avalonia
                     child.OnAttachedToVisualTreeCore(e);
                 }
             }
-            
-            ScreenSizeProviderChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private protected virtual CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
@@ -798,12 +797,5 @@ namespace Avalonia
 
             HasMirrorTransform = shouldApplyMirrorTransform;
         }
-        
-        public IScreenSizeProvider? GetScreenSizeProvider()
-        {
-            return VisualRoot as IScreenSizeProvider;
-        }
-
-        public event EventHandler? ScreenSizeProviderChanged;
     }
 }

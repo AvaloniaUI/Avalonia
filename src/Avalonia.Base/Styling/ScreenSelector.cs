@@ -1,5 +1,6 @@
 using System;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling;
@@ -12,25 +13,25 @@ internal sealed class MinWidthMediaSelector : MediaSelector<double>
 
     private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
-        if (!(control is ITopLevelScreenSizeProvider logical))
+        if (!(control is Visual visual))
         {
             return SelectorMatch.NeverThisType;
         }
 
         if (subscribe)
         {
-            return new SelectorMatch(new MinWidthActivator(logical, Argument));
+            return new SelectorMatch(new MinWidthActivator(visual, Argument));
         }
 
-        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
         {
-            return Evaluate(screenSizeProvider, Argument);
+            return Evaluate(mediaProvider, Argument);
         }
 
         return SelectorMatch.NeverThisInstance;
     }
 
-    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
     {
         return screenSizeProvider.GetScreenWidth() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
@@ -51,25 +52,25 @@ public sealed class MaxWidthMediaSelector : MediaSelector<double>
     
     private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
-        if (!(control is ITopLevelScreenSizeProvider logical))
+        if (!(control is Visual visual))
         {
             return SelectorMatch.NeverThisType;
         }
 
         if (subscribe)
         {
-            return new SelectorMatch(new MaxWidthActivator(logical, Argument));
+            return new SelectorMatch(new MaxWidthActivator(visual, Argument));
         }
 
-        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
         {
-            return Evaluate(screenSizeProvider, Argument);
+            return Evaluate(mediaProvider, Argument);
         }
-            
+
         return SelectorMatch.NeverThisInstance;
     }
 
-    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
     {
         return screenSizeProvider.GetScreenWidth() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
@@ -90,25 +91,25 @@ public sealed class MinHeightMediaSelector : MediaSelector<double>
     
     private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
-        if (!(control is ITopLevelScreenSizeProvider logical))
+        if (!(control is Visual visual))
         {
             return SelectorMatch.NeverThisType;
         }
 
         if (subscribe)
         {
-            return new SelectorMatch(new MinHeightActivator(logical, Argument));
+            return new SelectorMatch(new MinHeightActivator(visual, Argument));
         }
 
-        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
         {
-            return Evaluate(screenSizeProvider, Argument);
+            return Evaluate(mediaProvider, Argument);
         }
             
         return SelectorMatch.NeverThisInstance;
     }
 
-    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
     {
         return screenSizeProvider.GetScreenHeight() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
@@ -129,25 +130,25 @@ public sealed class MaxHeightMediaSelector : MediaSelector<double>
     
     private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
-        if (!(control is ITopLevelScreenSizeProvider logical))
+        if (!(control is Visual visual))
         {
             return SelectorMatch.NeverThisType;
         }
 
         if (subscribe)
         {
-            return new SelectorMatch(new MaxHeightActivator(logical, Argument));
+            return new SelectorMatch(new MaxHeightActivator(visual, Argument));
         }
 
-        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
         {
-            return Evaluate(screenSizeProvider, Argument);
+            return Evaluate(mediaProvider, Argument);
         }
-            
+
         return SelectorMatch.NeverThisInstance;
     }
 
-    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
     {
         return screenSizeProvider.GetScreenHeight() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
