@@ -103,7 +103,7 @@ namespace Avalonia.Diagnostics.Controls
         }
 
         /// <summary>
-        /// <see cref="https://stackoverflow.com/questions/6763032/how-to-pick-a-background-color-depending-on-font-color-to-have-proper-contrast">How to pick a background color depending on font color to have proper contrast</see>/>
+        /// Get Contrasted Text Color
         /// </summary>
         /// <param name="brush"></param>
         /// <returns></returns>
@@ -112,16 +112,7 @@ namespace Avalonia.Diagnostics.Controls
             if (brush is ISolidColorBrush solid)
             {
                 var color = solid.Color;
-
-
-                double R = color.R / 255.0;
-                double G = color.G / 255.0;
-                double B = color.B / 255.0;
-
-                R = Math.Pow((R + 0.055) / 1.055, 2.4);
-                G = Math.Pow((G + 0.055) / 1.055, 2.4);
-                B = Math.Pow((B + 0.055) / 1.055, 2.4);
-                var l = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+                var l = ColorHelper.GetRelativeLuminance(color);
 
                 return l < 0.5 ? Brushes.White : Brushes.Black;
             }
