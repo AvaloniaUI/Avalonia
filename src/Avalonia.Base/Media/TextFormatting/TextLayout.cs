@@ -128,7 +128,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets the text spacing.
         /// </summary>
-        public double LetterSpacing  => _paragraphProperties.LetterSpacing;
+        public double LetterSpacing => _paragraphProperties.LetterSpacing;
 
         /// <summary>
         /// Gets the text lines.
@@ -271,11 +271,13 @@ namespace Avalonia.Media.TextFormatting
 
             var currentY = 0.0;
 
-            foreach (var textLine in _textLines)
+            for (var i = 0; i < _textLines.Length; i++)
             {
+                var textLine = _textLines[i];
+
                 var end = textLine.FirstTextSourceIndex + textLine.Length;
 
-                if (end <= textPosition && end < _textSourceLength)
+                if (end <= textPosition && i + 1 < _textLines.Length)
                 {
                     currentY += textLine.Height;
 
@@ -511,7 +513,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
 
-                UpdateMetrics(textLine, ref lineStartOfLongestLine, ref origin, ref first, 
+                UpdateMetrics(textLine, ref lineStartOfLongestLine, ref origin, ref first,
                     ref accBlackBoxLeft, ref accBlackBoxTop, ref accBlackBoxRight, ref accBlackBoxBottom);
 
                 return new TextLine[] { textLine };
@@ -638,13 +640,13 @@ namespace Avalonia.Media.TextFormatting
         }
 
         private void UpdateMetrics(
-            TextLine currentLine, 
-            ref double lineStartOfLongestLine, 
-            ref Point origin, 
-            ref bool first, 
+            TextLine currentLine,
+            ref double lineStartOfLongestLine,
+            ref Point origin,
+            ref bool first,
             ref double accBlackBoxLeft,
-            ref double accBlackBoxTop, 
-            ref double accBlackBoxRight, 
+            ref double accBlackBoxTop,
+            ref double accBlackBoxRight,
             ref double accBlackBoxBottom)
         {
             var blackBoxLeft = origin.X + currentLine.Start + currentLine.OverhangLeading;
