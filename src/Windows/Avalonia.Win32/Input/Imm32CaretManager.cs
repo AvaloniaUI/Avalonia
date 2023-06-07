@@ -7,14 +7,11 @@ namespace Avalonia.Win32.Input
     {
         private bool _isCaretCreated;
 
-        public void TryCreate(int _langId, IntPtr hwnd)
+        public void TryCreate(IntPtr hwnd)
         {
             if (!_isCaretCreated)
             {
-                if (_langId == LANG_ZH || _langId == LANG_JA)
-                {
-                    _isCaretCreated = CreateCaret(hwnd, IntPtr.Zero, 2, 10);
-                }
+                _isCaretCreated = CreateCaret(hwnd, IntPtr.Zero, 2, 2);               
             }
         }
 
@@ -31,6 +28,7 @@ namespace Avalonia.Win32.Input
             if (_isCaretCreated)
             {
                 DestroyCaret();
+
                 _isCaretCreated = false;
             }
         }

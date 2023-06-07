@@ -152,7 +152,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.IsType<StreamNode>(result[1]);
         }
 
-        private void AssertIsProperty(ExpressionNode node, string name)
+        private static void AssertIsProperty(ExpressionNode node, string name)
         {
             Assert.IsType<PropertyAccessorNode>(node);
 
@@ -160,7 +160,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Equal(name, p.PropertyName);
         }
 
-        private void AssertIsIndexer(ExpressionNode node, params string[] args)
+        private static void AssertIsIndexer(ExpressionNode node, params string[] args)
         {
             Assert.IsType<StringIndexerNode>(node);
 
@@ -168,7 +168,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Equal(e.Arguments.ToArray(), args);
         }
 
-        private List<ExpressionNode> ToList((ExpressionNode node, SourceMode mode) parsed)
+        private static List<ExpressionNode> ToList((ExpressionNode node, SourceMode mode) parsed)
         {
             var (node, _) = parsed;
             var result = new List<ExpressionNode>();

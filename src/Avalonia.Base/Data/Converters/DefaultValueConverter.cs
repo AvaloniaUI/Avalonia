@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Input;
 using Avalonia.Utilities;
@@ -9,6 +10,7 @@ namespace Avalonia.Data.Converters
     /// Provides a default set of value conversions for bindings that do not specify a value
     /// converter.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
     public class DefaultValueConverter : IValueConverter
     {
         /// <summary>
@@ -28,12 +30,19 @@ namespace Avalonia.Data.Converters
         {
             if (value == null)
             {
-                return targetType.IsValueType ? AvaloniaProperty.UnsetValue : null;
+                return null;
             }
 
             if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
-                return new MethodToCommandConverter(d);
+                if (d.Method.IsPrivate == false)
+                {
+                    return new MethodToCommandConverter(d);
+                }
+                else
+                {
+                    return new BindingNotification(new InvalidCastException("You can't bind to private methods!"), BindingErrorType.Error);
+                }
             }
 
             if (TypeUtilities.TryConvert(targetType, value, culture, out var result))

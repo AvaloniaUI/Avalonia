@@ -2,25 +2,28 @@ using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers.Nodes;
 using Avalonia.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Markup.Parsers
 {
+    /// <summary>
+    /// Parser for composition expressions
+    /// </summary>
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
-        private readonly Func<string, string, Type>? _typeResolver;
+        private readonly Func<string?, string, Type>? _typeResolver;
         private readonly INameScope? _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type>? typeResolver, INameScope? nameScope)
+        public ExpressionParser(bool enableValidation, Func<string?, string, Type>? typeResolver, INameScope? nameScope)
         {
             _typeResolver = typeResolver;
             _nameScope = nameScope;
             _enableValidation = enableValidation;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
             ExpressionNode? rootNode = null;
@@ -32,13 +35,13 @@ namespace Avalonia.Markup.Parsers
                 ExpressionNode? nextNode = null;
                 switch (astNode)
                 {
-                    case BindingExpressionGrammar.EmptyExpressionNode _:
+                    case BindingExpressionGrammar.EmptyExpressionNode:
                         nextNode = new EmptyExpressionNode();
                         break;
-                    case BindingExpressionGrammar.NotNode _:
+                    case BindingExpressionGrammar.NotNode:
                         nextNode = new LogicalNotNode();
                         break;
-                    case BindingExpressionGrammar.StreamNode _:
+                    case BindingExpressionGrammar.StreamNode:
                         nextNode = new StreamNode();
                         break;
                     case BindingExpressionGrammar.PropertyNameNode propName:
@@ -50,7 +53,7 @@ namespace Avalonia.Markup.Parsers
                     case BindingExpressionGrammar.AttachedPropertyNameNode attachedProp:
                         nextNode = ParseAttachedProperty(attachedProp);
                         break;
-                    case BindingExpressionGrammar.SelfNode _:
+                    case BindingExpressionGrammar.SelfNode:
                         nextNode = new SelfNode();
                         break;
                     case BindingExpressionGrammar.AncestorNode ancestor:
@@ -85,7 +88,7 @@ namespace Avalonia.Markup.Parsers
             Type? ancestorType = null;
             var ancestorLevel = node.Level;
 
-            if (!(node.Namespace is null) && !(node.TypeName is null))
+            if (!string.IsNullOrEmpty(node.TypeName))
             {
                 if (_typeResolver == null)
                 {
@@ -101,7 +104,7 @@ namespace Avalonia.Markup.Parsers
         private TypeCastNode ParseTypeCastNode(BindingExpressionGrammar.TypeCastNode node)
         {
             Type? castType = null;
-            if (!(node.Namespace is null) && !(node.TypeName is null))
+            if (!string.IsNullOrEmpty(node.TypeName))
             {
                 if (_typeResolver == null)
                 {

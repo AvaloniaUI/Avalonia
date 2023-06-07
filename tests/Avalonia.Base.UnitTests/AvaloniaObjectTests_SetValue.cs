@@ -18,6 +18,21 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void ClearValue_Resets_Value_To_Style_value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "style", BindingPriority.Style);
+            target.SetValue(Class1.FooProperty, "local");
+
+            Assert.Equal("local", target.GetValue(Class1.FooProperty));
+
+            target.ClearValue(Class1.FooProperty);
+
+            Assert.Equal("style", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
         public void ClearValue_Raises_PropertyChanged()
         {
             Class1 target = new Class1();
@@ -212,7 +227,7 @@ namespace Avalonia.Base.UnitTests
         {
             Class2 target = new Class2();
 
-            target.SetValue((AvaloniaProperty)Class2.FlobProperty, new ImplictDouble(4));
+            target.SetValue((AvaloniaProperty)Class2.FlobProperty, new ImplicitDouble(4));
 
             var value = target.GetValue(Class2.FlobProperty);
             Assert.IsType<double>(value);
@@ -236,7 +251,7 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "one", BindingPriority.TemplatedParent);
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.Template);
             Assert.Equal("one", target.GetValue(Class1.FooProperty));
             target.SetValue(Class1.FooProperty, "two", BindingPriority.Style);
             Assert.Equal("one", target.GetValue(Class1.FooProperty));
@@ -378,16 +393,16 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaProperty.RegisterAttached<AttachedOwner, Class2, string>("Attached");
         }
 
-        private class ImplictDouble
+        private class ImplicitDouble
         {
-            public ImplictDouble(double value)
+            public ImplicitDouble(double value)
             {
                 Value = value;
             }
 
             public double Value { get; }
 
-            public static implicit operator double (ImplictDouble v)
+            public static implicit operator double (ImplicitDouble v)
             {
                 return v.Value;
             }

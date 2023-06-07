@@ -1,7 +1,9 @@
-﻿using Avalonia.Platform;
+﻿using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Platform.Surfaces
 {
+    [Unstable]
     public interface IFramebufferPlatformSurface
     {
         /// <summary>

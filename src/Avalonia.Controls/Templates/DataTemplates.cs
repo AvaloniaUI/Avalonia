@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Collections;
 
 namespace Avalonia.Controls.Templates
@@ -13,6 +14,22 @@ namespace Avalonia.Controls.Templates
         public DataTemplates()
         {
             ResetBehavior = ResetBehavior.Remove;
+            
+            Validate += ValidateDataTemplate;
+        }
+
+        private static void ValidateDataTemplate(IDataTemplate template)
+        {
+            var valid = template switch
+            {
+                ITypedDataTemplate typed => typed.DataType is not null,
+                _ => true
+            };
+            
+            if (!valid)
+            {
+                throw new InvalidOperationException("DataTemplate inside of DataTemplates must have a DataType set. Set DataType property or use ItemTemplate with single template instead.");
+            }
         }
     }
 }

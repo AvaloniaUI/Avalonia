@@ -8,7 +8,7 @@ namespace Avalonia.Utilities
 #if !BUILDTASK
     public
 #endif
-    struct StringTokenizer : IDisposable
+    record struct StringTokenizer : IDisposable
     {
         private const char DefaultSeparatorChar = ',';
 
@@ -63,7 +63,7 @@ namespace Avalonia.Utilities
             }
             else
             {
-                result = default(Int32);
+                result = default;
                 return false;
             }
         }
@@ -87,7 +87,7 @@ namespace Avalonia.Utilities
             }
             else
             {
-                result = default(double);
+                result = default;
                 return false;
             }
         }

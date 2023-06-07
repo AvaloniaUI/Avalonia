@@ -1,15 +1,9 @@
-using System;
-using System.Diagnostics;
-using System.Drawing.Drawing2D;
-using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
-using Avalonia.Threading;
-using Avalonia.Visuals.Media.Imaging;
 
 namespace RenderDemo.Pages
 {
@@ -43,11 +37,8 @@ namespace RenderDemo.Pages
 
         public override void Render(DrawingContext context)
         {
-            using (var ctxi = _bitmap.CreateDrawingContext(null))
-            using (var bitmapCtx = new DrawingContext(ctxi, false))
+            using (var bitmapCtx = _bitmap.CreateDrawingContext())
             {
-                ctxi.Clear(default);
-
                 var basePath = new PathGeometry();
 
                 using (var basePathCtx = basePath.Open())
@@ -62,15 +53,15 @@ namespace RenderDemo.Pages
                 bitmapCtx.DrawGeometry(null, strokePen, basePath);
 
 
-                var length = basePath.PlatformImpl.ContourLength;
+                var length = basePath.ContourLength;
 
-                if (basePath.PlatformImpl.TryGetSegment(length * 0.05, length * 0.2, true, out var dst1))
+                if (basePath.TryGetSegment(length * 0.05, length * 0.2, true, out var dst1))
                     bitmapCtx.DrawGeometry(null, strokePen1, dst1);
 
-                if (basePath.PlatformImpl.TryGetSegment(length * 0.2, length * 0.8, true, out var dst2))
+                if (basePath.TryGetSegment(length * 0.2, length * 0.8, true, out var dst2))
                     bitmapCtx.DrawGeometry(null, strokePen2, dst2);
 
-                if (basePath.PlatformImpl.TryGetSegment(length * 0.8, length * 0.95, true, out var dst3))
+                if (basePath.TryGetSegment(length * 0.8, length * 0.95, true, out var dst3))
                     bitmapCtx.DrawGeometry(null, strokePen3, dst3);
                 
                 var pathBounds = basePath.GetRenderBounds(strokePen);

@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -8,12 +9,12 @@ namespace Avalonia.Native
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
+        private readonly AvaloniaNativeGlPlatformGraphics _glFeature;
         private readonly IWindowBaseImpl _parent;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature,
+            AvaloniaNativeGlPlatformGraphics glFeature,
             IWindowBaseImpl parent) : base(factory, opts, glFeature)
         {
             _opts = opts;
@@ -21,8 +22,7 @@ namespace Avalonia.Native
             _parent = parent;
             using (var e = new PopupEvents(this))
             {
-                var context = _opts.UseGpu ? glFeature?.MainContext : null;
-                Init(factory.CreatePopup(e, context?.Context), factory.CreateScreens(), context);
+                Init(factory.CreatePopup(e, _glFeature.SharedContext.Context), factory.CreateScreens());
             }
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
@@ -30,7 +30,7 @@ namespace Avalonia.Native
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Position = position;
-            Resize(size, PlatformResizeReason.Layout);
+            Resize(size, WindowResizeReason.Layout);
             //TODO: We ignore the scaling override for now
         }
 

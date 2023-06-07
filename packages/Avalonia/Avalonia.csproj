@@ -5,12 +5,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+      <PackageReference Include="Avalonia.BuildServices" Version="0.0.19" />
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
-      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" >
+      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj">
         <PrivateAssets>all</PrivateAssets>
         <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
         <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
       </ProjectReference>
+      <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj"
+                        ReferenceOutputAssembly="false"
+                        PrivateAssets="all"
+                        OutputItemType="Analyzer" />
+      <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers\Avalonia.Analyzers.csproj"
+                        ReferenceOutputAssembly="false"
+                        PrivateAssets="all"
+                        OutputItemType="Analyzer" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -39,6 +48,10 @@
        <Pack>true</Pack>
        <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
+    <Content Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.props">
+      <Pack>true</Pack>
+      <PackagePath>build\;buildTransitive\</PackagePath>
+    </Content>
     <Content Include="*.targets">
       <Pack>true</Pack>
       <PackagePath>build\;buildTransitive\</PackagePath>
@@ -52,4 +65,20 @@
   <Import Project="..\..\build\NetFX.props" />
   <Import Project="..\..\build\CoreLibraries.props" />
   <Import Project="..\..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
+
+  <Target Name="WriteCurrentPackageVersionProps" BeforeTargets="_GetPackageFiles">
+    <PropertyGroup>
+      <PackageVersionPropsPath>$(IntermediateOutputPath)/AvaloniaVersion.props</PackageVersionPropsPath>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(PackageVersionPropsPath)"
+      Overwrite="true"
+      Lines="&lt;Project&gt;&lt;PropertyGroup&gt;&lt;AvaloniaMainPackageVersion&gt;$(PackageVersion)&lt;/AvaloniaMainPackageVersion&gt;&lt;/PropertyGroup&gt;&lt;/Project&gt;" />
+    <ItemGroup>
+      <Content Include="$(PackageVersionPropsPath)">
+        <Pack>true</Pack>
+        <PackagePath>build</PackagePath>
+      </Content>
+    </ItemGroup>
+  </Target>
 </Project>

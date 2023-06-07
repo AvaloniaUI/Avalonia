@@ -20,7 +20,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         [Fact]
         public async Task Polyline_1px_Stroke()
         {
-            var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
+            var polylinePoints = new Points { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
                 new Point(9, 1), new Point(10, 0), new Point(15, 0) };
 
             Decorator target = new Decorator
@@ -44,7 +44,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         [Fact]
         public async Task Polyline_10px_Stroke_PenLineJoin()
         {
-            var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
+            var polylinePoints = new Points { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
                 new Point(9, 1), new Point(10, 0), new Point(15, 0) };
 
             Decorator target = new Decorator

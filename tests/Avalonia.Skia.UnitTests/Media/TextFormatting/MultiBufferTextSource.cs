@@ -1,6 +1,4 @@
-﻿using System;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Utilities;
+﻿using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
@@ -29,8 +27,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             var runText = _runTexts[index];
 
-            return new TextCharacters(
-                new ReadOnlySlice<char>(runText.AsMemory(), textSourceIndex, runText.Length), _defaultStyle);
+            return new TextCharacters(runText, _defaultStyle);
         }
     }
 }

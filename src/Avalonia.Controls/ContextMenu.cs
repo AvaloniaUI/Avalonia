@@ -4,7 +4,6 @@ using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using System.Linq;
 using Avalonia.Controls.Diagnostics;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -15,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -54,16 +54,24 @@ namespace Avalonia.Controls
             Popup.PlacementGravityProperty.AddOwner<ContextMenu>();
 
         /// <summary>
+        /// Defines the <see cref="Placement"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep PlacementModeProperty for backward compatibility.")]
+        public static readonly StyledProperty<PlacementMode> PlacementProperty =
+            Popup.PlacementProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
-            Popup.PlacementModeProperty.AddOwner<ContextMenu>();
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
-            AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
+            Popup.PlacementRectProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
@@ -77,8 +85,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
@@ -107,99 +115,80 @@ namespace Avalonia.Controls
         static ContextMenu()
         {
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
-            PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
+            PlacementProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
-        /// <summary>
-        /// Gets or sets the Horizontal offset of the context menu in relation to the <see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.HorizontalOffset"/>
         public double HorizontalOffset
         {
-            get { return GetValue(HorizontalOffsetProperty); }
-            set { SetValue(HorizontalOffsetProperty, value); }
+            get => GetValue(HorizontalOffsetProperty);
+            set => SetValue(HorizontalOffsetProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the Vertical offset of the context menu in relation to the <see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.VerticalOffset"/>
         public double VerticalOffset
         {
-            get { return GetValue(VerticalOffsetProperty); }
-            set { SetValue(VerticalOffsetProperty, value); }
+            get => GetValue(VerticalOffsetProperty);
+            set => SetValue(VerticalOffsetProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
-        /// is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementAnchor"/>
         public PopupAnchor PlacementAnchor
         {
-            get { return GetValue(PlacementAnchorProperty); }
-            set { SetValue(PlacementAnchorProperty, value); }
+            get => GetValue(PlacementAnchorProperty);
+            set => SetValue(PlacementAnchorProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value describing how the context menu position will be adjusted if the
-        /// unadjusted position would result in the context menu being partly constrained.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementConstraintAdjustment"/>
         public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
         {
-            get { return GetValue(PlacementConstraintAdjustmentProperty); }
-            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+            get => GetValue(PlacementConstraintAdjustmentProperty);
+            set => SetValue(PlacementConstraintAdjustmentProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value which defines in what direction the context menu should open
-        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementGravity"/>
         public PopupGravity PlacementGravity
         {
-            get { return GetValue(PlacementGravityProperty); }
-            set { SetValue(PlacementGravityProperty, value); }
+            get => GetValue(PlacementGravityProperty);
+            set => SetValue(PlacementGravityProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the placement mode of the context menu in relation to the<see cref="PlacementTarget"/>.
-        /// </summary>
+        /// <inheritdoc cref="Placement"/>
+        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public PlacementMode PlacementMode
         {
-            get { return GetValue(PlacementModeProperty); }
-            set { SetValue(PlacementModeProperty, value); }
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
+        }
+
+        /// <inheritdoc cref="Popup.Placement"/>
+        public PlacementMode Placement
+        {
+            get => GetValue(PlacementProperty);
+            set => SetValue(PlacementProperty, value);
         }
 
         public bool WindowManagerAddShadowHint
         {
-            get { return GetValue(WindowManagerAddShadowHintProperty); }
-            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
-        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
-        /// </summary>
-        /// <remarks>
-        /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
-        /// which the popup will be opened, with <see cref="PlacementAnchor"/> determining which edge
-        /// of the placement target is used.
-        /// 
-        /// If unset, the anchor rectangle will be the bounds of the <see cref="PlacementTarget"/>.
-        /// </remarks>
+        /// <inheritdoc cref="Popup.PlacementRect"/>
         public Rect? PlacementRect
         {
-            get { return GetValue(PlacementRectProperty); }
-            set { SetValue(PlacementRectProperty, value); }
+            get => GetValue(PlacementRectProperty);
+            set => SetValue(PlacementRectProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the control that is used to determine the popup's position.
-        /// </summary>
+        /// <inheritdoc cref="Popup.PlacementTarget"/>
         public Control? PlacementTarget
         {
-            get { return GetValue(PlacementTargetProperty); }
-            set { SetValue(PlacementTargetProperty, value); }
+            get => GetValue(PlacementTargetProperty);
+            set => SetValue(PlacementTargetProperty, value);
         }
 
         /// <summary>
@@ -207,14 +196,14 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from false to true.
         /// </summary>
-        public event CancelEventHandler? ContextMenuOpening;
+        public event CancelEventHandler? Opening;
 
         /// <summary>
         /// Occurs when the value of the
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from true to false.
         /// </summary>
-        public event CancelEventHandler? ContextMenuClosing;
+        public event CancelEventHandler? Closing;
 
         /// <summary>
         /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
@@ -241,13 +230,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == WindowManagerAddShadowHintProperty && _popup != null)
             {
-                _popup.WindowManagerAddShadowHint = change.NewValue.GetValueOrDefault<bool>();
+                _popup.WindowManagerAddShadowHint = change.GetNewValue<bool>();
             }
         }
 
@@ -296,7 +285,7 @@ namespace Avalonia.Controls
             }
         }
 
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             // ContextMenu can be assigned to the ContextMenu property in a setter. This overrides
             // the behavior defined in Control which requires controls to be wrapped in a <template>.
@@ -313,11 +302,6 @@ namespace Avalonia.Controls
         { 
             add => _popupHostChangedHandler += value; 
             remove => _popupHostChangedHandler -= value;
-        }
-
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
         }
 
         private void Open(Control control, Control placementTarget, bool requestedByPointer)
@@ -347,9 +331,9 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
 
-            _popup.PlacementMode = !requestedByPointer && PlacementMode == PlacementMode.Pointer
+            _popup.Placement = !requestedByPointer && Placement == PlacementMode.Pointer
                 ? PlacementMode.Bottom
-                : PlacementMode;
+                : Placement;
 
             //Position of the line below is really important. 
             //All styles are being applied only when control has logical parent.
@@ -369,14 +353,14 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
 
         private void PopupOpened(object? sender, EventArgs e)
         {
-            _previousFocus = FocusManager.Instance?.Current;
+            _previousFocus = FocusManager.GetFocusManager(this)?.GetFocusedElement();
             Focus();
 
             _popupHostChangedHandler?.Invoke(_popup!.Host);
@@ -406,11 +390,11 @@ namespace Avalonia.Controls
             }
 
             // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            FocusManager.Instance?.Focus(_previousFocus);
+            _previousFocus?.Focus();
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
             
@@ -421,7 +405,7 @@ namespace Avalonia.Controls
         {
             if (IsOpen)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
                 if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true
                     && !CancelClosing())
@@ -450,6 +434,11 @@ namespace Avalonia.Controls
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu)
             {
+                if (contextMenu._popup?.Parent == control)
+                {
+                    ((ISetLogicalParent)contextMenu._popup).SetParent(null);
+                }
+
                 contextMenu.Close();
             }
         }
@@ -457,14 +446,14 @@ namespace Avalonia.Controls
         private bool CancelClosing()
         {
             var eventArgs = new CancelEventArgs();
-            ContextMenuClosing?.Invoke(this, eventArgs);
+            Closing?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
         }
 
         private bool CancelOpening()
         {
             var eventArgs = new CancelEventArgs();
-            ContextMenuOpening?.Invoke(this, eventArgs);
+            Opening?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
         }
     }

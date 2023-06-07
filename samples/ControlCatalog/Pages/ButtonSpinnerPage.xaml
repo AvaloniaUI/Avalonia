@@ -1,7 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ButtonSpinnerPage"
-             xmlns:sys="clr-namespace:System;assembly=netstandard">
+             xmlns:sys="using:System">
 
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">The ButtonSpinner control allows you to add button spinners to any element and then respond to the Spin event to manipulate that element.</TextBlock>

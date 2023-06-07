@@ -4,15 +4,13 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Embedding
 {
-    public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, IDisposable
+    public class EmbeddableControlRoot : TopLevel, IFocusScope, IDisposable
     {
         public EmbeddableControlRoot(ITopLevelImpl impl) : base(impl)
         {
-            
         }
 
         public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
@@ -28,6 +26,10 @@ namespace Avalonia.Controls.Embedding
             LayoutManager.ExecuteInitialLayoutPass();
         }
 
+        public new void StartRendering() => base.StartRendering();
+
+        public new void StopRendering() => base.StopRendering();
+        
         private void EnsureInitialized()
         {
             if (!this.IsInitialized)
@@ -48,7 +50,7 @@ namespace Avalonia.Controls.Embedding
             return rv;
         }
 
-        Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
+        protected override Type StyleKeyOverride => typeof(EmbeddableControlRoot);
         public void Dispose() => PlatformImpl?.Dispose();
     }
 }

@@ -162,6 +162,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport(libdrm, SetLastError = true)]
         public static extern drmModeConnector* drmModeGetConnector(int fd, uint connector);
         [DllImport(libdrm, SetLastError = true)]
+        public static extern drmModeConnector* drmModeGetConnectorCurrent(int fd, uint connector);
+        [DllImport(libdrm, SetLastError = true)]
         public static extern void drmModeFreeConnector(drmModeConnector* res);
         
         [DllImport(libdrm, SetLastError = true)]

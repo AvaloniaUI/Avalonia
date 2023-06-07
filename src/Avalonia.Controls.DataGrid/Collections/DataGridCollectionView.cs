@@ -3412,23 +3412,30 @@ namespace Avalonia.Collections
                 RefreshOrDefer();
                 return;
             }
-
-            object addedItem = args.NewItems?[0];
-            object removedItem = args.OldItems?[0];
-
+            
             // fire notifications for removes
-            if (args.Action == NotifyCollectionChangedAction.Remove ||
-                args.Action == NotifyCollectionChangedAction.Replace)
+            if (args.OldItems != null && 
+                (args.Action == NotifyCollectionChangedAction.Remove ||
+                args.Action == NotifyCollectionChangedAction.Replace))
             {
-                ProcessRemoveEvent(removedItem, args.Action == NotifyCollectionChangedAction.Replace);
+                foreach (var removedItem in args.OldItems)
+                {
+                    ProcessRemoveEvent(removedItem, args.Action == NotifyCollectionChangedAction.Replace);
+                }
             }
 
             // fire notifications for adds
-            if ((args.Action == NotifyCollectionChangedAction.Add ||
-                args.Action == NotifyCollectionChangedAction.Replace) &&
-                (Filter == null || PassesFilter(addedItem)))
+            if (args.NewItems != null && 
+                (args.Action == NotifyCollectionChangedAction.Add ||
+                 args.Action == NotifyCollectionChangedAction.Replace))
             {
-                ProcessAddEvent(addedItem, args.NewStartingIndex);
+                for (var i = 0; i < args.NewItems.Count; i++)
+                {
+                    if (Filter == null || PassesFilter(args.NewItems[i]))
+                    {
+                        ProcessAddEvent(args.NewItems[i], args.NewStartingIndex + i);
+                    }
+                }
             }
             if (args.Action != NotifyCollectionChangedAction.Replace)
             {

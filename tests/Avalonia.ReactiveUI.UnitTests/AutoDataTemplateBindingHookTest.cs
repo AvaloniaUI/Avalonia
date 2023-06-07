@@ -41,7 +41,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 
                 Content = List;
                 ViewModel = new ExampleViewModel();
-                this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
+                this.OneWayBind(ViewModel, x => x.Items, x => x.List.ItemsSource);
             }
         }
 
@@ -139,7 +139,6 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                 }.RegisterInNameScope(scope)
             });
         }

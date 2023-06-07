@@ -2,10 +2,8 @@ using System;
 
 namespace Avalonia.Data.Core
 {
-    public abstract class ExpressionNode
+    internal abstract class ExpressionNode
     {
-        private static readonly object CacheInvalid = new object();
-
         protected static readonly WeakReference<object?> UnsetReference = 
             new WeakReference<object?>(AvaloniaProperty.UnsetValue);
 
@@ -98,36 +96,36 @@ namespace Avalonia.Data.Core
 
         private void ValueChanged(object? value, bool notify)
         {
-            if (_subscriber is null)
-                return;
-
-            var notification = value as BindingNotification;
-
-            if (notification == null)
+            if (_subscriber is { } subscriber)
             {
-                LastValue = value != null ? new WeakReference<object?>(value) : NullReference;
+                var notification = value as BindingNotification;
+                var next = Next;
 
-                if (Next != null)
+                if (notification == null)
                 {
-                    Next.Target = LastValue;
+                    LastValue = value != null ? new WeakReference<object?>(value) : NullReference;
+                    if (next != null)
+                    {
+                        next.Target = LastValue;
+                    }
+                    else if (notify)
+                    {
+                        subscriber(value);
+                    }
                 }
-                else if (notify)
+                else
                 {
-                    _subscriber(value);
-                }
-            }
-            else
-            {
-                LastValue = notification.Value != null ? new WeakReference<object?>(notification.Value) : NullReference;
+                    LastValue = notification.Value != null ? new WeakReference<object?>(notification.Value) : NullReference;
 
-                if (Next != null)
-                {
-                    Next.Target = LastValue;
-                }
+                    if (next != null)
+                    {
+                        next.Target = LastValue;
+                    }
 
-                if (Next == null || notification.Error != null)
-                {
-                    _subscriber(value);
+                    if (next == null || notification.Error != null)
+                    {
+                        subscriber(value);
+                    }
                 }
             }
         }
@@ -159,7 +157,7 @@ namespace Avalonia.Data.Core
             _listening = false;
         }
 
-        private BindingNotification TargetNullNotification()
+        private static BindingNotification TargetNullNotification()
         {
             return new BindingNotification(
                 new MarkupBindingChainException("Null value"),

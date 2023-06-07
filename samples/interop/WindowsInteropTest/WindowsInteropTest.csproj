@@ -1,20 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net461</TargetFramework>
-
+    <TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interop\Avalonia.Win32.Interop.csproj" />
-    <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj">
-      <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
-      <Name>ControlCatalog</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interoperability\Avalonia.Win32.Interoperability.csproj" />
+    <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
-
-  <Import Project="..\..\..\build\Rx.props" />
 </Project>

@@ -1,12 +1,11 @@
 using Avalonia.Platform;
-using Avalonia.Rendering;
 
 namespace Avalonia.Skia
 {
     /// <summary>
     /// Adapts <see cref="ISkiaGpuRenderTarget"/> to be used within our rendering pipeline.
     /// </summary>
-    internal class SkiaGpuRenderTarget : IRenderTargetWithCorruptionInfo
+    internal class SkiaGpuRenderTarget : IRenderTarget
     {
         private readonly ISkiaGpu _skiaGpu;
         private readonly ISkiaGpuRenderTarget _renderTarget;
@@ -22,7 +21,7 @@ namespace Avalonia.Skia
             _renderTarget.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var session = _renderTarget.BeginRenderingSession();
 
@@ -31,8 +30,6 @@ namespace Avalonia.Skia
                 GrContext = session.GrContext,
                 Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true,
                 Gpu = _skiaGpu,
                 CurrentSession =  session
             };

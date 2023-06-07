@@ -1,13 +1,11 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Controls;
 using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
-    public class LabelsPage : UserControl
+    public partial class LabelsPage : UserControl
     {
-        private Person _person;
+        private Person? _person;
 
         public LabelsPage()
         {
@@ -23,11 +21,6 @@ namespace ControlCatalog.Pages
                 LastName = "Doe",
                 IsBanned = true,
             };
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         public void DoSave()

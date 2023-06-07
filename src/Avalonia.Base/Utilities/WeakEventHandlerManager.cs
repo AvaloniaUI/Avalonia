@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,7 +21,8 @@ namespace Avalonia.Utilities
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
-        public static void Subscribe<TTarget, TEventArgs, TSubscriber>(TTarget target, string eventName, EventHandler<TEventArgs> subscriber)
+        public static void Subscribe<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents | DynamicallyAccessedMemberTypes.NonPublicEvents)] TTarget, TEventArgs, TSubscriber>(
+            TTarget target, string eventName, EventHandler<TEventArgs> subscriber)
             where TEventArgs : EventArgs where TSubscriber : class
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
@@ -58,8 +60,7 @@ namespace Avalonia.Utilities
         private static class SubscriptionTypeStorage<TArgs, TSubscriber>
             where TArgs : EventArgs where TSubscriber : class
         {
-            public static readonly ConditionalWeakTable<object, SubscriptionDic<TArgs, TSubscriber>> Subscribers
-                = new ConditionalWeakTable<object, SubscriptionDic<TArgs, TSubscriber>>();
+            public static readonly ConditionalWeakTable<object, SubscriptionDic<TArgs, TSubscriber>> Subscribers = new();
         }
 
         private class SubscriptionDic<T, TSubscriber> : Dictionary<string, Subscription<T, TSubscriber>>
@@ -67,8 +68,7 @@ namespace Avalonia.Utilities
         {
         }
 
-        private static readonly Dictionary<Type, Dictionary<string, EventInfo>> Accessors
-            = new Dictionary<Type, Dictionary<string, EventInfo>>();
+        private static readonly Dictionary<Type, Dictionary<string, EventInfo>> s_accessors = new();
 
         private class Subscription<T, TSubscriber> where T : EventArgs where TSubscriber : class
         {
@@ -79,26 +79,27 @@ namespace Avalonia.Utilities
             private readonly Delegate _delegate;
 
             private Descriptor[] _data = new Descriptor[2];
-            private int _count = 0;
+            private int _count;
 
-            delegate void CallerDelegate(TSubscriber s, object sender, T args);
-            
-            struct Descriptor
+            private delegate void CallerDelegate(TSubscriber s, object? sender, T args);
+
+            private struct Descriptor
             {
-                public WeakReference<TSubscriber> Subscriber;
-                public CallerDelegate Caller;
+                public WeakReference<TSubscriber>? Subscriber;
+                public CallerDelegate? Caller;
             }
 
-            private static Dictionary<MethodInfo, CallerDelegate> s_Callers =
-                new Dictionary<MethodInfo, CallerDelegate>();
+            private static readonly Dictionary<MethodInfo, CallerDelegate> s_callers = new();
             
-            public Subscription(SubscriptionDic<T, TSubscriber> sdic, Type targetType, object target, string eventName)
+            public Subscription(SubscriptionDic<T, TSubscriber> sdic,
+                [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents | DynamicallyAccessedMemberTypes.NonPublicEvents)] Type targetType,
+                object target, string eventName)
             {
                 _sdic = sdic;
                 _target = target;
                 _eventName = eventName;
-                if (!Accessors.TryGetValue(targetType, out var evDic))
-                    Accessors[targetType] = evDic = new Dictionary<string, EventInfo>();
+                if (!s_accessors.TryGetValue(targetType, out var evDic))
+                    s_accessors[targetType] = evDic = new Dictionary<string, EventInfo>();
 
                 if (evDic.TryGetValue(eventName, out var info))
                 {
@@ -119,12 +120,12 @@ namespace Avalonia.Utilities
 
                 var del = new Action<object, T>(OnEvent);
                 _delegate = del.GetMethodInfo().CreateDelegate(_info.EventHandlerType!, del.Target);
-                _info.AddMethod!.Invoke(target, new[] { _delegate });
+                _info.AddMethod!.Invoke(target, new object?[] { _delegate });
             }
 
-            void Destroy()
+            private void Destroy()
             {
-                _info.RemoveMethod!.Invoke(_target, new[] { _delegate });
+                _info.RemoveMethod!.Invoke(_target, new object?[] { _delegate });
                 _sdic.Remove(_eventName);
             }
 
@@ -142,8 +143,8 @@ namespace Avalonia.Utilities
                 MethodInfo method = s.Method;
 
                 var subscriber = (TSubscriber)s.Target!;
-                if (!s_Callers.TryGetValue(method, out var caller))
-                    s_Callers[method] = caller =
+                if (!s_callers.TryGetValue(method, out var caller))
+                    s_callers[method] = caller =
                         (CallerDelegate)Delegate.CreateDelegate(typeof(CallerDelegate), null, method);
                 _data[_count] = new Descriptor
                 {
@@ -174,7 +175,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            void Compact(bool preventDestroy = false)
+            private void Compact(bool preventDestroy = false)
             {
                 int empty = -1;
                 for (int c = 0; c < _count; c++)
@@ -202,15 +203,15 @@ namespace Avalonia.Utilities
                     Destroy();
             }
 
-            void OnEvent(object sender, T eventArgs)
+            private void OnEvent(object? sender, T eventArgs)
             {
                 var needCompact = false;
-                for(var c=0; c<_count; c++)
+                for (var c = 0; c < _count; c++)
                 {
-                    var r = _data[c].Subscriber;
+                    var r = _data[c].Subscriber!;
                     if (r.TryGetTarget(out var sub))
                     {
-                        _data[c].Caller(sub, sender, eventArgs);
+                        _data[c].Caller!(sub, sender, eventArgs);
                     }
                     else
                         needCompact = true;

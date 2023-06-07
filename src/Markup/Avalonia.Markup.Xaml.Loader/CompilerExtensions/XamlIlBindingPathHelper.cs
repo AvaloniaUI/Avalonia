@@ -37,6 +37,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 bindingResultType = transformed.BindingResultType;
                 binding.Arguments[0] = transformed;
             }
+            else if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlIlBindingPathNode alreadyTransformed)
+            {
+                bindingResultType = alreadyTransformed.BindingResultType;
+            }
             else
             {
                 var bindingPathAssignment = binding.Children.OfType<XamlPropertyAssignmentNode>()
@@ -47,7 +51,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     return startTypeResolver();
                 }
 
-                if (bindingPathAssignment.Values[0] is ParsedBindingPathNode bindingPathNode)
+                if (bindingPathAssignment.Values[0] is XamlIlBindingPathNode pathNode)
+                {
+                    bindingResultType = pathNode.BindingResultType;
+                }
+                else if (bindingPathAssignment.Values[0] is ParsedBindingPathNode bindingPathNode)
                 {
                     var transformed = TransformBindingPath(
                         context,
@@ -63,7 +71,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 else
                 {
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Invalid state of Path property");
                 }
             }
 
@@ -240,6 +248,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case TemplatedParentBindingExpressionNode templatedParent:
                         var templatedParentField = context.GetAvaloniaTypes().StyledElement.GetAllFields()
                             .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == "TemplatedParentProperty");
+                        nodes.Add(new SelfPathElementNode(selfType));
                         nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(
                             templatedParentField,
                             templatedParent.Type));
@@ -374,6 +383,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public static IXamlType GetTargetType(IXamlAstNode namescopeRoot, string name)
             {
+                // If we start from the nested scope - skip it.
+                if (namescopeRoot is NestedScopeMetadataNode scope)
+                {
+                    namescopeRoot = scope.Value;
+                }
+                
                 var finder = new ScopeRegistrationFinder(name);
                 namescopeRoot.Visit(finder);
                 return finder.TargetType;
@@ -399,6 +414,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
             {
+                // Ignore name registrations, if we are inside of the nested namescope.
                 if (_childScopesStack.Count == 0 && node is AvaloniaNameScopeRegistrationXamlIlNode registration)
                 {
                     if (registration.Name is XamlAstTextNode text && text.Text == Name)
@@ -685,7 +701,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             .GetConstructor(new() { objectType, context.Configuration.TypeSystem.GetType("System.IntPtr") }));
                 }
 
-                if (_dependsOnProperties is { Count:> 1 })
+                if (_dependsOnProperties is { Count:> 0 })
                 {
                     using var dependsOnPropertiesArray = context.GetLocalOfType(context.Configuration.WellKnownTypes.String.MakeArrayType(1));
                     codeGen

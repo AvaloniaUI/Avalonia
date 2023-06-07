@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Diagnostics.Screenshots
@@ -12,74 +14,62 @@ namespace Avalonia.Diagnostics.Screenshots
     /// </summary>
     public sealed class FilePickerHandler : BaseRenderToStreamHandler
     {
+        private readonly string _title;
+        private readonly string _screenshotRoot;
+
         /// <summary>
         /// Instance FilePickerHandler
         /// </summary>
-        public FilePickerHandler()
+        public FilePickerHandler() : this(null, null)
         {
 
         }
+
         /// <summary>
         /// Instance FilePickerHandler with specificated parameter
         /// </summary>
         /// <param name="title">SaveFilePicker Title</param>
         /// <param name="screenshotRoot"></param>
-        public FilePickerHandler(string? title
-            , string? screenshotRoot = default
-            )
+        public FilePickerHandler(
+            string? title,
+            string? screenshotRoot = default)
         {
-            if (title is { })
-                Title = title;
-            if (screenshotRoot is { })
-                ScreenshotsRoot = screenshotRoot;
-        }
-        /// <summary>
-        /// Get the root folder where screeshots well be stored.
-        /// The default root folder is [Environment.SpecialFolder.MyPictures]/Screenshots.
-        /// </summary>
-        public string ScreenshotsRoot { get; }
-            = Convetions.DefaultScreenshotsRoot;
-
-        /// <summary>
-        /// SaveFilePicker Title
-        /// </summary>
-        public string Title { get; } = "Save Screenshot to ...";
-
-        Window GetWindow(IControl control)
-        {
-            var window = control.VisualRoot as Window;
-            var app = Application.Current;
-            if (app?.ApplicationLifetime is Lifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                window = desktop.Windows.FirstOrDefault(w => w is Views.MainWindow);
-            }
-            return window!;
+            _title = title ?? "Save Screenshot to ...";
+            _screenshotRoot = screenshotRoot ?? Conventions.DefaultScreenshotsRoot;
         }
 
-        protected async override Task<Stream?> GetStream(IControl control)
+        private static TopLevel GetTopLevel(Control control)
         {
-            Stream? output = default;
-            var result = await new SaveFileDialog()
+            // If possible, use devtools main window.
+            TopLevel? devToolsTopLevel = null;
+            if (Application.Current?.ApplicationLifetime is Lifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             {
-                Title = Title,
-                Filters = new() { new FileDialogFilter() { Name = "PNG", Extensions = new() { "png" } } },
-                Directory = ScreenshotsRoot,
-            }.ShowAsync(GetWindow(control));
-            if (!string.IsNullOrWhiteSpace(result))
-            {
-                var foldler = Path.GetDirectoryName(result);
-                // Directory information for path, or null if path denotes a root directory or is
-                // null. Returns System.String.Empty if path does not contain directory information.
-                if (!string.IsNullOrWhiteSpace(foldler))
-                {
-                    if (!Directory.Exists(foldler))
-                    {
-                        Directory.CreateDirectory(foldler);
-                    }
-                    output = new FileStream(result, FileMode.Create);
-                }
+                devToolsTopLevel = desktop.Windows.FirstOrDefault(w => w is Views.MainWindow);
             }
-            return output;
+
+            return devToolsTopLevel ?? TopLevel.GetTopLevel(control)
+                ?? throw new InvalidOperationException("No TopLevel is available.");
+        }
+
+        protected override async Task<Stream?> GetStream(Control control)
+        {
+            var storageProvider = GetTopLevel(control).StorageProvider;
+            var defaultFolder = await storageProvider.TryGetFolderFromPathAsync(_screenshotRoot)
+                                ?? await storageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Pictures);
+
+            var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                SuggestedStartLocation = defaultFolder,
+                Title = _title,
+                FileTypeChoices = new [] { FilePickerFileTypes.ImagePng },
+                DefaultExtension = ".png"
+            });
+            if (result is null)
+            {
+                return null;
+            }
+
+            return await result.OpenWriteAsync();
         }
     }
 }

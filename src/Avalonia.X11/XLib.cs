@@ -16,11 +16,11 @@ namespace Avalonia.X11
 {
     internal unsafe static class XLib
     {
-        const string libX11 = "libX11.so.6";
-        const string libX11Randr = "libXrandr.so.2";
-        const string libX11Ext = "libXext.so.6";
-        const string libXInput = "libXi.so.6";
-        const string libXCursor = "libXcursor.so.1";
+        private const string libX11 = "libX11.so.6";
+        private const string libX11Randr = "libXrandr.so.2";
+        private const string libX11Ext = "libXext.so.6";
+        private const string libXInput = "libXi.so.6";
+        private const string libXCursor = "libXcursor.so.1";
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
@@ -109,6 +109,9 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern int XFree(IntPtr data);
+        
+        [DllImport(libX11)]
+        public static extern int XFree(void* data);
 
         [DllImport(libX11)]
         public static extern int XRaiseWindow(IntPtr display, IntPtr window);
@@ -373,6 +376,9 @@ namespace Avalonia.X11
         public static extern void XSetWMHints(IntPtr display, IntPtr window, ref XWMHints wmhints);
 
         [DllImport(libX11)]
+        public static extern IntPtr XGetWMHints(IntPtr display, IntPtr window);
+
+        [DllImport(libX11)]
         public static extern int XGetIconSizes(IntPtr display, IntPtr window, out IntPtr size_list, out int count);
 
         [DllImport(libX11)]
@@ -542,6 +548,18 @@ namespace Avalonia.X11
         public static extern int XRRQueryExtension (IntPtr dpy,
             out int event_base_return,
             out int error_base_return);
+        
+        [DllImport(libX11Ext)]
+        public static extern Status XSyncInitialize(IntPtr dpy, out int event_base_return, out int error_base_return);
+
+        [DllImport(libX11Ext)]
+        public static extern IntPtr XSyncCreateCounter(IntPtr dpy, XSyncValue initialValue);
+        
+        [DllImport(libX11Ext)]
+        public static extern int XSyncDestroyCounter(IntPtr dpy, IntPtr counter);
+        
+        [DllImport(libX11Ext)]
+        public static extern int XSyncSetCounter(IntPtr dpy, IntPtr counter, XSyncValue value);
 
         [DllImport(libX11Randr)]
         public static extern int XRRQueryVersion(IntPtr dpy,
@@ -616,6 +634,12 @@ namespace Avalonia.X11
             return XISelectEvents(display, window, emasks, devices.Count);
 
         }
+        
+        [DllImport(libX11)]
+        public static extern XClassHint* XAllocClassHint();
+
+        [DllImport(libX11)]
+        public static extern int XSetClassHint(IntPtr display, IntPtr window, XClassHint* class_hints);
 
         public struct XGeometry
         {
@@ -626,6 +650,16 @@ namespace Avalonia.X11
             public int height;
             public int bw;
             public int d;
+        }
+        public struct XClassHint
+        {
+            public byte* res_name;
+            public byte* res_class;
+        }
+        
+        public struct XSyncValue {
+            public int Hi;
+            public uint Lo;
         }
 
         public static bool XGetGeometry(IntPtr display, IntPtr window, out XGeometry geo)

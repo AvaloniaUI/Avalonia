@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(NETCoreSdkVersion), '7.0'))">
+    <DefineConstants>$(DefineConstants);NET7SDK</DefineConstants>
+  </PropertyGroup>  
+</Project>

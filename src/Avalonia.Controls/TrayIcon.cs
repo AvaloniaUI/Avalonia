@@ -6,20 +6,17 @@ using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
     public sealed class TrayIcons : AvaloniaList<TrayIcon>
     {
     }
-    
-    
 
     public class TrayIcon : AvaloniaObject, INativeMenuExporterProvider, IDisposable
     {
         private readonly ITrayIconImpl? _impl;
-        private ICommand? _command;
 
         private TrayIcon(ITrayIconImpl? impl)
         {
@@ -61,6 +58,10 @@ namespace Avalonia.Controls
                         args.NewValue.Value.CollectionChanged += Icons_CollectionChanged;
                     }
                 }
+                else
+                {
+                    throw new InvalidOperationException("TrayIcon.Icons must be set on the Application.");
+                }
             });
 
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
@@ -81,23 +82,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<TrayIcon, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<TrayIcon>(
-                trayIcon => trayIcon.Command,
-                (trayIcon, command) => trayIcon.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<TrayIcon>(new(enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> CommandParameterProperty =
-            Button.CommandParameterProperty.AddOwner<MenuItem>();
+            Button.CommandParameterProperty.AddOwner<TrayIcon>();
 
         /// <summary>
         /// Defines the <see cref="TrayIcons"/> attached property.
         /// </summary>
-        public static readonly AttachedProperty<TrayIcons> IconsProperty
-            = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("Icons");
+        public static readonly AttachedProperty<TrayIcons?> IconsProperty
+            = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons?>("Icons");
 
         /// <summary>
         /// Defines the <see cref="Menu"/> property.
@@ -123,17 +121,17 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
 
-        public static void SetIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
+        public static void SetIcons(Application o, TrayIcons? trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
-        public static TrayIcons GetIcons(AvaloniaObject o) => o.GetValue(IconsProperty);
+        public static TrayIcons? GetIcons(Application o) => o.GetValue(IconsProperty);
         
         /// <summary>
         /// Gets or sets the <see cref="Command"/> property of a TrayIcon.
         /// </summary>
         public ICommand? Command
         {
-            get => _command;
-            set => SetAndRaise(CommandProperty, ref _command, value);
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -189,7 +187,10 @@ namespace Avalonia.Controls
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
             var trayIcons = GetIcons(app);
 
-            RemoveIcons(trayIcons);
+            if (trayIcons != null)
+            {
+                RemoveIcons(trayIcons);
+            }
         }
 
         private static void Icons_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -206,7 +207,8 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -216,15 +218,15 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsVisibleProperty)
             {
-                _impl?.SetIsVisible(change.NewValue.GetValueOrDefault<bool>());
+                _impl?.SetIsVisible(change.GetNewValue<bool>());
             }
             else if (change.Property == ToolTipTextProperty)
             {
-                _impl?.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
+                _impl?.SetToolTipText(change.GetNewValue<string?>());
             }
             else if (change.Property == MenuProperty)
             {
-                _impl?.MenuExporter?.SetNativeMenu(change.NewValue.GetValueOrDefault<NativeMenu>());
+                _impl?.MenuExporter?.SetNativeMenu(change.GetNewValue<NativeMenu?>());
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 using Avalonia.Styling;
 using BenchmarkDotNet.Attributes;
 
@@ -11,6 +12,8 @@ namespace Avalonia.Benchmarks.Styling
         private readonly Calendar _matchingControl;
         private readonly Selector _isCalendarSelector;
         private readonly Selector _classSelector;
+        private readonly Selector _orSelectorTwo;
+        private readonly Selector _orSelectorFive;
 
         public SelectorBenchmark()
         {
@@ -23,30 +26,73 @@ namespace Avalonia.Benchmarks.Styling
 
             _isCalendarSelector = Selectors.Is<Calendar>(null);
             _classSelector = Selectors.Class(null, className);
+
+            _orSelectorTwo = Selectors.Or(new AlwaysMatchSelector(), new AlwaysMatchSelector());
+            _orSelectorFive = Selectors.Or(
+                new AlwaysMatchSelector(), 
+                new AlwaysMatchSelector(),
+                new AlwaysMatchSelector(),
+                new AlwaysMatchSelector(),
+                new AlwaysMatchSelector());
         }
 
         [Benchmark]
-        public SelectorMatch IsSelector_NoMatch()
+        public void IsSelector_NoMatch()
         {
-            return _isCalendarSelector.Match(_notMatchingControl);
+            _isCalendarSelector.Match(_notMatchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch IsSelector_Match()
+        public void IsSelector_Match()
         {
-            return _isCalendarSelector.Match(_matchingControl);
+            _isCalendarSelector.Match(_matchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch ClassSelector_NoMatch()
+        public void ClassSelector_NoMatch()
         {
-            return _classSelector.Match(_notMatchingControl);
+            _classSelector.Match(_notMatchingControl);
         }
 
         [Benchmark]
-        public SelectorMatch ClassSelector_Match()
+        public void ClassSelector_Match()
         {
-            return _classSelector.Match(_matchingControl);
+            _classSelector.Match(_matchingControl);
         }
+
+        [Benchmark]
+        public void OrSelector_One_Match()
+        {
+            _orSelectorTwo.Match(_matchingControl);
+        }
+
+        [Benchmark]
+        public void OrSelector_Five_Match()
+        {
+            _orSelectorFive.Match(_matchingControl);
+        }
+    }
+
+    internal class AlwaysMatchSelector : Selector
+    {
+        internal override bool InTemplate => false;
+
+        internal override bool IsCombinator => false;
+
+        internal override Type TargetType => null;
+
+        public override string ToString(Style owner)
+        {
+            return "Always";
+        }
+
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle parent, bool subscribe)
+        {
+            return SelectorMatch.AlwaysThisType;
+        }
+
+        private protected override Selector MovePrevious() => null;
+
+        private protected override Selector MovePreviousOrParent() => null;
     }
 }

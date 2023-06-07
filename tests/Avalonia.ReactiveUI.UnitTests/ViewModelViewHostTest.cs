@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using ReactiveUI;
 using Splat;
@@ -46,6 +47,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = host 
             };
             
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(TextBlock), host.Content.GetType());
             Assert.Equal(defaultContent, host.Content);
@@ -91,6 +93,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = host
             };
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(TextBlock), host.Content.GetType());
             Assert.Equal(defaultContent, host.Content);

@@ -4,32 +4,34 @@ using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
 using AlphaFormat = Avalonia.Platform.AlphaFormat;
-using D2DBitmap = SharpDX.Direct2D1.Bitmap;
+using D2DBitmap = SharpDX.Direct2D1.Bitmap1;
+using Avalonia.Platform;
+using PixelFormat = SharpDX.WIC.PixelFormat;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// A WIC implementation of a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
     /// </summary>
-    public class WicBitmapImpl : BitmapImpl
+    internal class WicBitmapImpl : BitmapImpl, IReadableBitmapImpl
     {
         private readonly BitmapDecoder _decoder;
 
-        private static BitmapInterpolationMode ConvertInterpolationMode(Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
+        private static BitmapInterpolationMode ConvertInterpolationMode(Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode)
         {
             switch (interpolationMode)
             {
-                case Visuals.Media.Imaging.BitmapInterpolationMode.Default:
+                case Avalonia.Media.Imaging.BitmapInterpolationMode.Unspecified:
                     return BitmapInterpolationMode.Fant;
 
-                case Visuals.Media.Imaging.BitmapInterpolationMode.LowQuality:
+                case Avalonia.Media.Imaging.BitmapInterpolationMode.LowQuality:
                     return BitmapInterpolationMode.NearestNeighbor;
 
-                case Visuals.Media.Imaging.BitmapInterpolationMode.MediumQuality:
+                case Avalonia.Media.Imaging.BitmapInterpolationMode.MediumQuality:
                     return BitmapInterpolationMode.Fant;
 
                 default:
-                case Visuals.Media.Imaging.BitmapInterpolationMode.HighQuality:
+                case Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality:
                     return BitmapInterpolationMode.HighQualityCubic;
 
             }
@@ -118,7 +120,7 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public WicBitmapImpl(Stream stream, int decodeSize, bool horizontal, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
+        public WicBitmapImpl(Stream stream, int decodeSize, bool horizontal, Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode)
         {
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
@@ -181,10 +183,13 @@ namespace Avalonia.Direct2D1.Media
         {
             using var converter = new FormatConverter(Direct2D1Platform.ImagingFactory);
             converter.Initialize(WicImpl, SharpDX.WIC.PixelFormat.Format32bppPBGRA);
-            return new OptionalDispose<D2DBitmap>(D2DBitmap.FromWicBitmap(renderTarget, converter), true);
+
+            var d2dBitmap = D2DBitmap.FromWicBitmap(renderTarget, converter).QueryInterface<D2DBitmap>();
+
+            return new OptionalDispose<D2DBitmap>(d2dBitmap, true);
         }
 
-        public override void Save(Stream stream)
+        public override void Save(Stream stream, int? quality = null)
         {
             using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
             using (var frame = new BitmapFrameEncode(encoder))
@@ -195,5 +200,38 @@ namespace Avalonia.Direct2D1.Media
                 encoder.Commit();
             }
         }
+        
+        class LockedBitmap : ILockedFramebuffer
+        {
+            private readonly WicBitmapImpl _parent;
+            private readonly BitmapLock _lock;
+            private readonly APixelFormat _format;
+
+            public LockedBitmap(WicBitmapImpl parent, BitmapLock l, APixelFormat format)
+            {
+                _parent = parent;
+                _lock = l;
+                _format = format;
+            }
+
+
+            public void Dispose()
+            {
+                _lock.Dispose();
+                _parent.Version++;
+            }
+
+            public IntPtr Address => _lock.Data.DataPointer;
+            public PixelSize Size => _lock.Size.ToAvalonia();
+            public int RowBytes => _lock.Stride;
+            public Vector Dpi => _parent.Dpi;
+            public APixelFormat Format => _format;
+
+        }
+
+        APixelFormat? IReadableBitmapImpl.Format => PixelFormat;
+
+        public ILockedFramebuffer Lock() =>
+            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
     }
 }

@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <PackageId>Avalonia.Browser.Blazor</PackageId>
+    <ResolveStaticWebAssetsInputsDependsOn>_IncludeGeneratedAvaloniaStaticFiles;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\build\NullableEnable.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Browser\Avalonia.Browser.csproj" />
+  </ItemGroup>
+
+  <Target Name="_IncludeGeneratedAvaloniaStaticFiles">
+    <ItemGroup>
+      <_AvaloniaWebAssets Include="$(MSBuildThisFileDirectory)../Avalonia.Browser/wwwroot/**/*.*" />
+    </ItemGroup>
+    <DefineStaticWebAssets SourceId="$(PackageId)"
+                           SourceType="Computed"
+                           AssetKind="All"
+                           AssetRole="Primary"
+                           CopyToOutputDirectory="PreserveNewest"
+                           CopyToPublishDirectory="PreserveNewest"
+                           ContentRoot="$(MSBuildThisFileDirectory)../Avalonia.Browser/wwwroot/"
+                           BasePath="_content\$(PackageId)"
+                           CandidateAssets="@(_AvaloniaWebAssets)"
+                           RelativePathFilter="**.js">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </DefineStaticWebAssets>
+  </Target>
+</Project>

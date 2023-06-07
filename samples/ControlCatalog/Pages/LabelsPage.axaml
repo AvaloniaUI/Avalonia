@@ -2,9 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:ControlCatalog.Models"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
              x:Class="ControlCatalog.Pages.LabelsPage"
-             x:Name="_labelsPage">
+             x:Name="_labelsPage"
+             x:DataType="models:Person">
     <UserControl.Styles>
         <Style Selector="Label">
             <Setter Property="VerticalAlignment" Value="Center"/>

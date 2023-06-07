@@ -1,0 +1,27 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="viewModels:RefreshContainerViewModel"
+             x:Class="ControlCatalog.Pages.RefreshContainerPage">
+  <DockPanel HorizontalAlignment="Stretch"
+             Height="600"
+             VerticalAlignment="Top">
+    <Label DockPanel.Dock="Top">A control that supports pull to refresh</Label>
+    <RefreshContainer Name="Refresh"
+                      DockPanel.Dock="Bottom"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      PullDirection="TopToBottom"
+                      RefreshRequested="RefreshContainerPage_RefreshRequested"
+                      Margin="5">
+      <ListBox HorizontalAlignment="Stretch"
+               VerticalAlignment="Top"
+               ItemsSource="{Binding Items}"/>
+    </RefreshContainer>
+  </DockPanel>
+</UserControl>

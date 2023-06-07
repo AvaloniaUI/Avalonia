@@ -1,0 +1,106 @@
+<!--
+  // (c) Copyright Microsoft Corporation.
+  // This source is subject to the Microsoft Public License (Ms-PL).
+  // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+  // All other rights reserved.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <ControlTheme x:Key="{x:Type CalendarDayButton}"
+                TargetType="CalendarDayButton">
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="MinWidth" Value="5" />
+    <Setter Property="MinHeight" Value="5" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel Background="Transparent">
+
+          <Rectangle Name="TodayBackground"
+                     Fill="{DynamicResource HighlightBrush}"
+                     IsVisible="False" />
+
+          <Rectangle Name="SelectedBackground"
+                     Fill="{TemplateBinding Background}"
+                     IsVisible="False"
+                     Opacity="0.75" />
+
+          <Rectangle Name="Background"
+                     Fill="{TemplateBinding Background}"
+                     IsVisible="False"
+                     Opacity="0.5" />
+
+          <ContentControl Name="Content"
+                          Margin="5,1,5,1"
+                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          FontSize="{TemplateBinding FontSize}"
+                          Foreground="{TemplateBinding Foreground}"
+                          Opacity="1" />
+
+          <Path Name="BlackoutVisual"
+                Margin="3"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Data="M8.1772461,11.029181 L10.433105,11.029181 L11.700684,12.801641 L12.973633,11.029181 L15.191895,11.029181 L12.844727,13.999395 L15.21875,17.060919 L12.962891,17.060919 L11.673828,15.256231 L10.352539,17.060919 L8.1396484,17.060919 L10.519043,14.042364 z"
+                Fill="{DynamicResource ThemeForegroundBrush}"
+                IsVisible="False"
+                RenderTransformOrigin="0.5,0.5"
+                Stretch="Fill" />
+
+          <Rectangle Name="FocusVisual"
+                     IsHitTestVisible="False"
+                     IsVisible="False"
+                     Stroke="{DynamicResource HighlightBrush}"
+                     StrokeThickness="1" />
+
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Rectangle#Background">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:pressed /template/ Rectangle#Background">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Rectangle#SelectedBackground">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:disabled /template/ Rectangle#Background">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentControl#Content">
+      <Setter Property="Opacity" Value="0.3" />
+    </Style>
+
+    <Style Selector="^:dayfocused /template/ Rectangle#FocusVisual">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:today /template/ Rectangle#TodayBackground">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:inactive /template/ ContentControl#Content">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
+    </Style>
+    <Style Selector="^:today /template/ ContentControl#Content">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeControlLowBrush}" />
+    </Style>
+
+    <Style Selector="^:blackout /template/ Path#BlackoutVisual">
+      <Setter Property="Opacity" Value="0.3" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

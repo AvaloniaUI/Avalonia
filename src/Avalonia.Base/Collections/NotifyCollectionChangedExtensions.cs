@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Reactive.Linq;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 

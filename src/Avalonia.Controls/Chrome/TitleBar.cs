@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
@@ -17,60 +17,59 @@ namespace Avalonia.Controls.Chrome
 
         private void UpdateSize(Window window)
         {
-            if (window != null)
+            Margin = new Thickness(
+                window.OffScreenMargin.Left,
+                window.OffScreenMargin.Top,
+                window.OffScreenMargin.Right,
+                window.OffScreenMargin.Bottom);
+
+            if (window.WindowState != WindowState.FullScreen)
             {
-                Margin = new Thickness(
-                    window.OffScreenMargin.Left,
-                    window.OffScreenMargin.Top,
-                    window.OffScreenMargin.Right,
-                    window.OffScreenMargin.Bottom);
+                Height = window.WindowDecorationMargin.Top;
 
-                if (window.WindowState != WindowState.FullScreen)
+                if (_captionButtons != null)
                 {
-                    Height = window.WindowDecorationMargin.Top;
-
-                    if (_captionButtons != null)
-                    {
-                        _captionButtons.Height = Height;
-                    }
+                    _captionButtons.Height = Height;
                 }
-
-                IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
             }
+
+            IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
         }
 
+        /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
 
             _captionButtons?.Detach();
-            
+
             _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
             if (VisualRoot is Window window)
             {
-                _captionButtons?.Attach(window);   
-                
+                _captionButtons?.Attach(window);
+
                 UpdateSize(window);
             }
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
 
             if (VisualRoot is Window window)
             {
-                _disposables = new CompositeDisposable
+                _disposables = new CompositeDisposable(6)
                 {
                     window.GetObservable(Window.WindowDecorationMarginProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.OffScreenMarginProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.ExtendClientAreaChromeHintsProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.WindowStateProperty)
                         .Subscribe(x =>
                         {
@@ -80,17 +79,18 @@ namespace Avalonia.Controls.Chrome
                             PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
                         }),
                     window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
-                        .Subscribe(x => UpdateSize(window))
+                        .Subscribe(_ => UpdateSize(window))
                 };
             }
         }
 
+        /// <inheritdoc />
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
 
             _disposables?.Dispose();
-            
+
             _captionButtons?.Detach();
             _captionButtons = null;
         }

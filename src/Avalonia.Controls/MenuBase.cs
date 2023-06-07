@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls
 {
@@ -18,29 +19,29 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<Menu, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<Menu, bool>(
+        public static readonly DirectProperty<MenuBase, bool> IsOpenProperty =
+            AvaloniaProperty.RegisterDirect<MenuBase, bool>(
                 nameof(IsOpen),
                 o => o.IsOpen);
 
         /// <summary>
-        /// Defines the <see cref="MenuOpened"/> event.
+        /// Defines the <see cref="Opened"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> MenuOpenedEvent =
-            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuOpened), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="MenuClosed"/> event.
+        /// Defines the <see cref="Closed"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> MenuClosedEvent =
-            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuClosed), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
 
         private bool _isOpen;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MenuBase"/> class.
         /// </summary>
-        public MenuBase()
+        protected MenuBase()
         {
             InteractionHandler = new DefaultMenuInteractionHandler(false);
         }
@@ -49,7 +50,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="MenuBase"/> class.
         /// </summary>
         /// <param name="interactionHandler">The menu interaction handler.</param>
-        public MenuBase(IMenuInteractionHandler interactionHandler)
+        protected MenuBase(IMenuInteractionHandler interactionHandler)
         {
             InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
         }
@@ -67,13 +68,15 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsOpen
         {
-            get { return _isOpen; }
-            protected set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
+            get => _isOpen;
+            protected set => SetAndRaise(IsOpenProperty, ref _isOpen, value);
         }
 
         /// <inheritdoc/>
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
+        IRenderRoot? IMenu.VisualRoot => VisualRoot;
+        
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem
         {
@@ -81,26 +84,18 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = value is not null ?
-                    ItemContainerGenerator.IndexFromContainer(value) : -1;
+                SelectedIndex = value is Control c ?
+                    IndexFromContainer(c) : -1;
             }
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Gets the interaction handler for the menu.
@@ -110,19 +105,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is opened.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? MenuOpened
+        public event EventHandler<RoutedEventArgs>? Opened
         {
-            add { AddHandler(MenuOpenedEvent, value); }
-            remove { RemoveHandler(MenuOpenedEvent, value); }
+            add => AddHandler(OpenedEvent, value);
+            remove => RemoveHandler(OpenedEvent, value);
         }
 
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is closed.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? MenuClosed
+        public event EventHandler<RoutedEventArgs>? Closed
         {
-            add { AddHandler(MenuClosedEvent, value); }
-            remove { RemoveHandler(MenuClosedEvent, value); }
+            add => AddHandler(ClosedEvent, value);
+            remove => RemoveHandler(ClosedEvent, value);
         }
 
         /// <summary>
@@ -138,10 +133,21 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
-            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
+            return new MenuItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            if (item is MenuItem or Separator)
+            {
+                recycleKey = null;
+                return false;
+            }
+
+            recycleKey = DefaultRecycleKey;
+            return true;
         }
 
         /// <inheritdoc/>

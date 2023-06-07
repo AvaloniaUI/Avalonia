@@ -25,12 +25,12 @@ namespace Avalonia.Diagnostics.Views
         {
             if (sender is DataGrid grid && grid.DataContext is ControlDetailsViewModel controlDetails)
             {
-                controlDetails.ApplySelectedProperty();
+                controlDetails.NavigateToSelectedProperty();
             }
             
         }
 
-        private void PropertyNamePressed(object sender, PointerPressedEventArgs e)
+        public void PropertyNamePressed(object sender, PointerPressedEventArgs e)
         {
             var mainVm = (ControlDetailsViewModel?) DataContext;
 

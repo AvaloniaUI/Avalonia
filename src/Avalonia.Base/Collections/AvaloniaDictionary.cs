@@ -14,11 +14,7 @@ namespace Avalonia.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary key.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary value.</typeparam>
-    public class AvaloniaDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
-        IDictionary,
-        INotifyCollectionChanged,
-        INotifyPropertyChanged
-            where TKey : notnull
+    public class AvaloniaDictionary<TKey, TValue> : IAvaloniaDictionary<TKey, TValue> where TKey : notnull
     {
         private Dictionary<TKey, TValue> _inner;
 
@@ -28,6 +24,14 @@ namespace Avalonia.Collections
         public AvaloniaDictionary()
         {
             _inner = new Dictionary<TKey, TValue>();
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AvaloniaDictionary{TKey, TValue}"/> class.
+        /// </summary>
+        public AvaloniaDictionary(int capacity)
+        {
+            _inner = new Dictionary<TKey, TValue>(capacity);
         }
 
         /// <summary>
@@ -62,6 +66,10 @@ namespace Avalonia.Collections
 
         object ICollection.SyncRoot => ((IDictionary)_inner).SyncRoot;
 
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _inner.Keys;
+
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _inner.Values;
+
         /// <summary>
         /// Gets or sets the named resource.
         /// </summary>
@@ -81,7 +89,7 @@ namespace Avalonia.Collections
 
                 if (replace)
                 {
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
 
                     if (CollectionChanged != null)
                     {
@@ -148,7 +156,7 @@ namespace Avalonia.Collections
             {
                 _inner.Remove(key);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
 
                 if (CollectionChanged != null)
                 {
@@ -208,7 +216,7 @@ namespace Avalonia.Collections
         private void NotifyAdd(TKey key, TValue value)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
             
 
             if (CollectionChanged != null)

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
@@ -8,15 +6,20 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
+    public sealed class PopupRoot : WindowBase, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
+        /// <summary>
+        /// Defines the <see cref="Transform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            AvaloniaProperty.Register<PopupRoot, Transform?>(nameof(Transform));
+
         private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
@@ -55,17 +58,26 @@ namespace Avalonia.Controls.Primitives
         public new IPopupImpl? PlatformImpl => (IPopupImpl?)base.PlatformImpl;               
 
         /// <summary>
+        /// Gets or sets a transform that will be applied to the popup.
+        /// </summary>
+        public Transform? Transform
+        {
+            get => GetValue(TransformProperty);
+            set => SetValue(TransformProperty, value);
+        }
+
+        /// <summary>
         /// Gets the parent control in the event route.
         /// </summary>
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        IInteractive? IInteractive.InteractiveParent => Parent;
+        internal override Interactive? InteractiveParent => (Interactive?)Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        IVisual? IHostedVisualTreeRoot.Host => Parent;
+        Visual? IHostedVisualTreeRoot.Host => VisualParent;
 
         /// <summary>
         /// Gets the styling parent of the popup root.
@@ -78,52 +90,30 @@ namespace Avalonia.Controls.Primitives
         public void Dispose()
         {
             PlatformImpl?.Dispose();
-            HandleClosed();
         }
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner.Update(_positionerParameters);
+            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
         }
 
-        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None,
             PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition(ParentTopLevel, target,
-                placement, offset, anchor, gravity, constraintAdjustment, rect);
+                placement, offset, anchor, gravity, constraintAdjustment, rect, FlowDirection);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();
         }
 
-        public void SetChild(IControl? control) => Content = control;
+        public void SetChild(Control? control) => Content = control;
 
-        IVisual IPopupHost.HostedVisualTreeRoot => this;
+        Visual IPopupHost.HostedVisualTreeRoot => this;
         
-        public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
-            StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
-            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)
-        {
-            var bindings = new List<IDisposable>();
-
-            void Bind(AvaloniaProperty what, AvaloniaProperty to) => bindings.Add(this.Bind(what, popup[~to]));
-            Bind(WidthProperty, widthProperty);
-            Bind(MinWidthProperty, minWidthProperty);
-            Bind(MaxWidthProperty, maxWidthProperty);
-            Bind(HeightProperty, heightProperty);
-            Bind(MinHeightProperty, minHeightProperty);
-            Bind(MaxHeightProperty, maxHeightProperty);
-            Bind(TopmostProperty, topmostProperty);
-            return Disposable.Create(() =>
-            {
-                foreach (var x in bindings)
-                    x.Dispose();
-            });
-        }
-
         protected override Size MeasureOverride(Size availableSize)
         {
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;

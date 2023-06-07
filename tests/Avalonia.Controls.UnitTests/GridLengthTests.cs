@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -99,6 +101,24 @@ namespace Avalonia.Controls.UnitTests
                     new GridLength(4, GridUnitType.Pixel),
                 },
                 result);
+        }
+
+        [Theory]
+        [InlineData(1.2d, GridUnitType.Pixel, "1.2")]
+        [InlineData(1.2d, GridUnitType.Star, "1.2*")]
+        [InlineData(1.2d, GridUnitType.Auto, "Auto")]
+        public async void ToString_AllCulture_Should_Pass(double d, GridUnitType type, string result)
+        {
+            List<CultureInfo> cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures).ToList();
+            GridLength length = new GridLength(d, type);
+            foreach(var culture in cultureInfos)
+            {
+                await Task.Run(() =>
+                {
+                    CultureInfo.CurrentCulture = culture;
+                    Assert.Equal(result, length.ToString());
+                });
+            }
         }
     }
 }

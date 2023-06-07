@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reactive.Joins;
 using System.Runtime.CompilerServices;
 
 namespace MiniMvvm

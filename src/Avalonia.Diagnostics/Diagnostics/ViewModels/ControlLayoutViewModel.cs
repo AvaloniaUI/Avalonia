@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlLayoutViewModel : ViewModelBase
     {
-        private readonly IVisual _control;
+        private readonly Visual _control;
         private Thickness _borderThickness;
         private double _height;
         private string? _heightConstraint;
@@ -21,7 +21,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private double _width;
         private string? _widthConstraint;
 
-        public ControlLayoutViewModel(IVisual control)
+        public ControlLayoutViewModel(Visual control)
         {
             _control = control;
 
@@ -30,20 +30,28 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (control is AvaloniaObject ao)
             {
-                MarginThickness = ao.GetValue(Layoutable.MarginProperty);
-
-                if (HasPadding)
+                try
                 {
-                    PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
-                }
+                    _updatingFromControl = true;
+                    MarginThickness = ao.GetValue(Layoutable.MarginProperty);
 
-                if (HasBorder)
+                    if (HasPadding)
+                    {
+                        PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
+                    }
+
+                    if (HasBorder)
+                    {
+                        BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                    }
+
+                    HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
+                    VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
+                }
+                finally
                 {
-                    BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                    _updatingFromControl = false;
                 }
-
-                HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
-                VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
             }
 
             UpdateSize();
@@ -95,13 +103,13 @@ namespace Avalonia.Diagnostics.ViewModels
         public HorizontalAlignment HorizontalAlignment
         {
             get => _horizontalAlignment;
-            private set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
+            set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
         }
 
         public VerticalAlignment VerticalAlignment
         {
             get => _verticalAlignment;
-            private set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
+            set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
         }
 
         public bool HasPadding { get; }
@@ -110,7 +118,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateSizeConstraints()
         {
-            if (_control is IAvaloniaObject ao)
+            if (_control is AvaloniaObject ao)
             {
                 string? CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
                 {
@@ -191,7 +199,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
                 else
                 {
-                    if (_control is IAvaloniaObject ao)
+                    if (_control is AvaloniaObject ao)
                     {
                         if (e.Property == Layoutable.MarginProperty)
                         {

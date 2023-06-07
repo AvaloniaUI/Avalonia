@@ -59,7 +59,7 @@ namespace Avalonia.Controls.Templates
         /// <returns>The untyped function.</returns>
         private static Func<object?, bool> CastMatch(Func<T, bool> f)
         {
-            return o => (o is T) && f((T)o);
+            return o => o is T arg && f(arg);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Templates
         {
             return (o, s) => f((T)o!, s);
         }
-        
+
         /// <summary>
         /// Casts a function with a typed parameter to an untyped function.
         /// </summary>

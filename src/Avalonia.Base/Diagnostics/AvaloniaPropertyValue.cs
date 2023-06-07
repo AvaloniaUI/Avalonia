@@ -3,28 +3,23 @@ using Avalonia.Data;
 namespace Avalonia.Diagnostics
 {
     /// <summary>
-    /// Holds diagnostic-related information about the value of a <see cref="AvaloniaProperty"/>
-    /// on a <see cref="AvaloniaObject"/>.
+    /// Holds diagnostic-related information about the value of an <see cref="AvaloniaProperty"/>
+    /// on an <see cref="AvaloniaObject"/>.
     /// </summary>
     public class AvaloniaPropertyValue
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaPropertyValue"/> class.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The current property value.</param>
-        /// <param name="priority">The priority of the current value.</param>
-        /// <param name="diagnostic">A diagnostic string.</param>
-        public AvaloniaPropertyValue(
+        internal AvaloniaPropertyValue(
             AvaloniaProperty property,
             object? value,
             BindingPriority priority,
-            string? diagnostic)
+            string? diagnostic,
+            bool isOverriddenCurrentValue)
         {
             Property = property;
             Value = value;
             Priority = priority;
             Diagnostic = diagnostic;
+            IsOverriddenCurrentValue = isOverriddenCurrentValue;
         }
 
         /// <summary>
@@ -46,5 +41,11 @@ namespace Avalonia.Diagnostics
         /// Gets a diagnostic string.
         /// </summary>
         public string? Diagnostic { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Value"/> was overridden by a call to 
+        /// <see cref="AvaloniaObject.SetCurrentValue{T}"/>.
+        /// </summary>
+        public bool IsOverriddenCurrentValue { get; }
     }
 }

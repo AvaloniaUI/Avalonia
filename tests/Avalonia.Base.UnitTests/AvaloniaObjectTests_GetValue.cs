@@ -65,53 +65,42 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void GetBaseValue_LocalValue_Ignores_Default_Value()
+        public void GetBaseValue_Ignores_Default_Value()
         {
             var target = new Class3();
 
             target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
-            Assert.False(target.GetBaseValue(Class1.FooProperty, BindingPriority.LocalValue).HasValue);
+            Assert.False(target.GetBaseValue(Class1.FooProperty).HasValue);
         }
 
         [Fact]
-        public void GetBaseValue_LocalValue_Returns_Local_Value()
+        public void GetBaseValue_Returns_Local_Value()
         {
             var target = new Class3();
 
             target.SetValue(Class1.FooProperty, "local");
             target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
-            Assert.Equal("local", target.GetBaseValue(Class1.FooProperty, BindingPriority.LocalValue).Value);
+            Assert.Equal("local", target.GetBaseValue(Class1.FooProperty).Value);
         }
 
         [Fact]
-        public void GetBaseValue_LocalValue_Returns_Style_Value()
+        public void GetBaseValue_Returns_Style_Value()
         {
             var target = new Class3();
 
             target.SetValue(Class1.FooProperty, "style", BindingPriority.Style);
             target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
-            Assert.Equal("style", target.GetBaseValue(Class1.FooProperty, BindingPriority.LocalValue).Value);
+            Assert.Equal("style", target.GetBaseValue(Class1.FooProperty).Value);
         }
 
         [Fact]
-        public void GetBaseValue_Style_Ignores_LocalValue_Animated_Value()
+        public void GetBaseValue_Returns_Style_Value_Set_Via_Untyped_Setters()
         {
             var target = new Class3();
 
-            target.Bind(Class1.FooProperty, new BehaviorSubject<string>("animated"), BindingPriority.Animation);
-            target.SetValue(Class1.FooProperty, "local");
-            Assert.False(target.GetBaseValue(Class1.FooProperty, BindingPriority.Style).HasValue);
-        }
-
-        [Fact]
-        public void GetBaseValue_Style_Returns_Style_Value()
-        {
-            var target = new Class3();
-
-            target.SetValue(Class1.FooProperty, "local");
-            target.SetValue(Class1.FooProperty, "style", BindingPriority.Style);
-            target.Bind(Class1.FooProperty, new BehaviorSubject<string>("animated"), BindingPriority.Animation);
-            Assert.Equal("style", target.GetBaseValue(Class1.FooProperty, BindingPriority.Style));
+            target.SetValue(Class1.FooProperty, (object)"style", BindingPriority.Style);
+            target.SetValue(Class1.FooProperty, (object)"animated", BindingPriority.Animation);
+            Assert.Equal("style", target.GetBaseValue(Class1.FooProperty).Value);
         }
 
         private class Class1 : AvaloniaObject

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
@@ -22,7 +21,7 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
         
-        private MenuPageViewModel _model;
+        private MenuPageViewModel? _model;
         protected override void OnDataContextChanged(EventArgs e)
         {
             if (_model != null)

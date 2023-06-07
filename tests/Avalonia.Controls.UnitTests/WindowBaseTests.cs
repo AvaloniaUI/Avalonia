@@ -7,8 +7,10 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -22,7 +24,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<IWindowBaseImpl>();
+                var impl = CreateMockWindowBaseImpl();
                 var target = new TestWindowBase(impl.Object);
 
                 target.Activate();
@@ -36,8 +38,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<IWindowBaseImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockWindowBaseImpl(true);
 
                 bool raised = false;
                 var target = new TestWindowBase(impl.Object);
@@ -55,8 +56,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<IWindowBaseImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockWindowBaseImpl(true);
 
                 bool raised = false;
                 var target = new TestWindowBase(impl.Object);
@@ -110,6 +110,7 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_Atfer_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.SetupProperty(x => x.Closed);
@@ -129,6 +130,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_True_Shows_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
@@ -145,6 +147,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_False_Hides_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
@@ -163,12 +166,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
-                var target = new TestWindowBase(renderer.Object);
+                var target = new TestWindowBase();
 
                 target.Show();
 
-                renderer.Verify(x => x.Start(), Times.Once);
+                Assert.True(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -194,13 +196,12 @@ namespace Avalonia.Controls.UnitTests
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
-                var target = new TestWindowBase(renderer.Object);
+                var target = new TestWindowBase();
 
                 target.Show();
                 target.Hide();
 
-                renderer.Verify(x => x.Stop(), Times.Once);
+                Assert.False(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -209,23 +210,21 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
                 var windowImpl = new Mock<IPopupImpl>();
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+                windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
 
                 var target = new TestWindowBase(windowImpl.Object);
 
                 target.Show();
                 windowImpl.Object.Closed();
-
-                renderer.Verify(x => x.Dispose(), Times.Once);
+                Assert.True(((CompositingRenderer)target.Renderer).IsDisposed);
             }
         }
 
-        private FuncControlTemplate<TestWindowBase> CreateTemplate()
+        private static FuncControlTemplate<TestWindowBase> CreateTemplate()
         {
             return new FuncControlTemplate<TestWindowBase>((x, scope) =>
                 new ContentPresenter
@@ -235,15 +234,30 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
+        private static Mock<IWindowBaseImpl> CreateMockWindowBaseImpl(bool setupAllProperties = false)
+        {
+            var renderer = new Mock<IWindowBaseImpl>();
+            if (setupAllProperties)
+                renderer.SetupAllProperties();
+            renderer.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            return renderer;
+        }
+
         private class TestWindowBase : WindowBase
         {
             public bool IsClosed { get; private set; }
 
-            public TestWindowBase(IRenderer renderer = null)
-                : base(Mock.Of<IWindowBaseImpl>(x => 
-                    x.RenderScaling == 1 &&
-                    x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer))
+            public TestWindowBase()
+                : base(CreateWindowsBaseImplMock())
             {
+            }
+
+            private static IWindowBaseImpl CreateWindowsBaseImplMock()
+            {
+                var compositor = RendererMocks.CreateDummyCompositor();
+                return Mock.Of<IWindowBaseImpl>(x =>
+                    x.RenderScaling == 1 &&
+                    x.Compositor == compositor);
             }
 
             public TestWindowBase(IWindowBaseImpl impl)

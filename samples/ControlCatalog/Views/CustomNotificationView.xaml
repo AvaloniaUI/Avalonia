@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Views.CustomNotificationView">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Views.CustomNotificationView"
+             x:DataType="viewModels:NotificationViewModel">
     <Border Padding="12" MinHeight="20" Background="DodgerBlue">
         <Grid ColumnDefinitions="Auto,*">
             <Panel Margin="0,0,12,0" Width="25" Height="25" VerticalAlignment="Top">

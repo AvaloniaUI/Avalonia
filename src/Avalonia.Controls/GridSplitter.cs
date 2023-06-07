@@ -53,8 +53,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PreviewContent"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<IControl>> PreviewContentProperty =
-            AvaloniaProperty.Register<GridSplitter, ITemplate<IControl>>(nameof(PreviewContent));
+        public static readonly StyledProperty<ITemplate<Control>> PreviewContentProperty =
+            AvaloniaProperty.Register<GridSplitter, ITemplate<Control>>(nameof(PreviewContent));
 
         private static readonly Cursor s_columnSplitterCursor = new Cursor(StandardCursorType.SizeWestEast);
         private static readonly Cursor s_rowSplitterCursor = new Cursor(StandardCursorType.SizeNorthSouth);
@@ -109,7 +109,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets content that will be shown when <see cref="ShowsPreview"/> is enabled and user starts resize operation.
         /// </summary>
-        public ITemplate<IControl> PreviewContent
+        public ITemplate<Control> PreviewContent
         {
             get => GetValue(PreviewContentProperty);
             set => SetValue(PreviewContentProperty, value);
@@ -221,7 +221,8 @@ namespace Avalonia.Controls
                     ShowsPreview = showsPreview,
                     ResizeDirection = resizeDirection,
                     SplitterLength = Math.Min(Bounds.Width, Bounds.Height),
-                    ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection)
+                    ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection),
+                    Scaling = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1,
                 };
 
                 // Store the rows and columns to resize on drag events.
@@ -335,7 +336,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                IControl? builtPreviewContent = previewContent?.Build();
+                Control? builtPreviewContent = previewContent?.Build();
 
                 _resizeData.Adorner = new PreviewAdorner(builtPreviewContent);
 
@@ -348,9 +349,9 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             GridResizeDirection direction = GetEffectiveResizeDirection();
 
@@ -515,7 +516,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Retrieves the ActualWidth or ActualHeight of the definition depending on its type Column or Row.
         /// </summary>
-        private double GetActualLength(DefinitionBase definition)
+        private static double GetActualLength(DefinitionBase definition)
         {
             var column = definition as ColumnDefinition;
 
@@ -630,13 +631,17 @@ namespace Avalonia.Controls
             {
                 double actualLength1 = GetActualLength(definition1);
                 double actualLength2 = GetActualLength(definition2);
+                double pixelLength = 1 / _resizeData.Scaling;
+                double epsilon = pixelLength + LayoutHelper.LayoutEpsilon;
 
                 // When splitting, Check to see if the total pixels spanned by the definitions 
-                // is the same as before starting resize. If not cancel the drag.
+                // is the same as before starting resize. If not cancel the drag. We need to account for
+                // layout rounding here, so ignore differences of less than a device pixel to avoid problems
+                // that WPF has, such as https://stackoverflow.com/questions/28464843.
                 if (_resizeData.SplitBehavior == SplitBehavior.Split &&
                     !MathUtilities.AreClose(
                         actualLength1 + actualLength2,
-                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, LayoutHelper.LayoutEpsilon))
+                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, epsilon))
                 {
                     CancelResize();
 
@@ -690,8 +695,9 @@ namespace Avalonia.Controls
         {
             private readonly TranslateTransform _translation;
             private readonly Decorator _decorator;
-            
-            public PreviewAdorner(IControl? previewControl)
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Private object")]
+            public PreviewAdorner(Control? previewControl)
             {
                 // Add a decorator to perform translations.
                 _translation = new TranslateTransform();
@@ -798,6 +804,9 @@ namespace Avalonia.Controls
             // The minimum of Width/Height of Splitter.  Used to ensure splitter 
             // isn't hidden by resizing a row/column smaller than the splitter.
             public double SplitterLength;
+
+            // The current layout scaling factor.
+            public double Scaling;
         }
     }
 

@@ -1,0 +1,10 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Compile Sandbox": {
+      "commandName": "Project",
+      "executablePath": "$(SolutionDir)\\src\\Avalonia.Build.Tasks\\bin\\Debug\\net6.0\\Avalonia.Build.Tasks.exe",
+      "commandLineArgs": "$(SolutionDir)\\samples\\Sandbox\\obj\\Debug\\net6.0\\Avalonia\\original.dll $(SolutionDir)\\samples\\Sandbox\\bin\\Debug\\net6.0\\Sandbox.dll.refs $(SolutionDir)\\out.dll"
+    }
+  }
+}

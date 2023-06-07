@@ -24,7 +24,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var expressionObserver = (BindingExpression)target.Initiate(
                 textBlock, 
-                TextBlock.TextProperty).Observable;
+                TextBlock.TextProperty).Source;
 
             Assert.Same(StringConverters.IsNullOrEmpty, expressionObserver.Converter);
         }
@@ -46,7 +46,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 var expressionObserver = (BindingExpression)target.Initiate(
                     textBlock,
-                    TextBlock.TextProperty).Observable;
+                    TextBlock.TextProperty).Source;
 
                 Assert.IsType<StringFormatValueConverter>(expressionObserver.Converter);
             }
@@ -69,7 +69,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 var expressionObserver = (BindingExpression)target.Initiate(
                     textBlock,
-                    TextBlock.TagProperty).Observable;
+                    TextBlock.TagProperty).Source;
 
                 Assert.IsType<StringFormatValueConverter>(expressionObserver.Converter);
             }
@@ -92,7 +92,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 var expressionObserver = (BindingExpression)target.Initiate(
                     textBlock,
-                    TextBlock.MarginProperty).Observable;
+                    TextBlock.MarginProperty).Source;
 
                 Assert.Same(DefaultValueConverter.Instance, expressionObserver.Converter);
             }

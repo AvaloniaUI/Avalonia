@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -11,7 +11,11 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
@@ -28,9 +32,9 @@ namespace Avalonia.DesignerSupport.Remote
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
@@ -55,11 +59,18 @@ namespace Avalonia.DesignerSupport.Remote
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent,
                     (_, size, __) =>
                     {
-                        Resize(size, PlatformResizeReason.Unspecified);
+                        Resize(size, WindowResizeReason.Unspecified);
                     }));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        class DummyRenderTimer : IRenderTimer
+        {
+            public event Action<TimeSpan> Tick;
+            public bool RunsInBackground => false;
+        }
+
+        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+
         public void Dispose()
         {
         }
@@ -99,7 +110,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void Resize(Size clientSize, PlatformResizeReason reason)
+        public void Resize(Size clientSize, WindowResizeReason reason)
         {
         }
 
@@ -166,19 +177,22 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public bool NeedsManagedDecorations => false;
-        
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+        public object TryGetFeature(Type featureType) => null;
     }
 
     class ClipboardStub : IClipboard
@@ -189,7 +203,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task ClearAsync() => Task.CompletedTask;
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
         public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
@@ -222,15 +236,6 @@ namespace Avalonia.DesignerSupport.Remote
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
     }
 
-    class SystemDialogsStub : ISystemDialogImpl
-    {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
-            Task.FromResult((string[])null);
-
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
-            Task.FromResult((string)null);
-    }
-
     class ScreenStub : IScreenImpl
     {
         public int ScreenCount => 1;
@@ -251,6 +256,27 @@ namespace Avalonia.DesignerSupport.Remote
         public Screen ScreenFromWindow(IWindowBaseImpl window)
         {
             return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
+    }
+
+    internal class NoopStorageProvider : BclStorageProvider
+    {
+        public override bool CanOpen => false;
+        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
+        }
+
+        public override bool CanSave => false;
+        public override Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
+        {
+            return Task.FromResult<IStorageFile>(null);
+        }
+
+        public override bool CanPickFolder => false;
+        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
         }
     }
 }

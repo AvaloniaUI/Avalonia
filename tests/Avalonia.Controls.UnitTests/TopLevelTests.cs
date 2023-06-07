@@ -2,14 +2,18 @@ using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+using static Avalonia.Controls.UnitTests.MaskedTextBoxTests;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -20,7 +24,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 var target = new TestTopLevel(impl.Object);
 
                 Assert.True(((ILogical)target).IsAttachedToLogicalTree);
@@ -32,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 var target = new TestTopLevel(impl.Object);
@@ -46,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 var target = new TestTopLevel(impl.Object);
@@ -60,7 +64,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 var target = new TestTopLevel(impl.Object);
@@ -76,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
 
             using (UnitTestApplication.Start(services))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 
                 var target = new TestTopLevel(impl.Object, Mock.Of<ILayoutManager>());
 
@@ -91,7 +95,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 impl.SetupProperty(x => x.Resized);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
 
@@ -117,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 var target = new TestTopLevel(impl.Object);
@@ -133,13 +137,12 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 // The user has resized the window, so we can no longer auto-size.
                 var target = new TestTopLevel(impl.Object);
-                impl.Object.Resized(new Size(100, 200), PlatformResizeReason.Unspecified);
+                impl.Object.Resized(new Size(100, 200), WindowResizeReason.Unspecified);
 
                 Assert.Equal(100, target.Width);
                 Assert.Equal(200, target.Height);
@@ -151,8 +154,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 bool raised = false;
                 var target = new TestTopLevel(impl.Object);
@@ -169,8 +171,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 var target = new TestTopLevel(impl.Object);
                 var raised = 0;
@@ -193,12 +194,14 @@ namespace Avalonia.Controls.UnitTests
         public void Impl_Input_Should_Pass_Input_To_InputManager()
         {
             var inputManagerMock = new Mock<IInputManager>();
+            inputManagerMock.DefaultValue = DefaultValue.Mock;
+            inputManagerMock.SetupAllProperties();
+
             var services = TestServices.StyledWindow.With(inputManager: inputManagerMock.Object);
 
             using (UnitTestApplication.Start(services))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 var target = new TestTopLevel(impl.Object);
 
@@ -219,8 +222,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
                 var target = new TestTopLevel(impl.Object);
                 var child = new TestTopLevel(impl.Object);
 
@@ -237,8 +239,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
                 var target = new TestTopLevel(impl.Object);
                 var raised = false;
 
@@ -250,30 +251,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Close_Should_Notify_MouseDevice()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                var mouseDevice = new Mock<IMouseDevice>();
-                impl.SetupAllProperties();
-                impl.Setup(x => x.MouseDevice).Returns(mouseDevice.Object);
-
-                var target = new TestTopLevel(impl.Object);
-
-                impl.Object.Closed();
-
-                mouseDevice.Verify(x => x.TopLevelClosed(target));
-            }
-        }
-
-        [Fact]
         public void Close_Should_Dispose_LayoutManager()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 var layoutManager = new Mock<ILayoutManager>();
                 var target = new TestTopLevel(impl.Object, layoutManager.Object);
@@ -289,7 +271,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = CreateMockTopLevelImpl();
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
 
                 var child = new Border { Classes = { "foo" } };
@@ -322,7 +304,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private FuncControlTemplate<TestTopLevel> CreateTemplate()
+        private static FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
             return new FuncControlTemplate<TestTopLevel>((x, scope) =>
                 new ContentPresenter
@@ -330,6 +312,16 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
                 }.RegisterInNameScope(scope));
+        }
+
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(bool setupProperties = false)
+        {
+            var topLevel = new Mock<ITopLevelImpl>();
+            if (setupProperties)
+                topLevel.SetupAllProperties();
+            topLevel.Setup(x => x.RenderScaling).Returns(1);
+            topLevel.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            return topLevel;
         }
 
         private class TestTopLevel : TopLevel
@@ -343,7 +335,7 @@ namespace Avalonia.Controls.UnitTests
                 _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
     }
 }

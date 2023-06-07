@@ -112,7 +112,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (OwningGrid == null || Children.Count == 0)
             {
-                return Size.Empty;
+                return default;
             }
 
             double desiredWidth = OwningGrid.AreRowDetailsFrozen ?

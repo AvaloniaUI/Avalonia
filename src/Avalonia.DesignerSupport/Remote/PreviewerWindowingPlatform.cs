@@ -6,10 +6,11 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class PreviewerWindowingPlatform : IWindowingPlatform, IPlatformSettings
+    class PreviewerWindowingPlatform : IWindowingPlatform
     {
         static readonly IKeyboardDevice Keyboard = new KeyboardDevice();
         private static IAvaloniaRemoteTransportConnection s_transport;
@@ -46,27 +47,16 @@ namespace Avalonia.DesignerSupport.Remote
         {
             s_transport = transport;
             var instance = new PreviewerWindowingPlatform();
-            var threading = new InternalPlatformThreadingInterface();
             AvaloniaLocator.CurrentMutable
-                .Bind<IClipboard>().ToSingleton<ClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
-                .Bind<IPlatformSettings>().ToConstant(instance)
-                .Bind<IPlatformThreadingInterface>().ToConstant(threading)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsStub>()
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
+                .Bind<IRenderTimer>().ToConstant(new UiThreadRenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
         }
-
-        public Size DoubleClickSize { get; } = new Size(2, 2);
-        public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
-
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 }

@@ -49,7 +49,11 @@ public partial class Build
                         {
                             if (fsEntry is FileInfo)
                             {
+#if NET6
                                 var relPath = Path.GetRelativePath(rootPath, fsEntry.FullName);
+#else
+                                var relPath = GetRelativePath(rootPath, fsEntry.FullName);
+#endif
                                 AddFile(fsEntry.FullName, relPath);
                             }
                         }
@@ -76,6 +80,17 @@ public partial class Build
                 //Ignore
             }
         }
+    }
+
+    private static string GetRelativePath(string relativeTo, string path)
+    {
+        var uri = new Uri(relativeTo);
+        var rel = Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        if (rel.Contains(Path.DirectorySeparatorChar.ToString()) == false)
+        {
+            rel = $".{Path.DirectorySeparatorChar}{rel}";
+        }
+        return rel;
     }
 
     class NumergeNukeLogger : INumergeLogger

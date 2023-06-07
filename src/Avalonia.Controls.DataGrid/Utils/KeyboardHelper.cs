@@ -10,23 +10,23 @@ namespace Avalonia.Controls.Utils
 {
     internal static class KeyboardHelper
     {
-        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrlOrCmd, out bool shift)
+        public static void GetMetaKeyState(Control target, KeyModifiers modifiers, out bool ctrlOrCmd, out bool shift)
         {
-            ctrlOrCmd = modifiers.HasFlag(GetPlatformCtrlOrCmdKeyModifier());
+            ctrlOrCmd = modifiers.HasFlag(GetPlatformCtrlOrCmdKeyModifier(target));
             shift = modifiers.HasFlag(KeyModifiers.Shift);
         }
 
-        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrlOrCmd, out bool shift, out bool alt)
+        public static void GetMetaKeyState(Control target, KeyModifiers modifiers, out bool ctrlOrCmd, out bool shift, out bool alt)
         {
-            ctrlOrCmd = modifiers.HasFlag(GetPlatformCtrlOrCmdKeyModifier());
+            ctrlOrCmd = modifiers.HasFlag(GetPlatformCtrlOrCmdKeyModifier(target));
             shift = modifiers.HasFlag(KeyModifiers.Shift);
             alt = modifiers.HasFlag(KeyModifiers.Alt);
         }
 
-        public static KeyModifiers GetPlatformCtrlOrCmdKeyModifier()
-        {                
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-            return keymap?.CommandModifiers ?? KeyModifiers.Control;
+        public static KeyModifiers GetPlatformCtrlOrCmdKeyModifier(Control target)
+        {
+            var keymap = TopLevel.GetTopLevel(target)!.PlatformSettings!.HotkeyConfiguration;
+            return keymap.CommandModifiers;
         }
     }
 }

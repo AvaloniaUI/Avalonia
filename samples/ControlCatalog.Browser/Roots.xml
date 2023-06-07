@@ -1,0 +1,7 @@
+﻿<linker>
+  <assembly fullname="ControlCatalog" preserve="All" />
+  <assembly fullname="ControlCatalog.Web" preserve="All" />
+  <assembly fullname="Avalonia.Themes.Fluent" preserve="All" />
+  <assembly fullname="Avalonia.Themes.Simple" preserve="All" />
+  <assembly fullname="Avalonia.Controls.ColorPicker" preserve="All" />
+</linker>

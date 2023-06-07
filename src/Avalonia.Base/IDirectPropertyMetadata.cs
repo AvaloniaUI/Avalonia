@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia
 {
     /// <summary>
     /// Untyped interface to <see cref="DirectPropertyMetadata{TValue}"/>
     /// </summary>
+    [NotClientImplementable]
     public interface IDirectPropertyMetadata
     {
         /// <summary>

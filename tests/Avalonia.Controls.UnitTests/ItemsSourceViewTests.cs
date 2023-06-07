@@ -15,7 +15,7 @@ namespace Avalonia.Controls.UnitTests
         public void Only_Subscribes_To_Source_CollectionChanged_When_CollectionChanged_Subscribed()
         {
             var source = new AvaloniaList<string>();
-            var target = new ItemsSourceView<string>(source);
+            var target = ItemsSourceView.GetOrCreate(source);
             var debug = (INotifyCollectionChangedDebug)source;
 
             Assert.Null(debug.GetCollectionChangedSubscribers());
@@ -32,17 +32,39 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Cannot_Wrap_An_ItemsSourceView_In_Another()
-        {
-            var source = new ItemsSourceView<string>(new string[0]);
-            Assert.Throws<ArgumentException>(() => new ItemsSourceView<string>(source));
-        }
-
-        [Fact]
         public void Cannot_Create_ItemsSourceView_With_Collection_That_Implements_INCC_But_Not_List()
         {
             var source = new InvalidCollection();
-            Assert.Throws<ArgumentException>(() => new ItemsSourceView<string>(source));
+            Assert.Throws<ArgumentException>(() => ItemsSourceView.GetOrCreate(source));
+        }
+
+        [Fact]
+        public void Reassigning_Source_Unsubscribes_From_Previous_Source()
+        {
+            var source = new AvaloniaList<string>();
+            var target = new ReassignableItemsSourceView(source);
+            var debug = (INotifyCollectionChangedDebug)source;
+
+            target.CollectionChanged += (s, e) => { };
+
+            Assert.Equal(1, debug.GetCollectionChangedSubscribers().Length);
+
+            target.SetSource(new string[0]);
+
+            Assert.Null(debug.GetCollectionChangedSubscribers());
+        }
+
+        [Fact]
+        public void Reassigning_Source_Subscribes_To_New_Source()
+        {
+            var source = new AvaloniaList<string>();
+            var target = new ReassignableItemsSourceView(new string[0]);
+            var debug = (INotifyCollectionChangedDebug)source;
+
+            target.CollectionChanged += (s, e) => { };
+            target.SetSource(source);
+
+            Assert.Equal(1, debug.GetCollectionChangedSubscribers().Length);
         }
 
         private class InvalidCollection : INotifyCollectionChanged, IEnumerable<string>
@@ -58,6 +80,16 @@ namespace Avalonia.Controls.UnitTests
             {
                 yield break;
             }
+        }
+
+        private class ReassignableItemsSourceView : ItemsSourceView
+        {
+            public ReassignableItemsSourceView(IEnumerable source)
+                : base(source)
+            {
+            }
+
+            public new void SetSource(IEnumerable source) => base.SetSource(source);
         }
     }
 }

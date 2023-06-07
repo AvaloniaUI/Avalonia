@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
 
 The above is the version of the MIT "Expat" License used by X.org:
 
-    http://cgit.freedesktop.org/xorg/xserver/tree/COPYING
+    https://cgit.freedesktop.org/xorg/xserver/tree/COPYING
     
     
 Adjustments for Avalonia needs:
@@ -45,7 +45,10 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using Avalonia.Input;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives.PopupPositioning
 {
@@ -60,7 +63,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// requirement that a popup must intersect with or be at least partially adjacent to its parent
     /// surface.
     /// </remarks>
-    public struct PopupPositionerParameters
+    [Unstable]
+    public record struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
         private PopupAnchor _anchor;
@@ -428,6 +432,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// managed implementation is provided in <see cref="ManagedPopupPositioner"/> for platforms
     /// on which popups can be arbitrarily positioned.
     /// </remarks>
+    [NotClientImplementable]
     public interface IPopupPositioner
     {
         /// <summary>
@@ -438,24 +443,24 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         void Update(PopupPositionerParameters parameters);
     }
 
+    [Unstable]
     static class PopupPositionerExtensions
     {
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
             TopLevel topLevel,
-            IVisual target, PlacementMode placement, Point offset,
+            Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor, PopupGravity gravity,
-            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect)
+            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
+            FlowDirection flowDirection)
         {
-            // We need a better way for tracking the last pointer position
-#pragma warning disable CS0618 // Type or member is obsolete
-            var pointer = topLevel.PointToClient(topLevel.PlatformImpl?.MouseDevice.Position ?? default);
-#pragma warning restore CS0618 // Type or member is obsolete
-
             positionerParameters.Offset = offset;
             positionerParameters.ConstraintAdjustment = constraintAdjustment;
             if (placement == PlacementMode.Pointer)
             {
-                positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
+                // We need a better way for tracking the last pointer position
+                var position = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+
+                positionerParameters.AnchorRectangle = new Rect(position, new Size(1, 1));
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
                 positionerParameters.Gravity = PopupGravity.BottomRight;
             }
@@ -473,35 +478,55 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
                 var bounds = new Rect(default, target.Bounds.Size);
                 var anchorRect = rect ?? bounds;
-                positionerParameters.AnchorRectangle = anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
+                positionerParameters.AnchorRectangle =  anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
 
-                if (placement == PlacementMode.Right)
+                var parameters = placement switch
                 {
-                    positionerParameters.Anchor = PopupAnchor.TopRight;
-                    positionerParameters.Gravity = PopupGravity.BottomRight;
-                }
-                else if (placement == PlacementMode.Bottom)
+                    PlacementMode.Bottom => (PopupAnchor.Bottom, PopupGravity.Bottom),
+                    PlacementMode.Right => (PopupAnchor.Right, PopupGravity.Right),
+                    PlacementMode.Left => (PopupAnchor.Left, PopupGravity.Left),
+                    PlacementMode.Top => (PopupAnchor.Top, PopupGravity.Top),
+                    PlacementMode.Center => (PopupAnchor.None, PopupGravity.None),
+                    PlacementMode.AnchorAndGravity => (anchor, gravity),
+                    PlacementMode.TopEdgeAlignedRight => (PopupAnchor.TopRight, PopupGravity.TopLeft),
+                    PlacementMode.TopEdgeAlignedLeft => (PopupAnchor.TopLeft, PopupGravity.TopRight),
+                    PlacementMode.BottomEdgeAlignedLeft => (PopupAnchor.BottomLeft, PopupGravity.BottomRight),
+                    PlacementMode.BottomEdgeAlignedRight => (PopupAnchor.BottomRight, PopupGravity.BottomLeft),
+                    PlacementMode.LeftEdgeAlignedTop => (PopupAnchor.TopLeft, PopupGravity.BottomLeft),
+                    PlacementMode.LeftEdgeAlignedBottom => (PopupAnchor.BottomLeft, PopupGravity.TopLeft),
+                    PlacementMode.RightEdgeAlignedTop => (PopupAnchor.TopRight, PopupGravity.BottomRight),
+                    PlacementMode.RightEdgeAlignedBottom => (PopupAnchor.BottomRight, PopupGravity.TopRight),
+                    _ => throw new ArgumentOutOfRangeException(nameof(placement), placement,
+                        "Invalid value for Popup.PlacementMode")
+                };
+                positionerParameters.Anchor = parameters.Item1;
+                positionerParameters.Gravity = parameters.Item2;
+            }
+
+            // Invert coordinate system if FlowDirection is RTL
+            if (flowDirection == FlowDirection.RightToLeft)
+            {
+                if ((positionerParameters.Anchor & PopupAnchor.Right) == PopupAnchor.Right)
                 {
-                    positionerParameters.Anchor = PopupAnchor.BottomLeft;
-                    positionerParameters.Gravity = PopupGravity.BottomRight;
+                    positionerParameters.Anchor ^= PopupAnchor.Right;
+                    positionerParameters.Anchor |= PopupAnchor.Left;
                 }
-                else if (placement == PlacementMode.Left)
+                else if ((positionerParameters.Anchor & PopupAnchor.Left) == PopupAnchor.Left)
                 {
-                    positionerParameters.Anchor = PopupAnchor.TopLeft;
-                    positionerParameters.Gravity = PopupGravity.BottomLeft;
+                    positionerParameters.Anchor ^= PopupAnchor.Left;
+                    positionerParameters.Anchor |= PopupAnchor.Right;
                 }
-                else if (placement == PlacementMode.Top)
+
+                if ((positionerParameters.Gravity & PopupGravity.Right) == PopupGravity.Right)
                 {
-                    positionerParameters.Anchor = PopupAnchor.TopLeft;
-                    positionerParameters.Gravity = PopupGravity.TopRight;
+                    positionerParameters.Gravity ^= PopupGravity.Right;
+                    positionerParameters.Gravity |= PopupGravity.Left;
                 }
-                else if (placement == PlacementMode.AnchorAndGravity)
+                else if ((positionerParameters.Gravity & PopupGravity.Left) == PopupGravity.Left)
                 {
-                    positionerParameters.Anchor = anchor;
-                    positionerParameters.Gravity = gravity;
+                    positionerParameters.Gravity ^= PopupGravity.Left;
+                    positionerParameters.Gravity |= PopupGravity.Right;
                 }
-                else
-                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
             }
         }
     }

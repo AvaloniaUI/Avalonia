@@ -4,10 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Interactivity;
 using Avalonia.Native.Interop;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Native
 {
@@ -18,16 +15,6 @@ namespace Avalonia.Native
         public AvaloniaNativeDragSource(IAvaloniaNativeFactory factory)
         {
             _factory = factory;
-        }
-        
-        TopLevel FindRoot(IInteractive interactive)
-        {
-            while (interactive != null && !(interactive is IVisual))
-                interactive = interactive.InteractiveParent;
-            if (interactive == null)
-                return null;
-            var visual = (IVisual)interactive;
-            return visual.VisualRoot as TopLevel;
         }
 
         class DndCallback : NativeCallbackBase, IAvnDndResultCallback
@@ -48,7 +35,7 @@ namespace Avalonia.Native
         public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             // Sanity check
-            var tl = FindRoot(triggerEvent.Source);
+            var tl = TopLevel.GetTopLevel(triggerEvent.Source as Visual);
             var view = tl?.PlatformImpl as WindowBaseImpl;
             if (view == null)
                 throw new ArgumentException();

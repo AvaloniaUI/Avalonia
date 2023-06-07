@@ -1,17 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
+using System.Reactive.Disposables;
+using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using JetBrains.dotMemoryUnit;
@@ -24,9 +31,53 @@ namespace Avalonia.LeakTests
     [DotMemoryUnit(FailIfRunWithoutSupport = false)]
     public class ControlTests
     {
+        // Need to have the collection as field, so GC will not free it
+        private readonly ObservableCollection<string> _observableCollection = new();
+        
         public ControlTests(ITestOutputHelper atr)
         {
             DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
+        }
+
+ 
+        [Fact]
+        public void DataGrid_Is_Freed()
+        {
+            using (Start())
+            {
+                // When attached to INotifyCollectionChanged, DataGrid will subscribe to it's events, potentially causing leak
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new DataGrid
+                        {
+                            ItemsSource = _observableCollection
+                        }
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that DataGrid gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<DataGrid>(window.Presenter.Child);
+
+                    // Clear the content and ensure the DataGrid is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<DataGrid>()).ObjectsCount));
+            }
         }
 
         [Fact]
@@ -56,6 +107,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -98,6 +152,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
@@ -136,6 +193,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -172,6 +232,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -218,6 +281,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -249,7 +315,7 @@ namespace Avalonia.LeakTests
 
                 // The TextBox should have subscriptions to its Classes collection from the
                 // default theme.
-                Assert.NotEmpty(((INotifyCollectionChangedDebug)textBox.Classes).GetCollectionChangedSubscribers());
+                Assert.NotEqual(0, textBox.Classes.ListenerCount);
 
                 // Clear the content and ensure the TextBox is removed.
                 window.Content = null;
@@ -288,7 +354,7 @@ namespace Avalonia.LeakTests
                                     (x, _) => new TextBlock { Text = x.Name },
                                     x => x.Children)
                             },
-                            Items = nodes
+                            ItemsSource = nodes
                         }
                     };
 
@@ -296,7 +362,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.Single(target.ItemContainerGenerator.Containers);
+                    Assert.Single(target.GetRealizedContainers());
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
@@ -307,6 +373,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
@@ -341,6 +410,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
             }
@@ -357,7 +429,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = new TabControl
                         {
-                            Items = new[] { new TabItem() }
+                            ItemsSource = new[] { new TabItem() }
                         }
                     };
 
@@ -369,7 +441,7 @@ namespace Avalonia.LeakTests
                     Assert.IsType<TabItem>(tabControl.Presenter.Panel.Children[0]);
 
                     // Clear the items and ensure the TabItem is removed.
-                    tabControl.Items = null;
+                    tabControl.ItemsSource = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Empty(tabControl.Presenter.Panel.Children);
 
@@ -377,6 +449,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TabItem>()).ObjectsCount));
@@ -388,12 +463,11 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
-                var renderer = new Mock<IRenderer>();
-                renderer.Setup(x => x.Dispose());
                 var impl = new Mock<IWindowImpl>();
+                impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
-                impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+                impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
@@ -404,7 +478,7 @@ namespace Avalonia.LeakTests
                 };
                 window.Show();
                 window.Close();
-                renderer.Verify(r => r.Dispose());
+                Assert.True(((CompositingRenderer)window.Renderer).IsDisposed);
             }
         }
 
@@ -453,6 +527,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
@@ -467,7 +544,7 @@ namespace Avalonia.LeakTests
                 {
                     var contextMenu = new ContextMenu
                     {
-                        Items = new[]
+                        Items =
                         {
                             new MenuItem { Header = "Foo" },
                             new MenuItem { Header = "Foo" },
@@ -480,10 +557,10 @@ namespace Avalonia.LeakTests
                     control.ContextMenu = null;
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+                Assert.Same(window, window.FocusManager.GetFocusedElement());
 
                 // Context menu in resources means the baseline may not be 0.
                 var initialMenuCount = 0;
@@ -493,8 +570,11 @@ namespace Avalonia.LeakTests
                     initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
                     initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
                 });
-                
+
                 AttachShowAndDetachContextMenu(window);
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
@@ -513,7 +593,7 @@ namespace Avalonia.LeakTests
                 {
                     var contextMenu = new ContextMenu
                     {
-                        Items = new[]
+                        Items =
                         {
                             new MenuItem { Header = "Foo" },
                             new MenuItem { Header = "Foo" },
@@ -524,10 +604,10 @@ namespace Avalonia.LeakTests
                     contextMenu.Close();
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+                Assert.Same(window, window.FocusManager.GetFocusedElement());
 
                 // Context menu in resources means the baseline may not be 0.
                 var initialMenuCount = 0;
@@ -537,9 +617,12 @@ namespace Avalonia.LeakTests
                     initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
                     initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
                 });
-                
+
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
@@ -580,6 +663,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Path>()).ObjectsCount));
 
@@ -614,18 +700,327 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
             }
         }
 
+        [Fact]
+        public void ElementName_Binding_In_DataTemplate_Is_Freed()
+        {
+            using (Start())
+            {
+                // Height of ListBoxItem content + padding.
+                const double ListBoxItemHeight = 12;
+                const double TextBoxHeight = 25;
+
+                var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
+                NameScope ns;
+                TextBox tb;
+                ListBox lb;
+                var window = new Window
+                {
+                    [NameScope.NameScopeProperty] = ns = new NameScope(),
+                    Width = 100,
+                    Height = (items.Count * ListBoxItemHeight) + TextBoxHeight,
+                    Content = new DockPanel
+                    {
+                        Children =
+                        {
+                            (tb = new TextBox
+                            {
+                                Name = "tb",
+                                Text = "foo",
+                                Height = TextBoxHeight,
+                                [DockPanel.DockProperty] = Dock.Top,
+                            }),
+                            (lb = new ListBox
+                            {
+                                ItemsSource = items,
+                                ItemTemplate = new FuncDataTemplate<int>((_, _) =>
+                                    new Canvas
+                                    {
+                                        Width = 10,
+                                        Height = 10,
+                                        [!Control.TagProperty] = new Binding
+                                        {
+                                            ElementName = "tb",
+                                            Path = "Text",
+                                            NameScope = new WeakReference<INameScope>(ns),
+                                        }
+                                    }),
+                                Padding = new Thickness(0),
+                            }),
+                        }
+                    }
+                };
+
+                tb.RegisterInNameScope(ns);
+
+                window.Show();
+                window.LayoutManager.ExecuteInitialLayoutPass();
+
+                void AssertInitialItemState()
+                {
+                    var item0 = (ListBoxItem)lb.GetRealizedContainers().First();
+                    var canvas0 = (Canvas)item0.Presenter.Child;
+                    Assert.Equal("foo", canvas0.Tag);
+                }
+
+                Assert.Equal(10, lb.GetRealizedContainers().Count());
+                AssertInitialItemState();
+
+                items.Clear();
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Empty(lb.GetRealizedContainers());
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void HotKeyManager_Should_Release_Reference_When_Control_Detached()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
+                    var tl = new Window
+                    {
+                        Content = new ItemsRepeater(),
+                    };
+
+                    tl.Show();
+
+                    var button = new Button();
+                    tl.Content = button;
+                    tl.Template = CreateWindowTemplate();
+                    tl.ApplyTemplate();
+                    tl.Presenter.ApplyTemplate();
+                    HotKeyManager.SetHotKey(button, gesture1);
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    tl.Content = null;
+                    tl.ApplyTemplate();
+
+                    return tl;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void HotKeyManager_Should_Release_Reference_When_Control_In_Item_Template_Detached()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                    var tl = new Window { SizeToContent = SizeToContent.WidthAndHeight, IsVisible = true };
+                    var lm = tl.LayoutManager;
+                    tl.Show();
+
+                    var keyGestures = new AvaloniaList<KeyGesture> { gesture1 };
+                    var listBox = new ListBox
+                    {
+                        Width = 100,
+                        Height = 100,
+                        // Create a button with binding to the KeyGesture in the template and add it to references list
+                        ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, scope) =>
+                        {
+                            var keyGesture = o as KeyGesture;
+                            return new Button
+                            {
+                                DataContext = keyGesture,
+                                [!Button.HotKeyProperty] = new Binding("")
+                            };
+                        })
+                    };
+                    // Add the listbox and render it
+                    tl.Content = listBox;
+                    lm.ExecuteInitialLayoutPass();
+                    listBox.ItemsSource = keyGestures;
+                    lm.ExecuteLayoutPass();
+
+                    // Let the button detach when clearing the source items
+                    keyGestures.Clear();
+                    lm.ExecuteLayoutPass();
+
+                    // Add it again to double check,and render
+                    keyGestures.Add(gesture1);
+                    lm.ExecuteLayoutPass();
+
+                    keyGestures.Clear();
+                    lm.ExecuteLayoutPass();
+
+                    return tl;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void ToolTip_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window();
+                    var source = new Button
+                    {
+                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                            new Decorator
+                            {
+                                [ToolTip.TipProperty] = new TextBlock
+                                {
+                                    [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                }
+                            }),
+                    };
+
+                    window.Content = source;
+                    window.Show();
+
+                    var templateChild = (Decorator)source.GetVisualChildren().Single();
+                    ToolTip.SetIsOpen(templateChild, true);
+
+                    ToolTip.SetIsOpen(templateChild, false);
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    window.Content = null;
+                    
+                    // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
+                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                {
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ToolTip>()).ObjectsCount);
+                });
+            }
+        }
+        
+        [Fact]
+        public void Flyout_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window();
+                    var source = new Button
+                    {
+                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                            new Button
+                            {
+                                Flyout = new Flyout
+                                {
+                                    Content = new TextBlock
+                                    {
+                                        [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                    }
+                                }
+                            }),
+                    };
+
+                    window.Content = source;
+                    window.Show();
+
+                    var templateChild = (Button)source.GetVisualChildren().Single();
+                    templateChild.Flyout!.ShowAt(templateChild);
+                    
+                    templateChild.Flyout!.Hide();
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    window.Content = null;
+
+                    // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
+                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                {
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Flyout>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Popup>()).ObjectsCount);
+                });
+            }
+        }
+        
+        private FuncControlTemplate CreateWindowTemplate()
+        {
+            return new FuncControlTemplate<Window>((parent, scope) =>
+            {
+                return new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                }.RegisterInNameScope(scope);
+            });
+        }
+
         private IDisposable Start()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
-                keyboardDevice: () => new KeyboardDevice(),
-                inputManager: new InputManager()));
+            static void Cleanup()
+            {
+                // KeyboardDevice holds a reference to the focused item.
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                
+                // Empty the dispatcher queue.
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            return new CompositeDisposable
+            {
+                Disposable.Create(Cleanup),
+                UnitTestApplication.Start(TestServices.StyledWindow.With(
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    inputManager: new InputManager()))
+            };
         }
+
 
         private class Node
         {
@@ -633,44 +1028,5 @@ namespace Avalonia.LeakTests
             public IEnumerable<Node> Children { get; set; }
         }
 
-        private class NullRenderer : IRenderer
-        {
-            public bool DrawFps { get; set; }
-            public bool DrawDirtyRects { get; set; }
-#pragma warning disable CS0067
-            public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-#pragma warning restore CS0067
-            public void AddDirty(IVisual visual)
-            {
-            }
-
-            public void Dispose()
-            {
-            }
-
-            public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
-
-            public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
-
-            public void Paint(Rect rect)
-            {
-            }
-
-            public void RecalculateChildren(IVisual visual)
-            {
-            }
-
-            public void Resized(Size size)
-            {
-            }
-
-            public void Start()
-            {
-            }
-
-            public void Stop()
-            {
-            }
-        }
     }
 }

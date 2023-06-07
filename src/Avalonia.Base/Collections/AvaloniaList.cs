@@ -394,7 +394,13 @@ namespace Avalonia.Collections
                         } while (en.MoveNext());
 
                         if (notificationItems is not null)
+                        {
                             NotifyAdd(notificationItems, index);
+                        }
+                        else
+                        {
+                            NotifyCountChanged();
+                        }
                     }
                 }
             }

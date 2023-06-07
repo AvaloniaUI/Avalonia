@@ -5,23 +5,22 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
     internal class OleContext
     {
-        private static OleContext s_current;
+        private static OleContext? s_current;
 
-        internal static OleContext Current
+        internal static OleContext? Current
         {
             get
             {
                 if (!IsValidOleThread())
                     return null;
 
-                if (s_current == null)
-                    s_current = new OleContext();
-                return s_current;
+                return s_current ??= new OleContext();
             }
         }
 
@@ -40,18 +39,18 @@ namespace Avalonia.Win32
                    Thread.CurrentThread.GetApartmentState() == ApartmentState.STA;
         }
 
-        internal bool RegisterDragDrop(IPlatformHandle hwnd, IDropTarget target)
+        internal bool RegisterDragDrop(IPlatformHandle? hwnd, IDropTarget? target)
         {
             if (hwnd?.HandleDescriptor != "HWND" || target == null)
             {
                 return false;
             }
 
-            var trgPtr = MicroCom.MicroComRuntime.GetNativeIntPtr(target);
+            var trgPtr = target.GetNativeIntPtr();
             return UnmanagedMethods.RegisterDragDrop(hwnd.Handle, trgPtr) == UnmanagedMethods.HRESULT.S_OK;
         }
 
-        internal bool UnregisterDragDrop(IPlatformHandle hwnd)
+        internal bool UnregisterDragDrop(IPlatformHandle? hwnd)
         {
             if (hwnd?.HandleDescriptor != "HWND")
             {

@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Diagnostics.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -39,15 +40,14 @@ namespace Avalonia.Diagnostics.Views
 
             _layoutRoot = this.GetControl<Grid>("LayoutRoot");
 
-            void SubscribeToBounds(Visual visual)
+            Visual? visual = _contentArea;
+            while (visual != null && !ReferenceEquals(visual, this))
             {
-                visual.GetPropertyChangedObservable(TransformedBoundsProperty)
+                visual.GetPropertyChangedObservable(BoundsProperty)
                     .Subscribe(UpdateSizeGuidelines);
+                visual = visual.VisualParent;
             }
-
-            SubscribeToBounds(_borderArea);
-            SubscribeToBounds(_paddingArea);
-            SubscribeToBounds(_contentArea);
+            
         }
 
         private void InitializeComponent()
@@ -55,22 +55,27 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void UpdateSizeGuidelines(AvaloniaPropertyChangedEventArgs e)
+        private void UpdateSizeGuidelines(AvaloniaPropertyChangedEventArgs _)
         {
             void UpdateGuidelines(Visual area)
             {
-                if (area.TransformedBounds is TransformedBounds bounds)
+                // That's what TransformedBounds.Bounds actually was.
+                // The code below doesn't really make sense to me, so I've just changed v.TransformedBounds.Bounds
+                // to GetPseudoTransformedBounds
+                Rect GetPseudoTransformedBounds(Visual v) => new(v.Bounds.Size);
+                var bounds = GetPseudoTransformedBounds(area);
+                
                 {
                     // Horizontal guideline
                     {
-                        var sizeArea = TranslateToRoot((_horizontalSize.TransformedBounds ?? default).Bounds.BottomLeft,
+                        var sizeArea = TranslateToRoot(GetPseudoTransformedBounds(_horizontalSize).BottomLeft,
                             _horizontalSize);
 
-                        var start = TranslateToRoot(bounds.Bounds.BottomLeft, area);
+                        var start = TranslateToRoot(bounds.BottomLeft, area);
 
                         SetPosition(_horizontalSizeBegin, start);
 
-                        var end = TranslateToRoot(bounds.Bounds.BottomRight, area);
+                        var end = TranslateToRoot(bounds.BottomRight, area);
 
                         SetPosition(_horizontalSizeEnd, end.WithX(end.X - 1));
 
@@ -82,13 +87,13 @@ namespace Avalonia.Diagnostics.Views
 
                     // Vertical guideline
                     {
-                        var sizeArea = TranslateToRoot((_verticalSize.TransformedBounds ?? default).Bounds.TopRight, _verticalSize);
+                        var sizeArea = TranslateToRoot(GetPseudoTransformedBounds(_verticalSize).TopRight, _verticalSize);
 
-                        var start = TranslateToRoot(bounds.Bounds.TopRight, area);
+                        var start = TranslateToRoot(bounds.TopRight, area);
 
                         SetPosition(_verticalSizeBegin, start);
 
-                        var end = TranslateToRoot(bounds.Bounds.BottomRight, area);
+                        var end = TranslateToRoot(bounds.BottomRight, area);
 
                         SetPosition(_verticalSizeEnd, end.WithY(end.Y - 1));
 
@@ -100,7 +105,7 @@ namespace Avalonia.Diagnostics.Views
                 }
             }
 
-            Point TranslateToRoot(Point point, IVisual from)
+            Point TranslateToRoot(Point point, Visual from)
             {
                 return from.TranslatePoint(point, _layoutRoot) ?? default;
             }

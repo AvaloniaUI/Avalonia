@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Avalonia.Data.Core.Parsers
 {
     static class ExpressionTreeParser
     {
+        [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
         public static ExpressionNode Parse(Expression expr, bool enableDataValidation)
         {
             var visitor = new ExpressionVisitorNodeBuilder(enableDataValidation);

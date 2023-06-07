@@ -7,6 +7,7 @@ using System.Reactive;
 using System.Reactive.Subjects;
 using System.Reactive.Linq;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -17,6 +18,7 @@ using Avalonia.UnitTests;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Avalonia;
+using Avalonia.Threading;
 using ReactiveUI;
 using DynamicData;
 using Xunit;
@@ -45,7 +47,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var isLaunchingReceived = false;
-                var application = AvaloniaLocator.Current.GetService<Application>();
+                var application = AvaloniaLocator.Current.GetRequiredService<Application>();
                 application.ApplicationLifetime = lifetime;
 
                 // Initialize ReactiveUI Suspension as in real-world scenario.
@@ -63,7 +65,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
             {
-                var application = AvaloniaLocator.Current.GetService<Application>();
+                var application = AvaloniaLocator.Current.GetRequiredService<Application>();
                 application.ApplicationLifetime = lifetime;
                 Assert.Throws<NotSupportedException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
             }
@@ -86,20 +88,30 @@ namespace Avalonia.ReactiveUI.UnitTests
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime()) 
             {
                 var shouldPersistReceived = false;
-                var application = AvaloniaLocator.Current.GetService<Application>();
+                var application = AvaloniaLocator.Current.GetRequiredService<Application>();
                 application.ApplicationLifetime = lifetime;
 
                 // Initialize ReactiveUI Suspension as in real-world scenario.
                 var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
                 RxApp.SuspensionHost.CreateNewAppState = () => new AppState { Example = "Foo" };
                 RxApp.SuspensionHost.ShouldPersistState.Subscribe(_ => shouldPersistReceived = true);
-                RxApp.SuspensionHost.SetupDefaultSuspendResume(new DummySuspensionDriver());
+                RxApp.SuspensionHost.SetupDefaultSuspendResume(new FakeSuspensionDriver());
                 suspension.OnFrameworkInitializationCompleted();
 
                 lifetime.Shutdown();
+                
                 Assert.True(shouldPersistReceived);
                 Assert.Equal("Foo", RxApp.SuspensionHost.GetAppState<AppState>().Example);
             }
+        }
+
+        private class FakeSuspensionDriver : ISuspensionDriver
+        {
+            public IObservable<object> LoadState() => Observable.Empty<object>();
+
+            public IObservable<Unit> SaveState(object state) => Observable.Empty<Unit>();
+
+            public IObservable<Unit> InvalidateState() => Observable.Empty<Unit>();
         }
     }
 }

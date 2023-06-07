@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
-namespace Avalonia.Controls.Documents 
+namespace Avalonia.Controls.Documents
 {
     /// <summary>
     /// LineBreak element that forces a line breaking. 
@@ -20,24 +19,20 @@ namespace Avalonia.Controls.Documents
         {
         }
 
-        internal override int BuildRun(StringBuilder stringBuilder,
-            IList<ValueSpan<TextRunProperties>> textStyleOverrides, int firstCharacterIndex)
-        {
-            var length = AppendText(stringBuilder);
-
-            textStyleOverrides.Add(new ValueSpan<TextRunProperties>(firstCharacterIndex, length,
-                CreateTextRunProperties()));
-
-            return length;
-        }
-
-        internal override int AppendText(StringBuilder stringBuilder)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
             var text = Environment.NewLine;
 
-            stringBuilder.Append(text);
+            var textRunProperties = CreateTextRunProperties();
 
-            return text.Length;
+            var textCharacters = new TextCharacters(text, textRunProperties);
+
+            textRuns.Add(textCharacters);
+        }
+
+        internal override void AppendText(StringBuilder stringBuilder)
+        {
+            stringBuilder.Append(Environment.NewLine);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls;
 using ControlCatalog;
 using Avalonia;
 
@@ -15,8 +14,11 @@ namespace WindowsInteropTest
         {
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
-            AppBuilder.Configure<App>().UseWin32().UseDirect2D1().SetupWithoutStarting();
-            System.Windows.Forms.Application.Run(new SelectorForm());
+            AppBuilder.Configure<App>()
+                .UseWin32()
+                .UseSkia()
+                .SetupWithoutStarting();
+            System.Windows.Forms.Application.Run(new EmbedToWinFormsDemo());
         }
     }
 }

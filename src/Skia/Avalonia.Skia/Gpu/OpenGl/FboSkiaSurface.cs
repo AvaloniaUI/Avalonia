@@ -1,21 +1,26 @@
 using System;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
+
 namespace Avalonia.Skia
 {
-    public class FboSkiaSurface : ISkiaSurface
+    internal class FboSkiaSurface : ISkiaSurface
     {
+        private readonly GlSkiaGpu _gpu;
         private readonly GRContext _grContext;
         private readonly IGlContext _glContext;
         private readonly PixelSize _pixelSize;
         private int _fbo;
         private int _depthStencil;
         private int _texture;
+        private SKSurface? _surface;
 
         private static readonly bool[] TrueFalse = new[] { true, false };
-        public FboSkiaSurface(GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
+        public FboSkiaSurface(GlSkiaGpu gpu, GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
         {
+            _gpu = gpu;
             _grContext = grContext;
             _glContext = glContext;
             _pixelSize = pixelSize;
@@ -27,16 +32,13 @@ namespace Avalonia.Skia
             gl.GetIntegerv(GL_RENDERBUFFER_BINDING, out var oldRenderbuffer);
             gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out var oldTexture);
 
-            var arr = new int[2];
-
+            
             // Generate FBO
-            gl.GenFramebuffers(1, arr);
-            _fbo = arr[0];
+            _fbo = gl.GenFramebuffer();
             gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
             // Create a texture to render into
-            gl.GenTextures(1, arr);
-            _texture = arr[0];
+            _texture = gl.GenTexture();
             gl.BindTexture(GL_TEXTURE_2D, _texture);
             gl.TexImage2D(GL_TEXTURE_2D, 0,
                 InternalFormat, pixelSize.Width, pixelSize.Height,
@@ -48,8 +50,7 @@ namespace Avalonia.Skia
             var success = false;
             foreach (var useStencil8 in TrueFalse)
             {
-                gl.GenRenderbuffers(1, arr);
-                _depthStencil = arr[0];
+                _depthStencil = gl.GenRenderbuffer();
                 gl.BindRenderbuffer(GL_RENDERBUFFER, _depthStencil);
 
                 if (useStencil8)
@@ -73,7 +74,7 @@ namespace Avalonia.Skia
                 else
                 {
                     gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderbuffer);
-                    gl.DeleteRenderbuffers(1, arr);
+                    gl.DeleteRenderbuffer(_depthStencil);
                 }
             }
             
@@ -83,39 +84,53 @@ namespace Avalonia.Skia
 
             if (!success)
             {
-                arr[0] = _fbo;
-                gl.DeleteFramebuffers(1, arr);
-                arr[0] = _texture;
-                gl.DeleteTextures(1, arr);
+                gl.DeleteFramebuffer(_fbo);
+                gl.DeleteTexture(_texture);
                 throw new OpenGlException("Unable to create FBO with stencil");
             }
 
             var target = new GRBackendRenderTarget(pixelSize.Width, pixelSize.Height, 0, 8,
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
-            Surface = SKSurface.Create(_grContext, target,
-                surfaceOrigin, SKColorType.Rgba8888);
-            CanBlit = gl.BlitFramebuffer != null;
+            _surface = SKSurface.Create(_grContext, target,
+                surfaceOrigin, SKColorType.Rgba8888, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
+            CanBlit = gl.IsBlitFramebufferAvailable;
         }
         
         public void Dispose()
         {
-            using (_glContext.EnsureCurrent())
+            try
             {
-                Surface?.Dispose();
-                Surface = null;
-                var gl = _glContext.GlInterface;
-                if (_fbo != 0)
+                using (_glContext.EnsureCurrent())
                 {
-                    gl.DeleteFramebuffers(1, new[] { _fbo });
-                    gl.DeleteTextures(1, new[] { _texture });
-                    gl.DeleteRenderbuffers(1, new[] { _depthStencil });
-                    _fbo = _texture = _depthStencil = 0;
+                    _surface?.Dispose();
+                    _surface = null;
+                    var gl = _glContext.GlInterface;
+                    if (_fbo != 0)
+                    {
+                        gl.DeleteFramebuffer(_fbo);
+                        gl.DeleteTexture(_texture);
+                        gl.DeleteRenderbuffer(_depthStencil);
+                    }
                 }
+            }
+            catch (PlatformGraphicsContextLostException)
+            {
+                if (_surface != null)
+                    // We need to dispose SKSurface _after_ GRContext.Abandon was called,
+                    // otherwise it will try to do OpenGL calls without a proper context 
+                    _gpu.AddPostDispose(_surface.Dispose);
+                _surface = null;
+            }
+            finally
+            {
+                _fbo = _texture = _depthStencil = 0;
             }
         }
 
-        public SKSurface Surface { get; private set; }
+        public SKSurface Surface => _surface ?? throw new ObjectDisposedException(nameof(FboSkiaSurface));
+
         public bool CanBlit { get; }
+
         public void Blit(SKCanvas canvas)
         {
             // This should set the render target as the current FBO

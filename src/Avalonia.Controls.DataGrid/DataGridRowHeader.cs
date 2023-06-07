@@ -13,12 +13,11 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> row header. 
     /// </summary>
+    [TemplatePart(DATAGRIDROWHEADER_elementRootName, typeof(Control))]
     [PseudoClasses(":invalid", ":selected", ":editing", ":current")]
     public class DataGridRowHeader : ContentControl
     {
         private const string DATAGRIDROWHEADER_elementRootName = "PART_Root";
-        private const double DATAGRIDROWHEADER_separatorThickness = 1;
-
         private Control _rootElement;
 
         public static readonly StyledProperty<IBrush> SeparatorBrushProperty =
@@ -157,23 +156,23 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
             if (OwningRow != null)
             {
                 OwningRow.IsMouseOver = true;
             }
 
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
         }
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             if (OwningRow != null)
             {
                 OwningRow.IsMouseOver = false;
             }
 
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         //TODO TabStop

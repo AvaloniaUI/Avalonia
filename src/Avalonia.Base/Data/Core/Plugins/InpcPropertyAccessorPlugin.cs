@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Utilities;
 
@@ -11,13 +11,14 @@ namespace Avalonia.Data.Core.Plugins
     /// Reads a property from a standard C# object that optionally supports the
     /// <see cref="INotifyPropertyChanged"/> interface.
     /// </summary>
-    public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
+    internal class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         private readonly Dictionary<(Type, string), PropertyInfo?> _propertyLookup =
             new Dictionary<(Type, string), PropertyInfo?>();
 
         /// <inheritdoc/>
-        public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj.GetType(), propertyName) != null;
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj, propertyName) != null;
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
@@ -28,6 +29,7 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor? Start(WeakReference<object?> reference, string propertyName)
         {
             _ = reference ?? throw new ArgumentNullException(nameof(reference));
@@ -36,7 +38,7 @@ namespace Avalonia.Data.Core.Plugins
             if (!reference.TryGetTarget(out var instance) || instance is null)
                 return null;
 
-            var p = GetFirstPropertyWithName(instance.GetType(), propertyName);
+            var p = GetFirstPropertyWithName(instance, propertyName);
 
             if (p != null)
             {
@@ -50,8 +52,17 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private PropertyInfo? GetFirstPropertyWithName(Type type, string propertyName)
+        private const BindingFlags PropertyBindingFlags =
+            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
+
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        private PropertyInfo? GetFirstPropertyWithName(object instance, string propertyName)
         {
+            if (instance is IReflectableType reflectableType && instance is not Type)
+                return reflectableType.GetTypeInfo().GetProperty(propertyName, PropertyBindingFlags);
+
+            var type = instance.GetType();
+            
             var key = (type, propertyName);
 
             if (!_propertyLookup.TryGetValue(key, out var propertyInfo))
@@ -62,14 +73,12 @@ namespace Avalonia.Data.Core.Plugins
             return propertyInfo;
         }
 
-        private PropertyInfo? TryFindAndCacheProperty(Type type, string propertyName)
+        private PropertyInfo? TryFindAndCacheProperty(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type, string propertyName)
         {
             PropertyInfo? found = null;
 
-            const BindingFlags bindingFlags =
-                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
-
-            var properties = type.GetProperties(bindingFlags);
+            var properties = type.GetProperties(PropertyBindingFlags);
 
             foreach (PropertyInfo propertyInfo in properties)
             {
@@ -151,7 +160,7 @@ namespace Avalonia.Data.Core.Plugins
                 var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
                 if (inpc != null) 
-                    WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
+                    WeakEvents.ThreadSafePropertyChanged.Unsubscribe(inpc, this);
             }
 
             private object? GetReferenceTarget()
@@ -176,7 +185,7 @@ namespace Avalonia.Data.Core.Plugins
                 var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
                 if (inpc != null) 
-                    WeakEvents.PropertyChanged.Subscribe(inpc, this);
+                    WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
             }
         }
     }

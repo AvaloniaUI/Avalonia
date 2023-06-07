@@ -2,7 +2,7 @@ using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -15,8 +15,8 @@ using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -24,70 +24,112 @@ namespace Avalonia.Controls
     /// Represents a control that can be used to display or edit unformatted text.
     /// </summary>
     [TemplatePart("PART_TextPresenter", typeof(TextPresenter))]
+    [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
-        public static KeyGesture? CutGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
+        /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the Cut action
+        /// </summary>
+        public static KeyGesture? CutGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Cut.FirstOrDefault();
 
-        public static KeyGesture? CopyGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Copy.FirstOrDefault();
+        /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the Copy action
+        /// </summary>
+        public static KeyGesture? CopyGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Copy.FirstOrDefault();
 
-        public static KeyGesture? PasteGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Paste.FirstOrDefault();
+        /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the Paste action
+        /// </summary>
+        public static KeyGesture? PasteGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Paste.FirstOrDefault();
 
+        /// <summary>
+        /// Defines the <see cref="AcceptsReturn"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
 
+        /// <summary>
+        /// Defines the <see cref="AcceptsTab"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> AcceptsTabProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsTab));
 
-        public static readonly DirectProperty<TextBox, int> CaretIndexProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(CaretIndex),
-                o => o.CaretIndex,
-                (o, v) => o.CaretIndex = v);
+        /// <summary>
+        /// Defines the <see cref="CaretIndex"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> CaretIndexProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(CaretIndex),
+                coerce: CoerceCaretIndex);
 
+        /// <summary>
+        /// Defines the <see cref="IsReadOnly"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
+        /// <summary>
+        /// Defines the <see cref="PasswordChar"/> property
+        /// </summary>
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
+        /// <summary>
+        /// Defines the <see cref="SelectionBrush"/> property
+        /// </summary>
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
+        /// <summary>
+        /// Defines the <see cref="SelectionForegroundBrush"/> property
+        /// </summary>
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrush));
 
+        /// <summary>
+        /// Defines the <see cref="CaretBrush"/> property
+        /// </summary>
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
-        public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(SelectionStart),
-                o => o.SelectionStart,
-                (o, v) => o.SelectionStart = v);
+        /// <summary>
+        /// Defines the <see cref="SelectionStart"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> SelectionStartProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(SelectionStart),
+                coerce: CoerceCaretIndex);
 
-        public static readonly DirectProperty<TextBox, int> SelectionEndProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(SelectionEnd),
-                o => o.SelectionEnd,
-                (o, v) => o.SelectionEnd = v);
+        /// <summary>
+        /// Defines the <see cref="SelectionEnd"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> SelectionEndProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(SelectionEnd),
+                coerce: CoerceCaretIndex);
 
+        /// <summary>
+        /// Defines the <see cref="MaxLength"/> property
+        /// </summary>
         public static readonly StyledProperty<int> MaxLengthProperty =
-            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
+            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength));
 
+        /// <summary>
+        /// Defines the <see cref="MaxLines"/> property
+        /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
-      AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
+            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines));
 
-        public static readonly DirectProperty<TextBox, string?> TextProperty =
-            TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
-                o => o.Text,
-                (o, v) => o.Text = v,
+        /// <summary>
+        /// Defines the <see cref="Text"/> property
+        /// </summary>
+        public static readonly StyledProperty<string?> TextProperty =
+            TextBlock.TextProperty.AddOwner<TextBox>(new(
+                coerce: CoerceText,
                 defaultBindingMode: BindingMode.TwoWay,
-                enableDataValidation: true);
+                enableDataValidation: true));
 
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property
+        /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
 
@@ -106,67 +148,146 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
+        /// <summary>
+        /// Defines see <see cref="TextPresenter.LineHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LineHeightProperty =
+            TextBlock.LineHeightProperty.AddOwner<TextBox>(new(defaultValue: double.NaN));
+
+        /// <summary>
+        /// Defines see <see cref="TextBlock.LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextBlock.LetterSpacingProperty.AddOwner<TextBox>();
+
+        /// <summary>
+        /// Defines the <see cref="Watermark"/> property
+        /// </summary>
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
 
+        /// <summary>
+        /// Defines the <see cref="UseFloatingWatermark"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
-        public static readonly DirectProperty<TextBox, string> NewLineProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
-                textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
+        /// <summary>
+        /// Defines the <see cref="NewLine"/> property
+        /// </summary>
+        public static readonly StyledProperty<string> NewLineProperty =
+            AvaloniaProperty.Register<TextBox, string>(nameof(NewLine), Environment.NewLine);
 
+        /// <summary>
+        /// Defines the <see cref="InnerLeftContent"/> property
+        /// </summary>
         public static readonly StyledProperty<object> InnerLeftContentProperty =
             AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
 
+        /// <summary>
+        /// Defines the <see cref="InnerRightContent"/> property
+        /// </summary>
         public static readonly StyledProperty<object> InnerRightContentProperty =
             AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
 
+        /// <summary>
+        /// Defines the <see cref="RevealPassword"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> RevealPasswordProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(RevealPassword));
 
+        /// <summary>
+        /// Defines the <see cref="CanCut"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanCutProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanCut),
                 o => o.CanCut);
 
+        /// <summary>
+        /// Defines the <see cref="CanCopy"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanCopyProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanCopy),
                 o => o.CanCopy);
 
+        /// <summary>
+        /// Defines the <see cref="CanPaste"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanPasteProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanPaste),
                 o => o.CanPaste);
 
+        /// <summary>
+        /// Defines the <see cref="IsUndoEnabled"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> IsUndoEnabledProperty =
             AvaloniaProperty.Register<TextBox, bool>(
                 nameof(IsUndoEnabled),
                 defaultValue: true);
 
-        public static readonly DirectProperty<TextBox, int> UndoLimitProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(UndoLimit),
-                o => o.UndoLimit,
-                (o, v) => o.UndoLimit = v,
-                unsetValue: -1);
+        /// <summary>
+        /// Defines the <see cref="UndoLimit"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> UndoLimitProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(UndoLimit), UndoRedoHelper<UndoRedoState>.DefaultUndoLimit);
 
+        /// <summary>
+        /// Defines the <see cref="CanUndo"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, bool> CanUndoProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(nameof(CanUndo), x => x.CanUndo);
+
+        /// <summary>
+        /// Defines the <see cref="CanRedo"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, bool> CanRedoProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(nameof(CanRedo), x => x.CanRedo);
+
+        /// <summary>
+        /// Defines the <see cref="CopyingToClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CopyingToClipboard", RoutingStrategies.Bubble);
+                nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="CuttingToClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CuttingToClipboard", RoutingStrategies.Bubble);
+                nameof(CuttingToClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PastingFromClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "PastingFromClipboard", RoutingStrategies.Bubble);
+                nameof(PastingFromClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="TextChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextChangedEventArgs> TextChangedEvent =
+            RoutedEvent.Register<TextBox, TextChangedEventArgs>(
+                nameof(TextChanged), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="TextChanging"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextChangingEventArgs> TextChangingEvent =
+            RoutedEvent.Register<TextBox, TextChangingEventArgs>(
+                nameof(TextChanging), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Stores the state information for available actions in the UndoRedoHelper
+        /// </summary>
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string? Text { get; }
+
             public int CaretPosition { get; }
 
             public UndoRedoState(string? text, int caretPosition)
@@ -182,21 +303,19 @@ namespace Avalonia.Controls
             public override int GetHashCode() => Text?.GetHashCode() ?? 0;
         }
 
-        private string? _text;
-        private int _caretIndex;
-        private int _selectionStart;
-        private int _selectionEnd;
         private TextPresenter? _presenter;
-        private TextBoxTextInputMethodClient _imClient = new TextBoxTextInputMethodClient();
-        private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private ScrollViewer? _scrollViewer;
+        private readonly TextBoxTextInputMethodClient _imClient = new();
+        private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
-        private bool _ignoreTextChanges;
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
-        private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
+        private bool _canUndo;
+        private bool _canRedo;
 
+        private int _wordSelectionStart = -1;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private const int _maxCharsBeforeUndoSnapshot = 7;
@@ -231,162 +350,211 @@ namespace Avalonia.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
+
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
             UpdatePseudoclasses();
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines whether the TextBox allows and displays newline or return characters
+        /// </summary>
         public bool AcceptsReturn
         {
-            get { return GetValue(AcceptsReturnProperty); }
-            set { SetValue(AcceptsReturnProperty, value); }
+            get => GetValue(AcceptsReturnProperty);
+            set => SetValue(AcceptsReturnProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that determins whether the TextBox allows and displays tabs
+        /// </summary>
         public bool AcceptsTab
         {
-            get { return GetValue(AcceptsTabProperty); }
-            set { SetValue(AcceptsTabProperty, value); }
+            get => GetValue(AcceptsTabProperty);
+            set => SetValue(AcceptsTabProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the index of the text caret
+        /// </summary>
         public int CaretIndex
         {
-            get
-            {
-                return _caretIndex;
-            }
-
-            set
-            {
-                value = CoerceCaretIndex(value);
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
-
-                UndoRedoState state;
-                if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
-                    _undoRedoHelper.UpdateLastState();
-
-                SelectionStart = SelectionEnd = value;
-            }
+            get => GetValue(CaretIndexProperty);
+            set => SetValue(CaretIndexProperty, value);
         }
 
+        private void OnCaretIndexChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UndoRedoState state;
+            if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
+                _undoRedoHelper.UpdateLastState();
+
+            var newValue = e.GetNewValue<int>();
+            SetCurrentValue(SelectionStartProperty, newValue);
+            SetCurrentValue(SelectionEndProperty, newValue);
+        }
+
+        /// <summary>
+        /// Gets or sets a value whether this TextBox is read-only
+        /// </summary>
         public bool IsReadOnly
         {
-            get { return GetValue(IsReadOnlyProperty); }
-            set { SetValue(IsReadOnlyProperty, value); }
+            get => GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="char"/> that should be used for password masking
+        /// </summary>
         public char PasswordChar
         {
             get => GetValue(PasswordCharProperty);
             set => SetValue(PasswordCharProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a brush that is used to highlight selected text
+        /// </summary>
         public IBrush? SelectionBrush
         {
             get => GetValue(SelectionBrushProperty);
             set => SetValue(SelectionBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a brush that is used for the foreground of selected text
+        /// </summary>
         public IBrush? SelectionForegroundBrush
         {
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a brush that is used for the text caret
+        /// </summary>
         public IBrush? CaretBrush
         {
             get => GetValue(CaretBrushProperty);
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the starting position of the text selected in the TextBox
+        /// </summary>
         public int SelectionStart
         {
-            get
-            {
-                return _selectionStart;
-            }
+            get => GetValue(SelectionStartProperty);
+            set => SetValue(SelectionStartProperty, value);
+        }
 
-            set
-            {
-                value = CoerceCaretIndex(value);
-                var changed = SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
-                
-                if (changed)
-                {
-                    UpdateCommandStates();
-                }
+        private void OnSelectionStartChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UpdateCommandStates();
 
-                if (SelectionEnd == value && CaretIndex != value)
-                {
-                    CaretIndex = value;
-                }
+            var value = e.GetNewValue<int>();
+            if (SelectionEnd == value && CaretIndex != value)
+            {
+                SetCurrentValue(CaretIndexProperty, value);
             }
         }
 
+        /// <summary>
+        /// Gets or sets the end position of the text selected in the TextBox
+        /// </summary>
+        /// <remarks>
+        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no 
+        /// selected text and it marks the caret position
+        /// </remarks>
         public int SelectionEnd
         {
-            get
-            {
-                return _selectionEnd;
-            }
+            get => GetValue(SelectionEndProperty);
+            set => SetValue(SelectionEndProperty, value);
+        }
 
-            set
+        private void OnSelectionEndChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UpdateCommandStates();
+
+            var value = e.GetNewValue<int>();
+            if (SelectionStart == value && CaretIndex != value)
             {
-                value = CoerceCaretIndex(value);
-                var changed = SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
-                
-                if (changed)
-                {
-                    UpdateCommandStates();
-                }
-                
-                if (SelectionStart == value && CaretIndex != value)
-                {
-                    CaretIndex = value;
-                }
+                SetCurrentValue(CaretIndexProperty, value);
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of visible lines.
+        /// </summary>
         public int MaxLength
         {
-            get { return GetValue(MaxLengthProperty); }
-            set { SetValue(MaxLengthProperty, value); }
+            get => GetValue(MaxLengthProperty);
+            set => SetValue(MaxLengthProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of lines the TextBox can contain
+        /// </summary>
         public int MaxLines
         {
-            get { return GetValue(MaxLinesProperty); }
-            set { SetValue(MaxLinesProperty, value); }
+            get => GetValue(MaxLinesProperty);
+            set => SetValue(MaxLinesProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the spacing between characters
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the line height.
+        /// </summary>
+        public double LineHeight
+        {
+            get => GetValue(LineHeightProperty);
+            set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the Text content of the TextBox
+        /// </summary>
         [Content]
         public string? Text
         {
-            get { return _text; }
-            set
-            {
-                if (!_ignoreTextChanges)
-                {
-                    var caretIndex = CaretIndex;
-                    var selectionStart = SelectionStart;
-                    var selectionEnd = SelectionEnd;
-                    
-                    CaretIndex = CoerceCaretIndex(caretIndex, value);
-                    SelectionStart = CoerceCaretIndex(selectionStart, value);
-                    SelectionEnd = CoerceCaretIndex(selectionEnd, value);
-
-                    if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
-                    {
-                        _undoRedoHelper.Clear();
-                        SnapshotUndoRedo(); // so we always have an initial state
-                    }
-                }
-            }
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
+        private static string? CoerceText(AvaloniaObject sender, string? value)
+        {
+            var textBox = (TextBox)sender;
+
+            // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
+            // since intial state would never be no text and you'd always have to make a text 
+            // change before undo would be available
+            // The undo/redo stacks were also cleared at this point, which also doesn't make sense
+            // as it is still valid to want to undo a programmatic text set
+            // So we snapshot text now BEFORE the change so we can always revert
+            // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
+            if (!textBox._isUndoingRedoing)
+            {
+                textBox.SnapshotUndoRedo();
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Gets or sets the text selected in the TextBox
+        /// </summary>
         public string SelectedText
         {
-            get { return GetSelection(); }
+            get => GetSelection();
             set
             {
                 if (string.IsNullOrEmpty(value))
@@ -407,8 +575,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -416,50 +584,73 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Media.TextAlignment"/> of the TextBox
+        /// </summary>
         public TextAlignment TextAlignment
         {
-            get { return GetValue(TextAlignmentProperty); }
-            set { SetValue(TextAlignmentProperty, value); }
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
+        /// property is not yet set.
+        /// </summary>
         public string? Watermark
         {
-            get { return GetValue(WatermarkProperty); }
-            set { SetValue(WatermarkProperty, value); }
+            get => GetValue(WatermarkProperty);
+            set => SetValue(WatermarkProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="Watermark"/> will still be shown above the
+        /// <see cref="Text"/> even after a text value is set.
+        /// </summary>
         public bool UseFloatingWatermark
         {
-            get { return GetValue(UseFloatingWatermarkProperty); }
-            set { SetValue(UseFloatingWatermarkProperty, value); }
+            get => GetValue(UseFloatingWatermarkProperty);
+            set => SetValue(UseFloatingWatermarkProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the left side of the text layout box
+        /// </summary>
         public object InnerLeftContent
         {
-            get { return GetValue(InnerLeftContentProperty); }
-            set { SetValue(InnerLeftContentProperty, value); }
+            get => GetValue(InnerLeftContentProperty);
+            set => SetValue(InnerLeftContentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the right side of the text layout box
+        /// </summary>
         public object InnerRightContent
         {
-            get { return GetValue(InnerRightContentProperty); }
-            set { SetValue(InnerRightContentProperty, value); }
+            get => GetValue(InnerRightContentProperty);
+            set => SetValue(InnerRightContentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets whether text masked by <see cref="PasswordChar"/> should be revealed
+        /// </summary>
         public bool RevealPassword
         {
-            get { return GetValue(RevealPasswordProperty); }
-            set { SetValue(RevealPasswordProperty, value); }
+            get => GetValue(RevealPasswordProperty);
+            set => SetValue(RevealPasswordProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Media.TextWrapping"/> of the TextBox
+        /// </summary>
         public TextWrapping TextWrapping
         {
-            get { return GetValue(TextWrappingProperty); }
-            set { SetValue(TextWrappingProperty, value); }
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
         }
 
         /// <summary>
@@ -467,8 +658,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string NewLine
         {
-            get { return _newLine; }
-            set { SetAndRaise(NewLineProperty, ref _newLine, value); }
+            get => GetValue(NewLineProperty);
+            set => SetValue(NewLineProperty, value);
         }
 
         /// <summary>
@@ -476,7 +667,8 @@ namespace Avalonia.Controls
         /// </summary>
         public void ClearSelection()
         {
-            CaretIndex = SelectionStart;
+            SetCurrentValue(CaretIndexProperty, SelectionStart);
+            SetCurrentValue(SelectionEndProperty, SelectionStart);
         }
 
         /// <summary>
@@ -484,8 +676,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanCut
         {
-            get { return _canCut; }
-            private set { SetAndRaise(CanCutProperty, ref _canCut, value); }
+            get => _canCut;
+            private set => SetAndRaise(CanCutProperty, ref _canCut, value);
         }
 
         /// <summary>
@@ -493,8 +685,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanCopy
         {
-            get { return _canCopy; }
-            private set { SetAndRaise(CanCopyProperty, ref _canCopy, value); }
+            get => _canCopy;
+            private set => SetAndRaise(CanCopyProperty, ref _canCopy, value);
         }
 
         /// <summary>
@@ -502,8 +694,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanPaste
         {
-            get { return _canPaste; }
-            private set { SetAndRaise(CanPasteProperty, ref _canPaste, value); }
+            get => _canPaste;
+            private set => SetAndRaise(CanPasteProperty, ref _canPaste, value);
         }
 
         /// <summary>
@@ -511,57 +703,105 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsUndoEnabled
         {
-            get { return GetValue(IsUndoEnabledProperty); }
-            set { SetValue(IsUndoEnabledProperty, value); }
+            get => GetValue(IsUndoEnabledProperty);
+            set => SetValue(IsUndoEnabledProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of items that can reside in the Undo stack
+        /// </summary>
         public int UndoLimit
         {
-            get { return _undoRedoHelper.Limit; }
-            set
-            {
-                if (_undoRedoHelper.Limit != value)
-                {
-                    // can't use SetAndRaise due to using _undoRedoHelper.Limit
-                    // (can't send a ref of a property to SetAndRaise),
-                    // so use RaisePropertyChanged instead.
-                    var oldValue = _undoRedoHelper.Limit;
-                    _undoRedoHelper.Limit = value;
-                    RaisePropertyChanged(UndoLimitProperty, oldValue, value);
-                }
-                // from docs at
-                // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
-                // "Setting UndoLimit clears the undo queue."
-                _undoRedoHelper.Clear();
-                _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
-                _hasDoneSnapshotOnce = false;
-            }
+            get => GetValue(UndoLimitProperty);
+            set => SetValue(UndoLimitProperty, value);
         }
 
+        private void OnUndoLimitChanged(int newValue)
+        {
+            _undoRedoHelper.Limit = newValue;
+
+            // from docs at
+            // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
+            // "Setting UndoLimit clears the undo queue."
+            _undoRedoHelper.Clear();
+            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+            _hasDoneSnapshotOnce = false;
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the undo stack has an action that can be undone
+        /// </summary>
+        public bool CanUndo
+        {
+            get => _canUndo;
+            private set => SetAndRaise(CanUndoProperty, ref _canUndo, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the redo stack has an action that can be redone
+        /// </summary>
+        public bool CanRedo
+        {
+            get => _canRedo;
+            private set => SetAndRaise(CanRedoProperty, ref _canRedo, value);
+        }
+
+        /// <summary>
+        /// Raised when content is being copied to the clipboard
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
         {
             add => AddHandler(CopyingToClipboardEvent, value);
             remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
 
+        /// <summary>
+        /// Raised when content is being cut to the clipboard
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? CuttingToClipboard
         {
             add => AddHandler(CuttingToClipboardEvent, value);
             remove => RemoveHandler(CuttingToClipboardEvent, value);
         }
 
+        /// <summary>
+        /// Raised when content is being pasted from the clipboard
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? PastingFromClipboard
         {
             add => AddHandler(PastingFromClipboardEvent, value);
             remove => RemoveHandler(PastingFromClipboardEvent, value);
         }
 
+        /// <summary>
+        /// Occurs asynchronously after text changes and the new text is rendered.
+        /// </summary>
+        public event EventHandler<TextChangedEventArgs>? TextChanged
+        {
+            add => AddHandler(TextChangedEvent, value);
+            remove => RemoveHandler(TextChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs synchronously when text starts to change but before it is rendered.
+        /// </summary>
+        /// <remarks>
+        /// This event occurs just after the <see cref="Text"/> property value has been updated.
+        /// </remarks>
+        public event EventHandler<TextChangingEventArgs>? TextChanging
+        {
+            add => AddHandler(TextChangingEvent, value);
+            remove => RemoveHandler(TextChangingEvent, value);
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
+            _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+
             _imClient.SetPresenter(_presenter, this);
-            
+
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
@@ -571,7 +811,7 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            
+
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
@@ -581,20 +821,46 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            
+
             _imClient.SetPresenter(null, null);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == TextProperty)
             {
+                CoerceValue(CaretIndexProperty);
+                CoerceValue(SelectionStartProperty);
+                CoerceValue(SelectionEndProperty);
+
+                RaiseTextChangeEvents();
+
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
-            else if (change.Property == IsUndoEnabledProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            else if (change.Property == CaretIndexProperty)
+            {
+                OnCaretIndexChanged(change);
+            }
+            else if (change.Property == SelectionStartProperty)
+            {
+                OnSelectionStartChanged(change);
+            }
+            else if (change.Property == SelectionEndProperty)
+            {
+                OnSelectionEndChanged(change);
+            }
+            else if (change.Property == MaxLinesProperty)
+            {
+                InvalidateMeasure();
+            }
+            else if (change.Property == UndoLimitProperty)
+            {
+                OnUndoLimitChanged(change.GetNewValue<int>());
+            }
+            else if (change.Property == IsUndoEnabledProperty && change.GetNewValue<bool>() == false)
             {
                 // from docs at
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
@@ -631,7 +897,7 @@ namespace Avalonia.Controls
             }
 
             UpdateCommandStates();
-            
+
             _imClient.SetPresenter(_presenter, this);
 
             _presenter?.ShowCaret();
@@ -645,13 +911,13 @@ namespace Avalonia.Controls
                 (ContextMenu == null || !ContextMenu.IsOpen))
             {
                 ClearSelection();
-                RevealPassword = false;
+                SetCurrentValue(RevealPasswordProperty, false);
             }
 
             UpdateCommandStates();
 
             _presenter?.HideCaret();
-            
+
             _imClient.SetPresenter(null, null);
         }
 
@@ -677,84 +943,52 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
             _selectedTextChangesMadeSinceLastUndoSnapshot++;
             SnapshotUndoRedo(ignoreChangeCount: false);
 
-            if (_presenter != null && MaxLines > 0)
-            {
-                var lineCount = _presenter.TextLayout.TextLines.Count;
-
-                var length = 0;
-
-                var graphemeEnumerator = new GraphemeEnumerator(input.AsMemory());
-
-                while (graphemeEnumerator.MoveNext())
-                {
-                    var grapheme = graphemeEnumerator.Current;
-
-                    if (grapheme.FirstCodepoint.IsBreakChar)
-                    {
-                        if(lineCount + 1 > MaxLines)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            lineCount++;
-                        }                       
-                    }
-
-                    length += grapheme.Text.Length;
-                }
-
-                if (length < input.Length)
-                {
-                    input = input.Remove(Math.Max(0, length));
-                }
-            }
-
-            var text = Text ?? string.Empty;
-            var newLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
+            var currentText = Text ?? string.Empty;
+            var selectionLength = Math.Abs(SelectionStart - SelectionEnd);
+            var newLength = input.Length + currentText.Length - selectionLength;
 
             if (MaxLength > 0 && newLength > MaxLength)
             {
                 input = input.Remove(Math.Max(0, input.Length - (newLength - MaxLength)));
+                newLength = MaxLength;
             }
 
             if (!string.IsNullOrEmpty(input))
             {
-                var oldText = _text;
+                var textBuilder = StringBuilderCache.Acquire(Math.Max(currentText.Length, newLength));
+                textBuilder.Append(currentText);
 
-                _ignoreTextChanges = true;
+                var caretIndex = CaretIndex;
 
-                try
+                if (selectionLength != 0)
                 {
-                    DeleteSelection(false);
-                    var caretIndex = CaretIndex;
-                    text = Text ?? string.Empty;
-                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
-                    ClearSelection();
-                    
-                    if (IsUndoEnabled)
-                    {
-                        _undoRedoHelper.DiscardRedo();
-                    }
+                    var (start, _) = GetSelectionRange();
 
-                    if (_text != oldText)
-                    {
-                        RaisePropertyChanged(TextProperty, oldText, _text);
-                    }
-                    
-                    CaretIndex = caretIndex + input.Length;
+                    textBuilder.Remove(start, selectionLength);
+
+                    caretIndex = start;
                 }
-                finally
+
+                textBuilder.Insert(caretIndex, input);
+
+                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
+
+                ClearSelection();
+
+                if (IsUndoEnabled)
                 {
-                    _ignoreTextChanges = false;
+                    _undoRedoHelper.DiscardRedo();
                 }
+
+                SetCurrentValue(CaretIndexProperty, caretIndex + input.Length);
             }
         }
 
-        public string? RemoveInvalidCharacters(string? text)
+        private string? RemoveInvalidCharacters(string? text)
         {
             if (text is null)
                 return null;
@@ -767,6 +1001,9 @@ namespace Avalonia.Controls
             return text;
         }
 
+        /// <summary>
+        /// Cuts the current text onto the clipboard
+        /// </summary>
         public async void Cut()
         {
             var text = GetSelection();
@@ -781,12 +1018,20 @@ namespace Avalonia.Controls
             if (!eventArgs.Handled)
             {
                 SnapshotUndoRedo();
-                await ((IClipboard)AvaloniaLocator.Current.GetRequiredService(typeof(IClipboard)))
-                    .SetTextAsync(text);
+
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+                if (clipboard == null)
+                    return;
+
+                await clipboard.SetTextAsync(text);
                 DeleteSelection();
             }
         }
 
+        /// <summary>
+        /// Copies the current text onto the clipboard
+        /// </summary>
         public async void Copy()
         {
             var text = GetSelection();
@@ -800,11 +1045,16 @@ namespace Avalonia.Controls
             RaiseEvent(eventArgs);
             if (!eventArgs.Handled)
             {
-                await ((IClipboard)AvaloniaLocator.Current.GetRequiredService(typeof(IClipboard)))
-                    .SetTextAsync(text);
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+                if (clipboard != null)
+                    await clipboard.SetTextAsync(text);
             }
         }
 
+        /// <summary>
+        /// Pastes the current clipboard text content into the TextBox
+        /// </summary>
         public async void Paste()
         {
             var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
@@ -814,7 +1064,12 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var text = await ((IClipboard)AvaloniaLocator.Current.GetRequiredService(typeof(IClipboard))).GetTextAsync();
+            string? text = null;
+
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+            if (clipboard != null)
+                text = await clipboard.GetTextAsync();
 
             if (string.IsNullOrEmpty(text))
             {
@@ -831,7 +1086,12 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
+            if (!string.IsNullOrEmpty(_presenter.PreeditText))
+            {
+                return;
+            }
+
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
             var movement = false;
@@ -839,7 +1099,7 @@ namespace Avalonia.Controls
             var handled = false;
             var modifiers = e.KeyModifiers;
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
             bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);
@@ -874,30 +1134,13 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.Undo) && IsUndoEnabled)
             {
-                try
-                {
-                    SnapshotUndoRedo();
-                    _isUndoingRedoing = true;
-                    _undoRedoHelper.Undo();
-                }
-                finally
-                {
-                    _isUndoingRedoing = false;
-                }
+                Undo();
 
                 handled = true;
             }
             else if (Match(keymap.Redo) && IsUndoEnabled)
             {
-                try
-                {
-                    _isUndoingRedoing = true;
-                    _undoRedoHelper.Redo();
-                }
-                finally
-                {
-                    _isUndoingRedoing = false;
-                }
+                Redo();
 
                 handled = true;
             }
@@ -907,7 +1150,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-                CaretIndex = _presenter.CaretIndex;
+                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocument))
             {
@@ -915,7 +1158,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-                CaretIndex = _presenter.CaretIndex;
+                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
             }
             else if (Match(keymap.MoveCursorToTheStartOfLine))
             {
@@ -923,7 +1166,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-                CaretIndex = _presenter.CaretIndex;
+                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
@@ -931,31 +1174,31 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-                CaretIndex = _presenter.CaretIndex;
+                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
             }
             else if (Match(keymap.MoveCursorToTheStartOfDocumentWithSelection))
             {
-                SelectionStart = caretIndex;
+                SetCurrentValue(SelectionStartProperty, caretIndex);
                 MoveHome(true);
-                SelectionEnd = _presenter.CaretIndex;
+                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocumentWithSelection))
             {
-                SelectionStart = caretIndex;
+                SetCurrentValue(SelectionStartProperty, caretIndex);
                 MoveEnd(true);
-                SelectionEnd = _presenter.CaretIndex;
+                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
                 movement = true;
                 selection = true;
                 handled = true;
             }
             else if (Match(keymap.MoveCursorToTheStartOfLineWithSelection))
             {
-                SelectionStart = caretIndex;
+                SetCurrentValue(SelectionStartProperty, caretIndex);
                 MoveHome(false);
-                SelectionEnd = _presenter.CaretIndex;
+                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
                 movement = true;
                 selection = true;
                 handled = true;
@@ -963,11 +1206,39 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
             {
-                SelectionStart = caretIndex;
+                SetCurrentValue(SelectionStartProperty, caretIndex);
                 MoveEnd(false);
-                SelectionEnd = _presenter.CaretIndex;
+                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
                 movement = true;
                 selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.PageLeft))
+            {
+                MovePageLeft();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageRight))
+            {
+                MovePageRight();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageUp))
+            {
+                MovePageUp();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageDown))
+            {
+                MovePageDown();
+                movement = true;
+                selection = false;
                 handled = true;
             }
             else
@@ -988,87 +1259,89 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Up:
-                    {
-                        selection = DetectSelection();
-                        
-                        _presenter.MoveCaretVertical(LogicalDirection.Backward);
-                        
-                        if (caretIndex != _presenter.CaretIndex)
                         {
-                            movement = true;
-                        }
+                            selection = DetectSelection();
 
-                        if (selection)
-                        {
-                            SelectionEnd = _presenter.CaretIndex;
-                        }
-                        else
-                        {
-                            CaretIndex = _presenter.CaretIndex;
-                        }
-                        
-                        break;
-                    }
-                    case Key.Down:
-                    {
-                        selection = DetectSelection();
-                        
-                        _presenter.MoveCaretVertical();
-                        
-                        if (caretIndex != _presenter.CaretIndex)
-                        {
-                            movement = true;
-                        }
-  
-                        if (selection)
-                        {
-                            SelectionEnd = _presenter.CaretIndex;
-                        }
-                        else
-                        {
-                            CaretIndex = _presenter.CaretIndex;
-                        }
-                        
-                        break;
-                    }
-                    case Key.Back:
-                    {
-                        SnapshotUndoRedo();
-                        
-                        if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
-                        {
-                            SetSelectionForControlBackspace();
-                        }
+                            _presenter.MoveCaretVertical(LogicalDirection.Backward);
 
-                        if (!DeleteSelection())
-                        {
-                            var characterHit = _presenter.GetNextCharacterHit(LogicalDirection.Backward);
-
-                            var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-
-                            if (caretIndex != backspacePosition)
+                            if (caretIndex != _presenter.CaretIndex)
                             {
-                                var start = Math.Min(backspacePosition, caretIndex);
-                                var end = Math.Max(backspacePosition, caretIndex);
+                                movement = true;
+                            }
 
-                                var length = end - start;
+                            if (selection)
+                            {
+                                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                            }
+                            else
+                            {
+                                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
+                            }
 
-                                var editedText = text.Substring(0, start) + text.Substring(Math.Min(end, text.Length));
-
-                                SetTextInternal(editedText);
-
-                                CaretIndex = end;
-                            } 
+                            break;
                         }
-                        
-                        SnapshotUndoRedo();
+                    case Key.Down:
+                        {
+                            selection = DetectSelection();
 
-                        handled = true;
-                        break;
-                    }
+                            _presenter.MoveCaretVertical();
+
+                            if (caretIndex != _presenter.CaretIndex)
+                            {
+                                movement = true;
+                            }
+
+                            if (selection)
+                            {
+                                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+                            }
+                            else
+                            {
+                                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
+                            }
+
+                            break;
+                        }
+                    case Key.Back:
+                        {
+                            SnapshotUndoRedo();
+
+                            if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
+                            {
+                                SetSelectionForControlBackspace();
+                            }
+
+                            if (!DeleteSelection())
+                            {
+                                var characterHit = _presenter.GetNextCharacterHit(LogicalDirection.Backward);
+
+                                var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+                                if (caretIndex != backspacePosition)
+                                {
+                                    var start = Math.Min(backspacePosition, caretIndex);
+                                    var end = Math.Max(backspacePosition, caretIndex);
+
+                                    var length = end - start;
+
+                                    var sb = StringBuilderCache.Acquire(text.Length);
+                                    sb.Append(text);
+                                    sb.Remove(start, end - start);
+
+                                    SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+
+                                    SetCurrentValue(CaretIndexProperty, start);
+                                }
+                            }
+
+                            SnapshotUndoRedo();
+
+                            handled = true;
+                            break;
+                        }
                     case Key.Delete:
                         SnapshotUndoRedo();
-                        
+
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlDelete();
@@ -1080,14 +1353,16 @@ namespace Avalonia.Controls
 
                             var nextPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                            if(nextPosition != caretIndex)
+                            if (nextPosition != caretIndex)
                             {
                                 var start = Math.Min(nextPosition, caretIndex);
                                 var end = Math.Max(nextPosition, caretIndex);
 
-                                var editedText = text.Substring(0, start) + text.Substring(Math.Min(end, text.Length));
+                                var sb = StringBuilderCache.Acquire(text.Length);
+                                sb.Append(text);
+                                sb.Remove(start, end - start);
 
-                                SetTextInternal(editedText);
+                                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
                             }
                         }
 
@@ -1147,7 +1422,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
@@ -1156,41 +1431,62 @@ namespace Avalonia.Controls
             {
                 var point = e.GetPosition(_presenter);
 
-                var oldIndex = CaretIndex;
-
                 _presenter.MoveCaretToPoint(point);
 
-                var index = _presenter.CaretIndex;
-
+                var caretIndex = _presenter.CaretIndex;
                 var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
 
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
-
-#pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
                         if (clickToSelect)
                         {
-                            SelectionStart = Math.Min(oldIndex, index);
-                            SelectionEnd = Math.Max(oldIndex, index);
+                            if (_wordSelectionStart >= 0)
+                            {
+                                UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                                SetCurrentValue(SelectionStartProperty, selectionStart);
+                                SetCurrentValue(SelectionEndProperty, selectionEnd);
+                            }
+                            else
+                            {
+                                SetCurrentValue(SelectionEndProperty, caretIndex);
+                            }
                         }
                         else
                         {
-                            SelectionStart = SelectionEnd = index;
+                            SetCurrentValue(SelectionStartProperty, caretIndex);
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                            _wordSelectionStart = -1;
                         }
 
                         break;
                     case 2:
-                        if (!StringUtils.IsStartOfWord(text, index))
+
+                        if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
-                            SelectionStart = StringUtils.PreviousWord(text, index);
+                            selectionStart = StringUtils.PreviousWord(text, caretIndex);
                         }
 
-                        SelectionEnd = StringUtils.NextWord(text, index);
+                        if (!StringUtils.IsEndOfWord(text, caretIndex))
+                        {
+                            selectionEnd = StringUtils.NextWord(text, caretIndex);
+                        }
+
+                        if (selectionStart != selectionEnd)
+                        {
+                            _wordSelectionStart = selectionStart;
+                        }
+
+                        SetCurrentValue(SelectionStartProperty, selectionStart);
+                        SetCurrentValue(SelectionEndProperty, selectionEnd);
+
                         break;
                     case 3:
+                        _wordSelectionStart = -1;
+
                         SelectAll();
                         break;
                 }
@@ -1206,7 +1502,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -1218,7 +1514,48 @@ namespace Avalonia.Controls
 
                 _presenter.MoveCaretToPoint(point);
 
-                SelectionEnd = _presenter.CaretIndex;
+                var caretIndex = _presenter.CaretIndex;
+
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
+
+                if (_wordSelectionStart >= 0)
+                {
+                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                    SetCurrentValue(SelectionStartProperty, selectionStart);
+                    SetCurrentValue(SelectionEndProperty, selectionEnd);
+                }
+                else
+                {
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                }
+            }
+        }
+
+        private void UpdateWordSelectionRange(int caretIndex, ref int selectionStart, ref int selectionEnd)
+        {
+            var text = Text;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            if (caretIndex > _wordSelectionStart)
+            {
+                var nextWord = StringUtils.NextWord(text, caretIndex);
+
+                selectionEnd = nextWord;
+
+                selectionStart = _wordSelectionStart;
+            }
+            else
+            {
+                var previousWord = StringUtils.PreviousWord(text, caretIndex);
+                selectionStart = previousWord;
+
+                selectionEnd = StringUtils.NextWord(text, _wordSelectionStart);
             }
         }
 
@@ -1237,9 +1574,9 @@ namespace Avalonia.Controls
             if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 var point = e.GetPosition(_presenter);
-                    
+
                 _presenter.MoveCaretToPoint(point);
-                    
+
                 var caretIndex = _presenter.CaretIndex;
 
                 // see if mouse clicked inside current selection
@@ -1250,10 +1587,12 @@ namespace Avalonia.Controls
                                           caretIndex >= firstSelection && caretIndex <= lastSelection;
                 if (!didClickInSelection)
                 {
-                    CaretIndex = SelectionEnd = SelectionStart = caretIndex;
+                    SetCurrentValue(CaretIndexProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
-            
+
             e.Pointer.Capture(null);
         }
 
@@ -1262,18 +1601,21 @@ namespace Avalonia.Controls
             return new TextBoxAutomationPeer(this);
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == TextProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
-        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
-
-        private int CoerceCaretIndex(int value, string? text)
+        internal static int CoerceCaretIndex(AvaloniaObject sender, int value)
         {
+            var text = sender.GetValue(TextProperty); // method also used by TextPresenter and SelectableTextBlock
+
             if (text == null)
             {
                 return 0;
@@ -1298,10 +1640,10 @@ namespace Avalonia.Controls
             }
         }
 
-        public void Clear()
-        {
-            Text = string.Empty;
-        }
+        /// <summary>
+        /// Clears the text in the TextBox
+        /// </summary>
+        public void Clear() => SetCurrentValue(TextProperty, string.Empty);
 
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
         {
@@ -1309,7 +1651,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             var text = Text ?? string.Empty;
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
@@ -1319,12 +1661,12 @@ namespace Avalonia.Controls
                 if (isSelecting)
                 {
                     _presenter.MoveCaretToTextPosition(selectionEnd);
-                    
+
                     _presenter.MoveCaretHorizontal(direction > 0 ?
                         LogicalDirection.Forward :
                         LogicalDirection.Backward);
-                    
-                    SelectionEnd = _presenter.CaretIndex;
+
+                    SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
                 }
                 else
                 {
@@ -1341,13 +1683,13 @@ namespace Avalonia.Controls
                             LogicalDirection.Backward);
                     }
 
-                    CaretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
                 }
             }
             else
             {
                 int offset;
-                
+
                 if (direction > 0)
                 {
                     offset = StringUtils.NextWord(text, selectionEnd) - selectionEnd;
@@ -1356,18 +1698,18 @@ namespace Avalonia.Controls
                 {
                     offset = StringUtils.PreviousWord(text, selectionEnd) - selectionEnd;
                 }
-                
-                SelectionEnd += offset;
+
+                SetCurrentValue(SelectionEndProperty, SelectionEnd + offset);
 
                 _presenter.MoveCaretToTextPosition(SelectionEnd);
 
                 if (!isSelecting)
                 {
-                    CaretIndex = SelectionEnd;
+                    SetCurrentValue(CaretIndexProperty, SelectionEnd);
                 }
                 else
                 {
-                    SelectionStart = selectionStart;
+                    SetCurrentValue(SelectionStartProperty, selectionStart);
                 }
             }
         }
@@ -1378,7 +1720,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             var caretIndex = CaretIndex;
 
             if (document)
@@ -1401,7 +1743,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
@@ -1415,10 +1757,29 @@ namespace Avalonia.Controls
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
                 var textLine = textLines[lineIndex];
 
-                var textPosition = textLine.FirstTextSourceIndex + textLine.Length;
+                var textPosition = textLine.FirstTextSourceIndex + textLine.Length - textLine.NewLineLength;
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
+        }
+
+        private void MovePageRight()
+        {
+            _scrollViewer?.PageRight();
+        }
+
+        private void MovePageLeft()
+        {
+            _scrollViewer?.PageLeft();
+        }
+        private void MovePageUp()
+        {
+            _scrollViewer?.PageUp();
+        }
+
+        private void MovePageDown()
+        {
+            _scrollViewer?.PageDown();
         }
 
         /// <summary>
@@ -1426,104 +1787,118 @@ namespace Avalonia.Controls
         /// </summary>
         public void SelectAll()
         {
-            SelectionStart = 0;
-            SelectionEnd = Text?.Length ?? 0;
+            SetCurrentValue(SelectionStartProperty, 0);
+            SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
         }
 
-        private bool DeleteSelection(bool raiseTextChanged = true)
+        private (int start, int end) GetSelectionRange()
         {
-            if (IsReadOnly) return true;
-            
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
-            if (selectionStart != selectionEnd)
-            {
-                var start = Math.Min(selectionStart, selectionEnd);
-                var end = Math.Max(selectionStart, selectionEnd);
-                var text = Text!;
+            return (Math.Min(selectionStart, selectionEnd), Math.Max(selectionStart, selectionEnd));
+        }
 
-                SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
-                    
+        internal bool DeleteSelection()
+        {
+            if (IsReadOnly)
+                return true;
+
+            var (start, end) = GetSelectionRange();
+
+            if (start != end)
+            {
+                var text = Text!;
+                var textBuilder = StringBuilderCache.Acquire(text.Length);
+
+                textBuilder.Append(text);
+                textBuilder.Remove(start, end - start);
+
+                SetCurrentValue(TextProperty, textBuilder.ToString());
+
                 _presenter?.MoveCaretToTextPosition(start);
-                    
-                CaretIndex= start;
-                    
+
+                SetCurrentValue(CaretIndexProperty, start);
+
                 ClearSelection();
-                    
+
                 return true;
             }
-                
-            CaretIndex = SelectionStart;
-            
+
+            SetCurrentValue(CaretIndexProperty, SelectionStart);
+
             return false;
         }
 
         private string GetSelection()
         {
             var text = Text;
-            
+
             if (string.IsNullOrEmpty(text))
             {
                 return "";
             }
-               
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var end = Math.Max(selectionStart, selectionEnd);
-            
+
             if (start == end || (Text?.Length ?? 0) < end)
             {
                 return "";
             }
-            
+
             return text.Substring(start, end - start);
         }
 
-        private void SetTextInternal(string value, bool raiseTextChanged = true)
+        /// <summary>
+        /// Raises both the <see cref="TextChanging"/> and <see cref="TextChanged"/> events.
+        /// </summary>
+        /// <remarks>
+        /// This must be called after the <see cref="Text"/> property is set.
+        /// </remarks>
+        private void RaiseTextChangeEvents()
         {
-            if (raiseTextChanged)
+            // Note the following sequence of these events (following WinUI)
+            // 1. TextChanging occurs synchronously when text starts to change but before it is rendered.
+            //    This occurs after the Text property is set.
+            // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
+
+            var textChangingEventArgs = new TextChangingEventArgs(TextChangingEvent);
+            RaiseEvent(textChangingEventArgs);
+
+            Dispatcher.UIThread.Post(() =>
             {
-                try
-                {
-                    _ignoreTextChanges = true;
-                    SetAndRaise(TextProperty, ref _text, value);
-                }
-                finally
-                {
-                    _ignoreTextChanges = false;
-                }
-            }
-            else
-            {
-                _text = value;
-            }
+                var textChangedEventArgs = new TextChangedEventArgs(TextChangedEvent);
+                RaiseEvent(textChangedEventArgs);
+            }, DispatcherPriority.Normal);
         }
 
         private void SetSelectionForControlBackspace()
         {
             var selectionStart = CaretIndex;
-            
+
             MoveHorizontal(-1, true, false);
 
-            SelectionStart = selectionStart;
+            SetCurrentValue(SelectionStartProperty, selectionStart);
         }
 
         private void SetSelectionForControlDelete()
         {
-            if (_text == null || _presenter == null)
+            var textLength = Text?.Length ?? 0;
+            if (_presenter == null || textLength == 0)
             {
                 return;
             }
-            
-            SelectionStart = CaretIndex;
-            
+
+            SetCurrentValue(SelectionStartProperty, CaretIndex);
+
             MoveHorizontal(1, true, true);
 
-            if (SelectionEnd < _text.Length && _text[SelectionEnd] == ' ')
+            if (SelectionEnd < textLength && Text![SelectionEnd] == ' ')
             {
-                SelectionEnd++;
+                SetCurrentValue(SelectionEndProperty, SelectionEnd + 1);
             }
         }
 
@@ -1536,11 +1911,11 @@ namespace Avalonia.Controls
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
-            get { return new UndoRedoState(Text, CaretIndex); }
+            get => new UndoRedoState(Text, CaretIndex);
             set
             {
-                Text = value.Text;
-                CaretIndex = value.CaretPosition;
+                SetCurrentValue(TextProperty, value.Text);
+                SetCurrentValue(CaretIndexProperty, value.CaretPosition);
                 ClearSelection();
             }
         }
@@ -1558,6 +1933,105 @@ namespace Avalonia.Controls
                     _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
                     _hasDoneSnapshotOnce = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Undoes the first action in the undo stack
+        /// </summary>
+        public void Undo()
+        {
+            if (IsUndoEnabled && CanUndo)
+            {
+                try
+                {
+                    // Snapshot the current Text state - this will get popped on to the redo stack
+                    // when we call undo below
+                    SnapshotUndoRedo();
+                    _isUndoingRedoing = true;
+                    _undoRedoHelper.Undo();
+                }
+                finally
+                {
+                    _isUndoingRedoing = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reapplies the first item on the redo stack
+        /// </summary>
+        public void Redo()
+        {
+            if (IsUndoEnabled && CanRedo)
+            {
+                try
+                {
+                    _isUndoingRedoing = true;
+                    _undoRedoHelper.Redo();
+                }
+                finally
+                {
+                    _isUndoingRedoing = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called from the UndoRedoHelper when the undo stack is modified
+        /// </summary>
+        void UndoRedoHelper<UndoRedoState>.IUndoRedoHost.OnUndoStackChanged()
+        {
+            CanUndo = _undoRedoHelper.CanUndo;
+        }
+
+        /// <summary>
+        /// Called from the UndoRedoHelper when the redo stack is modified
+        /// </summary>
+        void UndoRedoHelper<UndoRedoState>.IUndoRedoHost.OnRedoStackChanged()
+        {
+            CanRedo = _undoRedoHelper.CanRedo;
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if(_scrollViewer != null)
+            {
+                var maxHeight = double.PositiveInfinity;
+
+                if (MaxLines > 0 && double.IsNaN(Height))
+                {
+                    var fontSize = FontSize;
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
+                    var textLayout = new TextLayout(new MaxLinesTextSource(MaxLines), paragraphProperties);
+
+                    maxHeight = Math.Ceiling(textLayout.Height);
+                }
+
+                _scrollViewer.SetCurrentValue(MaxHeightProperty, maxHeight);
+            }
+
+            return base.MeasureOverride(availableSize);
+        }
+
+        private class MaxLinesTextSource : ITextSource
+        {
+            private readonly int _maxLines;
+
+            public MaxLinesTextSource(int maxLines)
+            {
+                _maxLines = maxLines;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex >= _maxLines)
+                {
+                    return null;
+                }
+
+                return new TextEndOfLine(1);
             }
         }
     }

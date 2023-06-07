@@ -1,6 +1,7 @@
 using System;
-using System.Reactive.Subjects;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -11,23 +12,25 @@ namespace Avalonia
     /// <typeparam name="TValue">The value type of the property.</typeparam>
     public abstract class AvaloniaProperty<TValue> : AvaloniaProperty
     {
-        private readonly Subject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
+        private readonly LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
-        protected AvaloniaProperty(
+        private protected AvaloniaProperty(
             string name,
             Type ownerType,
+            Type hostType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool>? notifying = null)
-            : base(name, typeof(TValue), ownerType, metadata, notifying)
+            Action<AvaloniaObject, bool>? notifying = null)
+            : base(name, typeof(TValue), ownerType, hostType, metadata, notifying)
         {
-            _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
+            _changed = new LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>>();
         }
 
         /// <summary>
@@ -36,22 +39,7 @@ namespace Avalonia
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        [Obsolete("Use constructor with AvaloniaProperty<TValue> instead.", true)]
-        protected AvaloniaProperty(
-            AvaloniaProperty source,
-            Type ownerType,
-            AvaloniaPropertyMetadata? metadata)
-            : this(source as AvaloniaProperty<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
-        /// </summary>
-        /// <param name="source">The property to copy.</param>
-        /// <param name="ownerType">The new owner type.</param>
-        /// <param name="metadata">Optional overridden metadata.</param>
-        protected AvaloniaProperty(
+        private protected AvaloniaProperty(
             AvaloniaProperty<TValue> source,
             Type ownerType,
             AvaloniaPropertyMetadata? metadata)
@@ -80,9 +68,10 @@ namespace Avalonia
             _changed.OnNext(e);
         }
 
-        protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
+        private protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
-        protected BindingValue<object?> TryConvert(object? value)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
+        private protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)
             {

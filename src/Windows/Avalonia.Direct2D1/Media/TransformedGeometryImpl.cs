@@ -3,7 +3,7 @@ using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
+    internal class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.

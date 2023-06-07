@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Styling;
 
@@ -6,6 +7,8 @@ namespace Avalonia.Controls
 {
     public static class Design
     {
+        private static Dictionary<object, Control?>? _previewWith;
+
         public static bool IsDesignMode { get; internal set; }
 
         public static readonly AttachedProperty<double> HeightProperty = AvaloniaProperty
@@ -47,17 +50,28 @@ namespace Avalonia.Controls
             return control.GetValue(DataContextProperty);
         }
         
-        public static readonly AttachedProperty<Control> PreviewWithProperty = AvaloniaProperty
-            .RegisterAttached<AvaloniaObject, Control>("PreviewWith", typeof (Design));
+        public static readonly AttachedProperty<Control?> PreviewWithProperty = AvaloniaProperty
+            .RegisterAttached<AvaloniaObject, Control?>("PreviewWith", typeof (Design));
 
-        public static void SetPreviewWith(AvaloniaObject target, Control control)
+        public static void SetPreviewWith(AvaloniaObject target, Control? control)
         {
             target.SetValue(PreviewWithProperty, control);
         }
 
-        public static Control GetPreviewWith(AvaloniaObject target)
+        public static void SetPreviewWith(ResourceDictionary target, Control? control)
+        {
+            _previewWith ??= new();
+            _previewWith[target] = control;
+        }
+
+        public static Control? GetPreviewWith(AvaloniaObject target)
         {
             return target.GetValue(PreviewWithProperty);
+        }
+
+        public static Control? GetPreviewWith(ResourceDictionary target)
+        {
+            return _previewWith?[target];
         }
 
         public static readonly AttachedProperty<IStyle> DesignStyleProperty = AvaloniaProperty

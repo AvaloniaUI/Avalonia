@@ -1,0 +1,103 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="using:Avalonia.Controls.Converters"
+                    x:ClassModifier="internal">
+  <converters:MarginMultiplierConverter x:Key="LeftMarginConverter"
+                                        Indent="16"
+                                        Left="True" />
+
+  <ControlTheme x:Key="SimpleTreeViewItemToggleButtonTheme"
+                TargetType="ToggleButton">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Width="14"
+                Height="12"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="Transparent">
+          <Path HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Data="M 0 2 L 4 6 L 0 10 Z"
+                Fill="{DynamicResource ThemeForegroundBrush}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:checked">
+      <Setter Property="RenderTransform">
+        <RotateTransform Angle="45" />
+      </Setter>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TreeViewItem}"
+                TargetType="TreeViewItem">
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <Border Name="SelectionBorder"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Focusable="True"
+                  TemplatedControl.IsTemplateFocusTarget="True">
+            <Grid Name="PART_Header"
+                  Margin="{TemplateBinding Level,
+                                           Mode=OneWay,
+                                           Converter={StaticResource LeftMarginConverter}}"
+                  ColumnDefinitions="16, *">
+              <ToggleButton Name="PART_ExpandCollapseChevron"
+                            Focusable="False"
+                            Background="Transparent"
+                            IsChecked="{TemplateBinding IsExpanded,
+                                                        Mode=TwoWay}"
+                            Theme="{StaticResource SimpleTreeViewItemToggleButtonTheme}" />
+              <ContentPresenter Name="PART_HeaderPresenter"
+                                Grid.Column="1"
+                                Background="Transparent"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalAlignment}"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                Focusable="False" />
+            </Grid>
+          </Border>
+          <ItemsPresenter Name="PART_ItemsPresenter"
+                          IsVisible="{TemplateBinding IsExpanded}"
+                          ItemsPanel="{TemplateBinding ItemsPanel}" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="Padding" Value="2" />
+    </Style>
+
+    <Style Selector="^ /template/ Border#SelectionBorder:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Border#SelectionBorder">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Border#SelectionBorder:focus">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Border#SelectionBorder:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Border#SelectionBorder:pointerover:focus">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}" />
+    </Style>
+
+    <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

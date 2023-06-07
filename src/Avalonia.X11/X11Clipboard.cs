@@ -9,7 +9,7 @@ using Avalonia.Input.Platform;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    class X11Clipboard : IClipboard
+    internal class X11Clipboard : IClipboard
     {
         private readonly X11Info _x11;
         private IDataObject _storedDataObject;
@@ -18,8 +18,6 @@ namespace Avalonia.X11
         private TaskCompletionSource<object> _requestedDataTcs;
         private readonly IntPtr[] _textAtoms;
         private readonly IntPtr _avaloniaSaveTargetsAtom;
-        private readonly Dictionary<string, IntPtr> _formatAtoms = new Dictionary<string, IntPtr>();
-        private readonly Dictionary<IntPtr, string> _atomFormats = new Dictionary<IntPtr, string>();
 
         public X11Clipboard(AvaloniaX11Platform platform)
         {
@@ -35,12 +33,12 @@ namespace Avalonia.X11
             }.Where(a => a != IntPtr.Zero).ToArray();
         }
 
-        bool IsStringAtom(IntPtr atom)
+        private bool IsStringAtom(IntPtr atom)
         {
             return _textAtoms.Contains(atom);
         }
-        
-        Encoding GetStringEncoding(IntPtr atom)
+
+        private Encoding GetStringEncoding(IntPtr atom)
         {
             return (atom == _x11.Atoms.XA_STRING
                     || atom == _x11.Atoms.OEMTEXT)
@@ -215,7 +213,7 @@ namespace Avalonia.X11
             }
         }
 
-        Task<IntPtr[]> SendFormatRequest()
+        private Task<IntPtr[]> SendFormatRequest()
         {
             if (_requestedFormatsTcs == null || _requestedFormatsTcs.Task.IsCompleted)
                 _requestedFormatsTcs = new TaskCompletionSource<IntPtr[]>();
@@ -224,7 +222,7 @@ namespace Avalonia.X11
             return _requestedFormatsTcs.Task;
         }
 
-        Task<object> SendDataRequest(IntPtr format)
+        private Task<object> SendDataRequest(IntPtr format)
         {
             if (_requestedDataTcs == null || _requestedFormatsTcs.Task.IsCompleted)
                 _requestedDataTcs = new TaskCompletionSource<object>();
@@ -232,7 +230,7 @@ namespace Avalonia.X11
             return _requestedDataTcs.Task;
         }
 
-        bool HasOwner => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) != IntPtr.Zero;
+        private bool HasOwner => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) != IntPtr.Zero;
         
         public async Task<string> GetTextAsync()
         {
@@ -254,7 +252,7 @@ namespace Avalonia.X11
             return (string)await SendDataRequest(target);
         }
 
-        void StoreAtomsInClipboardManager(IntPtr[] atoms)
+        private void StoreAtomsInClipboardManager(IntPtr[] atoms)
         {
             if (_x11.Atoms.CLIPBOARD_MANAGER != IntPtr.Zero && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
             {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -9,11 +8,17 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayPopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
+    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup
     {
+        /// <summary>
+        /// Defines the <see cref="Transform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            PopupRoot.TransformProperty.AddOwner<OverlayPopupHost>();
+
         private readonly OverlayLayer _overlayLayer;
-        private PopupPositionerParameters _positionerParameters = new PopupPositionerParameters();
-        private ManagedPopupPositioner _positioner;
+        private readonly ManagedPopupPositioner _positioner;
+        private PopupPositionerParameters _positionerParameters;
         private Point _lastRequestedPosition;
         private bool _shown;
 
@@ -23,63 +28,61 @@ namespace Avalonia.Controls.Primitives
             _positioner = new ManagedPopupPositioner(this);
         }
 
-        public void SetChild(IControl? control)
+        /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
+        public void SetChild(Control? control)
         {
             Content = control;
         }
 
-        public IVisual? HostedVisualTreeRoot => null;
-        
-        /// <inheritdoc/>
-        IInteractive? IInteractive.InteractiveParent => Parent;
+        /// <inheritdoc />
+        public Visual? HostedVisualTreeRoot => null;
 
+        /// <inheritdoc />
+        public Transform? Transform
+        {
+            get => GetValue(TransformProperty);
+            set => SetValue(TransformProperty, value);
+        }
+
+        bool IPopupHost.Topmost
+        {
+            get => false;
+            set { /* Not currently supported in overlay popups */ }
+        }
+
+        /// <inheritdoc />
+        internal override Interactive? InteractiveParent => Parent as Interactive;
+
+        /// <inheritdoc />
         public void Dispose() => Hide();
 
-
+        /// <inheritdoc />
         public void Show()
         {
             _overlayLayer.Children.Add(this);
             _shown = true;
         }
 
+        /// <inheritdoc />
         public void Hide()
         {
             _overlayLayer.Children.Remove(this);
             _shown = false;
         }
 
-        public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
-            StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
-            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)
-        {
-            // Topmost property is not supported
-            var bindings = new List<IDisposable>();
-
-            void Bind(AvaloniaProperty what, AvaloniaProperty to) => bindings.Add(this.Bind(what, popup[~to]));
-            Bind(WidthProperty, widthProperty);
-            Bind(MinWidthProperty, minWidthProperty);
-            Bind(MaxWidthProperty, maxWidthProperty);
-            Bind(HeightProperty, heightProperty);
-            Bind(MinHeightProperty, minHeightProperty);
-            Bind(MaxHeightProperty, maxHeightProperty);
-            
-            return Disposable.Create(() =>
-            {
-                foreach (var x in bindings)
-                    x.Dispose();
-            });
-        }
-
-        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+        /// <inheritdoc />
+        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
-                gravity, constraintAdjustment, rect);
+                gravity, constraintAdjustment, rect, FlowDirection);
             UpdatePosition();
         }
 
+        /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
             if (_positionerParameters.Size != finalSize)
@@ -117,28 +120,29 @@ namespace Avalonia.Controls.Primitives
         void IManagedPopupPositionerPopup.MoveAndResize(Point devicePoint, Size virtualSize)
         {
             _lastRequestedPosition = devicePoint;
-            Dispatcher.UIThread.Post(() =>
+            MediaContext.Instance.BeginInvokeOnRender(() =>
             {
-                OverlayLayer.SetLeft(this, _lastRequestedPosition.X);
-                OverlayLayer.SetTop(this, _lastRequestedPosition.Y);
-            }, DispatcherPriority.Layout);
+                Canvas.SetLeft(this, _lastRequestedPosition.X);
+                Canvas.SetTop(this, _lastRequestedPosition.Y);
+            });
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;
        
-        public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver? dependencyResolver)
+        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
-            var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
-            if (platform != null)
-                return new PopupRoot((TopLevel)target.GetVisualRoot()!, platform, dependencyResolver);
-            
-            var overlayLayer = OverlayLayer.GetOverlayLayer(target);
-            if (overlayLayer == null)
-                throw new InvalidOperationException(
-                    "Unable to create IPopupImpl and no overlay layer is found for the target control");
+            if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
+            {
+                return new PopupRoot(topLevel, popupImpl, dependencyResolver);
+            }
 
+            if (OverlayLayer.GetOverlayLayer(target) is { } overlayLayer)
+            {
+                return new OverlayPopupHost(overlayLayer);
+            }
 
-            return new OverlayPopupHost(overlayLayer);
+            throw new InvalidOperationException(
+                "Unable to create IPopupImpl and no overlay layer is found for the target control");
         }
     }
 }

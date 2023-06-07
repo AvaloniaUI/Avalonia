@@ -2,7 +2,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class SolidColorBrushImpl : BrushImpl
+    internal class SolidColorBrushImpl : BrushImpl
     {
         public SolidColorBrushImpl(ISolidColorBrush brush, SharpDX.Direct2D1.RenderTarget target)
         {

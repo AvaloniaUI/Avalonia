@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Base class for system file dialogs.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class FileDialog : FileSystemDialog
     {
         /// <summary>
@@ -26,15 +30,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// Base class for system file and directory dialogs.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class FileSystemDialog : SystemDialog
     {
-        [Obsolete("Use Directory")]
-        public string? InitialDirectory
-        {
-            get => Directory;
-            set => Directory = value;
-        }
-
         /// <summary>
         /// Gets or sets the initial directory that will be displayed when the file system dialog
         /// is opened.
@@ -45,6 +43,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a system dialog that prompts the user to select a location for saving a file.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public class SaveFileDialog : FileDialog
     {
         /// <summary>
@@ -73,11 +72,27 @@ namespace Avalonia.Controls
             return (await service.ShowFileDialogAsync(this, parent) ??
              Array.Empty<string>()).FirstOrDefault();
         }
+
+        public FilePickerSaveOptions ToFilePickerSaveOptions()
+        {
+            return new FilePickerSaveOptions
+            {
+                SuggestedFileName = InitialFileName,
+                DefaultExtension = DefaultExtension,
+                FileTypeChoices = Filters?.Select(f => new FilePickerFileType(f.Name!) { Patterns = f.Extensions.Select(e => $"*.{e}").ToArray() }).ToArray(),
+                Title = Title,
+                SuggestedStartLocation = Directory is { } directory
+                        ? new BclStorageFolder(new System.IO.DirectoryInfo(directory))
+                        : null,
+                ShowOverwritePrompt = ShowOverwritePrompt
+            };
+        }
     }
 
     /// <summary>
     /// Represents a system dialog that allows the user to select one or more files to open.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public class OpenFileDialog : FileDialog
     {
         /// <summary>
@@ -100,20 +115,27 @@ namespace Avalonia.Controls
             var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
             return service.ShowFileDialogAsync(this, parent);
         }
+
+        public FilePickerOpenOptions ToFilePickerOpenOptions()
+        {
+            return new FilePickerOpenOptions
+            {
+                AllowMultiple = AllowMultiple,
+                FileTypeFilter = Filters?.Select(f => new FilePickerFileType(f.Name!) { Patterns = f.Extensions.Select(e => $"*.{e}").ToArray() }).ToArray(),
+                Title = Title,
+                SuggestedStartLocation = Directory is { } directory
+                    ? new BclStorageFolder(new System.IO.DirectoryInfo(directory))
+                    : null
+            };
+        }
     }
 
     /// <summary>
     /// Represents a system dialog that allows the user to select a directory.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public class OpenFolderDialog : FileSystemDialog
     {
-        [Obsolete("Use Directory")]
-        public string? DefaultDirectory
-        {
-            get => Directory;
-            set => Directory = value;
-        }
-
         /// <summary>
         /// Shows the open folder dialog.
         /// </summary>
@@ -129,14 +151,35 @@ namespace Avalonia.Controls
             var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
             return service.ShowFolderDialogAsync(this, parent);
         }
+
+        public FolderPickerOpenOptions ToFolderPickerOpenOptions()
+        {
+            return new FolderPickerOpenOptions
+            {
+                Title = Title,
+                SuggestedStartLocation = Directory is { } directory
+                    ? new BclStorageFolder(new System.IO.DirectoryInfo(directory))
+                    : null
+            };
+        }
     }
 
 
     /// <summary>
     /// Base class for system dialogs.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class SystemDialog
     {
+        static SystemDialog()
+        {
+            if (AvaloniaLocator.Current.GetService<ISystemDialogImpl>() is null)
+            {
+                // Register default implementation.
+                AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
+            }
+        }
+        
         /// <summary>
         /// Gets or sets the dialog title.
         /// </summary>
@@ -146,6 +189,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a filter in an <see cref="OpenFileDialog"/> or an <see cref="SaveFileDialog"/>.
     /// </summary>
+    [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
     public class FileDialogFilter
     {
         /// <summary>

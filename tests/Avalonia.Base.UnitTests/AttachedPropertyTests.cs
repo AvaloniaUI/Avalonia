@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -10,6 +11,7 @@ namespace Avalonia.Base.UnitTests
             var property = new AttachedProperty<string>(
                 "Foo",
                 typeof(Class1),
+                typeof(Control),
                 new StyledPropertyMetadata<string>());
 
             Assert.True(property.IsAttached);

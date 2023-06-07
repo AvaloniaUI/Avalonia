@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using Avalonia.Animation;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -9,8 +10,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// A Toggle Switch control.
     /// </summary>
-    [TemplatePart("MovingKnobs", typeof(Panel))]
-    [TemplatePart("SwitchKnob",  typeof(Panel))]
+    [TemplatePart("PART_MovingKnobs",         typeof(Panel))]
+    [TemplatePart("PART_OffContentPresenter", typeof(ContentPresenter))]
+    [TemplatePart("PART_OnContentPresenter",  typeof(ContentPresenter))]
+    [TemplatePart("PART_SwitchKnob",          typeof(Panel))]
     [PseudoClasses(":dragging")]
     public class ToggleSwitch : ToggleButton
     {
@@ -40,6 +43,10 @@ namespace Avalonia.Controls
                     x.UpdateKnobPos(x.IsChecked.Value);
                 }
             });
+            KnobTransitionsProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
+            {
+                x.UpdateKnobTransitions();
+            });
         }
 
         /// <summary>
@@ -67,6 +74,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ToggleSwitch, IDataTemplate?>(nameof(OnContentTemplate));
 
         /// <summary>
+        /// Defines the <see cref="KnobTransitions"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transitions> KnobTransitionsProperty = 
+            AvaloniaProperty.Register<ToggleSwitch, Transitions>(nameof(KnobTransitions));
+
+        /// <summary>
         /// Gets or Sets the Content that is displayed when in the On State.
         /// </summary>
         public object? OnContent
@@ -84,13 +97,13 @@ namespace Avalonia.Controls
             set { SetValue(OffContentProperty, value); }
         }
 
-        public IContentPresenter? OffContentPresenter
+        public ContentPresenter? OffContentPresenter
         {
             get;
             private set;
         }
 
-        public IContentPresenter? OnContentPresenter
+        public ContentPresenter? OnContentPresenter
         {
             get;
             private set;
@@ -113,6 +126,17 @@ namespace Avalonia.Controls
             get { return GetValue(OnContentTemplateProperty); }
             set { SetValue(OnContentTemplateProperty, value); }
         }
+
+        /// <summary>
+        /// Gets or Sets the <see cref="Transitions"/> of switching knob. 
+        /// </summary>
+        public Transitions KnobTransitions
+        {
+            get { return GetValue(KnobTransitionsProperty); }
+            set { SetValue(KnobTransitionsProperty, value); }
+        }
+
+        
 
         private void OffContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -140,7 +164,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             var result = base.RegisterContentPresenter(presenter);
 
@@ -163,8 +187,8 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            _switchKnob = e.NameScope.Find<Panel>("SwitchKnob");
-            _knobsPanel = e.NameScope.Get<Panel>("MovingKnobs");
+            _switchKnob = e.NameScope.Find<Panel>("PART_SwitchKnob");
+            _knobsPanel = e.NameScope.Get<Panel>("PART_MovingKnobs");
             
             _knobsPanel.PointerPressed += KnobsPanel_PointerPressed;
             _knobsPanel.PointerReleased += KnobsPanel_PointerReleased;
@@ -175,7 +199,21 @@ namespace Avalonia.Controls
                 UpdateKnobPos(IsChecked.Value);
             }
         }
-        
+
+        protected override void OnLoaded()
+        {
+            base.OnLoaded();
+            UpdateKnobTransitions();
+        }
+
+        private void UpdateKnobTransitions()
+        {
+            if (_knobsPanel != null)
+            {
+                _knobsPanel.Transitions = KnobTransitions;
+            }
+        }
+
         private void KnobsPanel_PointerPressed(object? sender, Input.PointerPressedEventArgs e)
         {
             _switchStartPoint = e.GetPosition(_switchKnob);
@@ -192,15 +230,16 @@ namespace Avalonia.Controls
                 _knobsPanel!.ClearValue(Canvas.LeftProperty);
 
                 PseudoClasses.Set(":dragging", false);
-
+  
                 if (shouldBecomeChecked == IsChecked)
                 {
                     UpdateKnobPos(shouldBecomeChecked);
                 }
                 else
                 {
-                    IsChecked = shouldBecomeChecked;
+                    SetCurrentValue(IsCheckedProperty, shouldBecomeChecked);
                 }
+                UpdateKnobTransitions();
             }
             else
             {
@@ -216,6 +255,10 @@ namespace Avalonia.Controls
         {
             if (_knobsPanelPressed)
             {
+                if(_knobsPanel != null)
+                {
+                    _knobsPanel.Transitions = null;
+                }
                 var difference = e.GetPosition(_switchKnob) - _switchStartPoint;
 
                 if ((!_isDragging) && (System.Math.Abs(difference.X) > 3))
@@ -239,7 +282,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected void UpdateKnobPos(bool value)
+        private void UpdateKnobPos(bool value)
         {
             if ((_switchKnob != null) && (_knobsPanel != null))
             {

@@ -1,22 +1,20 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Data;
-using Avalonia.Data.Converters;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.Templates;
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml;
-using Xunit;
+using Avalonia.Collections;
+using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.Metadata;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -57,7 +55,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namspace()
+        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namespace()
         {
             // Test for issue #1548
             var xaml =
@@ -281,69 +279,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(expected3, grid.RowDefinitions[2].Height);
             Assert.Equal(expected4, grid.RowDefinitions[3].Height);
         }
-
+        
         [Fact]
-        public void ControlTemplate_With_Nested_Child_Is_Operational()
+        public void Grid_Row_Col_Definitions_Are_Parsed_Space_Delimiter()
         {
             var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui'>
-    <ContentControl Name='parent'>
-        <ContentControl Name='child' />
-    </ContentControl>
-</ControlTemplate>
-";
-            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
+<Grid xmlns='https://github.com/avaloniaui'
+        ColumnDefinitions='100 Auto * 100*'
+        RowDefinitions='100 Auto * 100*'>
+</Grid>";
 
-            var parent = (ContentControl)template.Build(new ContentControl()).Control;
+            var grid = AvaloniaRuntimeXamlLoader.Parse<Grid>(xaml);
 
-            Assert.Equal("parent", parent.Name);
 
-            var child = parent.Content as ContentControl;
+            Assert.Equal(4, grid.ColumnDefinitions.Count);
+            Assert.Equal(4, grid.RowDefinitions.Count);
 
-            Assert.NotNull(child);
+            var expected1 = new GridLength(100);
+            var expected2 = GridLength.Auto;
+            var expected3 = new GridLength(1, GridUnitType.Star);
+            var expected4 = new GridLength(100, GridUnitType.Star);
 
-            Assert.Equal("child", child.Name);
-        }
+            Assert.Equal(expected1, grid.ColumnDefinitions[0].Width);
+            Assert.Equal(expected2, grid.ColumnDefinitions[1].Width);
+            Assert.Equal(expected3, grid.ColumnDefinitions[2].Width);
+            Assert.Equal(expected4, grid.ColumnDefinitions[3].Width);
 
-        [Fact]
-        public void ControlTemplate_With_TargetType_Is_Operational()
-        {
-            var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui' 
-                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                 TargetType='{x:Type ContentControl}'>
-    <ContentPresenter Content='{TemplateBinding Content}' />
-</ControlTemplate>
-";
-            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
-
-            Assert.Equal(typeof(ContentControl), template.TargetType);
-
-            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Control);
-        }
-
-        [Fact]
-        public void ControlTemplate_With_Panel_Children_Are_Added()
-        {
-            var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui'>
-    <Panel Name='panel'>
-        <ContentControl Name='Foo' />
-        <ContentControl Name='Bar' />
-    </Panel>
-</ControlTemplate>
-";
-            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
-
-            var panel = (Panel)template.Build(new ContentControl()).Control;
-
-            Assert.Equal(2, panel.Children.Count);
-
-            var foo = panel.Children[0];
-            var bar = panel.Children[1];
-
-            Assert.Equal("Foo", foo.Name);
-            Assert.Equal("Bar", bar.Name);
+            Assert.Equal(expected1, grid.RowDefinitions[0].Height);
+            Assert.Equal(expected2, grid.RowDefinitions[1].Height);
+            Assert.Equal(expected3, grid.RowDefinitions[2].Height);
+            Assert.Equal(expected4, grid.RowDefinitions[3].Height);
         }
 
         [Fact]
@@ -362,7 +327,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Standart_TypeConverter_Is_Used()
+        public void Standard_TypeConverter_Is_Used()
         {
             var xaml = @"<UserControl xmlns='https://github.com/avaloniaui' Width='200.5' />";
 
@@ -510,40 +475,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.True(style.Resources.Count > 0);
 
-            style.TryGetResource("Brush", out var brush);
+            style.TryGetResource("Brush", null, out var brush);
 
             Assert.NotNull(brush);
             Assert.IsAssignableFrom<ISolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
-            style.TryGetResource("Double", out var d);
+            style.TryGetResource("Double", null, out var d);
 
             Assert.Equal(10.0, d);
-        }
-
-        [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Styles xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='avares://Avalonia.Themes.Default/Controls/ContextMenu.xaml'/>
-</Styles>";
-
-                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
-
-                Assert.True(styles.Count == 1);
-
-                var styleInclude = styles.First() as StyleInclude;
-
-                Assert.NotNull(styleInclude);
-
-                var style = styleInclude.Loaded;
-
-                Assert.NotNull(style);
-            }
         }
 
         [Fact]
@@ -592,7 +532,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ItemsControl Name='itemsControl' Items='{Binding}'>
+    <ItemsControl Name='itemsControl' ItemsSource='{Binding}'>
     </ItemsControl>
 </Window>
 ";
@@ -609,7 +549,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 target.DataContext = items;
 
-                Assert.Equal(items, itemsControl.Items);
+                Assert.Equal(items, itemsControl.ItemsSource);
             }
         }
 
@@ -696,7 +636,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var control = new ContentControl();
 
-            var result = (ContentPresenter)template.Build(control).Control;
+            var result = (ContentPresenter)template.Build(control).Result;
 
             Assert.NotNull(result);
         }
@@ -787,7 +727,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 //ensure binding is set and operational first
                 Assert.Equal(100.0, tracker.Tag);
 
-                Assert.Equal("EndInit 0", tracker.Order.Last());
+                // EndInit should be second-to-last operation, as last operation will be
+                // caused by styling being applied on EndInit.
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 3]);
+
+                // Caused by styling.
+                Assert.Equal("Property FontFamily Changed", tracker.Order[tracker.Order.Count - 2]);
+                Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }
 
@@ -811,7 +757,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void DeferedXamlLoader_Should_Preserve_NamespacesContext()
+        public void DeferredXamlLoader_Should_Preserve_NamespacesContext()
         {
             var xaml =
 @"<ContentControl xmlns='https://github.com/avaloniaui'
@@ -841,7 +787,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'>
-    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
+    <ListBox ItemsSource='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
 </Window>";
 
                 var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
@@ -854,7 +800,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.DataContext = vm;
 
-                Assert.Equal(vm.Items, listBox.Items);
+                Assert.Equal(vm.Items, listBox.ItemsSource);
 
                 Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
             }
@@ -958,6 +904,82 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Foo", toolTip.Content);
         }
 
+        [Fact]
+        public void AddChild_Child_Is_Set()
+        {
+            var xaml = @"<ObjectWithAddChild  xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml'>Foo</ObjectWithAddChild>";
+
+            var target = AvaloniaRuntimeXamlLoader.Parse<ObjectWithAddChild>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Equal("Foo", target.Child);
+        }
+
+        [Fact]
+        public void AddChildOfT_Child_Is_Set()
+        {
+            var xaml = @"<ObjectWithAddChildOfT  xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml'>Foo</ObjectWithAddChildOfT>";
+
+            var target = AvaloniaRuntimeXamlLoader.Parse<ObjectWithAddChildOfT>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Null(target.Child);
+            Assert.Equal("Foo", target.Text);
+        }
+
+        [Fact]
+        public void Should_Parse_And_Populate_Type_Without_Public_Ctor()
+        {
+            var xaml = @"<ObjectWithoutPublicCtor xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml' Test2='World' />";
+            var target = (ObjectWithoutPublicCtor)AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: new ObjectWithoutPublicCtor("Hello"));
+
+            Assert.NotNull(target);
+            Assert.Equal("World", target.Test2);
+            Assert.Equal("Hello", target.Test1);
+        }
+
+        [Fact]
+        public void Can_Specify_Button_Classes()
+        {
+            var xaml = "<Button xmlns='https://github.com/avaloniaui' Classes='foo bar'/>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Button_Classes_Longform()
+        {
+            var xaml = @"
+<Button xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Button.Classes>
+    <x:String>foo</x:String>
+    <x:String>bar</x:String>
+  </Button.Classes>
+</Button>";
+            var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+        }
+
+        [Fact]
+        public void Can_Specify_Flyout_FlyoutPresenterClasses()
+        {
+            var xaml = "<Flyout xmlns='https://github.com/avaloniaui' FlyoutPresenterClasses='foo bar'/>";
+            var target = (Flyout)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(new[] { "foo", "bar" }, target.FlyoutPresenterClasses);
+        }
+
+        [Fact]
+        public void Trying_To_Bind_ItemsControl_Items_Throws()
+        {
+            var xaml = "<ItemsControl xmlns='https://github.com/avaloniaui' Items='{Binding}'/>";
+
+            Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -977,6 +999,46 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
     }
+
+    public class ObjectWithAddChild : IAddChild
+    {
+        public object Child { get; set; }
+
+        void IAddChild.AddChild(object child)
+        {
+            Child = child;
+        }
+    }
+    
+    public class ObjectWithoutPublicCtor
+    {
+        public ObjectWithoutPublicCtor(string param)
+        {
+            Test1 = param;
+        }
+        
+        public string Test1 { get; set; }
+        
+        public string Test2 { get; set; }
+    }
+
+    public class ObjectWithAddChildOfT : IAddChild, IAddChild<string>
+    {
+        public string Text { get; set; }
+
+        public object Child { get; set; }
+
+        void IAddChild.AddChild(object child)
+        {
+            Child = child;
+        }
+
+        void IAddChild<string>.AddChild(string child)
+        {
+            Text = child;
+        }
+    }
+
     public class BasicTestsAttachedPropertyHolder
     {
         public static AvaloniaProperty<string> FooProperty =

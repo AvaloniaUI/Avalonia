@@ -1,14 +1,21 @@
 using System;
+using Avalonia.Threading;
 
 namespace Avalonia.Utilities
 {
-    public class NonPumpingLockHelper
+    internal class NonPumpingLockHelper
     {
         public interface IHelperImpl
         {
-            IDisposable? Use();
+            int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout);
         }
 
-        public static IDisposable? Use() => AvaloniaLocator.Current.GetService<IHelperImpl>()?.Use();
+        public static IDisposable? Use()
+        {
+            var impl = AvaloniaLocator.Current.GetService<IHelperImpl>();
+            if (impl == null)
+                return null;
+            return NonPumpingSyncContext.Use(impl);
+        }
     }
 }

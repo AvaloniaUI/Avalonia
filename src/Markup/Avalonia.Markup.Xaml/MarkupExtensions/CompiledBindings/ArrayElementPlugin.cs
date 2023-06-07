@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
-    class ArrayElementPlugin : IPropertyAccessorPlugin
+    internal class ArrayElementPlugin : IPropertyAccessorPlugin
     {
         private readonly int[] _indices;
         private readonly Type _elementType;
@@ -17,12 +16,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _elementType = elementType;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The ArrayElementPlugin does not support dynamic matching");
         }
 
-        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public IPropertyAccessor? Start(WeakReference<object?> reference, string propertyName)
         {
             if (reference.TryGetTarget(out var target) && target is Array arr)
             {
@@ -45,9 +46,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             public override Type PropertyType { get; }
 
-            public override object Value => _reference.TryGetTarget(out var arr) ? arr.GetValue(_indices) : null;
+            public override object? Value => _reference.TryGetTarget(out var arr) ? arr.GetValue(_indices) : null;
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object? value, BindingPriority priority)
             {
                 if (_reference.TryGetTarget(out var arr))
                 {

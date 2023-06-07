@@ -1,4 +1,0 @@
-﻿<Project>
-  <Import Project="Microsoft.AspNetCore.StaticWebAssets.props" />
-  <Import Project="Avalonia.Web.Blazor.CompilationTuning.props" />
-</Project>

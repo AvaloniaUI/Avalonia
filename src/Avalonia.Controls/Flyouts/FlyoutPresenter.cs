@@ -18,7 +18,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            base.OnKeyDown(e);            
+            base.OnKeyDown(e);
         }
     }
 }

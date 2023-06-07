@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 
 using Moq;
@@ -29,12 +30,13 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -61,8 +63,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 target.RaiseEvent(new ContextRequestedEventArgs());
 
@@ -130,12 +133,13 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 int openedCount = 0;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     openedCount++;
                 };
@@ -158,12 +162,13 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 bool opened = false;
 
-                sut.MenuOpened += (sender, args) =>
+                sut.Opened += (sender, args) =>
                 {
                     opened = true;
                 };
@@ -186,8 +191,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 target.ContextMenu = null;
 
@@ -207,14 +213,15 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 sut.Open(target);
 
                 int closedCount = 0;
 
-                sut.MenuClosed += (sender, args) =>
+                sut.Closed += (sender, args) =>
                 {
                     closedCount++;
                 };
@@ -252,7 +259,7 @@ namespace Avalonia.Controls.UnitTests
                 var tracker = 0;
 
                 var c = new ContextMenu();
-                c.ContextMenuClosing += (s, e) =>
+                c.Closing += (s, e) =>
                 {
                     tracker++;
                     e.Cancel = true;
@@ -297,7 +304,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 var c = new ContextMenu();
-                c.PlacementMode = PlacementMode.Bottom;
+                c.Placement = PlacementMode.Bottom;
                 c.Open(button);
 
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
@@ -390,9 +397,10 @@ namespace Avalonia.Controls.UnitTests
 
                 var sp = new StackPanel { Children = { target1, target2 } };
                 var window = new Window { Content = sp };
-                
+
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 _mouse.Click(target1, MouseButton.Right);
 
@@ -423,7 +431,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 new Window { Content = target };
 
-                sut.ContextMenuOpening += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Opening += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 _mouse.Click(target, MouseButton.Right);
 
@@ -443,6 +451,27 @@ namespace Avalonia.Controls.UnitTests
 
                 control.ContextMenu = target;
                 control.ContextMenu = null;
+            }
+        }
+
+        [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Detached()
+        {
+            using (Application())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var menu = new ContextMenu();
+                userControl.ContextMenu = menu;
+                menu.Open();
+                
+                var popup = Assert.IsType<Popup>(menu.Parent);
+                Assert.NotNull(popup.Parent);
+                
+                window.Content = null;
+                Assert.Null(popup.Parent);
             }
         }
 
@@ -546,7 +575,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = PreparedWindow(target);
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
-                sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
+                sut.Closing += (c, e) => { eventCalled = true; e.Cancel = true; };
 
                 window.Show();
 
@@ -565,16 +594,17 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
-            var renderer = new Mock<IRenderer>();
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
 
             var w = new Window(windowImpl.Object) { Content = content };
+            w.ApplyStyling();
             w.ApplyTemplate();
-            w.Presenter.ApplyTemplate();
+            ((Control)w.Presenter).ApplyTemplate();
             return w;
         }
 

@@ -6,14 +6,14 @@ namespace Avalonia.Reactive
         LightweightObservableBase<AvaloniaPropertyChangedEventArgs>,
         IDescription
     {
-        private readonly WeakReference<IAvaloniaObject> _target;
+        private readonly WeakReference<AvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
 
         public AvaloniaPropertyChangedObservable(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty property)
         {
-            _target = new WeakReference<IAvaloniaObject>(target);
+            _target = new WeakReference<AvaloniaObject>(target);
             _property = property;
         }
 

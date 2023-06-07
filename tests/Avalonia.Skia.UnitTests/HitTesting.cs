@@ -1,6 +1,8 @@
-﻿using Avalonia.Controls.Shapes;
+﻿using System;
+using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Xunit;
@@ -16,29 +18,24 @@ namespace Avalonia.Skia.UnitTests
             {
                 SkiaPlatform.Initialize();
 
-                var root = new TestRoot
+                using var services = new CompositorTestServices(new Size(100, 100), 
+                    AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>())
                 {
-                    Width = 100,
-                    Height = 100,
-                    Child = new Ellipse
+                    TopLevel =
                     {
-                        Width = 100,
-                        Height = 100,
-                        Fill = Brushes.Red,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center
+                        Content = new Ellipse
+                        {
+                            Width = 100,
+                            Height = 100,
+                            Fill = Brushes.Red,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center
+                        }
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
-
-                var outsideResult = root.Renderer.HitTest(new Point(10, 10), root, null);
-                var insideResult = root.Renderer.HitTest(new Point(50, 50), root, null);
-
-                Assert.Empty(outsideResult);
-                Assert.Equal(new[] {root.Child}, insideResult);
+                services.AssertHitTest(10, 10, null, Array.Empty<object>());
+                services.AssertHitTest(50, 50, null, services.TopLevel.Content);
             }
         }
 
@@ -49,30 +46,26 @@ namespace Avalonia.Skia.UnitTests
             {
                 SkiaPlatform.Initialize();
 
-                var root = new TestRoot
+                using var services = new CompositorTestServices(new Size(100, 100),
+                    AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>())
                 {
-                    Width = 100,
-                    Height = 100,
-                    Child = new Ellipse
+                    TopLevel =
                     {
-                        Width = 100,
-                        Height = 100,
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 5,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center
+                        Content = new Ellipse
+                        {
+                            Width = 100,
+                            Height = 100,
+                            Stroke = Brushes.Red,
+                            StrokeThickness = 5,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center
+                        }
                     }
                 };
-
-                root.Renderer = new DeferredRenderer(root, null);
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
-
-                var outsideResult = root.Renderer.HitTest(new Point(50, 50), root, null);
-                var insideResult = root.Renderer.HitTest(new Point(1, 50), root, null);
-
-                Assert.Empty(outsideResult);
-                Assert.Equal(new[] { root.Child }, insideResult);
+                
+                
+                services.AssertHitTest(50, 50, null, Array.Empty<object>());
+                services.AssertHitTest(1, 50, null, services.TopLevel.Content);
             }
         }
     }

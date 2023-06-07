@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -17,53 +17,30 @@ namespace Avalonia.Controls
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
-        /// Defines the <see cref="CanHorizontallyScroll"/> property.
+        /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
         /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, bool> CanHorizontallyScrollProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, bool>(
-                nameof(CanHorizontallyScroll),
-                o => o.CanHorizontallyScroll);
-
-        /// <summary>
-        /// Defines the <see cref="CanVerticallyScroll"/> property.
-        /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, bool> CanVerticallyScrollProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, bool>(
-                nameof(CanVerticallyScroll),
-                o => o.CanVerticallyScroll);
+        public static readonly AttachedProperty<bool> BringIntoViewOnFocusChangeProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(nameof(BringIntoViewOnFocusChange), true);
 
         /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, Size> ExtentProperty =
             AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(nameof(Extent),
-                o => o.Extent,
-                (o, v) => o.Extent = v);
+                o => o.Extent);
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
-        public static readonly DirectProperty<ScrollViewer, Vector> OffsetProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, Vector>(
-                nameof(Offset),
-                o => o.Offset,
-                (o, v) => o.Offset = v);
+        public static readonly StyledProperty<Vector> OffsetProperty =
+            AvaloniaProperty.Register<ScrollViewer, Vector>(nameof(Offset), coerce: CoerceOffset);
 
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, Size> ViewportProperty =
             AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(nameof(Viewport),
-                o => o.Viewport,
-                (o, v) => o.Viewport = v);
+                o => o.Viewport);
 
         /// <summary>
         /// Defines the <see cref="LargeChange"/> property.
@@ -82,41 +59,12 @@ namespace Avalonia.Controls
                 o => o.SmallChange);
 
         /// <summary>
-        /// Defines the HorizontalScrollBarMaximum property.
+        /// Defines the <see cref="ScrollBarMaximum"/> property.
         /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarMaximumProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
-                nameof(HorizontalScrollBarMaximum),
-                o => o.HorizontalScrollBarMaximum);
-
-        /// <summary>
-        /// Defines the HorizontalScrollBarValue property.
-        /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarValueProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
-                nameof(HorizontalScrollBarValue),
-                o => o.HorizontalScrollBarValue,
-                (o, v) => o.HorizontalScrollBarValue = v);
-
-        /// <summary>
-        /// Defines the HorizontalScrollBarViewportSize property.
-        /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarViewportSizeProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
-                nameof(HorizontalScrollBarViewportSize),
-                o => o.HorizontalScrollBarViewportSize);
+        public static readonly DirectProperty<ScrollViewer, Vector> ScrollBarMaximumProperty =
+            AvaloniaProperty.RegisterDirect<ScrollViewer, Vector>(
+                nameof(ScrollBarMaximum),
+                o => o.ScrollBarMaximum);
 
         /// <summary>
         /// Defines the <see cref="HorizontalScrollBarVisibility"/> property.
@@ -127,41 +75,32 @@ namespace Avalonia.Controls
                 ScrollBarVisibility.Disabled);
 
         /// <summary>
-        /// Defines the VerticalScrollBarMaximum property.
+        /// Defines the <see cref="HorizontalSnapPointsType"/> property.
         /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarMaximumProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
-                nameof(VerticalScrollBarMaximum),
-                o => o.VerticalScrollBarMaximum);
+        public static readonly AttachedProperty<SnapPointsType> HorizontalSnapPointsTypeProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsType>(
+                nameof(HorizontalSnapPointsType));
 
         /// <summary>
-        /// Defines the VerticalScrollBarValue property.
+        /// Defines the <see cref="VerticalSnapPointsType"/> property.
         /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarValueProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
-                nameof(VerticalScrollBarValue),
-                o => o.VerticalScrollBarValue,
-                (o, v) => o.VerticalScrollBarValue = v);
+        public static readonly AttachedProperty<SnapPointsType> VerticalSnapPointsTypeProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsType>(
+                nameof(VerticalSnapPointsType));
 
         /// <summary>
-        /// Defines the VerticalScrollBarViewportSize property.
+        /// Defines the <see cref="HorizontalSnapPointsAlignment"/> property.
         /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarViewportSizeProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
-                nameof(VerticalScrollBarViewportSize),
-                o => o.VerticalScrollBarViewportSize);
+        public static readonly AttachedProperty<SnapPointsAlignment> HorizontalSnapPointsAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsAlignment>(
+                nameof(HorizontalSnapPointsAlignment));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<SnapPointsAlignment> VerticalSnapPointsAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsAlignment>(
+                nameof(VerticalSnapPointsAlignment));
 
         /// <summary>
         /// Defines the <see cref="VerticalScrollBarVisibility"/> property.
@@ -172,7 +111,7 @@ namespace Avalonia.Controls
                 ScrollBarVisibility.Auto);
 
         /// <summary>
-        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, bool> IsExpandedProperty =
             ScrollBar.IsExpandedProperty.AddOwner<ScrollViewer>(o => o.IsExpanded);
@@ -194,6 +133,14 @@ namespace Avalonia.Controls
                 defaultValue: true);
 
         /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollInertiaEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsScrollInertiaEnabled),
+                defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -206,24 +153,15 @@ namespace Avalonia.Controls
         private IDisposable? _childSubscription;
         private ILogicalScrollable? _logicalScrollable;
         private Size _extent;
-        private Vector _offset;
         private Size _viewport;
         private Size _oldExtent;
         private Vector _oldOffset;
+        private Vector _oldMaximum;
         private Size _oldViewport;
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
         private IDisposable? _scrollBarExpandSubscription;
-
-        /// <summary>
-        /// Initializes static members of the <see cref="ScrollViewer"/> class.
-        /// </summary>
-        static ScrollViewer()
-        {
-            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
-            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrollViewer"/> class.
@@ -243,6 +181,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value that determines whether the <see cref="ScrollViewer"/> uses a
+        /// bring-into-view scroll behavior when an item in the view gets focus.
+        /// </summary>
+        /// <value>
+        /// true to use a behavior that brings focused items into view. false to use a behavior
+        /// that focused items do not automatically scroll into view. The default is true.
+        /// </value>
+        /// <remarks>
+        /// <see cref="BringIntoViewOnFocusChange"/> can either be set explicitly on a
+        /// <see cref="ScrollViewer"/>, or a the attached 
+        /// <code>ScrollViewer.BringIntoViewOnFocusChange</code> property can be set on an element
+        /// that hosts a <see cref="ScrollViewer"/>.
+        /// </remarks>
+        public bool BringIntoViewOnFocusChange
+        {
+            get => GetValue(BringIntoViewOnFocusChangeProperty);
+            set => SetValue(BringIntoViewOnFocusChangeProperty, value);
+        }
+
+        /// <summary>
         /// Gets the extent of the scrollable content.
         /// </summary>
         public Size Extent
@@ -252,7 +210,7 @@ namespace Avalonia.Controls
                 return _extent;
             }
 
-            private set
+            internal set
             {
                 if (SetAndRaise(ExtentProperty, ref _extent, value))
                 {
@@ -266,18 +224,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Vector Offset
         {
-            get
-            {
-                return _offset;
-            }
-
-            set
-            {
-                if (SetAndRaise(OffsetProperty, ref _offset, CoerceOffset(Extent, Viewport, value)))
-                {
-                    CalculatedPropertiesChanged();
-                }
-            }
+            get => GetValue(OffsetProperty);
+            set => SetValue(OffsetProperty, value);
         }
 
         /// <summary>
@@ -290,7 +238,7 @@ namespace Avalonia.Controls
                 return _viewport;
             }
 
-            private set
+            internal set
             {
                 if (SetAndRaise(ViewportProperty, ref _viewport, value))
                 {
@@ -344,73 +292,12 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public IControl? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
+        public Control? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
 
         /// <summary>
-        /// Gets the maximum horizontal scrollbar value.
+        /// Gets the maximum scrolling distance (which is <see cref="Extent"/> - <see cref="Viewport"/>).
         /// </summary>
-        protected double HorizontalScrollBarMaximum
-        {
-            get { return Max(_extent.Width - _viewport.Width, 0); }
-        }
-
-        /// <summary>
-        /// Gets or sets the horizontal scrollbar value.
-        /// </summary>
-        protected double HorizontalScrollBarValue
-        {
-            get { return _offset.X; }
-            set
-            {
-                if (_offset.X != value)
-                {
-                    var old = Offset.X;
-                    Offset = Offset.WithX(value);
-                    RaisePropertyChanged(HorizontalScrollBarValueProperty, old, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the size of the horizontal scrollbar viewport.
-        /// </summary>
-        protected double HorizontalScrollBarViewportSize
-        {
-            get { return _viewport.Width; }
-        }
-
-        /// <summary>
-        /// Gets the maximum vertical scrollbar value.
-        /// </summary>
-        protected double VerticalScrollBarMaximum
-        {
-            get { return Max(_extent.Height - _viewport.Height, 0); }
-        }
-
-        /// <summary>
-        /// Gets or sets the vertical scrollbar value.
-        /// </summary>
-        protected double VerticalScrollBarValue
-        {
-            get { return _offset.Y; }
-            set
-            {
-                if (_offset.Y != value)
-                {
-                    var old = Offset.Y;
-                    Offset = Offset.WithY(value);
-                    RaisePropertyChanged(VerticalScrollBarValueProperty, old, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the size of the vertical scrollbar viewport.
-        /// </summary>
-        protected double VerticalScrollBarViewportSize
-        {
-            get { return _viewport.Height; }
-        }
+        public Vector ScrollBarMaximum => new(Max(_extent.Width - _viewport.Width, 0), Max(_extent.Height - _viewport.Height, 0));
 
         /// <summary>
         /// Gets a value that indicates whether any scrollbar is expanded.
@@ -419,6 +306,42 @@ namespace Avalonia.Controls
         {
             get => _isExpanded;
             private set => SetAndRaise(ScrollBar.IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how scroll gesture reacts to the snap points along the horizontal axis.
+        /// </summary>
+        public SnapPointsType HorizontalSnapPointsType
+        {
+            get => GetValue(HorizontalSnapPointsTypeProperty);
+            set => SetValue(HorizontalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how scroll gesture reacts to the snap points along the vertical axis.
+        /// </summary>
+        public SnapPointsType VerticalSnapPointsType
+        {
+            get => GetValue(VerticalSnapPointsTypeProperty);
+            set => SetValue(VerticalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how the existing snap points are horizontally aligned versus the initial viewport.
+        /// </summary>
+        public SnapPointsAlignment HorizontalSnapPointsAlignment
+        {
+            get => GetValue(HorizontalSnapPointsAlignmentProperty); 
+            set => SetValue(HorizontalSnapPointsAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how the existing snap points are vertically aligned versus the initial viewport.
+        /// </summary>
+        public SnapPointsAlignment VerticalSnapPointsAlignment
+        {
+            get => GetValue(VerticalSnapPointsAlignmentProperty); 
+            set => SetValue(VerticalSnapPointsAlignmentProperty, value);
         }
 
         /// <summary>
@@ -445,83 +368,82 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => GetValue(IsScrollInertiaEnabledProperty);
+            set => SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
+        /// <summary>
         /// Scrolls the content up one line.
         /// </summary>
-        public void LineUp()
-        {
-            Offset -= new Vector(0, _smallChange.Height);
-        }
+        public void LineUp() => SetCurrentValue(OffsetProperty, Offset - new Vector(0, _smallChange.Height));
 
         /// <summary>
         /// Scrolls the content down one line.
         /// </summary>
-        public void LineDown()
-        {
-            Offset += new Vector(0, _smallChange.Height);
-        }
+        public void LineDown() => SetCurrentValue(OffsetProperty, Offset + new Vector(0, _smallChange.Height));
 
         /// <summary>
         /// Scrolls the content left one line.
         /// </summary>
-        public void LineLeft()
-        {
-            Offset -= new Vector(_smallChange.Width, 0);
-        }
+        public void LineLeft() => SetCurrentValue(OffsetProperty, Offset - new Vector(_smallChange.Width, 0));
 
         /// <summary>
         /// Scrolls the content right one line.
         /// </summary>
-        public void LineRight()
-        {
-            Offset += new Vector(_smallChange.Width, 0);
-        }
+        public void LineRight() => SetCurrentValue(OffsetProperty, Offset + new Vector(_smallChange.Width, 0));
 
         /// <summary>
         /// Scrolls the content upward by one page.
         /// </summary>
-        public void PageUp()
-        {
-            VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
-        }
+        public void PageUp() => SetCurrentValue(OffsetProperty, Offset.WithY(Math.Max(Offset.Y - _viewport.Height, 0)));
 
         /// <summary>
         /// Scrolls the content downward by one page.
         /// </summary>
-        public void PageDown()
-        {
-            VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
-        }
+        public void PageDown() => SetCurrentValue(OffsetProperty, Offset.WithY(Math.Min(Offset.Y + _viewport.Height, ScrollBarMaximum.Y)));
 
         /// <summary>
         /// Scrolls the content left by one page.
         /// </summary>
-        public void PageLeft()
-        {
-            HorizontalScrollBarValue = Math.Max(_offset.X - _viewport.Width, 0);
-        }
+        public void PageLeft() => SetCurrentValue(OffsetProperty, Offset.WithX(Math.Max(Offset.X - _viewport.Width, 0)));
 
         /// <summary>
         /// Scrolls the content tight by one page.
         /// </summary>
-        public void PageRight()
-        {
-            HorizontalScrollBarValue = Math.Min(_offset.X + _viewport.Width, HorizontalScrollBarMaximum);
-        }
+        public void PageRight() => SetCurrentValue(OffsetProperty, Offset.WithX(Math.Min(Offset.X + _viewport.Width, ScrollBarMaximum.X)));
 
         /// <summary>
         /// Scrolls to the top-left corner of the content.
         /// </summary>
-        public void ScrollToHome()
-        {
-            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
-        }
+        public void ScrollToHome() => SetCurrentValue(OffsetProperty, new Vector(double.NegativeInfinity, double.NegativeInfinity));
 
         /// <summary>
         /// Scrolls to the bottom-left corner of the content.
         /// </summary>
-        public void ScrollToEnd()
+        public void ScrollToEnd() => SetCurrentValue(OffsetProperty, new Vector(double.NegativeInfinity, double.PositiveInfinity));
+
+        /// <summary>
+        /// Gets the value of the <see cref="BringIntoViewOnFocusChange"/> attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static bool GetBringIntoViewOnFocusChange(Control control)
         {
-            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+            return control.GetValue(BringIntoViewOnFocusChangeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the <see cref="BringIntoViewOnFocusChange"/> attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetBringIntoViewOnFocusChange(Control control, bool value)
+        {
+            control.SetValue(BringIntoViewOnFocusChangeProperty, value);
         }
 
         /// <summary>
@@ -542,6 +464,86 @@ namespace Avalonia.Controls
         public static void SetHorizontalScrollBarVisibility(Control control, ScrollBarVisibility value)
         {
             control.SetValue(HorizontalScrollBarVisibilityProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsType GetHorizontalSnapPointsType(Control control)
+        {
+            return control.GetValue(HorizontalSnapPointsTypeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetHorizontalSnapPointsType(Control control, SnapPointsType value)
+        {
+            control.SetValue(HorizontalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsType GetVerticalSnapPointsType(Control control)
+        {
+            return control.GetValue(VerticalSnapPointsTypeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsType attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetVerticalSnapPointsType(Control control, SnapPointsType value)
+        {
+            control.SetValue(VerticalSnapPointsTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsAlignment GetHorizontalSnapPointsAlignment(Control control)
+        {
+            return control.GetValue(HorizontalSnapPointsAlignmentProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetHorizontalSnapPointsAlignment(Control control, SnapPointsAlignment value)
+        {
+            control.SetValue(HorizontalSnapPointsAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static SnapPointsAlignment GetVerticalSnapPointsAlignment(Control control)
+        {
+            return control.GetValue(VerticalSnapPointsAlignmentProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalSnapPointsAlignment attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetVerticalSnapPointsAlignment(Control control, SnapPointsAlignment value)
+        {
+            control.SetValue(VerticalSnapPointsAlignmentProperty, value);
         }
 
         /// <summary>
@@ -614,26 +616,42 @@ namespace Avalonia.Controls
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
+        /// <summary>
+        /// Gets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public static bool GetIsScrollInertiaEnabled(Control control)
+        {
+            return control.GetValue(IsScrollInertiaEnabledProperty);
+        }
+
+        /// <summary>
+        /// Sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public static void SetIsScrollInertiaEnabled(Control control, bool value)
+        {
+            control.SetValue(IsScrollInertiaEnabledProperty, value);
+        }
+
         /// <inheritdoc/>
-        public void RegisterAnchorCandidate(IControl element)
+        public void RegisterAnchorCandidate(Control element)
         {
             (Presenter as IScrollAnchorProvider)?.RegisterAnchorCandidate(element);
         }
 
         /// <inheritdoc/>
-        public void UnregisterAnchorCandidate(IControl element)
+        public void UnregisterAnchorCandidate(Control element)
         {
             (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             _childSubscription?.Dispose();
             _childSubscription = null;
 
             if (base.RegisterContentPresenter(presenter))
             {
-                _childSubscription = Presenter?
+                _childSubscription = ((Control?)Presenter)?
                     .GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(ChildChanged);
                 return true;
@@ -642,11 +660,14 @@ namespace Avalonia.Controls
             return false;
         }
 
-        internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
+        internal static Vector CoerceOffset(AvaloniaObject sender, Vector value)
         {
+            var extent = sender.GetValue(ExtentProperty);
+            var viewport = sender.GetValue(ViewportProperty);
+
             var maxX = Math.Max(extent.Width - viewport.Width, 0);
             var maxY = Math.Max(extent.Height - viewport.Height, 0);
-            return new Vector(Clamp(offset.X, 0, maxX), Clamp(offset.Y, 0, maxY));
+            return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
         }
 
         private static double Clamp(double value, double min, double max)
@@ -660,7 +681,7 @@ namespace Avalonia.Controls
             return double.IsNaN(result) ? 0 : result;
         }
 
-        private void ChildChanged(IControl? child)
+        private void ChildChanged(Control? child)
         {
             if (_logicalScrollable is object)
             {
@@ -682,40 +703,14 @@ namespace Avalonia.Controls
             CalculatedPropertiesChanged();
         }
 
-        private void ScrollBarVisibilityChanged(AvaloniaPropertyChangedEventArgs<ScrollBarVisibility> e)
-        {
-            var wasEnabled = e.OldValue.GetValueOrDefault() != ScrollBarVisibility.Disabled;
-            var isEnabled = e.NewValue.GetValueOrDefault() != ScrollBarVisibility.Disabled;
-
-            if (wasEnabled != isEnabled)
-            {
-                if (e.Property == HorizontalScrollBarVisibilityProperty)
-                {
-                    RaisePropertyChanged(
-                        CanHorizontallyScrollProperty,
-                        wasEnabled,
-                        isEnabled);
-                }
-                else if (e.Property == VerticalScrollBarVisibilityProperty)
-                {
-                    RaisePropertyChanged(
-                        CanVerticallyScrollProperty,
-                        wasEnabled,
-                        isEnabled);
-                }
-            }
-        }
-
         private void CalculatedPropertiesChanged()
         {
-            // Pass old values of 0 here because we don't have the old values at this point,
-            // and it shouldn't matter as only the template uses these properties.
-            RaisePropertyChanged(HorizontalScrollBarMaximumProperty, 0, HorizontalScrollBarMaximum);
-            RaisePropertyChanged(HorizontalScrollBarValueProperty, 0, HorizontalScrollBarValue);
-            RaisePropertyChanged(HorizontalScrollBarViewportSizeProperty, 0, HorizontalScrollBarViewportSize);
-            RaisePropertyChanged(VerticalScrollBarMaximumProperty, 0, VerticalScrollBarMaximum);
-            RaisePropertyChanged(VerticalScrollBarValueProperty, 0, VerticalScrollBarValue);
-            RaisePropertyChanged(VerticalScrollBarViewportSizeProperty, 0, VerticalScrollBarViewportSize);
+            var newMaximum = ScrollBarMaximum;
+            if (newMaximum != _oldMaximum)
+            {
+                RaisePropertyChanged(ScrollBarMaximumProperty, _oldMaximum, newMaximum);
+                _oldMaximum = newMaximum;
+            }
 
             if (_logicalScrollable?.IsLogicalScrollEnabled == true)
             {
@@ -727,6 +722,32 @@ namespace Avalonia.Controls
                 SetAndRaise(SmallChangeProperty, ref _smallChange, new Size(DefaultSmallChange, DefaultSmallChange));
                 SetAndRaise(LargeChangeProperty, ref _largeChange, Viewport);
             }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == OffsetProperty)
+            {
+                CalculatedPropertiesChanged();
+            }
+            else if (change.Property == ExtentProperty)
+            {
+                CoerceValue(OffsetProperty);
+            }
+            else if (change.Property == ViewportProperty)
+            {
+                CoerceValue(OffsetProperty);
+            }
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (e.Source != this && e.Source is Control c && BringIntoViewOnFocusChange)
+                c.BringIntoView();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

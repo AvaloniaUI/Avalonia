@@ -1,0 +1,180 @@
+<!--
+  // (c) Copyright Microsoft Corporation.
+  // This source is subject to the Microsoft Public License (Ms-PL).
+  // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
+  // All other rights reserved.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <ControlTheme x:Key="{x:Type CalendarItem}"
+                TargetType="CalendarItem">
+    <Setter Property="CornerRadius" Value="1" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Margin="0,2,0,2"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+
+            <Border BorderBrush="{DynamicResource ThemeBackgroundBrush}"
+                    BorderThickness="2"
+                    CornerRadius="1">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.Styles>
+                  <Style Selector="Button.CalendarHeader">
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                  </Style>
+                  <Style Selector="Button.CalendarHeader:pressed  /template/ ContentPresenter">
+                    <Setter Property="Background" Value="Transparent" />
+                  </Style>
+
+                  <Style Selector="Button.CalendarNavigation">
+                    <Setter Property="Height" Value="20" />
+                    <Setter Property="Width" Value="28" />
+                  </Style>
+                  <Style Selector="Button.CalendarNavigation > Path">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}" />
+                  </Style>
+                  <Style Selector="Button.CalendarNavigation:pointerover > Path">
+                    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
+                  </Style>
+
+                  <Style Selector="Button#HeaderButton:pointerover">
+                    <Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
+                  </Style>
+                </Grid.Styles>
+
+                <Rectangle Grid.ColumnSpan="3"
+                           Height="22"
+                           VerticalAlignment="Top"
+                           Fill="{TemplateBinding HeaderBackground}"
+                           Stretch="Fill" />
+
+                <Button Name="PART_PreviousButton"
+                        HorizontalAlignment="Left"
+                        Classes="CalendarHeader CalendarNavigation"
+                        IsVisible="False">
+
+                  <Path Width="6"
+                        Height="10"
+                        Margin="14,-6,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Data="M288.75,232.25 L288.75,240.625 L283,236.625 z"
+                        Stretch="Fill" />
+
+                </Button>
+
+                <Button Name="PART_HeaderButton"
+                        Grid.Column="1"
+                        Padding="1,5,1,9"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Classes="CalendarHeader"
+                        FontSize="10.5"
+                        FontWeight="Bold" />
+
+                <Button Name="PART_NextButton"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Classes="CalendarHeader CalendarNavigation"
+                        IsVisible="False">
+
+                  <Path Width="6"
+                        Height="10"
+                        Margin="0,-6,14,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Data="M282.875,231.875 L282.875,240.375 L288.625,236 z"
+                        Stretch="Fill" />
+
+                </Button>
+
+                <Grid Name="PART_MonthView"
+                      Grid.Row="1"
+                      Grid.ColumnSpan="3"
+                      Margin="6,-1,6,6"
+                      IsVisible="False">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                </Grid>
+
+                <Grid Name="PART_YearView"
+                      Grid.Row="1"
+                      Grid.ColumnSpan="3"
+                      Margin="6,-3,7,6"
+                      IsVisible="False">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                </Grid>
+              </Grid>
+            </Border>
+          </Border>
+
+          <Rectangle Name="DisabledVisual"
+                     Margin="0,2,0,2"
+                     Fill="{DynamicResource ThemeControlLowBrush}"
+                     IsVisible="False"
+                     Opacity="{DynamicResource ThemeDisabledOpacity}"
+                     Stretch="Fill" />
+
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="DayTitleTemplate">
+      <Template x:DataType="x:String">
+        <TextBlock Margin="0,4,0,4"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="9.5"
+                   FontWeight="Bold"
+                   Text="{Binding}" />
+      </Template>
+    </Setter>
+
+    <Style Selector="^:calendardisabled /template/ Rectangle#DisabledVisual">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

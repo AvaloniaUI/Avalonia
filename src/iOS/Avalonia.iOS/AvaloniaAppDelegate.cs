@@ -20,7 +20,7 @@ namespace Avalonia.iOS
             }
         }
 
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseiOS();
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
         
         [Export("window")]
         public UIWindow Window { get; set; }
@@ -28,7 +28,7 @@ namespace Avalonia.iOS
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            var builder = AppBuilder.Configure<TApp>();
+            var builder = AppBuilder.Configure<TApp>().UseiOS();
             CustomizeAppBuilder(builder);
 
             var lifetime = new SingleViewLifetime();
@@ -36,17 +36,22 @@ namespace Avalonia.iOS
             builder.AfterSetup(_ =>
             {
                 Window = new UIWindow();
+                
+                
                 var view = new AvaloniaView();
                 lifetime.View = view;
-                Window.RootViewController = new UIViewController
+                var controller = new DefaultAvaloniaViewController
                 {
                     View = view
                 };
+                Window.RootViewController = controller;
+                view.InitWithController(controller);
             });
             
             builder.SetupWithLifetime(lifetime);
-            
-            Window.Hidden = false;
+
+            Window.MakeKeyAndVisible();
+
             return true;
         }
     }

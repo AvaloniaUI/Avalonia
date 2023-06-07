@@ -1,0 +1,59 @@
+using System.Collections;
+using System.Collections.Generic;
+using Avalonia.Rendering.Composition.Server;
+
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
+namespace Avalonia.Rendering.Composition.Expressions;
+
+internal class ExpressionTrackedObjects : IEnumerable<IExpressionObject>
+{
+    private List<IExpressionObject> _list = new();
+    private HashSet<IExpressionObject> _hashSet = new();
+    
+    public void Add(IExpressionObject obj, string member)
+    {
+        if (_hashSet.Add(obj))
+            _list.Add(obj);
+    }
+
+    public void Clear()
+    {
+        _list.Clear();
+        _hashSet.Clear();
+    }
+
+    IEnumerator<IExpressionObject> IEnumerable<IExpressionObject>.GetEnumerator()
+    {
+        return _list.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)_list).GetEnumerator();
+    }
+
+    public List<IExpressionObject>.Enumerator GetEnumerator() => _list.GetEnumerator();
+    
+    public struct Pool
+    {
+        private Stack<ExpressionTrackedObjects> _stack = new();
+
+        public Pool()
+        {
+        }
+
+        public ExpressionTrackedObjects Get()
+        {
+            if (_stack.Count > 0)
+                return _stack.Pop();
+            return new ExpressionTrackedObjects();
+        }
+
+        public void Return(ExpressionTrackedObjects obj)
+        {
+            _stack.Clear();
+            _stack.Push(obj);
+        }
+    }
+}

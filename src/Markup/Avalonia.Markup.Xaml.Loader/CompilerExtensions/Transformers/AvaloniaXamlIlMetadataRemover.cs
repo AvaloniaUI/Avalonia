@@ -1,4 +1,3 @@
-using System.Linq;
 using XamlX.Ast;
 using XamlX.Transform;
 
@@ -8,8 +7,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is AvaloniaXamlIlTargetTypeMetadataNode targetType)
-                return targetType.Value;
+            while (node is AvaloniaXamlIlTargetTypeMetadataNode targetType)
+                node = targetType.Value;
 
             return node;
         }

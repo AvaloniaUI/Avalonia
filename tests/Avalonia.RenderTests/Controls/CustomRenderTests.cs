@@ -88,7 +88,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Height = 200,
                 Child = new CustomRenderer((control, context) =>
                 {
-                    using (var transform = context.PushPreTransform(Matrix.CreateTranslation(100, 100)))
+                    using (var transform = context.PushTransform(Matrix.CreateTranslation(100, 100)))
                     using (var clip = context.PushClip(new Rect(0, 0, 100, 100)))
                     {
                         context.FillRectangle(Brushes.Blue, new Rect(0, 0, 200, 200));
@@ -112,7 +112,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Height = 200,
                 Child = new CustomRenderer((control, context) =>
                 {
-                    using (var transform = context.PushPreTransform(Matrix.CreateTranslation(100, 100)))
+                    using (var transform = context.PushTransform(Matrix.CreateTranslation(100, 100)))
                     using (var clip = context.PushClip(new Rect(0, 0, 100, 100)))
                     {
                         context.FillRectangle(Brushes.Blue, new Rect(0, 0, 200, 200));

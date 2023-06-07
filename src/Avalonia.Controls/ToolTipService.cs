@@ -26,14 +26,14 @@ namespace Avalonia.Controls
 
             if (e.OldValue != null)
             {
-                control.PointerEnter -= ControlPointerEnter;
-                control.PointerLeave -= ControlPointerLeave;
+                control.PointerEntered -= ControlPointerEntered;
+                control.PointerExited -= ControlPointerExited;
             }
 
             if (e.NewValue != null)
             {
-                control.PointerEnter += ControlPointerEnter;
-                control.PointerLeave += ControlPointerLeave;
+                control.PointerEntered += ControlPointerEntered;
+                control.PointerExited += ControlPointerExited;
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -42,11 +42,12 @@ namespace Avalonia.Controls
                 {
                     Close(control);
                 }
-                else
+                else 
                 {
-                    var tip = control.GetValue(ToolTip.ToolTipProperty);
-
-                    tip!.Content = e.NewValue;
+                    if (control.GetValue(ToolTip.ToolTipProperty) is { } tip)
+                    {
+                        tip.Content = e.NewValue;
+                    }
                 }
             }
         }
@@ -80,7 +81,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerEnter(object? sender, PointerEventArgs e)
+        private void ControlPointerEntered(object? sender, PointerEventArgs e)
         {
             StopTimer();
 
@@ -101,7 +102,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerLeave(object? sender, PointerEventArgs e)
+        private void ControlPointerExited(object? sender, PointerEventArgs e)
         {
             var control = (Control)sender!;
             Close(control);
@@ -125,7 +126,7 @@ namespace Avalonia.Controls
         {
             StopTimer();
 
-            if ((control as IVisual).IsAttachedToVisualTree)
+            if (control.IsAttachedToVisualTree)
             {
                 ToolTip.SetIsOpen(control, true);
             }

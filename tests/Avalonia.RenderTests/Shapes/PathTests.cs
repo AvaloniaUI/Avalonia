@@ -376,5 +376,63 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
+        
+        [Fact]
+        public async Task BeginFigure_IsFilled_Is_Respected()
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = Brushes.White,
+                Child = new Path
+                {
+                    Fill = Brushes.Black,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 10,
+                    Data = new PathGeometry()
+                    {
+                        Figures = new()
+                        {
+                            new PathFigure
+                            {
+                                IsFilled = false, IsClosed = false,
+                                StartPoint = new Point(170,170),
+                                Segments = new ()
+                                {
+                                    new LineSegment
+                                    {
+                                        Point = new Point(60, 170)
+                                    },
+                                    new LineSegment
+                                    {
+                                        Point = new Point(60, 60)
+                                    }
+                                }
+                            },
+                            new PathFigure
+                            {
+                                IsFilled = true, IsClosed = true,
+                                StartPoint = new Point(60,20),
+                                Segments = new ()
+                                {
+                                    new LineSegment
+                                    {
+                                        Point = new Point(20, 60)
+                                    },
+                                    new LineSegment
+                                    {
+                                        Point = new Point(100, 60)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

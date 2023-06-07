@@ -1,9 +1,10 @@
 using System;
-using System.ComponentModel;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IPlatformLifetimeEventsImpl
     {
         /// <summary>
@@ -12,6 +13,6 @@ namespace Avalonia.Platform
         /// <remarks>
         /// Raised on on OSX via the Quit menu or right-clicking on the application icon and selecting Quit.
         /// </remarks>
-        event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
     }
 }

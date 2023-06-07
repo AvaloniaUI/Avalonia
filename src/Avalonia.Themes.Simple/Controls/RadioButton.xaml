@@ -1,0 +1,65 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <ControlTheme x:Key="{x:Type RadioButton}"
+                TargetType="RadioButton">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Background="{TemplateBinding Background}"
+              ColumnDefinitions="Auto,*">
+          <Ellipse Name="border"
+                   Width="18"
+                   Height="18"
+                   VerticalAlignment="Center"
+                   Stroke="{TemplateBinding BorderBrush}"
+                   StrokeThickness="1" />
+          <Ellipse Name="checkMark"
+                   Width="10"
+                   Height="10"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Stretch="Uniform"
+                   UseLayoutRounding="False" />
+          <Ellipse Name="indeterminateMark"
+                   Width="10"
+                   Height="10"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Fill="{DynamicResource ThemeAccentBrush}"
+                   Stretch="Uniform"
+                   UseLayoutRounding="False" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Grid.Column="1"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            RecognizesAccessKey="True" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Ellipse#border">
+      <Setter Property="Stroke" Value="{DynamicResource ThemeBorderHighBrush}" />
+    </Style>
+    <Style Selector="^ /template/ Ellipse#checkMark">
+      <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ Ellipse#indeterminateMark">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#checkMark">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Ellipse#indeterminateMark">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled /template/ Ellipse#border">
+      <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

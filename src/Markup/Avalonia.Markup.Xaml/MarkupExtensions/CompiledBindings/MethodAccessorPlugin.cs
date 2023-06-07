@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
-
-#nullable enable
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     internal class MethodAccessorPlugin : IPropertyAccessorPlugin
     {
-        private MethodInfo _method;
+        private readonly MethodInfo _method;
         private readonly Type _delegateType;
 
         public MethodAccessorPlugin(MethodInfo method, Type delegateType)
@@ -21,11 +18,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _delegateType = delegateType;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The MethodAccessorPlugin does not support dynamic matching");
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object?> reference, string propertyName)
         {
             Debug.Assert(_method.Name == propertyName);

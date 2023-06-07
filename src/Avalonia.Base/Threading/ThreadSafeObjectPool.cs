@@ -2,15 +2,14 @@ using System.Collections.Generic;
 
 namespace Avalonia.Threading
 {
-    public class ThreadSafeObjectPool<T> where T : class, new()
+    internal class ThreadSafeObjectPool<T> where T : class, new()
     {
         private Stack<T> _stack = new Stack<T>();
-        private object _lock = new object();
         public static ThreadSafeObjectPool<T> Default { get; } = new ThreadSafeObjectPool<T>();
 
         public T Get()
         {
-            lock (_lock)
+            lock (_stack)
             {
                 if(_stack.Count == 0)
                     return new T();
@@ -18,11 +17,14 @@ namespace Avalonia.Threading
             }
         }
 
-        public void Return(T obj)
+        public void ReturnAndSetNull(ref T? obj)
         {
+            if (obj == null)
+                return;
             lock (_stack)
             {
                 _stack.Push(obj);
+                obj = null;
             }
         }
     }

@@ -43,7 +43,7 @@ namespace Avalonia.Benchmarks.Base
 
             for (var i = 0; i < 100; ++i)
             {
-                obj.SetValue(StyledClass.IntValueProperty, obj.IntValue + 1, BindingPriority.TemplatedParent);
+                obj.SetValue(StyledClass.IntValueProperty, obj.IntValue + 1, BindingPriority.Template);
             }
         }
 
@@ -138,7 +138,7 @@ namespace Avalonia.Benchmarks.Base
                 return arg < 1000;
             }
 
-            private static int CoerceIntValue(IAvaloniaObject arg1, int arg2)
+            private static int CoerceIntValue(AvaloniaObject arg1, int arg2)
             {
                 return Math.Min(1000, arg2);
             }

@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <TabStrip>
@@ -8,7 +10,8 @@
       </TabStrip>
     </Border>
   </Design.PreviewWith>
-  <Style Selector="TabStrip">
+
+  <ControlTheme x:Key="{x:Type TabStrip}" TargetType="TabStrip">
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"
@@ -17,9 +20,7 @@
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{TemplateBinding Padding}">
           <ItemsPresenter Name="PART_ItemsPresenter"
-                          Items="{TemplateBinding Items}"
-                          ItemsPanel="{TemplateBinding ItemsPanel}"
-                          ItemTemplate="{TemplateBinding ItemTemplate}" />
+                          ItemsPanel="{TemplateBinding ItemsPanel}" />
         </Border>
       </ControlTemplate>
     </Setter>
@@ -28,5 +29,5 @@
         <WrapPanel />
       </ItemsPanelTemplate>
     </Setter>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>

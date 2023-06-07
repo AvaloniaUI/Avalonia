@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Reflection;
+using Avalonia.Reactive;
 
 namespace MiniMvvm
 {
@@ -92,11 +92,13 @@ namespace MiniMvvm
             Expression<Func<TModel, T3>> v3,
             Func<T1, T2, T3, TRes> cb
         ) where TModel : INotifyPropertyChanged =>
-            Observable.CombineLatest(
-                model.WhenAnyValue(v1),
-                model.WhenAnyValue(v2),
-                model.WhenAnyValue(v3),
-                cb);
+            model.WhenAnyValue(v1)
+                .CombineLatest(
+                    model.WhenAnyValue(v2),
+                    (l, r) => (l, r))
+                .CombineLatest(
+                    model.WhenAnyValue(v3),
+                    (t, r) => cb(t.l, t.r, r));
 
         public static IObservable<ValueTuple<T1, T2, T3>> WhenAnyValue<TModel, T1, T2, T3>(this TModel model,
             Expression<Func<TModel, T1>> v1,

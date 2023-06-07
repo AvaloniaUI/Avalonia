@@ -1,22 +1,21 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
-        xmlns:diag="clr-namespace:Avalonia.Diagnostics"
-        xmlns:default="using:Avalonia.Themes.Default"
+        xmlns:views="using:Avalonia.Diagnostics.Views"
+        xmlns:diag="using:Avalonia.Diagnostics"
+        xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
         Title="Avalonia DevTools"
-        x:Class="Avalonia.Diagnostics.Views.MainWindow">
+        x:Class="Avalonia.Diagnostics.Views.MainWindow"
+        x:DataType="viewModels:MainViewModel">
   <Window.DataTemplates>
     <diag:ViewLocator/>
   </Window.DataTemplates>
-  
+
   <Window.Styles>
-    <default:SimpleTheme Mode="Light"/>
-    <StyleInclude Source="resm:Avalonia.Controls.DataGrid.Themes.Default.xaml?assembly=Avalonia.Controls.DataGrid"/>
-    <Style Selector="DataGrid ContextMenu">
-      <Setter Property="Foreground" Value="Black"/>
-    </Style>
+    <SimpleTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
+    <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
   </Window.Styles>
   <Window.KeyBindings>
     <KeyBinding Gesture="F8" Command="{Binding Shot}"/>

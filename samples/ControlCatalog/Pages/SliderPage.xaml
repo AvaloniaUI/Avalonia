@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             xmlns:sys="using:System"
              x:Class="ControlCatalog.Pages.SliderPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A control that lets the user select from a range of values by moving a Thumb control along a Track.</TextBlock>

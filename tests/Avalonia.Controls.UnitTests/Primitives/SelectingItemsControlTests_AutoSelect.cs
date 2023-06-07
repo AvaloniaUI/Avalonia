@@ -4,6 +4,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -15,7 +16,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestSelector
             {
-                Items = new[] { "foo", "bar" },
+                ItemsSource = new[] { "foo", "bar" },
                 Template = Template(),
             };
 
@@ -31,7 +32,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new AvaloniaList<string>();
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -49,7 +50,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new ResetOnAdd();
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -67,7 +68,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -86,7 +87,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -105,7 +106,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new AvaloniaList<string>(new[] { "foo", "bar" });
             var target = new TestSelector
             {
-                Items = items,
+                ItemsSource = items,
                 Template = Template(),
             };
 
@@ -115,16 +116,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("bar", target.SelectedItem);
-            Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[0].Classes);
         }
 
-        private FuncControlTemplate Template()
+        private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 }.RegisterInNameScope(scope));
         }

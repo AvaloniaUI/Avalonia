@@ -6,7 +6,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// A Direct2D implementation of a <see cref="Avalonia.Media.StreamGeometry"/>.
     /// </summary>
-    public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
+    internal class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.

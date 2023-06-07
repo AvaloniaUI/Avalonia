@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
 namespace Avalonia.Remote.Protocol
 {
+    [RequiresUnreferencedCode("Bson uses reflection")]
     public class BsonTcpTransport : TcpTransportBase
     {
         public BsonTcpTransport(IMessageTypeResolver resolver) : base(resolver)

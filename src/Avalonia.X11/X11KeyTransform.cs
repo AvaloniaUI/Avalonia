@@ -4,7 +4,7 @@ using Avalonia.Input;
 
 namespace Avalonia.X11
 {
-    static class X11KeyTransform
+    internal static class X11KeyTransform
     {
         private static readonly Dictionary<X11Key, Key> KeyDic = new Dictionary<X11Key, Key>
         {

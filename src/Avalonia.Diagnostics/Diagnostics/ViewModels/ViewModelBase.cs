@@ -20,7 +20,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
         }
 
-        protected bool RaiseAndSetIfChanged<T>([NotNullIfNotNull("value")] ref T field, T value, [CallerMemberName] string propertyName = null!)
+        protected bool RaiseAndSetIfChanged<T>([NotNullIfNotNull("value")] ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
             {
@@ -32,7 +32,7 @@ namespace Avalonia.Diagnostics.ViewModels
             return false;
         }
 
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null!)
+        protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
         {
             var e = new PropertyChangedEventArgs(propertyName);
             OnPropertyChanged(e);

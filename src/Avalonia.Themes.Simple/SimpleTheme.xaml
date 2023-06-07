@@ -1,0 +1,13 @@
+﻿<Styles x:Class="Avalonia.Themes.Simple.SimpleTheme"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="/Accents/Base.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+  
+  <StyleInclude Source="/Controls/SimpleControls.xaml" />
+</Styles>

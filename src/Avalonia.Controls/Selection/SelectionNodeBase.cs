@@ -2,35 +2,62 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Selection
 {
-    public abstract class SelectionNodeBase<T> : ICollectionChangedListener
+    /// <summary>
+    /// Base class for selection models.
+    /// </summary>
+    /// <typeparam name="T">The type of the element being selected.</typeparam>
+    public abstract class SelectionNodeBase<T>
     {
         private IEnumerable? _source;
         private bool _rangesEnabled;
         private List<IndexRange>? _ranges;
-        private int _collectionChanging;
 
+        /// <summary>
+        /// Gets or sets the source collection.
+        /// </summary>
         protected IEnumerable? Source
         {
             get => _source;
             set
             {
+                void OnPreChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnSourceCollectionChangeStarted();
+                void OnChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnSourceCollectionChanged(e);
+                void OnPostChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnSourceCollectionChangeFinished();
+
                 if (_source != value)
                 {
-                    ItemsView?.RemoveListener(this);
+                    if (ItemsView is not null)
+                    {
+                        ItemsView.PreCollectionChanged -= OnPreChanged;
+                        ItemsView.CollectionChanged -= OnChanged;
+                        ItemsView.PostCollectionChanged -= OnPostChanged;
+                    }
+
                     _source = value;
-                    ItemsView = value is object ? ItemsSourceView<T>.GetOrCreate(value) : null;
-                    ItemsView?.AddListener(this);
+                    ItemsView = value is not null ? ItemsSourceView.GetOrCreate<T>(value) : null;
+
+                    if (ItemsView is not null)
+                    {
+                        ItemsView.PreCollectionChanged += OnPreChanged;
+                        ItemsView.CollectionChanged += OnChanged;
+                        ItemsView.PostCollectionChanged += OnPostChanged;
+                    }
                 }
             }
         }
 
-        protected bool IsSourceCollectionChanging => _collectionChanging > 0;
+        /// <summary>
+        /// Gets an <see cref="ItemsSourceView{T}"/> of the <see cref="Source"/>.
+        /// </summary>
+        protected internal ItemsSourceView<T>? ItemsView { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether range selection is currently enabled for
+        /// the selection node.
+        /// </summary>
         protected bool RangesEnabled
         {
             get => _rangesEnabled;
@@ -48,8 +75,6 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        internal ItemsSourceView<T>? ItemsView { get; set; }
-
         internal IReadOnlyList<IndexRange> Ranges
         {
             get
@@ -63,81 +88,170 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        /// <summary>
+        /// Called when the source collection starts changing.
+        /// </summary>
+        protected virtual void OnSourceCollectionChangeStarted()
         {
-            ++_collectionChanging;
         }
 
-        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        /// <summary>
+        /// Called when the <see cref="Source"/> collection changes.
+        /// </summary>
+        /// <param name="e">The details of the collection change.</param>
+        /// <remarks>
+        /// The implementation in <see cref="SelectionNodeBase{T}"/> calls
+        /// <see cref="OnItemsAdded(int, IList)"/> and <see cref="OnItemsRemoved(int, IList)"/>
+        /// in order to calculate how the collection change affects the currently selected items.
+        /// It then calls <see cref="OnIndexesChanged(int, int)"/> and
+        /// <see cref="OnSelectionRemoved(int, int, IReadOnlyList{T})"/> if necessary, according
+        /// to the <see cref="CollectionChangeState"/> returned by those methods.
+        /// 
+        /// Override this method and <see cref="OnSourceCollectionChangeFinished"/> to provide
+        /// custom handling of source collection changes.
+        /// </remarks>
+        protected virtual void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            OnSourceCollectionChanged(e);
-        }
+            var shiftDelta = 0;
+            var shiftIndex = -1;
+            List<T>? removed = null;
 
-        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (--_collectionChanging == 0)
+            if (!IsValidCollectionChange(e))
             {
-                OnSourceCollectionChangeFinished();
+                return;
             }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    {
+                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
+                        shiftIndex = change.ShiftIndex;
+                        shiftDelta = change.ShiftDelta;
+                        break;
+                    }
+                case NotifyCollectionChangedAction.Remove:
+                    {
+                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                        shiftIndex = change.ShiftIndex;
+                        shiftDelta = change.ShiftDelta;
+                        removed = change.RemovedItems;
+                        break;
+                    }
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
+                    {
+                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
+                        shiftIndex = removeChange.ShiftIndex;
+                        shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
+                        removed = removeChange.RemovedItems;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    OnSourceReset();
+                    break;
+            }
+
+            if (shiftDelta != 0)
+                OnIndexesChanged(shiftIndex, shiftDelta);
+            if (removed is not null)
+                OnSelectionRemoved(shiftIndex, -shiftDelta, removed);
         }
 
-        protected abstract void OnSourceCollectionChangeFinished();
+        /// <summary>
+        /// Called when the source collection has finished changing, and all CollectionChanged
+        /// handlers have run.
+        /// </summary>
+        /// <remarks>
+        /// Override this method to respond to the end of a collection change instead of acting at
+        /// the end of <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>
+        /// in order to ensure that all UI subscribers to the source collection change event have
+        /// had chance to run.
+        /// </remarks>
+        protected virtual void OnSourceCollectionChangeFinished()
+        {
+        }
 
-        private protected abstract void OnIndexesChanged(int shiftIndex, int shiftDelta);
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>,
+        /// detailing the indexes changed by the collection changing.
+        /// </summary>
+        /// <param name="shiftIndex">The first index that was shifted.</param>
+        /// <param name="shiftDelta">
+        /// If positive, the number of items inserted, or if negative the number of items removed.
+        /// </param>
+        protected virtual void OnIndexesChanged(int shiftIndex, int shiftDelta)
+        {
+        }
 
-        private protected abstract void OnSourceReset();
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>,
+        /// on collection reset.
+        /// </summary>
+        protected abstract void OnSourceReset();
 
-        private protected abstract void OnSelectionChanged(IReadOnlyList<T> deselectedItems);
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>,
+        /// detailing the items removed by a collection change.
+        /// </summary>
+        protected virtual void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
+        {
+        }
 
-        private protected int CommitSelect(IndexRange range)
+        /// <summary>
+        /// If <see cref="RangesEnabled"/>, adds the specified range to the selection.
+        /// </summary>
+        /// <param name="begin">The inclusive index of the start of the range to select.</param>
+        /// <param name="end">The inclusive index of the end of the range to select.</param>
+        /// <returns>The number of items selected.</returns>
+        protected int CommitSelect(int begin, int end)
         {
             if (RangesEnabled)
             {
                 _ranges ??= new List<IndexRange>();
-                return IndexRange.Add(_ranges, range);
+                return IndexRange.Add(_ranges, new IndexRange(begin, end));
             }
 
             return 0;
         }
 
-        private protected int CommitSelect(IReadOnlyList<IndexRange> ranges)
+        /// <summary>
+        /// If <see cref="RangesEnabled"/>, removes the specified range from the selection.
+        /// </summary>
+        /// <param name="begin">The inclusive index of the start of the range to deselect.</param>
+        /// <param name="end">The inclusive index of the end of the range to deselect.</param>
+        /// <returns>The number of items selected.</returns>
+        protected int CommitDeselect(int begin, int end)
         {
             if (RangesEnabled)
             {
                 _ranges ??= new List<IndexRange>();
-                return IndexRange.Add(_ranges, ranges);
+                return IndexRange.Remove(_ranges, new IndexRange(begin, end));
             }
 
             return 0;
         }
 
-        private protected int CommitDeselect(IndexRange range)
-        {
-            if (RangesEnabled)
-            {
-                _ranges ??= new List<IndexRange>();
-                return IndexRange.Remove(_ranges, range);
-            }
-
-            return 0;
-        }
-
-        private protected int CommitDeselect(IReadOnlyList<IndexRange> ranges)
-        {
-            if (RangesEnabled && _ranges is object)
-            {
-                return IndexRange.Remove(_ranges, ranges);
-            }
-
-            return 0;
-        }
-
-        private protected virtual CollectionChangeState OnItemsAdded(int index, IList items)
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>
+        /// when items are added to the source collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="CollectionChangeState"/> struct containing the details of the adjusted
+        /// selection.
+        /// </returns>
+        /// <remarks>
+        /// The implementation in <see cref="SelectionNodeBase{T}"/> adjusts the selected ranges, 
+        /// assigning new indexes. Override this method to carry out additional computation when
+        /// items are added.
+        /// </remarks>
+        protected virtual CollectionChangeState OnItemsAdded(int index, IList items)
         {
             var count = items.Count;
             var shifted = false;
 
-            if (_ranges is object)
+            if (_ranges is not null)
             {
                 List<IndexRange>? toAdd = null;
 
@@ -148,7 +262,7 @@ namespace Avalonia.Controls.Selection
                     // The range is after the inserted items, need to shift the range right
                     if (range.End >= index)
                     {
-                        int begin = range.Begin;
+                        var begin = range.Begin;
 
                         // If the index left of newIndex is inside the range,
                         // Split the range and remember the left piece to add later
@@ -165,7 +279,7 @@ namespace Avalonia.Controls.Selection
                     }
                 }
 
-                if (toAdd is object)
+                if (toAdd is not null)
                 {
                     foreach (var range in toAdd)
                     {
@@ -181,14 +295,27 @@ namespace Avalonia.Controls.Selection
             };
         }
 
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>
+        /// when items are removed from the source collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="CollectionChangeState"/> struct containing the details of the adjusted
+        /// selection.
+        /// </returns>
+        /// <remarks>
+        /// The implementation in <see cref="SelectionNodeBase{T}"/> adjusts the selected ranges, 
+        /// assigning new indexes. Override this method to carry out additional computation when
+        /// items are removed.
+        /// </remarks>
         private protected virtual CollectionChangeState OnItemsRemoved(int index, IList items)
         {
             var count = items.Count;
             var removedRange = new IndexRange(index, index + count - 1);
-            bool shifted = false;
+            var shifted = false;
             List<T>? removed = null;
 
-            if (_ranges is object)
+            if (_ranges is not null)
             {
                 var deselected = new List<IndexRange>();
 
@@ -225,59 +352,6 @@ namespace Avalonia.Controls.Selection
             };
         }
 
-        private protected virtual void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            var shiftDelta = 0;
-            var shiftIndex = -1;
-            List<T>? removed = null;
-
-            if (!IsValidCollectionChange(e))
-            {
-                return;
-            }
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    {
-                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
-                        shiftIndex = change.ShiftIndex;
-                        shiftDelta = change.ShiftDelta;
-                        break;
-                    }
-                case NotifyCollectionChangedAction.Remove:
-                    {
-                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
-                        shiftIndex = change.ShiftIndex;
-                        shiftDelta = change.ShiftDelta;
-                        removed = change.RemovedItems;
-                        break;
-                    }
-                case NotifyCollectionChangedAction.Replace:
-                    {
-                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
-                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
-                        shiftIndex = removeChange.ShiftIndex;
-                        shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
-                        removed = removeChange.RemovedItems;
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    OnSourceReset();
-                    break;
-            }
-
-            if (shiftDelta != 0)
-            {
-                OnIndexesChanged(shiftIndex, shiftDelta);
-            }
-
-            if (removed is object)
-            {
-                OnSelectionChanged(removed);
-            }
-        }
-
         private protected virtual bool IsValidCollectionChange(NotifyCollectionChangedEventArgs e)
         {
             // If the selection is modified in a CollectionChanged handler before the selection
@@ -290,12 +364,12 @@ namespace Avalonia.Controls.Selection
             // so bail.
             //
             // See unit test Handles_Selection_Made_In_CollectionChanged for more details.
-            if (ItemsView is object &&
+            if (ItemsView is not null &&
                 RangesEnabled &&
                 Ranges.Count > 0 &&
                 e.Action == NotifyCollectionChangedAction.Add)
             {
-                var lastIndex = Ranges.Last().End;
+                var lastIndex = Ranges[Ranges.Count - 1].End;
 
                 if (e.NewStartingIndex <= lastIndex)
                 {
@@ -306,11 +380,27 @@ namespace Avalonia.Controls.Selection
             return true;
         }
 
-        private protected struct CollectionChangeState
+        /// <summary>
+        /// Details the results of a collection change on the current selection;
+        /// </summary>
+        protected class CollectionChangeState
         {
-            public int ShiftIndex;
-            public int ShiftDelta;
-            public List<T>? RemovedItems;
+            /// <summary>
+            /// Gets or sets the first index that was shifted as a result of the collection
+            /// changing.
+            /// </summary>
+            public int ShiftIndex { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating how the indexes after <see cref="ShiftIndex"/>
+            /// were shifted.
+            /// </summary>
+            public int ShiftDelta { get; set; }
+
+            /// <summary>
+            /// Gets or sets the items removed by the collection change, if any.
+            /// </summary>
+            public List<T>? RemovedItems { get; set; }
         }
     }
 }

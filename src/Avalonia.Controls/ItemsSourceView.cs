@@ -7,75 +7,47 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Represents a standardized view of the supported interactions between a given ItemsSource
-    /// object and an <see cref="ItemsRepeater"/> control.
+    /// Represents a standardized view of the supported interactions between an items collection
+    /// and an items control.
     /// </summary>
-    /// <remarks>
-    /// Components written to work with ItemsRepeater should consume the
-    /// <see cref="ItemsRepeater.Items"/> via ItemsSourceView since this provides a normalized
-    /// view of the Items. That way, each component does not need to know if the source is an
-    /// IEnumerable, an IList, or something else.
-    /// </remarks>
-    public class ItemsSourceView : INotifyCollectionChanged, IDisposable
+    public class ItemsSourceView : IReadOnlyList<object?>,
+        IList,
+        INotifyCollectionChanged,
+        ICollectionChangedListener
     {
         /// <summary>
-        ///  Gets an empty <see cref="ItemsSourceView"/>
+        /// Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
-        public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object>());
+        public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object?>());
 
-        private IList? _inner;
+        private IList _source;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
+        private NotifyCollectionChangedEventHandler? _preCollectionChanged;
+        private NotifyCollectionChangedEventHandler? _postCollectionChanged;
+        private bool _listening;
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceView(IEnumerable source)
-        {
-            source = source ?? throw new ArgumentNullException(nameof(source));
-            _inner = source switch
-            {
-                ItemsSourceView _ => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
-                IList list => list,
-                INotifyCollectionChanged _ => throw new ArgumentException(
-                    "Collection implements INotifyCollectionChanged by not IList.",
-                    nameof(source)),
-                IEnumerable<object> iObj => new List<object>(iObj),
-                _ => new List<object>(source.Cast<object>())
-            };
-        }
+        private protected ItemsSourceView(IEnumerable source) => SetSource(source);
 
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count => Inner.Count;
+        public int Count => Source.Count;
 
         /// <summary>
-        /// Gets a value that indicates whether the items source can provide a unique key for each item.
+        /// Gets the source collection.
         /// </summary>
-        /// <remarks>
-        /// TODO: Not yet implemented in Avalonia.
-        /// </remarks>
-        public bool HasKeyIndexMapping => false;
-
-        /// <summary>
-        /// Gets the inner collection.
-        /// </summary>
-        public IList Inner
-        {
-            get
-            {
-                if (_inner is null)
-                    ThrowDisposed();
-                return _inner!;
-            }
-        }
+        public IList Source => _source;
 
         /// <summary>
         /// Retrieves the item at the specified index.
@@ -84,6 +56,22 @@ namespace Avalonia.Controls
         /// <returns>The item.</returns>
         public object? this[int index] => GetAt(index);
 
+        bool IList.IsFixedSize => false;
+        bool IList.IsReadOnly => true;
+        bool ICollection.IsSynchronized => false;
+        object ICollection.SyncRoot => this;
+
+        object? IList.this[int index]
+        {
+            get => GetAt(index);
+            set => ThrowReadOnly();
+        }
+
+        /// <summary>
+        /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
+        /// </summary>
+        internal bool HasKeyIndexMapping => false;
+
         /// <summary>
         /// Occurs when the collection has changed to indicate the reason for the change and which items changed.
         /// </summary>
@@ -91,34 +79,53 @@ namespace Avalonia.Controls
         {
             add
             {
-                if (_collectionChanged is null && Inner is INotifyCollectionChanged incc)
-                {
-                    incc.CollectionChanged += OnCollectionChanged;
-                }
-
+                AddListenerIfNecessary();
                 _collectionChanged += value;
             }
 
             remove
             {
                 _collectionChanged -= value;
-
-                if (_collectionChanged is null && Inner is INotifyCollectionChanged incc)
-                {
-                    incc.CollectionChanged -= OnCollectionChanged;
-                }
+                RemoveListenerIfNecessary();
             }
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
+        /// <summary>
+        /// Occurs when a collection has finished changing and all <see cref="CollectionChanged"/>
+        /// event handlers have been notified.
+        /// </summary>
+        internal event NotifyCollectionChangedEventHandler? PreCollectionChanged
         {
-            if (_inner is INotifyCollectionChanged incc)
+            add
             {
-                incc.CollectionChanged -= OnCollectionChanged;
+                AddListenerIfNecessary();
+                _preCollectionChanged += value;
             }
 
-            _inner = null;
+            remove
+            {
+                _preCollectionChanged -= value;
+                RemoveListenerIfNecessary();
+            }
+        }
+
+        /// <summary>
+        /// Occurs when a collection has finished changing and all <see cref="CollectionChanged"/>
+        /// event handlers have been notified.
+        /// </summary>
+        internal event NotifyCollectionChangedEventHandler? PostCollectionChanged
+        {
+            add
+            {
+                AddListenerIfNecessary();
+                _postCollectionChanged += value;
+            }
+
+            remove
+            {
+                _postCollectionChanged -= value;
+                RemoveListenerIfNecessary();
+            }
         }
 
         /// <summary>
@@ -126,82 +133,174 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public object? GetAt(int index) => Inner[index];
+        public object? GetAt(int index) => Source[index];
+        public bool Contains(object? item) => Source.Contains(item);
+        public int IndexOf(object? item) => Source.IndexOf(item);
 
-        public int IndexOf(object? item) => Inner.IndexOf(item);
-
+        /// <summary>
+        /// Gets or creates an <see cref="ItemsSourceView"/> for the specified enumerable.
+        /// </summary>
+        /// <param name="items">The enumerable.</param>
+        /// <remarks>
+        /// This method handles the following three cases:
+        /// - If <paramref name="items"/> is null, returns <see cref="Empty"/>
+        /// - If <paramref name="items"/> is an <see cref="ItemsSourceView"/> returns the existing
+        ///   <see cref="ItemsSourceView"/>
+        /// - Otherwise creates a new <see cref="ItemsSourceView"/>
+        /// </remarks>
         public static ItemsSourceView GetOrCreate(IEnumerable? items)
         {
-            if (items is ItemsSourceView isv)
+            return items switch
             {
-                return isv;
-            }
-            else if (items is null)
-            {
-                return Empty;
-            }
-            else
-            {
-                return new ItemsSourceView(items);
-            }
+                ItemsSourceView isv => isv,
+                null => Empty,
+                _ => new ItemsSourceView(items)
+            };
         }
 
         /// <summary>
-        /// Retrieves the index of the item that has the specified unique identifier (key).
+        /// Gets or creates an <see cref="ItemsSourceView{T}"/> for the specified enumerable.
         /// </summary>
-        /// <param name="index">The index.</param>
-        /// <returns>The key</returns>
+        /// <param name="items">The enumerable.</param>
         /// <remarks>
-        /// TODO: Not yet implemented in Avalonia.
+        /// This method handles the following three cases:
+        /// - If <paramref name="items"/> is null, returns <see cref="Empty"/>
+        /// - If <paramref name="items"/> is an <see cref="ItemsSourceView"/> returns the existing
+        ///   <see cref="ItemsSourceView"/>
+        /// - Otherwise creates a new <see cref="ItemsSourceView"/>
         /// </remarks>
-        public string KeyFromIndex(int index)
+        public static ItemsSourceView<T> GetOrCreate<T>(IEnumerable? items)
         {
-            throw new NotImplementedException();
+            return items switch
+            {
+                ItemsSourceView<T> isvt => isvt,
+                ItemsSourceView isv => new ItemsSourceView<T>(isv.Source),
+                null => ItemsSourceView<T>.Empty,
+                _ => new ItemsSourceView<T>(items)
+            };
         }
 
         /// <summary>
-        /// Retrieves the unique identifier (key) for the item at the specified index.
+        /// Gets or creates an <see cref="ItemsSourceView{T}"/> for the specified enumerable.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>The index.</returns>
+        /// <param name="items">The enumerable.</param>
         /// <remarks>
-        /// TODO: Not yet implemented in Avalonia.
+        /// This method handles the following three cases:
+        /// - If <paramref name="items"/> is null, returns <see cref="Empty"/>
+        /// - If <paramref name="items"/> is an <see cref="ItemsSourceView"/> returns the existing
+        ///   <see cref="ItemsSourceView"/>
+        /// - Otherwise creates a new <see cref="ItemsSourceView"/>
         /// </remarks>
-        public int IndexFromKey(string key)
+        public static ItemsSourceView<T> GetOrCreate<T>(IEnumerable<T>? items)
         {
-            throw new NotImplementedException();
+            return items switch
+            {
+                ItemsSourceView<T> isv => isv,
+                null => ItemsSourceView<T>.Empty,
+                _ => new ItemsSourceView<T>(items)
+            };
         }
 
-        internal void AddListener(ICollectionChangedListener listener)
+        public IEnumerator<object?> GetEnumerator()
         {
-            if (Inner is INotifyCollectionChanged incc)
+            static IEnumerator<object> EnumerateItems(IList list)
             {
-                CollectionChangedEventManager.Instance.AddListener(incc, listener);
+                foreach (var o in list)
+                    yield return o;
+            }
+
+            var inner = Source;
+
+            return inner switch
+            {
+                IEnumerable<object> e => e.GetEnumerator(),
+                _ => EnumerateItems(inner),
+            };
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => Source.GetEnumerator();
+
+        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            _preCollectionChanged?.Invoke(this, e);
+        }
+
+        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            _collectionChanged?.Invoke(this, e);
+        }
+
+        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            _postCollectionChanged?.Invoke(this, e);
+        }
+
+        int IList.Add(object? value) => ThrowReadOnly();
+        void IList.Clear() => ThrowReadOnly();
+        void IList.Insert(int index, object? value) => ThrowReadOnly();
+        void IList.Remove(object? value) => ThrowReadOnly();
+        void IList.RemoveAt(int index) => ThrowReadOnly();
+        void ICollection.CopyTo(Array array, int index) => Source.CopyTo(array, index);
+
+        /// <summary>
+        /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
+        /// </summary>
+        internal string KeyFromIndex(int index) => throw new NotImplementedException();
+
+        private protected void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            _preCollectionChanged?.Invoke(this, e);
+            _collectionChanged?.Invoke(this, e);
+            _postCollectionChanged?.Invoke(this, e);
+        }
+
+        [MemberNotNull(nameof(_source))]
+        private protected void SetSource(IEnumerable source)
+        {
+            if (_listening && _source is INotifyCollectionChanged inccOld)
+                CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
+
+            _source = source switch
+            {
+                ItemsSourceView isv => isv.Source,
+                IList list => list,
+                INotifyCollectionChanged => throw new ArgumentException(
+                    "Collection implements INotifyCollectionChanged but not IList.",
+                    nameof(source)),
+                IEnumerable<object> iObj => new List<object>(iObj),
+                null => throw new ArgumentNullException(nameof(source)),
+                _ => new List<object>(source.Cast<object>())
+            };
+
+            if (_listening && _source is INotifyCollectionChanged inccNew)
+                CollectionChangedEventManager.Instance.AddListener(inccNew, this);
+        }
+
+        private void AddListenerIfNecessary()
+        {
+            if (!_listening)
+            {
+                if (_source is INotifyCollectionChanged incc)
+                    CollectionChangedEventManager.Instance.AddListener(incc, this);
+                _listening = true;
             }
         }
 
-        internal void RemoveListener(ICollectionChangedListener listener)
+        private void RemoveListenerIfNecessary()
         {
-            if (Inner is INotifyCollectionChanged incc)
+            if (_listening && _collectionChanged is null && _postCollectionChanged is null)
             {
-                CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
+                if (_source is INotifyCollectionChanged incc)
+                    CollectionChangedEventManager.Instance.RemoveListener(incc, this);
+                _listening = false;
             }
         }
 
-        protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
-        {
-            _collectionChanged?.Invoke(this, args);
-        }
-
-        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnItemsSourceChanged(e);
-        }
-
-        private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceView));
+        [DoesNotReturn]
+        private static int ThrowReadOnly() => throw new NotSupportedException("Collection is read-only.");
     }
 
-    public class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
+    public sealed class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
     {
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceView"/>
@@ -212,12 +311,12 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceView(IEnumerable<T> source)
+        internal ItemsSourceView(IEnumerable<T> source)
             : base(source)
         {
         }
 
-        private ItemsSourceView(IEnumerable source)
+        internal ItemsSourceView(IEnumerable source)
             : base(source)
         {
         }
@@ -227,34 +326,32 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-#pragma warning disable CS8603
         public new T this[int index] => GetAt(index);
-#pragma warning restore CS8603
 
         /// <summary>
         /// Retrieves the item at the specified index.
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public new T GetAt(int index) => (T)Inner[index]!;
+        public new T GetAt(int index) => (T)Source[index]!;
 
-        public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
-
-        public static new ItemsSourceView<T> GetOrCreate(IEnumerable? items)
+        public new IEnumerator<T> GetEnumerator()
         {
-            if (items is ItemsSourceView<T> isv)
+            static IEnumerator<T> EnumerateItems(IList list)
             {
-                return isv;
+                foreach (var o in list)
+                    yield return (T)o;
             }
-            else if (items is null)
+
+            var inner = Source;
+
+            return inner switch
             {
-                return Empty;
-            }
-            else
-            {
-                return new ItemsSourceView<T>(items);
-            }
+                IEnumerable<T> e => e.GetEnumerator(),
+                _ => EnumerateItems(inner),
+            };
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => Source.GetEnumerator();
     }
 }

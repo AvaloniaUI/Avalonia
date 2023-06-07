@@ -1,7 +1,6 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Peers;
 using Avalonia.Input;
+using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -61,10 +60,9 @@ namespace Avalonia.Controls.Primitives
         /// Renders the <see cref="AccessText"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        private protected override void RenderCore(DrawingContext context)
         {
-            base.Render(context);
-
+            base.RenderCore(context);
             int underscore = Text?.IndexOf('_') ?? -1;
 
             if (underscore != -1 && ShowAccessKey)
@@ -79,16 +77,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override TextLayout CreateTextLayout(Size constraint, string? text)
+        protected override TextLayout CreateTextLayout(string? text)
         {
-            return base.CreateTextLayout(constraint, RemoveAccessKeyMarker(text));
+            return base.CreateTextLayout(RemoveAccessKeyMarker(text));
         }
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _accessKeys = (e.Root as IInputRoot)?.AccessKeyHandler;
+            _accessKeys = (e.Root as TopLevel)?.AccessKeyHandler;
 
             if (_accessKeys != null && AccessKey != 0)
             {

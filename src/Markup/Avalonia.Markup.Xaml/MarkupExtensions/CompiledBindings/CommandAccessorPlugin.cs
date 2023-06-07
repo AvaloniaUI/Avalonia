@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
@@ -12,44 +11,44 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     internal class CommandAccessorPlugin : IPropertyAccessorPlugin
     {
-        private readonly Action<object, object> _execute;
-        private readonly Func<object, object, bool> _canExecute;
+        private readonly Action<object, object?> _execute;
+        private readonly Func<object, object?, bool>? _canExecute;
         private readonly ISet<string> _dependsOnProperties;
 
-        public CommandAccessorPlugin(Action<object, object> execute, Func<object, object, bool> canExecute, ISet<string> dependsOnProperties)
+        public CommandAccessorPlugin(Action<object, object?> execute, Func<object, object?, bool>? canExecute, ISet<string> dependsOnProperties)
         {
             _execute = execute;
             _canExecute = canExecute;
             _dependsOnProperties = dependsOnProperties;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The CommandAccessorPlugin does not support dynamic matching");
         }
 
-        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public IPropertyAccessor Start(WeakReference<object?> reference, string propertyName)
         {
             return new CommandAccessor(reference, _execute, _canExecute, _dependsOnProperties);
         }
 
         private sealed class CommandAccessor : PropertyAccessorBase
         {
-            private readonly WeakReference<object> _reference;
-            private Command _command;
+            private readonly WeakReference<object?> _reference;
+            private readonly Command _command;
             private readonly ISet<string> _dependsOnProperties;
 
-            public CommandAccessor(WeakReference<object> reference, Action<object, object> execute, Func<object, object, bool> canExecute, ISet<string> dependsOnProperties)
+            public CommandAccessor(WeakReference<object?> reference, Action<object, object?> execute, Func<object, object?, bool>? canExecute, ISet<string> dependsOnProperties)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-
-                _reference = reference;
+                _reference = reference ?? throw new ArgumentNullException(nameof(reference));
                 _dependsOnProperties = dependsOnProperties;
                 _command = new Command(reference, execute, canExecute);
 
             }
 
-            public override object Value => _reference.TryGetTarget(out var _) ? _command : null;
+            public override object? Value => _reference.TryGetTarget(out _) ? _command : null;
 
             private void RaiseCanExecuteChanged()
             {
@@ -58,13 +57,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             private sealed class Command : ICommand
             {
-                private readonly WeakReference<object> _target;
-                private readonly Action<object, object> _execute;
-                private readonly Func<object, object, bool> _canExecute;
+                private readonly WeakReference<object?> _target;
+                private readonly Action<object, object?> _execute;
+                private readonly Func<object, object?, bool>? _canExecute;
 
-                public event EventHandler CanExecuteChanged;
+                public event EventHandler? CanExecuteChanged;
 
-                public Command(WeakReference<object> target, Action<object, object> execute, Func<object, object, bool> canExecute)
+                public Command(WeakReference<object?> target, Action<object, object?> execute, Func<object, object?, bool>? canExecute)
                 {
                     _target = target;
                     _execute = execute;
@@ -77,7 +76,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                        , Threading.DispatcherPriority.Input);
                 }
 
-                public bool CanExecute(object parameter)
+                public bool CanExecute(object? parameter)
                 {
                     if (_target.TryGetTarget(out var target))
                     {
@@ -90,7 +89,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     return false;
                 }
 
-                public void Execute(object parameter)
+                public void Execute(object? parameter)
                 {
                     if (_target.TryGetTarget(out var target))
                     {
@@ -101,12 +100,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             public override Type PropertyType => typeof(ICommand);
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object? value, BindingPriority priority)
             {
                 return false;
             }
 
-            void OnNotifyPropertyChanged(object sender, PropertyChangedEventArgs e)
+            private void OnNotifyPropertyChanged(object? sender, PropertyChangedEventArgs e)
             {
                 if (string.IsNullOrEmpty(e.PropertyName) || _dependsOnProperties.Contains(e.PropertyName))
                 {
@@ -124,7 +123,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_dependsOnProperties is { Count: > 0 } && _reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
                 {
-                    WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, InpcPropertyAccessor>(
+                    WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, CommandAccessor>(
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);
@@ -145,7 +144,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_dependsOnProperties is { Count:>0 } && _reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
                 {
-                    WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, InpcPropertyAccessor>(
+                    WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, CommandAccessor>(
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);

@@ -2,6 +2,7 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Shapes
 {
@@ -125,8 +126,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public IBrush? Fill
         {
-            get { return GetValue(FillProperty); }
-            set { SetValue(FillProperty, value); }
+            get => GetValue(FillProperty);
+            set => SetValue(FillProperty, value);
         }
 
         /// <summary>
@@ -134,8 +135,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public Stretch Stretch
         {
-            get { return GetValue(StretchProperty); }
-            set { SetValue(StretchProperty, value); }
+            get => GetValue(StretchProperty);
+            set => SetValue(StretchProperty, value);
         }
 
         /// <summary>
@@ -143,8 +144,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public IBrush? Stroke
         {
-            get { return GetValue(StrokeProperty); }
-            set { SetValue(StrokeProperty, value); }
+            get => GetValue(StrokeProperty);
+            set => SetValue(StrokeProperty, value);
         }
 
         /// <summary>
@@ -152,8 +153,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public AvaloniaList<double>? StrokeDashArray
         {
-            get { return GetValue(StrokeDashArrayProperty); }
-            set { SetValue(StrokeDashArrayProperty, value); }
+            get => GetValue(StrokeDashArrayProperty);
+            set => SetValue(StrokeDashArrayProperty, value);
         }
 
         /// <summary>
@@ -161,8 +162,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public double StrokeDashOffset
         {
-            get { return GetValue(StrokeDashOffsetProperty); }
-            set { SetValue(StrokeDashOffsetProperty, value); }
+            get => GetValue(StrokeDashOffsetProperty);
+            set => SetValue(StrokeDashOffsetProperty, value);
         }
 
         /// <summary>
@@ -170,8 +171,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public double StrokeThickness
         {
-            get { return GetValue(StrokeThicknessProperty); }
-            set { SetValue(StrokeThicknessProperty, value); }
+            get => GetValue(StrokeThicknessProperty);
+            set => SetValue(StrokeThicknessProperty, value);
         }
 
         /// <summary>
@@ -179,8 +180,8 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public PenLineCap StrokeLineCap
         {
-            get { return GetValue(StrokeLineCapProperty); }
-            set { SetValue(StrokeLineCapProperty, value); }
+            get => GetValue(StrokeLineCapProperty);
+            set => SetValue(StrokeLineCapProperty, value);
         }
 
         /// <summary>
@@ -188,11 +189,11 @@ namespace Avalonia.Controls.Shapes
         /// </summary>
         public PenLineJoin StrokeJoin
         {
-            get { return GetValue(StrokeJoinProperty); }
-            set { SetValue(StrokeJoinProperty, value); }
+            get => GetValue(StrokeJoinProperty);
+            set => SetValue(StrokeJoinProperty, value);
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
 
@@ -292,7 +293,7 @@ namespace Avalonia.Controls.Shapes
                 return finalSize;
             }
 
-            return Size.Empty;
+            return default;
         }
 
         internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)

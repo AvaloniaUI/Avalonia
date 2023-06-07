@@ -7,7 +7,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// The platform-specific interface for <see cref="Avalonia.Media.Geometry"/>.
     /// </summary>
-    public abstract class GeometryImpl : IGeometryImpl
+    internal abstract class GeometryImpl : IGeometryImpl
     {
         private const float ContourApproximation = 0.0001f;
 

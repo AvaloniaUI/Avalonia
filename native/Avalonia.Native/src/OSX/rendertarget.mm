@@ -1,14 +1,10 @@
 #include "common.h"
 #include "rendertarget.h"
-#import <IOSurface/IOSurface.h>
 #import <IOSurface/IOSurfaceObjC.h>
 #import <QuartzCore/QuartzCore.h>
 
-#include <OpenGL/CGLIOSurface.h>
-#include <OpenGL/OpenGL.h>
 #include <OpenGL/glext.h>
 #include <OpenGL/gl3.h>
-#include <OpenGL/gl3ext.h>
 
 @interface IOSurfaceHolder : NSObject
 @end
@@ -17,6 +13,7 @@
 {
     @public IOSurfaceRef surface;
     @public AvnPixelSize size;
+    @public bool hasContent;
     @public float scale;
     ComPtr<IAvnGlContext> _context;
     GLuint _framebuffer, _texture, _renderbuffer;
@@ -45,6 +42,7 @@
     self->scale = scale;
     self->size = size;
     self->_context = context;
+    self->hasContent = false;
     return self;
 }
 
@@ -96,6 +94,7 @@
     _context->MakeCurrent(release.getPPV());
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     glFlush();
+    self->hasContent = true;
 }
 
 -(void) dealloc
@@ -174,6 +173,8 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
         @synchronized (lock) {
             if(_layer == nil)
                 return;
+            if(!surface->hasContent)
+                return;
             [CATransaction begin];
             [_layer setContents: nil];
             if(surface != nil)
@@ -182,8 +183,11 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
                 [_layer setContents: (__bridge IOSurface*) surface->surface];
             }
             [CATransaction commit];
-            [CATransaction flush];
         }
+        // This can trigger event processing on the main thread
+        // which might need to lock the renderer
+        // which can cause a deadlock. So flush call is outside of the lock
+        [CATransaction flush];
     }
     else
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -217,6 +221,7 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
             memcpy(pSurface + y*sstride, pFb + y*fstride, wbytes);
         }
         IOSurfaceUnlock(surf, 0, nil);
+        surface->hasContent = true;
         [self updateLayer];
         return S_OK;
     }

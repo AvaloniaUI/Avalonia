@@ -8,29 +8,24 @@ using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
+using MicroCom.Runtime;
+#nullable enable
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IPlatformSettings, IWindowingPlatform
+    class AvaloniaNativePlatform : IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
-        private AvaloniaNativePlatformOptions _options;
-        private AvaloniaNativePlatformOpenGlInterface _platformGl;
+        private AvaloniaNativePlatformOptions? _options;
+        private AvaloniaNativeGlPlatformGraphics? _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
-
-        public Size DoubleClickSize => new Size(4, 4);
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
+        internal static Compositor Compositor { get; private set; } = null!;
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -68,7 +63,7 @@ namespace Avalonia.Native
 
         public void SetupApplicationName()
         {
-            if (!string.IsNullOrWhiteSpace(Application.Current.Name))
+            if (!string.IsNullOrWhiteSpace(Application.Current!.Name))
             {
                 _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
             }
@@ -99,44 +94,49 @@ namespace Avalonia.Native
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
 
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
+                _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
+                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>()
-                .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
+                .Bind<IDispatcherImpl>()
+                .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IPlatformSettings>().ToConstant(this)
+                .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
 
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
             hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
             hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
 
+            AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
+            
             if (_options.UseGpu)
             {
                 try
                 {
-                    AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>()
-                        .ToConstant(_platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay()));
+                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                    AvaloniaLocator.CurrentMutable
+                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
+
                 }
                 catch (Exception)
                 {
                     // ignored
                 }
             }
+            
+            Compositor = new Compositor(_platformGl, true);
         }
 
         public ITrayIconImpl CreateTrayIcon()
@@ -152,27 +152,6 @@ namespace Avalonia.Native
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
-        }
-    }
-
-    public class AvaloniaNativeMacOptions
-    {
-        private readonly IAvnMacOptions _opts;
-        private bool _showInDock;
-        internal AvaloniaNativeMacOptions(IAvnMacOptions opts)
-        {
-            _opts = opts;
-            ShowInDock = true;
-        }
-
-        public bool ShowInDock
-        {
-            get => _showInDock;
-            set
-            {
-                _showInDock = value;
-                _opts.SetShowInDock(value ? 1 : 0);
-            }
         }
     }
 }

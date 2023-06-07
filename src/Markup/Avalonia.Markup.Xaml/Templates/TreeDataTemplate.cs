@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -9,18 +10,19 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    public class TreeDataTemplate : ITreeDataTemplate
+    public class TreeDataTemplate : ITreeDataTemplate, ITypedDataTemplate
     {
-        public Type DataType { get; set; }
+        [DataType]
+        public Type? DataType { get; set; }
 
         [Content]
         [TemplateContent]
-        public object Content { get; set; }
+        public object? Content { get; set; }
 
         [AssignBinding]
-        public BindingBase ItemsSource { get; set; }
+        public BindingBase? ItemsSource { get; set; }
 
-        public bool Match(object data)
+        public bool Match(object? data)
         {
             if (DataType == null)
             {
@@ -32,7 +34,8 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public InstancedBinding ItemsSelector(object item)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "If ItemsSource is a CompiledBinding, then path members will be preserver")]
+        public InstancedBinding? ItemsSelector(object item)
         {
             if (ItemsSource != null)
             {
@@ -49,9 +52,9 @@ namespace Avalonia.Markup.Xaml.Templates
             return null;
         }
 
-        public IControl Build(object data)
+        public Control? Build(object? data)
         {
-            var visualTreeForItem = TemplateContent.Load(Content)?.Control;
+            var visualTreeForItem = TemplateContent.Load(Content)?.Result;
             if (visualTreeForItem != null)
             {
                 visualTreeForItem.DataContext = data;

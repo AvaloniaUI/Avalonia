@@ -6,12 +6,8 @@ namespace Avalonia
     /// <summary>
     /// Provides extension methods for enums.
     /// </summary>
-    public static class EnumExtensions
+    internal static class EnumExtensions
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [Obsolete("This method is obsolete. Use HasAllFlags instead.")]
-        public static bool HasFlagCustom<T>(this T value, T flag) where T : unmanaged, Enum
-            => value.HasAllFlags(flag);
             
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool HasAllFlags<T>(this T value, T flags) where T : unmanaged, Enum

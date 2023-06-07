@@ -122,10 +122,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
                 }
 
-                var mode = relativeSourceObject.Children
+                var modeProperty = relativeSourceObject.Children
                     .OfType<XamlAstXamlPropertyValueNode>()
-                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Mode")
-                    ?.Values[0] is XamlAstTextNode modeAssignedValue ? modeAssignedValue.Text : null;
+                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Mode")?
+                    .Values.FirstOrDefault() as XamlAstTextNode
+                    ?? relativeSourceObject.Arguments.OfType<XamlAstTextNode>().FirstOrDefault();
+                
+                var mode = modeProperty?.Text;
                 if (relativeSourceObject.Arguments.Count == 0 && mode == null)
                 {
                     mode = "FindAncestor";
@@ -143,13 +146,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Tree")
                         ?.Values[0] is XamlAstTextNode treeTypeValue ? treeTypeValue.Text : "Visual";
 
-                    var ancestorTypeName = relativeSourceObject.Children
+                    var ancestorType = relativeSourceObject.Children
                         .OfType<XamlAstXamlPropertyValueNode>()
                         .FirstOrDefault(x => x.Property.GetClrProperty().Name == "AncestorType")
-                        ?.Values[0] as XamlAstTextNode;
+                        ?.Values[0] switch
+                        {
+                            XamlAstTextNode textNode => TypeReferenceResolver.ResolveType(
+                                context,
+                                textNode.Text,
+                                false,
+                                textNode,
+                                true).GetClrType(),
+                            XamlTypeExtensionNode typeExtensionNode => typeExtensionNode.Value.GetClrType(),
+                            null => null,
+                            _ => throw new XamlParseException($"Unsupported node for AncestorType property", relativeSourceObject)
+                        };
 
-                    IXamlType ancestorType = null;
-                    if (ancestorTypeName is null)
+                    if (ancestorType is null)
                     {
                         if (treeType == "Visual")
                         {
@@ -170,15 +183,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 throw new XamlX.XamlParseException("Unable to resolve implicit ancestor type based on XAML tree.", relativeSourceObject);
                             }
                         }
-                    }
-                    else
-                    {
-                        ancestorType = TypeReferenceResolver.ResolveType(
-                                            context,
-                                            ancestorTypeName.Text,
-                                            false,
-                                            ancestorTypeName,
-                                            true).GetClrType();
                     }
 
                     if (treeType == "Visual")
@@ -212,15 +216,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 else if (mode == "TemplatedParent")
                 {
-                    var parentType = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                    var contentTemplateNode = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                         .FirstOrDefault(x =>
-                            x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate)
-                        ?.TargetType.GetClrType();
-
-                    if (parentType is null)
+                            x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate);
+                    if (contentTemplateNode is null)
                     {
                         throw new XamlParseException("A binding with a TemplatedParent RelativeSource has to be in a ControlTemplate.", binding);
                     }
+
+                    var parentType = contentTemplateNode.TargetType.GetClrType();
+                    if (parentType is null)
+                    {
+                        throw new XamlParseException("TargetType has to be set on ControlTemplate or it should be defined inside of a Style.", binding);
+                    } 
 
                     convertedNode = new TemplatedParentBindingExpressionNode { Type = parentType };
                 }

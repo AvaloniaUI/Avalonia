@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Selection
 {
@@ -13,6 +14,7 @@ namespace Avalonia.Controls.Selection
         private IList? _writableSelectedItems;
         private int _ignoreModelChanges;
         private bool _ignoreSelectedItemsChanges;
+        private bool _skipSyncFromSelectedItems;
         private bool _isResetting;
 
         public InternalSelectionModel()
@@ -57,6 +59,43 @@ namespace Avalonia.Controls.Selection
 
                     RaisePropertyChanged(nameof(WritableSelectedItems));
                 }
+            }
+        }
+
+        internal void Update(IEnumerable? source, Optional<IList?> selectedItems)
+        {
+            var previousSource = Source;
+            var previousWritableSelectedItems = _writableSelectedItems;
+
+            base.OnSourceCollectionChangeStarted();
+            
+            try
+            {
+                _skipSyncFromSelectedItems = true;
+                SetSource(source);
+                if (selectedItems.HasValue)
+                    WritableSelectedItems = selectedItems.Value;
+            }
+            finally 
+            { 
+                _skipSyncFromSelectedItems = false;
+            }
+
+            // We skipped the sync from WritableSelectedItems before; do it now that both
+            // the source and WritableSelectedItems are updated.
+            if (previousWritableSelectedItems != _writableSelectedItems)
+            {
+                base.OnSourceCollectionChangeFinished();
+                SyncFromSelectedItems();
+            }
+            else if (previousSource != Source)
+            {
+                SyncFromSelectedItems();
+                base.OnSourceCollectionChangeFinished();
+            }
+            else
+            {
+                base.OnSourceCollectionChangeFinished();
             }
         }
 
@@ -121,7 +160,7 @@ namespace Avalonia.Controls.Selection
 
         private void SyncFromSelectedItems()
         {
-            if (Source is null || _writableSelectedItems is null)
+            if (_skipSyncFromSelectedItems || Source is null || _writableSelectedItems is null)
             {
                 return;
             }
@@ -168,7 +207,7 @@ namespace Avalonia.Controls.Selection
         {
             if (_writableSelectedItems is INotifyCollectionChanged incc)
             {
-                incc.CollectionChanged += OnSelectedItemsCollectionChanged;
+                incc.CollectionChanged -= OnSelectedItemsCollectionChanged;
             }
         }
 
@@ -203,7 +242,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {

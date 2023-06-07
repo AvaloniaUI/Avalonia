@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
@@ -13,11 +13,12 @@ namespace Avalonia.Skia
     {
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;
-
-        public GlRenderTarget(GRContext grContext, IGlPlatformSurface glSurface)
+        private static readonly SKSurfaceProperties _surfaceProperties = new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal);
+        public GlRenderTarget(GRContext grContext, IGlContext glContext, IGlPlatformSurface glSurface)
         {
             _grContext = grContext;
-            _surface = glSurface.CreateGlRenderTarget();
+            using (glContext.EnsureCurrent())
+                _surface = glSurface.CreateGlRenderTarget(glContext);
         }
 
         public void Dispose() => _surface.Dispose();
@@ -91,7 +92,7 @@ namespace Avalonia.Skia
                     var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, samples, disp.StencilSize, glInfo);
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        colorType);
+                        colorType, _surfaceProperties);
 
                     success = true;
 

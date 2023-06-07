@@ -1,8 +1,12 @@
 using System;
 using Avalonia.Media;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Shapes
 {
+    /// <summary>
+    /// Represents a circular or elliptical arc (a segment of a curve).
+    /// </summary>
     public class Arc : Shape
     {
         /// <summary>
@@ -19,8 +23,12 @@ namespace Avalonia.Controls.Shapes
 
         static Arc()
         {
-            StrokeThicknessProperty.OverrideDefaultValue<Arc>(1);
-            AffectsGeometry<Arc>(BoundsProperty, StrokeThicknessProperty, StartAngleProperty, SweepAngleProperty);
+            StrokeThicknessProperty.OverrideDefaultValue<Arc>(1.0d);
+            AffectsGeometry<Arc>(
+                BoundsProperty,
+                StrokeThicknessProperty,
+                StartAngleProperty,
+                SweepAngleProperty);
         }
 
         /// <summary>
@@ -42,10 +50,11 @@ namespace Avalonia.Controls.Shapes
             set => SetValue(SweepAngleProperty, value);
         }
 
+        /// <inheritdoc/>
         protected override Geometry CreateDefiningGeometry()
         {
-            var angle1 = DegreesToRad(StartAngle);
-            var angle2 = angle1 + DegreesToRad(SweepAngle);
+            var angle1 = MathUtilities.Deg2Rad(StartAngle);
+            var angle2 = angle1 + MathUtilities.Deg2Rad(SweepAngle);
 
             var startAngle = Math.Min(angle1, angle2);
             var sweepAngle = Math.Max(angle1, angle2);
@@ -80,24 +89,25 @@ namespace Avalonia.Controls.Shapes
 
                 var arcGeometry = new StreamGeometry();
 
-                using (var ctx = arcGeometry.Open())
+                using (StreamGeometryContext context = arcGeometry.Open())
                 {
-                    ctx.BeginFigure(startPoint, false);
-                    ctx.ArcTo(endPoint, new Size(radiusX, radiusY), angleGap, angleGap >= Math.PI,
+                    context.BeginFigure(startPoint, false);
+                    context.ArcTo(
+                        endPoint,
+                        new Size(radiusX, radiusY),
+                        rotationAngle: angleGap,
+                        isLargeArc: angleGap >= Math.PI,
                         SweepDirection.Clockwise);
-                    ctx.EndFigure(false);
+                    context.EndFigure(false);
                 }
 
                 return arcGeometry;
             }
         }
 
-        static double DegreesToRad(double inAngle) =>
-            inAngle * Math.PI / 180;
+        private static double RadToNormRad(double inAngle) => ((inAngle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
 
-        static double RadToNormRad(double inAngle) => ((inAngle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-
-        static Point GetRingPoint(double radiusX, double radiusY, double centerX, double centerY, double angle) =>
+        private static Point GetRingPoint(double radiusX, double radiusY, double centerX, double centerY, double angle) =>
             new Point((radiusX * Math.Cos(angle)) + centerX, (radiusY * Math.Sin(angle)) + centerY);
     }
 }

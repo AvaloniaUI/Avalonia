@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
+             xmlns:vm="using:ControlCatalog.ViewModels"
              x:DataType="vm:MainWindowViewModel"
              x:Class="ControlCatalog.Pages.CalendarDatePickerPage">
   <StackPanel Orientation="Vertical" Spacing="4">
@@ -10,8 +10,7 @@
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Spacing="16">
-      <StackPanel Orientation="Vertical"
-                  Width="200">
+      <StackPanel Orientation="Vertical">
         <TextBlock Text="SelectedDateFormat: Short"/>
         <CalendarDatePicker Name="DatePicker1"
                     SelectedDateFormat="Short"

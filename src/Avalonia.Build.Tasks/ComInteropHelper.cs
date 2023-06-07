@@ -65,10 +65,8 @@ namespace Avalonia.Build.Tasks
                 {
                     Instruction instruction = instructions[i];
 
-                    if (instruction.OpCode == OpCodes.Call && instruction.Operand is MethodReference)
+                    if (instruction.OpCode == OpCodes.Call && instruction.Operand is MethodReference methodDescription)
                     {
-                        var methodDescription = (MethodReference)instruction.Operand;
-
                         if (methodDescription.Name.StartsWith("Calli") && methodDescription.DeclaringType.Name == "LocalInterop")
                         {
                             var callSite = new CallSite(methodDescription.ReturnType) { CallingConvention = MethodCallingConvention.StdCall };

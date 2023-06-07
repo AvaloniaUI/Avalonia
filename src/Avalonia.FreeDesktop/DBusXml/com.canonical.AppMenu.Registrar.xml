@@ -1,0 +1,56 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node xmlns:dox="http://www.ayatana.org/dbus/dox.dtd">
+	<dox:d><![CDATA[
+	  @mainpage
+	 
+	  An interface to register menus that are associated with a window in an application.  The
+	  main interface is documented here: @ref com::canonical::AppMenu::Registrar.
+	    
+	  The actual menus are transported using the dbusmenu protocol which is available
+	  here: @ref com::canonical::dbusmenu.
+	]]></dox:d>
+	<interface name="com.canonical.AppMenu.Registrar" xmlns:dox="http://www.ayatana.org/dbus/dox.dtd">
+		<dox:d>
+		  An interface to register a menu from an application's window to be displayed in another
+		  window.  This manages that association between XWindow Window IDs and the dbus
+		  address and object that provides the menu using the dbusmenu dbus interface.
+		</dox:d>
+		<method name="RegisterWindow">
+			<dox:d><![CDATA[
+			  Associates a dbusmenu with a window
+	     
+			  /note this method assumes that the connection from the caller is the DBus connection
+			    to use for the object.  Applications that use multiple DBus connections will need to
+			    ensure this method is called with the same connection that implmenets the object.
+			]]></dox:d>
+			<arg name="windowId" type="u" direction="in">
+				<dox:d>The XWindow ID of the window</dox:d>
+			</arg>
+			<arg name="menuObjectPath" type="o" direction="in">
+				<dox:d>The object on the dbus interface implementing the dbusmenu interface</dox:d>
+			</arg>
+		</method>
+		<method name="UnregisterWindow">
+			<dox:d>
+			  A method to allow removing a window from the database.  Windows will also be removed
+			  when the client drops off DBus so this is not required.  It is polite though.  And
+			  important for testing.
+			</dox:d>
+			<arg name="windowId" type="u" direction="in">
+				<dox:d>The XWindow ID of the window</dox:d>
+			</arg>
+		</method>
+		<method name="GetMenuForWindow">
+			<dox:d>Gets the registered menu for a given window ID.</dox:d>
+			<arg name="windowId" type="u" direction="in">
+				<dox:d>The XWindow ID of the window to get</dox:d>
+			</arg>
+			<arg name="service" type="s" direction="out">
+				<dox:d>The address of the connection on DBus (e.g. :1.23 or org.example.service)</dox:d>
+			</arg>
+			<arg name="menuObjectPath" type="o" direction="out">
+				<dox:d>The path to the object which implements the com.canonical.dbusmenu interface.</dox:d>
+			</arg>
+		</method>
+	</interface>
+</node>

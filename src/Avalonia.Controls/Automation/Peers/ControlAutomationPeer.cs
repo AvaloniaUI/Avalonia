@@ -31,10 +31,30 @@ namespace Avalonia.Automation.Peers
             return CreatePeerForElement(element);
         }
 
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> for a <see cref="Control"/>, creating it if
+        /// necessary.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The automation peer.</returns>
+        /// <remarks>
+        /// Despite the name (which comes from the analogous WPF API), this method does not create
+        /// a new peer if one already exists: instead it returns the existing peer.
+        /// </remarks>
         public static AutomationPeer CreatePeerForElement(Control element)
         {
             return element.GetOrCreateAutomationPeer();
         }
+
+        /// <summary>
+        /// Gets an existing <see cref="AutomationPeer"/> for a <see cref="Control"/>.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The automation peer if already created; otherwise null.</returns>
+        /// <remarks>
+        /// To ensure that a peer is created, use <see cref="CreatePeerForElement(Control)"/>.
+        /// </remarks>
+        public static AutomationPeer? FromElement(Control element) => element.GetAutomationPeer();
 
         protected override void BringIntoViewCore() => Owner.BringIntoView();
 
@@ -58,7 +78,7 @@ namespace Avalonia.Automation.Peers
 
         protected virtual IReadOnlyList<AutomationPeer>? GetChildrenCore()
         {
-            var children = ((IVisual)Owner).VisualChildren;
+            var children = Owner.VisualChildren;
 
             if (children.Count == 0)
                 return null;
@@ -88,10 +108,10 @@ namespace Avalonia.Automation.Peers
 
             if (string.IsNullOrWhiteSpace(result) && GetLabeledBy() is AutomationPeer labeledBy)
             {
-                return labeledBy.GetName();
+                result = labeledBy.GetName();
             }
 
-            return null;
+            return result;
         }
 
         protected override AutomationPeer? GetParentCore()
@@ -146,12 +166,12 @@ namespace Avalonia.Automation.Peers
         protected override string? GetAccessKeyCore() => AutomationProperties.GetAccessKey(Owner);
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
-        protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
+        protected override Rect GetBoundingRectangleCore() => GetBounds(Owner);
         protected override string GetClassNameCore() => Owner.GetType().Name;
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
-        protected override bool IsContentElementCore() => AutomationProperties.GetAccessibilityView(Owner) >= AccessibilityView.Content;
-        protected override bool IsControlElementCore() => AutomationProperties.GetAccessibilityView(Owner) >= AccessibilityView.Control;
-        protected override bool IsEnabledCore() => Owner.IsEnabled;
+        protected override bool IsContentElementCore() => true;
+        protected override bool IsControlElementCore() => true;
+        protected override bool IsEnabledCore() => Owner.IsEffectivelyEnabled;
         protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
         protected override void SetFocusCore() => Owner.Focus();
 
@@ -160,15 +180,37 @@ namespace Avalonia.Automation.Peers
             return AutomationProperties.GetControlTypeOverride(Owner) ?? GetAutomationControlTypeCore();
         }
 
-        private static Rect GetBounds(TransformedBounds? bounds)
+        protected override bool IsContentElementOverrideCore()
         {
-            return bounds?.Bounds.TransformToAABB(bounds!.Value.Transform) ?? default;
+            var view = AutomationProperties.GetAccessibilityView(Owner);
+            return view == AccessibilityView.Default ? IsContentElementCore() : view >= AccessibilityView.Content;
+        }
+
+        protected override bool IsControlElementOverrideCore()
+        {
+            var view = AutomationProperties.GetAccessibilityView(Owner);
+            return view == AccessibilityView.Default ? IsControlElementCore() : view >= AccessibilityView.Control;
+        }
+
+        private static Rect GetBounds(Control control)
+        {
+            var root = control.GetVisualRoot();
+
+            if (root is not Visual rootVisual)
+                return default;
+
+            var transform = control.TransformToVisual(rootVisual);
+
+            if (!transform.HasValue)
+                return default;
+
+            return new Rect(control.Bounds.Size).TransformToAABB(transform.Value);
         }
 
         private void Initialize()
         {
             Owner.PropertyChanged += OwnerPropertyChanged;
-            var visualChildren = ((IVisual)Owner).VisualChildren;
+            var visualChildren = Owner.VisualChildren;
             visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 
@@ -182,12 +224,14 @@ namespace Avalonia.Automation.Peers
                 if (parent is Control c)
                     (GetOrCreate(c) as ControlAutomationPeer)?.InvalidateChildren();
             }
-            else if (e.Property == Visual.TransformedBoundsProperty)
+            else if (e.Property == Visual.BoundsProperty || 
+                     e.Property == Visual.RenderTransformProperty ||
+                     e.Property == Visual.RenderTransformOriginProperty)
             {
                 RaisePropertyChangedEvent(
                     AutomationElementIdentifiers.BoundingRectangleProperty,
-                    GetBounds((TransformedBounds?)e.OldValue),
-                    GetBounds((TransformedBounds?)e.NewValue));
+                    null,
+                    GetBounds(Owner));
             }
             else if (e.Property == Visual.VisualParentProperty)
             {

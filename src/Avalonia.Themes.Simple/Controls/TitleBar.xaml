@@ -1,0 +1,66 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border>
+      <TitleBar Width="300"
+                Height="30"
+                Background="SkyBlue"
+                Foreground="Black" />
+    </Border>
+  </Design.PreviewWith>
+  <ControlTheme x:Key="{x:Type TitleBar}"
+                TargetType="TitleBar">
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+               VerticalAlignment="Stretch">
+          <Panel x:Name="PART_MouseTracker"
+                 Height="1"
+                 VerticalAlignment="Top" />
+          <Panel x:Name="PART_Container">
+            <Border x:Name="PART_Background"
+                    Background="{TemplateBinding Background}" />
+            <CaptionButtons x:Name="PART_CaptionButtons"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Foreground="{TemplateBinding Foreground}" />
+          </Panel>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:fullscreen">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentColor}" />
+    </Style>
+
+    <Style Selector="^ /template/ Border#PART_Background">
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:fullscreen /template/ Border#PART_Background">
+      <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:fullscreen /template/ Panel#PART_MouseTracker">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="^:fullscreen /template/ Panel#PART_Container">
+      <Setter Property="RenderTransform" Value="translateY(-30px)" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <TransformOperationsTransition Property="RenderTransform"
+                                         Duration="0:0:.25" />
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="^:fullscreen:pointerover /template/ Panel#PART_Container">
+      <Setter Property="RenderTransform" Value="none" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

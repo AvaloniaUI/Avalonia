@@ -4,6 +4,7 @@ using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {

@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -15,9 +15,9 @@ namespace Avalonia.Skia
         private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
-        private SKSurface _framebufferSurface;
-        private PixelFormatConversionShim _conversionShim;
-        private IDisposable _preFramebufferCopyHandler;
+        private SKSurface? _framebufferSurface;
+        private PixelFormatConversionShim? _conversionShim;
+        private IDisposable? _preFramebufferCopyHandler;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
@@ -35,7 +35,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var framebuffer = _platformSurface.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
@@ -53,13 +53,13 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
+                Dpi = framebuffer.Dpi
             };
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
+
+        public bool IsCorrupted => false;
 
         /// <summary>
         /// Check if two images info are compatible.
@@ -79,6 +79,7 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="desiredImageInfo">Desired image info.</param>
         /// <param name="framebuffer">Backing framebuffer.</param>
+        [MemberNotNull(nameof(_framebufferSurface))]
         private void CreateSurface(SKImageInfo desiredImageInfo, ILockedFramebuffer framebuffer)
         {
             if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) && _currentFramebufferAddress == framebuffer.Address)
@@ -90,7 +91,8 @@ namespace Avalonia.Skia
             
             _currentFramebufferAddress = framebuffer.Address;
 
-            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, framebuffer.RowBytes);
+            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, 
+                framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
 
             // If surface cannot be created - try to create a compatibility shim first
             if (surface == null)
@@ -148,7 +150,7 @@ namespace Avalonia.Skia
                         $"Unable to create pixel format shim for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
 
-                Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
+                Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
 
                 if (Surface == null)
                 {

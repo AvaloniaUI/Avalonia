@@ -34,7 +34,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Header = "Foo";
             target.ApplyTemplate();
-            ((ContentPresenter)target.HeaderPresenter).UpdateChild();
+            target.HeaderPresenter.UpdateChild();
 
             var child = target.HeaderPresenter.Child;
 
@@ -58,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Empty(target.GetLogicalChildren());
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<HeaderedItemsControl>((parent, scope) =>
             {

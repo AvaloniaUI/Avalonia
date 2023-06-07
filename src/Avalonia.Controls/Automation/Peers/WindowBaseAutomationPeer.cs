@@ -53,8 +53,9 @@ namespace Avalonia.Automation.Peers
         private void OnFocusChanged(IInputElement? focus)
         {
             var oldFocus = _focus;
+            var c = focus as Control;
             
-            _focus = focus?.VisualRoot == Owner ? focus as Control : null;
+            _focus = c?.VisualRoot == Owner ? c : null;
             
             if (_focus != oldFocus)
             {

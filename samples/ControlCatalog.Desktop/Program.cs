@@ -3,6 +3,8 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using ControlCatalog.NetCore;
+using ControlCatalog.Pages;
 
 namespace ControlCatalog
 {
@@ -18,12 +20,21 @@ namespace ControlCatalog
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .LogToTrace()
+                .AfterSetup(builder =>
+                {
+                    builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                    {
+                        StartupScreenIndex = 1,
+                    });
+
+                    EmbedSample.Implementation = new EmbedSampleWin();
+                })
                 .UsePlatformDetect();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
             AvaloniaLocator.CurrentMutable
-                .GetService<IAssetLoader>()
+                .GetRequiredService<IAssetLoader>()
                 .SetDefaultAssembly(typeof(App).Assembly);
         }
     }

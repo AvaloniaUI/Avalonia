@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 WhitespaceSignificantCollectionAttributes =
                 {
-                     typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
+                    typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
                 },
                 TrimSurroundingWhitespaceAttributes =
                 {
@@ -56,8 +56,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 XmlNamespaceInfoProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider"),
-                DeferredContentPropertyAttributes = {typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute")},
-                DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.IControl"),
+                DeferredContentPropertyAttributes = { typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute") },
+                DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.Control"),
                 DeferredContentExecutorCustomizationTypeParameterDeferredContentAttributePropertyNames = new List<string>
                 {
                     "TemplateResultType"
@@ -70,6 +70,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
+                IAddChild = typeSystem.GetType("Avalonia.Metadata.IAddChild"),
+                IAddChildOfT = typeSystem.GetType("Avalonia.Metadata.IAddChild`1")
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
 
@@ -123,7 +125,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
                 
                 Add("Avalonia.Media.IImage","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
-                Add("Avalonia.Media.Imaging.IBitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
+                Add("Avalonia.Media.Imaging.Bitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
+                Add("Avalonia.Media.IImageBrushSource","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
                 var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
                 AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
                     typeSystem.GetType("Avalonia.Markup.Xaml.Converters.PointsListTypeConverter"));
@@ -183,6 +186,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static bool CustomValueConverter(AstTransformationContext context,
             IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
         {
+            if (node is AvaloniaXamlIlOptionMarkupExtensionTransformer.OptionsMarkupExtensionNode optionsNode)
+            {
+                if (optionsNode.ConvertToReturnType(context, type, out var newOptionsNode))
+                {
+                    result = newOptionsNode;
+                    return true;
+                }
+            }
+
             if (!(node is XamlAstTextNode textNode))
             {
                 result = null;

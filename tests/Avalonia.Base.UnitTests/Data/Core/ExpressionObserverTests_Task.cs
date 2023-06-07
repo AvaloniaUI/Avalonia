@@ -143,7 +143,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             }
         }
 
-        private Task TaskFromException(Exception e)
+        private static Task TaskFromException(Exception e)
         {
             var tcs = new TaskCompletionSource<object>();
             tcs.SetException(e);

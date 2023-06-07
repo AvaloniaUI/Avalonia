@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
+using ControlCatalog.Pages;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -20,9 +20,9 @@ namespace ControlCatalog.ViewModels
 
         public ListBoxPageViewModel()
         {
-            Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
+            Items = new ObservableCollection<ItemModel>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
             
-            Selection = new SelectionModel<string>();
+            Selection = new SelectionModel<ItemModel>();
             Selection.Select(1);
 
             _selectionMode = this.WhenAnyValue(
@@ -58,8 +58,8 @@ namespace ControlCatalog.ViewModels
             });
         }
 
-        public ObservableCollection<string> Items { get; }
-        public SelectionModel<string> Selection { get; }
+        public ObservableCollection<ItemModel> Items { get; }
+        public SelectionModel<ItemModel> Selection { get; }
         public IObservable<SelectionMode> SelectionMode => _selectionMode;
 
         public bool Multiple
@@ -96,6 +96,31 @@ namespace ControlCatalog.ViewModels
         public MiniCommand RemoveItemCommand { get; }
         public MiniCommand SelectRandomItemCommand { get; }
 
-        private string GenerateItem() => $"Item {_counter++.ToString()}";
+        private ItemModel GenerateItem() => new ItemModel(_counter ++);  
+    }
+
+    /// <summary>
+    /// An Item model for the <see cref="ListBoxPage"/>
+    /// </summary>
+    public class ItemModel
+    {
+        /// <summary>
+        /// Creates a new ItemModel with the given ID
+        /// </summary>
+        /// <param name="id">The ID to display</param>
+        public ItemModel(int id)
+        {
+            ID = id;
+        }
+
+        /// <summary>
+        /// The ID of this Item
+        /// </summary>
+        public int ID { get; }
+
+        public override string ToString()
+        {
+            return $"Item {ID}";
+        }
     }
 }

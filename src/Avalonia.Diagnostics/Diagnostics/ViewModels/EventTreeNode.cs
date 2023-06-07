@@ -4,6 +4,7 @@ using Avalonia.Diagnostics.Views;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -65,7 +66,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
-            if (sender is IVisual v && BelongsToDevTool(v))
+            if (sender is Visual v && BelongsToDevTool(v))
                 return;
 
             var s = sender!;
@@ -99,7 +100,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
-            if (e.Source is IVisual v && BelongsToDevTool(v))
+            if (e.Source is Visual v && BelongsToDevTool(v))
                 return;
 
             var s = e.Source;
@@ -114,7 +115,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     var link = _currentEvent.EventChain[linkIndex];
 
                     link.Handled = true;
-                    _currentEvent.HandledBy = link;
+                    _currentEvent.HandledBy ??= link;
                 }
             }
 
@@ -124,7 +125,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 handler();
         }
 
-        private static bool BelongsToDevTool(IVisual v)
+        private static bool BelongsToDevTool(Visual v)
         {
             var current = v;
 

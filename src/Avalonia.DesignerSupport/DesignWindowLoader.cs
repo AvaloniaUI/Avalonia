@@ -18,12 +18,9 @@ namespace Avalonia.DesignerSupport
             Control control;
             using (PlatformManager.DesignerMode())
             {
-                var loader = AvaloniaLocator.Current.GetService<AvaloniaXamlLoader.IRuntimeXamlLoader>();
+                var loader = AvaloniaLocator.Current.GetRequiredService<AvaloniaXamlLoader.IRuntimeXamlLoader>();
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
 
-                if (loader == null)
-                    throw new XamlLoadException("Runtime XAML loader is not registered");
-                
                 Uri baseUri = null;
                 if (assemblyPath != null)
                 {
@@ -35,8 +32,17 @@ namespace Avalonia.DesignerSupport
                 }
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
-                var loaded = loader.Load(stream, localAsm, null, baseUri, true);
+                var useCompiledBindings = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(a => a.Key == "AvaloniaUseCompiledBindingsByDefault")?.Value;
+
+                var loaded = loader.Load(new RuntimeXamlLoaderDocument(baseUri, stream), new RuntimeXamlLoaderConfiguration
+                {
+                    LocalAssembly = localAsm,
+                    DesignMode = true,
+                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue ) && parsedValue 
+                });
                 var style = loaded as IStyle;
+                var resources = loaded as ResourceDictionary;
                 if (style != null)
                 {
                     var substitute = Design.GetPreviewWith((AvaloniaObject)style);
@@ -55,6 +61,27 @@ namespace Avalonia.DesignerSupport
                                 new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
                                 new TextBlock {Text = "</Design.PreviewWith>"},
                                 new TextBlock {Text = "before setters in your first Style"}
+                            }
+                        };
+                }
+                else if (resources != null)
+                {
+                    var substitute = Design.GetPreviewWith(resources);
+                    if (substitute != null)
+                    {
+                        substitute.Resources.MergedDictionaries.Add(resources);
+                        control = substitute;
+                    }
+                    else
+                        control = new StackPanel
+                        {
+                            Children =
+                            {
+                                new TextBlock {Text = "ResourceDictionaries can't be previewed without Design.PreviewWith. Add"},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                                new TextBlock {Text = "</Design.PreviewWith>"},
+                                new TextBlock {Text = "in your resource dictionary"}
                             }
                         };
                 }

@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="ControlCatalog.Pages.AdornerLayerPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DesignHeight="800"
+             d:DesignWidth="400"
+             mc:Ignorable="d">
+
+  <DockPanel>
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="16" DockPanel.Dock="Top">
+      <TextBlock Grid.Column="0" Grid.Row="0">Rotation</TextBlock>
+      <Slider Name="rotation" Maximum="360" Grid.Column="1" Grid.Row="0"/>
+    </Grid>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top">
+      <Button Name="AddAdorner" 
+              Click="AddAdorner_OnClick"
+              Content="Add Adorner" 
+              Margin="6" />
+      <Button Name="RemoveAdorner" 
+              Click="RemoveAdorner_OnClick"
+              Content="Remove Adorner"
+              Margin="6" />
+    </StackPanel>
+
+    <Grid ColumnDefinitions="24,Auto,24" 
+          RowDefinitions="24,Auto,24"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center">
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="1" Grid.Row="0"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="0" Grid.Row="1"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="2" Grid.Row="1"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="1" Grid.Row="2"/>
+
+      <LayoutTransformControl Name="layoutTransform" Grid.Column="1" Grid.Row="1">
+        <LayoutTransformControl.LayoutTransform>
+          <RotateTransform Angle="{Binding #rotation.Value}"/>
+        </LayoutTransformControl.LayoutTransform>
+
+        <Button Name="AdornerButton"
+                Content="Adorned Button" 
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center" VerticalAlignment="Stretch" 
+                Width="200" Height="42">
+          <AdornerLayer.Adorner>
+            <Canvas x:Name="AdornerCanvas"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="Cyan"
+                    IsHitTestVisible="False"
+                    Opacity="0.3"
+                    IsVisible="True">
+              <Line StartPoint="-10000,0" EndPoint="10000,0" Stroke="Cyan" StrokeThickness="1" />
+              <Line StartPoint="-10000,42" EndPoint="10000,42" Stroke="Cyan" StrokeThickness="1" />
+              <Line StartPoint="0,-10000" EndPoint="0,10000" Stroke="Cyan" StrokeThickness="1" />
+              <Line StartPoint="200,-10000" EndPoint="200,10000" Stroke="Cyan" StrokeThickness="1" />
+            </Canvas>
+          </AdornerLayer.Adorner>
+        </Button>
+
+      </LayoutTransformControl>
+    </Grid>
+  </DockPanel>
+
+</UserControl>

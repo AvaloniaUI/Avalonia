@@ -77,6 +77,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE,
             LIBINPUT_EVENT_POINTER_BUTTON,
             LIBINPUT_EVENT_POINTER_AXIS,
+            LIBINPUT_EVENT_POINTER_SCROLL_WHEEL,
+            LIBINPUT_EVENT_POINTER_SCROLL_FINGER,
+            LIBINPUT_EVENT_POINTER_SCROLL_CONTINUOUS,
             LIBINPUT_EVENT_TOUCH_DOWN = 500,
             LIBINPUT_EVENT_TOUCH_UP,
             LIBINPUT_EVENT_TOUCH_MOTION,
@@ -97,8 +100,38 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             LIBINPUT_EVENT_GESTURE_PINCH_END,
             LIBINPUT_EVENT_SWITCH_TOGGLE = 900,
         }
-        
-        
+
+        public enum LibInputPointerAxisSource
+        {
+            /**
+             * The event is caused by the rotation of a wheel.
+            **/
+            LIBINPUT_POINTER_AXIS_SOURCE_WHEEL = 1,
+            /**
+             * The event is caused by the movement of one or more fingers on a device.
+             **/
+            LIBINPUT_POINTER_AXIS_SOURCE_FINGER,
+            /**
+             * The event is caused by the motion of some device.
+             **/
+            LIBINPUT_POINTER_AXIS_SOURCE_CONTINUOUS,
+            /**
+             * The event is caused by the tilting of a mouse wheel rather than
+             * its rotation. This method is commonly used on mice without
+             * separate horizontal scroll wheels.
+             * @deprecated This axis source is deprecated as of libinput 1.16.
+             * It was never used by any device before libinput 1.16. All wheel
+             * tilt devices use @ref LIBINPUT_POINTER_AXIS_SOURCE_WHEEL instead.
+             **/
+            LIBINPUT_POINTER_AXIS_SOURCE_WHEEL_TILT,
+        };
+
+        public enum LibInputPointerAxis
+        {
+            LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL = 0,
+            LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL = 1,
+        };
+
         [DllImport(LibInput)]
         public extern static void libinput_event_destroy(IntPtr ev);
         
@@ -119,21 +152,29 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         
         [DllImport(LibInput)]
         public extern static IntPtr libinput_event_get_pointer_event(IntPtr ev);
-        
-        
+
         [DllImport(LibInput)]
         public extern static ulong libinput_event_pointer_get_time_usec(IntPtr ev);
         
         [DllImport(LibInput)]
         public extern static double libinput_event_pointer_get_absolute_x_transformed(IntPtr ev, int width);
-        
+
         [DllImport(LibInput)]
         public extern static double libinput_event_pointer_get_absolute_y_transformed(IntPtr ev, int height);
-        
+
         [DllImport(LibInput)]
         public extern static int libinput_event_pointer_get_button(IntPtr ev);
         
         [DllImport(LibInput)]
         public extern static int libinput_event_pointer_get_button_state(IntPtr ev);
+
+        [DllImport(LibInput)]
+        public extern static LibInputPointerAxisSource libinput_event_pointer_get_axis_source(IntPtr ev);
+
+        [DllImport((LibInput))]
+        public extern static double libinput_event_pointer_get_axis_value_discrete(IntPtr ev, LibInputPointerAxis axis);
+
+        [DllImport(LibInput)]
+        public extern static double libinput_event_pointer_get_scroll_value_v120(IntPtr ev, LibInputPointerAxis axis);
     }
 }

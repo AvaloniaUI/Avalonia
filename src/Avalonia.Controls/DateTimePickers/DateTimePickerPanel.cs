@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -60,6 +62,7 @@ namespace Avalonia.Controls.Primitives
         private Vector _offset;
         private bool _hasInit;
         private bool _suppressUpdateOffset;
+        private ScrollContentPresenter? _parentScroller;
 
         public DateTimePickerPanel()
         {
@@ -255,6 +258,8 @@ namespace Avalonia.Controls.Primitives
                 _suppressUpdateOffset = true;
                 SelectedValue = (int)newSel * Increment + MinimumValue;
                 _suppressUpdateOffset = false;
+
+                System.Diagnostics.Debug.WriteLine(FormattableString.Invariant($"Offset: {_offset} ItemHeight: {ItemHeight}"));
             }
         }
 
@@ -270,7 +275,7 @@ namespace Avalonia.Controls.Primitives
 
         public Size Extent => _extent;
 
-        public Size Viewport => new Size(0, ItemHeight);
+        public Size Viewport => Bounds.Size;
 
         public event EventHandler? ScrollInvalidated;
 
@@ -339,6 +344,20 @@ namespace Avalonia.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _parentScroller = this.GetVisualParent() as ScrollContentPresenter;
+            _parentScroller?.AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _parentScroller?.RemoveHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller = null;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -435,7 +454,7 @@ namespace Avalonia.Controls.Primitives
                 children.Add(new ListBoxItem
                 {
                     Height = ItemHeight,
-                    Classes = new Classes("DateTimePickerItem", $"{PanelType}Item"),
+                    Classes = { $"{PanelType}Item" },
                     VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     Focusable = false
                 });
@@ -526,7 +545,7 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemTapped(object? sender, TappedEventArgs e)
         {
-            if (e.Source is IVisual source && 
+            if (e.Source is Visual source && 
                 GetItemFromSource(source) is ListBoxItem listBoxItem &&
                 listBoxItem.Tag is int tag)
             {
@@ -536,7 +555,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         //Helper to get ListBoxItem from pointerevent source
-        private ListBoxItem? GetItemFromSource(IVisual src)
+        private ListBoxItem? GetItemFromSource(Visual src)
         {
             var item = src;
             while (item != null && !(item is ListBoxItem))
@@ -546,13 +565,23 @@ namespace Avalonia.Controls.Primitives
             return (ListBoxItem?)item;
         }
 
-        public bool BringIntoView(IControl target, Rect targetRect) { return false; }
+        public bool BringIntoView(Control target, Rect targetRect) { return false; }
 
-        public IControl? GetControlInDirection(NavigationDirection direction, IControl? from) { return null; }
+        public Control? GetControlInDirection(NavigationDirection direction, Control? from) { return null; }
 
         public void RaiseScrollInvalidated(EventArgs e)
         {
             ScrollInvalidated?.Invoke(this, e);
+        }
+
+        private void OnScrollGestureEnded(object? sender, ScrollGestureEndedEventArgs e)
+        {
+            var snapY = Math.Round(Offset.Y / ItemHeight) * ItemHeight;
+
+            if (snapY != Offset.Y)
+            {
+                Offset = Offset.WithY(snapY);
+            }
         }
     }
 }

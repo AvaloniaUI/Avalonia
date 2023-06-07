@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -18,19 +18,27 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
-            Renderer = Mock.Of<IRenderer>();
+            Renderer = RendererMocks.CreateRenderer().Object;
+            HitTester = new NullHitTester();
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         }
 
-        public TestRoot(IControl child)
+        class NullHitTester : IHitTester
+        {
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+
+            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
+        }
+
+        public TestRoot(Control child)
             : this(false, child)
         {
             Child = child;
         }
 
-        public TestRoot(bool useGlobalStyles, IControl child)
+        public TestRoot(bool useGlobalStyles, Control child)
             : this()
         {
             if (useGlobalStyles)
@@ -41,26 +49,28 @@ namespace Avalonia.UnitTests
             Child = child;
         }
 
-        public Size ClientSize { get; set; } = new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(1000, 1000);
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
         public double LayoutScaling { get; set; } = 1;
 
-        public ILayoutManager LayoutManager { get; set; }
+        internal ILayoutManager LayoutManager { get; set; }
+        ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
         public double RenderScaling => 1;
 
-        public IRenderer Renderer { get; set; }
-
-        public IAccessKeyHandler AccessKeyHandler => null;
+        internal IRenderer Renderer { get; set; }
+        internal IHitTester HitTester { get; set; }
+        IRenderer IRenderRoot.Renderer => Renderer;
+        IHitTester IRenderRoot.HitTester => HitTester;
 
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
+        public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement PointerOverElement { get; set; }
-
-        public IMouseDevice MouseDevice { get; set; }
-
+        
         public bool ShowAccessKeys { get; set; }
 
         public IStyleHost StylingParent { get; set; }
@@ -74,12 +84,12 @@ namespace Avalonia.UnitTests
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
                 var layer = new Mock<IDrawingContextLayerImpl>();
-                layer.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(layerDc.Object);
+                layer.Setup(x => x.CreateDrawingContext()).Returns(layerDc.Object);
                 return layer.Object;
             });
 
             var result = new Mock<IRenderTarget>();
-            result.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(dc.Object);
+            result.Setup(x => x.CreateDrawingContext()).Returns(dc.Object);
             return result.Object;
         }
 
@@ -103,12 +113,17 @@ namespace Avalonia.UnitTests
                         scope.Register(element.Name, element);
                 }
 
-                if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))
+                if(element is Visual visual && (force || NameScope.GetNameScope(element) == null))
                     foreach(var child in visual.GetVisualChildren())
                         if (child is StyledElement styledChild)
                             Visit(styledChild);
             }
             Visit(this, true);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(ClientSize);
         }
     }
 }

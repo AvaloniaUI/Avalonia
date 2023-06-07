@@ -1,7 +1,9 @@
 <UserControl 
   xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:viewModels="using:RenderDemo.ViewModels"
   x:Class="RenderDemo.Pages.TransitionsPage"
+  x:DataType="viewModels:AnimationsPageViewModel"
   MaxWidth="600">
   <UserControl.Styles>
     <Styles>
@@ -246,12 +248,8 @@
 
   <Grid>
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
-      <StackPanel.Clock>
-        <Clock />
-      </StackPanel.Clock>
       <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="20">
         <TextBlock VerticalAlignment="Center">Hover to activate Transitions.</TextBlock>
-        <Button Content="{Binding PlayStateText}" Command="{Binding TogglePlayState}" Click="ToggleClock" />
       </StackPanel>
       <WrapPanel ClipToBounds="False">
         <Border Classes="Test Rect1" Background="DarkRed"/>

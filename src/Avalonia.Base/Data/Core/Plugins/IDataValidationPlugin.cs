@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -13,6 +14,7 @@ namespace Avalonia.Data.Core.Plugins
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="memberName">The name of the member to validate.</param>
         /// <returns>True if the plugin can handle the object; otherwise false.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         bool Match(WeakReference<object?> reference, string memberName);
 
         /// <summary>
@@ -25,6 +27,7 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         IPropertyAccessor Start(WeakReference<object?> reference,
             string propertyName,
             IPropertyAccessor inner);

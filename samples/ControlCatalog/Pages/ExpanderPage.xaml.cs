@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
@@ -8,6 +9,13 @@ namespace ControlCatalog.Pages
         public ExpanderPage()
         {
             this.InitializeComponent();
+            DataContext = new ExpanderPageViewModel();
+
+            var CollapsingDisabledExpander = this.Get<Expander>("CollapsingDisabledExpander");
+            var ExpandingDisabledExpander = this.Get<Expander>("ExpandingDisabledExpander");
+
+            CollapsingDisabledExpander.Collapsing += (s, e) => { e.Cancel = true; };
+            ExpandingDisabledExpander.Expanding += (s, e) => { e.Cancel = true; };
         }
 
         private void InitializeComponent()

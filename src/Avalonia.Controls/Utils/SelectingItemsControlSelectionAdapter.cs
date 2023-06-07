@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
@@ -140,17 +140,17 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <value>The collection used to generate content for the selection
         /// adapter.</value>
-        public IEnumerable? Items
+        public IEnumerable? ItemsSource
         {
             get
             {
-                return SelectorControl?.Items;
+                return SelectorControl?.ItemsSource;
             }
             set
             {
                 if (SelectorControl != null)
                 {
-                    SelectorControl.Items = value;
+                    SelectorControl.ItemsSource = value;
                 }
             }
         }

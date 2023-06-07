@@ -67,7 +67,7 @@ namespace Avalonia.Base.UnitTests
             Assert.False(handled);
         }
 
-        private void AddSubscriber(EventSource source, Action func)
+        private static void AddSubscriber(EventSource source, Action func)
         {
             EventSource.WeakEv.Subscribe(source, new Subscriber(func));
         }

@@ -13,7 +13,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> cell.
     /// </summary>
-    [PseudoClasses(":selected", ":current", ":edited", ":invalid")]
+    [TemplatePart(DATAGRIDCELL_elementRightGridLine, typeof(Rectangle))]
+    [PseudoClasses(":selected", ":current", ":edited", ":invalid", ":focus")]
     public class DataGridCell : ContentControl
     {
         private const string DATAGRIDCELL_elementRightGridLine = "PART_RightGridLine";
@@ -32,6 +33,8 @@ namespace Avalonia.Controls
         {
             PointerPressedEvent.AddClassHandler<DataGridCell>(
                 (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
+            FocusableProperty.OverrideDefaultValue<DataGridCell>(true);
+            IsTabStopProperty.OverrideDefaultValue<DataGridCell>(false);
         }
         public DataGridCell()
         { }
@@ -138,18 +141,18 @@ namespace Avalonia.Controls
             }
 
         }
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             if (OwningRow != null)
             {
                 IsMouseOver = true;
             }
         }
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
 
             if (OwningRow != null)
             {
@@ -168,8 +171,7 @@ namespace Avalonia.Controls
             OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                if (!e.Handled)
-                //if (!e.Handled && OwningGrid.IsTabStop)
+                if (!e.Handled && OwningGrid.IsTabStop)
                 {
                     OwningGrid.Focus();
                 }
@@ -177,9 +179,9 @@ namespace Avalonia.Controls
                 {
                     var handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
 
-                    // Do not handle PointerPressed with touch,
+                    // Do not handle PointerPressed with touch or pen,
                     // so we can start scroll gesture on the same event.
-                    if (e.Pointer.Type != PointerType.Touch)
+                    if (e.Pointer.Type != PointerType.Touch && e.Pointer.Type != PointerType.Pen)
                     {
                         e.Handled = handled;
                     }
@@ -189,8 +191,7 @@ namespace Avalonia.Controls
             }
             else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
-                if (!e.Handled)
-                //if (!e.Handled && OwningGrid.IsTabStop)
+                if (!e.Handled && OwningGrid.IsTabStop)
                 {
                     OwningGrid.Focus();
                 }
@@ -215,6 +216,8 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":edited", IsEdited);
 
             PseudoClasses.Set(":invalid", !IsValid);
+            
+            PseudoClasses.Set(":focus", OwningGrid.IsFocused && IsCurrent);
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 
@@ -244,9 +247,15 @@ namespace Avalonia.Controls
             if (column == null)
             {
                 Classes.Clear();
+                ClearValue(ThemeProperty);
             }
             else
             {
+                if (Theme != column.CellTheme)
+                {
+                    Theme = column.CellTheme;
+                }
+                
                 Classes.Replace(column.CellStyleClasses);
             }
         }

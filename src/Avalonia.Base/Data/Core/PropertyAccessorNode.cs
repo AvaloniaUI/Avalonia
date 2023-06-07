@@ -1,10 +1,11 @@
 using System;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
-    public class PropertyAccessorNode : SettableNode
+    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+    internal class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessorPlugin? _customPlugin;

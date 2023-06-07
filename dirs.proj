@@ -9,17 +9,18 @@
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
-    <ProjectReference Remove="tests/Avalonia.ReactiveUI.Events.UnitTests/Avalonia.ReactiveUI.Events.UnitTests.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.iOS/ControlCatalog.iOS.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.iOS.Legacy/ControlCatalog.iOS.Legacy.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
-    <ProjectReference Remove="src/Android/Avalonia.AndroidTestApplication/Avalonia.AndroidTestApplication.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
-    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
-    <ProjectReference Remove="samples/interop/**/*.*proj" />
+    <!-- Exclude iOS, Android and Browser samples from build -->
+    <ProjectReference Remove="samples/*.iOS/*.csproj" />
+    <ProjectReference Remove="samples/*.Android/*.csproj" />
+    <ProjectReference Remove="samples/*.Browser/*.csproj" />
+    <ProjectReference Remove="samples/*.Blazor/*.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
   </ItemGroup>
+  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
+    <ProjectReference Remove="src/Windows/Avalonia.Win32.Interoperability/Avalonia.Win32.Interoperability.csproj" />
+    <ProjectReference Remove="samples/interop/**/*.*proj" />
+  </ItemGroup>
+
   <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
     <ProjectReference Remove="src/Android/**/*.*proj" />
@@ -27,6 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
 </Project>

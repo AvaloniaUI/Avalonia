@@ -5,14 +5,16 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, ITemplatedControl
+    public class TemplatedControl : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -97,7 +99,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                "TemplateApplied", 
+                nameof(TemplateApplied), 
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;
@@ -273,7 +275,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     foreach (var child in this.GetTemplateChildren())
                     {
-                        child.SetValue(TemplatedParentProperty, null);
+                        child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
                     }
 
@@ -284,21 +286,17 @@ namespace Avalonia.Controls.Primitives
                 {
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(this, "Creating control template");
 
-                    var (child, nameScope) = template.Build(this);
-                    ApplyTemplatedParent(child);
-                    ((ISetLogicalParent)child).SetParent(this);
-                    VisualChildren.Add(child);
-                    
-                    // Existing code kinda expect to see a NameScope even if it's empty
-                    if (nameScope == null)
-                        nameScope = new NameScope();
+                    if (template.Build(this) is { } templateResult)
+                    {
+                        var (child, nameScope) = templateResult;
+                        ApplyTemplatedParent(child, this);
+                        ((ISetLogicalParent)child).SetParent(this);
+                        VisualChildren.Add(child);
 
-                    var e = new TemplateAppliedEventArgs(nameScope);
-                    OnApplyTemplate(e);
-#pragma warning disable CS0618 // Type or member is obsolete
-                    OnTemplateApplied(e);
-#pragma warning restore CS0618 // Type or member is obsolete
-                    RaiseEvent(e);
+                        var e = new TemplateAppliedEventArgs(nameScope);
+                        OnApplyTemplate(e);
+                        RaiseEvent(e);
+                    }
                 }
 
                 _appliedTemplate = template;
@@ -306,7 +304,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override IControl GetTemplateFocusTarget()
+        protected override Control GetTemplateFocusTarget()
         {
             foreach (Control child in this.GetTemplateChildren())
             {
@@ -319,7 +317,8 @@ namespace Avalonia.Controls.Primitives
             return this;
         }
 
-        protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        /// <inheritdoc />
+        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;
 
@@ -366,15 +365,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Called when the control's template is applied.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        [Obsolete("Use OnApplyTemplate")]
-        protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-        }
-
-        /// <summary>
         /// Called when the <see cref="Template"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -387,18 +377,34 @@ namespace Avalonia.Controls.Primitives
         /// Sets the TemplatedParent property for the created template children.
         /// </summary>
         /// <param name="control">The control.</param>
-        private void ApplyTemplatedParent(IControl control)
+        /// <param name="templatedParent">The templated parent to apply.</param>
+        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
-            control.SetValue(TemplatedParentProperty, this);
+            control.TemplatedParent = templatedParent;
 
             var children = control.LogicalChildren;
             var count = children.Count;
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IControl child)
+                if (children[i] is StyledElement child && child.TemplatedParent is null)
                 {
-                    ApplyTemplatedParent(child);
+                    ApplyTemplatedParent(child, templatedParent);
+                }
+            }
+        }
+
+        private protected override void OnControlThemeChanged()
+        {
+            base.OnControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == this)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
                 }
             }
         }

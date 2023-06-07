@@ -1,8 +1,10 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Remote.Server;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
@@ -40,7 +42,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
@@ -51,13 +53,17 @@ namespace Avalonia.DesignerSupport.Remote
             // In previewer mode we completely ignore client-side viewport size
             if (obj is ClientViewportAllocatedMessage alloc)
             {
-                Dispatcher.UIThread.Post(() => SetDpi(new Vector(alloc.DpiX, alloc.DpiY)));
+                Dispatcher.UIThread.Post(() =>
+                {
+                    RenderScaling = alloc.DpiX / 96.0;
+                    RenderAndSendFrameIfNeeded();
+                });
                 return;
             }
             base.OnMessage(transport, obj);
         }
         
-        public void Resize(Size clientSize, PlatformResizeReason reason)
+        public void Resize(Size clientSize, WindowResizeReason reason)
         {
             _transport.Send(new RequestViewportResizeMessage
             {
@@ -65,7 +71,7 @@ namespace Avalonia.DesignerSupport.Remote
                 Height = clientSize.Height
             });
             ClientSize = clientSize;
-            RenderIfNeeded();
+            RenderAndSendFrameIfNeeded();
         }
 
         public void Move(PixelPoint point)
@@ -90,6 +96,16 @@ namespace Avalonia.DesignerSupport.Remote
 
         public bool NeedsManagedDecorations => false;
 
+        public override object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
+            
+            return base.TryGetFeature(featureType);
+        }
+        
         public void Activate()
         {
         }

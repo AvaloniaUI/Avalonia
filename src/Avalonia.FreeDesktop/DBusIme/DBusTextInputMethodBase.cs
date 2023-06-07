@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
-using Avalonia.FreeDesktop.DBusIme.Fcitx;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
-using Tmds.DBus;
+using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme
 {
@@ -26,7 +25,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             return (im, im);
         }
     }
-    
+
     internal abstract class DBusTextInputMethodBase : IX11InputMethodControl, ITextInputMethodImpl
     {
         private List<IDisposable> _disposables = new List<IDisposable>();
@@ -34,42 +33,58 @@ namespace Avalonia.FreeDesktop.DBusIme
         protected Connection Connection { get; }
         private readonly string[] _knownNames;
         private bool _connecting;
-        private string _currentName;
+        private string? _currentName;
         private DBusCallQueue _queue;
-        private bool _controlActive, _windowActive;
+        private bool _windowActive;
         private bool? _imeActive;
         private Rect _logicalRect;
         private PixelRect? _lastReportedRect;
         private double _scaling = 1;
         private PixelPoint _windowPosition;
-        
+        private ITextInputMethodClient? _client;
+
         protected bool IsConnected => _currentName != null;
-        
+
         public DBusTextInputMethodBase(Connection connection, params string[] knownNames)
         {
-            _queue = new DBusCallQueue(QueueOnError);
+            _queue = new DBusCallQueue(QueueOnErrorAsync);
             Connection = connection;
             _knownNames = knownNames;
-            Watch();
+            _ = WatchAsync();
         }
 
-        async void Watch()
+        public ITextInputMethodClient Client => _client;
+
+        public bool IsActive => _client is not null;
+
+        private async Task WatchAsync()
         {
             foreach (var name in _knownNames)
-                _disposables.Add(await Connection.ResolveServiceOwnerAsync(name, OnNameChange));
+            {
+                var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
+                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
+                var nameOwner = await dbus.GetNameOwnerAsync(name);
+                OnNameChange(null, (name, null, nameOwner));
+            }
         }
-        
+
         protected abstract Task<bool> Connect(string name);
 
         protected string GetAppName() =>
-            Application.Current.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
-        
-        private async void OnNameChange(ServiceOwnerChangedEventArgs args)
+            Application.Current?.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
+
+        private async void OnNameChange(Exception? e, (string ServiceName, string? OldOwner, string? NewOwner) args)
         {
-            if (args.NewOwner != null && _currentName == null)
+            if (e is not null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnNameChange failed: {e}");
+                return;
+            }
+
+            if (args.NewOwner is not null && _currentName is null)
             {
                 _onlineNamesQueue.Enqueue(args.ServiceName);
-                if(!_connecting)
+                if (!_connecting)
                 {
                     _connecting = true;
                     try
@@ -86,10 +101,10 @@ namespace Avalonia.FreeDesktop.DBusIme
                                     return;
                                 }
                             }
-                            catch (Exception e)
+                            catch (Exception ex)
                             {
                                 Logger.TryGet(LogEventLevel.Error, "IME")
-                                    ?.Log(this, "Unable to create IME input context:\n" + e);
+                                    ?.Log(this, "Unable to create IME input context:\n" + ex);
                             }
                         }
                     }
@@ -98,33 +113,33 @@ namespace Avalonia.FreeDesktop.DBusIme
                         _connecting = false;
                     }
                 }
-                
+
             }
-            
+
             // IME has crashed
-            if (args.NewOwner == null && args.ServiceName == _currentName)
+            if (args.NewOwner is null && args.ServiceName == _currentName)
             {
                 _currentName = null;
-                foreach(var s in _disposables)
+                foreach (var s in _disposables)
                     s.Dispose();
                 _disposables.Clear();
-                
+
                 OnDisconnected();
                 Reset();
-                
+
                 // Watch again
-                Watch();
+                _ = WatchAsync();
             }
         }
-        
-        protected virtual Task Disconnect()
+
+        protected virtual Task DisconnectAsync()
         {
             return Task.CompletedTask;
         }
 
         protected virtual void OnDisconnected()
         {
-            
+
         }
 
         protected virtual void Reset()
@@ -133,13 +148,13 @@ namespace Avalonia.FreeDesktop.DBusIme
             _imeActive = null;
         }
 
-        async Task QueueOnError(Exception e)
+        private async Task QueueOnErrorAsync(Exception e)
         {
             Logger.TryGet(LogEventLevel.Error, "IME")
                 ?.Log(this, "Error:\n" + e);
             try
             {
-                await Disconnect();
+                await DisconnectAsync();
             }
             catch (Exception ex)
             {
@@ -149,24 +164,21 @@ namespace Avalonia.FreeDesktop.DBusIme
             OnDisconnected();
             _currentName = null;
         }
-        
+
         protected void Enqueue(Func<Task> cb) => _queue.Enqueue(cb);
 
-        protected void AddDisposable(IDisposable d) => _disposables.Add(d);
-        
+        protected void AddDisposable(IDisposable? d)
+        {
+            if (d is { })
+                _disposables.Add(d);
+        }
+
         public void Dispose()
         {
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();
-            try
-            {
-                Disconnect().ContinueWith(_ => { });
-            }
-            catch
-            {
-                // fire and forget
-            }
+            _ = DisconnectAsync();
             _currentName = null;
         }
 
@@ -175,14 +187,14 @@ namespace Avalonia.FreeDesktop.DBusIme
         protected abstract Task ResetContextCore();
         protected abstract Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode);
 
-        void UpdateActive()
+        private void UpdateActive()
         {
             _queue.Enqueue(async () =>
             {
                 if(!IsConnected)
                     return;
-                
-                var active = _windowActive && _controlActive;
+
+                var active = _windowActive && IsActive;
                 if (active != _imeActive)
                 {
                     _imeActive = active;
@@ -197,10 +209,10 @@ namespace Avalonia.FreeDesktop.DBusIme
             _windowActive = active;
             UpdateActive();
         }
-        
-        void ITextInputMethodImpl.SetClient(ITextInputMethodClient client)
+
+        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
-            _controlActive = client is { };
+            _client = client;
             UpdateActive();
         }
 
@@ -220,12 +232,12 @@ namespace Avalonia.FreeDesktop.DBusIme
             // Error, disconnect
             catch (Exception e)
             {
-                await QueueOnError(e);
+                await QueueOnErrorAsync(e);
                 return false;
             }
         }
 
-        private Action<string> _onCommit;
+        private Action<string>? _onCommit;
         event Action<string> IX11InputMethodControl.Commit
         {
             add => _onCommit += value;
@@ -233,8 +245,8 @@ namespace Avalonia.FreeDesktop.DBusIme
         }
 
         protected void FireCommit(string s) => _onCommit?.Invoke(s);
-        
-        private Action<X11InputMethodForwardedKey> _onForward;
+
+        private Action<X11InputMethodForwardedKey>? _onForward;
         event Action<X11InputMethodForwardedKey> IX11InputMethodControl.ForwardKey
         {
             add => _onForward += value;
@@ -242,8 +254,8 @@ namespace Avalonia.FreeDesktop.DBusIme
         }
 
         protected void FireForward(X11InputMethodForwardedKey k) => _onForward?.Invoke(k);
-        
-        void UpdateCursorRect()
+
+        private void UpdateCursorRect()
         {
             _queue.Enqueue(async () =>
             {
@@ -258,7 +270,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                 }
             });
         }
-        
+
         void IX11InputMethodControl.UpdateWindowInfo(PixelPoint position, double scaling)
         {
             _windowPosition = position;

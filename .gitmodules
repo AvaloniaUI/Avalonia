@@ -4,3 +4,6 @@
 [submodule "src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github"]
 	path = src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github
 	url = https://github.com/kekekeks/XamlX.git
+[submodule "nukebuild/il-repack"]
+	path = nukebuild/il-repack
+	url = https://github.com/Gillibald/il-repack

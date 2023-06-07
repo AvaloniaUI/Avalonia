@@ -12,8 +12,7 @@ namespace Avalonia.ReactiveUI
         /// scheduler, an activation for view fetcher, a template binding hook. Remember
         /// to call this method if you are using ReactiveUI in your application.
         /// </summary>
-        public static TAppBuilder UseReactiveUI<TAppBuilder>(this TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new() =>
+        public static AppBuilder UseReactiveUI(this AppBuilder builder) =>
             builder.AfterPlatformServicesSetup(_ => Locator.RegisterResolverCallbackChanged(() =>
             {
                 if (Locator.CurrentMutable is null)

@@ -13,29 +13,26 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Be_Styled_As_UserControl()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var target = new UserControl();
+            var root = new TestRoot
             {
-                var target = new UserControl();
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<UserControl>())
                     {
-                        new Style(x => x.OfType<UserControl>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(TemplatedControl.TemplateProperty, GetTemplate())
-                            }
+                            new Setter(TemplatedControl.TemplateProperty, GetTemplate())
                         }
-                    },
-                    Child = target,
-                };
+                    }
+                },
+                Child = target,
+            };
 
-                Assert.NotNull(target.Template);
-            }
+            Assert.NotNull(target.Template);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<UserControl>((parent, scope) =>
             {

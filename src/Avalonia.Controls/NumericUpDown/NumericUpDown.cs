@@ -5,9 +5,11 @@ using System.Linq;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
@@ -41,24 +43,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ClipValueToMinMax"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, bool> ClipValueToMinMaxProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, bool>(nameof(ClipValueToMinMax),
-                updown => updown.ClipValueToMinMax, (updown, b) => updown.ClipValueToMinMax = b);
-
-        /// <summary>
-        /// Defines the <see cref="CultureInfo"/> property.
-        /// </summary>
-        [Obsolete]
-        public static readonly DirectProperty<NumericUpDown, CultureInfo?> CultureInfoProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, CultureInfo?>(nameof(CultureInfo), o => o.CultureInfo,
-                (o, v) => o.CultureInfo = v, CultureInfo.CurrentCulture);
+        public static readonly StyledProperty<bool> ClipValueToMinMaxProperty =
+            AvaloniaProperty.Register<NumericUpDown, bool>(nameof(ClipValueToMinMax));
 
         /// <summary>
         /// Defines the <see cref="NumberFormat"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, NumberFormatInfo?> NumberFormatProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, NumberFormatInfo?>(nameof(NumberFormat), o => o.NumberFormat,
-                (o, v) => o.NumberFormat = v, NumberFormatInfo.CurrentInfo);
+        public static readonly StyledProperty<NumberFormatInfo?> NumberFormatProperty =
+            AvaloniaProperty.Register<NumericUpDown, NumberFormatInfo?>(nameof(NumberFormat), NumberFormatInfo.CurrentInfo);
 
         /// <summary>
         /// Defines the <see cref="FormatString"/> property.
@@ -93,23 +85,28 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ParsingNumberStyle"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, NumberStyles> ParsingNumberStyleProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, NumberStyles>(nameof(ParsingNumberStyle),
-                updown => updown.ParsingNumberStyle, (updown, style) => updown.ParsingNumberStyle = style);
+        public static readonly StyledProperty<NumberStyles> ParsingNumberStyleProperty =
+            AvaloniaProperty.Register<NumericUpDown, NumberStyles>(nameof(ParsingNumberStyle), NumberStyles.Any);
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, string?> TextProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, string?>(nameof(Text), o => o.Text, (o, v) => o.Text = v,
+        public static readonly StyledProperty<string?> TextProperty =
+            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Text),
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
+        /// <summary>
+        /// Defines the <see cref="TextConverter"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IValueConverter?> TextConverterProperty =
+            AvaloniaProperty.Register<NumericUpDown, IValueConverter?>(nameof(TextConverter), defaultBindingMode: BindingMode.OneWay);
 
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, decimal> ValueProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, decimal>(nameof(Value), updown => updown.Value,
-                (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+        public static readonly StyledProperty<decimal?> ValueProperty =
+            AvaloniaProperty.Register<NumericUpDown, decimal?>(nameof(Value), coerce: (s,v) => ((NumericUpDown)s).OnCoerceValue(v),
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
@@ -131,15 +128,9 @@ namespace Avalonia.Controls
 
         private IDisposable? _textBoxTextChangedSubscription;
 
-        private decimal _value;
-        private string? _text;
         private bool _internalValueSet;
-        private bool _clipValueToMinMax;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
-        private CultureInfo? _cultureInfo;
-        private NumberStyles _parsingNumberStyle = NumberStyles.Any;
-        private NumberFormatInfo? _numberFormat;
 
         /// <summary>
         /// Gets the Spinner template part.
@@ -183,23 +174,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ClipValueToMinMax
         {
-            get { return _clipValueToMinMax; }
-            set { SetAndRaise(ClipValueToMinMaxProperty, ref _clipValueToMinMax, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the current CultureInfo.
-        /// </summary>
-        [Obsolete("CultureInfo is obsolete, please use NumberFormat instead.")]
-        public CultureInfo? CultureInfo
-        {
-            get { return _cultureInfo; }
-            set
-            {
-                SetAndRaise(CultureInfoProperty, ref _cultureInfo, value);
-                //Set and Raise the NumberFormatProperty when CultureInfo is changed.
-                SetAndRaise(NumberFormatProperty, ref _numberFormat, value?.NumberFormat);
-            }
+            get => GetValue(ClipValueToMinMaxProperty);
+            set => SetValue(ClipValueToMinMaxProperty, value);
         }
 
         /// <summary>
@@ -207,8 +183,8 @@ namespace Avalonia.Controls
         /// </summary>
         public NumberFormatInfo? NumberFormat
         {
-            get { return _numberFormat; }
-            set { SetAndRaise(NumberFormatProperty, ref _numberFormat, value); }
+            get => GetValue(NumberFormatProperty);
+            set => SetValue(NumberFormatProperty, value);
         }
 
         /// <summary>
@@ -258,11 +234,13 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the parsing style (AllowLeadingWhite, Float, AllowHexSpecifier, ...). By default, Any.
+        /// Note that Hex style does not work with decimal. 
+        /// For hexadecimal display, use <see cref="TextConverter"/>.
         /// </summary>
         public NumberStyles ParsingNumberStyle
         {
-            get { return _parsingNumberStyle; }
-            set { SetAndRaise(ParsingNumberStyleProperty, ref _parsingNumberStyle, value); }
+            get => GetValue(ParsingNumberStyleProperty);
+            set => SetValue(ParsingNumberStyleProperty, value);
         }
 
         /// <summary>
@@ -270,21 +248,28 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Text
         {
-            get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the custom bidirectional Text-Value converter.
+        /// Non-null converter overrides <see cref="ParsingNumberStyle"/>, providing finer control over 
+        /// string representation of the underlying value.
+        /// </summary>
+        public IValueConverter? TextConverter
+        {
+            get => GetValue(TextConverterProperty);
+            set => SetValue(TextConverterProperty, value);
         }
 
         /// <summary>
         /// Gets or sets the value.
         /// </summary>
-        public decimal Value
+        public decimal? Value
         {
-            get { return _value; }
-            set
-            {
-                value = OnCoerceValue(value);
-                SetAndRaise(ValueProperty, ref _value, value);
-            }
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         /// <summary>
@@ -335,9 +320,6 @@ namespace Avalonia.Controls
         /// </summary>
         static NumericUpDown()
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            CultureInfoProperty.Changed.Subscribe(OnCultureInfoChanged);
-#pragma warning restore CS0612 // Type or member is obsolete
             NumberFormatProperty.Changed.Subscribe(OnNumberFormatChanged);
             FormatStringProperty.Changed.Subscribe(FormatStringChanged);
             IncrementProperty.Changed.Subscribe(IncrementChanged);
@@ -345,13 +327,14 @@ namespace Avalonia.Controls
             MaximumProperty.Changed.Subscribe(OnMaximumChanged);
             MinimumProperty.Changed.Subscribe(OnMinimumChanged);
             TextProperty.Changed.Subscribe(OnTextChanged);
+            TextConverterProperty.Changed.Subscribe(OnTextConverterChanged);
             ValueProperty.Changed.Subscribe(OnValueChanged);
         }
 
         /// <inheritdoc />
         protected override void OnLostFocus(RoutedEventArgs e)
         {
-            CommitInput();
+            CommitInput(true);
             base.OnLostFocus(e);
         }
 
@@ -403,25 +386,16 @@ namespace Avalonia.Controls
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == TextProperty || property == ValueProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="CultureInfo"/> property value changed.
-        /// </summary>
-        /// <param name="oldValue">The old value.</param>
-        /// <param name="newValue">The new value.</param>
-        protected virtual void OnCultureInfoChanged(CultureInfo? oldValue, CultureInfo? newValue)
-        {
-            if (IsInitialized)
-            {
-                SyncTextAndValueProperties(false, null);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
@@ -485,9 +459,9 @@ namespace Avalonia.Controls
             {
                 SetValidSpinDirection();
             }
-            if (ClipValueToMinMax)
+            if (ClipValueToMinMax && Value.HasValue)
             {
-                Value = MathUtilities.Clamp(Value, Minimum, Maximum);
+                SetCurrentValue(ValueProperty, MathUtilities.Clamp(Value.Value, Minimum, Maximum));
             }
         }
 
@@ -502,9 +476,9 @@ namespace Avalonia.Controls
             {
                 SetValidSpinDirection();
             }
-            if (ClipValueToMinMax)
+            if (ClipValueToMinMax && Value.HasValue)
             {
-                Value = MathUtilities.Clamp(Value, Minimum, Maximum);
+                SetCurrentValue(ValueProperty, MathUtilities.Clamp(Value.Value, Minimum, Maximum));
             }
         }
 
@@ -522,11 +496,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when the <see cref="Text"/> property value changed.
+        /// </summary>
+        /// <param name="oldValue">The old value.</param>
+        /// <param name="newValue">The new value.</param>
+        protected virtual void OnTextConverterChanged(IValueConverter? oldValue, IValueConverter? newValue)
+        {
+            if (IsInitialized)
+            {
+                SyncTextAndValueProperties(false, null);
+            }
+        }
+
+        /// <summary>
         /// Called when the <see cref="Value"/> property value changed.
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        protected virtual void OnValueChanged(decimal oldValue, decimal newValue)
+        protected virtual void OnValueChanged(decimal? oldValue, decimal? newValue)
         {
             if (!_internalValueSet && IsInitialized)
             {
@@ -569,7 +556,7 @@ namespace Avalonia.Controls
         /// Called when the <see cref="Value"/> property has to be coerced.
         /// </summary>
         /// <param name="baseValue">The value.</param>
-        protected virtual decimal OnCoerceValue(decimal baseValue)
+        protected virtual decimal? OnCoerceValue(decimal? baseValue)
         {
             return baseValue;
         }
@@ -603,7 +590,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        protected virtual void RaiseValueChangedEvent(decimal oldValue, decimal newValue)
+        protected virtual void RaiseValueChangedEvent(decimal? oldValue, decimal? newValue)
         {
             var e = new NumericUpDownValueChangedEventArgs(ValueChangedEvent, oldValue, newValue);
             RaiseEvent(e);
@@ -612,9 +599,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Converts the formatted text to a value.
         /// </summary>
-        private decimal ConvertTextToValue(string text)
+        private decimal? ConvertTextToValue(string? text)
         {
-            decimal result = 0;
+            decimal? result = null;
 
             if (string.IsNullOrEmpty(text))
             {
@@ -631,9 +618,9 @@ namespace Avalonia.Controls
 
             result = ConvertTextToValueCore(currentValueText, text);
 
-            if (ClipValueToMinMax)
+            if (ClipValueToMinMax && result.HasValue)
             {
-                return MathUtilities.Clamp(result, Minimum, Maximum);
+                return MathUtilities.Clamp(result.Value, Minimum, Maximum);
             }
 
             ValidateMinMax(result);
@@ -645,15 +632,19 @@ namespace Avalonia.Controls
         /// Converts the value to formatted text.
         /// </summary>
         /// <returns></returns>
-        private string ConvertValueToText()
+        private string? ConvertValueToText()
         {
+            if (TextConverter != null)
+            {
+                return TextConverter.ConvertBack(Value, typeof(string), null, CultureInfo.CurrentCulture)?.ToString();
+            }
             //Manage FormatString of type "{}{0:N2} °" (in xaml) or "{0:N2} °" in code-behind.
             if (FormatString.Contains("{0"))
             {
                 return string.Format(NumberFormat, FormatString, Value);
             }
 
-            return Value.ToString(FormatString, NumberFormat);
+            return Value?.ToString(FormatString, NumberFormat);
         }
 
         /// <summary>
@@ -661,8 +652,19 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnIncrement()
         {
-            var result = Value + Increment;
-            Value = MathUtilities.Clamp(result, Minimum, Maximum);
+            decimal result;
+            if (Value.HasValue)
+            {
+                result = Value.Value + Increment;
+            }
+            else
+            {
+                // if Minimum is set we set value to Minimum on Increment. 
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                result = IsSet(MinimumProperty) ? Minimum : 0;
+            }
+
+            SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
         }
 
         /// <summary>
@@ -670,8 +672,20 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnDecrement()
         {
-            var result = Value - Increment;
-            Value = MathUtilities.Clamp(result, Minimum, Maximum);
+            decimal result;
+
+            if (Value.HasValue)
+            {
+                result = Value.Value - Increment;
+            }
+            else
+            {
+                // if Maximum is set we set value to Maximum on decrement. 
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                result = IsSet(MaximumProperty) ? Maximum : 0;
+            }
+
+            SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
         }
 
         /// <summary>
@@ -684,6 +698,11 @@ namespace Avalonia.Controls
             // Zero increment always prevents spin.
             if (Increment != 0 && !IsReadOnly)
             {
+                if (!Value.HasValue)
+                {
+                    validDirections = ValidSpinDirections.Increase | ValidSpinDirections.Decrease;
+                }
+
                 if (Value < Maximum)
                 {
                     validDirections = validDirections | ValidSpinDirections.Increase;
@@ -698,20 +717,6 @@ namespace Avalonia.Controls
             if (Spinner != null)
             {
                 Spinner.ValidSpinDirection = validDirections;
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="CultureInfo"/> property value changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void OnCultureInfoChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Sender is NumericUpDown upDown)
-            {
-                var oldValue = (CultureInfo?)e.OldValue;
-                var newValue = (CultureInfo?)e.NewValue;
-                upDown.OnCultureInfoChanged(oldValue, newValue);
             }
         }
 
@@ -814,6 +819,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when the <see cref="TextConverter"/> property value changed.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void OnTextConverterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is NumericUpDown upDown)
+            {
+                var oldValue = (IValueConverter?)e.OldValue;
+                var newValue = (IValueConverter?)e.NewValue;
+                upDown.OnTextConverterChanged(oldValue, newValue);
+            }
+        }
+
+
+        /// <summary>
         /// Called when the <see cref="Value"/> property value changed.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -821,18 +841,18 @@ namespace Avalonia.Controls
         {
             if (e.Sender is NumericUpDown upDown)
             {
-                var oldValue = (decimal)e.OldValue!;
-                var newValue = (decimal)e.NewValue!;
+                var oldValue = (decimal?)e.OldValue;
+                var newValue = (decimal?)e.NewValue;
                 upDown.OnValueChanged(oldValue, newValue);
             }
         }
 
-        private void SetValueInternal(decimal value)
+        private void SetValueInternal(decimal? value)
         {
             _internalValueSet = true;
             try
             {
-                Value = value;
+                SetCurrentValue(ValueProperty, value);
             }
             finally
             {
@@ -840,7 +860,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private static decimal OnCoerceMaximum(IAvaloniaObject instance, decimal value)
+        private static decimal OnCoerceMaximum(AvaloniaObject instance, decimal value)
         {
             if (instance is NumericUpDown upDown)
             {
@@ -850,7 +870,7 @@ namespace Avalonia.Controls
             return value;
         }
 
-        private static decimal OnCoerceMinimum(IAvaloniaObject instance, decimal value)
+        private static decimal OnCoerceMinimum(AvaloniaObject instance, decimal value)
         {
             if (instance is NumericUpDown upDown)
             {
@@ -860,7 +880,7 @@ namespace Avalonia.Controls
             return value;
         }
 
-        private static decimal OnCoerceIncrement(IAvaloniaObject instance, decimal value)
+        private static decimal OnCoerceIncrement(AvaloniaObject instance, decimal value)
         {
             if (instance is NumericUpDown upDown)
             {
@@ -877,7 +897,7 @@ namespace Avalonia.Controls
                 _isTextChangedFromUI = true;
                 if (TextBox != null)
                 {
-                    Text = TextBox.Text;
+                    SetCurrentValue(TextProperty, TextBox.Text);
                 }
             }
             finally
@@ -942,9 +962,9 @@ namespace Avalonia.Controls
             remove { RemoveHandler(ValueChangedEvent, value); }
         }
 
-        private bool CommitInput()
+        private bool CommitInput(bool forceTextUpdate = false)
         {
-            return SyncTextAndValueProperties(true, Text);
+            return SyncTextAndValueProperties(true, Text, forceTextUpdate);
         }
 
         /// <summary>
@@ -974,33 +994,29 @@ namespace Avalonia.Controls
             {
                 if (updateValueFromText)
                 {
-                    if (!string.IsNullOrEmpty(text))
+                    try
                     {
-                        try
+                        var newValue = ConvertTextToValue(text);
+                        if (!Equals(newValue, Value))
                         {
-                            var newValue = ConvertTextToValue(text);
-                            if (!Equals(newValue, Value))
-                            {
-                                SetValueInternal(newValue);
-                            }
+                            SetValueInternal(newValue);
                         }
-                        catch
-                        {
-                            parsedTextIsValid = false;
-                        }
+                    }
+                    catch
+                    {
+                        parsedTextIsValid = false;
                     }
                 }
 
                 // Do not touch the ongoing text input from user.
                 if (!_isTextChangedFromUI)
                 {
-                    var keepEmpty = !forceTextUpdate && string.IsNullOrEmpty(Text);
-                    if (!keepEmpty)
+                    if (forceTextUpdate)
                     {
                         var newText = ConvertValueToText();
                         if (!Equals(Text, newText))
                         {
-                            Text = newText;
+                            SetCurrentValue(TextProperty, newText);
                         }
                     }
 
@@ -1032,9 +1048,20 @@ namespace Avalonia.Controls
             return parsedTextIsValid;
         }
 
-        private decimal ConvertTextToValueCore(string currentValueText, string text)
+        private decimal? ConvertTextToValueCore(string? currentValueText, string? text)
         {
             decimal result;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return null;
+            }
+
+            if (TextConverter != null)
+            {
+                var valueFromText = TextConverter.Convert(text, typeof(decimal?), null, CultureInfo.CurrentCulture);
+                return (decimal?)valueFromText;
+            }
 
             if (IsPercent(FormatString))
             {
@@ -1048,7 +1075,7 @@ namespace Avalonia.Controls
                     var shouldThrow = true;
 
                     // Check if CurrentValueText is also failing => it also contains special characters. ex : 90°
-                    if (!decimal.TryParse(currentValueText, ParsingNumberStyle, NumberFormat, out var _))
+                    if (!string.IsNullOrEmpty(currentValueText) && !decimal.TryParse(currentValueText, ParsingNumberStyle, NumberFormat, out var _))
                     {
                         // extract non-digit characters
                         var currentValueTextSpecialCharacters = currentValueText.Where(c => !char.IsDigit(c));
@@ -1078,8 +1105,12 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void ValidateMinMax(decimal value)
+        private void ValidateMinMax(decimal? value)
         {
+            if (!value.HasValue)
+            {
+                return;
+            }
             if (value < Minimum)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be greater than Minimum value of {0}", Minimum));
@@ -1111,8 +1142,8 @@ namespace Avalonia.Controls
             if (PIndex >= 0)
             {
                 //stringToTest contains a "P" between 2 "'", it's considered as text, not percent
-                var isText = stringToTest.Substring(0, PIndex).Contains("'")
-                             && stringToTest.Substring(PIndex, FormatString.Length - PIndex).Contains("'");
+                var isText = stringToTest.Substring(0, PIndex).Contains('\'')
+                             && stringToTest.Substring(PIndex, FormatString.Length - PIndex).Contains('\'');
 
                 return !isText;
             }

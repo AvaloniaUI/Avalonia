@@ -1,9 +1,11 @@
-﻿namespace Avalonia.Controls
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
     /// </summary>
-    public interface IMenuItem : IMenuElement
+    internal interface IMenuItem : IMenuElement
     {
         /// <summary>
         /// Gets or sets a value that indicates whether the item has a submenu.
@@ -35,7 +37,7 @@
         /// <summary>
         /// Gets the parent <see cref="IMenuElement"/>.
         /// </summary>
-        new IMenuElement? Parent { get; }
+        IMenuElement? Parent { get; }
 
         /// <summary>
         /// Raises a click event on the menu item.

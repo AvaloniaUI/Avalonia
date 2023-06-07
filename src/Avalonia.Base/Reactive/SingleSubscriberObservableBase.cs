@@ -3,7 +3,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Reactive
 {
-    public abstract class SingleSubscriberObservableBase<T> : IObservable<T>, IDisposable
+    internal abstract class SingleSubscriberObservableBase<T> : IObservable<T>, IDisposable
     {
         private Exception? _error;
         private IObserver<T>? _observer;
@@ -51,10 +51,11 @@ namespace Avalonia.Reactive
 
         protected void PublishCompleted()
         {
+            _completed = true;
+
             if (_observer != null)
             {
                 _observer.OnCompleted();
-                _completed = true;
                 Unsubscribed();
                 _observer = null;
             }
@@ -62,10 +63,11 @@ namespace Avalonia.Reactive
 
         protected void PublishError(Exception error)
         {
+            _error = error;
+
             if (_observer != null)
             {
                 _observer.OnError(error);
-                _error = error;
                 Unsubscribed();
                 _observer = null;
             }

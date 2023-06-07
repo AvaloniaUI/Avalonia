@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -8,13 +9,13 @@ namespace Avalonia.Controls
     /// </summary>
     public class Viewbox : Control
     {
-        private Decorator _containerVisual;
+        private readonly ViewboxContainer _containerVisual;
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
+            AvaloniaProperty.Register<Viewbox, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         /// <summary>
         /// Defines the <see cref="StretchDirection"/> property.
@@ -25,7 +26,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Child"/> property
         /// </summary>
-        public static readonly StyledProperty<IControl?> ChildProperty =
+        public static readonly StyledProperty<Control?> ChildProperty =
             Decorator.ChildProperty.AddOwner<Viewbox>();
 
         static Viewbox()
@@ -35,11 +36,16 @@ namespace Avalonia.Controls
             AffectsMeasure<Viewbox>(StretchProperty, StretchDirectionProperty);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Viewbox"/> class.
+        /// </summary>
         public Viewbox()
         {
-            _containerVisual = new Decorator();
+            // The Child control is hosted inside a ViewboxContainer control so that the transform
+            // can be applied independently of the Viewbox and Child transforms.
+            _containerVisual = new ViewboxContainer();
             _containerVisual.RenderTransformOrigin = RelativePoint.TopLeft;
-            LogicalChildren.Add(_containerVisual);
+            ((ISetLogicalParent)_containerVisual).SetParent(this);
             VisualChildren.Add(_containerVisual);
         }
 
@@ -66,7 +72,7 @@ namespace Avalonia.Controls
         /// Gets or sets the child of the Viewbox
         /// </summary>
         [Content]
-        public IControl? Child
+        public Control? Child
         {
             get => GetValue(ChildProperty);
             set => SetValue(ChildProperty, value);
@@ -76,58 +82,94 @@ namespace Avalonia.Controls
         /// Gets or sets the transform applied to the container visual that
         /// hosts the child of the Viewbox
         /// </summary>
-        protected internal ITransform? InternalTransform
+        internal ITransform? InternalTransform
         {
             get => _containerVisual.RenderTransform;
             set => _containerVisual.RenderTransform = value;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ChildProperty)
             {
-                _containerVisual.Child = change.NewValue.GetValueOrDefault<IControl>();
+                var (oldChild, newChild) = change.GetOldAndNewValue<Control?>();
+
+                if (oldChild is not null)
+                {
+                    ((ISetLogicalParent)oldChild).SetParent(null);
+                    LogicalChildren.Remove(oldChild);
+                }
+
+                _containerVisual.Child = newChild;
+
+                if (newChild is not null)
+                {
+                    ((ISetLogicalParent)newChild).SetParent(this);
+                    LogicalChildren.Add(newChild);
+                }
+
                 InvalidateMeasure();
             }
         }
 
+        /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
             var child = _containerVisual;
 
-            if (child != null)
-            {
-                child.Measure(Size.Infinity);
+            child.Measure(Size.Infinity);
 
-                var childSize = child.DesiredSize;
+            var childSize = child.DesiredSize;
 
-                var size = Stretch.CalculateSize(availableSize, childSize, StretchDirection);
+            var size = Stretch.CalculateSize(availableSize, childSize, StretchDirection);
 
-                return size;
-            }
-
-            return new Size();
+            return size;
         }
 
+        /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
             var child = _containerVisual;
 
-            if (child != null)
+            var childSize = child.DesiredSize;
+            var scale = Stretch.CalculateScaling(finalSize, childSize, StretchDirection);
+
+            InternalTransform = new ImmutableTransform(Matrix.CreateScale(scale.X, scale.Y));
+
+            child.Arrange(new Rect(childSize));
+
+            return childSize * scale;
+        }
+
+        /// <summary>
+        /// A simple container control which hosts its child as a visual but not logical child.
+        /// </summary>
+        private class ViewboxContainer : Control
+        {
+            private Control? _child;
+
+            public Control? Child
             {
-                var childSize = child.DesiredSize;
-                var scale = Stretch.CalculateScaling(finalSize, childSize, StretchDirection);
+                get => _child;
+                set
+                {
+                    if (_child != value)
+                    {
+                        if (_child is not null)
+                            VisualChildren.Remove(_child);
 
-                InternalTransform = new ScaleTransform(scale.X, scale.Y);
+                        _child = value;
 
-                child.Arrange(new Rect(childSize));
+                        if (_child is not null)
+                            VisualChildren.Add(_child);
 
-                return childSize * scale;
+                        InvalidateMeasure();
+                    }
+                }
             }
-
-            return finalSize;
         }
     }
 }

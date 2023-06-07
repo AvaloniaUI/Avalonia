@@ -6,7 +6,7 @@ using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
     // TODO: Actually implement XEmbed instead of simply using XReparentWindow
-    class X11NativeControlHost : INativeControlHostImpl
+    internal class X11NativeControlHost : INativeControlHostImpl
     {
         private readonly AvaloniaX11Platform _platform;
         public X11Window Window { get; }
@@ -57,7 +57,7 @@ namespace Avalonia.X11
 
         public bool IsCompatibleWith(IPlatformHandle handle) => handle.HandleDescriptor == "XID";
 
-        class DumbWindow : INativeControlHostDestroyableControlHandle
+        private class DumbWindow : INativeControlHostDestroyableControlHandle
         {
             private readonly IntPtr _display;
 
@@ -96,8 +96,8 @@ namespace Avalonia.X11
                 }
             }
         }
-        
-        class Attachment : INativeControlHostControlTopLevelAttachment
+
+        private class Attachment : INativeControlHostControlTopLevelAttachment
         {
             private readonly IntPtr _display;
             private readonly IntPtr _orphanedWindow;
@@ -129,7 +129,7 @@ namespace Avalonia.X11
                 _attachedTo = null;
             }
 
-            void CheckDisposed()
+            private void CheckDisposed()
             {
                 if (_child == null)
                     throw new ObjectDisposedException("X11 INativeControlHostControlTopLevelAttachment");

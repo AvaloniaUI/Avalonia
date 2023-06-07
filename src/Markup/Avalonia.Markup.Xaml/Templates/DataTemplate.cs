@@ -5,15 +5,16 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    public class DataTemplate : IRecyclingDataTemplate
+    public class DataTemplate : IRecyclingDataTemplate, ITypedDataTemplate
     {
-        public Type DataType { get; set; }
+        [DataType]
+        public Type? DataType { get; set; }
 
         [Content]
         [TemplateContent]
-        public object Content { get; set; }
+        public object? Content { get; set; }
 
-        public bool Match(object data)
+        public bool Match(object? data)
         {
             if (DataType == null)
             {
@@ -25,11 +26,11 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data) => Build(data, null);
+        public Control? Build(object? data) => Build(data, null);
 
-        public IControl Build(object data, IControl existing)
+        public Control? Build(object? data, Control? existing)
         {
-            return existing ?? TemplateContent.Load(Content)?.Control;
+            return existing ?? TemplateContent.Load(Content)?.Result;
         }
     }
 }

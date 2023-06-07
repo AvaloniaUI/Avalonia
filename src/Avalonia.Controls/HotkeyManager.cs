@@ -2,6 +2,7 @@ using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -14,7 +15,7 @@ namespace Avalonia.Controls
         {
             readonly WeakReference reference;
 
-            public HotkeyCommandWrapper(IControl control)
+            public HotkeyCommandWrapper(Control control)
             {
                 reference = new WeakReference(control);
             }
@@ -76,7 +77,7 @@ namespace Avalonia.Controls
 
         class Manager
         {
-            private readonly IControl _control;
+            private readonly Control _control;
             private TopLevel? _root;
             private IDisposable? _parentSub;
             private IDisposable? _hotkeySub;
@@ -84,7 +85,7 @@ namespace Avalonia.Controls
             private readonly HotkeyCommandWrapper _wrapper;
             private KeyBinding? _binding;
 
-            public Manager(IControl control)
+            public Manager(Control control)
             {
                 _control = control;
                 _wrapper = new HotkeyCommandWrapper(_control);
@@ -147,7 +148,7 @@ namespace Avalonia.Controls
                 if (args.NewValue.Value is null)
                     return;
 
-                var control = args.Sender as IControl;
+                var control = args.Sender as Control;
                 if (control is not IClickableControl)
                 {
                     Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.Log(control,

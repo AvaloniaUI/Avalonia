@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Profile 1": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\..\\samples\\Generators.Sandbox\\Generators.Sandbox.csproj"
+    }
+  }
+}

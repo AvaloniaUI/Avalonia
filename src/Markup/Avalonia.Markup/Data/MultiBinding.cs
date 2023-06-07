@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
 
@@ -67,7 +67,7 @@ namespace Avalonia.Data
 
         /// <inheritdoc/>
         public InstancedBinding? Initiate(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
@@ -85,8 +85,8 @@ namespace Avalonia.Data
 
             var children = Bindings.Select(x => x.Initiate(target, null));
 
-            var input = children.Select(x => x?.Observable!)
-                                .Where(x => x is not null)
+            var input = children.Select(x => x?.Source)
+                                .Where(x => x is not null)!
                                 .CombineLatest()
                                 .Select(x => ConvertValue(x, targetType, converter))
                                 .Where(x => x != BindingOperations.DoNothing);

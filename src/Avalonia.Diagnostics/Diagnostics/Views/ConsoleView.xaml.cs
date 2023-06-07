@@ -32,7 +32,7 @@ namespace Avalonia.Diagnostics.Views
 
         private void HistoryChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems?[0] is IControl control)
+            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems?[0] is Control control)
             {
                 DispatcherTimer.RunOnce(control.BringIntoView, TimeSpan.Zero);
             }

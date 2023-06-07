@@ -3,7 +3,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class LinearGradientBrushImpl : BrushImpl
+    internal class LinearGradientBrushImpl : BrushImpl
     {
         public LinearGradientBrushImpl(
             ILinearGradientBrush brush,

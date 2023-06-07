@@ -34,7 +34,6 @@ namespace Avalonia.Controls
         }
 
         private const int DATAGRIDCOLUMNHEADER_resizeRegionWidth = 5;
-        private const double DATAGRIDCOLUMNHEADER_separatorThickness = 1;
         private const int DATAGRIDCOLUMNHEADER_columnsDragTreshold = 5;
 
         private bool _areHandlersSuspended;
@@ -73,19 +72,20 @@ namespace Avalonia.Controls
         {
             AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x, e) => x.OnAreSeparatorsVisibleChanged(e));
             PressedMixin.Attach<DataGridColumnHeader>();
+            IsTabStopProperty.OverrideDefaultValue<DataGridColumnHeader>(false);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Avalonia.Controls.Primitives.DataGridColumnHeader" /> class. 
+        /// Initializes a new instance of the <see cref="T:Avalonia.Controls.Primitives.DataGridColumnHeader" /> class.
         /// </summary>
         //TODO Implement
         public DataGridColumnHeader()
         {
             PointerPressed += DataGridColumnHeader_PointerPressed;
             PointerReleased += DataGridColumnHeader_PointerReleased;
-            PointerMoved += DataGridColumnHeader_PointerMove;
-            PointerEnter += DataGridColumnHeader_PointerEnter;
-            PointerLeave += DataGridColumnHeader_PointerLeave;
+            PointerMoved += DataGridColumnHeader_PointerMoved;
+            PointerEntered += DataGridColumnHeader_PointerEntered;
+            PointerExited += DataGridColumnHeader_PointerExited;
         }
 
         private void OnAreSeparatorsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                     DataGrid owningGrid = OwningGrid;
                     DataGridSortDescription newSort;
 
-                    KeyboardHelper.GetMetaKeyState(keyModifiers, out bool ctrl, out bool shift);
+                    KeyboardHelper.GetMetaKeyState(this, keyModifiers, out bool ctrl, out bool shift);
 
                     DataGridSortDescription sort = OwningColumn.GetSortDescription();
                     IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
@@ -267,7 +267,7 @@ namespace Avalonia.Controls
                                 else
                                 {
                                     newSort = sort;
-                                } 
+                                }
 
                                 // changing direction should not affect sort order, so we replace this column's
                                 // sort description instead of just adding it to the end of the collection
@@ -441,18 +441,15 @@ namespace Avalonia.Controls
             }
 
             Debug.Assert(OwningGrid.Parent is InputElement);
-
-            double distanceFromLeft = mousePosition.X;
-            double distanceFromRight = Bounds.Width - distanceFromLeft;
-
+            
             OnMouseMove_Resize(ref handled, mousePositionHeaders);
 
-            OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders, distanceFromLeft, distanceFromRight);
+            OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders);
 
             SetDragCursor(mousePosition);
         }
 
-        private void DataGridColumnHeader_PointerEnter(object sender, PointerEventArgs e)
+        private void DataGridColumnHeader_PointerEntered(object sender, PointerEventArgs e)
         {
             if (!IsEnabled)
             {
@@ -464,7 +461,7 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
-        private void DataGridColumnHeader_PointerLeave(object sender, PointerEventArgs e)
+        private void DataGridColumnHeader_PointerExited(object sender, PointerEventArgs e)
         {
             if (!IsEnabled)
             {
@@ -506,7 +503,7 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
-        private void DataGridColumnHeader_PointerMove(object sender, PointerEventArgs e)
+        private void DataGridColumnHeader_PointerMoved(object sender, PointerEventArgs e)
         {
             if (OwningGrid == null || !IsEnabled)
             {
@@ -603,7 +600,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Returns true if the mouse is 
+        /// Returns true if the mouse is
         /// - to the left of the element, or within the left half of the element
         /// and
         /// - within the vertical range of the element, or ignoreVertical == true
@@ -663,20 +660,23 @@ namespace Avalonia.Controls
             IsMouseOver = false;
         }
 
-        //TODO Styles DragIndicator
         private void OnMouseMove_BeginReorder(Point mousePosition)
         {
-            DataGridColumnHeader dragIndicator = new DataGridColumnHeader
+            var dragIndicator = new DataGridColumnHeader
             {
                 OwningColumn = OwningColumn,
                 IsEnabled = false,
                 Content = Content,
                 ContentTemplate = ContentTemplate
             };
+            if (OwningGrid.ColumnHeaderTheme is {} columnHeaderTheme)
+            {
+                dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.Template);
+            }
 
             dragIndicator.PseudoClasses.Add(":dragIndicator");
 
-            IControl dropLocationIndicator = OwningGrid.DropLocationIndicatorTemplate?.Build();
+            Control dropLocationIndicator = OwningGrid.DropLocationIndicatorTemplate?.Build();
 
             // If the user didn't style the dropLocationIndicator's Height, default to the column header's height
             if (dropLocationIndicator != null && double.IsNaN(dropLocationIndicator.Height) && dropLocationIndicator is Control element)
@@ -714,15 +714,15 @@ namespace Avalonia.Controls
         }
 
         //TODO DragEvents
-        private void OnMouseMove_Reorder(ref bool handled, Point mousePosition, Point mousePositionHeaders, double distanceFromLeft, double distanceFromRight)
+        private void OnMouseMove_Reorder(ref bool handled, Point mousePosition, Point mousePositionHeaders)
         {
             if (handled)
             {
                 return;
             }
-            
+
             //handle entry into reorder mode
-            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
+            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null)
             {
                 var distanceFromInitial = (Vector)(mousePositionHeaders - _lastMousePositionHeaders);
                 if (distanceFromInitial.Length > DATAGRIDCOLUMNHEADER_columnsDragTreshold)

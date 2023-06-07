@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Avalonia.Base.UnitTests
         {
             var registry = new AvaloniaPropertyRegistry();
             var metadata = new StyledPropertyMetadata<int>();
-            var property = new AttachedProperty<int>("test", typeof(object), metadata, true);
+            var property = new AttachedProperty<int>("test", typeof(object), typeof(object), metadata, true);
             registry.Register(typeof(object), property);
             registry.RegisterAttached(typeof(AvaloniaPropertyRegistryTests), property);
             property.AddOwner<Class4>();
@@ -56,7 +57,7 @@ namespace Avalonia.Base.UnitTests
                 .Select(x => x.Name)
                 .ToArray();
 
-            Assert.Equal(new[] { "Attached" }, names);
+            Assert.Contains("Attached", names);
         }
 
         [Fact]
@@ -66,7 +67,7 @@ namespace Avalonia.Base.UnitTests
                 .Select(x => x.Name)
                 .ToArray();
 
-            Assert.Equal(new[] { "Attached" }, names);
+            Assert.Contains("Attached", names);
         }
 
         [Fact]

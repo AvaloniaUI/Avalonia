@@ -4,45 +4,12 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
-using JetBrains.Annotations;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Platform
 {
-    /// <summary>
-    /// Describes the reason for a <see cref="ITopLevelImpl.Resized"/> message.
-    /// </summary>
-    public enum PlatformResizeReason
-    {
-        /// <summary>
-        /// The resize reason is unknown or unspecified.
-        /// </summary>
-        Unspecified,
-
-        /// <summary>
-        /// The resize was due to the user resizing the window, for example by dragging the
-        /// window frame.
-        /// </summary>
-        User,
-
-        /// <summary>
-        /// The resize was initiated by the application, for example by setting one of the sizing-
-        /// related properties on <see cref="Window"/> such as <see cref="Layoutable.Width"/> or
-        /// <see cref="Layoutable.Height"/>.
-        /// </summary>
-        Application,
-
-        /// <summary>
-        /// The resize was initiated by the layout system.
-        /// </summary>
-        Layout,
-
-        /// <summary>
-        /// The resize was due to a change in DPI.
-        /// </summary>
-        DpiChange,
-    }
-
     /// <summary>
     /// Defines a platform-specific top-level window implementation.
     /// </summary>
@@ -50,7 +17,8 @@ namespace Avalonia.Platform
     /// This interface is the common interface to <see cref="IWindowImpl"/> and
     /// <see cref="IPopupImpl"/>.
     /// </remarks>
-    public interface ITopLevelImpl : IDisposable
+    [Unstable]
+    public interface ITopLevelImpl : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>
         /// Gets the client size of the toplevel.
@@ -92,7 +60,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the toplevel is resized.
         /// </summary>
-        Action<Size, PlatformResizeReason>? Resized { get; set; }
+        Action<Size, WindowResizeReason>? Resized { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel's scaling changes.
@@ -105,15 +73,9 @@ namespace Avalonia.Platform
         Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         /// <summary>
-        /// Creates a new renderer for the toplevel.
+        /// Gets the compositor that's compatible with the toplevel
         /// </summary>
-        /// <param name="root">The toplevel.</param>
-        IRenderer CreateRenderer(IRenderRoot root);
-
-        /// <summary>
-        /// Invalidates a rect on the toplevel.
-        /// </summary>
-        void Invalidate(Rect rect);
+        Compositor Compositor { get; }
 
         /// <summary>
         /// Sets the <see cref="IInputRoot"/> for the toplevel.
@@ -149,25 +111,25 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the input focus is lost.
         /// </summary>
         Action? LostFocus { get; set; }
-
-        /// <summary>
-        /// Gets a mouse device associated with toplevel
-        /// </summary>
-        [CanBeNull]
-        IMouseDevice MouseDevice { get; }
-
+        
         IPopupImpl? CreatePopup();
 
         /// <summary>
         /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.
         /// </summary>
-        void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel);
+        void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels);
 
         /// <summary>
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
         /// </summary>
         WindowTransparencyLevel TransparencyLevel { get; }
 
+        /// <summary>
+        /// Sets the <see cref="PlatformThemeVariant"/> on the frame if it should be dark or light.
+        /// Also applies for the mobile status bar.
+        /// </summary>
+        void SetFrameThemeVariant(PlatformThemeVariant themeVariant);
+        
         /// <summary>
         /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
         /// </summary>

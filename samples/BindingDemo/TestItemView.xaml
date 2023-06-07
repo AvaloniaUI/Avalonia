@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="BindingDemo.TestItemView">
+        xmlns:viewModels="using:BindingDemo.ViewModels"
+        x:Class="BindingDemo.TestItemView"
+        x:DataType="viewModels:TestItem">
   <StackPanel>
     <TextBlock Classes="h1" Text="{Binding StringValue}"/>
     <TextBox Text="{Binding Detail}" AcceptsReturn="True"/>

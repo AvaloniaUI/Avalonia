@@ -9,7 +9,8 @@ namespace Avalonia.Base.UnitTests
         {
             var p1 = new StyledProperty<string>(
                 "p1", 
-                typeof(Class1), 
+                typeof(Class1),
+                typeof(Class1),
                 new StyledPropertyMetadata<string>());
             var p2 = p1.AddOwner<Class2>();
 
@@ -23,6 +24,7 @@ namespace Avalonia.Base.UnitTests
         {
             var p1 = new StyledProperty<string>(
                 "p1",
+                typeof(Class1),
                 typeof(Class1),
                 new StyledPropertyMetadata<string>());
             var p2 = p1.AddOwner<Class2>();

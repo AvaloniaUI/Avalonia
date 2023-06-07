@@ -57,7 +57,7 @@ namespace Avalonia.Direct2D1.RenderTests
         }
 
         [Fact]
-        public async Task RenderTansform_Applies_To_Opacity_Mask()
+        public async Task RenderTransform_Applies_To_Opacity_Mask()
         {
             var target = new Canvas
             {

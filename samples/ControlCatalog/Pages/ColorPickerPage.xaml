@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Avalonia.Controls"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.ColorPickerPage">
+
+  <UserControl.Resources>
+  </UserControl.Resources>
+
+  <Grid x:Name="LayoutRoot"
+        ColumnDefinitions="Auto,10,Auto"
+        RowDefinitions="Auto,Auto">
+    <ColorView Grid.Column="0"
+               Grid.Row="0"
+               ColorSpectrumShape="Ring" />
+    <ColorPicker Grid.Column="0"
+                 Grid.Row="1"
+                 HsvColor="hsv(120, 1, 1)"
+                 Margin="0,50,0,0">
+      <ColorPicker.Palette>
+        <controls:FlatHalfColorPalette />
+      </ColorPicker.Palette>
+    </ColorPicker>
+    <Grid Grid.Column="2"
+          Grid.Row="0"
+          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <Grid.Resources>
+
+        <x:Double x:Key="ColorSliderSize">24</x:Double>
+        <x:Double x:Key="ColorSliderTrackSize">18</x:Double>
+        <CornerRadius x:Key="ColorSliderCornerRadius">12</CornerRadius>
+        <CornerRadius x:Key="ColorSliderTrackCornerRadius">9</CornerRadius>
+
+        <!-- Due to 'SystemControlForegroundBaseHighBrush' usage this only works in Fluent theme. -->
+        <!-- Otherwise it would be necessary to make custom light/dark resources. -->
+        <ControlTheme x:Key="ColorSliderThumbTheme"
+                      TargetType="Thumb">
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+          <Setter Property="BorderThickness" Value="5" />
+          <Setter Property="CornerRadius" Value="{DynamicResource ColorSliderCornerRadius}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Grid>
+                  <Border Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}" />
+                  <Ellipse Height="{TemplateBinding Height}"
+                           Width="{TemplateBinding Width}"
+                           Fill="Transparent"
+                           Stroke="{TemplateBinding Foreground}"
+                           StrokeThickness="1" />
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </ControlTheme>
+
+      </Grid.Resources>
+      <ColorSpectrum x:Name="ColorSpectrum1"
+                     Grid.Row="0"
+                     Color="Red"
+                     CornerRadius="10"
+                     Height="256"
+                     Width="256" />
+      <!-- HSV Sliders -->
+      <ColorSlider Grid.Row="1"
+                   Margin="0,10,0,0"
+                   ColorComponent="Component1"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+      <ColorSlider Grid.Row="2"
+                   ColorComponent="Component2"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+      <ColorSlider Grid.Row="3"
+                   ColorComponent="Component3"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+      <ColorSlider Grid.Row="4"
+                   ColorComponent="Alpha"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+      <!-- RGB Sliders -->
+      <!--<ColorSlider Grid.Row="5"
+                   Margin="0,10,0,0"
+                   ColorComponent="Component1"
+                   ColorModel="Rgba"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+      <ColorSlider Grid.Row="6"
+                   ColorComponent="Component2"
+                   ColorModel="Rgba"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
+      <ColorSlider Grid.Row="7"
+                   ColorComponent="Component3"
+                   ColorModel="Rgba"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />-->
+      <ColorPreviewer Grid.Row="8"
+                      IsAccentColorsVisible="False"
+                      HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}"
+                      Margin="0,2,0,0" />
+    </Grid>
+  </Grid>
+</UserControl>

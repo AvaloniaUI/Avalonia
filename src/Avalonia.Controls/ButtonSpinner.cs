@@ -1,7 +1,6 @@
-using System;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
+using Avalonia.Reactive;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -210,13 +209,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ButtonSpinnerLocationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Location>());
+                UpdatePseudoClasses(change.GetNewValue<Location>());
             }
         }
 

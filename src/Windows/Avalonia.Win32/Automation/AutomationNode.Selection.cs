@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using UIA = Avalonia.Win32.Interop.Automation;
-
-#nullable enable
 
 namespace Avalonia.Win32.Automation
 {
@@ -27,8 +24,7 @@ namespace Avalonia.Win32.Automation
         UIA.IRawElementProviderSimple[] UIA.ISelectionProvider.GetSelection()
         {
             var peers = InvokeSync<ISelectionProvider, IReadOnlyList<AutomationPeer>>(x => x.GetSelection());
-            return peers?.Select(x => (UIA.IRawElementProviderSimple)GetOrCreate(x)!).ToArray() ??
-                Array.Empty<UIA.IRawElementProviderSimple>();
+            return peers.Select(x => (UIA.IRawElementProviderSimple)GetOrCreate(x)).ToArray();
         }
 
         void UIA.ISelectionItemProvider.AddToSelection() => InvokeSync<ISelectionItemProvider>(x => x.AddToSelection());

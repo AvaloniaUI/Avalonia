@@ -1,11 +1,15 @@
 using System;
 using Android.Content;
+using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android
@@ -15,20 +19,21 @@ namespace Avalonia.Android
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
-        private IDisposable? _timerSubscription;
+        private IDisposable _timerSubscription;
 
         public AvaloniaView(Context context) : base(context)
         {
-            _view = new ViewImpl(context);
+            _view = new ViewImpl(this);
             AddView(_view.View);
-            
-        }
 
-        internal void Prepare ()
-        {
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
+
+            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            OnConfigurationChanged();
         }
+
+        internal TopLevelImpl TopLevelImpl => _view;
 
         public object Content
         {
@@ -62,18 +67,35 @@ namespace Avalonia.Android
                     _timerSubscription = timer.SubscribeView(this);
                 }
 
-                _root.Renderer.Start();
+                _root.StartRendering();
+
+                if (_view.TryGetFeature<IInsetsManager>(out var insetsManager) == true)
+                {
+                    (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
+                }
             }
             else
             {
-                _root.Renderer.Stop();
+                _root.StopRendering();
                 _timerSubscription?.Dispose();
             }
+        }
+        
+        protected override void OnConfigurationChanged(Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+            OnConfigurationChanged();
+        }
+
+        private void OnConfigurationChanged()
+        {
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
+            settings?.OnViewConfigurationChanged(Context);
         }
 
         class ViewImpl : TopLevelImpl
         {
-            public ViewImpl(Context context) : base(context)
+            public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
                 View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;

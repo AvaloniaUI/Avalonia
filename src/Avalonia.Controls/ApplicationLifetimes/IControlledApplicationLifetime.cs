@@ -1,7 +1,9 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
+    [NotClientImplementable]
     public interface IControlledApplicationLifetime : IApplicationLifetime
     {
         /// <summary>

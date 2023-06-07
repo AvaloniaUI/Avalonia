@@ -56,10 +56,14 @@
       </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "bin/Debug/netcoreapp3.1/ControlCatalog.NetCore.dll"
+            argument = "bin/Debug/net6.0/ControlCatalog.NetCore.dll"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
+      <LocationScenarioReference
+         identifier = "com.apple.dt.IDEFoundation.CurrentLocationScenarioIdentifier"
+         referenceType = "1">
+      </LocationScenarioReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

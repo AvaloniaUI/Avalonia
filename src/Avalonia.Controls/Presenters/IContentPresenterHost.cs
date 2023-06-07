@@ -1,6 +1,5 @@
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -15,7 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// parent control's template is instantiated so they register themselves using this 
     /// interface.
     /// </remarks>
-    public interface IContentPresenterHost : ITemplatedControl
+    internal interface IContentPresenterHost
     {
         /// <summary>
         /// Gets a collection describing the logical children of the host control.
@@ -23,13 +22,13 @@ namespace Avalonia.Controls.Presenters
         IAvaloniaList<ILogical> LogicalChildren { get; }
 
         /// <summary>
-        /// Registers an <see cref="IContentPresenter"/> with a host control.
+        /// Registers an <see cref="ContentPresenter"/> with a host control.
         /// </summary>
         /// <param name="presenter">The content presenter.</param>
         /// <returns>
         /// True if the content presenter should add its child to the logical children of the
         /// host; otherwise false.
         /// </returns>
-        bool RegisterContentPresenter(IContentPresenter presenter);
+        bool RegisterContentPresenter(ContentPresenter presenter);
     }
 }

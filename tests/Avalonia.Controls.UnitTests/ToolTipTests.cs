@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
@@ -24,7 +25,7 @@ namespace Avalonia.Controls.UnitTests
                 [ToolTip.ShowDelayProperty] = 0
             };
 
-            Assert.False((control as IVisual).IsAttachedToVisualTree);
+            Assert.False(control.IsAttachedToVisualTree);
 
             //here in issue #3188 exception is raised
             _mouseHelper.Enter(control);
@@ -51,10 +52,11 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = panel;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);                               
+                Assert.True(target.IsAttachedToVisualTree);                               
 
                 _mouseHelper.Enter(target);
 
@@ -87,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = window.Find<Decorator>("PART_target");
                 var panel = window.Find<Panel>("PART_panel");
                 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);                               
+                Assert.True(target.IsAttachedToVisualTree);                               
 
                 _mouseHelper.Enter(target);
 
@@ -114,10 +116,11 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);
+                Assert.True(target.IsAttachedToVisualTree);
 
                 _mouseHelper.Enter(target);
 
@@ -140,6 +143,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -157,21 +161,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Open_On_Pointer_Enter_With_Delay()
         {
-            Action timercallback = null;
-            var delay = TimeSpan.Zero;
-
-            var pti = Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true);
-
-            Mock.Get(pti)
-                .Setup(v => v.StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
-                .Callback<DispatcherPriority, TimeSpan, Action>((priority, interval, tick) =>
-                {
-                    delay = interval;
-                    timercallback = tick;
-                })
-                .Returns(Disposable.Empty);
-
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(threadingInterface: pti)))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var window = new Window();
 
@@ -183,18 +173,19 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);
+                Assert.True(target.IsAttachedToVisualTree);
 
                 _mouseHelper.Enter(target);
 
-                Assert.Equal(TimeSpan.FromMilliseconds(1), delay);
-                Assert.NotNull(timercallback);
+                var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+                Assert.Equal(TimeSpan.FromMilliseconds(1), timer.Interval);
                 Assert.False(ToolTip.GetIsOpen(target));
 
-                timercallback();
+                timer.ForceFire();
 
                 Assert.True(ToolTip.GetIsOpen(target));
             }
@@ -215,6 +206,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = decorator;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -237,6 +229,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = decorator;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -261,6 +254,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = decorator;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -286,6 +280,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 

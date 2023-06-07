@@ -15,5 +15,12 @@ namespace Avalonia
         /// The default value.
         /// </returns>
         object? GetDefaultValue(Type type);
+
+        /// <summary>
+        /// Validates the specified property value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>True if the value is valid, otherwise false.</returns>
+        bool ValidateValue(object? value);
     }
 }

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -15,6 +17,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
 
             using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
@@ -98,6 +101,7 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_After_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             windowImpl.SetupProperty(x => x.Closed);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -140,7 +144,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Child_windows_should_be_closed_before_parent(bool programaticClose)
+        public void Child_windows_should_be_closed_before_parent(bool programmaticClose)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -155,12 +159,16 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Closing += (sender, e) =>
                 {
+                    Assert.Equal(WindowCloseReason.WindowClosing, e.CloseReason);
+                    Assert.Equal(programmaticClose, e.IsProgrammatic);
                     count++;
                     windowClosing = count;
                 };
                 
                 child.Closing += (sender, e) =>
                 {
+                    Assert.Equal(WindowCloseReason.OwnerWindowClosing, e.CloseReason);
+                    Assert.Equal(programmaticClose, e.IsProgrammatic);
                     count++;
                     childClosing = count;
                 };
@@ -180,13 +188,13 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 child.Show(window);
 
-                if (programaticClose)
+                if (programmaticClose)
                 {
                     window.Close();
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing();
+                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(false, cancel);
                 }
@@ -201,7 +209,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Child_windows_must_not_close_before_parent_has_chance_to_Cancel_OSCloseButton(bool programaticClose)
+        public void Child_windows_must_not_close_before_parent_has_chance_to_Cancel_OSCloseButton(bool programmaticClose)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -242,13 +250,13 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 child.Show(window);
                 
-                if (programaticClose)
+                if (programmaticClose)
                 {
                     window.Close();
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing();
+                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(true, cancel);
                 }
@@ -265,12 +273,10 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
-                var target = new Window(CreateImpl(renderer));
+                var target = new Window(CreateImpl());
 
                 target.Show();
-
-                renderer.Verify(x => x.Start(), Times.Once);
+                Assert.True(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -280,13 +286,12 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var parent = new Window();
-                var renderer = new Mock<IRenderer>();
-                var target = new Window(CreateImpl(renderer));
+                var target = new Window(CreateImpl());
 
                 parent.Show();
                 target.ShowDialog<object>(parent);
 
-                renderer.Verify(x => x.Start(), Times.Once);
+                Assert.True(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -313,13 +318,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
-                var target = new Window(CreateImpl(renderer));
+                var target = new Window(CreateImpl());
 
                 target.Show();
                 target.Hide();
-
-                renderer.Verify(x => x.Stop(), Times.Once);
+                Assert.False(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -330,6 +333,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -371,6 +375,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -403,7 +408,7 @@ namespace Avalonia.Controls.UnitTests
                 parent.Close();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot show a window with a closed parent.", ex.Message);
+                Assert.Equal("Cannot show a window with a closed owner.", ex.Message);
             }
         }
 
@@ -431,7 +436,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+                Assert.Equal("Cannot show window with non-visible owner.", ex.Message);
             }
         }
 
@@ -444,7 +449,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(parent));
-                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+                Assert.Equal("Cannot show window with non-visible owner.", ex.Message);
             }
         }
 
@@ -456,7 +461,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(target));
-                Assert.Equal("A Window cannot be its own parent.", ex.Message);
+                Assert.Equal("A Window cannot be its own owner.", ex.Message);
             }
         }
 
@@ -538,6 +543,33 @@ namespace Avalonia.Controls.UnitTests
                     (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
+            }
+        }
+        
+        [Fact]
+        public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
+        {
+            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            
+            var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1.75);
+            windowImpl.Setup(x => x.Screen).Returns(screens.Object);
+            
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window(windowImpl.Object);
+                window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                window.MinWidth = 720;
+                window.MinHeight = 480;
+
+                window.Show();
+                
+                Assert.Equal(new PixelPoint(330, 63), window.Position);
+                Assert.Equal(new Size(720, 480), window.Bounds.Size);
             }
         }
 
@@ -665,8 +697,8 @@ namespace Avalonia.Controls.UnitTests
                     var clientSize = new Size(200, 200);
                     var maxClientSize = new Size(480, 480);
 
-                    windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
-                        .Callback<Size, PlatformResizeReason>((size, reason) =>
+                    windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<WindowResizeReason>()))
+                        .Callback<Size, WindowResizeReason>((size, reason) =>
                     {
                         clientSize = size.Constrain(maxClientSize);
                         windowImpl.Object.Resized?.Invoke(clientSize, reason);
@@ -696,6 +728,31 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_Manual()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    // Values come from MockWindowingPlatform defaults.
+                    Assert.Equal(800, target.Width);
+                    Assert.Equal(600, target.Height);
+                }
+            }
+
+            [Fact]
             public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_WidthAndHeight()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -712,10 +769,33 @@ namespace Avalonia.Controls.UnitTests
                         Content = child
                     };
 
+                    target.GetObservable(Window.WidthProperty).Subscribe(x => { });
+
                     Show(target);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
+                }
+            }
+
+            [Fact]
+            public void MaxWidth_And_MaxHeight_Should_Be_Respected_With_SizeToContent_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new ChildControl();
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        MaxWidth = 300,
+                        MaxHeight = 700,
+                        Content = child,
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(new[] { new Size(300, 700) }, child.MeasureSizes);
                 }
             }
 
@@ -766,7 +846,7 @@ namespace Avalonia.Controls.UnitTests
                     target.PlatformImpl.ScalingChanged(1.5);
                     target.PlatformImpl.Resized(
                         new Size(210.66666666666666, 118.66666666666667),
-                        PlatformResizeReason.DpiChange);
+                        WindowResizeReason.DpiChange);
 
                     Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
                 }
@@ -824,7 +904,7 @@ namespace Avalonia.Controls.UnitTests
                     target.LayoutManager.ExecuteLayoutPass();
 
                     var windowImpl = Mock.Get(target.PlatformImpl);
-                    windowImpl.Verify(x => x.Resize(new Size(410, 800), PlatformResizeReason.Application));
+                    windowImpl.Verify(x => x.Resize(new Size(410, 800), WindowResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }
             }
@@ -849,7 +929,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 800), PlatformResizeReason.User);
+                    target.PlatformImpl.Resized(new Size(410, 800), WindowResizeReason.User);
 
                     Assert.Equal(410, target.Width);
                     Assert.Equal(800, target.Height);
@@ -876,7 +956,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(400, 810), PlatformResizeReason.User);
+                    target.PlatformImpl.Resized(new Size(400, 810), WindowResizeReason.User);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(810, target.Height);
@@ -904,14 +984,53 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 810), PlatformResizeReason.Unspecified);
+                    target.PlatformImpl.Resized(new Size(410, 810), WindowResizeReason.Unspecified);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
                     Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
                 }
             }
+            
+            [Fact]
+            public void IsVisible_Should_Open_Window()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var target = new Window();
+                    var raised = false;
+                    
+                    target.Opened += (s, e) => raised = true;
+                    target.IsVisible = true;
 
+                    Assert.True(raised);
+                }
+            }
+            
+            [Fact]
+            public void IsVisible_Should_Close_DialogWindow()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var parent = new Window();
+                    parent.Show();
+                    
+                    var target = new Window();
+                    
+                    var raised = false;
+
+                    var task = target.ShowDialog<bool>(parent);
+                    
+                    target.Closed += (sender, args) => raised = true;
+
+                    target.IsVisible = false;
+
+                    Assert.True(raised);
+                    
+                    Assert.False(task.Result);
+                }
+            }
+            
             protected virtual void Show(Window window)
             {
                 window.Show();
@@ -928,11 +1047,11 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
+        private static IWindowImpl CreateImpl()
         {
-            return Mock.Of<IWindowImpl>(x =>
-                x.RenderScaling == 1 &&
-                x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
+            var compositor = RendererMocks.CreateDummyCompositor();
+            return Mock.Of<IWindowImpl>(x => x.RenderScaling == 1 &&
+                                             x.Compositor == compositor);
         }
 
         private class ChildControl : Control

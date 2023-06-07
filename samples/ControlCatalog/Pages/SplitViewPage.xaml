@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ControlCatalog.Pages.SplitViewPage">
+             x:Class="ControlCatalog.Pages.SplitViewPage"
+             x:DataType="viewModels:SplitViewPageViewModel">
 
   <Border>
 
@@ -30,7 +32,7 @@
 
         <TextBlock Text="PaneBackground" />
         <ComboBox Name="PaneBackgroundSelector" SelectedIndex="0" Width="170" Margin="10">
-          <ComboBoxItem Tag="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">SystemControlBackgroundChromeMediumLowBrush</ComboBoxItem>
+          <ComboBoxItem Tag="{DynamicResource CatalogChromeMediumColor}">CatalogChromeMediumColor</ComboBoxItem>
           <ComboBoxItem Tag="Red">Red</ComboBoxItem>
           <ComboBoxItem Tag="Blue">Blue</ComboBoxItem>
           <ComboBoxItem Tag="Green">Green</ComboBoxItem>
@@ -46,12 +48,12 @@
 
       </StackPanel>
 
-      <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+      <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
             BorderThickness="1">
         <!--{Binding SelectedItem.Tag, ElementName=PaneBackgroundSelector}-->
         <SplitView Name="SplitView"
                       PanePlacement="{Binding PanePlacement}"
-                      PaneBackground="{Binding SelectedItem.Tag, ElementName=PaneBackgroundSelector}"
+                      PaneBackground="{Binding ((Control)SelectedItem).Tag, ElementName=PaneBackgroundSelector, FallbackValue={x:Null}}"
                       OpenPaneLength="{Binding Value, ElementName=OpenPaneLengthSlider}"
                       CompactPaneLength="{Binding Value, ElementName=CompactPaneLengthSlider}"
                       DisplayMode="{Binding CurrentDisplayMode}">
@@ -75,7 +77,7 @@
                   <Border Width="48">
                     <Viewbox Width="24" Height="24" HorizontalAlignment="Left">
                       <Canvas Width="24" Height="24">
-                        <Path Fill="{DynamicResource SystemControlForegroundBaseHighBrush}" Data="M16 17V19H2V17S2 13 9 13 16 17 16 17M12.5 7.5A3.5 3.5 0 1 0 9 11A3.5 3.5 0 0 0 12.5 7.5M15.94 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13M15 4A3.39 3.39 0 0 0 13.07 4.59A5 5 0 0 1 13.07 10.41A3.39 3.39 0 0 0 15 11A3.5 3.5 0 0 0 15 4Z" />
+                        <Path Fill="{DynamicResource CatalogBaseHighColor}" Data="M16 17V19H2V17S2 13 9 13 16 17 16 17M12.5 7.5A3.5 3.5 0 1 0 9 11A3.5 3.5 0 0 0 12.5 7.5M15.94 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13M15 4A3.39 3.39 0 0 0 13.07 4.59A5 5 0 0 1 13.07 10.41A3.39 3.39 0 0 0 15 11A3.5 3.5 0 0 0 15 4Z" />
                       </Canvas>
                     </Viewbox>
                   </Border>
@@ -87,11 +89,11 @@
           </SplitView.Pane>
 
           <Grid>
-            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" HorizontalAlignment="Center" VerticalAlignment="Center"  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" TextAlignment="Left"  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" HorizontalAlignment="Right" TextAlignment="Left"  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" VerticalAlignment="Bottom" TextAlignment="Left"  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" VerticalAlignment="Bottom" HorizontalAlignment="Right" TextAlignment="Left"  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" HorizontalAlignment="Center" VerticalAlignment="Center"  Foreground="{DynamicResource CatalogBaseHighColor}" />
+            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" TextAlignment="Left"  Foreground="{DynamicResource CatalogBaseHighColor}" />
+            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" HorizontalAlignment="Right" TextAlignment="Left"  Foreground="{DynamicResource CatalogBaseHighColor}" />
+            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" VerticalAlignment="Bottom" TextAlignment="Left"  Foreground="{DynamicResource CatalogBaseHighColor}" />
+            <TextBlock FontSize="14" FontWeight="700" Text="SplitViewContent" VerticalAlignment="Bottom" HorizontalAlignment="Right" TextAlignment="Left"  Foreground="{DynamicResource CatalogBaseHighColor}" />
           </Grid>
 
         </SplitView>

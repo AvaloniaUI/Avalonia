@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;

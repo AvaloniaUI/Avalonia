@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop.Automation;
 
-#nullable enable
-
 namespace Avalonia.Win32.Automation
 {
+    [RequiresUnreferencedCode("Requires .NET COM interop")]
     internal class RootAutomationNode : AutomationNode,
-        IRawElementProviderFragmentRoot
+        IRawElementProviderFragmentRoot,
+        IRawElementProviderAdviseEvents
     {
+        private int _raiseFocusChanged;
+
         public RootAutomationNode(AutomationPeer peer)
             : base(peer)
         {
@@ -42,7 +45,37 @@ namespace Avalonia.Win32.Automation
             return GetOrCreate(focus);
         }
 
-        public void FocusChanged(object sender, EventArgs e)
+        void IRawElementProviderAdviseEvents.AdviseEventAdded(int eventId, int[] properties)
+        {
+            switch ((UiaEventId)eventId)
+            {
+                case UiaEventId.AutomationFocusChanged:
+                    ++_raiseFocusChanged;
+                    break;
+            }
+        }
+
+        void IRawElementProviderAdviseEvents.AdviseEventRemoved(int eventId, int[] properties)
+        {
+            switch ((UiaEventId)eventId)
+            {
+                case UiaEventId.AutomationFocusChanged:
+                    --_raiseFocusChanged;
+                    break;
+            }
+        }
+
+        protected void RaiseFocusChanged(AutomationNode? focused)
+        {
+            if (_raiseFocusChanged > 0)
+            {
+                UiaCoreProviderApi.UiaRaiseAutomationEvent(
+                    focused,
+                    (int)UiaEventId.AutomationFocusChanged);
+            }
+        }
+
+        public void FocusChanged(object? sender, EventArgs e)
         {
             RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
         }

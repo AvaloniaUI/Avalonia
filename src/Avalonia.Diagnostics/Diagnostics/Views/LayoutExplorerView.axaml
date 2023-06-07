@@ -1,9 +1,10 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Avalonia.Diagnostics.Views.LayoutExplorerView"
-             xmlns:local="clr-namespace:Avalonia.Diagnostics.Views"
-             xmlns:controls="clr-namespace:Avalonia.Diagnostics.Controls"
-             xmlns:converters="clr-namespace:Avalonia.Diagnostics.Converters">
+             xmlns:controls="using:Avalonia.Diagnostics.Controls"
+             xmlns:converters="using:Avalonia.Diagnostics.Converters"
+             xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
+             x:DataType="viewModels:ControlLayoutViewModel">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="SizeGuidelineBrush" Color="#333333" />

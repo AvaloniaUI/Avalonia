@@ -1,7 +1,9 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
-             x:Class="Avalonia.Diagnostics.Views.MainView">
+             xmlns:views="using:Avalonia.Diagnostics.Views"
+             xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.MainView"
+             x:DataType="viewModels:MainViewModel">
   <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,0,Auto">
     <Menu>
       <MenuItem Header="_File">
@@ -38,7 +40,7 @@
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_View">
-        <MenuItem Header="_Console" Command="{Binding $parent[UserControl].ToggleConsole}">
+        <MenuItem Header="_Console" Command="{Binding $parent[views:MainView].ToggleConsole}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding Console.IsVisible}"
@@ -53,35 +55,49 @@
                         IsEnabled="False" />
             </MenuItem.Icon>
           </MenuItem>
-          <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDettailsPropertyType}">
+          <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDetailsPropertyType}">
             <MenuItem.Icon>
               <CheckBox BorderThickness="0"
-                        IsChecked="{Binding ShowDettailsPropertyType}"
+                        IsChecked="{Binding ShowDetailsPropertyType}"
                         IsEnabled="False"/>
             </MenuItem.Icon>
 
           </MenuItem>          
         </MenuItem>
       </MenuItem>
-      <MenuItem Header="_Options">
-        <MenuItem Header="Visualize margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
+      <MenuItem Header="_Overlays">
+        <MenuItem Header="Margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding ShouldVisualizeMarginPadding}"
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Header="Visualize dirty rects" Command="{Binding ToggleVisualizeDirtyRects}">
+        <MenuItem Header="Dirty rects" Command="{Binding ToggleDirtyRectsOverlay}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
-                      IsChecked="{Binding ShouldVisualizeDirtyRects}"
+                      IsChecked="{Binding ShowDirtyRectsOverlay}"
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Header="Show fps overlay" Command="{Binding ToggleFpsOverlay}">
+        <MenuItem Header="FPS" Command="{Binding ToggleFpsOverlay}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding ShowFpsOverlay}"
+                      IsEnabled="False" />
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Header="Layout time graph" Command="{Binding ToggleLayoutTimeGraphOverlay}">
+          <MenuItem.Icon>
+            <CheckBox BorderThickness="0"
+                      IsChecked="{Binding ShowLayoutTimeGraphOverlay}"
+                      IsEnabled="False" />
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Header="Render time graph" Command="{Binding ToggleRenderTimeGraphOverlay}">
+          <MenuItem.Icon>
+            <CheckBox BorderThickness="0"
+                      IsChecked="{Binding ShowRenderTimeGraphOverlay}"
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>

@@ -1,0 +1,209 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:RenderDemo.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="700"
+             x:Class="RenderDemo.Pages.Transform3DPage"
+             x:DataType="viewModels:Transform3DPageViewModel">
+    <UserControl.Styles>
+        <Styles>
+            <Styles.Resources>
+                <Template x:Key="TestContent">
+                    <Grid RowDefinitions="*,*" ColumnDefinitions="*,*" Margin="5">
+                        <TextBlock>I'm a text</TextBlock>
+                        <Button Grid.Row="0" Grid.Column="1" Content="A Button"></Button>
+                        <Slider Grid.Row="1"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Value="{Binding Depth}"
+                                Minimum="100"
+                                Maximum="300" />
+                    </Grid>
+                </Template>
+            </Styles.Resources>
+        </Styles>
+        <Style Selector="Border.Test">
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="200" />
+            <Setter Property="Child" Value="{StaticResource TestContent}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Black" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="TextBlock, Label, Slider">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="10,0,10,0" />
+        </Style>
+        <Style Selector="Border TextBlock">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Border Button">
+            <Setter Property="Background" Value="White"></Setter>
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+        
+        <Style Selector="Border#B1">
+            <Style.Animations>
+                <Animation Duration="0:0:10"
+                           IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="0" />
+                        <Setter Property="ZIndex" Value="4" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="90" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="360" />
+                        <Setter Property="ZIndex" Value="4" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border#B2">
+            <Style.Animations>
+                <Animation Duration="0:0:10"
+                           IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="90" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="180" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="75%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="360" />
+                        <Setter Property="ZIndex" Value="4" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="450" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border#B3">
+            <Style.Animations>
+                <Animation Duration="0:0:10"
+                           IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="180" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="360" />
+                        <Setter Property="ZIndex" Value="4" />
+                    </KeyFrame>
+                    <KeyFrame Cue="75%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="450" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="540" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border#B4">
+            <Style.Animations>
+                <Animation Duration="0:0:10"
+                           IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="270" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="360" />
+                        <Setter Property="ZIndex" Value="4" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="450" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Rotate3DTransform.AngleX" Value="630" />
+                        <Setter Property="ZIndex" Value="1" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+        <Border Name="B1" Background="DarkRed" Classes="Test">
+            <Border.RenderTransform>
+                <Rotate3DTransform CenterZ="-100"
+                                   Depth="{Binding Depth}" />
+            </Border.RenderTransform>
+        </Border>
+        <Border Name="B2" Grid.Row="0" Grid.Column="0" Classes="Test" Background="DarkGreen">
+            <Border.RenderTransform>
+                <Rotate3DTransform CenterZ="-100"
+                                   Depth="{Binding Depth}" />
+            </Border.RenderTransform>
+        </Border>
+        <Border Name="B3" Grid.Row="0" Grid.Column="0" Classes="Test" Background="DarkBlue">
+            <Border.RenderTransform>
+                <Rotate3DTransform CenterZ="-100"
+                                   Depth="{Binding Depth}" />
+            </Border.RenderTransform>
+        </Border>
+        <Border Name="B4" Grid.Row="0" Grid.Column="0" Classes="Test" Background="Orange">
+            <Border.RenderTransform>
+                <Rotate3DTransform CenterZ="-100"
+                                   Depth="{Binding Depth}" />
+            </Border.RenderTransform>
+        </Border>
+
+        <Label Grid.Column="0" Grid.Row="1">Depth: </Label>
+        <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Depth}" Minimum="100" Maximum="300" />
+
+        <Border Grid.Row="0" Grid.Column="2" Classes="Test" ZIndex="-2">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="Red" />
+                    <GradientStop Offset="1" Color="Blue" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Styles>
+                <Style Selector="Label">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Slider">
+                    <Setter Property="Width" Value="100" />
+                </Style>
+            </Border.Styles>
+            <Border.RenderTransform>
+                <Rotate3DTransform Depth="{Binding Depth}"
+                                   CenterX="{Binding CenterX}"
+                                   CenterY="{Binding CenterY}"
+                                   CenterZ="{Binding CenterZ}"
+                                   AngleX="{Binding AngleX}"
+                                   AngleY="{Binding AngleY}"
+                                   AngleZ="{Binding AngleZ}" />
+            </Border.RenderTransform>
+        </Border>
+
+        <Label Grid.Row="1" Grid.Column="2">Center X: </Label>
+        <Slider Grid.Row="1" Grid.Column="3" Value="{Binding CenterX}" Minimum="-100" Maximum="100" />
+
+        <Label Grid.Row="2" Grid.Column="2">Center Y: </Label>
+        <Slider Grid.Row="2" Grid.Column="3" Value="{Binding CenterY}" Minimum="-100" Maximum="100" />
+
+        <Label Grid.Row="3" Grid.Column="2">Center Z: </Label>
+        <Slider Grid.Row="3" Grid.Column="3" Value="{Binding CenterZ}" Minimum="-100" Maximum="100" />
+
+        <Label Grid.Row="4" Grid.Column="2">Angle X: </Label>
+        <Slider Grid.Row="4" Grid.Column="3" Value="{Binding AngleX}" Minimum="-180" Maximum="180" />
+
+        <Label Grid.Row="5" Grid.Column="2">Angle Y: </Label>
+        <Slider Grid.Row="5" Grid.Column="3" Value="{Binding AngleY}" Minimum="-180" Maximum="180" />
+
+        <Label Grid.Row="6" Grid.Column="2">Angle Z: </Label>
+        <Slider Grid.Row="6" Grid.Column="3" Value="{Binding AngleZ}" Minimum="-180" Maximum="180" />
+    </Grid>
+</UserControl>

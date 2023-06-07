@@ -8,7 +8,11 @@ namespace Avalonia.Utilities
 #endif
     static class IdentifierParser
     {
-        public static ReadOnlySpan<char> ParseIdentifier(this ref CharacterReader r)
+        public static ReadOnlySpan<char> ParseIdentifier(this
+#if NET7SDK
+            scoped
+#endif
+            ref CharacterReader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {

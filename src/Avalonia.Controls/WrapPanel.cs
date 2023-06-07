@@ -84,7 +84,7 @@ namespace Avalonia.Controls
             var orientation = Orientation;
             var children = Children;
             bool horiz = orientation == Orientation.Horizontal;
-            int index = from is not null ? Children.IndexOf((IControl)from) : -1;
+            int index = from is not null ? Children.IndexOf((Control)from) : -1;
 
             switch (direction)
             {
@@ -144,34 +144,31 @@ namespace Avalonia.Controls
             for (int i = 0, count = children.Count; i < count; i++)
             {
                 var child = children[i];
-                if (child != null)
+                // Flow passes its own constraint to children
+                child.Measure(childConstraint);
+
+                // This is the size of the child in UV space
+                var sz = new UVSize(orientation,
+                    itemWidthSet ? itemWidth : child.DesiredSize.Width,
+                    itemHeightSet ? itemHeight : child.DesiredSize.Height);
+
+                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) // Need to switch to another line
                 {
-                    // Flow passes its own constraint to children
-                    child.Measure(childConstraint);
+                    panelSize.U = Max(curLineSize.U, panelSize.U);
+                    panelSize.V += curLineSize.V;
+                    curLineSize = sz;
 
-                    // This is the size of the child in UV space
-                    var sz = new UVSize(orientation,
-                        itemWidthSet ? itemWidth : child.DesiredSize.Width,
-                        itemHeightSet ? itemHeight : child.DesiredSize.Height);
-
-                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) // Need to switch to another line
+                    if (MathUtilities.GreaterThan(sz.U, uvConstraint.U)) // The element is wider then the constraint - give it a separate line
                     {
-                        panelSize.U = Max(curLineSize.U, panelSize.U);
-                        panelSize.V += curLineSize.V;
-                        curLineSize = sz;
-
-                        if (MathUtilities.GreaterThan(sz.U, uvConstraint.U)) // The element is wider then the constraint - give it a separate line                    
-                        {
-                            panelSize.U = Max(sz.U, panelSize.U);
-                            panelSize.V += sz.V;
-                            curLineSize = new UVSize(orientation);
-                        }
+                        panelSize.U = Max(sz.U, panelSize.U);
+                        panelSize.V += sz.V;
+                        curLineSize = new UVSize(orientation);
                     }
-                    else // Continue to accumulate a line
-                    {
-                        curLineSize.U += sz.U;
-                        curLineSize.V = Max(sz.V, curLineSize.V);
-                    }
+                }
+                else // Continue to accumulate a line
+                {
+                    curLineSize.U += sz.U;
+                    curLineSize.V = Max(sz.V, curLineSize.V);
                 }
             }
 
@@ -202,34 +199,31 @@ namespace Avalonia.Controls
             for (int i = 0; i < children.Count; i++)
             {
                 var child = children[i];
-                if (child != null)
+                var sz = new UVSize(orientation,
+                    itemWidthSet ? itemWidth : child.DesiredSize.Width,
+                    itemHeightSet ? itemHeight : child.DesiredSize.Height);
+
+                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) // Need to switch to another line
                 {
-                    var sz = new UVSize(orientation,
-                        itemWidthSet ? itemWidth : child.DesiredSize.Width,
-                        itemHeightSet ? itemHeight : child.DesiredSize.Height);
+                    ArrangeLine(accumulatedV, curLineSize.V, firstInLine, i, useItemU, itemU);
 
-                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) // Need to switch to another line
+                    accumulatedV += curLineSize.V;
+                    curLineSize = sz;
+
+                    if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) // The element is wider then the constraint - give it a separate line
                     {
-                        ArrangeLine(accumulatedV, curLineSize.V, firstInLine, i, useItemU, itemU);
+                        // Switch to next line which only contain one element
+                        ArrangeLine(accumulatedV, sz.V, i, ++i, useItemU, itemU);
 
-                        accumulatedV += curLineSize.V;
-                        curLineSize = sz;
-
-                        if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) // The element is wider then the constraint - give it a separate line                    
-                        {
-                            // Switch to next line which only contain one element
-                            ArrangeLine(accumulatedV, sz.V, i, ++i, useItemU, itemU);
-
-                            accumulatedV += sz.V;
-                            curLineSize = new UVSize(orientation);
-                        }
-                        firstInLine = i;
+                        accumulatedV += sz.V;
+                        curLineSize = new UVSize(orientation);
                     }
-                    else // Continue to accumulate a line
-                    {
-                        curLineSize.U += sz.U;
-                        curLineSize.V = Max(sz.V, curLineSize.V);
-                    }
+                    firstInLine = i;
+                }
+                else // Continue to accumulate a line
+                {
+                    curLineSize.U += sz.U;
+                    curLineSize.V = Max(sz.V, curLineSize.V);
                 }
             }
 
@@ -252,17 +246,14 @@ namespace Avalonia.Controls
             for (int i = start; i < end; i++)
             {
                 var child = children[i];
-                if (child != null)
-                {
-                    var childSize = new UVSize(orientation, child.DesiredSize.Width, child.DesiredSize.Height);
-                    double layoutSlotU = useItemU ? itemU : childSize.U;
-                    child.Arrange(new Rect(
-                        isHorizontal ? u : v,
-                        isHorizontal ? v : u,
-                        isHorizontal ? layoutSlotU : lineV,
-                        isHorizontal ? lineV : layoutSlotU));
-                    u += layoutSlotU;
-                }
+                var childSize = new UVSize(orientation, child.DesiredSize.Width, child.DesiredSize.Height);
+                double layoutSlotU = useItemU ? itemU : childSize.U;
+                child.Arrange(new Rect(
+                    isHorizontal ? u : v,
+                    isHorizontal ? v : u,
+                    isHorizontal ? layoutSlotU : lineV,
+                    isHorizontal ? lineV : layoutSlotU));
+                u += layoutSlotU;
             }
         }
 

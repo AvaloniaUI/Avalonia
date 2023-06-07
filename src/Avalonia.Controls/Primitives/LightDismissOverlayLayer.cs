@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The light dismiss overlay, or null if none found.</returns>
-        public static LightDismissOverlayLayer? GetLightDismissOverlayLayer(IVisual visual)
+        public static LightDismissOverlayLayer? GetLightDismissOverlayLayer(Visual visual)
         {
             visual = visual ?? throw new ArgumentNullException(nameof(visual));
 
@@ -46,15 +46,14 @@ namespace Avalonia.Controls.Primitives
             return manager?.LightDismissOverlayLayer;
         }
 
+        /// <inheritdoc />
         public bool HitTest(Point point)
         {
-            if (InputPassThroughElement is object)
+            if (InputPassThroughElement is Visual v)
             {
-                var hit = VisualRoot?.GetVisualAt(point, x => x != this);
-
-                if (hit is object)
+                if (VisualRoot is IInputElement ie && ie.InputHitTest(point, x => x != this) is Visual hit)
                 {
-                    return !InputPassThroughElement.IsVisualAncestorOf(hit);
+                    return !v.IsVisualAncestorOf(hit);
                 }
             }
 

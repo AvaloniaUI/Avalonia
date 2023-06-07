@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
+    [Unstable]
     public abstract class OffscreenTopLevelImplBase : ITopLevelImpl
     {
         private double _scaling = 1;
@@ -20,9 +22,11 @@ namespace Avalonia.Controls.Embedding.Offscreen
             IsDisposed = true;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public Compositor Compositor { get; }
 
-        public abstract void Invalidate(Rect rect);
+        public OffscreenTopLevelImplBase()
+            => Compositor = new Compositor(null);
+
         public abstract IEnumerable<object> Surfaces { get; }
 
         public Size ClientSize
@@ -31,7 +35,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             set
             {
                 _clientSize = value;
-                Resized?.Invoke(value, PlatformResizeReason.Unspecified);
+                Resized?.Invoke(value, WindowResizeReason.Unspecified);
             }
         }
 
@@ -49,12 +53,13 @@ namespace Avalonia.Controls.Embedding.Offscreen
         
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        /// <inheritdoc/>
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
@@ -71,10 +76,12 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action? LostFocus { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public IPopupImpl? CreatePopup() => null;
+        
+        public virtual object? TryGetFeature(Type featureType) => null;
     }
 }

@@ -1,13 +1,14 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ClrPropertyViewModel : PropertyViewModel
     {
         private readonly object _target;
-        private System.Type _assignedType;
+        private Type _assignedType;
         private object? _value;
-        private readonly System.Type _propertyType;
+        private readonly Type _propertyType;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -25,6 +26,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 Name = property.DeclaringType.Name + '.' + property.Name;
             }
+
             DeclaringType = property.DeclaringType;
             _propertyType = property.PropertyType;
 
@@ -36,38 +38,48 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Name { get; }
         public override string Group => "CLR Properties";
 
-        public override System.Type AssignedType => _assignedType;
-        public override  System.Type PropertyType => _propertyType;
+        public override Type AssignedType => _assignedType;
+        public override Type PropertyType => _propertyType;
+        public override bool IsReadonly => !Property.CanWrite;
 
-        public override string? Value 
+        public override object? Value
         {
-            get => ConvertToString(_value);
+            get => _value;
             set
             {
                 try
                 {
-                    var convertedValue = ConvertFromString(value, Property.PropertyType);
-                    Property.SetValue(_target, convertedValue);
+                    Property.SetValue(_target, value);
                     Update();
                 }
                 catch { }
             }
         }
 
-        public override string Priority => 
-            string.Empty;
+        public override string Priority => string.Empty;
 
-        public override bool? IsAttached => 
-            default;
+        public override bool? IsAttached => default;
 
-        public override System.Type? DeclaringType { get; }
+        public override Type? DeclaringType { get; }
 
         // [MemberNotNull(nameof(_type))]
         public override void Update()
         {
-            var val = Property.GetValue(_target);
-            RaiseAndSetIfChanged(ref _value, val, nameof(Value));
-            RaiseAndSetIfChanged(ref _assignedType, _value?.GetType() ?? Property.PropertyType, nameof(AssignedType));
+            object? value;
+            Type? valueType = null;
+
+            try
+            {
+                value = Property.GetValue(_target);
+                valueType = value?.GetType();
+            }
+            catch (Exception e)
+            {
+                value = e.GetBaseException();
+            }
+
+            RaiseAndSetIfChanged(ref _value, value, nameof(Value));
+            RaiseAndSetIfChanged(ref _assignedType, valueType ?? Property.PropertyType, nameof(AssignedType));
             RaisePropertyChanged(nameof(Type));
         }
     }

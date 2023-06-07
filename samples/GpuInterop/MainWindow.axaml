@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:gpuInterop="clr-namespace:GpuInterop"
+        xmlns:d3DDemo="clr-namespace:GpuInterop.D3DDemo"
+        xmlns:vulkanDemo="clr-namespace:GpuInterop.VulkanDemo"
+        x:Class="GpuInterop.MainWindow">
+  <gpuInterop:GpuDemo>
+    <gpuInterop:GpuDemo.Demo>
+      <!--<d3DDemo:D3D11DemoControl/>-->
+      <vulkanDemo:VulkanDemoControl/>
+    </gpuInterop:GpuDemo.Demo>
+  </gpuInterop:GpuDemo>
+</Window>

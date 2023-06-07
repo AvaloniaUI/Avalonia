@@ -3,9 +3,11 @@ using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -14,7 +16,7 @@ using MouseButton = Avalonia.Input.MouseButton;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ButtonTests
+    public class ButtonTests : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
         
@@ -134,23 +136,30 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Raises_Click()
         {
-            var renderer = Mock.Of<IRenderer>();
+            var renderer = new Mock<IHitTester>();
             var pt = new Point(50, 50);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
-
-            var target = new TestButton()
+            renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
+                    r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
+            
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+            
+            var root = new Window() { HitTesterOverride = renderer.Object };
+            var target = new Button()
             {
-                Bounds = new Rect(0, 0, 100, 100),
-                Renderer = renderer
+                Width = 100,
+                Height = 100,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left
             };
+            root.Content = target;
+            root.Show();
 
             bool clicked = false;
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target);
+            RaisePointerEntered(target);
             RaisePointerMove(target, pt);
             RaisePointerPressed(target, 1, MouseButton.Left, pt);
 
@@ -166,26 +175,22 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
-            var renderer = Mock.Of<IRenderer>();
-            
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
-
-            var target = new TestButton()
+            var root = new TestRoot();
+            var target = new Button()
             {
-                Bounds = new Rect(0, 0, 100, 100),
-                Renderer = renderer
+                Width = 100,
+                Height = 100
             };
+            root.Child = target;
 
             bool clicked = false;
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target);
+            RaisePointerEntered(target);
             RaisePointerMove(target, new Point(50,50));
             RaisePointerPressed(target, 1, MouseButton.Left, new Point(50, 50));
-            RaisePointerLeave(target);
+            RaisePointerExited(target);
 
             Assert.Equal(_helper.Captured, target);
 
@@ -199,19 +204,26 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_With_RenderTransform_Raises_Click()
         {
-            var renderer = Mock.Of<IRenderer>();
+            var renderer = new Mock<IHitTester>();
             var pt = new Point(150, 50);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
+            renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
-                    new IVisual[] { r } : new IVisual[0]);
-
-            var target = new TestButton()
+                    new Visual[] { r } : new Visual[0]);
+            
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+            
+            var root = new Window() { HitTesterOverride = renderer.Object };
+            var target = new Button()
             {
-                Bounds = new Rect(0, 0, 100, 100),
-                RenderTransform = new TranslateTransform { X = 100, Y = 0 },
-                Renderer = renderer
+                Width = 100,
+                Height = 100,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                RenderTransform = new TranslateTransform { X = 100, Y = 0 }
             };
+            root.Content = target;
+            root.Show();
 
             //actual bounds of button should  be 100,0,100,100 x -> translated 100 pixels
             //so mouse with x=150 coordinates should trigger click
@@ -224,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target);
+            RaisePointerEntered(target);
             RaisePointerMove(target, pt);
             RaisePointerPressed(target, 1, MouseButton.Left, pt);
 
@@ -309,33 +321,79 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, raised);
         }
-
-        private class TestButton : Button, IRenderRoot
+        
+        [Fact]
+        public void Button_IsDefault_Works()
         {
-            public TestButton()
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                IsVisible = true;
-            }
+                var raised = 0;
+                var target = new Button();
+                var window = new Window { Content = target };
+                window.Show();
+                
+                target.Click += (s, e) => ++raised;
 
-            public new Rect Bounds
+                target.IsDefault = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(0, raised);
+                
+                target.IsDefault = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(1, raised);
+
+                target.IsDefault = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(1, raised);
+                
+                target.IsDefault = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(2, raised);
+                
+                window.Content = null;
+                // To check if handler was raised on the button, when it's detached, we need to pass it as a source manually.
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter, target));
+                Assert.Equal(2, raised);
+            }
+        }
+        
+        [Fact]
+        public void Button_IsCancel_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                get => base.Bounds;
-                set => base.Bounds = value;
+                var raised = 0;
+                var target = new Button();
+                var window = new Window { Content = target };
+                window.Show();
+                
+                target.Click += (s, e) => ++raised;
+
+                target.IsCancel = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(0, raised);
+                
+                target.IsCancel = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(1, raised);
+
+                target.IsCancel = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(1, raised);
+                
+                target.IsCancel = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(2, raised);
+                
+                window.Content = null;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape, target));
+                Assert.Equal(2, raised);
             }
+        }
 
-            public Size ClientSize => throw new NotImplementedException();
-
-            public IRenderer Renderer { get; set; }
-
-            public double RenderScaling => throw new NotImplementedException();
-
-            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
-
-            public void Invalidate(Rect rect) => throw new NotImplementedException();
-
-            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
-
-            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
+        private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
+        {
+            return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
         }
 
         private void RaisePointerPressed(Button button, int clickCount, MouseButton mouseButton, Point position)
@@ -348,12 +406,12 @@ namespace Avalonia.Controls.UnitTests
             _helper.Up(button, mouseButton, pt);
         }
 
-        private void RaisePointerEnter(Button button)
+        private void RaisePointerEntered(Button button)
         {
             _helper.Enter(button);
         }
 
-        private void RaisePointerLeave(Button button)
+        private void RaisePointerExited(Button button)
         {
             _helper.Leave(button);
         }

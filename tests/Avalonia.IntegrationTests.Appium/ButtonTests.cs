@@ -9,7 +9,7 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public ButtonTests(TestAppFixture fixture)
+        public ButtonTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
@@ -24,6 +24,15 @@ namespace Avalonia.IntegrationTests.Appium
             var button = _session.FindElementByAccessibilityId("DisabledButton");
 
             Assert.Equal("Disabled Button", button.Text);
+            Assert.False(button.Enabled);
+        }
+
+        [Fact]
+        public void EffectivelyDisabledButton()
+        {
+            var button = _session.FindElementByAccessibilityId("EffectivelyDisabledButton");
+
+            Assert.Equal("Effectively Disabled Button", button.Text);
             Assert.False(button.Enabled);
         }
 
@@ -44,7 +53,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Button with TextBlock", button.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void ButtonWithAcceleratorKey()
         {
             var button = _session.FindElementByAccessibilityId("ButtonWithAcceleratorKey");

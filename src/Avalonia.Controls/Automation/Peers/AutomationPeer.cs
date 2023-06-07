@@ -128,13 +128,13 @@ namespace Avalonia.Automation.Peers
         /// Gets a value that indicates whether the element that is associated with this automation
         /// peer contains data that is presented to the user.
         /// </summary>
-        public bool IsContentElement() => IsControlElement() && IsContentElementCore();
+        public bool IsContentElement() => IsContentElementOverrideCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element is understood by the user as
         /// interactive or as contributing to the logical structure of the control in the GUI.
         /// </summary>
-        public bool IsControlElement() => IsControlElementCore();
+        public bool IsControlElement() => IsControlElementOverrideCore();
 
         /// <summary>
         /// Gets a value indicating whether the control is enabled for user interaction.
@@ -245,6 +245,16 @@ namespace Avalonia.Automation.Peers
         protected virtual AutomationControlType GetControlTypeOverrideCore()
         {
             return GetAutomationControlTypeCore();
+        }
+
+        protected virtual bool IsContentElementOverrideCore()
+        {
+            return IsControlElement() && IsContentElementCore();
+        }
+
+        protected virtual bool IsControlElementOverrideCore()
+        {
+            return IsControlElementCore();
         }
 
         protected virtual object? GetProviderCore(Type providerType)

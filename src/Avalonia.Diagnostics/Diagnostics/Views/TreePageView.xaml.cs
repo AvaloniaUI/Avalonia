@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls;
@@ -21,7 +22,6 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
             _tree = this.GetControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index!.Materialized += TreeViewItemMaterialized;
 
             _adorner = new Panel
             {
@@ -36,6 +36,7 @@ namespace Avalonia.Diagnostics.Views
                     new Border { BorderBrush = new SolidColorBrush(Colors.Yellow, 0.5) }
                 },
             };
+            AdornerLayer.SetIsClipEnabled(_adorner, false);
         }
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
@@ -97,34 +98,27 @@ namespace Avalonia.Diagnostics.Views
             _currentLayer = null;
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == DataContextProperty)
+            {
+                if (change.GetOldValue<object?>() is TreePageViewModel oldViewModel)
+                    oldViewModel.ClipboardCopyRequested -= OnClipboardCopyRequested;
+                if (change.GetNewValue<object?>() is TreePageViewModel newViewModel)
+                    newViewModel.ClipboardCopyRequested += OnClipboardCopyRequested;
+            }
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void TreeViewItemMaterialized(object? sender, ItemContainerEventArgs e)
+        private void OnClipboardCopyRequested(object? sender, string e)
         {
-            var item = (TreeViewItem)e.Containers[0].ContainerControl;
-            item.TemplateApplied += TreeViewItemTemplateApplied;
-        }
-
-        private void TreeViewItemTemplateApplied(object? sender, TemplateAppliedEventArgs e)
-        {
-            var item = (TreeViewItem)sender!;
-
-            // This depends on the default tree item template.
-            // We want to handle events in the item header but exclude events coming from children.
-            var header = item.FindDescendantOfType<Border>();
-
-            Debug.Assert(header != null);
-
-            if (header != null)
-            {
-                header.PointerEnter += AddAdorner;
-                header.PointerLeave += RemoveAdorner;
-            }
-
-            item.TemplateApplied -= TreeViewItemTemplateApplied;
+            TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(e);
         }
     }
 }

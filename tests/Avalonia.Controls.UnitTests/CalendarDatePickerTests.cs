@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
-        private CalendarDatePicker CreateControl()
+        private static CalendarDatePicker CreateControl()
         {
             var datePicker =
                 new CalendarDatePicker
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests
             return datePicker;
         }
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<CalendarDatePicker>((control, scope) =>
             {

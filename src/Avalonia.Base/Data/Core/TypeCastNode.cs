@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Avalonia.Data.Core
 {
-    public class TypeCastNode : ExpressionNode
+    internal class TypeCastNode : ExpressionNode
     {
         public override string Description => $"as {TargetType.FullName}";
 

@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using Avalonia.Controls.Metadata;
@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Primitives
         public CalendarButton()
             : base()
         {
-            Content = DateTimeHelper.GetCurrentDateFormat().AbbreviatedMonthNames[0];
+            SetCurrentValue(ContentProperty, DateTimeHelper.GetCurrentDateFormat().AbbreviatedMonthNames[0]);
         }
 
         /// <summary>

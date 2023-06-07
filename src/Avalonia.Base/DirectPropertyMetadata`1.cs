@@ -21,10 +21,9 @@ namespace Avalonia
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.Default,
             bool? enableDataValidation = null)
-                : base(defaultBindingMode)
+                : base(defaultBindingMode, enableDataValidation)
         {
             UnsetValue = unsetValue;
-            EnableDataValidation = enableDataValidation;
         }
 
         /// <summary>
@@ -32,16 +31,6 @@ namespace Avalonia
         /// </summary>
         public TValue UnsetValue { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether the property is interested in data validation.
-        /// </summary>
-        /// <remarks>
-        /// Data validation is validation performed at the target of a binding, for example in a
-        /// view model using the INotifyDataErrorInfo interface. Only certain properties on a
-        /// control (such as a TextBox's Text property) will be interested in receiving data
-        /// validation messages so this feature must be explicitly enabled by setting this flag.
-        /// </remarks>
-        public bool? EnableDataValidation { get; private set; }
 
         /// <inheritdoc/>
         object? IDirectPropertyMetadata.UnsetValue => UnsetValue;
@@ -51,20 +40,12 @@ namespace Avalonia
         {
             base.Merge(baseMetadata, property);
 
-            var src = baseMetadata as DirectPropertyMetadata<TValue>;
-
-            if (src != null)
+            if (baseMetadata is DirectPropertyMetadata<TValue> src)
             {
-                if (UnsetValue == null)
-                {
-                    UnsetValue = src.UnsetValue;
-                }
-
-                if (EnableDataValidation == null)
-                {
-                    EnableDataValidation = src.EnableDataValidation;
-                }
+                UnsetValue ??= src.UnsetValue;
             }
         }
+
+        public override AvaloniaPropertyMetadata GenerateTypeSafeMetadata() => new DirectPropertyMetadata<TValue>(UnsetValue, DefaultBindingMode, EnableDataValidation);
     }
 }

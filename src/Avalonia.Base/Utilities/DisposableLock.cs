@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Avalonia.Utilities
 {
-    public class DisposableLock
+    internal class DisposableLock
     {
         private readonly object _lock = new object();
 

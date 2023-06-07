@@ -4,13 +4,14 @@ using System.Globalization;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Markup.Parsers
 {
     /// <summary>
     /// Parses a <see cref="Selector"/> from text.
     /// </summary>
-    public class SelectorParser
+    internal class SelectorParser
     {
         private readonly Func<string, string, Type> _typeResolver;
 
@@ -32,12 +33,14 @@ namespace Avalonia.Markup.Parsers
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>The parsed selector.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.SelectorsParseRequiresUnreferencedCodeMessage)]
         public Selector? Parse(string s)
         {
             var syntax = SelectorGrammar.Parse(s);
             return Create(syntax);
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.SelectorsParseRequiresUnreferencedCodeMessage)]
         private Selector? Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
         {
             var result = default(Selector);

@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using ReactiveUI;
 using Splat;
@@ -69,12 +70,14 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.False(view.ViewModel.IsActive);
 
             root.Child = view;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
             Assert.NotNull(view.ViewModel);
             Assert.NotNull(view.DataContext);
             Assert.True(view.ViewModel.IsActive);
 
             root.Child = null;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
             Assert.NotNull(view.ViewModel);
             Assert.NotNull(view.DataContext);
@@ -90,12 +93,14 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.False(view.ViewModel.IsActive);
 
             root.Child = view;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
             Assert.NotNull(view.ViewModel);
             Assert.NotNull(view.DataContext);
             Assert.True(view.ViewModel.IsActive);
 
             root.Child = null;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
             Assert.NotNull(view.ViewModel);
             Assert.NotNull(view.DataContext);

@@ -6,8 +6,6 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Avalonia.Markup.Parsers
 {
     internal enum SourceMode
@@ -168,7 +166,11 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static State ParseAttachedProperty(ref CharacterReader r, List<INode> nodes)
+        private static State ParseAttachedProperty(
+#if NET7SDK
+            scoped
+#endif
+            ref CharacterReader r, List<INode> nodes)
         {
             var (ns, owner) = ParseTypeName(ref r);
 
@@ -197,8 +199,8 @@ namespace Avalonia.Markup.Parsers
 
             nodes.Add(new AttachedPropertyNameNode
             {
-                Namespace = ns.ToString(),
-                TypeName = owner.ToString(),
+                Namespace = ns,
+                TypeName = owner,
                 PropertyName = name.ToString()
             });
             return State.AfterMember;
@@ -318,7 +320,11 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
 
-        private static TypeName ParseTypeName(ref CharacterReader r)
+        private static TypeName ParseTypeName(
+#if NET7SDK
+            scoped
+#endif
+            ref CharacterReader r)
         {
             ReadOnlySpan<char> ns, typeName;
             ns = ReadOnlySpan<char>.Empty;

@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents an <see cref="IMenu"/> or <see cref="IMenuItem"/>.
     /// </summary>
-    public interface IMenuElement : IControl
+    internal interface IMenuElement : IInputElement, ILogical
     {
         /// <summary>
         /// Gets or sets the currently selected submenu item.

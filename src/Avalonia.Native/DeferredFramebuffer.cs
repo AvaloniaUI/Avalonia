@@ -63,7 +63,7 @@ namespace Avalonia.Native
                     },
                     Width = Size.Width,
                     Height = Size.Height,
-                    PixelFormat = (AvnPixelFormat)Format,
+                    PixelFormat = (AvnPixelFormat)Format.FormatEnum,
                     Stride = RowBytes
                 };
 

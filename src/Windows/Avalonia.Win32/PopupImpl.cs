@@ -1,13 +1,14 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class PopupImpl : WindowImpl, IPopupImpl
+    internal class PopupImpl : WindowImpl, IPopupImpl
     {
-        private readonly IWindowBaseImpl _parent;
+        private readonly IWindowBaseImpl? _parent;
         private bool _dropShadowHint = true;
         private Size? _maxAutoSize;
 
@@ -113,7 +114,7 @@ namespace Avalonia.Win32
 
         // This is needed because we are calling virtual methods from constructors
         // One fabulous design decision leads to another, I guess
-        static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
+        private static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
         {
             s_parentHandle = parent.Handle.Handle;
             return parent;
@@ -126,7 +127,7 @@ namespace Avalonia.Win32
 
         }
 
-        private PopupImpl(IWindowBaseImpl parent, bool dummy) : base()
+        private PopupImpl(IWindowBaseImpl parent, bool dummy)
         {
             _parent = parent;
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
@@ -135,11 +136,11 @@ namespace Avalonia.Win32
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
-            Resize(size, PlatformResizeReason.Layout);
+            Resize(size, WindowResizeReason.Layout);
             //TODO: We ignore the scaling override for now
         }
 
-        private void EnableBoxShadow (IntPtr hwnd, bool enabled)
+        private static void EnableBoxShadow (IntPtr hwnd, bool enabled)
         {
             var classes = (int)UnmanagedMethods.GetClassLongPtr(hwnd, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
 
@@ -159,10 +160,7 @@ namespace Avalonia.Win32
         {
             _dropShadowHint = enabled;
 
-            if (Handle != null)
-            {
-                EnableBoxShadow(Handle.Handle, enabled);
-            }
+            EnableBoxShadow(Handle.Handle, enabled);
         }
 
         public IPopupPositioner PopupPositioner { get; }

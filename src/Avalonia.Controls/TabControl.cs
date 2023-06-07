@@ -1,8 +1,6 @@
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -12,6 +10,7 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -21,6 +20,10 @@ namespace Avalonia.Controls
     [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
+        private object? _selectedContent;
+        private IDataTemplate? _selectedContentTemplate;
+        private CompositeDisposable? _selectedItemSubscriptions;
+
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
         /// </summary>
@@ -48,20 +51,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// The selected content property
         /// </summary>
-        public static readonly StyledProperty<object?> SelectedContentProperty =
-            AvaloniaProperty.Register<TabControl, object?>(nameof(SelectedContent));
+        public static readonly DirectProperty<TabControl, object?> SelectedContentProperty =
+            AvaloniaProperty.RegisterDirect<TabControl, object?>(nameof(SelectedContent), o => o.SelectedContent);
 
         /// <summary>
         /// The selected content template property
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate?> SelectedContentTemplateProperty =
-            AvaloniaProperty.Register<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate));
-
+        public static readonly DirectProperty<TabControl, IDataTemplate?> SelectedContentTemplateProperty =
+            AvaloniaProperty.RegisterDirect<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate), o => o.SelectedContentTemplate);
+        
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new WrapPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new WrapPanel());
 
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
@@ -119,8 +122,8 @@ namespace Avalonia.Controls
         /// </value>
         public object? SelectedContent
         {
-            get { return GetValue(SelectedContentProperty); }
-            internal set { SetValue(SelectedContentProperty, value); }
+            get => _selectedContent;
+            internal set => SetAndRaise(SelectedContentProperty, ref _selectedContent, value);
         }
 
         /// <summary>
@@ -131,55 +134,86 @@ namespace Avalonia.Controls
         /// </value>
         public IDataTemplate? SelectedContentTemplate
         {
-            get { return GetValue(SelectedContentTemplateProperty); }
-            internal set { SetValue(SelectedContentTemplateProperty, value); }
+            get => _selectedContentTemplate;
+            internal set => SetAndRaise(SelectedContentTemplateProperty, ref _selectedContentTemplate, value);
         }
 
         internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
-        internal IContentPresenter? ContentPart { get; private set; }
+        internal ContentPresenter? ContentPart { get; private set; }
 
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
         }
 
-        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
-            base.OnContainersMaterialized(e);
+            return new TabItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<TabItem>(item, out recycleKey);
+        }
+
+        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
+        {
+            base.PrepareContainerForItemOverride(element, item, index);
+
+            if (index == SelectedIndex)
+            {
+                UpdateSelectedContent(element);
+            }
+        }
+
+        protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
+        {
+            base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
+
+            var selectedIndex = SelectedIndex;
+            
+            if (selectedIndex == oldIndex || selectedIndex == newIndex)
+                UpdateSelectedContent();
+        }
+
+        protected internal override void ClearContainerForItemOverride(Control element)
+        {
+            base.ClearContainerForItemOverride(element);
             UpdateSelectedContent();
         }
 
-        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        private void UpdateSelectedContent(Control? container = null)
         {
-            base.OnContainersRecycled(e);
-            UpdateSelectedContent();
-        }
+            _selectedItemSubscriptions?.Dispose();
+            _selectedItemSubscriptions = null;
 
-        private void UpdateSelectedContent()
-        {
             if (SelectedIndex == -1)
             {
                 SelectedContent = SelectedContentTemplate = null;
             }
             else
             {
-                var container = SelectedItem as IContentControl ??
-                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
-                SelectedContentTemplate = container?.ContentTemplate;
-                SelectedContent = container?.Content;
+                container ??= ContainerFromIndex(SelectedIndex);
+                if (container != null)
+                {
+                    _selectedItemSubscriptions = new CompositeDisposable(
+                        container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
+                        // Note how we fall back to our own ContentTemplate if the container doesn't specify one
+                        container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = v ?? ContentTemplate));
+                }
             }
         }
 
         /// <summary>
-        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// Called when an <see cref="ContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
         {
             if (presenter.Name == "PART_SelectedContentHost")
             {
@@ -190,14 +224,23 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new TabItemContainerGenerator(this);
-        }
-
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
+            ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+            ItemsPresenterPart?.ApplyTemplate();
+
+            // Set TabNavigation to Once on the panel if not already set and
+            // forward the TabOnceActiveElement to the panel.
+            if (ItemsPresenterPart?.Panel is { } panel)
+            {
+                if (!panel.IsSet(KeyboardNavigation.TabNavigationProperty))
+                    panel.SetCurrentValue(
+                        KeyboardNavigation.TabNavigationProperty,
+                        KeyboardNavigationMode.Once);
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    panel,
+                    KeyboardNavigation.GetTabOnceActiveElement(this));
+            }
         }
 
         /// <inheritdoc/>
@@ -233,6 +276,34 @@ namespace Avalonia.Controls
                 {
                     e.Handled = UpdateSelectionFromEventSource(e.Source);
                 }
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TabStripPlacementProperty)
+            {
+                RefreshContainers();
+            }
+            else if (change.Property == ContentTemplateProperty)
+            {
+                var newTemplate = change.GetNewValue<IDataTemplate?>();
+                if (SelectedContentTemplate != newTemplate &&
+                    ContainerFromIndex(SelectedIndex) is { } container && 
+                    container.GetValue(ContentControl.ContentTemplateProperty) == null)
+                {
+                    SelectedContentTemplate = newTemplate; // See also UpdateSelectedContent
+                }
+            }
+            else if (change.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
+                ItemsPresenterPart?.Panel is { } panel)
+            {
+                // Forward TabOnceActiveElement to the panel.
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    panel,
+                    change.GetNewValue<IInputElement?>());
             }
         }
     }

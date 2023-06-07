@@ -1,11 +1,11 @@
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Input
 {
-    class WindowsKeyboardDevice : KeyboardDevice
+    internal class WindowsKeyboardDevice : KeyboardDevice
     {
         private readonly byte[] _keyStates = new byte[256];
 
@@ -49,7 +49,7 @@ namespace Avalonia.Win32.Input
 
         public string StringFromVirtualKey(uint virtualKey)
         {
-            StringBuilder result = new StringBuilder(256);
+            var result = StringBuilderCache.Acquire(256);
             int length = UnmanagedMethods.ToUnicode(
                 virtualKey,
                 0,
@@ -57,7 +57,7 @@ namespace Avalonia.Win32.Input
                 result,
                 256,
                 0);
-            return result.ToString();
+            return StringBuilderCache.GetStringAndRelease(result);
         }
 
         private void UpdateKeyStates()

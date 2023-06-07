@@ -13,12 +13,12 @@ namespace Avalonia.Controls
     /// the secondary part opens a flyout.
     /// </summary>
     [PseudoClasses(pcChecked)]
-    public class ToggleSplitButton : SplitButton, IStyleable
+    public class ToggleSplitButton : SplitButton
     {
         /// <summary>
         /// Raised when the <see cref="IsChecked"/> property value changes.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> IsCheckedChanged
+        public event EventHandler<RoutedEventArgs>? IsCheckedChanged
         {
             add => AddHandler(IsCheckedChangedEvent, value);
             remove => RemoveHandler(IsCheckedChangedEvent, value);
@@ -39,20 +39,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ToggleSplitButton, bool>(
                 nameof(IsChecked));
 
-        ////////////////////////////////////////////////////////////////////////
-        // Constructor / Destructors
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ToggleSplitButton"/> class.
         /// </summary>
         public ToggleSplitButton()
         {
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Properties
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="ToggleSplitButton"/> is checked.
@@ -71,27 +63,20 @@ namespace Avalonia.Controls
         /// Both <see cref="ToggleSplitButton"/> and <see cref="SplitButton"/> share
         /// the same exact default style.
         /// </remarks>
-        Type IStyleable.StyleKey => typeof(SplitButton);
-
-        ////////////////////////////////////////////////////////////////////////
-        // Methods
-        ////////////////////////////////////////////////////////////////////////
+        protected override Type StyleKeyOverride => typeof(SplitButton);
 
         /// <summary>
         /// Toggles the <see cref="IsChecked"/> property between true and false.
         /// </summary>
         protected void Toggle()
         {
-            IsChecked = !IsChecked;
+            SetCurrentValue(IsCheckedProperty, !IsChecked);
         }
 
-        ////////////////////////////////////////////////////////////////////////
-        // OnEvent Overridable Methods
-        ////////////////////////////////////////////////////////////////////////
-
         /// <inheritdoc/>
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            base.OnPropertyChanged(e);
             if (e.Property == IsCheckedProperty)
             {
                 OnIsCheckedChanged();

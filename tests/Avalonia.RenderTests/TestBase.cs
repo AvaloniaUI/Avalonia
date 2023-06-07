@@ -1,17 +1,26 @@
 using System.IO;
 using System.Runtime.CompilerServices;
-using ImageMagick;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
-
+using SixLabors.ImageSharp;
 using Xunit;
 using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
+using Avalonia.Utilities;
+using SixLabors.ImageSharp.PixelFormats;
+using Image = SixLabors.ImageSharp.Image;
 #if AVALONIA_SKIA
 using Avalonia.Skia;
 #else
@@ -24,9 +33,7 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
-    using Avalonia.PlatformSupport;
-
-    public class TestBase
+    public class TestBase : IDisposable
     {
 #if AVALONIA_SKIA
         private static string s_fontUri = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Noto Mono";
@@ -35,11 +42,11 @@ namespace Avalonia.Direct2D1.RenderTests
 #endif
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-        private static readonly TestThreadingInterface threadingInterface =
-            new TestThreadingInterface();
+        private static readonly TestDispatcherImpl threadingInterface =
+            new TestDispatcherImpl();
 
-        private static readonly IAssetLoader assetLoader = new AssetLoader();
-
+        private static readonly IAssetLoader assetLoader = new StandardAssetLoader();
+        
         static TestBase()
         {
 #if AVALONIA_SKIA
@@ -48,7 +55,7 @@ namespace Avalonia.Direct2D1.RenderTests
             Direct2D1Platform.Initialize();
 #endif
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>()
+                .Bind<IDispatcherImpl>()
                 .ToConstant(threadingInterface);
 
             AvaloniaLocator.CurrentMutable
@@ -84,8 +91,8 @@ namespace Avalonia.Direct2D1.RenderTests
             }
 
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
-            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
             var size = new Size(target.Width, target.Height);
             var dpiVector = new Vector(dpi, dpi);
@@ -97,56 +104,75 @@ namespace Avalonia.Direct2D1.RenderTests
                 bitmap.Render(target);
                 bitmap.Save(immediatePath);
             }
+            
+            var timer = new ManualRenderTimer();
 
-            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
-            using (var renderer = new DeferredRenderer(target, rtb))
+            var compositor = new Compositor(new RenderLoop(timer), null, true,
+                new DispatcherCompositorScheduler(), true);
+            using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
             {
-                target.Measure(size);
-                target.Arrange(new Rect(size));
-                renderer.UnitTestUpdateScene();
-
-                // Do the deferred render on a background thread to expose any threading errors in
-                // the deferred rendering path.
-                await Task.Run((Action)renderer.UnitTestRender);
-
-                rtb.Save(deferredPath);
+                var root = new TestRenderRoot(dpiVector.X / 96, null!);
+                using (var renderer = new CompositingRenderer(root, compositor, () => new[]
+                       {
+                           new BitmapFramebufferSurface(writableBitmap)
+                       }))
+                {
+                    root.Initialize(renderer, target);
+                    renderer.Start();
+                    Dispatcher.UIThread.RunJobs();
+                    timer.TriggerTick();
+                }
+                writableBitmap.Save(compositedPath);
             }
         }
 
-        protected void CompareImages([CallerMemberName] string testName = "")
+        class BitmapFramebufferSurface : IFramebufferPlatformSurface
+        {
+            private readonly IWriteableBitmapImpl _bitmap;
+
+            public BitmapFramebufferSurface(IWriteableBitmapImpl bitmap)
+            {
+                _bitmap = bitmap;
+            }
+            
+            public ILockedFramebuffer Lock() => _bitmap.Lock();
+        }
+
+        protected void CompareImages([CallerMemberName] string testName = "",
+            bool skipImmediate = false,  bool skipCompositor = false)
         {
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
-            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
+            var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
-            using (var expected = new MagickImage(expectedPath))
-            using (var immediate = new MagickImage(immediatePath))
-            using (var deferred = new MagickImage(deferredPath))
+            using (var expected = Image.Load<Rgba32>(expectedPath))
+            using (var immediate = Image.Load<Rgba32>(immediatePath))
+            using (var composited = Image.Load<Rgba32>(compositedPath))
             {
-                double immediateError = expected.Compare(immediate, ErrorMetric.RootMeanSquared);
-                double deferredError = expected.Compare(deferred, ErrorMetric.RootMeanSquared);
+                var immediateError = CompareImages(immediate, expected);
+                var compositedError = CompareImages(composited, expected);
 
-                if (immediateError > 0.022)
+                if (immediateError > 0.022 && !skipImmediate)
                 {
                     Assert.True(false, immediatePath + ": Error = " + immediateError);
                 }
 
-                if (deferredError > 0.022)
+                if (compositedError > 0.022 && !skipCompositor)
                 {
-                    Assert.True(false, deferredPath + ": Error = " + deferredError);
+                    Assert.True(false, compositedPath + ": Error = " + compositedError);
                 }
             }
         }
 
-        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "")
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string expectedName = null)
         {
-            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");
 
-            using (var expected = new MagickImage(expectedPath))
-            using (var actual = new MagickImage(actualPath))
+            using (var expected = Image.Load<Rgba32>(expectedPath))
+            using (var actual = Image.Load<Rgba32>(actualPath))
             {
-                double immediateError = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+                double immediateError = CompareImages(actual, expected);
 
                 if (immediateError > 0.022)
                 {
@@ -154,8 +180,55 @@ namespace Avalonia.Direct2D1.RenderTests
                 }
             }
         }
+        
+        /// <summary>
+        /// Calculates root mean square error for given two images.
+        /// Based roughly on ImageMagick implementation to ensure consistency.
+        /// </summary>
+        private static double CompareImages(Image<Rgba32> actual, Image<Rgba32> expected)
+        {
+            if (actual.Width != expected.Width || actual.Height != expected.Height)
+            {
+                throw new ArgumentException("Images have different resolutions");
+            }
 
-        private string GetTestsDirectory()
+            var quantity = actual.Width * actual.Height;
+            double squaresError = 0;
+
+            const double scale = 1 / 255d;
+            
+            for (var x = 0; x < actual.Width; x++)
+            {
+                double localError = 0;
+                
+                for (var y = 0; y < actual.Height; y++)
+                {
+                    var expectedAlpha = expected[x, y].A * scale;
+                    var actualAlpha = actual[x, y].A * scale;
+                    
+                    var r = scale * (expectedAlpha * expected[x, y].R - actualAlpha * actual[x, y].R);
+                    var g = scale * (expectedAlpha * expected[x, y].G - actualAlpha * actual[x, y].G);
+                    var b = scale * (expectedAlpha * expected[x, y].B - actualAlpha * actual[x, y].B);
+                    var a = expectedAlpha - actualAlpha;
+
+                    var error = r * r + g * g + b * b + a * a;
+
+                    localError += error;
+                }
+
+                squaresError += localError;
+            }
+
+            var meanSquaresError = squaresError / quantity;
+
+            const int channelCount = 4;
+            
+            meanSquaresError = meanSquaresError / channelCount;
+            
+            return Math.Sqrt(meanSquaresError);
+        }
+
+        private static string GetTestsDirectory()
         {
             var path = Directory.GetCurrentDirectory();
 
@@ -167,29 +240,35 @@ namespace Avalonia.Direct2D1.RenderTests
             return path;
         }
 
-        private class TestThreadingInterface : IPlatformThreadingInterface
+        private class TestDispatcherImpl : IDispatcherImpl
         {
             public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
 
             public Thread MainThread { get; set; }
 
 #pragma warning disable 67
-            public event Action<DispatcherPriority?> Signaled;
+            public event Action Signaled;
+            public event Action Timer;
 #pragma warning restore 67
 
-            public void RunLoop(CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Signal(DispatcherPriority prio)
+            public void Signal()
             {
                 // No-op
             }
 
-            public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
+            public long Now => 0;
+
+            public void UpdateTimer(long? dueTimeInMs)
             {
-                throw new NotImplementedException();
+                // No-op
+            }
+        }
+
+        public void Dispose()
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.RunJobs();
             }
         }
     }

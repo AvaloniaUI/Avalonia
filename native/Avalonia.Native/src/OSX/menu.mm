@@ -1,7 +1,6 @@
 
 #include "common.h"
 #include "menu.h"
-#include "window.h"
 #include "KeyTransform.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */
@@ -74,8 +73,7 @@
 AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
 {
     _isCheckable = false;
-    _isSeparator = isSeparator;
-    
+
     if(isSeparator)
     {
         _native = [NSMenuItem separatorItem];
@@ -294,8 +292,13 @@ void AvnAppMenuItem::RaiseOnClicked()
 AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
 {
     _baseEvents = events;
-    id del = [[AvnMenuDelegate alloc] initWithParent: this];
-    _native = [[AvnMenu alloc] initWithDelegate: del];
+    _delegate = [[AvnMenuDelegate alloc] initWithParent: this];
+    _native = [[AvnMenu alloc] initWithDelegate: _delegate];
+}
+
+AvnAppMenu::~AvnAppMenu()
+{
+    [_delegate parentDestroyed];
 }
 
 
@@ -396,7 +399,7 @@ HRESULT AvnAppMenu::Clear()
 
 @implementation AvnMenuDelegate
 {
-    ComPtr<AvnAppMenu> _parent;
+    AvnAppMenu* _parent;
 }
 - (id) initWithParent:(AvnAppMenu *)parent
 {
@@ -404,6 +407,12 @@ HRESULT AvnAppMenu::Clear()
     _parent = parent;
     return self;
 }
+
+- (void) parentDestroyed
+{
+    _parent = nullptr;
+}
+
 - (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
 {
     if(shouldCancel)
@@ -418,17 +427,20 @@ HRESULT AvnAppMenu::Clear()
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
-    _parent->RaiseNeedsUpdate();
+    if(_parent)
+        _parent->RaiseNeedsUpdate();
 }
 
 - (void)menuWillOpen:(NSMenu *)menu
 {
-    _parent->RaiseOpening();
+    if(_parent)
+        _parent->RaiseOpening();
 }
 
 - (void)menuDidClose:(NSMenu *)menu
 {
-    _parent->RaiseClosed();
+    if(_parent)
+        _parent->RaiseClosed();
 }
 
 @end
@@ -460,7 +472,7 @@ extern IAvnMenuItem* CreateAppMenuItemSeparator()
 static IAvnMenu* s_appMenu = nullptr;
 static NSMenuItem* s_appMenuItem = nullptr;
 
-extern void SetAppMenu (NSString* appName, IAvnMenu* menu)
+extern void SetAppMenu(IAvnMenu *menu)
 {
     s_appMenu = menu;
     

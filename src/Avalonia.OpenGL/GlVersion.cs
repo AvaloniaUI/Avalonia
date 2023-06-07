@@ -6,7 +6,7 @@ namespace Avalonia.OpenGL
         OpenGLES
     }
     
-    public struct GlVersion
+    public record struct GlVersion
     {
         public GlProfileType Type { get; }
         public int Major { get; }

@@ -14,7 +14,7 @@ namespace Avalonia.Build.Tasks
 
         static int Main(string[] args)
         {
-            if (args.Length != 3)
+            if (args.Length < 3)
             {
                 if (args.Length == 1)
                 {
@@ -27,11 +27,12 @@ namespace Avalonia.Build.Tasks
                     Console.WriteLine(@$"Usage:
     1) dotnet ./Avalonia.Build.Tasks.dll <ReferencesOutputPath>
        , where <ReferencesOutputPath> likes {referencesOutputPath}
-    2) dotnet ./Avalonia.Build.Tasks.dll <AssemblyFilePath> <ReferencesFilePath> <OutputPath>
+    2) dotnet ./Avalonia.Build.Tasks.dll <AssemblyFilePath> <ReferencesFilePath> <OutputPath> <RefAssemblyFile>
        , where:
            - <AssemblyFilePath> likes {referencesOutputPath}/{OriginalDll}
            - <ReferencesFilePath> likes {referencesOutputPath}/{References}
-           - <OutputPath> likes {referencesOutputPath}/{OutDll}");
+           - <OutputPath> likes {referencesOutputPath}/{OutDll}
+           - <RefAssemblyFile> Likes {referencesOutputPath}/original.ref.dll");
 
                     return 1;
                 }
@@ -42,10 +43,10 @@ namespace Avalonia.Build.Tasks
                 AssemblyFile = args[0],
                 ReferencesFilePath = args[1],
                 OutputPath = args[2],
+                RefAssemblyFile = args.Length > 3 ? args[3] : null, 
                 BuildEngine = new ConsoleBuildEngine(),
                 ProjectDirectory = Directory.GetCurrentDirectory(),
-                VerifyIl = true,
-                EnableComInteropPatching = true
+                VerifyIl = true
             }.Execute() ?
                 0 :
                 2;

@@ -102,6 +102,7 @@ csx
 AppPackages/
 
 # NCrunch
+.NCrunch_*/
 _NCrunch_*/
 *.ncrunchsolution.user
 nCrunchTemp_*
@@ -210,5 +211,9 @@ coc-settings.json
 .ccls-cache
 .ccls
 *.map
-src/Web/Avalonia.Web.Blazor/wwwroot/*.js
-src/Web/Avalonia.Web.Blazor/Interop/Typescript/*.js
+src/Browser/Avalonia.Browser.Blazor/wwwroot/*.js
+src/Browser/Avalonia.Browser.Blazor/Interop/Typescript/*.js
+node_modules
+src/Browser/Avalonia.Browser.Blazor/webapp/package-lock.json
+src/Browser/Avalonia.Browser.Blazor/wwwroot
+src/Browser/Avalonia.Browser/wwwroot

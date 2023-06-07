@@ -1,0 +1,117 @@
+<!--
+// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20" Width="200">
+      <StackPanel Spacing="20">
+        <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}">Standard Item</ListBoxItem>
+        <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}" Classes="MonthItem">Month Item</ListBoxItem>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerButton}">Button</RepeatButton>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerUpButton}" IsVisible="True"/>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerDownButton}" IsVisible="True"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Theme for the items displayed in the selectors -->
+  <ControlTheme x:Key="FluentDateTimePickerItem" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+    <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterItemPadding}"/>
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+
+    <Style Selector="^:selected">
+      <Setter Property="IsHitTestVisible" Value="False"/>
+      <Style Selector="^/template/ Rectangle#PressedBackground">
+        <Setter Property="Fill" Value="Transparent"/>
+      </Style>
+      <Style Selector="^/template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+      </Style>
+    </Style>
+    <Style Selector="^.MonthItem">
+      <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterMonthPadding}"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+    </Style>
+  </ControlTheme>
+
+  <!-- This is used for both the accept/dismiss & repeatbuttons in the presenter-->
+  <ControlTheme x:Key="FluentDateTimePickerButton" TargetType="Button">
+    <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <!-- 
+                The background is doubled here for the loopingselector up/down repeat buttons 
+                that appear opaque. Not sure how MS does it though I suspect this is it
+                but source isn't MIT yet, so this is my solution -->
+        <Border Background="{TemplateBinding Background}">
+          <ContentPresenter x:Name="ContentPresenter"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
+                  BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
+                  Content="{TemplateBinding Content}"
+                  Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
+                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                  Padding="{TemplateBinding Padding}"
+                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                  CornerRadius="{TemplateBinding CornerRadius}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPointerOver}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPointerOver}"/>
+      <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPointerOver}"/>
+    </Style>
+
+    <Style Selector="^:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPressed}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPressed}"/>
+      <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentDateTimePickerUpButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
+    <Setter Property="VerticalAlignment" Value="Top"/>
+    <Setter Property="Height" Value="22" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Content">
+      <Template>
+        <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,9 L 9,0 L 18,9"/>
+        </Viewbox>
+      </Template>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentDateTimePickerDownButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
+    <Setter Property="VerticalAlignment" Value="Bottom"/>
+    <Setter Property="Height" Value="22" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Content">
+      <Template>
+        <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,0 L 9,9 L 18,0"/>
+        </Viewbox>
+      </Template>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

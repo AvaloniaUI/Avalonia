@@ -65,7 +65,7 @@ namespace Avalonia.Native
             }
         }
 
-        private NativeMenu CreateDefaultAppMenu()
+        private static NativeMenu CreateDefaultAppMenu()
         {
             var result = new NativeMenu();
 

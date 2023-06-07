@@ -1,22 +1,22 @@
 using System;
-using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using System.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class LogicalTreeNode : TreeNode
     {
-        public LogicalTreeNode(IAvaloniaObject avaloniaObject, TreeNode? parent)
+        public LogicalTreeNode(AvaloniaObject avaloniaObject, TreeNode? parent)
             : base(avaloniaObject, parent)
         {
             Children =  avaloniaObject switch
             {
                 ILogical logical => new LogicalTreeNodeCollection(this, logical),
-                Controls.Application host => new ApplicationHostLogical(this, host),
+                Controls.TopLevelGroup host => new TopLevelGroupHostLogical(this, host),
                 _ => TreeNodeCollection.Empty
             };
         }
@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public static LogicalTreeNode[] Create(object control)
         {
-            var logical = control as IAvaloniaObject;
+            var logical = control as AvaloniaObject;
             return logical != null ? new[] { new LogicalTreeNode(logical, null) } : Array.Empty<LogicalTreeNode>();
         }
 
@@ -49,76 +49,61 @@ namespace Avalonia.Diagnostics.ViewModels
             protected override void Initialize(AvaloniaList<TreeNode> nodes)
             {
                 _subscription = _control.LogicalChildren.ForEachItem(
-                    (i, item) => nodes.Insert(i, new LogicalTreeNode((IAvaloniaObject)item, Owner)),
+                    (i, item) => nodes.Insert(i, new LogicalTreeNode((AvaloniaObject)item, Owner)),
                     (i, item) => nodes.RemoveAt(i),
                     () => nodes.Clear());
             }
         }
 
-        internal class ApplicationHostLogical : TreeNodeCollection
+        internal class TopLevelGroupHostLogical : TreeNodeCollection
         {
-            readonly Controls.Application _application;
-            CompositeDisposable _subscriptions = new CompositeDisposable(2);
-            public ApplicationHostLogical(TreeNode owner, Controls.Application host) :
+            private readonly Controls.TopLevelGroup _group;
+            private readonly CompositeDisposable _subscriptions = new(1);
+
+            public TopLevelGroupHostLogical(TreeNode owner, Controls.TopLevelGroup host) :
                 base(owner)
             {
-                _application = host;
+                _group = host;
             }
 
             protected override void Initialize(AvaloniaList<TreeNode> nodes)
             {
-                if (_application.ApplicationLifetime is Lifetimes.ISingleViewApplicationLifetime single &&
-                    single.MainView is not null)
+                for (var i = 0; i < _group.Items.Count; i++)
                 {
-                    nodes.Add(new LogicalTreeNode(single.MainView, Owner));
-                }
-                if (_application.ApplicationLifetime is Lifetimes.IClassicDesktopStyleApplicationLifetime classic)
-                {
-
-                    for (int i = 0; i < classic.Windows.Count; i++)
+                    var window = _group.Items[i];
+                    if (window is Views.MainWindow)
                     {
-                        var window = classic.Windows[i];
-                        if (window is Views.MainWindow)
-                        {
-                            continue;
-                        }
-                        nodes.Add(new LogicalTreeNode(window, Owner));
+                        continue;
                     }
-                    _subscriptions = new System.Reactive.Disposables.CompositeDisposable()
-                    {
-                        Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
-                            {
-                                if (s is Views.MainWindow)
-                                {
-                                    return;
-                                }
-                                nodes.Add(new LogicalTreeNode((IAvaloniaObject)s!,Owner));
-                            }),
-                        Window.WindowClosedEvent.AddClassHandler(typeof(Window), (s,e)=>
-                            {
-                                if (s is Views.MainWindow)
-                                {
-                                    return;
-                                }
-                                var item = nodes.FirstOrDefault(node=>object.ReferenceEquals(node.Visual,s));
-                                if(!(item is null))
-                                {
-                                    nodes.Remove(item);
-                                }
-                                if(nodes.Count == 0)
-                                {
-                                    if (Avalonia.Application.Current?.ApplicationLifetime is Lifetimes.IControlledApplicationLifetime controller)
-                                    {
-                                        controller.Shutdown();
-                                    }
-                                    else
-                                    {
-                                        Environment.Exit(0);
-                                    }
-                                }
-                            }),
-                    };
+                    nodes.Add(new LogicalTreeNode(window, Owner));
                 }
+                void GroupOnAdded(object? sender, TopLevel e)
+                {
+                    if (e is Views.MainWindow)
+                    {
+                        return;
+                    }
+
+                    nodes.Add(new LogicalTreeNode(e, Owner));
+                }
+                void GroupOnRemoved(object? sender, TopLevel e)
+                {
+                    if (e is Views.MainWindow)
+                    {
+                        return;
+                    }
+
+                    nodes.Add(new LogicalTreeNode(e, Owner));
+                }
+                
+                _group.Added += GroupOnAdded;
+                _group.Removed += GroupOnRemoved;
+
+                _subscriptions.Add(new Disposable.AnonymousDisposable(() =>
+                {
+                    _group.Added -= GroupOnAdded;
+                    _group.Removed -= GroupOnRemoved;
+                }));
             }
 
             public override void Dispose()

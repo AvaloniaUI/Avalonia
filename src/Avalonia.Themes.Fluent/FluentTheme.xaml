@@ -1,0 +1,26 @@
+﻿<Styles x:Class="Avalonia.Themes.Fluent.FluentTheme"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluent="using:Avalonia.Themes.Fluent"
+        xmlns:accents="using:Avalonia.Themes.Fluent.Accents">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- Keep custom palettes higher priority than default BaseColorsPalette and SystemAccentColors
+             As that's an only place for user to redefine palette in a good way -->
+        <ResourceInclude Source="/Accents/BaseColorsPalette.xaml" />
+        <accents:SystemAccentColors />
+        <fluent:ColorPaletteResourcesCollection />
+
+        <!-- Resources and brushes will be merged into current dictionary for slightly better performance and possible optimizations -->
+        <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
+        <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      
+      <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
+      <StyleInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
+    </ResourceDictionary>
+  </Styles.Resources>
+  
+  <StyleInclude Source="/Controls/FluentControls.xaml" />
+</Styles>

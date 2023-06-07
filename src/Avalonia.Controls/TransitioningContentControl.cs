@@ -1,33 +1,30 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Threading;
+using Avalonia.Data;
 
 namespace Avalonia.Controls;
 
 /// <summary>
-/// Displays <see cref="ContentControl.Content"/> according to a <see cref="FuncDataTemplate"/>.
-/// Uses <see cref="PageTransition"/> to move between the old and new content values. 
+/// Displays <see cref="ContentControl.Content"/> according to an <see cref="IDataTemplate"/>,
+/// using a <see cref="PageTransition"/> to move between the old and new content. 
 /// </summary>
 public class TransitioningContentControl : ContentControl
 {
-    private CancellationTokenSource? _lastTransitionCts;
-    private object? _currentContent;
+    private CancellationTokenSource? _currentTransition;
+    private ContentPresenter? _transitionPresenter;
+    private Optional<object?> _transitionFrom;
 
     /// <summary>
     /// Defines the <see cref="PageTransition"/> property.
     /// </summary>
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
-        AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition),
-            new CrossFade(TimeSpan.FromSeconds(0.125)));
-    
-    /// <summary>
-    /// Defines the <see cref="CurrentContent"/> property.
-    /// </summary>
-    public static readonly DirectProperty<TransitioningContentControl, object?> CurrentContentProperty =
-        AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(CurrentContent),
-            o => o.CurrentContent);
+        AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(
+            nameof(PageTransition),
+            defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
 
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -38,59 +35,79 @@ public class TransitioningContentControl : ContentControl
         set => SetValue(PageTransitionProperty, value);
     }
 
-    /// <summary>
-    /// Gets the content currently displayed on the screen.
-    /// </summary>
-    public object? CurrentContent
+    protected override Size ArrangeOverride(Size finalSize)
     {
-        get => _currentContent;
-        private set => SetAndRaise(CurrentContentProperty, ref _currentContent, value);
+        var result = base.ArrangeOverride(finalSize);
+
+        if (_transitionFrom.HasValue)
+        {
+            _currentTransition?.Cancel();
+
+            if (_transitionPresenter is not null &&
+                Presenter is Visual presenter &&
+                PageTransition is { } transition &&
+                (_transitionFrom.Value is not Visual v || v.VisualParent is null))
+            {
+                _transitionPresenter.Content = _transitionFrom.Value;
+                _transitionPresenter.IsVisible = true;
+                _transitionFrom = Optional<object?>.Empty;
+                
+                var cancel = new CancellationTokenSource();
+                _currentTransition = cancel;
+
+                transition.Start(_transitionPresenter, presenter, true, cancel.Token).ContinueWith(x =>
+                {
+                    if (!cancel.IsCancellationRequested)
+                    {
+                        _transitionPresenter.Content = null;
+                        _transitionPresenter.IsVisible = false;
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+            }
+
+            _transitionFrom = Optional<object?>.Empty;
+        }
+
+        return result;
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
-        base.OnAttachedToVisualTree(e);
+        if (!base.RegisterContentPresenter(presenter) &&
+            presenter is ContentPresenter p &&
+            p.Name == "PART_TransitionContentPresenter")
+        {
+            _transitionPresenter = p;
+            _transitionPresenter.IsVisible = false;
+            return true;
+        }
 
-        Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
+        return false;
     }
 
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        
-        _lastTransitionCts?.Cancel();
-    }
-
-    protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == ContentProperty)
+        if (change.Property == ContentProperty && 
+            _transitionPresenter is not null &&
+            Presenter is Visual &&
+            PageTransition is not null)
         {
-            Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
+            _transitionFrom = change.GetOldValue<object?>();
+            InvalidateArrange();
         }
     }
 
-    /// <summary>
-    /// Updates the content with transitions.
-    /// </summary>
-    /// <param name="content">New content to set.</param>
-    private async void UpdateContentWithTransition(object? content)
+    private class ImmutableCrossFade : IPageTransition
     {
-        if (VisualRoot is null)
+        private readonly CrossFade _inner;
+
+        public ImmutableCrossFade(TimeSpan duration) => _inner = new CrossFade(duration);
+
+        public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
-            return;
+            return _inner.Start(from, to, cancellationToken);
         }
-
-        _lastTransitionCts?.Cancel();
-        _lastTransitionCts = new CancellationTokenSource();
-
-        if (PageTransition != null)
-            await PageTransition.Start(this, null, true, _lastTransitionCts.Token);
-
-        CurrentContent = content;
-
-        if (PageTransition != null)
-            await PageTransition.Start(null, this, true, _lastTransitionCts.Token);
     }
 }
