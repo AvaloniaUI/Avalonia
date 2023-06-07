@@ -11,7 +11,7 @@ using AndroidX.AppCompat.App;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService
+    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService, IActivityConfigurationService
     {
         internal static object ViewContent;
 
@@ -67,6 +67,7 @@ namespace Avalonia.Android
         }
 
         public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
+        public event EventHandler ConfigurationChanged;
 
         public override void OnBackPressed()
         {
@@ -87,6 +88,13 @@ namespace Avalonia.Android
             View.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
 
             base.OnDestroy();
+        }
+
+        public override void OnConfigurationChanged(Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+
+            ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)

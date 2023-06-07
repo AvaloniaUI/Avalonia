@@ -37,6 +37,7 @@ namespace Avalonia.Styling.Activators
             if (_currentScreenSizeProvider is { })
             {
                 _currentScreenSizeProvider.ScreenSizeChanged -= ScreenSizeChanged;
+                _currentScreenSizeProvider.OrientationChanged -= OrientationChanged;
                 _currentScreenSizeProvider = null;
             }
         }
@@ -48,8 +49,14 @@ namespace Avalonia.Styling.Activators
                 _currentScreenSizeProvider = mediaProvider;
 
                 _currentScreenSizeProvider.ScreenSizeChanged += ScreenSizeChanged;
+                _currentScreenSizeProvider.OrientationChanged += OrientationChanged;
             }
 
+            ReevaluateIsActive();
+        }
+
+        private void OrientationChanged(object sender, EventArgs e)
+        {
             ReevaluateIsActive();
         }
 

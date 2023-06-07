@@ -20,12 +20,20 @@
       <Style Selector=":max-height(800) TextBlock#MaxHeight">
         <Setter Property="Foreground" Value="Red" />
       </Style>
+      <Style Selector=":orientation(landscape) TextBlock#Landscape">
+        <Setter Property="Foreground" Value="Red" />
+      </Style>
+      <Style Selector=":orientation(portrait) TextBlock#Portrait">
+        <Setter Property="Foreground" Value="Red" />
+      </Style>
     </Grid.Styles>
     <StackPanel Spacing="10">
       <TextBlock Name="MinWidth" Classes="h2" Text="min-width" />
       <TextBlock Name="MaxWidth" Classes="h2" Text="max-width" />
       <TextBlock Name="MinHeight" Classes="h2" Text="min-height" />
       <TextBlock Name="MaxHeight" Classes="h2" Text="max-height" />
+      <TextBlock Name="Landscape" Classes="h2" Text="orientation(landscape)" />
+      <TextBlock Name="Portrait" Classes="h2" Text="orientation(portrait)" />
     </StackPanel>
   </Grid>
 </UserControl>

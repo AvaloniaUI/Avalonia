@@ -1,5 +1,6 @@
 using System;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 
 namespace Avalonia.Styling.Activators
 {
@@ -49,5 +50,17 @@ namespace Avalonia.Styling.Activators
         }
 
         protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+    }
+
+    internal sealed class OrientationActivator : MediaQueryActivatorBase
+    {
+        private readonly DeviceOrientation _argument;
+
+        public OrientationActivator(Visual visual, DeviceOrientation argument) : base(visual)
+        {
+            _argument = argument;
+        }
+
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && OrientationMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 }

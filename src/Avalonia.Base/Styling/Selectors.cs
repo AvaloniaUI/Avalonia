@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Platform;
 
 namespace Avalonia.Styling
 {
@@ -214,6 +215,11 @@ namespace Avalonia.Styling
         public static Selector Or(IReadOnlyList<Selector> selectors)
         {
             return new OrSelector(selectors);
+        }
+        
+        public static Selector Orientation(this Selector? previous, DeviceOrientation argument)
+        {
+            return new OrientationMediaSelector(previous, (DeviceOrientation)argument);
         }
 
         /// <summary>

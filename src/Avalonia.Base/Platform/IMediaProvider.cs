@@ -8,6 +8,9 @@ namespace Avalonia.Platform
 
         double GetScreenHeight();
 
+        DeviceOrientation GetDeviceOrientation();
+
         event EventHandler? ScreenSizeChanged;
+        event EventHandler? OrientationChanged;
     }
 }

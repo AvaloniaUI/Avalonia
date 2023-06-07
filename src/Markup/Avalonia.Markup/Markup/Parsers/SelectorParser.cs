@@ -170,6 +170,9 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NthLastChildSyntax nth:
                         result = result.NthLastChild(nth.Step, nth.Offset);
                         break;
+                    case SelectorGrammar.OrientationSyntax orientation:
+                        result = result.Orientation(orientation.Argument);
+                        break;
                     case SelectorGrammar.CommaSyntax comma:
                         if (results == null)
                         {

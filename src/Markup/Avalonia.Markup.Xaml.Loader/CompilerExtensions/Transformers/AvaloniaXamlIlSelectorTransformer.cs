@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Markup.Parsers;
+using Avalonia.Platform;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -157,6 +158,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             break;
                         case SelectorGrammar.NthLastChildSyntax nth:
                             result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthLastChild);
+                            break;
+                        case SelectorGrammar.OrientationSyntax orientation:
+                            result = new XamlIlOrientationSelector(result, orientation.Argument);
                             break;
                         case SelectorGrammar.CommaSyntax comma:
                             if (results == null) 
@@ -466,6 +470,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldc_R8(_argument);
             EmitCall(context, codeGen,
                 m => m.Name == "MaxHeight" && m.Parameters.Count == 2);
+        }
+    }
+    
+    class XamlIlOrientationSelector : XamlIlSelectorNode
+    {
+        private DeviceOrientation _argument;
+        
+        public XamlIlOrientationSelector(XamlIlSelectorNode previous, DeviceOrientation argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_I4((int)_argument);
+            EmitCall(context, codeGen,
+                m => m.Name == "Orientation" && m.Parameters.Count == 2);
         }
     }
 

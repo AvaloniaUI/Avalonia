@@ -28,14 +28,30 @@ namespace Avalonia.Platform
                 if (oldValue.Size != newValue.Size)
                 {
                     ScreenSizeChanged?.Invoke(_visual, EventArgs.Empty);
+                    OrientationChanged?.Invoke(_visual, EventArgs.Empty);
                 }
             }
         }
 
         public event EventHandler? ScreenSizeChanged;
+        public event EventHandler? OrientationChanged;
 
         public double GetScreenHeight() => _visual.Bounds.Size.Height;
 
         public double GetScreenWidth() => _visual.Bounds.Size.Width;
+
+        public DeviceOrientation GetDeviceOrientation()
+        {
+            var width = GetScreenWidth();
+            var height = GetScreenHeight();
+
+            if(width > height)
+                return DeviceOrientation.Landscape;
+
+            if(height > width)
+                return DeviceOrientation.Portrait;
+
+            return DeviceOrientation.Square;
+        }
     }
 }

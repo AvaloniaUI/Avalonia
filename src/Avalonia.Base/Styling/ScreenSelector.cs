@@ -3,189 +3,200 @@ using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Styling.Activators;
 
-namespace Avalonia.Styling;
-
-internal sealed class MinWidthMediaSelector : MediaSelector<double>
+namespace Avalonia.Styling
 {
-    public MinWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
+    internal sealed class MinWidthMediaSelector : MediaSelector<double>
     {
-    }
-
-    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
-    {
-        if (!(control is Visual visual))
+        public MinWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
         {
-            return SelectorMatch.NeverThisType;
         }
 
-        if (subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
-            return new SelectorMatch(new MinWidthActivator(visual, Argument));
+            if (!(control is Visual visual))
+            {
+                return SelectorMatch.NeverThisType;
+            }
+
+            if (subscribe)
+            {
+                return new SelectorMatch(new MinWidthActivator(visual, Argument));
+            }
+
+            if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+            {
+                return Evaluate(mediaProvider, Argument);
+            }
+
+            return SelectorMatch.NeverThisInstance;
         }
 
-        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
         {
-            return Evaluate(mediaProvider, Argument);
+            return screenSizeProvider.GetScreenWidth() >= argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        return SelectorMatch.NeverThisInstance;
-    }
+        public override string ToString() => "min-width";
 
-    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
-    {
-        return screenSizeProvider.GetScreenWidth() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
-    }
-
-    public override string ToString() => "min-width";
-
-    public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public sealed class MaxWidthMediaSelector : MediaSelector<double>
-{
-    public MaxWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
-    {
-    }
-    
-    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
-    {
-        if (!(control is Visual visual))
+        public override string ToString(Style? owner)
         {
-            return SelectorMatch.NeverThisType;
+            throw new NotImplementedException();
+        }
+    }
+
+    public sealed class MaxWidthMediaSelector : MediaSelector<double>
+    {
+        public MaxWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        {
         }
 
-        if (subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
-            return new SelectorMatch(new MaxWidthActivator(visual, Argument));
+            if (!(control is Visual visual))
+            {
+                return SelectorMatch.NeverThisType;
+            }
+
+            if (subscribe)
+            {
+                return new SelectorMatch(new MaxWidthActivator(visual, Argument));
+            }
+
+            if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+            {
+                return Evaluate(mediaProvider, Argument);
+            }
+
+            return SelectorMatch.NeverThisInstance;
         }
 
-        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
         {
-            return Evaluate(mediaProvider, Argument);
+            return screenSizeProvider.GetScreenWidth() <= argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        return SelectorMatch.NeverThisInstance;
-    }
+        public override string ToString() => "max-width";
 
-    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
-    {
-        return screenSizeProvider.GetScreenWidth() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
-    }
-
-    public override string ToString() => "max-width";
-
-    public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public sealed class MinHeightMediaSelector : MediaSelector<double>
-{
-    public MinHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
-    {
-    }
-    
-    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
-    {
-        if (!(control is Visual visual))
+        public override string ToString(Style? owner)
         {
-            return SelectorMatch.NeverThisType;
+            throw new NotImplementedException();
+        }
+    }
+
+    public sealed class MinHeightMediaSelector : MediaSelector<double>
+    {
+        public MinHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        {
         }
 
-        if (subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
-            return new SelectorMatch(new MinHeightActivator(visual, Argument));
+            if (!(control is Visual visual))
+            {
+                return SelectorMatch.NeverThisType;
+            }
+
+            if (subscribe)
+            {
+                return new SelectorMatch(new MinHeightActivator(visual, Argument));
+            }
+
+            if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+            {
+                return Evaluate(mediaProvider, Argument);
+            }
+
+            return SelectorMatch.NeverThisInstance;
         }
 
-        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
         {
-            return Evaluate(mediaProvider, Argument);
-        }
-            
-        return SelectorMatch.NeverThisInstance;
-    }
-
-    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
-    {
-        return screenSizeProvider.GetScreenHeight() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
-    }
-
-    public override string ToString() => "min-height";
-
-    public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public sealed class MaxHeightMediaSelector : MediaSelector<double>
-{
-    public MaxHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
-    {
-    }
-    
-    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
-    {
-        if (!(control is Visual visual))
-        {
-            return SelectorMatch.NeverThisType;
+            return screenSizeProvider.GetScreenHeight() >= argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        if (subscribe)
+        public override string ToString() => "min-height";
+
+        public override string ToString(Style? owner)
         {
-            return new SelectorMatch(new MaxHeightActivator(visual, Argument));
+            throw new NotImplementedException();
+        }
+    }
+
+    public sealed class MaxHeightMediaSelector : MediaSelector<double>
+    {
+        public MaxHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        {
         }
 
-        if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
-            return Evaluate(mediaProvider, Argument);
+            if (!(control is Visual visual))
+            {
+                return SelectorMatch.NeverThisType;
+            }
+
+            if (subscribe)
+            {
+                return new SelectorMatch(new MaxHeightActivator(visual, Argument));
+            }
+
+            if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+            {
+                return Evaluate(mediaProvider, Argument);
+            }
+
+            return SelectorMatch.NeverThisInstance;
         }
 
-        return SelectorMatch.NeverThisInstance;
+        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
+        {
+            return screenSizeProvider.GetScreenHeight() <= argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+        }
+
+        public override string ToString() => "max-height";
+
+        public override string ToString(Style? owner)
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, double argument)
+    internal sealed class OrientationMediaSelector : MediaSelector<DeviceOrientation>
     {
-        return screenSizeProvider.GetScreenHeight() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+        public OrientationMediaSelector(Selector? previous, DeviceOrientation argument) : base(previous, argument)
+        {
+        }
+
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        {
+            if (!(control is Visual visual))
+            {
+                return SelectorMatch.NeverThisType;
+            }
+
+            if (subscribe)
+            {
+                return new SelectorMatch(new OrientationActivator(visual, Argument));
+            }
+
+            if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
+            {
+                return Evaluate(mediaProvider, Argument);
+            }
+
+            return SelectorMatch.NeverThisInstance;
+        }
+
+        internal static SelectorMatch Evaluate(IMediaProvider mediaProvider, DeviceOrientation argument)
+        {
+            return mediaProvider.GetDeviceOrientation() == argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+        }
+
+        public override string ToString() => "orientation";
+
+        public override string ToString(Style? owner)
+        {
+            throw new NotImplementedException();
+        }
     }
-
-    public override string ToString() => "max-height";
-
-    public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public abstract class MediaSelector<T> : Selector
-{
-    private readonly Selector? _previous;
-    private T _argument;
-
-    public MediaSelector(Selector? previous, T argument)
-    {
-        _previous = previous;
-        _argument = argument;
-    }
-
-    protected T Argument => _argument;
-    
-    internal override bool InTemplate => _previous?.InTemplate ?? false;
-
-    internal override bool IsCombinator => false;
-
-    internal override Type? TargetType => _previous?.TargetType;
-
-    public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-
-    private protected override Selector? MovePrevious() => _previous;
-
-    private protected override Selector? MovePreviousOrParent() => _previous;
 }

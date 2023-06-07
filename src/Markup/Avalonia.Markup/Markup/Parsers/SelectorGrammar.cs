@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data.Core;
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the
@@ -181,6 +182,7 @@ namespace Avalonia.Markup.Parsers
             const string MaxHeightKeyword = "max-height";
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
+            const string OrientationKeyword = "orientation";
 
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
@@ -241,6 +243,14 @@ namespace Avalonia.Markup.Parsers
                 var (step, offset) = ParseNthChildArguments(ref r);
 
                 var syntax = new NthLastChildSyntax { Step = step, Offset = offset };
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(OrientationKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = ParseEnum<DeviceOrientation>(ref r);
+                Expect(ref r, ')');
+
+                var syntax = new OrientationSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
             else
@@ -320,6 +330,16 @@ namespace Avalonia.Markup.Parsers
             }
 
             return double.Parse(number.ToString());
+        }
+        
+        private static T ParseEnum<T>(ref CharacterReader r) where T: struct
+        {
+            var identifier = r.ParseIdentifier();
+
+            if (Enum.TryParse<T>(identifier.ToString(), true, out T value))
+                return value;
+
+            throw new ExpressionParseException(r.Position, $"Expected a {typeof(T)} after.");
         }
 
         private static (State, ISyntax) ParseTypeName(ref CharacterReader r)
@@ -730,6 +750,16 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return (obj is NthLastChildSyntax nth) && nth.Offset == Offset && nth.Step == Step;
+            }
+        }
+
+        public class OrientationSyntax : ISyntax
+        {
+            public DeviceOrientation Argument { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is OrientationSyntax orientation) && orientation.Argument == Argument;
             }
         }
 
