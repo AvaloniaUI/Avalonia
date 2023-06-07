@@ -15,13 +15,6 @@ namespace Avalonia
 #endif
     readonly struct Size : IEquatable<Size>
     {
-        static Size()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<SizeAnimator>(prop => typeof(Size).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// A size representing infinity.
         /// </summary>

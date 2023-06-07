@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -535,7 +536,16 @@ namespace Avalonia.Controls
                     return Disposable.Create(() => { });
             }
         }
-
+        
+        /// <summary>
+        /// Enqueues a callback to be called on the next animation tick
+        /// </summary>
+        public void RequestAnimationFrame(Action<TimeSpan> action)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            MediaContext.Instance.RequestAnimationFrame(action);
+        }
+        
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
