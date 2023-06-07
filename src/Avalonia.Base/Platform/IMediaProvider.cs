@@ -4,6 +4,7 @@ namespace Avalonia.Platform
 {
     public interface IMediaProvider
     {
+        string GetPlatform();
         double GetScreenWidth();
 
         double GetScreenHeight();

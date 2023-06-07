@@ -26,6 +26,25 @@
       <Style Selector=":orientation(portrait) TextBlock#Portrait">
         <Setter Property="Foreground" Value="Red" />
       </Style>
+      <Style Selector=":is-os(windows) TextBlock#Windows">
+        <Setter Property="Foreground" Value="Red" />
+      </Style>
+      <Style Selector=":is-os(linux) TextBlock#Linux">
+        <Setter Property="Foreground"
+                Value="Red" />
+      </Style>
+      <Style Selector=":is-os(osx) TextBlock#OSX">
+        <Setter Property="Foreground"
+                Value="Red" />
+      </Style>
+      <Style Selector=":is-os(android) TextBlock#Android">
+        <Setter Property="Foreground"
+                Value="Red" />
+      </Style>
+      <Style Selector=":is-os(ios) TextBlock#iOS">
+        <Setter Property="Foreground"
+                Value="Red" />
+      </Style>
     </Grid.Styles>
     <StackPanel Spacing="10">
       <TextBlock Name="MinWidth" Classes="h2" Text="min-width" />
@@ -34,6 +53,11 @@
       <TextBlock Name="MaxHeight" Classes="h2" Text="max-height" />
       <TextBlock Name="Landscape" Classes="h2" Text="orientation(landscape)" />
       <TextBlock Name="Portrait" Classes="h2" Text="orientation(portrait)" />
+      <TextBlock Name="Windows" Classes="h2" Text="is-os(windows)" />
+      <TextBlock Name="Linux" Classes="h2" Text="is-os(linux)" />
+      <TextBlock Name="OSX" Classes="h2" Text="is-os(osx)" />
+      <TextBlock Name="Android" Classes="h2" Text="is-os(android)" />
+      <TextBlock Name="iOS" Classes="h2" Text="is-os(ios)" />
     </StackPanel>
   </Grid>
 </UserControl>

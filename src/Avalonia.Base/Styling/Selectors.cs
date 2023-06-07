@@ -221,6 +221,11 @@ namespace Avalonia.Styling
         {
             return new OrientationMediaSelector(previous, (DeviceOrientation)argument);
         }
+        
+        public static Selector IsOs(this Selector? previous, string argument)
+        {
+            return new IsOsMediaSelector(previous, argument);
+        }
 
         /// <summary>
         /// Returns a selector which matches a control with the specified property value.

@@ -51,5 +51,10 @@ namespace Avalonia.Android.Platform
                 _ => DeviceOrientation.Portrait,
             };
         }
+
+        public string GetPlatform()
+        {
+            return "android";
+        }
     }
 }

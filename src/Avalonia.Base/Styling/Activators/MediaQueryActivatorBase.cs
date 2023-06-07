@@ -55,7 +55,7 @@ namespace Avalonia.Styling.Activators
             ReevaluateIsActive();
         }
 
-        private void OrientationChanged(object sender, EventArgs e)
+        private void OrientationChanged(object? sender, EventArgs e)
         {
             ReevaluateIsActive();
         }

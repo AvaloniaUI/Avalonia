@@ -183,6 +183,7 @@ namespace Avalonia.Markup.Parsers
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
             const string OrientationKeyword = "orientation";
+            const string IsOsKeyword = "is-os";
 
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
@@ -251,6 +252,14 @@ namespace Avalonia.Markup.Parsers
                 Expect(ref r, ')');
 
                 var syntax = new OrientationSyntax { Argument = argument };
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(IsOsKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = ParseString(ref r);
+                Expect(ref r, ')');
+
+                var syntax = new IsOsSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
             else
@@ -340,6 +349,11 @@ namespace Avalonia.Markup.Parsers
                 return value;
 
             throw new ExpressionParseException(r.Position, $"Expected a {typeof(T)} after.");
+        }
+        
+        private static string ParseString(ref CharacterReader r) 
+        {
+            return r.ParseIdentifier().ToString();
         }
 
         private static (State, ISyntax) ParseTypeName(ref CharacterReader r)
@@ -760,6 +774,16 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return (obj is OrientationSyntax orientation) && orientation.Argument == Argument;
+            }
+        }
+
+        public class IsOsSyntax : ISyntax
+        {
+            public string Argument { get; set; } = string.Empty;
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is IsOsSyntax orientation) && orientation.Argument == Argument;
             }
         }
 

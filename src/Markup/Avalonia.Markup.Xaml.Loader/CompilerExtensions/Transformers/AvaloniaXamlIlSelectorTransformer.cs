@@ -162,6 +162,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.OrientationSyntax orientation:
                             result = new XamlIlOrientationSelector(result, orientation.Argument);
                             break;
+                        case SelectorGrammar.IsOsSyntax isOs:
+                            result = new XamlIlIsOsSelector(result, isOs.Argument);
+                            break;
                         case SelectorGrammar.CommaSyntax comma:
                             if (results == null) 
                                 results = new XamlIlOrSelectorNode(node, selectorType);
@@ -488,6 +491,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldc_I4((int)_argument);
             EmitCall(context, codeGen,
                 m => m.Name == "Orientation" && m.Parameters.Count == 2);
+        }
+    }
+    
+    class XamlIlIsOsSelector : XamlIlSelectorNode
+    {
+        private string _argument;
+        
+        public XamlIlIsOsSelector(XamlIlSelectorNode previous, string argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldstr(_argument);
+            EmitCall(context, codeGen,
+                m => m.Name == "IsOs" && m.Parameters.Count == 2);
         }
     }
 

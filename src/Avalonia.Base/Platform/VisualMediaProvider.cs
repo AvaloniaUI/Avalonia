@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Reactive;
@@ -52,6 +53,18 @@ namespace Avalonia.Platform
                 return DeviceOrientation.Portrait;
 
             return DeviceOrientation.Square;
+        }
+
+        public string GetPlatform()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "windows";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return "linux";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return "osx";
+
+            return "";
         }
     }
 }

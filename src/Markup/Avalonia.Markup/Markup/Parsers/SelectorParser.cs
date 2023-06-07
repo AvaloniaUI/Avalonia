@@ -173,6 +173,9 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.OrientationSyntax orientation:
                         result = result.Orientation(orientation.Argument);
                         break;
+                    case SelectorGrammar.IsOsSyntax isOs:
+                        result = result.IsOs(isOs.Argument);
+                        break;
                     case SelectorGrammar.CommaSyntax comma:
                         if (results == null)
                         {
