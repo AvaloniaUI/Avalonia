@@ -11,8 +11,8 @@ internal sealed class MinWidthActivator : MediaQueryActivatorBase
     {
         _argument = argument;
     }
-    
-    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MinWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+
+    protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MinWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
 }
 
 internal sealed class MaxWidthActivator : MediaQueryActivatorBase
@@ -23,8 +23,8 @@ internal sealed class MaxWidthActivator : MediaQueryActivatorBase
     {
         _argument = argument;
     }
-    
-    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MaxWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+
+    protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
 }
 
 internal sealed class MinHeightActivator : MediaQueryActivatorBase
@@ -36,7 +36,7 @@ internal sealed class MinHeightActivator : MediaQueryActivatorBase
         _argument = argument;
     }
     
-    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MinHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+    protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MinHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
 }
 
 internal sealed class MaxHeightActivator : MediaQueryActivatorBase
@@ -47,11 +47,11 @@ internal sealed class MaxHeightActivator : MediaQueryActivatorBase
     {
         _argument = argument;
     }
-    
-    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MaxHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+
+    protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
 }
 
-internal abstract class MediaQueryActivatorBase : StyleActivatorBase
+internal abstract class MediaQueryActivatorBase : StyleActivatorBase, IStyleActivatorSink
 {
     private readonly ITopLevelScreenSizeProvider _provider;
     private IScreenSizeProvider? _currentScreenSizeProvider;
@@ -64,10 +64,12 @@ internal abstract class MediaQueryActivatorBase : StyleActivatorBase
 
     protected IScreenSizeProvider? CurrentMediaInfoProvider => _currentScreenSizeProvider;
 
+    void IStyleActivatorSink.OnNext(bool value) => ReevaluateIsActive();
+
     protected override void Initialize()
     {
         InitialiseScreenSizeProvider();
-        PublishNext(IsMatching());
+
         _provider.ScreenSizeProviderChanged += ScreenSizeProviderChanged;
     }
 
@@ -89,7 +91,7 @@ internal abstract class MediaQueryActivatorBase : StyleActivatorBase
             _currentScreenSizeProvider.ScreenSizeChanged -= ScreenSizeChanged;
             _currentScreenSizeProvider = null;
         }
-            
+
         InitialiseScreenSizeProvider();
     }
 
@@ -101,14 +103,12 @@ internal abstract class MediaQueryActivatorBase : StyleActivatorBase
 
             _currentScreenSizeProvider.ScreenSizeChanged += ScreenSizeChanged;
         }
-            
-        PublishNext(IsMatching());
+
+        ReevaluateIsActive();
     }
 
     private void ScreenSizeChanged(object? sender, EventArgs e)
     {
-        PublishNext(IsMatching());
+        ReevaluateIsActive();
     }
-
-    protected abstract bool IsMatching();
 }

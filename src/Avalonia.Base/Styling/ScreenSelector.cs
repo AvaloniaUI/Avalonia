@@ -4,13 +4,13 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling;
 
-public sealed class MinWidthMediaSelector : MediaSelector<double>
+internal sealed class MinWidthMediaSelector : MediaSelector<double>
 {
     public MinWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
     {
     }
-    
-    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+
+    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
         if (!(control is ITopLevelScreenSizeProvider logical))
         {
@@ -26,7 +26,7 @@ public sealed class MinWidthMediaSelector : MediaSelector<double>
         {
             return Evaluate(screenSizeProvider, Argument);
         }
-            
+
         return SelectorMatch.NeverThisInstance;
     }
 
@@ -34,7 +34,18 @@ public sealed class MinWidthMediaSelector : MediaSelector<double>
     {
         return screenSizeProvider.GetScreenWidth() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
+
     public override string ToString() => "min-width";
+
+    public override string ToString(Style? owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    private protected override Selector? MovePreviousOrParent()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public sealed class MaxWidthMediaSelector : MediaSelector<double>
@@ -43,7 +54,7 @@ public sealed class MaxWidthMediaSelector : MediaSelector<double>
     {
     }
     
-    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
         if (!(control is ITopLevelScreenSizeProvider logical))
         {
@@ -67,7 +78,18 @@ public sealed class MaxWidthMediaSelector : MediaSelector<double>
     {
         return screenSizeProvider.GetScreenWidth() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
+
     public override string ToString() => "max-width";
+
+    public override string ToString(Style? owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    private protected override Selector? MovePreviousOrParent()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public sealed class MinHeightMediaSelector : MediaSelector<double>
@@ -76,7 +98,7 @@ public sealed class MinHeightMediaSelector : MediaSelector<double>
     {
     }
     
-    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
         if (!(control is ITopLevelScreenSizeProvider logical))
         {
@@ -100,7 +122,18 @@ public sealed class MinHeightMediaSelector : MediaSelector<double>
     {
         return screenSizeProvider.GetScreenHeight() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
+
     public override string ToString() => "min-height";
+
+    public override string ToString(Style? owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    private protected override Selector? MovePreviousOrParent()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public sealed class MaxHeightMediaSelector : MediaSelector<double>
@@ -109,7 +142,7 @@ public sealed class MaxHeightMediaSelector : MediaSelector<double>
     {
     }
     
-    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+    private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
     {
         if (!(control is ITopLevelScreenSizeProvider logical))
         {
@@ -133,7 +166,18 @@ public sealed class MaxHeightMediaSelector : MediaSelector<double>
     {
         return screenSizeProvider.GetScreenHeight() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
+
     public override string ToString() => "max-height";
+
+    public override string ToString(Style? owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    private protected override Selector? MovePreviousOrParent()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public abstract class MediaSelector<T> : Selector
@@ -149,11 +193,18 @@ public abstract class MediaSelector<T> : Selector
 
     protected T Argument => _argument;
     
-    public override bool InTemplate => _previous?.InTemplate ?? false;
+    internal override bool InTemplate => _previous?.InTemplate ?? false;
 
-    public override bool IsCombinator => false;
+    internal override bool IsCombinator => false;
 
-    public override Type? TargetType => _previous?.TargetType;
+    internal override Type? TargetType => _previous?.TargetType;
 
-    protected override Selector? MovePrevious() => _previous;
+    public override string ToString(Style? owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    private protected override Selector? MovePrevious() => _previous;
+
+    private protected override Selector? MovePreviousOrParent() => _previous;
 }

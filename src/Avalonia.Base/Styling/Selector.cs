@@ -41,7 +41,7 @@ namespace Avalonia.Styling
         /// or simply return an immediate result.
         /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        internal SelectorMatch Match(StyledElement control, IStyle? parent = null, bool subscribe = true)
+        internal virtual SelectorMatch Match(StyledElement control, IStyle? parent = null, bool subscribe = true)
         {
             // First match the selector until a combinator is found. Selectors are stored from 
             // right-to-left, so MatchUntilCombinator reverses this order because the type selector

@@ -564,6 +564,16 @@ namespace Avalonia.Controls
                 var newThemeVariant = change.GetNewValue<ThemeVariant?>() ?? ThemeVariant.Default;
                 PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)newThemeVariant ?? PlatformThemeVariant.Light);
             }
+            else if (change.Property == BoundsProperty)
+            {
+                var oldValue = change.GetOldValue<Rect>();
+                var newValue = change.GetNewValue<Rect>();
+
+                if (oldValue.Size != newValue.Size)
+                {
+                    ScreenSizeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
         
         /// <summary>
@@ -823,24 +833,6 @@ namespace Avalonia.Controls
                 _layoutManager.LayoutPassTimed = null;
             }
         }
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == BoundsProperty)
-            {
-                var oldValue = change.OldValue.GetValueOrDefault<Rect>();
-                var newValue = change.NewValue.GetValueOrDefault<Rect>();
-
-                if (oldValue.Size != newValue.Size)
-                {
-                    ScreenSizeChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
-
-        ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
-            (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
 
         public double GetScreenWidth()
         {
