@@ -41,11 +41,6 @@ internal sealed class MinWidthMediaSelector : MediaSelector<double>
     {
         throw new NotImplementedException();
     }
-
-    private protected override Selector? MovePreviousOrParent()
-    {
-        throw new NotImplementedException();
-    }
 }
 
 public sealed class MaxWidthMediaSelector : MediaSelector<double>
@@ -82,11 +77,6 @@ public sealed class MaxWidthMediaSelector : MediaSelector<double>
     public override string ToString() => "max-width";
 
     public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-
-    private protected override Selector? MovePreviousOrParent()
     {
         throw new NotImplementedException();
     }
@@ -129,11 +119,6 @@ public sealed class MinHeightMediaSelector : MediaSelector<double>
     {
         throw new NotImplementedException();
     }
-
-    private protected override Selector? MovePreviousOrParent()
-    {
-        throw new NotImplementedException();
-    }
 }
 
 public sealed class MaxHeightMediaSelector : MediaSelector<double>
@@ -170,11 +155,6 @@ public sealed class MaxHeightMediaSelector : MediaSelector<double>
     public override string ToString() => "max-height";
 
     public override string ToString(Style? owner)
-    {
-        throw new NotImplementedException();
-    }
-
-    private protected override Selector? MovePreviousOrParent()
     {
         throw new NotImplementedException();
     }
