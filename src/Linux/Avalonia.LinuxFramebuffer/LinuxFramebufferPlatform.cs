@@ -42,18 +42,18 @@ namespace Avalonia.LinuxFramebuffer
     
     class LinuxFramebufferPlatform
     {
-        IOutputBackend _fb;
+        internal IOutputBackend _fb;
         public static ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue = new();
 
         internal static Compositor Compositor { get; private set; } = null!;
-       
-        
-        LinuxFramebufferPlatform(IOutputBackend backend)
+
+
+        internal LinuxFramebufferPlatform(IOutputBackend backend)
         {
             _fb = backend;
         }
         
-        void Initialize()
+        internal void Initialize()
         {
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl.PlatformGraphics);
@@ -81,7 +81,7 @@ namespace Avalonia.LinuxFramebuffer
         }
     }
 
-    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
+    public class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
     {
         private readonly IOutputBackend _fb;
         private readonly IInputBackend? _inputBackend;
@@ -89,12 +89,12 @@ namespace Avalonia.LinuxFramebuffer
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         public CancellationToken Token => _cts.Token;
 
-        public LinuxFramebufferLifetime(IOutputBackend fb)
+        internal LinuxFramebufferLifetime(IOutputBackend fb)
         {
             _fb = fb;
         }
 
-        public LinuxFramebufferLifetime(IOutputBackend fb, IInputBackend? input)
+        internal LinuxFramebufferLifetime(IOutputBackend fb, IInputBackend? input)
         {
             _fb = fb;
             _inputBackend = input;
@@ -154,6 +154,14 @@ namespace Avalonia.LinuxFramebuffer
 
 public static class LinuxFramebufferPlatformExtensions
 {
+    public static AppBuilder UseLinuxFrameBufferPlatform(this AppBuilder builder, string? fbdev = null,  double scaling = 1, PixelFormat? format = null,IInputBackend? inputBackend = default)
+    {
+        var platform = new LinuxFramebufferPlatform(new FbdevOutput(fileName: fbdev, format: null));
+        builder.UseSkia().UseWindowingSubsystem(platform.Initialize, "fbdev");
+        builder.SetupWithLifetime(new LinuxFramebufferLifetime(platform._fb, inputBackend));
+        return builder;
+    }
+    
     public static int StartLinuxFbDev(this AppBuilder builder, string[] args, string? fbdev = null, double scaling = 1, IInputBackend? inputBackend = default)
         => StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling }, inputBackend);
     public static int StartLinuxFbDev(this AppBuilder builder, string[] args, string fbdev, PixelFormat? format, double scaling, IInputBackend? inputBackend = default)
