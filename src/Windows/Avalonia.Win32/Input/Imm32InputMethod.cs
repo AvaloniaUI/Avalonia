@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Threading;
 
@@ -295,6 +297,87 @@ namespace Avalonia.Win32.Input
             var himc = ImmGetContext(Hwnd);
 
             return ImmGetCompositionString(himc, flag);
+        }
+
+        public void HandleCompositionStart()
+        {
+            Composition = null;
+
+            if (IsActive)
+            {
+                Client.SetPreeditText(null);
+            }
+
+            IsComposing = true;
+        }
+
+        public void HandleCompositionEnd(WindowImpl windowImpl, uint timestamp)
+        {
+            var currentComposition = Composition;
+
+            //In case composition has not been comitted yet we need to do that here.
+            if (!string.IsNullOrEmpty(currentComposition))
+            {
+                var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, windowImpl.Owner, currentComposition);
+
+                if(windowImpl.Input != null)
+                {
+                    windowImpl.Input(e);
+                }
+            }
+
+            //Cleanup composition state.
+            IsComposing = false;
+            Composition = null;
+
+            if (IsActive)
+            {
+                Client.SetPreeditText(null);
+            }
+        }
+
+        public void HandleComposition(WindowImpl windowImpl, IntPtr wParam, IntPtr lParam, uint timestamp, ref bool ignoreWmChar)
+        {
+            var flags = (GCS)ToInt32(lParam);
+
+            if ((flags & GCS.GCS_RESULTSTR) != 0)
+            {
+                var resultString = GetCompositionString(GCS.GCS_RESULTSTR);
+
+                if (!string.IsNullOrEmpty(resultString))
+                {
+                    Composition = null;
+
+                    if (IsActive)
+                    {
+                        Client.SetPreeditText(null);
+                    }
+
+                    var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, windowImpl.Owner, resultString);
+
+                    if(windowImpl.Input != null)
+                    {
+                        windowImpl.Input(e);
+
+                        ignoreWmChar = true;
+                    }
+                }
+            }
+
+            if ((flags & GCS.GCS_COMPSTR) != 0)
+            {
+                var compositionString = GetCompositionString(GCS.GCS_COMPSTR);
+
+                CompositionChanged(compositionString);
+            }
+        }
+
+        private static int ToInt32(IntPtr ptr)
+        {
+            if (IntPtr.Size == 4)
+                return ptr.ToInt32();
+
+            return (int)(ptr.ToInt64() & 0xffffffff);
         }
 
         ~Imm32InputMethod()

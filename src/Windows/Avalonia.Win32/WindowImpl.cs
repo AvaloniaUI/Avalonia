@@ -186,7 +186,7 @@ namespace Avalonia.Win32
             s_instances.Add(this);
         }
 
-        private IInputRoot Owner
+        internal IInputRoot Owner
             => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
 
         public Action? Activated { get; set; }
