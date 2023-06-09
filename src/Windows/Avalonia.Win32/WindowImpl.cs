@@ -97,7 +97,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
-        private bool _ignoreWmChar;
+        internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
 
         private const int MaxPointerHistorySize = 512;

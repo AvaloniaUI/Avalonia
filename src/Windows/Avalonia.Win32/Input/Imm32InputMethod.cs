@@ -24,6 +24,8 @@ namespace Avalonia.Win32.Input
         private ushort _langId;
         private const int CaretMargin = 1;
 
+        private bool _ignoreComposition;
+
         public ITextInputMethodClient? Client { get; private set; }
 
         [MemberNotNullWhen(true, nameof(Client))]
@@ -123,19 +125,35 @@ namespace Avalonia.Win32.Input
             {
                 var himc = ImmGetContext(Hwnd);
 
-                if (IsComposing)
+                if (himc != IntPtr.Zero)
                 {
-                    ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
-                   
-                    IsComposing = false;
-                }
+                    _ignoreComposition = true;
 
-                ImmReleaseContext(Hwnd, himc);
+                    if (_parent != null)
+                    {
+                        _parent._ignoreWmChar = true;
+                    }
+
+                    ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+
+                    ImmReleaseContext(Hwnd, himc);
+
+                    IsComposing = false;
+
+                    Composition = null;
+                }
             });
         }
 
         public void SetClient(ITextInputMethodClient? client)
         {
+            if(Client != null)
+            {
+                Composition = null;
+
+                Client.SetPreeditText(null);
+            }
+
             Client = client;
 
             Dispatcher.UIThread.Post(() =>
@@ -311,23 +329,11 @@ namespace Avalonia.Win32.Input
             IsComposing = true;
         }
 
-        public void HandleCompositionEnd(WindowImpl windowImpl, uint timestamp)
+        public void HandleCompositionEnd()
         {
-            var currentComposition = Composition;
-
-            //In case composition has not been comitted yet we need to do that here.
-            if (!string.IsNullOrEmpty(currentComposition))
-            {
-                var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, windowImpl.Owner, currentComposition);
-
-                if(windowImpl.Input != null)
-                {
-                    windowImpl.Input(e);
-                }
-            }
-
             //Cleanup composition state.
             IsComposing = false;
+
             Composition = null;
 
             if (IsActive)
@@ -336,15 +342,22 @@ namespace Avalonia.Win32.Input
             }
         }
 
-        public void HandleComposition(WindowImpl windowImpl, IntPtr wParam, IntPtr lParam, uint timestamp, ref bool ignoreWmChar)
+        public void HandleComposition(IntPtr wParam, IntPtr lParam, uint timestamp)
         {
+            if (_ignoreComposition)
+            {
+                _ignoreComposition = false;
+
+                return;
+            }
+
             var flags = (GCS)ToInt32(lParam);
 
             if ((flags & GCS.GCS_RESULTSTR) != 0)
             {
                 var resultString = GetCompositionString(GCS.GCS_RESULTSTR);
 
-                if (!string.IsNullOrEmpty(resultString))
+                if (_parent != null && !string.IsNullOrEmpty(resultString))
                 {
                     Composition = null;
 
@@ -353,13 +366,13 @@ namespace Avalonia.Win32.Input
                         Client.SetPreeditText(null);
                     }
 
-                    var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, windowImpl.Owner, resultString);
+                    var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
 
-                    if(windowImpl.Input != null)
+                    if (_parent.Input != null)
                     {
-                        windowImpl.Input(e);
+                        _parent.Input(e);
 
-                        ignoreWmChar = true;
+                        _parent._ignoreWmChar = true;
                     }
                 }
             }

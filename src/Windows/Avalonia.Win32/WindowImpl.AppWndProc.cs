@@ -724,7 +724,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_COMPOSITION:
                     {
-                        Imm32InputMethod.Current.HandleComposition(this, wParam, lParam, timestamp, ref _ignoreWmChar);
+                        Imm32InputMethod.Current.HandleComposition(wParam, lParam, timestamp);
 
                         break;
                     }
@@ -745,7 +745,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        Imm32InputMethod.Current.HandleCompositionEnd(this, timestamp);
+                        Imm32InputMethod.Current.HandleCompositionEnd();
 
                         return IntPtr.Zero;
                     }
