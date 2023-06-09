@@ -63,6 +63,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Should_Connect_To_VisualTree_Once()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget(new Control());
+
+            var control = new Control();
+            int counter = 0;
+
+            control.AttachedToVisualTree += (s,e) => counter++;
+
+            target.Content = control;
+            Layout(target);
+            target.Content = new Control();
+            Layout(target);
+            
+            Assert.Equal(1, counter);
+        }
+
+        [Fact]
         public void ContentPresenters_Should_Be_Setup_For_Transition()
         {
             using var app = Start();
