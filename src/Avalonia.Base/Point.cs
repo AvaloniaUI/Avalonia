@@ -16,13 +16,6 @@ namespace Avalonia
 #endif
     readonly struct Point : IEquatable<Point>
     {
-        static Point()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// The X position.
         /// </summary>
