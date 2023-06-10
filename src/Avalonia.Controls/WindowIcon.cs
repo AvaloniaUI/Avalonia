@@ -24,6 +24,11 @@ namespace Avalonia.Controls
             PlatformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformIconLoader>().LoadIcon(stream);
         }
 
+        protected WindowIcon(IWindowIconImpl impl)
+        {
+            PlatformImpl = impl;
+        }
+
         internal IWindowIconImpl PlatformImpl { get; }
 
         public void Save(Stream stream) => PlatformImpl.Save(stream);

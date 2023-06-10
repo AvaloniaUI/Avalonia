@@ -7,25 +7,40 @@ namespace Avalonia.Win32
 {
     internal class IconImpl : IWindowIconImpl, IDisposable
     {
-        private readonly Icon _icon;
+        private readonly Icon _smallIcon;
+        private readonly Icon _bigIcon;
+
+        public IconImpl(Stream smallIcon, Stream bigIcon)
+        {
+            _smallIcon = ReadFromStream(smallIcon);
+            _bigIcon = ReadFromStream(bigIcon);
+        }
 
         public IconImpl(Stream icon)
         {
-            _icon = new(icon);
+            _smallIcon = _bigIcon = ReadFromStream(icon);
         }
 
-        public IconImpl(IntPtr hIcon)
+        private static Icon ReadFromStream(Stream stream)
         {
-            _icon = Icon.FromHandle(hIcon);
+            try
+            {
+                return new(stream);
+            }
+            catch (ArgumentException) // stream was not in .ICO format
+            {
+                using var bitmap = new Bitmap(stream);
+                return Icon.FromHandle(bitmap.GetHicon());
+            }
         }
 
         // GetSystemMetrics returns values scaled for the primary monitor, as of the time at which the process started.
         // This is no good for a per-monitor DPI aware application. GetSystemMetricsForDpi would solve the problem,
         // but is only available in Windows 10 version 1607 and later. So instead, we just hard-code the 96dpi icon sizes.
 
-        public Icon LoadSmallIcon(double scaleFactor) => new(_icon, GetScaledSize(16, scaleFactor));
+        public Icon LoadSmallIcon(double scaleFactor) => new(_smallIcon, GetScaledSize(16, scaleFactor));
 
-        public Icon LoadBigIcon(double scaleFactor) => new(_icon, GetScaledSize(32, scaleFactor));
+        public Icon LoadBigIcon(double scaleFactor) => new(_bigIcon, GetScaledSize(32, scaleFactor));
 
         private static System.Drawing.Size GetScaledSize(int baseSize, double factor)
         {
@@ -33,8 +48,12 @@ namespace Avalonia.Win32
             return new(scaled, scaled);
         }
 
-        public void Save(Stream outputStream) => _icon.Save(outputStream);
+        public void Save(Stream outputStream) => _bigIcon.Save(outputStream);
 
-        public void Dispose() => _icon.Dispose();
+        public void Dispose()
+        {
+            _smallIcon.Dispose();
+            _bigIcon.Dispose();
+        }
     }
 }
