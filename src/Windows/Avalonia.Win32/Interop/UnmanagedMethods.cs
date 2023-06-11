@@ -2407,7 +2407,9 @@ namespace Avalonia.Win32.Interop
         public enum Icons
         {
             ICON_SMALL = 0,
-            ICON_BIG = 1
+            ICON_BIG = 1,
+            /// <summary>Retrieves the small icon provided by the application. If the application does not provide one, the system uses the system-generated icon for that window.</summary>
+            ICON_SMALL2 = 2,
         }
 
         public static class ShellIds

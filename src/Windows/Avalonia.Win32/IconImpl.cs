@@ -10,6 +10,8 @@ namespace Avalonia.Win32
         private readonly Icon _smallIcon;
         private readonly Icon _bigIcon;
 
+        private static readonly int s_taskbarIconSize = Win32Platform.WindowsVersion < PlatformConstants.Windows10 ? 32 : 24;
+
         public IconImpl(Stream smallIcon, Stream bigIcon)
         {
             _smallIcon = ReadFromStream(smallIcon);
@@ -40,7 +42,7 @@ namespace Avalonia.Win32
 
         public Icon LoadSmallIcon(double scaleFactor) => new(_smallIcon, GetScaledSize(16, scaleFactor));
 
-        public Icon LoadBigIcon(double scaleFactor) => new(_bigIcon, GetScaledSize(32, scaleFactor));
+        public Icon LoadBigIcon(double scaleFactor) => new(_bigIcon, GetScaledSize(s_taskbarIconSize, scaleFactor));
 
         private static System.Drawing.Size GetScaledSize(int baseSize, double factor)
         {

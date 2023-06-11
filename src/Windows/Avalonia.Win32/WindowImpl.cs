@@ -84,11 +84,11 @@ namespace Avalonia.Win32
         private IInputRoot? _owner;
         private WindowProperties _windowProperties;
         private IconImpl? _iconImpl;
-        private Icon? _bigIcon;
-        private Icon? _smallIcon;
+        private readonly Dictionary<(Icons type, int dpi), Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
+        private int _dpi = 96;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
         private OleDropTarget? _dropTarget;
@@ -626,6 +626,8 @@ namespace Avalonia.Win32
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
+            
+            ClearIconCache();
         }
 
         public void Invalidate(Rect rect)
@@ -737,20 +739,50 @@ namespace Avalonia.Win32
         public void SetIcon(IWindowIconImpl? icon)
         {
             _iconImpl = icon as IconImpl;
+            ClearIconCache();
             RefreshIcon();
+        }
+
+        private void ClearIconCache()
+        {
+            foreach (var icon in _iconCache.Values)
+            {
+                icon.Dispose();
+            }
+            _iconCache.Clear();
+        }
+
+        private Icon? LoadIcon(Icons type, int dpi)
+        {
+            if (_iconImpl == null)
+            {
+                return null;
+            }
+
+            if (type == Icons.ICON_SMALL2) // used only by Task Manager?
+            {
+                type = Icons.ICON_SMALL;
+            }
+
+            var iconKey = (type, dpi);
+            if (!_iconCache.TryGetValue(iconKey, out var icon))
+            {
+                var scale = dpi / 96.0;
+                _iconCache[iconKey] = icon = type switch
+                {
+                    Icons.ICON_SMALL => _iconImpl.LoadSmallIcon(scale),
+                    Icons.ICON_BIG => _iconImpl.LoadBigIcon(scale),
+                    _ => throw new NotImplementedException(),
+                };
+            }
+
+            return icon;
         }
 
         private void RefreshIcon()
         {
-            var smallIcon = _iconImpl?.LoadSmallIcon(DesktopScaling);
-            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_SMALL, smallIcon?.Handle ?? default);
-            _smallIcon?.Dispose();
-            _smallIcon = smallIcon;
-
-            var bigIcon = _iconImpl?.LoadBigIcon(DesktopScaling);
-            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_BIG, bigIcon?.Handle ?? default);
-            _bigIcon?.Dispose();
-            _bigIcon = bigIcon;
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_SMALL, LoadIcon(Icons.ICON_SMALL, _dpi)?.Handle ?? default);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SETICON, (nint)Icons.ICON_BIG, LoadIcon(Icons.ICON_BIG, _dpi)?.Handle ?? default);
         }
 
         public void ShowTaskbarIcon(bool value)

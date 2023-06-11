@@ -128,9 +128,9 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DPICHANGED:
                     {
-                        var dpi = ToInt32(wParam) & 0xffff;
+                        _dpi = ToInt32(wParam) & 0xffff;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
-                        _scaling = dpi / 96.0;
+                        _scaling = _dpi / 96.0;
                         RefreshIcon();
                         ScalingChanged?.Invoke(_scaling);
 
@@ -148,6 +148,22 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+
+                case WindowsMessage.WM_GETICON:
+                    if (_iconImpl == null)
+                    {
+                        break;
+                    }
+
+                    var requestIcon = (Icons)wParam;
+                    var requestDpi = ToInt32(lParam);
+
+                    if (requestDpi == 0)
+                    {
+                        requestDpi = _dpi;
+                    }
+                                        
+                    return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
