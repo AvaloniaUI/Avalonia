@@ -128,7 +128,9 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (_renderTarget?.IsCorrupted == true)
             {
-                _renderTarget!.Dispose();
+                _layer?.Dispose();
+                _layer = null;
+                _renderTarget.Dispose();
                 _renderTarget = null;
                 _redrawRequested = true;
             }
