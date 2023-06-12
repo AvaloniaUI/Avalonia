@@ -777,7 +777,7 @@ namespace Avalonia.Controls
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
             var snapPoints = new List<double>();
-
+            var itemCount = ItemsControl?.ItemsSource?.Count() ?? 0;
             switch (orientation)
             {
                 case Orientation.Horizontal:
@@ -787,7 +787,7 @@ namespace Avalonia.Controls
                     {
                         var averageElementSize = EstimateElementSizeU();
                         double snapPoint = 0;
-                        for (var i = 0; i < Items.Count; i++)
+                        for (var i = 0; i < itemCount; i++)
                         {
                             var container = ContainerFromIndex(i);
                             if (container != null)
@@ -834,7 +834,7 @@ namespace Avalonia.Controls
                     {
                         var averageElementSize = EstimateElementSizeU();
                         double snapPoint = 0;
-                        for (var i = 0; i < Items.Count; i++)
+                        for (var i = 0; i < itemCount; i++)
                         {
                             var container = ContainerFromIndex(i);
                             if (container != null)
