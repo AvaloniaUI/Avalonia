@@ -254,24 +254,41 @@ namespace Avalonia.Headless
     {
         private class IconStub : IWindowIconImpl
         {
+            private readonly MemoryStream _memoryStream;
+
+            public IconStub(MemoryStream memoryStream)
+            {
+                _memoryStream = memoryStream;
+            }
+
             public void Save(Stream outputStream)
             {
-
+                _memoryStream.CopyTo(outputStream);
             }
-        }
-        public IWindowIconImpl LoadIcon(string fileName)
-        {
-            return new IconStub();
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-            return new IconStub();
+            var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            return new IconStub(memoryStream);
         }
 
+        public IWindowIconImpl LoadIcon(string fileName)
+        {
+            using (var stream = File.OpenRead(fileName))
+            {
+                return LoadIcon(stream);
+            }
+        }
+        
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
-            return new IconStub();
+            using (var memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream);
+                return LoadIcon(memoryStream);
+            }
         }
     }
 
