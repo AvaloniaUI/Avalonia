@@ -6,6 +6,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\xamlil.github\src\XamlX\**\*.cs" />
     <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\obj\**\*.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup\Markup\Parsers\MediaQueryGrammar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup.Xaml\Parsers\PropertyParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs" />
   </ItemGroup>

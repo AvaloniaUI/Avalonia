@@ -37,6 +37,12 @@
       <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
+      <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\ISyntax.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\MediaQueryGrammar.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
       <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\PropertyPathGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>

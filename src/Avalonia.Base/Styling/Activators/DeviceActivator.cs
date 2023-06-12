@@ -9,6 +9,6 @@
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && IsOsMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && IsOsMediaQuery.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 }

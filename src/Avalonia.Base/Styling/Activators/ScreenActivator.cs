@@ -13,7 +13,7 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MinWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MinWidthMediaQuery.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 
     internal sealed class MaxWidthActivator : MediaQueryActivatorBase
@@ -25,7 +25,7 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxWidthMediaQuery.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 
     internal sealed class MinHeightActivator : MediaQueryActivatorBase
@@ -37,7 +37,7 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MinHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MinHeightMediaQuery.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 
     internal sealed class MaxHeightActivator : MediaQueryActivatorBase
@@ -49,7 +49,7 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && MaxHeightMediaQuery.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 
     internal sealed class OrientationActivator : MediaQueryActivatorBase
@@ -61,6 +61,6 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && OrientationMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => CurrentMediaInfoProvider != null && OrientationMediaQuery.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
     }
 }

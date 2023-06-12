@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Parsers
         }
 
         [RequiresUnreferencedCode(TrimmingMessages.SelectorsParseRequiresUnreferencedCodeMessage)]
-        private Selector? Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
+        private Selector? Create(IEnumerable<ISyntax> syntax)
         {
             var result = default(Selector);
             var results = default(List<Selector>);
@@ -152,29 +152,11 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NotSyntax not:
                         result = result.Not(x => Create(not.Argument)!);
                         break;
-                    case SelectorGrammar.MinWidthSyntax minWidth:
-                        result = result.MinWidth(minWidth.Argument);
-                        break;
-                    case SelectorGrammar.MaxWidthSyntax maxWidth:
-                        result = result.MaxWidth(maxWidth.Argument);
-                        break;
-                    case SelectorGrammar.MinHeightSyntax minHeight:
-                        result = result.MinHeight(minHeight.Argument);
-                        break;
-                    case SelectorGrammar.MaxHeightSyntax maxHeight:
-                        result = result.MaxHeight(maxHeight.Argument);
-                        break;
                     case SelectorGrammar.NthChildSyntax nth:
                         result = result.NthChild(nth.Step, nth.Offset);
                         break;
                     case SelectorGrammar.NthLastChildSyntax nth:
                         result = result.NthLastChild(nth.Step, nth.Offset);
-                        break;
-                    case SelectorGrammar.OrientationSyntax orientation:
-                        result = result.Orientation(orientation.Argument);
-                        break;
-                    case SelectorGrammar.IsOsSyntax isOs:
-                        result = result.IsOs(isOs.Argument);
                         break;
                     case SelectorGrammar.CommaSyntax comma:
                         if (results == null)

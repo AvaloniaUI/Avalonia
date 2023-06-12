@@ -166,8 +166,24 @@ namespace Avalonia.Styling
                 }
             }
 
+            SelectorMatch match = SelectorMatch.NeverThisInstance;
+            bool mediaMatchesSometimes = false;
+            // Match any parent Media query
+            if (parent is Media media)
+            {
+                match = media.Query?.Evaluate(control, media.Parent, subscribe) ?? SelectorMatch.NeverThisInstance;
+
+                if (!match.IsMatch)
+                    return match.Result;
+
+                mediaMatchesSometimes = match.Result == SelectorMatchResult.Sometimes;
+
+                if (mediaMatchesSometimes)
+                    activators.Add(match.Activator!);
+            }
+
             // Match this selector.
-            var match = selector.Evaluate(control, parent, subscribe);
+            match = selector.Evaluate(control, parent, subscribe);
 
             if (!match.IsMatch)
             {
@@ -184,7 +200,7 @@ namespace Avalonia.Styling
                 combinator = previous;
             }
 
-            return match.Result;
+            return mediaMatchesSometimes ? SelectorMatchResult.Sometimes : match.Result;
         }
     }
 }

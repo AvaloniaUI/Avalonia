@@ -5,13 +5,13 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
-    internal sealed class MinWidthMediaSelector : MediaSelector<double>
+    internal sealed class MinWidthMediaQuery : MediaQuery<double>
     {
-        public MinWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        public MinWidthMediaQuery(Query? previous, double argument) : base(previous, argument)
         {
         }
 
-        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is Visual visual))
             {
@@ -38,19 +38,19 @@ namespace Avalonia.Styling
 
         public override string ToString() => "min-width";
 
-        public override string ToString(Style? owner)
+        public override string ToString(Media? owner)
         {
             throw new NotImplementedException();
         }
     }
 
-    public sealed class MaxWidthMediaSelector : MediaSelector<double>
+    public sealed class MaxWidthMediaQuery : MediaQuery<double>
     {
-        public MaxWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        public MaxWidthMediaQuery(Query? previous, double argument) : base(previous, argument)
         {
         }
 
-        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is Visual visual))
             {
@@ -77,19 +77,19 @@ namespace Avalonia.Styling
 
         public override string ToString() => "max-width";
 
-        public override string ToString(Style? owner)
+        public override string ToString(Media? owner)
         {
             throw new NotImplementedException();
         }
     }
 
-    public sealed class MinHeightMediaSelector : MediaSelector<double>
+    public sealed class MinHeightMediaQuery : MediaQuery<double>
     {
-        public MinHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        public MinHeightMediaQuery(Query? previous, double argument) : base(previous, argument)
         {
         }
 
-        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is Visual visual))
             {
@@ -116,19 +116,19 @@ namespace Avalonia.Styling
 
         public override string ToString() => "min-height";
 
-        public override string ToString(Style? owner)
+        public override string ToString(Media? owner)
         {
             throw new NotImplementedException();
         }
     }
 
-    public sealed class MaxHeightMediaSelector : MediaSelector<double>
+    public sealed class MaxHeightMediaQuery : MediaQuery<double>
     {
-        public MaxHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
+        public MaxHeightMediaQuery(Query? previous, double argument) : base(previous, argument)
         {
         }
 
-        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is Visual visual))
             {
@@ -155,19 +155,19 @@ namespace Avalonia.Styling
 
         public override string ToString() => "max-height";
 
-        public override string ToString(Style? owner)
+        public override string ToString(Media? owner)
         {
             throw new NotImplementedException();
         }
     }
 
-    internal sealed class OrientationMediaSelector : MediaSelector<DeviceOrientation>
+    internal sealed class OrientationMediaQuery : MediaQuery<DeviceOrientation>
     {
-        public OrientationMediaSelector(Selector? previous, DeviceOrientation argument) : base(previous, argument)
+        public OrientationMediaQuery(Query? previous, DeviceOrientation argument) : base(previous, argument)
         {
         }
 
-        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is Visual visual))
             {
@@ -194,7 +194,7 @@ namespace Avalonia.Styling
 
         public override string ToString() => "orientation";
 
-        public override string ToString(Style? owner)
+        public override string ToString(Media? owner)
         {
             throw new NotImplementedException();
         }

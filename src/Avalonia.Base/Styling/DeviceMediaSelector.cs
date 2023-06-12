@@ -4,13 +4,13 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
-    internal sealed class IsOsMediaSelector : MediaSelector<string>
+    internal sealed class IsOsMediaQuery : MediaQuery<string>
     {
-        public IsOsMediaSelector(Selector? previous, string argument) : base(previous, argument)
+        public IsOsMediaQuery(Query? previous, string argument) : base(previous, argument)
         {
         }
 
-        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is Visual visual))
             {
@@ -37,7 +37,7 @@ namespace Avalonia.Styling
 
         public override string ToString() => "is-os";
 
-        public override string ToString(Style? owner)
+        public override string ToString(Media? owner)
         {
             throw new NotImplementedException();
         }

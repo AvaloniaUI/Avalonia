@@ -17,6 +17,7 @@ namespace Avalonia.Styling
         IResourceProvider
     {
         private readonly AvaloniaList<IStyle> _styles = new();
+        private readonly AvaloniaList<Media> _medias = new();
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
 

@@ -57,7 +57,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             Style,
             ControlTemplate,
-            Transitions
+            Transitions,
+            Media
         }
         
         public AvaloniaXamlIlTargetTypeMetadataNode(IXamlAstValueNode value, IXamlAstTypeReference targetType,

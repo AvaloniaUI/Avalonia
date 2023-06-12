@@ -176,14 +176,8 @@ namespace Avalonia.Markup.Parsers
 
             const string IsKeyword = "is";
             const string NotKeyword = "not";
-            const string MinWidthKeyword = "min-width";
-            const string MaxWidthKeyword = "max-width";
-            const string MinHeightKeyword = "min-height";
-            const string MaxHeightKeyword = "max-height";
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
-            const string OrientationKeyword = "orientation";
-            const string IsOsKeyword = "is-os";
 
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
@@ -200,38 +194,6 @@ namespace Avalonia.Markup.Parsers
                 var syntax = new NotSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
-            if(identifier.SequenceEqual(MinWidthKeyword.AsSpan()) && r.TakeIf('('))
-            {
-                var argument = ParseDecimal(ref r);
-                Expect(ref r, ')');
-
-                var syntax = new MinWidthSyntax { Argument = argument };
-                return (State.Middle, syntax);
-            }
-            if(identifier.SequenceEqual(MaxWidthKeyword.AsSpan()) && r.TakeIf('('))
-            {
-                var argument = ParseDecimal(ref r);
-                Expect(ref r, ')');
-
-                var syntax = new MaxWidthSyntax { Argument = argument };
-                return (State.Middle, syntax);
-            }
-            if(identifier.SequenceEqual(MinHeightKeyword.AsSpan()) && r.TakeIf('('))
-            {
-                var argument = ParseDecimal(ref r);
-                Expect(ref r, ')');
-
-                var syntax = new MinHeightSyntax { Argument = argument };
-                return (State.Middle, syntax);
-            }
-            if(identifier.SequenceEqual(MaxHeightKeyword.AsSpan()) && r.TakeIf('('))
-            {
-                var argument = ParseDecimal(ref r);
-                Expect(ref r, ')');
-
-                var syntax = new MaxHeightSyntax { Argument = argument };
-                return (State.Middle, syntax);
-            }
             if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
             {
                 var (step, offset) = ParseNthChildArguments(ref r);
@@ -244,22 +206,6 @@ namespace Avalonia.Markup.Parsers
                 var (step, offset) = ParseNthChildArguments(ref r);
 
                 var syntax = new NthLastChildSyntax { Step = step, Offset = offset };
-                return (State.Middle, syntax);
-            }
-            if (identifier.SequenceEqual(OrientationKeyword.AsSpan()) && r.TakeIf('('))
-            {
-                var argument = ParseEnum<DeviceOrientation>(ref r);
-                Expect(ref r, ')');
-
-                var syntax = new OrientationSyntax { Argument = argument };
-                return (State.Middle, syntax);
-            }
-            if (identifier.SequenceEqual(IsOsKeyword.AsSpan()) && r.TakeIf('('))
-            {
-                var argument = ParseString(ref r);
-                Expect(ref r, ')');
-
-                var syntax = new IsOsSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
             else
@@ -568,17 +514,6 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public interface ISyntax
-        {
-        }
-
-        public interface ITypeSyntax
-        {
-            string TypeName { get; set; }
-
-            string Xmlns { get; set; }
-        }
-
         public class OfTypeSyntax : ISyntax, ITypeSyntax
         {
             public string TypeName { get; set; } = string.Empty;
@@ -646,11 +581,11 @@ namespace Avalonia.Markup.Parsers
                        syntax.Name == Name;
             }
         }
-        
+
         public class DecimalSyntax : ISyntax
         {
             public decimal Number { get; set; }
-            
+
             public override bool Equals(object? obj)
             {
                 return obj is DecimalSyntax dec && dec.Number == Number;
@@ -705,46 +640,6 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public class MinWidthSyntax : ISyntax
-        {
-            public double Argument { get; set; }
-            
-            public override bool Equals(object? obj)
-            {
-                return (obj is MinWidthSyntax minwidth) && minwidth.Argument == Argument;
-            }
-        }
-
-        public class MinHeightSyntax : ISyntax
-        {
-            public double Argument { get; set; }
-            
-            public override bool Equals(object? obj)
-            {
-                return (obj is MinHeightSyntax minwidth) && minwidth.Argument == Argument;
-            }
-        }
-
-        public class MaxWidthSyntax : ISyntax
-        {
-            public double Argument { get; set; }
-            
-            public override bool Equals(object? obj)
-            {
-                return (obj is MaxWidthSyntax maxwidth) && maxwidth.Argument == Argument;
-            }
-        }
-
-        public class MaxHeightSyntax : ISyntax
-        {
-            public double Argument { get; set; }
-            
-            public override bool Equals(object? obj)
-            {
-                return (obj is MaxHeightSyntax maxHeight) && maxHeight.Argument == Argument;
-            }
-        }
-
         public class NthChildSyntax : ISyntax
         {
             public int Offset { get; set; }
@@ -764,26 +659,6 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return (obj is NthLastChildSyntax nth) && nth.Offset == Offset && nth.Step == Step;
-            }
-        }
-
-        public class OrientationSyntax : ISyntax
-        {
-            public DeviceOrientation Argument { get; set; }
-
-            public override bool Equals(object? obj)
-            {
-                return (obj is OrientationSyntax orientation) && orientation.Argument == Argument;
-            }
-        }
-
-        public class IsOsSyntax : ISyntax
-        {
-            public string Argument { get; set; } = string.Empty;
-
-            public override bool Equals(object? obj)
-            {
-                return (obj is IsOsSyntax orientation) && orientation.Argument == Argument;
             }
         }
 

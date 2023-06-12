@@ -8,43 +8,78 @@
              x:DataType="viewModels:MainWindowViewModel">
   <Grid>
     <Grid.Styles>
-      <Style Selector=":min-width(600) TextBlock#MinWidth">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":max-width(800) TextBlock#MaxWidth">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":min-height(600) TextBlock#MinHeight">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":max-height(800) TextBlock#MaxHeight">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":orientation(landscape) TextBlock#Landscape">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":orientation(portrait) TextBlock#Portrait">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":is-os(windows) TextBlock#Windows">
-        <Setter Property="Foreground" Value="Red" />
-      </Style>
-      <Style Selector=":is-os(linux) TextBlock#Linux">
-        <Setter Property="Foreground"
-                Value="Red" />
-      </Style>
-      <Style Selector=":is-os(osx) TextBlock#OSX">
-        <Setter Property="Foreground"
-                Value="Red" />
-      </Style>
-      <Style Selector=":is-os(android) TextBlock#Android">
-        <Setter Property="Foreground"
-                Value="Red" />
-      </Style>
-      <Style Selector=":is-os(ios) TextBlock#iOS">
-        <Setter Property="Foreground"
-                Value="Red" />
-      </Style>
+      <Media Query=":min-width(600)">
+        <Style  Selector="TextBlock#MinWidth">
+          <Setter Property="Foreground"
+                  Value="Red" />          
+        </Style>
+      </Media>
+      <Media Query=":min-width(600)">
+        <Style  Selector="TextBlock#MinWidth">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":max-width(800)">
+        <Style  Selector="TextBlock#MaxWidth">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":min-height(600)">
+        <Style  Selector="TextBlock#MinHeight">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":max-height(800)">
+        <Style  Selector="TextBlock#MaxHeight">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":orientation(landscape)">
+        <Style  Selector="TextBlock#Landscape">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":orientation(portrait)">
+        <Style  Selector="TextBlock#Portrait">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":is-os(windows)">
+        <Style  Selector="TextBlock#Windows">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":is-os(linux)">
+        <Style  Selector="TextBlock#Linux">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":is-os(osx)">
+        <Style  Selector="TextBlock#OSX">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":is-os(android)">
+        <Style  Selector="TextBlock#Android">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
+      <Media Query=":is-os(ios)">
+        <Style  Selector="TextBlock#iOS">
+          <Setter Property="Foreground"
+                  Value="Red" />
+        </Style>
+      </Media>
     </Grid.Styles>
     <StackPanel Spacing="10">
       <TextBlock Name="MinWidth" Classes="h2" Text="min-width" />

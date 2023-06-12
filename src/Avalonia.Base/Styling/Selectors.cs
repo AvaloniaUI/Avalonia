@@ -137,26 +137,6 @@ namespace Avalonia.Styling
             return new NotSelector(previous, argument);
         }
 
-        public static Selector MinWidth(this Selector? previous, double argument)
-        {
-            return new MinWidthMediaSelector(previous, argument);
-        }
-        
-        public static Selector MaxWidth(this Selector? previous, double argument)
-        {
-            return new MaxWidthMediaSelector(previous, argument);
-        }
-        
-        public static Selector MinHeight(this Selector? previous, double argument)
-        {
-            return new MinHeightMediaSelector(previous, argument);
-        }
-        
-        public static Selector MaxHeight(this Selector? previous, double argument)
-        {
-            return new MaxHeightMediaSelector(previous, argument);
-        }
-
         /// <inheritdoc cref="NthChildSelector"/>
         /// <inheritdoc cref="NthChildSelector(Selector?, int, int)"/>
         /// <returns>The selector.</returns>
@@ -215,16 +195,6 @@ namespace Avalonia.Styling
         public static Selector Or(IReadOnlyList<Selector> selectors)
         {
             return new OrSelector(selectors);
-        }
-        
-        public static Selector Orientation(this Selector? previous, DeviceOrientation argument)
-        {
-            return new OrientationMediaSelector(previous, (DeviceOrientation)argument);
-        }
-        
-        public static Selector IsOs(this Selector? previous, string argument)
-        {
-            return new IsOsMediaSelector(previous, argument);
         }
 
         /// <summary>
