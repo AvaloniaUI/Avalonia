@@ -299,14 +299,32 @@ namespace Avalonia.Win32
 
         private static IconImpl CreateIconImpl(Stream stream)
         {
-            try
+            if (stream.CanSeek)
             {
-                // new Icon() will work only if stream is an "ico" file.
-                return new IconImpl(new System.Drawing.Icon(stream));
+                var header = new byte[4];
+                var readCount = stream.Read(header, 0, header.Length);
+                stream.Seek(0, SeekOrigin.Begin);
+
+                if (readCount == header.Length
+                    // 0010 - ico file header
+                    && header[0] == 0 && header[1] == 0 && header[2] == 1 && header[3] == 0)
+                {
+                    try
+                    {
+                        // new Icon() will work only if stream is an "ico" file.
+                        return new IconImpl(new System.Drawing.Icon(stream));
+                    }
+                    catch (ArgumentException)
+                    {
+                        return CreateIconImplAsBitmapIcon(stream);
+                    }
+                }
             }
-            catch (ArgumentException)
+            
+            return CreateIconImplAsBitmapIcon(stream);
+
+            static IconImpl CreateIconImplAsBitmapIcon(Stream stream)
             {
-                // Fallback to Bitmap creation and converting into a windows icon. 
                 using var icon = new System.Drawing.Bitmap(stream);
                 var hIcon = icon.GetHicon();
                 return new IconImpl(System.Drawing.Icon.FromHandle(hIcon));
