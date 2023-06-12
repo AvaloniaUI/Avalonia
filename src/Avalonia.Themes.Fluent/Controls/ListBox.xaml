@@ -40,8 +40,6 @@
                         AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
                         BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            AreVerticalSnapPointsRegular="{TemplateBinding AreVerticalSnapPointsRegular}"
-                            AreHorizontalSnapPointsRegular="{TemplateBinding AreHorizontalSnapPointsRegular}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
                             Margin="{TemplateBinding Padding}"/>
           </ScrollViewer>
