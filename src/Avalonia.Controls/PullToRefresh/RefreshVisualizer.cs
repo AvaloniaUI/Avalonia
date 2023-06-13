@@ -263,11 +263,11 @@ namespace Avalonia.Controls
                             contentVisual.RotationAngle = _startingRotationAngle + (float)(2 * Math.PI);
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3D(0, (float)(_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(0, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
                             }
                             else
                             {
-                                offset = new Vector3D((float)(_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
                             }
                             visual.Offset = offset;
                             visualizerVisual.Offset = IsPullDirectionVertical ? 
