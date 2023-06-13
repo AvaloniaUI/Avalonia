@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.ObjectModel;
+using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -24,6 +25,27 @@ public class RenderingTests
                 Content = new PathIcon
                 {
                     Data = StreamGeometry.Parse("M0,9 L10,0 20,9 19,10 10,2 1,10 z")
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
+    public void Should_Not_Hang_With_Non_Trivial_Layout()
+    {
+        var window = new Window
+        {
+            Content = new ContentControl
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Padding = new Thickness(1),
+                Content = new ListBox
+                {
+                    ItemsSource = new ObservableCollection<string>()
+                    {
+                        "Test 1",
+                        "Test 2"
+                    }
                 }
             },
             SizeToContent = SizeToContent.WidthAndHeight
