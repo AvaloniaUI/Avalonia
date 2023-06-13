@@ -10,16 +10,19 @@ internal static class StorageProviderHelpers
 {
     public static IStorageItem? TryCreateBclStorageItem(string path)
     {
-        var directory = new DirectoryInfo(path);
-        if (directory.Exists)
+        if (!string.IsNullOrWhiteSpace(path))
         {
-            return new BclStorageFolder(directory);
-        }
-        
-        var file = new FileInfo(path);
-        if (file.Exists)
-        {
-            return new BclStorageFile(file);
+            var directory = new DirectoryInfo(path);
+            if (directory.Exists)
+            {
+                return new BclStorageFolder(directory);
+            }
+
+            var file = new FileInfo(path);
+            if (file.Exists)
+            {
+                return new BclStorageFile(file);
+            }
         }
 
         return null;
