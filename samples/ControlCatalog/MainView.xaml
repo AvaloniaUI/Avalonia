@@ -8,73 +8,67 @@
              x:DataType="viewModels:MainWindowViewModel">
   <Grid>
     <Grid.Styles>
-      <Media Query=":min-width(600)">
-        <Style  Selector="TextBlock#MinWidth">
-          <Setter Property="Foreground"
-                  Value="Red" />          
-        </Style>
-      </Media>
-      <Media Query=":min-width(600)">
+      <Media Query="width >= 600">
         <Style  Selector="TextBlock#MinWidth">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":max-width(800)">
+      <Media Query="width &lt;= 800">
         <Style  Selector="TextBlock#MaxWidth">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":min-height(600)">
+      <Media Query="height >= 600">
         <Style  Selector="TextBlock#MinHeight">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":max-height(800)">
+      <Media Query="height &lt;= 800">
         <Style  Selector="TextBlock#MaxHeight">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":orientation(landscape)">
+      <Media Query="orientation:landscape">
         <Style  Selector="TextBlock#Landscape">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":orientation(portrait)">
+      <Media Query="orientation:portrait">
         <Style  Selector="TextBlock#Portrait">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":is-os(windows)">
+      <Media Query="platform:windows">
         <Style  Selector="TextBlock#Windows">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":is-os(linux)">
+      <Media Query="platform:linux">
         <Style  Selector="TextBlock#Linux">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":is-os(osx)">
+      <Media Query="platform:osx">
         <Style  Selector="TextBlock#OSX">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":is-os(android)">
+      <Media Query="platform:android">
         <Style  Selector="TextBlock#Android">
           <Setter Property="Foreground"
                   Value="Red" />
         </Style>
       </Media>
-      <Media Query=":is-os(ios)">
+      <Media Query="platform:ios">
         <Style  Selector="TextBlock#iOS">
           <Setter Property="Foreground"
                   Value="Red" />
@@ -82,17 +76,17 @@
       </Media>
     </Grid.Styles>
     <StackPanel Spacing="10">
-      <TextBlock Name="MinWidth" Classes="h2" Text="min-width" />
-      <TextBlock Name="MaxWidth" Classes="h2" Text="max-width" />
-      <TextBlock Name="MinHeight" Classes="h2" Text="min-height" />
-      <TextBlock Name="MaxHeight" Classes="h2" Text="max-height" />
-      <TextBlock Name="Landscape" Classes="h2" Text="orientation(landscape)" />
-      <TextBlock Name="Portrait" Classes="h2" Text="orientation(portrait)" />
-      <TextBlock Name="Windows" Classes="h2" Text="is-os(windows)" />
-      <TextBlock Name="Linux" Classes="h2" Text="is-os(linux)" />
-      <TextBlock Name="OSX" Classes="h2" Text="is-os(osx)" />
-      <TextBlock Name="Android" Classes="h2" Text="is-os(android)" />
-      <TextBlock Name="iOS" Classes="h2" Text="is-os(ios)" />
+      <TextBlock Name="MinWidth" Classes="h2" Text="width >= 600" />
+      <TextBlock Name="MaxWidth" Classes="h2" Text="width &lt;= 800" />
+      <TextBlock Name="MinHeight" Classes="h2" Text="height >= 600" />
+      <TextBlock Name="MaxHeight" Classes="h2" Text="height &lt;= 800" />
+      <TextBlock Name="Landscape" Classes="h2" Text="orientation:landscape" />
+      <TextBlock Name="Portrait" Classes="h2" Text="orientation:portrait" />
+      <TextBlock Name="Windows" Classes="h2" Text="platform:windows" />
+      <TextBlock Name="Linux" Classes="h2" Text="platform:linux" />
+      <TextBlock Name="OSX" Classes="h2" Text="platform:osx" />
+      <TextBlock Name="Android" Classes="h2" Text="platform:android" />
+      <TextBlock Name="iOS" Classes="h2" Text="platform:ios" />
     </StackPanel>
   </Grid>
 </UserControl>

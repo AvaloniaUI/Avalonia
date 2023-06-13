@@ -50,24 +50,18 @@ namespace Avalonia.Markup.Parsers
             {
                 switch (i)
                 {
-                    case MediaQueryGrammar.MinWidthSyntax minWidth:
-                        result = Styling.Queries.MinWidth(result, minWidth.Argument);
-                        break;
-                    case MediaQueryGrammar.MaxWidthSyntax maxWidth:
-                        result = Styling.Queries.MaxWidth(result, maxWidth.Argument);
-                        break;
-                    case MediaQueryGrammar.MinHeightSyntax minHeight:
-                        result = Styling.Queries.MinHeight(result, minHeight.Argument);
-                        break;
-                    case MediaQueryGrammar.MaxHeightSyntax maxHeight:
-                        result = Styling.Queries.MaxHeight(result, maxHeight.Argument);
-                        break;
                     case MediaQueryGrammar.OrientationSyntax orientation:
-                        result = Styling.Queries.Orientation(result, orientation.Argument);
+                        result = Queries.Orientation(result, orientation.Argument);
                         break;
-                    /*case MediaQueryGrammar.IsOsSyntax isOs:
-                        result = Queries.IsOs(result, isOs.Argument);
-                        break;*/
+                    case MediaQueryGrammar.WidthSyntax width:
+                        result = Queries.Width(result, width.LeftOperator, width.Left, width.RightOperator, width.Right);
+                        break;
+                    case MediaQueryGrammar.HeightSyntax height:
+                        result = Queries.Height(result, height.LeftOperator, height.Left, height.RightOperator, height.Right);
+                        break;
+                    case MediaQueryGrammar.PlatformSyntax platform:
+                        result = Queries.Platform(result, platform.Argument);
+                        break;
                     default:
                         throw new NotSupportedException($"Unsupported selector grammar '{i.GetType()}'.");
                 }

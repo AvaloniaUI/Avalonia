@@ -1,21 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Avalonia.Markup.Parsers;
-using Avalonia.Platform;
-using XamlX;
+using Avalonia.Styling;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
-using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    using XamlParseException = XamlX.XamlParseException;
     using XamlLoadException = XamlX.XamlLoadException;
+    using XamlParseException = XamlX.XamlParseException;
     class AvaloniaXamlIlQueryTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -51,24 +48,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     switch (i)
                     {
-
-                        case MediaQueryGrammar.MinWidthSyntax minWidth:
-                            result = new XamlIlMinWidthQuery(result, minWidth.Argument);
-                            break;
-                        case MediaQueryGrammar.MaxWidthSyntax maxWidth:
-                            result = new XamlIlMaxWidthQuery(result, maxWidth.Argument);
-                            break;
-                        case MediaQueryGrammar.MinHeightSyntax minHeight:
-                            result = new XamlIlMinHeightQuery(result, minHeight.Argument);
-                            break;
-                        case MediaQueryGrammar.MaxHeightSyntax maxHeight:
-                            result = new XamlIlMaxHeightQuery(result, maxHeight.Argument);
-                            break;
                         case MediaQueryGrammar.OrientationSyntax orientation:
                             result = new XamlIlOrientationQuery(result, orientation.Argument);
                             break;
-                        case MediaQueryGrammar.IsOsSyntax isOs:
-                            result = new XamlIlIsOsQuery(result, isOs.Argument);
+                        case MediaQueryGrammar.PlatformSyntax isOs:
+                            result = new XamlIlPlatformQuery(result, isOs.Argument);
+                            break;
+                        case MediaQueryGrammar.WidthSyntax width:
+                            result = new XamlIlWidthQuery(result, width);
+                            break;
+                        case MediaQueryGrammar.HeightSyntax height:
+                            result = new XamlIHeightQuery(result, height);
                             break;
                         case MediaQueryGrammar.CommaSyntax comma:
                             if (results == null) 
@@ -224,85 +214,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 m => m.Name == name && m.Parameters.Count == 1);
         }
     }
-
-    class XamlIlMinWidthQuery : XamlIlQueryNode
-    {
-        private double _argument;
-        
-        public XamlIlMinWidthQuery(XamlIlQueryNode previous, double argument) : base(previous)
-        {
-            _argument = argument;
-        }
-
-        public override IXamlType TargetType => Previous?.TargetType;
-        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
-        {
-            codeGen.Ldc_R8(_argument);
-            EmitCall(context, codeGen,
-                m => m.Name == "MinWidth" && m.Parameters.Count == 2);
-        }
-    }
-    
-    class XamlIlMaxWidthQuery : XamlIlQueryNode
-    {
-        private double _argument;
-        
-        public XamlIlMaxWidthQuery(XamlIlQueryNode previous, double argument) : base(previous)
-        {
-            _argument = argument;
-        }
-
-        public override IXamlType TargetType => Previous?.TargetType;
-        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
-        {
-            codeGen.Ldc_R8(_argument);
-            EmitCall(context, codeGen,
-                m => m.Name == "MaxWidth" && m.Parameters.Count == 2);
-        }
-    }
-    
-    class XamlIlMinHeightQuery : XamlIlQueryNode
-    {
-        private double _argument;
-        
-        public XamlIlMinHeightQuery(XamlIlQueryNode previous, double argument) : base(previous)
-        {
-            _argument = argument;
-        }
-
-        public override IXamlType TargetType => Previous?.TargetType;
-        
-        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
-        {
-            codeGen.Ldc_R8(_argument);
-            EmitCall(context, codeGen,
-                m => m.Name == "MinHeight" && m.Parameters.Count == 2);
-        }
-    }
-    
-    class XamlIlMaxHeightQuery : XamlIlQueryNode
-    {
-        private double _argument;
-        
-        public XamlIlMaxHeightQuery(XamlIlQueryNode previous, double argument) : base(previous)
-        {
-            _argument = argument;
-        }
-
-        public override IXamlType TargetType => Previous?.TargetType;
-        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
-        {
-            codeGen.Ldc_R8(_argument);
-            EmitCall(context, codeGen,
-                m => m.Name == "MaxHeight" && m.Parameters.Count == 2);
-        }
-    }
     
     class XamlIlOrientationQuery : XamlIlQueryNode
     {
-        private DeviceOrientation _argument;
+        private MediaOrientation _argument;
         
-        public XamlIlOrientationQuery(XamlIlQueryNode previous, DeviceOrientation argument) : base(previous)
+        public XamlIlOrientationQuery(XamlIlQueryNode previous, MediaOrientation argument) : base(previous)
         {
             _argument = argument;
         }
@@ -316,11 +233,53 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
     }
     
-    class XamlIlIsOsQuery : XamlIlQueryNode
+    class XamlIlWidthQuery : XamlIlQueryNode
+    {
+        private MediaQueryGrammar.WidthSyntax _argument;
+        
+        public XamlIlWidthQuery(XamlIlQueryNode previous, MediaQueryGrammar.WidthSyntax argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_I4((int)_argument.LeftOperator);
+            codeGen.Ldc_R8(_argument.Left);
+            codeGen.Ldc_I4((int)_argument.RightOperator);
+            codeGen.Ldc_R8(_argument.Right);
+            EmitCall(context, codeGen,
+                m => m.Name == "Width" && m.Parameters.Count == 5);
+        }
+    }
+    
+    class XamlIHeightQuery : XamlIlQueryNode
+    {
+        private MediaQueryGrammar.HeightSyntax _argument;
+        
+        public XamlIHeightQuery(XamlIlQueryNode previous, MediaQueryGrammar.HeightSyntax argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_I4((int)_argument.LeftOperator);
+            codeGen.Ldc_R8(_argument.Left);
+            codeGen.Ldc_I4((int)_argument.RightOperator);
+            codeGen.Ldc_R8(_argument.Right);
+            EmitCall(context, codeGen,
+                m => m.Name == "Height" && m.Parameters.Count == 5);
+        }
+    }
+    
+    class XamlIlPlatformQuery : XamlIlQueryNode
     {
         private string _argument;
         
-        public XamlIlIsOsQuery(XamlIlQueryNode previous, string argument) : base(previous)
+        public XamlIlPlatformQuery(XamlIlQueryNode previous, string argument) : base(previous)
         {
             _argument = argument;
         }
@@ -330,7 +289,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             codeGen.Ldstr(_argument);
             EmitCall(context, codeGen,
-                m => m.Name == "IsOs" && m.Parameters.Count == 2);
+                m => m.Name == "Platform" && m.Parameters.Count == 2);
         }
     }
 

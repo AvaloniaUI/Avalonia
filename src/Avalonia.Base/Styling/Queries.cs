@@ -5,34 +5,24 @@ namespace Avalonia.Styling
 {
     internal static class Queries
     {
-        public static Query IsOs(this Query? previous, string argument)
+        public static Query Platform(this Query? previous, string argument)
         {
-            return new IsOsMediaQuery(previous, argument);
+            return new PlatformMediaQuery(previous, argument);
         }
 
-        public static Query MaxHeight(this Query? previous, double argument)
-        {
-            return new MaxHeightMediaQuery(previous, argument);
-        }
-
-        public static Query MaxWidth(this Query? previous, double argument)
-        {
-            return new MaxWidthMediaQuery(previous, argument);
-        }
-
-        public static Query MinHeight(this Query? previous, double argument)
-        {
-            return new MinHeightMediaQuery(previous, argument);
-        }
-
-        public static Query MinWidth(this Query? previous, double argument)
-        {
-            return new MinWidthMediaQuery(previous, argument);
-        }
-
-        public static Query Orientation(this Query? previous, DeviceOrientation argument)
+        public static Query Orientation(this Query? previous, MediaOrientation argument)
         {
             return new OrientationMediaQuery(previous, argument);
+        }
+
+        public static Query Width(this Query? previous, QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right)
+        {
+            return new WidthMediaQuery(previous, leftOperator, left, rightOperator, right);
+        }
+
+        public static Query Height(this Query? previous, QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right)
+        {
+            return new HeightMediaQuery(previous, leftOperator, left, rightOperator, right);
         }
 
         /// <summary>

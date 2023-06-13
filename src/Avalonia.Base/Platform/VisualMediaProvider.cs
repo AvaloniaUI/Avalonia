@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Platform
 {
@@ -41,18 +37,18 @@ namespace Avalonia.Platform
 
         public double GetScreenWidth() => _visual.Bounds.Size.Width;
 
-        public DeviceOrientation GetDeviceOrientation()
+        public MediaOrientation GetDeviceOrientation()
         {
             var width = GetScreenWidth();
             var height = GetScreenHeight();
 
             if(width > height)
-                return DeviceOrientation.Landscape;
+                return MediaOrientation.Landscape;
 
             if(height > width)
-                return DeviceOrientation.Portrait;
+                return MediaOrientation.Portrait;
 
-            return DeviceOrientation.Square;
+            return MediaOrientation.Square;
         }
 
         public string GetPlatform()

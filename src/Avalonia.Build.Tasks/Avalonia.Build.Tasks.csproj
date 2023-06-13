@@ -83,7 +83,7 @@
       <Compile Include="../Avalonia.Base/Thickness.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Base/DeviceOrientation.cs">
+      <Compile Include="../Avalonia.Base/Styling/MediaOrientation.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Size.cs">

@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Styling;
 
 namespace Avalonia.Platform
 {
@@ -9,7 +10,7 @@ namespace Avalonia.Platform
 
         double GetScreenHeight();
 
-        DeviceOrientation GetDeviceOrientation();
+        MediaOrientation GetDeviceOrientation();
 
         event EventHandler? ScreenSizeChanged;
         event EventHandler? OrientationChanged;

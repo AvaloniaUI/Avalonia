@@ -4,9 +4,9 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
-    internal sealed class IsOsMediaQuery : MediaQuery<string>
+    internal sealed class PlatformMediaQuery : MediaQuery<string>
     {
-        public IsOsMediaQuery(Query? previous, string argument) : base(previous, argument)
+        public PlatformMediaQuery(Query? previous, string argument) : base(previous, argument)
         {
         }
 
@@ -19,7 +19,7 @@ namespace Avalonia.Styling
 
             if (subscribe)
             {
-                return new SelectorMatch(new IsOsActivator(visual, Argument));
+                return new SelectorMatch(new PlatformActivator(visual, Argument));
             }
 
             if (visual.VisualRoot is IMediaProviderHost mediaProviderHost && mediaProviderHost.MediaProvider is { } mediaProvider)
@@ -35,7 +35,7 @@ namespace Avalonia.Styling
             return mediaProvider.GetPlatform() == argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        public override string ToString() => "is-os";
+        public override string ToString() => "platform";
 
         public override string ToString(Media? owner)
         {

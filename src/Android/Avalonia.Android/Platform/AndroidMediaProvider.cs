@@ -41,14 +41,14 @@ namespace Avalonia.Android.Platform
 
         public double GetScreenWidth() => _topLevelImpl.Size.Width;
 
-        public DeviceOrientation GetDeviceOrientation()
+        public MediaOrientation GetDeviceOrientation()
         {
             return _topLevelImpl.View.Resources.Configuration.Orientation switch
             {
-                global::Android.Content.Res.Orientation.Landscape => DeviceOrientation.Landscape,
-                global::Android.Content.Res.Orientation.Portrait => DeviceOrientation.Portrait,
-                global::Android.Content.Res.Orientation.Square => DeviceOrientation.Square,
-                _ => DeviceOrientation.Portrait,
+                global::Android.Content.Res.Orientation.Landscape => MediaOrientation.Landscape,
+                global::Android.Content.Res.Orientation.Portrait => MediaOrientation.Portrait,
+                global::Android.Content.Res.Orientation.Square => MediaOrientation.Square,
+                _ => MediaOrientation.Portrait,
             };
         }
 
