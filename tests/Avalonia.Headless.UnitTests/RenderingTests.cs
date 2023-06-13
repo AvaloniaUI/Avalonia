@@ -25,6 +25,18 @@ public class RenderingTests
                 Content = new PathIcon
                 {
                     Data = StreamGeometry.Parse("M0,9 L10,0 20,9 19,10 10,2 1,10 z")
+                }
+            },
+            SizeToContent = SizeToContent.WidthAndHeight
+        };
+
+        window.Show();
+
+        var frame = window.CaptureRenderedFrame();
+
+        Assert.NotNull(frame);
+    }
+
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
@@ -50,6 +62,7 @@ public class RenderingTests
             },
             SizeToContent = SizeToContent.WidthAndHeight
         };
+
         window.Show();
 
         var frame = window.CaptureRenderedFrame();
