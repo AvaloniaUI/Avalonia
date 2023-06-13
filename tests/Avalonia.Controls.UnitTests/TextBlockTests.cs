@@ -116,6 +116,39 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_Inlines_Should_Reset_InlineUIContainer_VisualParent_On_Measure()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var control = new Control();
+
+                var run = new InlineUIContainer(control);
+
+                target.Inlines.Add(run);
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(target.IsMeasureValid);
+
+                Assert.Equal(target, control.VisualParent);
+
+                target.Inlines = null;
+
+                Assert.Null(run.Parent);
+
+                target.Inlines = new InlineCollection { new Run("Hello World") };
+
+                Assert.Null(run.Parent);
+
+                target.Measure(Size.Infinity);
+
+                Assert.Null(control.VisualParent);
+            }
+        }
+
+        [Fact]
         public void InlineUIContainer_Child_Schould_Be_Arranged()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

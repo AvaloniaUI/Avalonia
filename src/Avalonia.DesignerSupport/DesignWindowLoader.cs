@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -13,6 +14,9 @@ namespace Avalonia.DesignerSupport
     public class DesignWindowLoader
     {
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath)
+            => LoadDesignerWindow(xaml, assemblyPath, xamlFileProjectPath, 1.0);
+
+        public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath, double renderScaling)
         {
             Window window;
             Control control;
@@ -95,6 +99,9 @@ namespace Avalonia.DesignerSupport
                 {
                     window = new Window() {Content = (Control)control};
                 }
+
+                if (window.PlatformImpl is OffscreenTopLevelImplBase offscreenImpl)
+                    offscreenImpl.RenderScaling = renderScaling;
 
                 Design.ApplyDesignModeProperties(window, control);
 
