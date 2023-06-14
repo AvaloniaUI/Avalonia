@@ -67,8 +67,8 @@ namespace Avalonia.DesignerSupport.Remote
         {
             _transport.Send(new RequestViewportResizeMessage
             {
-                Width = clientSize.Width,
-                Height = clientSize.Height
+                Width = Math.Ceiling(clientSize.Width * RenderScaling),
+                Height = Math.Ceiling(clientSize.Height * RenderScaling)
             });
             ClientSize = clientSize;
             RenderAndSendFrameIfNeeded();
