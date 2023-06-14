@@ -5,9 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Xml.Linq;
 using Avalonia.Controls.Selection;
-using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -171,7 +169,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
         {
-            add => AddHandler(SelectionChangedEvent, value); 
+            add => AddHandler(SelectionChangedEvent, value);
             remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
@@ -369,7 +367,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool WrapSelection
         {
-            get => GetValue(WrapSelectionProperty); 
+            get => GetValue(WrapSelectionProperty);
             set => SetValue(WrapSelectionProperty, value);
         }
 
@@ -382,7 +380,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected SelectionMode SelectionMode
         {
-            get => GetValue(SelectionModeProperty); 
+            get => GetValue(SelectionModeProperty);
             set => SetValue(SelectionModeProperty, value);
         }
 
@@ -465,7 +463,10 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            AutoScrollToSelectedItemIfNecessary();
+            if (Selection?.AnchorIndex is int index)
+            {
+                AutoScrollToSelectedItemIfNecessary(index);
+            }
         }
 
         /// <inheritdoc />
@@ -476,7 +477,10 @@ namespace Avalonia.Controls.Primitives
             void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-                AutoScrollToSelectedItemIfNecessary();
+                if (Selection?.AnchorIndex is int index)
+                {
+                    AutoScrollToSelectedItemIfNecessary(index);
+                }
             }
 
             if (AutoScrollToSelectedItem)
@@ -625,7 +629,10 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
-                AutoScrollToSelectedItemIfNecessary();
+                if (Selection?.AnchorIndex is int index)
+                {
+                    AutoScrollToSelectedItemIfNecessary(index);
+                }
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -909,8 +916,11 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
-                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(Selection.AnchorIndex));
-                AutoScrollToSelectedItemIfNecessary();
+                if (Selection?.AnchorIndex is int index)
+                {
+                    KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(index));
+                    AutoScrollToSelectedItemIfNecessary(index);
+                }
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
             {
@@ -1038,7 +1048,7 @@ namespace Avalonia.Controls.Primitives
                     return value;
                 }
                 else
-                { 
+                {
                     return AvaloniaProperty.UnsetValue;
                 }
             }
@@ -1096,16 +1106,19 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void AutoScrollToSelectedItemIfNecessary()
+        private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
             if (AutoScrollToSelectedItem &&
                 !_hasScrolledToSelectedItem &&
                 Presenter is object &&
-                Selection.AnchorIndex >= 0 &&
+                anchorIndex >= 0 &&
                 IsAttachedToVisualTree)
             {
-                ScrollIntoView(Selection.AnchorIndex);
-                _hasScrolledToSelectedItem = true;
+                Dispatcher.UIThread.Post(state =>
+                {
+                    ScrollIntoView((int)state!);
+                    _hasScrolledToSelectedItem = true;
+                }, anchorIndex);
             }
         }
 
