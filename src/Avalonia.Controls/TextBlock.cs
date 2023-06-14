@@ -668,17 +668,7 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                if (_textRuns != null)
-                {
-                    foreach (var textRun in _textRuns)
-                    {
-                        if (textRun is EmbeddedControlRun controlRun &&
-                            controlRun.Control is Control control)
-                        {
-                            VisualChildren.Remove(control);
-                        }
-                    }
-                }
+                VisualChildren.Clear();
 
                 var textRuns = new List<TextRun>();
 
