@@ -45,7 +45,6 @@ namespace Avalonia.Controls.Primitives
 
         private bool _updatingColor = false;
         private bool _updatingHsvColor = false;
-        private bool _coercedInitialColor = false;
         private bool _isPointerPressed = false;
         private bool _shouldShowLargeSelection = false;
         private List<Hsv> _hsvValues = new List<Hsv>();
@@ -622,7 +621,7 @@ namespace Avalonia.Controls.Primitives
             // that no color has been selected by the user. Note that #00000000 is different than
             // #00FFFFFF (Transparent).
             //
-            // In this situation, the first time the user clicks on the spectrum the third
+            // In this situation, whenever the user clicks on the spectrum, the third
             // component and alpha component will remain zero. This is because the spectrum only
             // controls two components at any given time.
             //
@@ -633,16 +632,19 @@ namespace Avalonia.Controls.Primitives
             // though the desired value is simply full color.
             //
             // To work around this usability issue with an initial #00000000 color, the selected
-            // color is coerced (only the first time) into a color with maximum third component
-            // value and maximum alpha. This can only happen once and only if those two components
-            // are already zero.
+            // color is coerced into a color with maximum third component value and maximum alpha.
+            // This can only happen here in the spectrum if those two components are already zero.
+            //
+            // In the past this coercion was restricted to occur only one time. However, when
+            // ColorPicker controls are re-used or recycled #00000000 can be set multiple times.
+            // Each time needs this special logic for usability so now anytime the color is
+            // changed on the spectrum this logic will run.
             //
             // Also note this is NOT currently done for #00FFFFFF (Transparent) but based on
             // further usability study that case may need to be handled here as well. Right now
             // Transparent is treated as a normal color value with the alpha intentionally set
             // to zero so the alpha slider must still be adjusted after the spectrum.
-            if (!_coercedInitialColor &&
-                IsLoaded)
+            if (IsLoaded)
             {
                 bool isAlphaComponentZero = (alpha == 0.0);
                 bool isThirdComponentZero = false;
@@ -691,8 +693,6 @@ namespace Avalonia.Controls.Primitives
                             newHsv.H = 360.0;
                             break;
                     }
-
-                    _coercedInitialColor = true;
                 }
             }
 

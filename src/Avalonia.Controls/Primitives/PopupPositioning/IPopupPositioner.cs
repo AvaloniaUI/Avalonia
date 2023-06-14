@@ -216,7 +216,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         /// 
         /// If the adjusted position also ends up being constrained, the resulting position of the
         /// FlipX adjustment will be the one before the adjustment.
-        /// /// </remarks>
+        /// </remarks>
         FlipX = 4,
 
         /// <summary>
