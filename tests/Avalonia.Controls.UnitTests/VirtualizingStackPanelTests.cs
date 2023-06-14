@@ -368,6 +368,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Focused_Element_Losing_Focus_Does_Not_Reset_Selection()
+        {
+            using var app = App();
+            var (target, scroll, listBox) = CreateTarget<ListBox>(
+                styles: new[]
+                {
+                    new Style(x => x.OfType<ListBoxItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ListBoxItem.TemplateProperty, ListBoxItemTemplate()),
+                        }
+                    }
+                });
+
+            listBox.SelectedIndex = 0;
+
+            var selectedContainer = target.GetRealizedElements().First()!;
+            selectedContainer.Focusable = true;
+            selectedContainer.Focus();
+
+            scroll.Offset = new Vector(0, 500);
+            Layout(target);
+
+            var newFocused = target.GetRealizedElements().First()!;
+            newFocused.Focusable = true;
+            newFocused.Focus();
+
+            Assert.Equal(0, listBox.SelectedIndex);
+        }
+
+        [Fact]
         public void Removing_Range_When_Scrolled_To_End_Updates_Viewport()
         {
             using var app = App();
@@ -776,7 +808,19 @@ namespace Avalonia.Controls.UnitTests
             Optional<IDataTemplate?> itemTemplate = default,
             IEnumerable<Style>? styles = null)
         {
-            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(items, itemTemplate);
+            return CreateTarget<ItemsControl>(
+                items: items, 
+                itemTemplate: itemTemplate, 
+                styles: styles);
+        }
+
+        private static (VirtualizingStackPanel, ScrollViewer, T) CreateTarget<T>(
+            IEnumerable<object>? items = null,
+            Optional<IDataTemplate?> itemTemplate = default,
+            IEnumerable<Style>? styles = null)
+                where T : ItemsControl, new()
+        {
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<T>(items, itemTemplate);
             var root = CreateRoot(itemsControl, styles);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
@@ -808,7 +852,7 @@ namespace Avalonia.Controls.UnitTests
             var itemsControl = new T
             {
                 ItemsSource = items,
-                Template = new FuncControlTemplate<ItemsControl>((_, ns) => scroll.RegisterInNameScope(ns)),
+                Template = new FuncControlTemplate<T>((_, ns) => scroll.RegisterInNameScope(ns)),
                 ItemsPanel = new FuncTemplate<Panel?>(() => target),
                 ItemTemplate = itemTemplate.GetValueOrDefault(DefaultItemTemplate()),
             };
@@ -838,12 +882,23 @@ namespace Avalonia.Controls.UnitTests
             root?.LayoutManager.ExecuteLayoutPass();
         }
 
+        private static IControlTemplate ListBoxItemTemplate()
+        {
+            return new FuncControlTemplate<ListBoxItem>((x, ns) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    Width = 100,
+                    Height = 10,
+                }.RegisterInNameScope(ns));
+        }
+
         private static IControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((x, ns) =>
                 new ScrollContentPresenter
                 {
-                    Name = "PART_ContentPresenter",
+                    Name = "PART_ScrollContentPresenter",
                 }.RegisterInNameScope(ns));
         }
 

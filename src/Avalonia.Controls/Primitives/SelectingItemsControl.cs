@@ -533,7 +533,16 @@ namespace Avalonia.Controls.Primitives
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);
-            element.ClearValue(IsSelectedProperty);
+
+            try
+            {
+                _ignoreContainerSelectionChanged = true;
+                element.ClearValue(IsSelectedProperty);
+            }
+            finally
+            {
+                _ignoreContainerSelectionChanged = false;
+            }
         }
 
         /// <inheritdoc/>
