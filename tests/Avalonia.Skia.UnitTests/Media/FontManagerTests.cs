@@ -131,7 +131,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = "ABC" });
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = "avares://resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown" });
 
                     var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _);
 
