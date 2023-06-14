@@ -295,10 +295,7 @@ namespace Avalonia.Controls.Remote.Server
 
             lock (_lock)
             {
-                // Ideally we should only send a frame if its status is Rendered: since the renderer might not be
-                // initialized at the start, we're sending black frames in this case. However, this was the historical
-                // behavior and some external programs are depending on receiving a frame asap.
-                if (_lastReceivedFrame != _lastSentFrame || _framebuffer.GetStatus() == FrameStatus.CopiedToMessage)
+                if (_lastReceivedFrame != _lastSentFrame || _framebuffer.GetStatus() != FrameStatus.Rendered)
                     return;
 
                 framebuffer = _framebuffer;
