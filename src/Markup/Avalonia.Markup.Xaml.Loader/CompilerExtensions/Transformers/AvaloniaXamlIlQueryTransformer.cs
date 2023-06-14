@@ -44,6 +44,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 XamlIlQueryNode result = initialNode;
                 XamlIlOrQueryNode results = null;
+                XamlIlAndQueryNode andNode = null;
                 foreach (var i in syntax)
                 {
                     switch (i)
@@ -58,16 +59,30 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             result = new XamlIlWidthQuery(result, width);
                             break;
                         case MediaQueryGrammar.HeightSyntax height:
-                            result = new XamlIHeightQuery(result, height);
+                            result = new XamlIlHeightQuery(result, height);
                             break;
-                        case MediaQueryGrammar.CommaSyntax comma:
-                            if (results == null) 
+                        case MediaQueryGrammar.OrSyntax or:
+                            if (results == null)
                                 results = new XamlIlOrQueryNode(node, queryType);
-                            results.Add(result);
+                            if (andNode != null && result == initialNode)
+                                throw new XamlParseException($"Previously opened And node is not closed.", node);
+                            results.Add(andNode ?? result);
+                            result = initialNode;
+                            andNode = null;
+                            break;
+                        case MediaQueryGrammar.AndSyntax and:
+                            if (andNode == null)
+                                andNode = new XamlIlAndQueryNode(node, queryType);
+                            andNode.Add(result);
                             result = initialNode;
                             break;
                         default:
                             throw new XamlParseException($"Unsupported query grammar '{i.GetType()}'.", node);
+                    }
+
+                    if (andNode != null && result != initialNode)
+                    {
+                        andNode.Add(result);
                     }
                 }
 
@@ -254,11 +269,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
     }
     
-    class XamlIHeightQuery : XamlIlQueryNode
+    class XamlIlHeightQuery : XamlIlQueryNode
     {
         private MediaQueryGrammar.HeightSyntax _argument;
         
-        public XamlIHeightQuery(XamlIlQueryNode previous, MediaQueryGrammar.HeightSyntax argument) : base(previous)
+        public XamlIlHeightQuery(XamlIlQueryNode previous, MediaQueryGrammar.HeightSyntax argument) : base(previous)
         {
             _argument = argument;
         }
@@ -357,6 +372,73 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             EmitCall(context, codeGen,
                 m => m.Name == "Or" && m.Parameters.Count == 1 && m.Parameters[0].Name.StartsWith("IReadOnlyList"));
+        }
+    }
+
+    class XamlIlAndQueryNode : XamlIlQueryNode
+    {
+        List<XamlIlQueryNode> _queries = new List<XamlIlQueryNode>();
+        public XamlIlAndQueryNode(IXamlLineInfo info, IXamlType queryType) : base(null, info, queryType)
+        {
+        }
+
+        public void Add(XamlIlQueryNode node)
+        {
+            _queries.Add(node);
+        }
+
+        public override IXamlType TargetType
+        {
+            get
+            {
+                IXamlType result = null;
+
+                foreach (var query in _queries)
+                {
+                    if (query.TargetType == null)
+                    {
+                        return null;
+                    }
+                    else if (result == null)
+                    {
+                        result = query.TargetType;
+                    }
+                    else
+                    {
+                        while (!result.IsAssignableFrom(query.TargetType))
+                        {
+                            result = result.BaseType;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            if (_queries.Count == 0)
+                throw new XamlLoadException("Invalid query count", this);
+            if (_queries.Count == 1)
+            {
+                _queries[0].Emit(context, codeGen);
+                return;
+            }
+            var listType = context.Configuration.TypeSystem.FindType("System.Collections.Generic.List`1")
+                .MakeGenericType(base.Type.GetClrType());
+            var add = listType.FindMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
+            codeGen
+                .Newobj(listType.FindConstructor());
+            foreach (var s in _queries)
+            {
+                codeGen.Dup();
+                context.Emit(s, codeGen, Type.GetClrType());
+                codeGen.EmitCall(add, true);
+            }
+
+            EmitCall(context, codeGen,
+                m => m.Name == "And" && m.Parameters.Count == 1 && m.Parameters[0].Name.StartsWith("IReadOnlyList"));
         }
     }
 }

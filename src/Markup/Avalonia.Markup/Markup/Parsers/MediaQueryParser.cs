@@ -13,19 +13,11 @@ namespace Avalonia.Markup.Parsers
     /// </summary>
     internal class MediaQueryParser
     {
-        private readonly Func<string, string, Type> _typeResolver;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaQueryParser"/> class.
         /// </summary>
-        /// <param name="typeResolver">
-        /// The type resolver to use. The type resolver is a function which accepts two strings:
-        /// a type name and a XML namespace prefix and a type name, and should return the resolved
-        /// type or throw an exception.
-        /// </param>
-        public MediaQueryParser(Func<string, string, Type> typeResolver)
+        public MediaQueryParser()
         {
-            _typeResolver = typeResolver;
         }
 
         /// <summary>
@@ -51,16 +43,26 @@ namespace Avalonia.Markup.Parsers
                 switch (i)
                 {
                     case MediaQueryGrammar.OrientationSyntax orientation:
-                        result = Queries.Orientation(result, orientation.Argument);
+                        result = result.Orientation(orientation.Argument);
                         break;
                     case MediaQueryGrammar.WidthSyntax width:
-                        result = Queries.Width(result, width.LeftOperator, width.Left, width.RightOperator, width.Right);
+                        result = result.Width(width.LeftOperator, width.Left, width.RightOperator, width.Right);
                         break;
                     case MediaQueryGrammar.HeightSyntax height:
-                        result = Queries.Height(result, height.LeftOperator, height.Left, height.RightOperator, height.Right);
+                        result = result.Height(height.LeftOperator, height.Left, height.RightOperator, height.Right);
                         break;
                     case MediaQueryGrammar.PlatformSyntax platform:
-                        result = Queries.Platform(result, platform.Argument);
+                        result = result.Platform(platform.Argument);
+                        break;
+                    case MediaQueryGrammar.OrSyntax or:
+                    case MediaQueryGrammar.AndSyntax and:
+                        if (results == null)
+                        {
+                            results = new List<Query>();
+                        }
+
+                        results.Add(result ?? throw new NotSupportedException("Invalid query!"));
+                        result = null;
                         break;
                     default:
                         throw new NotSupportedException($"Unsupported selector grammar '{i.GetType()}'.");
@@ -75,19 +77,6 @@ namespace Avalonia.Markup.Parsers
                 }
 
                 result = results.Count > 1 ? Queries.Or(results) : results[0];
-            }
-
-            return result;
-        }
-
-        private Type Resolve(string xmlns, string typeName)
-        {
-            var result = _typeResolver(xmlns, typeName);
-
-            if (result == null)
-            {
-                var type = string.IsNullOrWhiteSpace(xmlns) ? typeName : xmlns + ':' + typeName;
-                throw new InvalidOperationException($"Could not resolve type '{type}'");
             }
 
             return result;

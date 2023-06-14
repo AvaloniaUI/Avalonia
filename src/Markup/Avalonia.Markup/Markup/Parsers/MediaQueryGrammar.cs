@@ -217,13 +217,24 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax?) ParseMiddle(ref CharacterReader r, char? end)
         {
+            r.SkipWhitespace();
+
             if (r.TakeIf(','))
             {
-                return (State.Start, new CommaSyntax());
+                return (State.Start, new OrSyntax());
             }
             else if (end.HasValue && !r.End && r.Peek == end.Value)
             {
                 return (State.End, null);
+            }
+            else
+            {
+                var identifier = r.TakeWhile(c => !char.IsWhiteSpace(c));
+
+                if (identifier.SequenceEqual("and".AsSpan()))
+                {
+                    return (State.Start, new AndSyntax());
+                }
             }
             throw new InvalidOperationException("Invalid syntax found");
         }
@@ -284,11 +295,19 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public class CommaSyntax : ISyntax
+        public class OrSyntax : ISyntax
         {
             public override bool Equals(object? obj)
             {
-                return obj is CommaSyntax;
+                return obj is OrSyntax;
+            }
+        }
+
+        public class AndSyntax : ISyntax
+        {
+            public override bool Equals(object? obj)
+            {
+                return obj is AndSyntax;
             }
         }
 

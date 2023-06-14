@@ -44,5 +44,25 @@ namespace Avalonia.Styling
         {
             return new OrQuery(query);
         }
+
+        /// <summary>
+        /// Returns a query which ANDs queries.
+        /// </summary>
+        /// <param name="queries">The queries to be AND'd.</param>
+        /// <returns>The query.</returns>
+        public static Query And(params Query[] queries)
+        {
+            return new AndQuery(queries);
+        }
+
+        /// <summary>
+        /// Returns a query which ANDs queries.
+        /// </summary>
+        /// <param name="query">The queries to be AND'd.</param>
+        /// <returns>The query.</returns>
+        public static Query And(IReadOnlyList<Query> query)
+        {
+            return new AndQuery(query);
+        }
     }
 }

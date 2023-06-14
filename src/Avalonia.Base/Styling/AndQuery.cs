@@ -10,17 +10,17 @@ namespace Avalonia.Styling
     /// <summary>
     /// The OR style query.
     /// </summary>
-    internal sealed class OrQuery : Query
+    internal sealed class AndQuery : Query
     {
         private readonly IReadOnlyList<Query> _queries;
         private string? _queryString;
         private Type? _targetType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OrQuery"/> class.
+        /// Initializes a new instance of the <see cref="AndQuery"/> class.
         /// </summary>
-        /// <param name="queries">The querys to OR.</param>
-        public OrQuery(IReadOnlyList<Query> queries)
+        /// <param name="queries">The queries to AND.</param>
+        public AndQuery(IReadOnlyList<Query> queries)
         {
             if (queries is null)
             {
@@ -29,7 +29,7 @@ namespace Avalonia.Styling
 
             if (queries.Count <= 1)
             {
-                throw new ArgumentException("Need more than one query to OR.");
+                throw new ArgumentException("Need more than one query to AND.");
             }
 
             _queries = queries;
@@ -43,7 +43,7 @@ namespace Avalonia.Styling
         {
             if (_queryString == null)
             {
-                _queryString = string.Join(", ", _queries.Select(x => x.ToString(owner)));
+                _queryString = string.Join(" and ", _queries.Select(x => x.ToString(owner)));
             }
 
             return _queryString;
@@ -56,8 +56,8 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisType;
             }
 
-            var activators = new OrQueryActivatorBuilder(visual);
-            var neverThisInstance = false;
+            var activators = new AndQueryActivatorBuilder(visual);
+            var alwaysThisInstance = false;
 
             var count = _queries.Count;
 
@@ -67,12 +67,12 @@ namespace Avalonia.Styling
 
                 switch (match.Result)
                 {
-                    case SelectorMatchResult.AlwaysThisType:
                     case SelectorMatchResult.AlwaysThisInstance:
-                        return match;
-                    case SelectorMatchResult.NeverThisInstance:
-                        neverThisInstance = true;
+                        alwaysThisInstance = true;
                         break;
+                    case SelectorMatchResult.NeverThisInstance:
+                    case SelectorMatchResult.NeverThisType:
+                        return match;
                     case SelectorMatchResult.Sometimes:
                         activators.Add(match.Activator!);
                         break;
@@ -83,13 +83,13 @@ namespace Avalonia.Styling
             {
                 return new SelectorMatch(activators.Get());
             }
-            else if (neverThisInstance)
+            else if (alwaysThisInstance)
             {
-                return SelectorMatch.NeverThisInstance;
+                return SelectorMatch.AlwaysThisInstance;
             }
             else
             {
-                return SelectorMatch.NeverThisType;
+                return SelectorMatch.AlwaysThisType;
             }
         }
 
