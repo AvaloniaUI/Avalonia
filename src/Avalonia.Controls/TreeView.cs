@@ -84,6 +84,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
         /// </summary>
+        /// <remarks>
+        /// This property is of limited use with <see cref="TreeView"/> as it will only scroll
+        /// to realized items. To scroll to a non-expanded item, you need to ensure that its
+        /// ancestors are expanded.
+        /// </remarks>
         public bool AutoScrollToSelectedItem
         {
             get => GetValue(AutoScrollToSelectedItemProperty);
@@ -353,9 +358,13 @@ namespace Avalonia.Controls
 
                     SelectedItemsAdded(e.NewItems!.Cast<object>().ToArray());
 
-                    if (AutoScrollToSelectedItem)
+                    var selectedItem = SelectedItem;
+
+                    if (AutoScrollToSelectedItem && 
+                        selectedItem is not null &&
+                        e.NewItems![0] == selectedItem)
                     {
-                        var container = ContainerFromItem(e.NewItems![0]!);
+                        var container = TreeContainerFromItem(selectedItem);
 
                         container?.BringIntoView();
                     }
@@ -531,6 +540,12 @@ namespace Avalonia.Controls
             // The IsSelected property is not set on the container: update the container
             // selection based on the current selection as understood by this control.
             MarkContainerSelected(container, SelectedItems.Contains(item));
+
+            // If the newly realized container is the selected container, scroll to it after layout.
+            if (AutoScrollToSelectedItem && SelectedItem == item)
+            {
+                Dispatcher.UIThread.Post(container.BringIntoView, DispatcherPriority.Loaded);
+            }
         }
 
         /// <inheritdoc/>
