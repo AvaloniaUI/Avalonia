@@ -99,9 +99,15 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
                 continue;
             }
 
-            if (_nextTimer != null)
+            TimeSpan? nextTimer;
+            lock (_lock)
             {
-                var waitFor = _clock.Elapsed - _nextTimer.Value;
+                nextTimer = _nextTimer;
+            }
+
+            if (nextTimer != null)
+            {
+                var waitFor = nextTimer.Value - _clock.Elapsed;
                 if (waitFor.TotalMilliseconds < 1)
                     continue;
                 _wakeup.WaitOne(waitFor);

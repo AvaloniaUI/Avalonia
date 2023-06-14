@@ -49,22 +49,31 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 
     public void UpdateWithAutomaticSync(CompositionImportedGpuImage image)
     {
-        PerformSanityChecks(image);
-        Update(image.Image.SnapshotWithAutomaticSync(), image.Context);
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            Update(image.Image.SnapshotWithAutomaticSync(), image.Context);
+        }
     }
     
     public void UpdateWithKeyedMutex(CompositionImportedGpuImage image, uint acquireIndex, uint releaseIndex)
     {
-        PerformSanityChecks(image);
-        Update(image.Image.SnapshotWithKeyedMutex(acquireIndex, releaseIndex), image.Context);
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            Update(image.Image.SnapshotWithKeyedMutex(acquireIndex, releaseIndex), image.Context);
+        }
     }
 
     public void UpdateWithSemaphores(CompositionImportedGpuImage image, CompositionImportedGpuSemaphore wait, CompositionImportedGpuSemaphore signal)
     {
-        PerformSanityChecks(image);
-        if (!wait.IsUsable || !signal.IsUsable)
-            throw new PlatformGraphicsContextLostException();
-        Update(image.Image.SnapshotWithSemaphores(wait.Semaphore, signal.Semaphore), image.Context);
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            if (!wait.IsUsable || !signal.IsUsable)
+                throw new PlatformGraphicsContextLostException();
+            Update(image.Image.SnapshotWithSemaphores(wait.Semaphore, signal.Semaphore), image.Context);
+        }
     }
 
     public void Dispose()

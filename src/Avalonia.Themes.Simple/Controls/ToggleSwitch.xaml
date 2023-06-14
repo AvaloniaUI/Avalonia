@@ -46,6 +46,14 @@
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="KnobTransitions">
+      <Transitions>
+        <DoubleTransition
+            Easing="CubicEaseOut"
+            Property="Canvas.Left"
+            Duration="0:0:0.2" />
+      </Transitions>
+    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="{TemplateBinding Background}"
@@ -123,11 +131,6 @@
 
               <Grid x:Name="PART_MovingKnobs"
                     Width="20" Height="20">
-                <Grid.Transitions>
-                  <Transitions>
-                    <DoubleTransition Property="Canvas.Left" Duration="0:0:0.2" Easing="CubicEaseOut" />
-                  </Transitions>
-                </Grid.Transitions>
 
                 <Ellipse x:Name="SwitchKnobOn"
                          Fill="{DynamicResource HighlightForegroundColor}"

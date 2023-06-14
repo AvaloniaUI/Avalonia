@@ -63,8 +63,6 @@ internal class EffectAnimator : Animator<IEffect?>
         if(s_Registered)
             return;
         s_Registered = true;
-        Animation.RegisterAnimator<EffectAnimator>(prop =>
-            typeof(IEffect).IsAssignableFrom(prop.PropertyType));
     }
 }
 
