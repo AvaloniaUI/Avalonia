@@ -35,7 +35,7 @@ namespace Avalonia.Platform
         /// Creates an ellipse geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the ellipse.</param>
-        /// <returns>An ellipse geometry..</returns>
+        /// <returns>An ellipse geometry.</returns>
         IGeometryImpl CreateEllipseGeometry(Rect rect);
 
         /// <summary>

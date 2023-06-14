@@ -303,7 +303,7 @@ namespace Avalonia.Utilities
         /// if the value could not be converted.
         /// </summary>
         /// <param name="value">The value to convert.</param>
-        /// <param name="type">The type to convert to..</param>
+        /// <param name="type">The type to convert to.</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
         public static object? ConvertOrDefault(object? value, Type type, CultureInfo culture)
