@@ -101,6 +101,7 @@ namespace Avalonia.Controls.Presenters
         private CompositeDisposable? _ownerSubscriptions;
         private ScrollViewer? _owner;
         private IScrollSnapPointsInfo? _scrollSnapPointsInfo;
+        private bool _isSnapPointsUpdated;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -379,6 +380,13 @@ namespace Avalonia.Controls.Presenters
                 CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
 
             Child.Measure(constraint);
+
+            if (!_isSnapPointsUpdated)
+            {
+                _isSnapPointsUpdated = true;
+                UpdateSnapPoints();
+            }
+
             return Child.DesiredSize.Constrain(availableSize);
         }
 
