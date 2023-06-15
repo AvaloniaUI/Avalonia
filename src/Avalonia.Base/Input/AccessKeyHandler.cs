@@ -159,8 +159,6 @@ namespace Avalonia.Input
 
                     _restoreFocusElement?.Focus();
                     _restoreFocusElement = null;
-                    
-                    e.Handled = true;
                 }
             }
             else if (_altIsDown)
@@ -200,7 +198,6 @@ namespace Avalonia.Input
                 if (match is not null)
                 {
                     match.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
-                    e.Handled = true;
                 }
             }
         }
@@ -225,7 +222,6 @@ namespace Avalonia.Input
                     else if (_showingAccessKeys && MainMenu != null)
                     {
                         MainMenu.Open();
-                        e.Handled = true;
                     }
 
                     break;
