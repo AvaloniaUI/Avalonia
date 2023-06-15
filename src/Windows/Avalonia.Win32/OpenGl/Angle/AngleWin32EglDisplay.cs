@@ -7,6 +7,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Win32.DirectX;
+using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 using static Avalonia.OpenGL.Egl.EglConsts;
 // ReSharper disable SimplifyLinqExpressionUseMinByAndMaxBy
@@ -46,14 +47,6 @@ namespace Avalonia.Win32.OpenGl.Angle
         public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl,
             bool preferDiscreteAdapter = false)
         {
-            var featureLevels = new[]
-            {
-                D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0,
-                D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_0,
-                D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_2,
-                D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_1
-            };
-
             var dxgiFactoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory1));
             DirectXUnmanagedMethods.CreateDXGIFactory1(ref dxgiFactoryGuid, out var pDxgiFactory);
             IDXGIAdapter1? chosenAdapter = null;
@@ -93,11 +86,39 @@ namespace Avalonia.Win32.OpenGl.Angle
 
             IntPtr pD3dDevice;
             using (chosenAdapter)
-                DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
-                    D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
-                    IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
-                    7, out pD3dDevice, out _, null);
+            {
+                var featureLevels = new[]
+                {
+                    D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_12_1,
+                    D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_12_0,
+                    D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0,
+                    D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_0,
+                    D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_2,
+                    D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_9_1
+                };
 
+                var skip = 0;
+                UnmanagedMethods.HRESULT result;
+
+                var adapter = chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero;
+                do
+                {
+                    var pFeatureLevels = featureLevels.Skip(skip).ToArray();
+                    result = DirectXUnmanagedMethods.D3D11CreateDevice(
+                        adapter,
+                        D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
+                        IntPtr.Zero,
+                        0,
+                        pFeatureLevels,
+                        (uint)pFeatureLevels.Length,
+                        7,
+                        out pD3dDevice,
+                        out _,
+                        null);
+                    if (result == UnmanagedMethods.HRESULT.E_INVALIDARG)
+                        skip++;
+                } while (skip < featureLevels.Length && result == UnmanagedMethods.HRESULT.E_INVALIDARG);
+            }
 
             if (pD3dDevice == IntPtr.Zero)
                 throw new Win32Exception("Unable to create D3D11 Device");
