@@ -394,6 +394,7 @@ namespace Avalonia.Controls
             _isEmbeddedInMenu = parent?.FindLogicalAncestorOfType<IMenu>(true) != null;
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
