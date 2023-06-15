@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -454,6 +455,114 @@ namespace Avalonia.Base.UnitTests.Animation
             // Remove the transition by removing the control from the logical tree. This was
             // causing an exception.
             root.Child = null;
+        }
+        
+        [Fact]
+        public void Run_Normal_Use_Case_Animation()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5d), }, KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(10),
+                    Children = { keyframe1, keyframe2 },
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Animations =
+                            {
+                                animation
+                            },
+                        }
+                    },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                clock.Step(TimeSpan.FromSeconds(0.99));
+
+                Assert.InRange(target.Opacity , 0.5d, 0.51d);
+            }
+        }
+        
+        [Fact]
+        public void Run_Normal_Use_Case_Animation_With_Infinite_Iteration()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), }, KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    IterationCount = IterationCount.Infinite,
+                    Children = { keyframe1, keyframe2 },
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Animations =
+                            {
+                                animation
+                            },
+                        }
+                    },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                
+                clock.Step(TimeSpan.FromSeconds(0.5));
+                Assert.Equal(0.5, target.Opacity);
+                
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.Equal(0, target.Opacity);
+                
+                clock.Step(TimeSpan.FromSeconds(1.5));
+                Assert.Equal(0.5, target.Opacity);
+                
+                clock.Step(TimeSpan.FromSeconds(2));
+                Assert.Equal(0, target.Opacity);
+            }
         }
 
         private static IDisposable Start()
