@@ -151,8 +151,13 @@ namespace Avalonia.Media
                 }
             }
 
+            if(typeface.FontFamily == DefaultFontFamily)
+            {
+                return false;
+            }
+
             //Nothing was found so use the default
-            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
         }
 
         /// <summary>
