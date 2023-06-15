@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Globalization;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -456,7 +454,7 @@ namespace Avalonia.Base.UnitTests.Animation
             // causing an exception.
             root.Child = null;
         }
-        
+
         [Fact]
         public void Run_Normal_Use_Case_Animation()
         {
@@ -474,8 +472,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
                 var animation = new Avalonia.Animation.Animation()
                 {
-                    Duration = TimeSpan.FromSeconds(10),
-                    Children = { keyframe1, keyframe2 },
+                    Duration = TimeSpan.FromSeconds(10), Children = { keyframe1, keyframe2 },
                 };
 
                 Border target;
@@ -483,16 +480,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 var root = new TestRoot
                 {
                     Clock = clock,
-                    Styles =
-                    {
-                        new Style(x => x.OfType<Border>())
-                        {
-                            Animations =
-                            {
-                                animation
-                            },
-                        }
-                    },
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
                     Child = target = new Border { Background = Brushes.Red, }
                 };
 
@@ -502,10 +490,10 @@ namespace Avalonia.Base.UnitTests.Animation
                 clock.Step(TimeSpan.FromSeconds(0));
                 clock.Step(TimeSpan.FromSeconds(0.99));
 
-                Assert.InRange(target.Opacity , 0.5d, 0.51d);
+                Assert.InRange(target.Opacity, 0.5d, 0.51d);
             }
         }
-        
+
         [Fact]
         public void Run_Normal_Use_Case_Animation_With_Infinite_Iteration()
         {
@@ -533,16 +521,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 var root = new TestRoot
                 {
                     Clock = clock,
-                    Styles =
-                    {
-                        new Style(x => x.OfType<Border>())
-                        {
-                            Animations =
-                            {
-                                animation
-                            },
-                        }
-                    },
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
                     Child = target = new Border { Background = Brushes.Red, }
                 };
 
@@ -550,18 +529,130 @@ namespace Avalonia.Base.UnitTests.Animation
                 root.Arrange(new Rect(root.DesiredSize));
 
                 clock.Step(TimeSpan.FromSeconds(0));
-                
+
                 clock.Step(TimeSpan.FromSeconds(0.5));
                 Assert.Equal(0.5, target.Opacity);
-                
+
                 clock.Step(TimeSpan.FromSeconds(1));
                 Assert.Equal(0, target.Opacity);
-                
+
                 clock.Step(TimeSpan.FromSeconds(1.5));
                 Assert.Equal(0.5, target.Opacity);
-                
+
                 clock.Step(TimeSpan.FromSeconds(2));
                 Assert.Equal(0, target.Opacity);
+            }
+        }
+        
+        [Fact]
+        public void Zero_Duration_Should_Finish_Animation()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5d), }, KeyTime = TimeSpan.FromSeconds(2)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(2),
+                    Children = { keyframe1, keyframe2 },
+                    FillMode = FillMode.Both
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                clock.Step(TimeSpan.FromSeconds(1));
+
+                Assert.True(target.IsAnimating(Visual.OpacityProperty));
+
+                Assert.Equal(0.75, target.Opacity);
+
+                // This is not the normal way to access and set the animations
+                // object's Duration property to zero that is defined in styles
+                // but this is still valid for the RunAsync version.
+                animation.Duration = TimeSpan.Zero;
+
+                clock.Step(TimeSpan.FromSeconds(1.2));
+
+                Assert.Equal(0.5, target.Opacity);
+                Assert.False(target.IsAnimating(Visual.OpacityProperty));
+            }
+        }
+
+        [Fact]
+        public void Zero_Duration_Should_Finish_Animation_With_Infinite_Iteration()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+        
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), }, KeyTime = TimeSpan.FromSeconds(1)
+                };
+        
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    IterationCount = IterationCount.Infinite,
+                    Children = { keyframe1, keyframe2 },
+                };
+        
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+        
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+                
+                clock.Step(TimeSpan.FromSeconds(0));
+                Assert.True(target.IsAnimating(Visual.OpacityProperty));
+
+                clock.Step(TimeSpan.FromSeconds(0.5));
+                Assert.Equal(0.5, target.Opacity);
+        
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.Equal(0, target.Opacity);
+        
+                clock.Step(TimeSpan.FromSeconds(1.5));
+                Assert.Equal(0.5, target.Opacity);
+        
+                clock.Step(TimeSpan.FromSeconds(2));
+                Assert.Equal(0, target.Opacity);
+                
+                // This is not the normal way to access and set the animations
+                // object's Duration property to zero that is defined in styles
+                // but this is still valid for the RunAsync version.
+                animation.Duration = TimeSpan.Zero;
+                clock.Step(TimeSpan.FromSeconds(1.2));
+                Assert.Equal(1, target.Opacity);
+                Assert.False(target.IsAnimating(Visual.OpacityProperty));
             }
         }
 
