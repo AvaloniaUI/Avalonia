@@ -97,7 +97,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
-        private bool _ignoreWmChar;
+        internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
 
         private const int MaxPointerHistorySize = 512;
@@ -186,7 +186,7 @@ namespace Avalonia.Win32
             s_instances.Add(this);
         }
 
-        private IInputRoot Owner
+        internal IInputRoot Owner
             => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
 
         public Action? Activated { get; set; }

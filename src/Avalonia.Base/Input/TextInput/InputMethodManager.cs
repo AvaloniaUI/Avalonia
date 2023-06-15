@@ -22,11 +22,18 @@ namespace Avalonia.Input.TextInput
             set
             {
                 if(_client == value)
+                {
                     return;
+                }
+
                 if (_client != null)
                 {
                     _client.CursorRectangleChanged -= OnCursorRectangleChanged;
                     _client.TextViewVisualChanged -= OnTextViewVisualChanged;
+
+                    _client = null;
+
+                    _im?.Reset();
                 }
 
                 _client = value;
@@ -35,8 +42,6 @@ namespace Avalonia.Input.TextInput
                 {
                     _client.CursorRectangleChanged += OnCursorRectangleChanged;
                     _client.TextViewVisualChanged += OnTextViewVisualChanged;
-
-                    _im?.Reset();
                     
                     if (_focusedElement is StyledElement target)
                     {
@@ -50,6 +55,7 @@ namespace Avalonia.Input.TextInput
                     _transformTracker.SetVisual(_client?.TextViewVisual);
                     
                     _im?.SetClient(_client);
+
                     UpdateCursorRect();
                 }
                 else
