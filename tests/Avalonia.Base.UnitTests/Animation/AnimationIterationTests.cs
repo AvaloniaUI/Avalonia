@@ -1,16 +1,13 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Styling;
-using Avalonia.UnitTests;
-using Avalonia.Data;
 using Xunit;
 using Avalonia.Animation.Easings;
 using System.Threading;
 using System.Reactive.Linq;
+using Avalonia.Layout;
 
 namespace Avalonia.Base.UnitTests.Animation
 {
@@ -23,47 +20,27 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 100d),
-                },
-                KeyTime = TimeSpan.FromSeconds(0.5)
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, KeyTime = TimeSpan.FromSeconds(0.5)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 0d),
-                },
-                KeyTime = TimeSpan.FromSeconds(0)
+                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, KeyTime = TimeSpan.FromSeconds(0)
             };
 
-            var animation = new Avalonia.Animation.Animation()
-            {
-                Duration = TimeSpan.FromSeconds(1),
-                Children =
-                {
-                    keyframe2,
-                    keyframe1
-                }
-            };
+            var animation = new Animation() { Duration = TimeSpan.FromSeconds(1), Children = { keyframe2, keyframe1 } };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 100d
-            };
+            var border = new Border() { Height = 100d, Width = 100d };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(border, clock);
 
-            clock.Step(TimeSpan.Zero); 
+            animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero);
             Assert.Equal(border.Width, 0d);
 
-            clock.Step(TimeSpan.FromSeconds(1)); 
+            clock.Step(TimeSpan.FromSeconds(1));
             Assert.Equal(border.Width, 100d);
- 
         }
 
 
@@ -72,40 +49,24 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 200d),
-                },
-                Cue = new Cue(1d)
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 100d),
-                },
-                Cue = new Cue(0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
             };
 
-            var animation = new Avalonia.Animation.Animation()
+            var animation = new Animation()
             {
                 Duration = TimeSpan.FromSeconds(3),
                 Delay = TimeSpan.FromSeconds(3),
                 DelayBetweenIterations = TimeSpan.FromSeconds(3),
                 IterationCount = new IterationCount(2),
-                Children =
-                {
-                    keyframe2,
-                    keyframe1
-                }
+                Children = { keyframe2, keyframe1 }
             };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 100d
-            };
+            var border = new Border() { Height = 100d, Width = 100d };
 
             var clock = new TestClock();
             var animationRun = animation.RunAsync(border, clock);
@@ -133,43 +94,28 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 0d),
-                },
-                Cue = new Cue(0.0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, Cue = new Cue(0.0d)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 300d),
-                },
-                Cue = new Cue(1.0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 300d), }, Cue = new Cue(1.0d)
             };
 
-            var animation = new Avalonia.Animation.Animation()
+            var animation = new Animation()
             {
                 Duration = TimeSpan.FromSeconds(0.05d),
                 Delay = TimeSpan.FromSeconds(0.05d),
                 Easing = new SineEaseInOut(),
                 FillMode = FillMode.Both,
-                Children =
-                {
-                    keyframe1,
-                    keyframe2
-                }
+                Children = { keyframe1, keyframe2 }
             };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 100d,
-            };
+            var border = new Border() { Height = 100d, Width = 100d, };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(border, clock);
+
+            animation.RunAsync(border, clock);
 
             clock.Step(TimeSpan.FromSeconds(0d));
             Assert.Equal(border.Width, 0d);
@@ -186,20 +132,12 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 200d),
-                },
-                Cue = new Cue(1d)
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 100d),
-                },
-                Cue = new Cue(0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
             };
 
             var animation = new Animation()
@@ -208,23 +146,15 @@ namespace Avalonia.Base.UnitTests.Animation
                 Delay = TimeSpan.FromSeconds(0),
                 DelayBetweenIterations = TimeSpan.FromSeconds(0),
                 IterationCount = new IterationCount(1),
-                Children =
-                {
-                    keyframe2,
-                    keyframe1
-                }
+                Children = { keyframe2, keyframe1 }
             };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 50d
-            };
+            var border = new Border() { Height = 100d, Width = 50d };
             var propertyChangedCount = 0;
             var animationCompletedCount = 0;
-            border.PropertyChanged += (sender, e) =>
+            border.PropertyChanged += (_, e) =>
             {
-                if (e.Property == Control.WidthProperty)
+                if (e.Property == Layoutable.WidthProperty)
                 {
                     propertyChangedCount++;
                 }
@@ -257,20 +187,12 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 200d),
-                },
-                Cue = new Cue(1d)
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 100d),
-                },
-                Cue = new Cue(0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
             };
 
             var animation = new Animation()
@@ -279,22 +201,14 @@ namespace Avalonia.Base.UnitTests.Animation
                 Delay = TimeSpan.FromSeconds(0),
                 DelayBetweenIterations = TimeSpan.FromSeconds(0),
                 IterationCount = new IterationCount(1),
-                Children =
-                {
-                    keyframe2,
-                    keyframe1
-                }
+                Children = { keyframe2, keyframe1 }
             };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 100d
-            };
+            var border = new Border() { Height = 100d, Width = 100d };
             var propertyChangedCount = 0;
-            border.PropertyChanged += (sender, e) =>
+            border.PropertyChanged += (_, e) =>
             {
-                if (e.Property == Control.WidthProperty)
+                if (e.Property == Layoutable.WidthProperty)
                 {
                     propertyChangedCount++;
                 }
@@ -315,20 +229,12 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 200d),
-                },
-                Cue = new Cue(1d)
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 100d),
-                },
-                Cue = new Cue(0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
             };
 
             var animation = new Animation()
@@ -337,22 +243,14 @@ namespace Avalonia.Base.UnitTests.Animation
                 Delay = TimeSpan.FromSeconds(0),
                 DelayBetweenIterations = TimeSpan.FromSeconds(0),
                 IterationCount = new IterationCount(1),
-                Children =
-                {
-                    keyframe2,
-                    keyframe1
-                }
+                Children = { keyframe2, keyframe1 }
             };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 50d
-            };
+            var border = new Border() { Height = 100d, Width = 50d };
             var propertyChangedCount = 0;
-            border.PropertyChanged += (sender, e) =>
+            border.PropertyChanged += (_, e) =>
             {
-                if (e.Property == Control.WidthProperty)
+                if (e.Property == Layoutable.WidthProperty)
                 {
                     propertyChangedCount++;
                 }
@@ -361,6 +259,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var clock = new TestClock();
             var cancellationTokenSource = new CancellationTokenSource();
             var animationRun = animation.RunAsync(border, clock, cancellationTokenSource.Token);
+            Assert.False(animationRun.IsCompleted);
 
             Assert.Equal(0, propertyChangedCount);
 
@@ -381,24 +280,48 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Cancellation_Of_Completed_Animation_Does_Not_Fail()
+        public void Dont_Run_Infinite_Iteration_Animation_On_RunAsync_Method()
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 200d),
-                },
-                Cue = new Cue(1d)
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Border.WidthProperty, 100d),
-                },
-                Cue = new Cue(0d)
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = IterationCount.Infinite,
+                Children = { keyframe2, keyframe1 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 50d };
+            var clock = new TestClock();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var animationRun = animation.RunAsync(border, clock, cancellationTokenSource.Token);
+
+
+            Assert.True(animationRun.IsCompleted);
+            Assert.NotNull(animationRun.Exception);
+        }
+
+        [Fact]
+        public void Cancellation_Of_Completed_Animation_Does_Not_Fail()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
             };
 
             var animation = new Animation()
@@ -407,22 +330,14 @@ namespace Avalonia.Base.UnitTests.Animation
                 Delay = TimeSpan.FromSeconds(0),
                 DelayBetweenIterations = TimeSpan.FromSeconds(0),
                 IterationCount = new IterationCount(1),
-                Children =
-                {
-                    keyframe2,
-                    keyframe1
-                }
+                Children = { keyframe2, keyframe1 }
             };
 
-            var border = new Border()
-            {
-                Height = 100d,
-                Width = 50d
-            };
+            var border = new Border() { Height = 100d, Width = 50d };
             var propertyChangedCount = 0;
-            border.PropertyChanged += (sender, e) =>
+            border.PropertyChanged += (_, e) =>
             {
-                if (e.Property == Control.WidthProperty)
+                if (e.Property == Layoutable.WidthProperty)
                 {
                     propertyChangedCount++;
                 }

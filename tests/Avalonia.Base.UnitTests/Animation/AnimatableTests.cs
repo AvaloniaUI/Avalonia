@@ -19,18 +19,15 @@ namespace Avalonia.Base.UnitTests.Animation
         public void Transition_Is_Not_Applied_When_Not_Attached_To_Visual_Tree()
         {
             var target = CreateTarget();
-            var control = new Control
-            {
-                Transitions = new Transitions { target.Object },
-            };
+            var control = new Control { Transitions = new Transitions { target.Object }, };
 
             control.Opacity = 0.5;
 
             target.Verify(x => x.Apply(
-                control,
-                It.IsAny<IClock>(),
-                1.0,
-                0.5),
+                    control,
+                    It.IsAny<IClock>(),
+                    1.0,
+                    0.5),
                 Times.Never);
         }
 
@@ -40,10 +37,7 @@ namespace Avalonia.Base.UnitTests.Animation
             using (Start())
             {
                 var target = CreateTarget();
-                var control = new Control
-                {
-                    Transitions = new Transitions { target.Object },
-                };
+                var control = new Control { Transitions = new Transitions { target.Object }, };
 
                 var root = new TestRoot
                 {
@@ -51,10 +45,7 @@ namespace Avalonia.Base.UnitTests.Animation
                     {
                         new Style(x => x.OfType<Control>())
                         {
-                            Setters =
-                            {
-                                new Setter(Visual.OpacityProperty, 0.8),
-                            }
+                            Setters = { new Setter(Visual.OpacityProperty, 0.8), }
                         }
                     }
                 };
@@ -64,10 +55,10 @@ namespace Avalonia.Base.UnitTests.Animation
                 Assert.Equal(0.8, control.Opacity);
 
                 target.Verify(x => x.Apply(
-                    It.IsAny<Control>(),
-                    It.IsAny<IClock>(),
-                    It.IsAny<object>(),
-                    It.IsAny<object>()),
+                        It.IsAny<Control>(),
+                        It.IsAny<IClock>(),
+                        It.IsAny<object>(),
+                        It.IsAny<object>()),
                     Times.Never);
             }
         }
@@ -97,10 +88,10 @@ namespace Avalonia.Base.UnitTests.Animation
             control.SetValue(Visual.OpacityProperty, 0.5, BindingPriority.Animation);
 
             target.Verify(x => x.Apply(
-                control,
-                It.IsAny<IClock>(),
-                1.0,
-                0.5),
+                    control,
+                    It.IsAny<IClock>(),
+                    1.0,
+                    0.5),
                 Times.Never);
         }
 
@@ -112,53 +103,34 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Layoutable.WidthProperty, 1d),
-                },
-                KeyTime = TimeSpan.FromSeconds(0)
+                Setters = { new Setter(Layoutable.WidthProperty, 1d), }, KeyTime = TimeSpan.FromSeconds(0)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Layoutable.WidthProperty, 2d),
-                },
-                KeyTime = TimeSpan.FromSeconds(2),
+                Setters = { new Setter(Layoutable.WidthProperty, 2d), }, KeyTime = TimeSpan.FromSeconds(2),
             };
 
             var keyframe3 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(Layoutable.WidthProperty, invalidValue),
-                },
+                Setters = { new Setter(Layoutable.WidthProperty, invalidValue), },
                 KeyTime = TimeSpan.FromSeconds(3),
             };
 
             var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(3),
-                Children =
-                {
-                    keyframe1,
-                    keyframe2,
-                    keyframe3
-                },
+                Children = { keyframe1, keyframe2, keyframe3 },
                 IterationCount = new IterationCount(5),
                 PlaybackDirection = PlaybackDirection.Alternate,
             };
 
-            var rect = new Rectangle()
-            {
-                Width = 11,
-            };
+            var rect = new Rectangle() { Width = 11, };
 
             var originalValue = rect.Width;
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(rect.Width, 1);
@@ -188,10 +160,10 @@ namespace Avalonia.Base.UnitTests.Animation
             control.SetValue(Visual.OpacityProperty, 0.8, BindingPriority.StyleTrigger);
 
             target.Verify(x => x.Apply(
-                It.IsAny<Control>(),
-                It.IsAny<IClock>(),
-                It.IsAny<object>(),
-                It.IsAny<object>()),
+                    It.IsAny<Control>(),
+                    It.IsAny<IClock>(),
+                    It.IsAny<object>(),
+                    It.IsAny<object>()),
                 Times.Never);
         }
 
@@ -258,14 +230,15 @@ namespace Avalonia.Base.UnitTests.Animation
             target.Invocations.Clear();
 
             var root = (TestRoot)control.Parent;
+            Assert.NotNull(root);
             root.Child = null;
             control.Opacity = 0.8;
 
             target.Verify(x => x.Apply(
-                It.IsAny<Control>(),
-                It.IsAny<IClock>(),
-                It.IsAny<object>(),
-                It.IsAny<object>()),
+                    It.IsAny<Control>(),
+                    It.IsAny<IClock>(),
+                    It.IsAny<object>(),
+                    It.IsAny<object>()),
                 Times.Never);
         }
 
@@ -284,6 +257,8 @@ namespace Avalonia.Base.UnitTests.Animation
                 It.IsAny<object>())).Returns(sub.Object);
 
             control.Opacity = 0.5;
+            Assert.NotNull(control.Transitions);
+
             control.Transitions.RemoveAt(0);
 
             sub.Verify(x => x.Dispose());
@@ -307,10 +282,10 @@ namespace Avalonia.Base.UnitTests.Animation
                 control.Opacity = 0.5;
 
                 target.Verify(x => x.Apply(
-                    control,
-                    It.IsAny<IClock>(),
-                    1.0,
-                    0.5),
+                        control,
+                        It.IsAny<IClock>(),
+                        1.0,
+                        0.5),
                     Times.Once);
 
                 control.Classes.Add("foo");
@@ -324,18 +299,17 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             using (Start())
             {
-                var target = CreateTransition(Control.WidthProperty);
+                var target = CreateTransition(Layoutable.WidthProperty);
                 var control = CreateStyledControl(transition2: target.Object);
-                var sub = new Mock<IDisposable>();
 
                 control.Classes.Add("foo");
                 control.Width = 100;
 
                 target.Verify(x => x.Apply(
-                    control,
-                    It.IsAny<IClock>(),
-                    double.NaN,
-                    100.0),
+                        control,
+                        It.IsAny<IClock>(),
+                        double.NaN,
+                        100.0),
                     Times.Once);
             }
         }
@@ -357,12 +331,12 @@ namespace Avalonia.Base.UnitTests.Animation
                         {
                             Setters =
                             {
-                                new Setter(Border.TransitionsProperty,
+                                new Setter(Animatable.TransitionsProperty,
                                     new Transitions
                                     {
                                         new DoubleTransition
                                         {
-                                            Property = Border.OpacityProperty,
+                                            Property = Visual.OpacityProperty,
                                             Duration = TimeSpan.FromSeconds(1),
                                         },
                                     }),
@@ -372,23 +346,20 @@ namespace Avalonia.Base.UnitTests.Animation
                         {
                             Setters =
                             {
-                                new Setter(Border.TransitionsProperty,
+                                new Setter(Animatable.TransitionsProperty,
                                     new Transitions
                                     {
                                         new DoubleTransition
                                         {
-                                            Property = Border.OpacityProperty,
+                                            Property = Visual.OpacityProperty,
                                             Duration = TimeSpan.FromSeconds(1),
                                         },
                                     }),
-                                new Setter(Border.OpacityProperty, 0.0),
+                                new Setter(Visual.OpacityProperty, 0.0),
                             },
                         },
                     },
-                    Child = target = new Border
-                    {
-                        Background = Brushes.Red,
-                    }
+                    Child = target = new Border { Background = Brushes.Red, }
                 };
 
                 root.Measure(Size.Infinity);
@@ -421,7 +392,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             // Assigning and then clearing Transitions ensures we have a transition state
             // collection created.
-            control.ClearValue(Control.TransitionsProperty);
+            control.ClearValue(Animatable.TransitionsProperty);
 
             control.GetValueStore().BeginStyling();
 
@@ -431,8 +402,8 @@ namespace Avalonia.Base.UnitTests.Animation
             {
                 Setters =
                 {
-                    new Setter(Control.OpacityProperty, 0.5),
-                    new Setter(Control.TransitionsProperty, new Transitions { target.Object }),
+                    new Setter(Visual.OpacityProperty, 0.5),
+                    new Setter(Animatable.TransitionsProperty, new Transitions { target.Object }),
                 }
             };
 
@@ -450,28 +421,17 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var opacityTransition = new DoubleTransition
             {
-                Property = Control.OpacityProperty,
-                Duration = TimeSpan.FromSeconds(1),
+                Property = Visual.OpacityProperty, Duration = TimeSpan.FromSeconds(1),
             };
 
             var transitions = new Transitions { opacityTransition };
             var borderTheme = new ControlTheme(typeof(Border))
             {
-                Setters =
-                {
-                    new Setter(Control.TransitionsProperty, transitions),
-                }
+                Setters = { new Setter(Animatable.TransitionsProperty, transitions), }
             };
 
             var clock = new TestClock();
-            var root = new TestRoot
-            {
-                Clock = clock,
-                Resources =
-                {
-                    { typeof(Border), borderTheme },
-                }
-            };
+            var root = new TestRoot { Clock = clock, Resources = { { typeof(Border), borderTheme }, } };
 
             var border = new Border();
             root.Child = border;
@@ -489,7 +449,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             // Now clear the property; a transition is now in progress but no local value is
             // set.
-            border.ClearValue(Border.OpacityProperty);
+            border.ClearValue(Visual.OpacityProperty);
 
             // Remove the transition by removing the control from the logical tree. This was
             // causing an exception.
@@ -510,12 +470,9 @@ namespace Avalonia.Base.UnitTests.Animation
 
         private static Control CreateControl(ITransition transition)
         {
-            var control = new Control
-            {
-                Transitions = new Transitions { transition },
-            };
+            var control = new Control { Transitions = new Transitions { transition }, };
 
-            var root = new TestRoot(control);
+            var _ = new TestRoot(control);
             return control;
         }
 
@@ -524,7 +481,7 @@ namespace Avalonia.Base.UnitTests.Animation
             ITransition transition2 = null)
         {
             transition1 = transition1 ?? CreateTarget().Object;
-            transition2 = transition2 ?? CreateTransition(Control.WidthProperty).Object;
+            transition2 = transition2 ?? CreateTransition(Layoutable.WidthProperty).Object;
 
             var control = new Control
             {
@@ -536,7 +493,7 @@ namespace Avalonia.Base.UnitTests.Animation
                         {
                             new Setter
                             {
-                                Property = Control.TransitionsProperty,
+                                Property = Animatable.TransitionsProperty,
                                 Value = new Transitions { transition1 },
                             }
                         }
@@ -547,7 +504,7 @@ namespace Avalonia.Base.UnitTests.Animation
                         {
                             new Setter
                             {
-                                Property = Control.TransitionsProperty,
+                                Property = Animatable.TransitionsProperty,
                                 Value = new Transitions { transition2 },
                             }
                         }
@@ -555,7 +512,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 }
             };
 
-            var root = new TestRoot(control);
+            var _ = new TestRoot(control);
             return control;
         }
 
