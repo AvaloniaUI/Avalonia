@@ -87,7 +87,7 @@ namespace Avalonia.Win32
                     {
                         // The first and foremost thing to do - notify the TopLevel
                         Closed?.Invoke();
-                        
+
                         if (UiaCoreTypesApi.IsNetComInteropAvailable)
                         {
                             UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
@@ -98,7 +98,7 @@ namespace Avalonia.Win32
                         {
                             Imm32InputMethod.Current.ClearLanguageAndWindow();
                         }
-                        
+
                         // Cleanup render targets
                         (_gl as IDisposable)?.Dispose();
 
@@ -724,26 +724,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_COMPOSITION:
                     {
-                        var flags = (GCS)ToInt32(lParam);
-
-                        if ((flags & GCS.GCS_COMPSTR) != 0)
-                        {
-                            var currentComposition = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_COMPSTR);
-
-                            Imm32InputMethod.Current.CompositionChanged(currentComposition);
-                        }
-
-                        if ((flags & GCS.GCS_RESULTSTR) != 0)
-                        {
-                            var result = Imm32InputMethod.Current.GetCompositionString(GCS.GCS_RESULTSTR);
-
-                            if (!string.IsNullOrEmpty(result))
-                            {
-                                Imm32InputMethod.Current.Composition = result;
-
-                                _ignoreWmChar = true;
-                            }
-                        }
+                        Imm32InputMethod.Current.HandleComposition(wParam, lParam, timestamp);
 
                         break;
                     }
@@ -757,35 +738,16 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_NOTIFY:
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
-                    Imm32InputMethod.Current.Composition = null;
-
-                    if (Imm32InputMethod.Current.IsActive)
                     {
-                        Imm32InputMethod.Current.Client.SetPreeditText(null);
-                    }
+                        Imm32InputMethod.Current.HandleCompositionStart();
 
-                    Imm32InputMethod.Current.IsComposing = true;
-                    return IntPtr.Zero;
+                        return IntPtr.Zero;
+                    }
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     {
-                        var currentComposition = Imm32InputMethod.Current.Composition;
- 
-                        //In case composition has not been comitted yet we need to do that here.
-                        if (!string.IsNullOrEmpty(currentComposition))
-                        {
-                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, currentComposition);
-                        }
+                        Imm32InputMethod.Current.HandleCompositionEnd();
 
-                        //Cleanup composition state.
-                        Imm32InputMethod.Current.IsComposing = false;
-                        Imm32InputMethod.Current.Composition = null;
-
-                        if (Imm32InputMethod.Current.IsActive)
-                        {
-                            Imm32InputMethod.Current.Client.SetPreeditText(null);
-                        }
-
-                        break;
+                        return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
                     if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
@@ -830,7 +792,7 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
                 }
             }
-            
+
             return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
