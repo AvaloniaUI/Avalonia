@@ -88,14 +88,17 @@ namespace Avalonia.Native
 
             var applicationPlatform = new AvaloniaNativeApplicationPlatform();
 
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
+            
+            if (_factory.MacOptions != null)
+                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
+
             _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
+            
             if (_factory.MacOptions != null)
             {
-                var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
-
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
-                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
