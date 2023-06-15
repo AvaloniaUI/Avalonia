@@ -21,7 +21,7 @@ namespace ControlCatalog.ViewModels
         public ListBoxPageViewModel()
         {
             Items = new ObservableCollection<ItemModel>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
-            
+
             Selection = new SelectionModel<ItemModel>();
             Selection.Select(1);
 
@@ -34,7 +34,13 @@ namespace ControlCatalog.ViewModels
                     (t ? Avalonia.Controls.SelectionMode.Toggle : 0) |
                     (a ? Avalonia.Controls.SelectionMode.AlwaysSelected : 0));
 
-            AddItemCommand = MiniCommand.Create(() => Items.Add(GenerateItem()));
+            AddItemCommand = MiniCommand.Create(() =>
+                {
+                    var item = GenerateItem();
+                    Items.Add(item);
+                    Selection.Clear();
+                    Selection.Select(Items.Count - 1);
+                });
 
             RemoveItemCommand = MiniCommand.Create(() =>
             {
@@ -96,7 +102,7 @@ namespace ControlCatalog.ViewModels
         public MiniCommand RemoveItemCommand { get; }
         public MiniCommand SelectRandomItemCommand { get; }
 
-        private ItemModel GenerateItem() => new ItemModel(_counter ++);  
+        private ItemModel GenerateItem() => new ItemModel(_counter++);
     }
 
     /// <summary>
