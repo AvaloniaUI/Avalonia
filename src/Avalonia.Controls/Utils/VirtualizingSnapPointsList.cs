@@ -147,45 +147,10 @@ namespace Avalonia.Controls.Utils
 
         public IEnumerator<double> GetEnumerator()
         {
-            return new VirtualizingEnumerator(this);
+            for (var i = 0; i < Count; i++)
+                yield return this[i];
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return new VirtualizingEnumerator(this);
-        }
-
-        private class VirtualizingEnumerator : IEnumerator<double>
-        {
-            private readonly VirtualizingSnapPointsList _list;
-            private int _index;
-
-            public VirtualizingEnumerator(VirtualizingSnapPointsList list)
-            {
-                _list = list;
-                _index = -1;
-            }
-
-            public double Current => _list[_index];
-
-            object IEnumerator.Current => Current;
-
-            public void Dispose()
-            {
-                _index = 0;
-            }
-
-            public bool MoveNext()
-            {
-                _index++;
-
-                return _index < _list.Count;
-            }
-
-            public void Reset()
-            {
-                _index = -1;
-            }
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
