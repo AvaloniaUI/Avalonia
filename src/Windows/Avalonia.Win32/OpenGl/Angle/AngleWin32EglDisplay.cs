@@ -115,9 +115,9 @@ namespace Avalonia.Win32.OpenGl.Angle
                         out pD3dDevice,
                         out _,
                         null);
-                    if (result == UnmanagedMethods.HRESULT.E_INVALIDARG)
+                    if (result != UnmanagedMethods.HRESULT.S_OK)
                         skip++;
-                } while (skip < featureLevels.Length && result == UnmanagedMethods.HRESULT.E_INVALIDARG);
+                } while (skip < featureLevels.Length && result != UnmanagedMethods.HRESULT.S_OK);
             }
 
             if (pD3dDevice == IntPtr.Zero)
