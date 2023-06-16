@@ -73,7 +73,7 @@ namespace Avalonia.Diagnostics.Views
                     {
                         Source = Property,
                         Converter = converter ?? new ValueConverter(),
-                        ConverterParameter = propertyType
+                        ConverterParameter = readonlyProperty?.Name ?? valueProperty.Name,
                     }).DisposeWith(_cleanup);
 
                 if (readonlyProperty != null)
