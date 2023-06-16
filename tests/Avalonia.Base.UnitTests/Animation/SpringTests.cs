@@ -18,6 +18,7 @@ public class SpringTests
 
         var spring = (Spring)conv.ConvertFrom(input);
 
+        Assert.NotNull(spring);
         Assert.Equal(1, spring.Mass);
         Assert.Equal(2, spring.Stiffness);
         Assert.Equal(3, spring.Damping);
@@ -25,8 +26,8 @@ public class SpringTests
     }
 
     [Theory]
-    [InlineData("1,2F,3,4")] 
-    [InlineData("Foo,Bar,Fee,Buzz")] 
+    [InlineData("1,2F,3,4")]
+    [InlineData("Foo,Bar,Fee,Buzz")]
     public void Can_Handle_Invalid_String_Via_TypeConverter(string input)
     {
         var conv = new SpringTypeConverter();
@@ -37,7 +38,7 @@ public class SpringTests
     [Fact]
     public void SplineEasing_Can_Be_Mutated()
     {
-        var easing = new SpringEasing(1, 1, 1, 0);
+        var easing = new SpringEasing(1, 1, 1);
 
         Assert.Equal(0, easing.Ease(0));
         Assert.Equal(0.34029984660829826, easing.Ease(1));
@@ -55,43 +56,28 @@ public class SpringTests
     {
         var keyframe1 = new KeyFrame()
         {
-            Setters =
-            {
-                new Setter(RotateTransform.AngleProperty, -2.5d),
-            },
-            KeyTime = TimeSpan.FromSeconds(0)
+            Setters = { new Setter(RotateTransform.AngleProperty, -2.5d), }, KeyTime = TimeSpan.FromSeconds(0)
         };
 
         var keyframe2 = new KeyFrame()
         {
-            Setters =
-            {
-                new Setter(RotateTransform.AngleProperty, 2.5d),
-            },
-            KeyTime = TimeSpan.FromSeconds(5)
+            Setters = { new Setter(RotateTransform.AngleProperty, 2.5d), }, KeyTime = TimeSpan.FromSeconds(5)
         };
 
         var animation = new Avalonia.Animation.Animation()
         {
             Duration = TimeSpan.FromSeconds(5),
-            Children =
-            {
-                keyframe1,
-                keyframe2
-            },
+            Children = { keyframe1, keyframe2 },
             IterationCount = new IterationCount(5),
             PlaybackDirection = PlaybackDirection.Alternate,
-            Easing = new SpringEasing(1, 10, 1, 0)
+            Easing = new SpringEasing(1, 10, 1)
         };
 
         var rotateTransform = new RotateTransform(-2.5);
-        var rect = new Rectangle()
-        {
-            RenderTransform = rotateTransform
-        };
+        var rect = new Rectangle() { RenderTransform = rotateTransform };
 
         var clock = new TestClock();
-        var animationRun = animation.RunAsync(rect, clock);
+        animation.RunAsync(rect, clock);
 
         clock.Step(TimeSpan.Zero);
         Assert.Equal(rotateTransform.Angle, -2.5);
