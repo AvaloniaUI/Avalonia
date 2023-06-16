@@ -49,6 +49,46 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
             }
 
+            return CallWithCast(countGroup, arguments, out result, false);
+        }
+        
+        bool CallWithCast(List<FfiRecord> countGroup, IReadOnlyList<ExpressionVariant> arguments, out ExpressionVariant result, bool anyCast)
+        {
+            result = default;
+            foreach (var record in countGroup)
+            {
+                var match = true;
+                for (var c = 0; c < arguments.Count; c++)
+                {
+                    var parameter = record.Types[c];
+                    var arg = arguments[c].Type;
+                    if (parameter != arg)
+                    {
+                        var canCast = (parameter == VariantType.Double && arg == VariantType.Scalar)
+                                      || (parameter == VariantType.Vector3D && arg == VariantType.Vector3)
+                                      || (parameter == VariantType.Vector && arg == VariantType.Vector2)
+                                      || (anyCast && (
+                                          (arg == VariantType.Double && parameter == VariantType.Scalar)
+                                          || (arg == VariantType.Vector3D && parameter == VariantType.Vector3)
+                                          || (arg == VariantType.Vector && parameter == VariantType.Vector2)
+                                      ));
+                        if (!canCast)
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (match)
+                {
+                    result = record.Delegate(arguments);
+                    return true;
+                }
+            }
+
+            if (anyCast == false)
+                return CallWithCast(countGroup, arguments, out result, true);
             return false;
         }
 
@@ -75,8 +115,11 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             [typeof(bool)] = VariantType.Boolean,
             [typeof(float)] = VariantType.Scalar,
+            [typeof(double)] = VariantType.Double,
             [typeof(Vector2)] = VariantType.Vector2,
+            [typeof(Vector)] = VariantType.Vector,
             [typeof(Vector3)] = VariantType.Vector3,
+            [typeof(Vector3D)] = VariantType.Vector3D,
             [typeof(Vector4)] = VariantType.Vector4,
             [typeof(Matrix3x2)] = VariantType.Matrix3x2,
             [typeof(Matrix4x4)] = VariantType.Matrix4x4,

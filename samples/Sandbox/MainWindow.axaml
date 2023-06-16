@@ -1,4 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
+        
+        <ScrollViewer>
+                <StackPanel>
+                        <Button Margin="0 100000000000000000 0 0">0</Button>
+                        <Button>1</Button>
+                </StackPanel>
+        </ScrollViewer>
 </Window>
