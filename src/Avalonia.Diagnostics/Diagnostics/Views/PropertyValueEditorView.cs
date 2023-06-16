@@ -232,11 +232,11 @@ namespace Avalonia.Diagnostics.Views
 
             return tb;
 
-            TControl CreateControl<TControl>(AvaloniaProperty valueProperty
-                , IValueConverter? converter = null
-                , Action<TControl>? init = null
-                , AvaloniaProperty? readonlyProperty = null)
-                where TControl : Control, new()
+            TControl CreateControl<TControl>(AvaloniaProperty valueProperty,
+                    IValueConverter? converter = null,
+                    Action<TControl>? init = null,
+                    AvaloniaProperty? readonlyProperty = null)
+                    where TControl : Control, new()
             {
                 var control = new TControl();
                 var bindingMode = Property.IsReadonly ? BindingMode.OneWay : BindingMode.TwoWay;
