@@ -5,7 +5,7 @@ using Avalonia.Base.UnitTests.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.PropertyStore;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -961,6 +961,72 @@ namespace Avalonia.Base.UnitTests.Styling
 
             target.Classes.Remove("foo");
             Assert.Equal(0.0, target.Double);
+        }
+
+        [Fact]
+        public void Animations_With_Activator_Trigger_Should_Be_Activated_And_Deactivated()
+        {
+            var clock = new TestClock();
+            var border = new Border();
+
+            var root = new TestRoot
+            {
+                Clock = clock,
+                Styles =
+                {
+                    new Style(x => x.OfType<Border>().Not(default(Selector).Class("foo")))
+                    {
+                        Setters =
+                        {
+                            new Setter(Border.BackgroundProperty, Brushes.Yellow),
+                        },
+                        Animations =
+                        {
+                            new Avalonia.Animation.Animation
+                            {
+                                Duration = TimeSpan.FromSeconds(1.0),
+                                Children =
+                                {
+                                    new KeyFrame
+                                    {
+                                        Setters =
+                                        {
+                                            new Setter(Border.BackgroundProperty, Brushes.Green)
+                                        },
+                                        Cue = new Cue(0.0)
+                                    },
+                                    new KeyFrame
+                                    {
+                                        Setters =
+                                        {
+                                            new Setter(Border.BackgroundProperty, Brushes.Green)
+                                        },
+                                        Cue = new Cue(1.0)
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    new Style(x => x.OfType<Border>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Border.BackgroundProperty, Brushes.Blue),
+                        }
+                    }
+                },
+                Child = border
+            };
+
+            root.Measure(Size.Infinity);
+
+            Assert.Equal(Brushes.Yellow, border.Background);
+
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            Assert.Equal(Brushes.Green, border.Background);
+
+            border.Classes.Add("foo");
+            Assert.Equal(Brushes.Blue, border.Background);
         }
 
         private class Class1 : Control
