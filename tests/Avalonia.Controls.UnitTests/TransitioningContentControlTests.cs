@@ -27,13 +27,13 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void TransitionContentPresenter_Should_Initially_Be_Hidden()
+        public void ContentPresenters2_Should_Initially_Be_Hidden()
         {
             using var app = Start();
             var (target, transition) = CreateTarget("foo");
-            var transitionPresenter = GetTransitionContentPresenter(target);
+            var presenter2 = GetContentPresenters2(target);
 
-            Assert.False(transitionPresenter.IsVisible);
+            Assert.False(presenter2.IsVisible);
         }
 
         [Fact]
@@ -63,36 +63,68 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ContentPresenters_Should_Be_Setup_For_Transition()
+        public void Control_Should_Connect_To_VisualTree_Once()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget(new Control());
+
+            var control = new Control();
+            int counter = 0;
+
+            control.AttachedToVisualTree += (s,e) => counter++;
+
+            target.Content = control;
+            Layout(target);
+            target.Content = new Control();
+            Layout(target);
+            
+            Assert.Equal(1, counter);
+        }
+
+        [Fact]
+        public void ContentPresenters2_Should_Be_Setup()
         {
             using var app = Start();
             var (target, transition) = CreateTarget("foo");
-            var transitionPresenter = GetTransitionContentPresenter(target);
+            var presenter1 = target.Presenter!;
+            var presenter2 = GetContentPresenters2(target);
 
             target.Content = "bar";
             Layout(target);
 
-            Assert.True(transitionPresenter.IsVisible);
-            Assert.Equal("bar", target.Presenter!.Content);
-            Assert.Equal("foo", transitionPresenter.Content);
+            Assert.True(presenter2.IsVisible);
+            Assert.Equal("foo", presenter1.Content);
+            Assert.Equal("bar", presenter2.Content);
         }
 
         [Fact]
-        public void TransitionContentPresenter_Should_Be_Hidden_When_Transition_Completes()
+        public void Old_Presenter_Should_Be_Hidden_When_Transition_Completes()
         {
             using var app = Start();
             using var sync = UnitTestSynchronizationContext.Begin();
             var (target, transition) = CreateTarget("foo");
-            var transitionPresenter = GetTransitionContentPresenter(target);
+            var presenter1 = target.Presenter!;
+            var presenter2 = GetContentPresenters2(target);
 
             target.Content = "bar";
             Layout(target);
-            Assert.True(transitionPresenter.IsVisible);
+            Assert.True(presenter1.IsVisible);
+            Assert.True(presenter2.IsVisible);
 
             transition.Complete();
             sync.ExecutePostedCallbacks();
+            Assert.True(presenter2.IsVisible);
+            Assert.False(presenter1.IsVisible);
 
-            Assert.False(transitionPresenter.IsVisible);
+            target.Content = "foo";
+            Layout(target);
+            Assert.True(presenter1.IsVisible);
+            Assert.True(presenter2.IsVisible);
+
+            transition.Complete();
+            sync.ExecutePostedCallbacks();
+            Assert.True(presenter1.IsVisible);
+            Assert.False(presenter2.IsVisible);
         }
 
         [Fact]
@@ -101,7 +133,6 @@ namespace Avalonia.Controls.UnitTests
             using var app = Start();
             using var sync = UnitTestSynchronizationContext.Begin();
             var (target, transition) = CreateTarget("foo");
-            var transitionPresenter = GetTransitionContentPresenter(target);
 
             target.Content = "bar";
             Layout(target);
@@ -120,7 +151,7 @@ namespace Avalonia.Controls.UnitTests
             using var app = Start();
             using var sync = UnitTestSynchronizationContext.Begin();
             var (target, transition) = CreateTarget("foo");
-            var transitionPresenter = GetTransitionContentPresenter(target);
+            var presenter2 = GetContentPresenters2(target);
 
             target.Content = "bar";
             Layout(target);
@@ -134,7 +165,7 @@ namespace Avalonia.Controls.UnitTests
                 var fromPresenter = Assert.IsType<ContentPresenter>(from);
                 var toPresenter = Assert.IsType<ContentPresenter>(to);
 
-                Assert.Same(transitionPresenter, fromPresenter);
+                Assert.Same(presenter2, fromPresenter);
                 Assert.Same(target.Presenter, toPresenter);
                 Assert.Equal("bar", fromPresenter.Content);
                 Assert.Equal("baz", toPresenter.Content);
@@ -149,7 +180,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, startedRaised);
             Assert.Equal("baz", target.Presenter!.Content);
-            Assert.Equal("bar", transitionPresenter.Content);
+            Assert.Equal("bar", presenter2.Content);
         }
 
         private static IDisposable Start()
@@ -187,22 +218,21 @@ namespace Avalonia.Controls.UnitTests
                         new ContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
                         },
                         new ContentPresenter
                         {
-                            Name = "PART_TransitionContentPresenter",
+                            Name = "PART_ContentPresenter2",
                         },
                     }
                 };
             });
         }
 
-        private static ContentPresenter GetTransitionContentPresenter(TransitioningContentControl target)
+        private static ContentPresenter GetContentPresenters2(TransitioningContentControl target)
         {
             return Assert.IsType<ContentPresenter>(target
                 .GetTemplateChildren()
-                .First(x => x.Name == "PART_TransitionContentPresenter"));
+                .First(x => x.Name == "PART_ContentPresenter2"));
         }
 
         private void Layout(Control c)
@@ -227,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
                 if (_tcs is not null)
                     throw new InvalidOperationException("Transition already running");
                 _tcs = new TaskCompletionSource();
-                cancellationToken.Register(() => _tcs.TrySetResult());
+                cancellationToken.Register(() => _tcs?.TrySetResult());
                 await _tcs.Task;
                 _tcs = null;
 

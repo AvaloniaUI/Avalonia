@@ -123,5 +123,21 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+        [Fact]
+        public void Should_Return_False_For_Invalid_DefaultFontFamily()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = "avares://resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown" });
+
+                    var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _);
+
+                    Assert.False(result);
+                }
+            }
+        }
     }
 }

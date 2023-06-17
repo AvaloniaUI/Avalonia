@@ -13,7 +13,7 @@ namespace Avalonia.Headless.NUnit;
 /// such that awaited expressions resume on the test's "main thread".
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-public sealed class AvaloniaTestAttribute : TestCaseAttribute, IWrapSetUpTearDown
+public sealed class AvaloniaTestAttribute : TestAttribute, IWrapSetUpTearDown
 {
     public TestCommand Wrap(TestCommand command)
     {

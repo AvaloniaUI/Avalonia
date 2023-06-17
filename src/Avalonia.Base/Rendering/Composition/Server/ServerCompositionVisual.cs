@@ -51,7 +51,7 @@ namespace Avalonia.Rendering.Composition.Server
                     canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
             }
             var transform = GlobalTransformMatrix;
-            canvas.PostTransform = MatrixUtils.ToMatrix(transform);
+            canvas.PostTransform = transform;
             canvas.Transform = Matrix.Identity;
 
             if (Effect != null)
@@ -71,7 +71,7 @@ namespace Avalonia.Rendering.Composition.Server
             RenderCore(canvas, currentTransformedClip);
             
             // Hack to force invalidation of SKMatrix
-            canvas.PostTransform = MatrixUtils.ToMatrix(transform);
+            canvas.PostTransform = transform;
             canvas.Transform = Matrix.Identity;
 
             if (OpacityMaskBrush != null)
@@ -106,8 +106,8 @@ namespace Avalonia.Rendering.Composition.Server
             return ref _readback2;
         }
 
-        public Matrix4x4 CombinedTransformMatrix { get; private set; } = Matrix4x4.Identity;
-        public Matrix4x4 GlobalTransformMatrix { get; private set; }
+        public Matrix CombinedTransformMatrix { get; private set; } = Matrix.Identity;
+        public Matrix GlobalTransformMatrix { get; private set; }
 
         public record struct UpdateResult(Rect? Bounds, bool InvalidatedOld, bool InvalidatedNew)
         {
@@ -134,12 +134,12 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
                     // HACK: Ignore RenderTransform set by the adorner layer
-                    AdornedVisual != null ? Matrix4x4.Identity : TransformMatrix,
+                    AdornedVisual != null ? Matrix.Identity : TransformMatrix,
                     Scale, RotationAngle, Orientation, Offset);
                 _combinedTransformDirty = false;
             }
 
-            var parentTransform = (AdornedVisual ?? Parent)?.GlobalTransformMatrix ?? Matrix4x4.Identity;
+            var parentTransform = (AdornedVisual ?? Parent)?.GlobalTransformMatrix ?? Matrix.Identity;
 
             var newTransform = CombinedTransformMatrix * parentTransform;
 
@@ -148,7 +148,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (GlobalTransformMatrix != newTransform)
             {
                 _isBackface = Vector3.Transform(
-                    new Vector3(0, 0, float.PositiveInfinity), GlobalTransformMatrix).Z <= 0;
+                    new Vector3(0, 0, float.PositiveInfinity), MatrixUtils.ToMatrix4x4(GlobalTransformMatrix)).Z <= 0;
                 positionChanged = true;
             }
 
@@ -179,14 +179,14 @@ namespace Avalonia.Rendering.Composition.Server
                     TransformedOwnContentBounds = default;
                 else
                     TransformedOwnContentBounds =
-                        ownBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
+                        ownBounds.TransformToAABB(GlobalTransformMatrix);
             }
 
             if (_clipSizeDirty || positionChanged)
             {
                 _transformedClipBounds = ClipToBounds
                     ? new Rect(new Size(Size.X, Size.Y))
-                        .TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix))
+                        .TransformToAABB(GlobalTransformMatrix)
                     : null;
                 
                 _clipSizeDirty = false;
@@ -249,7 +249,7 @@ namespace Avalonia.Rendering.Composition.Server
         /// </summary>
         public struct ReadbackData
         {
-            public Matrix4x4 Matrix;
+            public Matrix Matrix;
             public ulong Revision;
             public long TargetId;
             public bool Visible;

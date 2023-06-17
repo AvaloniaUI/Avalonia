@@ -53,10 +53,10 @@ namespace Avalonia.Animation
         private void FetchProperties()
         {
             if (_animation.SpeedRatio < 0d)
-                throw new ArgumentOutOfRangeException("SpeedRatio value should not be negative.");
+                throw new InvalidOperationException("SpeedRatio value should not be negative.");
 
-            if (_animation.Duration.TotalSeconds <= 0)
-                throw new InvalidOperationException("Duration value cannot be negative or zero.");
+            if (_animation.Duration < TimeSpan.Zero)
+                throw new InvalidOperationException("Duration value cannot be negative.");
 
             _easeFunc = _animation.Easing;
 
@@ -110,8 +110,8 @@ namespace Avalonia.Animation
         {
             if (_animator.Property is null)
                 throw new InvalidOperationException("Animator has no property specified.");
-            if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
-                _targetControl.SetValue(_animator.Property, _lastInterpValue, BindingPriority.LocalValue);
+            if (_fillMode is FillMode.Forward or FillMode.Both)
+                _targetControl.SetValue(_animator.Property, _lastInterpValue);
         }
 
         private void DoComplete()
@@ -123,11 +123,8 @@ namespace Avalonia.Animation
 
         private void DoDelay()
         {
-            if (_fillMode == FillMode.Backward || _fillMode == FillMode.Both)
-                if (_currentIteration == 0)
-                    PublishNext(_firstKFValue);
-                else
-                    PublishNext(_lastInterpValue);
+            if (_fillMode is not (FillMode.Backward or FillMode.Both)) return;
+            PublishNext(_currentIteration == 0 ? _firstKFValue : _lastInterpValue);
         }
 
         private void DoPlayStates()
@@ -167,9 +164,9 @@ namespace Avalonia.Animation
 
                 _currentIteration = (ulong)(opsTime / iterationTime);
 
-                // Stop animation when the current iteration is beyond the iteration count
-                // and snap the last iteration value to exact values.
-                if ((_currentIteration + 1) > _iterationCount)
+                // Stop animation when the current iteration is beyond the iteration count or
+                // when the duration is set to zero while animating and snap to the last iterated value.
+                if (_currentIteration + 1 > _iterationCount || _duration == TimeSpan.Zero)
                 {
                     var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
                     _lastInterpValue = _interpolator(easedTime, _neutralValue);
@@ -192,10 +189,10 @@ namespace Avalonia.Animation
                             _playbackReversed = true;
                             break;
                         case PlaybackDirection.Alternate:
-                            _playbackReversed = (_currentIteration % 2 == 0) ? false : true;
+                            _playbackReversed = _currentIteration % 2 != 0;
                             break;
                         case PlaybackDirection.AlternateReverse:
-                            _playbackReversed = (_currentIteration % 2 == 0) ? true : false;
+                            _playbackReversed = _currentIteration % 2 == 0;
                             break;
                         default:
                             throw new InvalidOperationException($"Animation direction value is unknown: {_playbackDirection}");
@@ -215,7 +212,7 @@ namespace Avalonia.Animation
                          iterDelay > 0)
                 {
                     // The last iteration's trailing delay should be skipped.
-                    if ((_currentIteration + 1) < _iterationCount)
+                    if (_currentIteration + 1 < _iterationCount)
                         DoDelay();
                     else
                         DoComplete();
