@@ -11,6 +11,7 @@
         ExtendClientAreaChromeHints="{Binding ChromeHints}"
         ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
         x:Name="MainWindow"
+        Background="Transparent"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}"
         x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>
