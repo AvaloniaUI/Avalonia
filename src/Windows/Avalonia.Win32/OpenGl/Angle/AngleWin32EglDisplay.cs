@@ -104,19 +104,28 @@ namespace Avalonia.Win32.OpenGl.Angle
                 do
                 {
                     var pFeatureLevels = featureLevels.Skip(skip).ToArray();
-                    result = DirectXUnmanagedMethods.D3D11CreateDevice(
-                        adapter,
-                        D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
-                        IntPtr.Zero,
-                        0,
-                        pFeatureLevels,
-                        (uint)pFeatureLevels.Length,
-                        7,
-                        out pD3dDevice,
-                        out _,
-                        null);
-                    if (result != UnmanagedMethods.HRESULT.S_OK)
+                    try
+                    {
+                        result = DirectXUnmanagedMethods.D3D11CreateDevice(
+                            adapter,
+                            D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
+                            IntPtr.Zero,
+                            0,
+                            pFeatureLevels,
+                            (uint)pFeatureLevels.Length,
+                            7,
+                            out pD3dDevice,
+                            out var s,
+                            null);
+                        if (result != UnmanagedMethods.HRESULT.S_OK)
+                            skip++;
+                    }
+                    catch (Exception e)
+                    {
+                        result = UnmanagedMethods.HRESULT.E_FAIL;
                         skip++;
+                        pD3dDevice = IntPtr.Zero;
+                    }
                 } while (skip < featureLevels.Length && result != UnmanagedMethods.HRESULT.S_OK);
             }
 
