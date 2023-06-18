@@ -58,6 +58,9 @@ namespace Avalonia.Animation
             if (_animation.Duration < TimeSpan.Zero)
                 throw new InvalidOperationException("Duration value cannot be negative.");
 
+            if (_animation.Delay < TimeSpan.Zero)
+                throw new InvalidOperationException("Delay value cannot be negative.");
+
             _easeFunc = _animation.Easing;
 
             _speedRatioConv = 1d / _animation.SpeedRatio;
@@ -151,72 +154,74 @@ namespace Avalonia.Animation
             var iterDelay = _iterationDelay.Ticks * _speedRatioConv;
             var initDelay = _initialDelay.Ticks * _speedRatioConv;
 
-            if (indexTime > 0 & indexTime <= initDelay)
+            // This conditional checks if the time given is the very start/zero
+            // and when we have an active delay time.
+            if (initDelay > 0 && indexTime <= initDelay)
             {
                 DoDelay();
+                return;
             }
-            else
+
+            // Calculate timebases.
+            var iterationTime = iterDuration + iterDelay;
+            var opsTime = indexTime - initDelay;
+            var playbackTime = opsTime % iterationTime;
+
+            _currentIteration = (ulong)(opsTime / iterationTime);
+
+            // Stop animation when the current iteration is beyond the iteration count or
+            // when the duration is set to zero while animating and snap to the last iterated value.
+            if (_currentIteration + 1 > _iterationCount || _duration == TimeSpan.Zero)
             {
-                // Calculate timebases.
-                var iterationTime = iterDuration + iterDelay;
-                var opsTime = indexTime - initDelay;
-                var playbackTime = opsTime % iterationTime;
+                var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
+                _lastInterpValue = _interpolator(easedTime, _neutralValue);
+                DoComplete();
+            }
 
-                _currentIteration = (ulong)(opsTime / iterationTime);
+            if (playbackTime <= iterDuration)
+            {
+                // Normalize time for interpolation.
+                var normalizedTime = playbackTime / iterDuration;
 
-                // Stop animation when the current iteration is beyond the iteration count or
-                // when the duration is set to zero while animating and snap to the last iterated value.
-                if (_currentIteration + 1 > _iterationCount || _duration == TimeSpan.Zero)
+                // Check if normalized time needs to be reversed according to PlaybackDirection
+
+                switch (_playbackDirection)
                 {
-                    var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
-                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
+                    case PlaybackDirection.Normal:
+                        _playbackReversed = false;
+                        break;
+                    case PlaybackDirection.Reverse:
+                        _playbackReversed = true;
+                        break;
+                    case PlaybackDirection.Alternate:
+                        _playbackReversed = _currentIteration % 2 != 0;
+                        break;
+                    case PlaybackDirection.AlternateReverse:
+                        _playbackReversed = _currentIteration % 2 == 0;
+                        break;
+                    default:
+                        throw new InvalidOperationException(
+                            $"Animation direction value is unknown: {_playbackDirection}");
+                }
+
+                if (_playbackReversed)
+                    normalizedTime = 1 - normalizedTime;
+
+                // Ease and interpolate
+                var easedTime = _easeFunc!.Ease(normalizedTime);
+                _lastInterpValue = _interpolator(easedTime, _neutralValue);
+
+                PublishNext(_lastInterpValue);
+            }
+            else if (playbackTime > iterDuration &&
+                     playbackTime <= iterationTime &&
+                     iterDelay > 0)
+            {
+                // The last iteration's trailing delay should be skipped.
+                if (_currentIteration + 1 < _iterationCount)
+                    DoDelay();
+                else
                     DoComplete();
-                }
-
-                if (playbackTime <= iterDuration)
-                {
-                    // Normalize time for interpolation.
-                    var normalizedTime = playbackTime / iterDuration;
-
-                    // Check if normalized time needs to be reversed according to PlaybackDirection
-
-                    switch (_playbackDirection)
-                    {
-                        case PlaybackDirection.Normal:
-                            _playbackReversed = false;
-                            break;
-                        case PlaybackDirection.Reverse:
-                            _playbackReversed = true;
-                            break;
-                        case PlaybackDirection.Alternate:
-                            _playbackReversed = _currentIteration % 2 != 0;
-                            break;
-                        case PlaybackDirection.AlternateReverse:
-                            _playbackReversed = _currentIteration % 2 == 0;
-                            break;
-                        default:
-                            throw new InvalidOperationException($"Animation direction value is unknown: {_playbackDirection}");
-                    }
-
-                    if (_playbackReversed)
-                        normalizedTime = 1 - normalizedTime;
-
-                    // Ease and interpolate
-                    var easedTime = _easeFunc!.Ease(normalizedTime);
-                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
-
-                    PublishNext(_lastInterpValue);
-                }
-                else if (playbackTime > iterDuration &
-                         playbackTime <= iterationTime &
-                         iterDelay > 0)
-                {
-                    // The last iteration's trailing delay should be skipped.
-                    if (_currentIteration + 1 < _iterationCount)
-                        DoDelay();
-                    else
-                        DoComplete();
-                }
             }
         }
 
