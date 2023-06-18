@@ -241,8 +241,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 continue;
             
             // TODO: Optimize all of that by moving to the Visual itself, so we won't have to recalculate every time
-            comp.Offset = new Vector3((float)visual.Bounds.Left, (float)visual.Bounds.Top, 0);
-            comp.Size = new Vector2((float)visual.Bounds.Width, (float)visual.Bounds.Height);
+            comp.Offset = new (visual.Bounds.Left, visual.Bounds.Top, 0);
+            comp.Size = new (visual.Bounds.Width, visual.Bounds.Height);
             comp.Visible = visual.IsVisible;
             comp.Opacity = (float)visual.Opacity;
             comp.ClipToBounds = visual.ClipToBounds;
@@ -269,7 +269,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 renderTransform *= (-offset) * visual.RenderTransform.Value * (offset);
             }
 
-            comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
+            comp.TransformMatrix = renderTransform;
 
             try
             {

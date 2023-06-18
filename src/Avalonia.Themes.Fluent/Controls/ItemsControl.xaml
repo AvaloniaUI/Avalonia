@@ -10,8 +10,6 @@
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{TemplateBinding Padding}">
           <ItemsPresenter Name="PART_ItemsPresenter"
-                          AreVerticalSnapPointsRegular="{TemplateBinding AreVerticalSnapPointsRegular}"
-                          AreHorizontalSnapPointsRegular="{TemplateBinding AreHorizontalSnapPointsRegular}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"/>
         </Border>
       </ControlTemplate>

@@ -223,7 +223,7 @@ namespace Avalonia.Controls
                 var visualizerVisual = ElementComposition.GetElementVisual(this);
                 if (visual != null && contentVisual != null && visualizerVisual != null)
                 {
-                    contentVisual.CenterPoint = new Vector3((float)(_content.Bounds.Width / 2), (float)(_content.Bounds.Height / 2), 0);
+                    contentVisual.CenterPoint = new Vector3D((_content.Bounds.Width / 2), (_content.Bounds.Height / 2), 0);
                     switch (RefreshVisualizerState)
                     {
                         case RefreshVisualizerState.Idle:
@@ -236,43 +236,43 @@ namespace Avalonia.Controls
                             contentVisual.Opacity = MinimumIndicatorOpacity;
                             contentVisual.RotationAngle = _startingRotationAngle;
                             visualizerVisual.Offset = IsPullDirectionVertical ?
-                                new Vector3(visualizerVisual.Offset.X, 0, 0) :
-                                new Vector3(0, visualizerVisual.Offset.Y, 0);
+                                new Vector3D(visualizerVisual.Offset.X, 0, 0) :
+                                new Vector3D(0, visualizerVisual.Offset.Y, 0);
                             _content.InvalidateMeasure();
                             break;
                         case RefreshVisualizerState.Interacting:
                             _played = false;
                             contentVisual.Opacity = MinimumIndicatorOpacity;
                             contentVisual.RotationAngle = (float)(_startingRotationAngle + _interactionRatio * 2 * Math.PI);
-                            Vector3 offset = default;
+                            Vector3D offset = default;
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3(0, (float)(_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(0, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
                             }
                             else
                             {
-                                offset = new Vector3((float)(_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
                             }
                             visual.Offset = offset;
                             visualizerVisual.Offset = IsPullDirectionVertical ? 
-                                new Vector3(visualizerVisual.Offset.X, offset.Y, 0) :
-                                new Vector3(offset.X, visualizerVisual.Offset.Y, 0);
+                                new Vector3D(visualizerVisual.Offset.X, offset.Y, 0) :
+                                new Vector3D(offset.X, visualizerVisual.Offset.Y, 0);
                             break;
                         case RefreshVisualizerState.Pending:
                             contentVisual.Opacity = 1;
                             contentVisual.RotationAngle = _startingRotationAngle + (float)(2 * Math.PI);
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3(0, (float)(_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(0, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
                             }
                             else
                             {
-                                offset = new Vector3((float)(_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
                             }
                             visual.Offset = offset;
                             visualizerVisual.Offset = IsPullDirectionVertical ? 
-                                new Vector3(visualizerVisual.Offset.X, offset.Y, 0) : 
-                                new Vector3(offset.X, visualizerVisual.Offset.Y, 0);
+                                new Vector3D(visualizerVisual.Offset.X, offset.Y, 0) : 
+                                new Vector3D(offset.X, visualizerVisual.Offset.Y, 0);
 
                             if (!_played)
                             {
@@ -301,18 +301,18 @@ namespace Avalonia.Controls
                                 * (IsPullDirectionFar ? -1f : 1f);
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3(0, (float)(_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(0, (_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
                             }
                             else
                             {
-                                offset = new Vector3((float)(_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
                             }
                             visual.Offset = offset;
-                            contentVisual.Offset += IsPullDirectionVertical ? new Vector3(0, (float)(translationRatio * root.Bounds.Height), 0) :
-                                new Vector3((float)(translationRatio * root.Bounds.Width), 0, 0);
+                            contentVisual.Offset += IsPullDirectionVertical ? new Vector3D(0, (translationRatio * root.Bounds.Height), 0) :
+                                new Vector3D((translationRatio * root.Bounds.Width), 0, 0);
                             visualizerVisual.Offset = IsPullDirectionVertical ?
-                                new Vector3(visualizerVisual.Offset.X, offset.Y, 0) :
-                                new Vector3(offset.X, visualizerVisual.Offset.Y, 0);
+                                new Vector3D(visualizerVisual.Offset.X, offset.Y, 0) :
+                                new Vector3D(offset.X, visualizerVisual.Offset.Y, 0);
                             break;
                         case RefreshVisualizerState.Peeking:
                             contentVisual.Opacity = 1;

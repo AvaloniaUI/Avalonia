@@ -21,6 +21,8 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var keySpline = (KeySpline)conv.ConvertFrom(input);
 
+            Assert.NotNull(keySpline);
+
             Assert.Equal(1, keySpline.ControlPointX1);
             Assert.Equal(2, keySpline.ControlPointY1);
             Assert.Equal(3, keySpline.ControlPointX2);
@@ -28,8 +30,8 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Theory]
-        [InlineData("1,2F,3,4")] 
-        [InlineData("Foo,Bar,Fee,Buzz")] 
+        [InlineData("1,2F,3,4")]
+        [InlineData("Foo,Bar,Fee,Buzz")]
         public void Can_Handle_Invalid_String_KeySpline_Via_TypeConverter(string input)
         {
             var conv = new KeySplineTypeConverter();
@@ -104,46 +106,33 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(RotateTransform.AngleProperty, -2.5d),
-                },
-                KeyTime = TimeSpan.FromSeconds(0)
+                Setters = { new Setter(RotateTransform.AngleProperty, -2.5d), }, KeyTime = TimeSpan.FromSeconds(0)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(RotateTransform.AngleProperty, 2.5d),
-                },
+                Setters = { new Setter(RotateTransform.AngleProperty, 2.5d), },
                 KeyTime = TimeSpan.FromSeconds(5),
                 KeySpline = new KeySpline(0.1123555056179775,
-                                          0.657303370786517,
-                                          0.8370786516853934,
-                                          0.499999999999999999)
+                    0.657303370786517,
+                    0.8370786516853934,
+                    0.499999999999999999)
             };
 
             var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(5),
-                Children =
-                {
-                    keyframe1,
-                    keyframe2
-                },
+                Children = { keyframe1, keyframe2 },
                 IterationCount = new IterationCount(5),
                 PlaybackDirection = PlaybackDirection.Alternate
             };
 
             var rotateTransform = new RotateTransform(-2.5);
-            var rect = new Rectangle()
-            {
-                RenderTransform = rotateTransform
-            };
+            var rect = new Rectangle() { RenderTransform = rotateTransform };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(rect, clock);
+
+            animation.RunAsync(rect, clock);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -169,49 +158,36 @@ namespace Avalonia.Base.UnitTests.Animation
             expected = 1.8016358493761722;
             Assert.True(Math.Abs(rotateTransform.Angle - expected) <= tolerance);
         }
-        
+
         [Fact]
         public void Check_KeySpline_Parsing_Is_Correct()
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(RotateTransform.AngleProperty, -2.5d),
-                },
-                KeyTime = TimeSpan.FromSeconds(0)
+                Setters = { new Setter(RotateTransform.AngleProperty, -2.5d), }, KeyTime = TimeSpan.FromSeconds(0)
             };
 
             var keyframe2 = new KeyFrame()
             {
-                Setters =
-                {
-                    new Setter(RotateTransform.AngleProperty, 2.5d),
-                },
-                KeyTime = TimeSpan.FromSeconds(5),
+                Setters = { new Setter(RotateTransform.AngleProperty, 2.5d), }, KeyTime = TimeSpan.FromSeconds(5),
             };
 
             var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(5),
-                Children =
-                {
-                    keyframe1,
-                    keyframe2
-                },
+                Children = { keyframe1, keyframe2 },
                 IterationCount = new IterationCount(5),
                 PlaybackDirection = PlaybackDirection.Alternate,
-                Easing = Easing.Parse("0.1123555056179775,0.657303370786517,0.8370786516853934,0.499999999999999999")
+                Easing = Easing.Parse(
+                    "0.1123555056179775,0.657303370786517,0.8370786516853934,0.499999999999999999")
             };
 
             var rotateTransform = new RotateTransform(-2.5);
-            var rect = new Rectangle()
-            {
-                RenderTransform = rotateTransform
-            };
+            var rect = new Rectangle() { RenderTransform = rotateTransform };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(rect, clock);
+
+            animation.RunAsync(rect, clock);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
