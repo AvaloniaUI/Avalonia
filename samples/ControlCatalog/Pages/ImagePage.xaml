@@ -72,7 +72,7 @@
         </Image>
       </DockPanel>
 
-      <DockPanel>
+      <DockPanel IsVisible="{OnPlatform False, Windows=True}">
         <TextBlock Classes="h3">Win32 Icon (<Run Text="{Binding #IconSizeSlider.Value}"/>px)</TextBlock>
         <Slider DockPanel.Dock="Top" Name="IconSizeSlider" Minimum="16" Maximum="256" Value="32" TickFrequency="16" IsSnapToTickEnabled="True"/>
         <Image Name="iconImage" Source="/Assets/test_icon.ico" Width="{Binding #IconSizeSlider.Value}" Height="{Binding #IconSizeSlider.Value}" 

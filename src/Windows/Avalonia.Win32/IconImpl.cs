@@ -25,15 +25,33 @@ namespace Avalonia.Win32
 
         private static Icon ReadFromStream(Stream stream)
         {
-            try
+            if (!stream.CanSeek)
+            {
+                using var seekableStream = new MemoryStream();
+                stream.CopyTo(seekableStream);
+                return ReadFromStream(seekableStream);
+            }
+            
+            if (IsIcoFile(stream))
             {
                 return new(stream);
             }
-            catch (ArgumentException) // stream was not in .ICO format
+            else
             {
                 using var bitmap = new Bitmap(stream);
                 return Icon.FromHandle(bitmap.GetHicon());
             }
+        }
+
+        private static bool IsIcoFile(Stream stream)
+        {
+            var header = new byte[4];
+            var readCount = stream.Read(header, 0, header.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return readCount == header.Length
+                // 0010 - ico file header
+                && header[0] == 0 && header[1] == 0 && header[2] == 1 && header[3] == 0;
         }
 
         // GetSystemMetrics returns values scaled for the primary monitor, as of the time at which the process started.
