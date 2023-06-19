@@ -215,7 +215,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
-        private Matrix _transformation;
+        private Matrix _transformation = Matrix.Identity;
         private IDisposable? _transformChangedEvent;
 
         /// <summary>
@@ -256,13 +256,16 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ApplyLayoutTransform()
         {
-            if (LayoutTransform == null)
+            // Get the transform matrix and apply it
+            var matrix = LayoutTransform is null ?
+                Matrix.Identity :
+                RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
+
+            if (_transformation == matrix)
                 return;
 
-            // Get the transform matrix and apply it
-            _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
-
-            _matrixTransform.Matrix = _transformation;
+            _transformation = matrix;
+            _matrixTransform.Matrix = matrix;
 
             // New transform means re-layout is necessary
             InvalidateMeasure();
