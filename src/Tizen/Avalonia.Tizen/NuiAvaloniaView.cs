@@ -18,6 +18,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     private IntPtr _buffer;
 
     private Renderer _renderer;
+    private NuiTouchHandler _touchHandler;
     private Geometry _geometry;
     private Shader _shader;
     private Texture _texture;
@@ -61,6 +62,8 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         _topLevel = new EmbeddableControlRoot(_topLevelImpl);
         _topLevel.Prepare();
         _topLevel.StartRendering();
+
+        _touchHandler = new NuiTouchHandler(this, _topLevelImpl);
 
         _geometry = CreateQuadGeometry();
         _shader = new Shader(Consts.VertexShader, Consts.FragmentShader);
@@ -226,29 +229,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
 
     private bool OnTouchEvent(object source, TouchEventArgs e)
     {
-        var count = e.Touch.GetPointCount();
-        for (var i = 0u; i < count; i++)
-        {
-            var point = e.Touch.GetLocalPosition(i);
-            var state = e.Touch.GetState(i);
-            var timestamp = e.Touch.GetTime();
-            var mouseEvent = new RawTouchEventArgs(
-                _device,
-                timestamp,
-                InputRoot,
-                state switch
-                {
-                    PointStateType.Down => RawPointerEventType.TouchBegin,
-                    PointStateType.Up => RawPointerEventType.TouchEnd,
-                    PointStateType.Motion => RawPointerEventType.Move,
-                    PointStateType.Interrupted => RawPointerEventType.TouchCancel,
-                    _ => RawPointerEventType.LeaveWindow
-                },
-                new Point(point.X, point.Y),
-                RawInputModifiers.None,
-                i);
-            _topLevelImpl?.Input?.Invoke(mouseEvent);
-        }
+        _touchHandler?.Handle(e);
         return true;
     }
 
