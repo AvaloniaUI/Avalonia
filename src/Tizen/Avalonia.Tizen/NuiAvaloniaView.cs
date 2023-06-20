@@ -238,9 +238,10 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
                 InputRoot,
                 state switch
                 {
-                    PointStateType.Down => RawPointerEventType.LeftButtonDown,
-                    PointStateType.Up => RawPointerEventType.LeftButtonUp,
+                    PointStateType.Down => RawPointerEventType.TouchBegin,
+                    PointStateType.Up => RawPointerEventType.TouchEnd,
                     PointStateType.Motion => RawPointerEventType.Move,
+                    PointStateType.Interrupted => RawPointerEventType.TouchCancel,
                     _ => RawPointerEventType.LeaveWindow
                 },
                 new Point(point.X, point.Y),
