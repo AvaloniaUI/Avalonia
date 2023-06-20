@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="7" package="com.Avalonia.ControlCatalog" version="1.0.0">
+  <profile name="common" />
+  <ui-application appid="com.Avalonia.ControlCatalog"
+          exec="ControlCatalog.Tizen.dll"
+          type="dotnet-nui"
+          multiple="false"
+					taskmanage="true"
+					nodisplay="false"
+					launch_mode="single"
+          api-version="10">
+    <label>ControlCatalog.Tizen</label>
+    <icon>ControlCatalog.Avalonia.png</icon>
+    <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
+  </ui-application>
+</manifest>

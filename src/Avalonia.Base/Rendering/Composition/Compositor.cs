@@ -99,13 +99,15 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.UIThread.VerifyAccess();
             if (_nextCommit == null)
             {
-                _nextCommit = new ();
+                var next = _nextCommit = new ();
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
                         _ => Dispatcher.UIThread.Post(_triggerCommitRequested, DispatcherPriority.Send));
                 else
                     _triggerCommitRequested();
+
+                return next.Processed;
             }
 
             return _nextCommit.Processed;
