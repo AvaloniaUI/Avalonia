@@ -30,11 +30,22 @@ internal class ColorPaletteResourcesCollection : AvaloniaDictionary<ThemeVariant
     public bool HasResources => Count > 0;
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
-        theme ??= ThemeVariant.Default;
-        if (base.TryGetValue(theme, out var paletteResources)
-            && paletteResources.TryGetResource(key, theme, out value))
+        if (theme is not null)
         {
-            return true;
+            if (base.TryGetValue(theme, out var themePaletteResources)
+                && themePaletteResources.TryGetResource(key, theme, out value))
+            {
+                return true;
+            }
+        }
+
+        if (theme != ThemeVariant.Default)
+        {
+            if (base.TryGetValue(ThemeVariant.Default, out var defaultPaletteResources)
+                && defaultPaletteResources.TryGetResource(key, ThemeVariant.Default, out value))
+            {
+                return true;
+            }
         }
 
         value = null;
