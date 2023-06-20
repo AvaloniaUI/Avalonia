@@ -96,10 +96,10 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="ThirdComponent"/> property.
         /// </summary>
-        public static readonly StyledProperty<ColorComponent> ThirdComponentProperty =
-            AvaloniaProperty.Register<ColorSpectrum, ColorComponent>(
+        public static readonly DirectProperty<ColorSpectrum, ColorComponent> ThirdComponentProperty =
+            AvaloniaProperty.RegisterDirect<ColorSpectrum, ColorComponent>(
                 nameof(ThirdComponent),
-                ColorComponent.Component3); // Value
+                o => o.ThirdComponent);
 
         /// <summary>
         /// Gets or sets the currently selected color in the RGB color model.
@@ -239,8 +239,8 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         public ColorComponent ThirdComponent
         {
-            get => GetValue(ThirdComponentProperty);
-            protected set => SetValue(ThirdComponentProperty, value);
+            get => _thirdComponent;
+            private set => SetAndRaise(ThirdComponentProperty, ref _thirdComponent, value);
         }
     }
 }

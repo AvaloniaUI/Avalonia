@@ -2,11 +2,12 @@ using System;
 
 namespace Avalonia.X11
 {
-    static class XError
+    internal static class XError
     {
         private static readonly XErrorHandler s_errorHandlerDelegate = Handler;
         public static XErrorEvent LastError;
-        static int Handler(IntPtr display, ref XErrorEvent error)
+
+        private static int Handler(IntPtr display, ref XErrorEvent error)
         {
             LastError = error;
             return 0;

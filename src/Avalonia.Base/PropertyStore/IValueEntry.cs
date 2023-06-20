@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
@@ -21,6 +22,16 @@ namespace Avalonia.PropertyStore
         /// The entry has no value.
         /// </exception>
         object? GetValue();
+
+        /// <summary>
+        /// Gets the data validation state if supported.
+        /// </summary>
+        /// <param name="state">The binding validation state.</param>
+        /// <param name="error">The current binding error, if any.</param>
+        /// <returns>
+        /// True if the entry supports data validation, otherwise false.
+        /// </returns>
+        bool GetDataValidationState(out BindingValueType state, out Exception? error);
 
         /// <summary>
         /// Called when the value entry is removed from the value store.

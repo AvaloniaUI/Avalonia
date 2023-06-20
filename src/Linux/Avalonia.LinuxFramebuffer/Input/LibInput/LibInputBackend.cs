@@ -13,14 +13,12 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         private IInputRoot _inputRoot;
         private TouchDevice _touch = new TouchDevice();
         private const string LibInput = nameof(Avalonia.LinuxFramebuffer) + "/" + nameof(Avalonia.LinuxFramebuffer.Input) + "/" + nameof(LibInput);
-        private readonly RawEventGroupingThreadingHelper _inputQueue;
         private Action<RawInputEventArgs> _onInput;
         private Dictionary<int, Point> _pointers = new Dictionary<int, Point>();
 
         public LibInputBackend()
         {
             var ctx = libinput_path_create_context();
-            _inputQueue = new(e => _onInput?.Invoke(e));
             new Thread(() => InputThread(ctx)).Start();
         }
 
@@ -58,7 +56,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
         }
 
-        private void ScheduleInput(RawInputEventArgs ev) => _inputQueue.OnEvent(ev);
+        private void ScheduleInput(RawInputEventArgs ev) => _onInput.Invoke(ev);
 
         private void HandleTouch(IntPtr ev, LibInputEventType type)
         {

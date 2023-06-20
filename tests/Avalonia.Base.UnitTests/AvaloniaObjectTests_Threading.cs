@@ -11,12 +11,12 @@ namespace Avalonia.Base.UnitTests
 {
     public class AvaloniaObjectTests_Threading
     {
-        private ThreadingInterface _threading = new ThreadingInterface(true);
+        private TestDipatcherImpl _threading = new(true);
 
         [Fact]
         public void AvaloniaObject_Constructor_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: new ThreadingInterface())))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: new TestDipatcherImpl())))
             {
                 Assert.Throws<InvalidOperationException>(() => new Class1());
             }
@@ -25,7 +25,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_GetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -36,7 +36,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_SetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -47,7 +47,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Setting_StyledProperty_Binding_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -61,7 +61,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_ClearValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -72,7 +72,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_IsSet_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -83,7 +83,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_GetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -94,7 +94,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_SetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -105,7 +105,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Setting_DirectProperty_Binding_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -119,7 +119,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_ClearValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -130,7 +130,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_IsSet_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: _threading)))
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
@@ -147,10 +147,10 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaProperty.RegisterDirect<Class1, string>("Qux", _ => null, (o, v) => { });
         }
 
-        private class ThreadingInterface : IPlatformThreadingInterface
+        private class TestDipatcherImpl : IDispatcherImpl
         {
 
-            public ThreadingInterface(bool isLoopThread = false)
+            public TestDipatcherImpl(bool isLoopThread = false)
             {
                 CurrentThreadIsLoopThread = isLoopThread;
             }
@@ -158,23 +158,17 @@ namespace Avalonia.Base.UnitTests
             public bool CurrentThreadIsLoopThread { get; set; }
 
 #pragma warning disable 67
-            public event Action<DispatcherPriority?> Signaled;
+            public event Action Signaled;
+            public event Action Timer;
+            public long Now => 0;
+            public void UpdateTimer(long? dueTimeInMs)
+            {
+                throw new NotImplementedException();
+            }
+            public void Signal() => throw new NotImplementedException();
 #pragma warning restore 67
 
-            public void RunLoop(CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Signal(DispatcherPriority prio)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
-            {
-                throw new NotImplementedException();
-            }
+            
         }
     }
 }

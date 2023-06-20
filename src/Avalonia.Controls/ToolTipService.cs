@@ -42,11 +42,12 @@ namespace Avalonia.Controls
                 {
                     Close(control);
                 }
-                else
+                else 
                 {
-                    var tip = control.GetValue(ToolTip.ToolTipProperty);
-
-                    tip!.Content = e.NewValue;
+                    if (control.GetValue(ToolTip.ToolTipProperty) is { } tip)
+                    {
+                        tip.Content = e.NewValue;
+                    }
                 }
             }
         }

@@ -16,25 +16,37 @@ namespace Avalonia.PropertyStore
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;
+        private UncommonFields? _uncommon;
 
         protected BindingEntryBase(
+            AvaloniaObject target,
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<BindingValue<TSource>> source)
+            : this(target, frame, property, (object)source)
         {
-            Frame = frame;
-            Source = source;
-            Property = property;
         }
 
         protected BindingEntryBase(
+            AvaloniaObject target,
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<TSource> source)
+            : this(target, frame, property, (object)source)
+        {
+        }
+
+        private BindingEntryBase(
+            AvaloniaObject target,
+            ValueFrame frame,
+            AvaloniaProperty property,
+            object source)
         {
             Frame = frame;
-            Source = source;
             Property = property;
+            Source = source;
+            if (property.GetMetadata(target.GetType()).EnableDataValidation == true)
+                _uncommon = new() { _hasDataValidation = true };
         }
 
         public bool HasValue
@@ -66,6 +78,20 @@ namespace Avalonia.PropertyStore
             return _value!;
         }
 
+        public bool GetDataValidationState(out BindingValueType state, out Exception? error)
+        {
+            if (_uncommon?._hasDataValidation == true)
+            {
+                state = _uncommon._dataValidationState;
+                error = _uncommon._dataValidationError;
+                return true;
+            }
+
+            state = BindingValueType.Value;
+            error = null;
+            return false;
+        }
+
         public void Start() => Start(true);
 
         public void OnCompleted() => BindingCompleted();
@@ -89,6 +115,7 @@ namespace Avalonia.PropertyStore
 
         protected abstract BindingValue<TValue> ConvertAndValidate(TSource value);
         protected abstract BindingValue<TValue> ConvertAndValidate(BindingValue<TSource> value);
+        protected abstract TValue GetDefaultValue(Type ownerType);
 
         protected virtual void Start(bool produceValue)
         {
@@ -104,43 +131,40 @@ namespace Avalonia.PropertyStore
             };
         }
 
-        private void ClearValue()
-        {
-            if (_hasValue)
-            {
-                _hasValue = false;
-                _value = default;
-                if (_subscription is not null)
-                    Frame.Owner?.OnBindingValueCleared(Property, Frame.Priority);
-            }
-        }
-
         private void SetValue(BindingValue<TValue> value)
         {
             static void Execute(BindingEntryBase<TValue, TSource> instance, BindingValue<TValue> value)
             {
-                if (instance.Frame.Owner is null)
+                if (instance.Frame.Owner is not { } valueStore)
                     return;
 
-                LoggingUtils.LogIfNecessary(instance.Frame.Owner.Owner, instance.Property, value);
+                var owner = valueStore.Owner;
+                var property = instance.Property;
+                var originalType = value.Type;
 
-                if (value.HasValue)
+                LoggingUtils.LogIfNecessary(owner, property, value);
+
+                if (!value.HasValue && value.Type != BindingValueType.DataValidationError)
+                    value = value.WithValue(instance.GetCachedDefaultValue());
+
+                if (instance._uncommon?._hasDataValidation == true)
                 {
-                    if (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, value.Value))
-                    {
-                        instance._value = value.Value;
-                        instance._hasValue = true;
-                        if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
-                            instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
-                    }
+                    instance._uncommon._dataValidationState = value.Type;
+                    instance._uncommon._dataValidationError = value.Error;
                 }
-                else if (value.Type != BindingValueType.DoNothing)
+
+                if (value.HasValue &&
+                    (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, value.Value)))
                 {
-                    instance.ClearValue();
+                    instance._value = value.Value;
+                    instance._hasValue = true;
                     if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
-                        instance.Frame.Owner?.OnBindingValueCleared(instance.Property, instance.Frame.Priority);
+                        instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
                 }
             }
+
+            if (value.Type == BindingValueType.DoNothing)
+                return;
 
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -160,6 +184,27 @@ namespace Avalonia.PropertyStore
         {
             _subscription = null;
             Frame.OnBindingCompleted(this);
+        }
+
+        private TValue GetCachedDefaultValue()
+        {
+            if (_uncommon?._isDefaultValueInitialized != true)
+            {
+                _uncommon ??= new();
+                _uncommon._defaultValue = GetDefaultValue(Frame.Owner!.Owner.GetType());
+                _uncommon._isDefaultValueInitialized = true;
+            }
+
+            return _uncommon._defaultValue!;
+        }
+
+        private class UncommonFields
+        {
+            public TValue? _defaultValue;
+            public bool _isDefaultValueInitialized;
+            public bool _hasDataValidation;
+            public BindingValueType _dataValidationState;
+            public Exception? _dataValidationError;
         }
     }
 }

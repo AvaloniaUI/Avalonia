@@ -3,7 +3,7 @@
 namespace Avalonia.Metadata
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class TrimSurroundingWhitespaceAttribute : Attribute
+    public sealed class TrimSurroundingWhitespaceAttribute : Attribute
     {
 
     }

@@ -18,7 +18,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         Button3Mask  = 1 << 10,
         Button4Mask  = 1 << 11,
         Button5Mask  = 1 << 12,
-        
+
         HandledMask  = 1 << 24,
         ForwardMask  = 1 << 25,
         IgnoredMask  = ForwardMask,
@@ -40,6 +40,6 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         CapLookupTable = 1 << 2,
         CapFocus = 1 << 3,
         CapProperty = 1 << 4,
-        CapSurroundingText = 1 << 5,
+        CapSurroundingText = 1 << 5
     }
 }

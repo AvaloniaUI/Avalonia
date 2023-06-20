@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
-
-#nullable enable
+using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.Styling
 {
@@ -14,7 +13,7 @@ namespace Avalonia.Markup.Xaml.Styling
     /// When used in runtime, this type might be unsafe with trimming and AOT.
     /// </remarks>
     [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
-    public class ResourceInclude : IResourceProvider
+    public class ResourceInclude : IResourceProvider, IThemeVariantProvider
     {
         private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;
@@ -66,6 +65,8 @@ namespace Avalonia.Markup.Xaml.Styling
         /// </summary>
         public Uri? Source { get; set; }
 
+        ThemeVariant? IThemeVariantProvider.Key { get; set; }
+        
         bool IResourceNode.HasResources => Loaded.HasResources;
 
         public event EventHandler? OwnerChanged
@@ -74,11 +75,11 @@ namespace Avalonia.Markup.Xaml.Styling
             remove => Loaded.OwnerChanged -= value;
         }
 
-        bool IResourceNode.TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (!_isLoading)
             {
-                return Loaded.TryGetResource(key, out value);
+                return Loaded.TryGetResource(key, theme, out value);
             }
 
             value = null;

@@ -1,7 +1,9 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
 {
+    [PrivateApi]
     public class RawTouchEventArgs : RawPointerEventArgs
     {
         public RawTouchEventArgs(IInputDevice device, ulong timestamp, IInputRoot root,

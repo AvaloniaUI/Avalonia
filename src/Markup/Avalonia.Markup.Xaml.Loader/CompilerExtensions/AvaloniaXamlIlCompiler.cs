@@ -43,12 +43,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver(),
-                new AvaloniaXamlIlReorderClassesPropertiesTransformer()
+                new AvaloniaXamlIlReorderClassesPropertiesTransformer(),
+                new AvaloniaXamlIlClassesTransformer()
             );
 
             InsertBefore<ContentConvertTransformer>(
                 new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
+                new AvaloniaXamlIlDuplicateSettersChecker(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
@@ -56,7 +58,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
-                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
+                new AvaloniaXamlIlThemeVariantProviderTransformer()
             );
             InsertBefore<ConvertPropertyValuesToAssignmentsTransformer>(
                 new AvaloniaXamlIlOptionMarkupExtensionTransformer());

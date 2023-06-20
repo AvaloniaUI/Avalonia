@@ -33,7 +33,7 @@ namespace Avalonia.OpenGL.Egl
         public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore();
 
         protected IGlPlatformSurfaceRenderingSession BeginDraw(EglSurface surface,
-            PixelSize size, double scaling, Action onFinish = null, bool isYFlipped = false)
+            PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false)
         {
 
             var restoreContext = Context.MakeCurrent(surface);
@@ -56,19 +56,18 @@ namespace Avalonia.OpenGL.Egl
                     restoreContext.Dispose();
             }
         }
-        
-        class Session : IGlPlatformSurfaceRenderingSession
+
+        private class Session : IGlPlatformSurfaceRenderingSession
         {
             private readonly EglContext _context;
             private readonly EglSurface _glSurface;
             private readonly EglDisplay _display;
             private readonly IDisposable _restoreContext;
-            private readonly Action _onFinish;
-
+            private readonly Action? _onFinish;
 
             public Session(EglDisplay display, EglContext context,
                 EglSurface glSurface, PixelSize size, double scaling,
-                 IDisposable restoreContext, Action onFinish, bool isYFlipped)
+                IDisposable restoreContext, Action? onFinish, bool isYFlipped)
             {
                 Size = size;
                 Scaling = scaling;

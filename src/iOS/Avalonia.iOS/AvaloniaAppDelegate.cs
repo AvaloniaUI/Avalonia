@@ -40,10 +40,12 @@ namespace Avalonia.iOS
                 
                 var view = new AvaloniaView();
                 lifetime.View = view;
-                Window.RootViewController = new UIViewController
+                var controller = new DefaultAvaloniaViewController
                 {
                     View = view
                 };
+                Window.RootViewController = controller;
+                view.InitWithController(controller);
             });
             
             builder.SetupWithLifetime(lifetime);

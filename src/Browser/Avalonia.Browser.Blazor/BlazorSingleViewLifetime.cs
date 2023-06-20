@@ -1,33 +1,28 @@
-﻿using System.Runtime.Versioning;
-
+﻿using System;
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Browser.Interop;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Browser.Blazor;
 
-public static class WebAppBuilder
+public static class BlazorAppBuilder
 {
-    public static AppBuilder SetupWithSingleViewLifetime(
-        this AppBuilder builder)
+    /// <summary>
+    /// Configures blazor backend, loads avalonia javascript modules and creates a single view lifetime.
+    /// </summary>
+    /// <param name="builder">Application builder.</param>
+    /// <param name="options">Browser backend specific options.</param>
+    public static async Task StartBlazorAppAsync(this AppBuilder builder, BrowserPlatformOptions? options = null)
     {
-        return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
-    }
+        options ??= new BrowserPlatformOptions();
+        options.FrameworkAssetPathResolver ??= filePath => $"/_content/Avalonia.Browser.Blazor/{filePath}";
 
-    public static AppBuilder UseBlazor(this AppBuilder builder)
-    {
-        return builder
-            .UseBrowser()
-            .With(new BrowserPlatformOptions
-            {
-                FrameworkAssetPathResolver = new(filePath => $"/_content/Avalonia.Browser.Blazor/{filePath}")
-            });
-    }
+        builder = await BrowserAppBuilder.PreSetupBrowser(builder, options);
 
-    public static AppBuilder Configure<TApp>()
-        where TApp : Application, new()
-    {
-        return AppBuilder.Configure<TApp>()
-            .UseBlazor();
+        builder.SetupWithLifetime(new BlazorSingleViewLifetime());
     }
 
     internal class BlazorSingleViewLifetime : ISingleViewApplicationLifetime

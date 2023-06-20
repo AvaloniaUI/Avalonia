@@ -33,7 +33,7 @@ namespace Avalonia.Native
         {
             using var events = new SystemDialogEvents();
 
-            var suggestedDirectory = options.SuggestedStartLocation?.TryGetFullPath() ?? string.Empty;
+            var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
             _native.OpenFileDialog((IAvnWindow)_window.Native,
                                     events,
@@ -53,7 +53,7 @@ namespace Avalonia.Native
         {
             using var events = new SystemDialogEvents();
 
-            var suggestedDirectory = options.SuggestedStartLocation?.TryGetFullPath() ?? string.Empty;
+            var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
             _native.SaveFileDialog((IAvnWindow)_window.Native,
                         events,
@@ -72,7 +72,7 @@ namespace Avalonia.Native
         {
             using var events = new SystemDialogEvents();
 
-            var suggestedDirectory = options.SuggestedStartLocation?.TryGetFullPath() ?? string.Empty;
+            var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
             _native.SelectFolderDialog((IAvnWindow)_window.Native, events, options.AllowMultiple.AsComBool(), options.Title ?? "", suggestedDirectory);
 

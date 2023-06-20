@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    unsafe class X11Globals
+    internal unsafe class X11Globals
     {
         private readonly AvaloniaX11Platform _plat;
         private readonly int _screenNumber;
@@ -75,7 +75,7 @@ namespace Avalonia.X11
             }
         }
 
-        IntPtr GetSupportingWmCheck(IntPtr window)
+        private IntPtr GetSupportingWmCheck(IntPtr window)
         {
             XGetWindowProperty(_x11.Display, _rootWindow, _x11.Atoms._NET_SUPPORTING_WM_CHECK,
                 IntPtr.Zero, new IntPtr(IntPtr.Size), false,
@@ -95,7 +95,7 @@ namespace Avalonia.X11
             }
         }
 
-        void UpdateCompositingAtomOwner()
+        private void UpdateCompositingAtomOwner()
         {
             // This procedure is described in https://tronche.com/gui/x/icccm/sec-2.html#s-2.8
             
@@ -128,10 +128,10 @@ namespace Avalonia.X11
             if(ev.type == XEventName.DestroyNotify)
                 UpdateCompositingAtomOwner();
         }
-        
-        void UpdateWmName() => WmName = GetWmName();
 
-        string GetWmName()
+        private void UpdateWmName() => WmName = GetWmName();
+
+        private string GetWmName()
         {
             var wm = GetSupportingWmCheck(_rootWindow);
             if (wm == IntPtr.Zero || wm != GetSupportingWmCheck(wm))

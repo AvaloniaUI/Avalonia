@@ -1,24 +1,24 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-
 using Avalonia.Media;
-
 
 namespace Avalonia.Markup.Xaml.Converters
 {
     public class FontFamilyTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        /// <inheritdoc />
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        /// <inheritdoc />
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             var s = (string)value;
 
-            return FontFamily.Parse(s, context.GetContextBaseUri());
+            return FontFamily.Parse(s, context?.GetContextBaseUri());
         }
     }
 }

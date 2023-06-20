@@ -7,7 +7,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
-
 namespace Avalonia.Data
 {
     public abstract class BindingBase : IBinding
@@ -68,7 +67,7 @@ namespace Avalonia.Data
 
         public WeakReference? DefaultAnchor { get; set; }
 
-        public WeakReference<INameScope>? NameScope { get; set; }
+        public WeakReference<INameScope?>? NameScope { get; set; }
 
         private protected abstract ExpressionObserver CreateExpressionObserver(
             AvaloniaObject target,
@@ -77,7 +76,7 @@ namespace Avalonia.Data
             bool enableDataValidation);
 
         /// <inheritdoc/>
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
         public InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
@@ -169,7 +168,7 @@ namespace Avalonia.Data
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            if (NameScope is null || !NameScope.TryGetTarget(out var scope) || scope is null)
+            if (NameScope is null || !NameScope.TryGetTarget(out var scope))
                 throw new InvalidOperationException("Name scope is null or was already collected");
             var result = new ExpressionObserver(
                 NameScopeLocator.Track(scope, elementName),
@@ -235,7 +234,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected IObservable<object?> GetParentDataContext(AvaloniaObject target)
+        private IObservable<object?> GetParentDataContext(AvaloniaObject target)
         {
             // The DataContext is based on the visual parent and not the logical parent: this may
             // seem counter intuitive considering the fact that property inheritance works on the logical

@@ -9,7 +9,7 @@ using Avalonia.OpenGL.Surfaces;
 
 namespace Avalonia.Win32.DirectX
 {
-    public class DxgiSwapchainWindow : EglGlPlatformSurfaceBase
+    internal class DxgiSwapchainWindow : EglGlPlatformSurfaceBase
     {
         private DxgiConnection _connection;
         private EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _window;

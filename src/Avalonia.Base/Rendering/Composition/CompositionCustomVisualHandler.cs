@@ -28,7 +28,7 @@ public abstract class CompositionCustomVisualHandler
         _host.Compositor.VerifyAccess();
     }
 
-    protected Vector2 EffectiveSize
+    protected Vector EffectiveSize
     {
         get
         {

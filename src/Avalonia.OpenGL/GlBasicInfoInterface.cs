@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia.Platform.Interop;
 using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL
 {
     public unsafe partial class GlBasicInfoInterface
     {
-        public GlBasicInfoInterface(Func<string, IntPtr> getProcAddress){
+        public GlBasicInfoInterface(Func<string, IntPtr> getProcAddress)
+        {
             Initialize(getProcAddress);
         }
     
@@ -22,7 +22,7 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glGetStringi")]
         public partial IntPtr GetStringiNative(int v, int v1);
 
-        public string GetString(int v)
+        public string? GetString(int v)
         {
             var ptr = GetStringNative(v);
             if (ptr != IntPtr.Zero)
@@ -30,7 +30,7 @@ namespace Avalonia.OpenGL
             return null;
         }
         
-        public string GetString(int v, int index)
+        public string? GetString(int v, int index)
         {
             var ptr = GetStringiNative(v, index);
             if (ptr != IntPtr.Zero)
@@ -46,7 +46,13 @@ namespace Avalonia.OpenGL
             GetIntegerv(GlConsts.GL_NUM_EXTENSIONS, out int count);
             var rv = new List<string>(count);
             for (var c = 0; c < count; c++)
-                rv.Add(GetString(GlConsts.GL_EXTENSIONS, c));
+            {
+                if (GetString(GlConsts.GL_EXTENSIONS, c) is { } extension)
+                {
+                    rv.Add(extension);
+                }
+            }
+
             return rv;
         }
     }

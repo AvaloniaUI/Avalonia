@@ -36,8 +36,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var border = new Border() { Background = oldBrush };
             BrushTransition sut = new BrushTransition
             {
-                Duration = TimeSpan.FromSeconds(1),
-                Property = Border.BackgroundProperty
+                Duration = TimeSpan.FromSeconds(1), Property = Border.BackgroundProperty
             };
 
             sut.Apply(border, clock, oldBrush, newBrush);
@@ -45,7 +44,8 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Pulse(sut.Duration * progress);
 
             Assert.NotNull(border.Background);
-            Assert.Equal(oldBrush.Opacity + (newBrush.Opacity - oldBrush.Opacity) * progress, border.Background.Opacity);
+            Assert.Equal(oldBrush.Opacity + (newBrush.Opacity - oldBrush.Opacity) * progress,
+                border.Background.Opacity);
         }
     }
 }

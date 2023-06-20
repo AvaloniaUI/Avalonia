@@ -1,14 +1,6 @@
 export class Caniuse {
-    public static canShowOpenFilePicker(): boolean {
-        return typeof globalThis.showOpenFilePicker !== "undefined";
-    }
-
-    public static canShowSaveFilePicker(): boolean {
-        return typeof globalThis.showSaveFilePicker !== "undefined";
-    }
-
-    public static canShowDirectoryPicker(): boolean {
-        return typeof globalThis.showDirectoryPicker !== "undefined";
+    public static hasNativeFilePicker(): boolean {
+        return "showSaveFilePicker" in globalThis;
     }
 
     public static isMobile(): boolean {

@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
@@ -18,6 +19,13 @@ namespace Avalonia.Styling
         public AvaloniaProperty Property { get; }
 
         public object? GetValue() => _value ??= _template.Build();
+
+        bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
+        {
+            state = BindingValueType.Value;
+            error = null;
+            return false;
+        }
 
         void IValueEntry.Unsubscribe() { }
     }

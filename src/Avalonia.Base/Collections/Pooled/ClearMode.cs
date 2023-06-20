@@ -9,7 +9,7 @@ namespace Avalonia.Collections.Pooled
     /// what each option does before using anything other than the default
     /// of Auto.
     /// </summary>
-    public enum ClearMode
+    internal enum ClearMode
     {
         /// <summary>
         /// <para><code>Auto</code> has different behavior depending on the host project's target framework.</para>

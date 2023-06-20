@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.Interop.Automation
@@ -8,7 +7,7 @@ namespace Avalonia.Win32.Interop.Automation
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IGridProvider
     {
-        IRawElementProviderSimple GetItem(int row, int column); 
+        IRawElementProviderSimple? GetItem(int row, int column);
         int RowCount { get; }
         int ColumnCount { get; }
     }

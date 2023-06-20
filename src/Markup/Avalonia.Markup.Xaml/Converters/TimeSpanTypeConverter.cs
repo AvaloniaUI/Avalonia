@@ -1,18 +1,13 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-	using System.ComponentModel;
-
-    public class TimeSpanTypeConverter : System.ComponentModel.TimeSpanConverter
+    public class TimeSpanTypeConverter : TimeSpanConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            return base.CanConvertFrom(context, sourceType);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        /// <inheritdoc />
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             var valueStr = (string)value;
             if (!valueStr.Contains(':'))

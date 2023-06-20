@@ -2,37 +2,34 @@
 
 namespace Avalonia.Input
 {
+    /// <summary>
+    /// Specific and mutable implementation of the IDataObject interface.
+    /// </summary>
     public class DataObject : IDataObject
     {
-        private readonly Dictionary<string, object> _items = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _items = new();
 
+        /// <inheritdoc />
         public bool Contains(string dataFormat)
         {
             return _items.ContainsKey(dataFormat);
         }
 
+        /// <inheritdoc />
         public object? Get(string dataFormat)
         {
-            if (_items.ContainsKey(dataFormat))
-                return _items[dataFormat];
-            return null;
+            return _items.TryGetValue(dataFormat, out var item) ? item : null;
         }
 
+        /// <inheritdoc />
         public IEnumerable<string> GetDataFormats()
         {
             return _items.Keys;
         }
 
-        public IEnumerable<string>? GetFileNames()
-        {
-            return Get(DataFormats.FileNames) as IEnumerable<string>;
-        }
-
-        public string? GetText()
-        {
-            return Get(DataFormats.Text) as string;
-        }
-
+        /// <summary>
+        /// Sets a value to the internal store of the data object with <see cref="DataFormats"/> as a key.
+        /// </summary>
         public void Set(string dataFormat, object value)
         {
             _items[dataFormat] = value;

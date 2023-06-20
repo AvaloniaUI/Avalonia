@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Rendering;
 
 namespace GpuInterop
 {
@@ -8,9 +9,9 @@ namespace GpuInterop
     {
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             this.AttachDevTools();
-            this.Renderer.DrawFps = true;
+            RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
         }
 
         private void InitializeComponent()

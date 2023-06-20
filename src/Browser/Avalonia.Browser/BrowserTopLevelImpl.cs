@@ -8,6 +8,7 @@ using Avalonia.Browser.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
@@ -31,18 +32,22 @@ namespace Avalonia.Browser
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly ClipboardImpl _clipboard;
+        private readonly IInsetsManager? _insetsManager;
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView)
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
-            TransparencyLevel = WindowTransparencyLevel.None;
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
+
+            _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = _avaloniaView.GetNativeControlHostImpl();
             _storageProvider = new BrowserStorageProvider();
             _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
+            _clipboard = new ClipboardImpl();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -68,7 +73,9 @@ namespace Avalonia.Browser
                     surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
                 }
 
-                Resized?.Invoke(newSize, PlatformResizeReason.User);
+                Resized?.Invoke(newSize, WindowResizeReason.User);
+
+                (_insetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
         }
 
@@ -164,18 +171,22 @@ namespace Avalonia.Browser
 
             return false;
         }
+        
+        public DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers, BrowserDataObject dataObject, DragDropEffects dropEffect)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataObject, dropEffect, modifiers);
+            Console.WriteLine($"{eventArgs.Location} {eventArgs.Effects} {eventArgs.Type} {eventArgs.KeyModifiers}");
+            Input?.Invoke(eventArgs);
+            return eventArgs.Effects;
+        }
 
         public void Dispose()
         {
 
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
-            return new CompositingRenderer(root,
-                new Compositor(loop, AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>()), () => Surfaces);
-        }
+        public Compositor Compositor { get; } = new(AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
 
         public void Invalidate(Rect rect)
         {
@@ -206,13 +217,8 @@ namespace Avalonia.Browser
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            if (transparencyLevel == WindowTransparencyLevel.None
-                || transparencyLevel == WindowTransparencyLevel.Transparent)
-            {
-                TransparencyLevel = transparencyLevel;
-            }
         }
 
         public Size ClientSize => _clientSize;
@@ -224,7 +230,7 @@ namespace Avalonia.Browser
         public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
-        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
         public Action? Closed { get; set; }
@@ -232,7 +238,7 @@ namespace Avalonia.Browser
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
@@ -260,6 +266,16 @@ namespace Avalonia.Browser
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
+            }
+
+            if (featureType == typeof(IClipboard))
+            {
+                return _clipboard;
             }
 
             return null;

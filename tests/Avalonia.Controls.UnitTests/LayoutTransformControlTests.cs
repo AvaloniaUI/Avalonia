@@ -170,6 +170,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Bounds_On_Transform_Applied_Then_Removed_Are_Correct()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var control = CreateWithChildAndMeasureAndTransform(
+                100,
+                25,
+                new RotateTransform { Angle = 90 });
+
+            Assert.Equal(new Size(25, 100), control.DesiredSize);
+
+            control.LayoutTransform = null;
+            control.Measure(Size.Infinity);
+            control.Arrange(new Rect(control.DesiredSize));
+
+            Assert.Equal(new Size(100, 25), control.DesiredSize);
+        }
+
+        [Fact]
         public void Should_Generate_RotateTransform_90_degrees()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);

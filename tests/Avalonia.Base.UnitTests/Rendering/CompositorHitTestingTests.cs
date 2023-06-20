@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Base.UnitTests.VisualTree;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;

@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.Composition.Animations
         public void Remove(CompositionAnimation value) => Animations.Remove(value);
         public void RemoveAll() => Animations.Clear();
 
-        public CompositionAnimationGroup(Compositor compositor) : base(compositor, null!)
+        public CompositionAnimationGroup(Compositor compositor) : base(compositor, null)
         {
         }
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Media;
-using Avalonia.Metadata;
 using HarfBuzzSharp;
 using SharpDX.DirectWrite;
 using FontMetrics = Avalonia.Media.FontMetrics;
@@ -9,14 +8,13 @@ using GlyphMetrics = Avalonia.Media.GlyphMetrics;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public class GlyphTypefaceImpl : IGlyphTypeface
+    internal class GlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
 
-        public GlyphTypefaceImpl(Typeface typeface)
+        public GlyphTypefaceImpl(SharpDX.DirectWrite.Font font)
         {
-            DWFont = Direct2D1FontCollectionCache.GetFont(typeface);
+            DWFont = font;
 
             FontFace = new FontFace(DWFont).QueryInterface<FontFace1>();
 
@@ -50,6 +48,14 @@ namespace Avalonia.Direct2D1.Media
                 StrikethroughThickness = strikethroughThickness,
                 IsFixedPitch = FontFace.IsMonospacedFont
             };
+
+            FamilyName = DWFont.FontFamily.FamilyNames.GetString(0);
+
+            Weight = (Avalonia.Media.FontWeight)DWFont.Weight;
+
+            Style = (Avalonia.Media.FontStyle)DWFont.Style;
+
+            Stretch = (Avalonia.Media.FontStretch)DWFont.Stretch;
         }
 
         private Blob GetTable(Face face, Tag tag)
@@ -84,6 +90,14 @@ namespace Avalonia.Direct2D1.Media
         public int GlyphCount { get; set; }
 
         public FontSimulations FontSimulations => FontSimulations.None;
+
+        public string FamilyName { get; }
+
+        public Avalonia.Media.FontWeight Weight { get; }
+
+        public Avalonia.Media.FontStyle Style { get; }
+
+        public Avalonia.Media.FontStretch Stretch { get; }
 
         /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)

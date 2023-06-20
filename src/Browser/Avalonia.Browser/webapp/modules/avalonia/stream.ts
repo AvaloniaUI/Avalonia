@@ -1,3 +1,4 @@
+import FileSystemWritableFileStream from "native-file-system-adapter/types/src/FileSystemWritableFileStream";
 import { IMemoryView } from "../../types/dotnet";
 
 export class StreamHelper {
@@ -17,12 +18,7 @@ export class StreamHelper {
         const array = new Uint8Array(span.byteLength);
         span.copyTo(array);
 
-        const data: WriteParams = {
-            type: "write",
-            data: array
-        };
-
-        return await stream.write(data);
+        return await stream.write(array);
     }
 
     public static byteLength(stream: Blob) {

@@ -5,7 +5,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Direct2D1
 {
-    public class RenderTarget : IRenderTarget, ILayerFactory
+    internal class RenderTarget : IRenderTarget, ILayerFactory
     {
         /// <summary>
         /// The render target.
@@ -25,9 +25,9 @@ namespace Avalonia.Direct2D1
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
-            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget);
+            return new DrawingContextImpl(this, _renderTarget);
         }
 
         public bool IsCorrupted => false;

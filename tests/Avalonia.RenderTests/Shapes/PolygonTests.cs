@@ -30,7 +30,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                     Stroke = Brushes.DarkBlue,
                     Stretch = Stretch.Uniform,
                     Fill = Brushes.Violet,
-                    Points = new [] { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) },
+                    Points = new Points { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) },
                     StrokeThickness = 1
                 }
             };
@@ -52,7 +52,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                     Stroke = Brushes.DarkBlue,
                     Stretch = Stretch.Fill,
                     Fill = Brushes.Violet,
-                    Points = new[] { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) },
+                    Points = new Points { new Point(5, 0), new Point(8, 8), new Point(0, 3), new Point(10, 3), new Point(2, 8) },
                     StrokeThickness = 5,
                 }
             };

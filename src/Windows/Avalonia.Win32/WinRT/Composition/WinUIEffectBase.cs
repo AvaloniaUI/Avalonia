@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia.MicroCom;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition
 {
-    abstract class WinUIEffectBase : WinRTInspectable, IGraphicsEffect,  IGraphicsEffectSource, IGraphicsEffectD2D1Interop
+    internal abstract class WinUIEffectBase : WinRTInspectable, IGraphicsEffect,  IGraphicsEffectSource, IGraphicsEffectD2D1Interop
     {
-        private IGraphicsEffectSource[] _sources;
+        private IGraphicsEffectSource[]? _sources;
 
         public WinUIEffectBase(params IGraphicsEffectSource[] _sources)
         {
@@ -32,7 +31,7 @@ namespace Avalonia.Win32.WinRT.Composition
             throw new COMException("Not supported", unchecked((int)0x80004001));
 
         public abstract uint PropertyCount { get; }
-        public abstract IPropertyValue GetProperty(uint index);
+        public abstract IPropertyValue? GetProperty(uint index);
 
         public IGraphicsEffectSource GetSource(uint index)
         {
@@ -53,14 +52,14 @@ namespace Avalonia.Win32.WinRT.Composition
             _sources = null;
         }
     }
-    
-    class WinUIGaussianBlurEffect : WinUIEffectBase
+
+    internal class WinUIGaussianBlurEffect : WinUIEffectBase
     {
         public WinUIGaussianBlurEffect(IGraphicsEffectSource source) : base(source)
         {
         }
 
-        enum D2D1_GAUSSIANBLUR_OPTIMIZATION
+        private enum D2D1_GAUSSIANBLUR_OPTIMIZATION
         {
             D2D1_GAUSSIANBLUR_OPTIMIZATION_SPEED,
             D2D1_GAUSSIANBLUR_OPTIMIZATION_BALANCED,
@@ -68,14 +67,14 @@ namespace Avalonia.Win32.WinRT.Composition
             D2D1_GAUSSIANBLUR_OPTIMIZATION_FORCE_DWORD
         };
 
-        enum D2D1_BORDER_MODE
+        private enum D2D1_BORDER_MODE
         {
             D2D1_BORDER_MODE_SOFT,
             D2D1_BORDER_MODE_HARD,
             D2D1_BORDER_MODE_FORCE_DWORD
         };
 
-        enum D2D1GaussianBlurProp
+        private enum D2D1GaussianBlurProp
         {
             D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION,
             D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION,
@@ -87,7 +86,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public override uint PropertyCount => 3;
 
-        public override IPropertyValue GetProperty(uint index)
+        public override IPropertyValue? GetProperty(uint index)
         {
             switch ((D2D1GaussianBlurProp)index)
             {
@@ -105,14 +104,14 @@ namespace Avalonia.Win32.WinRT.Composition
             return null;
         }
     }
-    
-    class SaturationEffect : WinUIEffectBase
+
+    internal class SaturationEffect : WinUIEffectBase
     {
         public SaturationEffect(IGraphicsEffectSource source) : base(source)
         {
         }
 
-        enum D2D1_SATURATION_PROP
+        private enum D2D1_SATURATION_PROP
         {
             D2D1_SATURATION_PROP_SATURATION,
             D2D1_SATURATION_PROP_FORCE_DWORD
@@ -122,7 +121,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public override uint PropertyCount => 1;
 
-        public override IPropertyValue GetProperty(uint index)
+        public override IPropertyValue? GetProperty(uint index)
         {
             switch ((D2D1_SATURATION_PROP)index)
             {

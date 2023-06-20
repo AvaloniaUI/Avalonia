@@ -1,4 +1,8 @@
+using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
@@ -23,11 +27,6 @@ namespace Avalonia.Media
                 nameof(Angle),
                 0);
         
-        static ConicGradientBrush()
-        {
-            AffectsRender<ConicGradientBrush>(CenterProperty, AngleProperty);
-        }
-
         /// <summary>
         /// Gets or sets the center point of the gradient.
         /// </summary>
@@ -50,6 +49,15 @@ namespace Avalonia.Media
         public override IImmutableBrush ToImmutable()
         {
             return new ImmutableConicGradientBrush(this);
+        }
+
+        internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
+            static c => new ServerCompositionSimpleConicGradientBrush(c.Server);
+
+        private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            base.SerializeChanges(c, writer);
+            ServerCompositionSimpleConicGradientBrush.SerializeAllChanges(writer, Angle, Center);
         }
     }
 }

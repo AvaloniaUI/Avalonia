@@ -54,13 +54,6 @@ namespace Avalonia
 
         private readonly RelativeUnit _unit;
 
-        static RelativePoint()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<RelativePointAnimator>(prop => typeof(RelativePoint).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RelativePoint"/> struct.
         /// </summary>

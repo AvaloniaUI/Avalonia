@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converters="using:Avalonia.Controls.Converters">
+                    xmlns:converters="using:Avalonia.Controls.Converters"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
@@ -86,14 +87,14 @@
                    IterationCount="Infinite"
                    Duration="0:0:3">
           <KeyFrame Cue="0%">
-            <Setter Property="TranslateTransform.X" Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateStartingOffset}" />
           </KeyFrame>
           <KeyFrame Cue="100%">
-            <Setter Property="TranslateTransform.X" Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateEndingOffset}" />
           </KeyFrame>
         </Animation>
       </Style.Animations>
-      <Setter Property="Width" Value="{Binding TemplateProperties.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+      <Setter Property="Width" Value="{Binding TemplateSettings.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
     </Style>
     <Style Selector="^:vertical:indeterminate /template/ Border#PART_IndeterminateIndicator">
       <Style.Animations>
@@ -101,14 +102,14 @@
                    IterationCount="Infinite"
                    Duration="0:0:3">
           <KeyFrame Cue="0%">
-            <Setter Property="TranslateTransform.Y" Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateStartingOffset}" />
           </KeyFrame>
           <KeyFrame Cue="100%">
-            <Setter Property="TranslateTransform.Y" Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateEndingOffset}" />
           </KeyFrame>
         </Animation>
       </Style.Animations>
-      <Setter Property="Height" Value="{Binding TemplateProperties.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+      <Setter Property="Height" Value="{Binding TemplateSettings.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

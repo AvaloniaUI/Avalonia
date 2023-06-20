@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -22,17 +24,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
-        public static readonly DirectProperty<TreeViewItem, bool> IsExpandedProperty =
-            AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
+        public static readonly StyledProperty<bool> IsExpandedProperty =
+            AvaloniaProperty.Register<TreeViewItem, bool>(
                 nameof(IsExpanded),
-                o => o.IsExpanded,
-                (o, v) => o.IsExpanded = v);
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
-            ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
+            SelectingItemsControl.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         /// <summary>
         /// Defines the <see cref="Level"/> property.
@@ -41,12 +42,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
 
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
         private TreeView? _treeView;
         private Control? _header;
-        private bool _isExpanded;
+        private Control? _headerPresenter;
         private int _level;
         private bool _templateApplied;
         private bool _deferredBringIntoViewFlag;
@@ -68,8 +69,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set { SetAndRaise(IsExpandedProperty, ref _isExpanded, value); }
+            get => GetValue(IsExpandedProperty);
+            set => SetValue(IsExpandedProperty, value);
         }
 
         /// <summary>
@@ -77,8 +78,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         /// <summary>
@@ -86,14 +87,31 @@ namespace Avalonia.Controls
         /// </summary>
         public int Level
         {
-            get { return _level; }
-            private set { SetAndRaise(LevelProperty, ref _level, value); }
+            get => _level;
+            private set => SetAndRaise(LevelProperty, ref _level, value);
         }
 
         internal TreeView? TreeViewOwner => _treeView;
 
-        protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return EnsureTreeView().CreateContainerForItemOverride(item, index, recycleKey);
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return EnsureTreeView().NeedsContainerOverride(item, index, out recycleKey);
+        }
+
+        protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().PrepareContainerForItemOverride(container, item, index);
+        }
+
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            EnsureTreeView().ContainerForItemPreparedOverride(container, item, index);
+        }
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -106,18 +124,13 @@ namespace Avalonia.Controls
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
-                ItemTemplate = _treeView.ItemTemplate;
+                SetCurrentValue(ItemTemplateProperty, _treeView.ItemTemplate);
             }
 
             if (ItemContainerTheme == null && _treeView?.ItemContainerTheme != null)
             {
-                ItemContainerTheme = _treeView.ItemContainerTheme;
+                SetCurrentValue(ItemContainerThemeProperty, _treeView.ItemContainerTheme);
             }
-        }
-
-        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromLogicalTree(e);
         }
 
         protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
@@ -154,7 +167,7 @@ namespace Avalonia.Controls
                     {
                         Key.Left => ApplyToItemOrRecursivelyIfCtrl(FocusAwareCollapseItem, e.KeyModifiers),
                         Key.Right => ApplyToItemOrRecursivelyIfCtrl(ExpandItem, e.KeyModifiers),
-                        Key.Enter or Key.Space => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
+                        Key.Enter => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
 
                         // do not handle CTRL with numpad keys
                         Key.Subtract => FocusAwareCollapseItem,
@@ -197,7 +210,7 @@ namespace Avalonia.Controls
                 {
                     if (treeViewItem.ItemCount > 0 && !treeViewItem.IsExpanded)
                     {
-                        treeViewItem.IsExpanded = true;
+                        treeViewItem.SetCurrentValue(IsExpandedProperty, true);
                         return true;
                     }
 
@@ -208,7 +221,7 @@ namespace Avalonia.Controls
                 {
                     if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
                     {
-                        treeViewItem.IsExpanded = false;
+                        treeViewItem.SetCurrentValue(IsExpandedProperty, false);
                         return true;
                     }
 
@@ -221,11 +234,11 @@ namespace Avalonia.Controls
                     {
                         if (treeViewItem.IsFocused)
                         {
-                            treeViewItem.IsExpanded = false;
+                            treeViewItem.SetCurrentValue(IsExpandedProperty, false);
                         }
                         else
                         {
-                            FocusManager.Instance?.Focus(treeViewItem, NavigationMethod.Directional);
+                            treeViewItem.Focus(NavigationMethod.Directional);
                         }
 
                         return true;
@@ -245,15 +258,16 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if (_header is InputElement previousInputMethod)
+            if (_headerPresenter is InputElement previousInputMethod)
             {
                 previousInputMethod.DoubleTapped -= HeaderDoubleTapped;
             }
 
             _header = e.NameScope.Find<Control>("PART_Header");
+            _headerPresenter = e.NameScope.Find<Control>("PART_HeaderPresenter");
             _templateApplied = true;
 
-            if (_header is InputElement im)
+            if (_headerPresenter is InputElement im)
             {
                 im.DoubleTapped += HeaderDoubleTapped;
             }
@@ -264,16 +278,40 @@ namespace Avalonia.Controls
                 Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
             }
         }
-        
+
         /// <summary>
-        /// Invoked when the <see cref="DoubleTapped"/> event occurs in the header.
+        /// Invoked when the <see cref="InputElement.DoubleTapped"/> event occurs in the header.
         /// </summary>
         protected virtual void OnHeaderDoubleTapped(TappedEventArgs e)
         {
             if (ItemCount > 0)
             {
-                IsExpanded = !IsExpanded;
+                SetCurrentValue(IsExpandedProperty, !IsExpanded);
                 e.Handled = true;
+            }
+        }
+
+        private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsViewCollectionChanged(sender, e);
+
+            if (_treeView is null)
+                return;
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var i in e.OldItems!)
+                        _treeView.SelectedItems.Remove(i);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    foreach (var i in GetRealizedContainers())
+                    {
+                        if (i is TreeViewItem tvi && tvi.IsSelected)
+                            _treeView.SelectedItems.Remove(i.DataContext);
+                    }
+                    break;
             }
         }
 
@@ -289,6 +327,9 @@ namespace Avalonia.Controls
 
             return logical != null ? result : @default;
         }
+
+        private TreeView EnsureTreeView() => _treeView ??
+            throw new InvalidOperationException("The TreeViewItem is not part of a TreeView.");
 
         private void HeaderDoubleTapped(object? sender, TappedEventArgs e)
         {

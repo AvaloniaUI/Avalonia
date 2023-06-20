@@ -5,7 +5,6 @@
 
 using System;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Metadata;
@@ -16,14 +15,14 @@ namespace Avalonia.Controls.Primitives
     [PseudoClasses(":vertical", ":horizontal")]
     public class Track : Control
     {
-        public static readonly DirectProperty<Track, double> MinimumProperty =
-            RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o, v) => o.Minimum = v);
+        public static readonly StyledProperty<double> MinimumProperty =
+            RangeBase.MinimumProperty.AddOwner<Track>();
 
-        public static readonly DirectProperty<Track, double> MaximumProperty =
-            RangeBase.MaximumProperty.AddOwner<Track>(o => o.Maximum, (o, v) => o.Maximum = v);
+        public static readonly StyledProperty<double> MaximumProperty =
+            RangeBase.MaximumProperty.AddOwner<Track>();
 
-        public static readonly DirectProperty<Track, double> ValueProperty =
-            RangeBase.ValueProperty.AddOwner<Track>(o => o.Value, (o, v) => o.Value = v);
+        public static readonly StyledProperty<double> ValueProperty =
+            RangeBase.ValueProperty.AddOwner<Track>();
 
         public static readonly StyledProperty<double> ViewportSizeProperty =
             ScrollBar.ViewportSizeProperty.AddOwner<Track>();
@@ -31,14 +30,14 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             ScrollBar.OrientationProperty.AddOwner<Track>();
 
-        public static readonly StyledProperty<Thumb> ThumbProperty =
-            AvaloniaProperty.Register<Track, Thumb>(nameof(Thumb));
+        public static readonly StyledProperty<Thumb?> ThumbProperty =
+            AvaloniaProperty.Register<Track, Thumb?>(nameof(Thumb));
 
-        public static readonly StyledProperty<Button> IncreaseButtonProperty =
-            AvaloniaProperty.Register<Track, Button>(nameof(IncreaseButton));
+        public static readonly StyledProperty<Button?> IncreaseButtonProperty =
+            AvaloniaProperty.Register<Track, Button?>(nameof(IncreaseButton));
 
-        public static readonly StyledProperty<Button> DecreaseButtonProperty =
-            AvaloniaProperty.Register<Track, Button>(nameof(DecreaseButton));
+        public static readonly StyledProperty<Button?> DecreaseButtonProperty =
+            AvaloniaProperty.Register<Track, Button?>(nameof(DecreaseButton));
 
         public static readonly StyledProperty<bool> IsDirectionReversedProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IsDirectionReversed));
@@ -46,9 +45,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IgnoreThumbDrag));
 
-        private double _minimum;
-        private double _maximum = 100.0;
-        private double _value;
+        private Vector _lastDrag;
 
         static Track()
         {
@@ -65,20 +62,20 @@ namespace Avalonia.Controls.Primitives
 
         public double Minimum
         {
-            get { return _minimum; }
-            set { SetAndRaise(MinimumProperty, ref _minimum, value); }
+            get => GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
         }
 
         public double Maximum
         {
-            get { return _maximum; }
-            set { SetAndRaise(MaximumProperty, ref _maximum, value); }
+            get => GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
         }
 
         public double Value
         {
-            get { return _value; }
-            set { SetAndRaise(ValueProperty, ref _value, value); }
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         public double ViewportSize
@@ -94,19 +91,19 @@ namespace Avalonia.Controls.Primitives
         }
 
         [Content]
-        public Thumb Thumb
+        public Thumb? Thumb
         {
             get { return GetValue(ThumbProperty); }
             set { SetValue(ThumbProperty, value); }
         }
 
-        public Button IncreaseButton
+        public Button? IncreaseButton
         {
             get { return GetValue(IncreaseButtonProperty); }
             set { SetValue(IncreaseButtonProperty, value); }
         }
 
-        public Button DecreaseButton
+        public Button? DecreaseButton
         {
             get { return GetValue(DecreaseButtonProperty); }
             set { SetValue(DecreaseButtonProperty, value); }
@@ -250,7 +247,10 @@ namespace Avalonia.Controls.Primitives
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.Y + (thumbLength * 0.5);
@@ -282,12 +282,16 @@ namespace Avalonia.Controls.Primitives
 
                 if (Thumb != null)
                 {
-                    Thumb.Arrange(new Rect(offset, pieceSize));
+                    var bounds = new Rect(offset, pieceSize);
+                    var adjust = CalculateThumbAdjustment(Thumb, bounds);
+                    Thumb.Arrange(bounds);
+                    Thumb.AdjustDrag(adjust);
                 }
 
                 ThumbCenterOffset = offset.X + (thumbLength * 0.5);
             }
 
+            _lastDrag = default;
             return arrangeSize;
         }
 
@@ -299,6 +303,12 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
+        }
+
+        private Vector CalculateThumbAdjustment(Thumb thumb, Rect newThumbBounds)
+        {
+            var thumbDelta = newThumbBounds.Position - thumb.Bounds.Position;
+            return _lastDrag - thumbDelta;
         }
 
         private static void CoerceLength(ref double componentLength, double trackLength)
@@ -444,11 +454,18 @@ namespace Avalonia.Controls.Primitives
         {
             if (IgnoreThumbDrag)
                 return;
-                
-            Value = MathUtilities.Clamp(
-                Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
+
+            var value = Value;
+            var delta = ValueFromDistance(e.Vector.X, e.Vector.Y);
+            var factor = e.Vector / delta;
+
+            SetCurrentValue(ValueProperty, MathUtilities.Clamp(
+                value + delta,
                 Minimum,
-                Maximum);
+                Maximum));
+            
+            // Record the part of the drag that actually had effect as the last drag delta.
+            _lastDrag = (Value - value) * factor;
         }
 
         private void ShowChildren(bool visible)

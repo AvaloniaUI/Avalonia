@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Metadata;
 
 #pragma warning disable CS1591 // Enable me later
 
 namespace Avalonia
 {
+    [PrivateApi]
     public class AvaloniaLocator : IAvaloniaDependencyResolver
     {
         private readonly IAvaloniaDependencyResolver? _parentScope;
@@ -114,11 +116,13 @@ namespace Avalonia
         }
     }
 
+    [PrivateApi]
     public interface IAvaloniaDependencyResolver
     {
         object? GetService(Type t);
     }
 
+    [PrivateApi]
     public static class LocatorExtensions
     {
         public static T? GetService<T>(this IAvaloniaDependencyResolver resolver)

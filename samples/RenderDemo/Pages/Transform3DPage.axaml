@@ -134,9 +134,6 @@
     </UserControl.Styles>
 
     <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
-        <Grid.Clock>
-            <Clock />
-        </Grid.Clock>
         <Border Name="B1" Background="DarkRed" Classes="Test">
             <Border.RenderTransform>
                 <Rotate3DTransform CenterZ="-100"

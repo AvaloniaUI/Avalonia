@@ -3,7 +3,7 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    public class PredicateCallback : NativeCallbackBase, IAvnPredicateCallback
+    internal class PredicateCallback : NativeCallbackBase, IAvnPredicateCallback
     {
         private Func<bool> _predicate;
 

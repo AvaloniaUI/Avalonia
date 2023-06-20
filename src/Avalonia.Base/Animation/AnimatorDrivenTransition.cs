@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Animation.Animators;
+using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation
 {
@@ -8,13 +9,11 @@ namespace Avalonia.Animation
     /// </summary>
     /// <typeparam name="T">Type of the transitioned value.</typeparam>
     /// <typeparam name="TAnimator">Type of the animator.</typeparam>
-    public abstract class AnimatorDrivenTransition<T, TAnimator> : Transition<T> where TAnimator : Animator<T>, new()
+    internal static class AnimatorDrivenTransition<T, TAnimator> where TAnimator : Animator<T>, new()
     {
         private static readonly TAnimator s_animator = new TAnimator();
 
-        public override IObservable<T> DoTransition(IObservable<double> progress, T oldValue, T newValue)
-        {
-            return new AnimatorTransitionObservable<T, TAnimator>(s_animator, progress, Easing, oldValue, newValue);
-        }
+        public static IObservable<T> Transition(IEasing easing, IObservable<double> progress, T oldValue, T newValue) =>
+            new AnimatorTransitionObservable<T, TAnimator>(s_animator, progress, easing, oldValue, newValue);
     }
 }

@@ -1,7 +1,6 @@
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -14,9 +13,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Menu : MenuBase, IMainMenu
     {
-        private static readonly ITemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Horizontal });
-
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new (() => new StackPanel { Orientation = Orientation.Horizontal });
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Menu"/> class.
@@ -37,6 +35,9 @@ namespace Avalonia.Controls
         static Menu()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(Menu),
+                KeyboardNavigationMode.Once);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<Menu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Menu>(AutomationControlType.Menu);
         }
@@ -59,7 +60,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
         }
@@ -76,7 +77,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
@@ -86,7 +87,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var inputRoot = e.Root as IInputRoot;
+            var inputRoot = e.Root as TopLevel;
 
             if (inputRoot?.AccessKeyHandler != null)
             {

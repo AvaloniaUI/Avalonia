@@ -1,8 +1,7 @@
+#nullable enable
 using System;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Foundation;
 using UIKit;
 
 namespace Avalonia.iOS;
@@ -10,7 +9,7 @@ namespace Avalonia.iOS;
 // TODO: ideally should be created per view/activity.
 internal class PlatformSettings : DefaultPlatformSettings
 {
-    private PlatformColorValues _lastColorValues;
+    private PlatformColorValues? _lastColorValues;
 
     public override PlatformColorValues GetColorValues()
     {
@@ -32,24 +31,25 @@ internal class PlatformSettings : DefaultPlatformSettings
         if (tintColor is not null)
         {
             tintColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
-            return _lastColorValues = new PlatformColorValues
+            if (red != 0 && green != 0 && blue != 0 && alpha != 0)
             {
-                ThemeVariant = themeVariant,
-                ContrastPreference = contrastPreference,
-                AccentColor1 = new Color(
-                    (byte)(alpha * 255),
-                    (byte)(red * 255),
-                    (byte)(green * 255),
-                    (byte)(blue * 255))
-            };
+                return _lastColorValues = new PlatformColorValues
+                {
+                    ThemeVariant = themeVariant,
+                    ContrastPreference = contrastPreference,
+                    AccentColor1 = new Color(
+                        (byte)(alpha * 255),
+                        (byte)(red * 255),
+                        (byte)(green * 255),
+                        (byte)(blue * 255))
+                };
+            }
         }
-        else
+
+        return _lastColorValues = new PlatformColorValues
         {
-            return _lastColorValues = new PlatformColorValues
-            {
-                ThemeVariant = themeVariant, ContrastPreference = contrastPreference
-            };
-        }
+            ThemeVariant = themeVariant, ContrastPreference = contrastPreference
+        };
     }
 
     public void TraitCollectionDidChange()

@@ -80,7 +80,18 @@ namespace Avalonia.Media
         /// <value>
         /// The glyph typeface.
         /// </value>
-        public IGlyphTypeface GlyphTypeface => FontManager.Current.GetOrAddGlyphTypeface(this);
+        public IGlyphTypeface GlyphTypeface
+        {
+            get
+            {
+                if(FontManager.Current.TryGetGlyphTypeface(this, out var glyphTypeface))
+                {
+                    return glyphTypeface;
+                }
+
+                throw new InvalidOperationException("Could not create glyphTypeface.");
+            }
+        }
 
         public static bool operator !=(Typeface a, Typeface b)
         {

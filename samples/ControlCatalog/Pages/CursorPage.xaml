@@ -8,7 +8,7 @@
       <TextBlock Classes="h2">Defines a cursor (mouse pointer)</TextBlock>
     </StackPanel>
 
-    <ListBox Grid.Row="1" Items="{Binding StandardCursors}" Margin="0 8 8 8">
+    <ListBox Grid.Row="1" ItemsSource="{Binding StandardCursors}" Margin="0 8 8 8">
       <ListBox.Styles>
         <Style Selector="ListBoxItem">
           <Setter Property="Cursor" Value="{Binding Cursor}" x:DataType="viewModels:StandardCursorModel"/>

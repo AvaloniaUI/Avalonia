@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Avalonia.Reactive;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Threading;
@@ -12,12 +11,12 @@ namespace Avalonia.Win32
     internal class WindowsMountedVolumeInfoListener : IDisposable
     {
         private readonly IDisposable _disposable;
-        private bool _beenDisposed = false;
-        private ObservableCollection<MountedVolumeInfo> mountedDrives;
+        private bool _beenDisposed;
+        private readonly ObservableCollection<MountedVolumeInfo> _mountedDrives;
 
         public WindowsMountedVolumeInfoListener(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
-            this.mountedDrives = mountedDrives;
+            _mountedDrives = mountedDrives;
 
             _disposable = DispatcherTimer.Run(Poll, TimeSpan.FromSeconds(1));
 
@@ -51,14 +50,14 @@ namespace Avalonia.Win32
                                 })
                                 .ToArray();
 
-            if (mountedDrives.SequenceEqual(mountVolInfos))
+            if (_mountedDrives.SequenceEqual(mountVolInfos))
                 return true;
             else
             {
-                mountedDrives.Clear();
+                _mountedDrives.Clear();
 
                 foreach (var i in mountVolInfos)
-                    mountedDrives.Add(i);
+                    _mountedDrives.Add(i);
                 return true;
             }
         }

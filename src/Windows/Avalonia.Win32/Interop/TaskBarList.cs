@@ -7,8 +7,8 @@ namespace Avalonia.Win32.Interop
     internal class TaskBarList
     {
         private static IntPtr s_taskBarList;
-        private static HrInit s_hrInitDelegate;
-        private static MarkFullscreenWindow s_markFullscreenWindowDelegate;
+        private static HrInit? s_hrInitDelegate;
+        private static MarkFullscreenWindow? s_markFullscreenWindowDelegate;
 
         /// <summary>
         /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
@@ -28,10 +28,7 @@ namespace Avalonia.Win32.Interop
                 {
                     var ptr = (ITaskBarList2VTable**)s_taskBarList.ToPointer();
 
-                    if (s_hrInitDelegate is null)
-                    {
-                        s_hrInitDelegate = Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
-                    }
+                    s_hrInitDelegate ??= Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
 
                     if (s_hrInitDelegate(s_taskBarList) != HRESULT.S_OK)
                     {
@@ -44,10 +41,8 @@ namespace Avalonia.Win32.Interop
             {
                 var ptr = (ITaskBarList2VTable**)s_taskBarList.ToPointer();
 
-                if (s_markFullscreenWindowDelegate is null)
-                {
-                    s_markFullscreenWindowDelegate = Marshal.GetDelegateForFunctionPointer<MarkFullscreenWindow>((*ptr)->MarkFullscreenWindow);
-                }
+                s_markFullscreenWindowDelegate ??=
+                    Marshal.GetDelegateForFunctionPointer<MarkFullscreenWindow>((*ptr)->MarkFullscreenWindow);
 
                 s_markFullscreenWindowDelegate(s_taskBarList, hwnd, fullscreen);
             }

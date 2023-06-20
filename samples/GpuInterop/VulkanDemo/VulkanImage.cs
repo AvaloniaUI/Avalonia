@@ -4,10 +4,13 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Vulkan;
+using SharpDX.DXGI;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using SilkNetDemo;
 using SkiaSharp;
+using Device = Silk.NET.Vulkan.Device;
+using Format = Silk.NET.Vulkan.Format;
 
 namespace GpuInterop.VulkanDemo;
 
@@ -24,7 +27,6 @@ public unsafe class VulkanImage : IDisposable
         private ImageView? _imageView { get; set; }
         private DeviceMemory _imageMemory { get; set; }
         private SharpDX.Direct3D11.Texture2D? _d3dTexture2D;
-        private IntPtr _win32ShareHandle;
         
         internal Image? InternalHandle { get; private set; }
         internal Format Format { get; }
@@ -54,13 +56,13 @@ public unsafe class VulkanImage : IDisposable
             Size = size;
             MipLevels = 1;//mipLevels;
             _imageUsageFlags =
-                ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferDstBit |
-                ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageSampledBit;
+                ImageUsageFlags.ColorAttachmentBit | ImageUsageFlags.TransferDstBit |
+                ImageUsageFlags.TransferSrcBit | ImageUsageFlags.SampledBit;
             
             //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
 
             var handleType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                ExternalMemoryHandleTypeFlags.D3D11TextureKmtBit :
+                ExternalMemoryHandleTypeFlags.D3D11TextureBit :
                 ExternalMemoryHandleTypeFlags.OpaqueFDBit;
             var externalMemoryCreateInfo = new ExternalMemoryImageCreateInfo
             {
@@ -72,19 +74,19 @@ public unsafe class VulkanImage : IDisposable
             {
                 PNext = exportable ? &externalMemoryCreateInfo : null,
                 SType = StructureType.ImageCreateInfo,
-                ImageType = ImageType.ImageType2D,
+                ImageType = ImageType.Type2D,
                 Format = Format,
                 Extent =
                     new Extent3D((uint?)Size.Width,
                         (uint?)Size.Height, 1),
                 MipLevels = MipLevels,
                 ArrayLayers = 1,
-                Samples = SampleCountFlags.SampleCount1Bit,
+                Samples = SampleCountFlags.Count1Bit,
                 Tiling = Tiling,
                 Usage = _imageUsageFlags,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
-                Flags = ImageCreateFlags.ImageCreateMutableFormatBit
+                Flags = ImageCreateFlags.CreateMutableFormatBit
             };
 
             Api
@@ -108,14 +110,14 @@ public unsafe class VulkanImage : IDisposable
             if (exportable && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                  _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(vk.D3DDevice, size, Format);
-                 using var dxgi = _d3dTexture2D.QueryInterface<SharpDX.DXGI.Resource>();
-                 _win32ShareHandle = dxgi.SharedHandle;
+                 using var dxgi = _d3dTexture2D.QueryInterface<SharpDX.DXGI.Resource1>();
+                 
                  handleImport = new ImportMemoryWin32HandleInfoKHR
                  {
                      PNext = &dedicatedAllocation,
                      SType = StructureType.ImportMemoryWin32HandleInfoKhr,
-                     HandleType = ExternalMemoryHandleTypeFlags.D3D11TextureKmtBit,
-                     Handle = _win32ShareHandle,
+                     HandleType = ExternalMemoryHandleTypeFlags.D3D11TextureBit,
+                     Handle = dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
                  };
             }
 
@@ -128,7 +130,7 @@ public unsafe class VulkanImage : IDisposable
                 MemoryTypeIndex = (uint)VulkanMemoryHelper.FindSuitableMemoryTypeIndex(
                     Api,
                     _physicalDevice,
-                    memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit)
+                    memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
             };
 
             Api.AllocateMemory(_device, memoryAllocateInfo, null,
@@ -146,7 +148,7 @@ public unsafe class VulkanImage : IDisposable
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity);
 
-            AspectFlags = ImageAspectFlags.ImageAspectColorBit;
+            AspectFlags = ImageAspectFlags.ColorBit;
 
             var subresourceRange = new ImageSubresourceRange(AspectFlags, 0, MipLevels, 0, 1);
 
@@ -154,7 +156,7 @@ public unsafe class VulkanImage : IDisposable
             {
                 SType = StructureType.ImageViewCreateInfo,
                 Image = InternalHandle.Value,
-                ViewType = ImageViewType.ImageViewType2D,
+                ViewType = ImageViewType.Type2D,
                 Format = Format,
                 Components = componentMapping,
                 SubresourceRange = subresourceRange
@@ -168,7 +170,7 @@ public unsafe class VulkanImage : IDisposable
 
             _currentLayout = ImageLayout.Undefined;
 
-            TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.AccessNoneKhr);
+            TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.NoneKhr);
         }
 
         public int ExportFd()
@@ -185,11 +187,19 @@ public unsafe class VulkanImage : IDisposable
             return fd;
         }
         
-        public IPlatformHandle Export() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-            new PlatformHandle(_win32ShareHandle,
-                KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle) :
-            new PlatformHandle(new IntPtr(ExportFd()),
-                KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor);
+        public IPlatformHandle Export()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                using var dxgi = _d3dTexture2D!.QueryInterface<Resource1>();
+                return new PlatformHandle(
+                    dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
+                    KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle);
+            }
+            else
+                return new PlatformHandle(new IntPtr(ExportFd()),
+                    KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor);
+        }
 
         public ImageTiling Tiling => ImageTiling.Optimal;
 

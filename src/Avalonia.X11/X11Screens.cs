@@ -8,7 +8,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    class X11Screens : IScreenImpl
+    internal class X11Screens : IScreenImpl
     {
         private IX11Screens _impl;
 
@@ -17,7 +17,7 @@ namespace Avalonia.X11
             _impl = impl;
         }
 
-        static unsafe X11Screen[] UpdateWorkArea(X11Info info, X11Screen[] screens)
+        private static unsafe X11Screen[] UpdateWorkArea(X11Info info, X11Screen[] screens)
         {
             var rect = default(PixelRect);
             foreach (var s in screens)
@@ -58,14 +58,14 @@ namespace Avalonia.X11
             XFree(prop);
             return screens;
         }
-        
-        class Randr15ScreensImpl : IX11Screens
+
+        private class Randr15ScreensImpl : IX11Screens
         {
             private readonly X11ScreensUserSettings _settings;
             private X11Screen[] _cache;
             private X11Info _x11;
             private IntPtr _window;
-            const int EDIDStructureLength = 32; // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
+            private const int EDIDStructureLength = 32; // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
             
             public Randr15ScreensImpl(AvaloniaX11Platform platform, X11ScreensUserSettings settings)
             {
@@ -160,7 +160,7 @@ namespace Avalonia.X11
             }
         }
 
-        class FallbackScreensImpl : IX11Screens
+        private class FallbackScreensImpl : IX11Screens
         {
             public FallbackScreensImpl(X11Info info, X11ScreensUserSettings settings)
             {
@@ -220,17 +220,17 @@ namespace Avalonia.X11
             _impl.Screens.Select(s => new Screen(s.Scaling, s.Bounds, s.WorkingArea, s.IsPrimary)).ToArray();
     }
 
-    interface IX11Screens
+    internal interface IX11Screens
     {
         X11Screen[] Screens { get; }
     }
 
-    class X11ScreensUserSettings
+    internal class X11ScreensUserSettings
     {
         public double GlobalScaleFactor { get; set; } = 1;
         public Dictionary<string, double> NamedScaleFactors { get; set; }
 
-        static double? TryParse(string s)
+        private static double? TryParse(string s)
         {
             if (s == null)
                 return null;
@@ -276,7 +276,7 @@ namespace Avalonia.X11
         }
     }
 
-    class X11Screen
+    internal class X11Screen
     {
         private const int FullHDWidth = 1920;
         private const int FullHDHeight = 1080;

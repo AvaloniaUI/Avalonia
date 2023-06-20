@@ -242,9 +242,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow);
+
+                var textSource = new SingleBufferTextSource("ABCDEFHFFHFJHKHFK", defaultProperties, true);
 
                 var formatter = new TextFormatterImpl();
+
+                var line = formatter.FormatLine(textSource, 0, 33, paragraphProperties);
+
+                textSource = new SingleBufferTextSource(text, defaultProperties);
 
                 var numberOfLines = 0;
 
@@ -253,8 +259,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 while (currentPosition < text.Length)
                 {
                     var textLine =
-                        formatter.FormatLine(textSource, currentPosition, 1,
-                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow));
+                        formatter.FormatLine(textSource, currentPosition, 1, paragraphProperties);
 
                     if (text.Length - currentPosition > expectedCharactersPerLine)
                     {
@@ -411,14 +416,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [InlineData("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor",
-            new[] { "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing elit, ", "sed do eiusmod " })]
+            new[] { "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing ", "elit, sed do ", "eiusmod tempor" })]
 
         [Theory]
         public void Should_Produce_Wrapped_And_Trimmed_Lines(string text, string[] expectedLines)
         {
             using (Start())
             {
-                var typeface = new Typeface("Verdana");
+                var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface, 32, foregroundBrush: Brushes.Black);
 
@@ -427,9 +432,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new ValueSpan<TextRunProperties>(0, 5,
                         new GenericTextRunProperties(typeface, 48)),
                     new ValueSpan<TextRunProperties>(6, 11,
-                        new GenericTextRunProperties(new Typeface("Verdana", weight: FontWeight.Bold), 32)),
+                        new GenericTextRunProperties(new Typeface(FontFamily.Default, weight: FontWeight.Bold), 32)),
                     new ValueSpan<TextRunProperties>(28, 28,
-                        new GenericTextRunProperties(new Typeface("Verdana", FontStyle.Italic),32))
+                        new GenericTextRunProperties(new Typeface(FontFamily.Default, FontStyle.Italic),32))
                 };
 
                 var textSource = new FormattedTextSource(text, defaultProperties, styleSpans);
@@ -452,7 +457,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
                     {
-                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(TextTrimming.DefaultEllipsisChar, 300, defaultProperties));
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(TextTrimming.DefaultEllipsisChar, 300, defaultProperties, FlowDirection.LeftToRight));
                     }
 
                     currentHeight += textLine.Height;
@@ -558,7 +563,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, 33, paragraphProperties);
 
-                Assert.NotNull(textLine.TextLineBreak?.RemainingRuns);
+                var remainingRunsLineBreak = Assert.IsType<WrappingTextLineBreak>(textLine.TextLineBreak);
+                var remainingRuns = remainingRunsLineBreak.AcquireRemainingRuns();
+                Assert.NotNull(remainingRuns);
+                Assert.NotEmpty(remainingRuns);
             }
         }
 
@@ -652,6 +660,90 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Return_Null_For_Empty_TextSource()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+                var textSource = new EmptyTextSource();
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.Null(textLine);
+            }
+        }
+
+        [Fact]
+        public void Should_Retain_TextEndOfParagraph_With_TextWrapping()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+
+                var text = "Hello World";
+
+                var textSource = new SimpleTextSource(text, defaultRunProperties);
+
+                var pos = 0;
+
+                TextLineBreak previousLineBreak = null;
+                TextLine textLine = null;
+
+                while (pos < text.Length)
+                {
+                    textLine = TextFormatter.Current.FormatLine(textSource, pos, 30, paragraphProperties, previousLineBreak);
+
+                    pos += textLine.Length;
+
+                    previousLineBreak = textLine.TextLineBreak;
+                }
+
+                Assert.NotNull(textLine);
+
+                Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
+            }
+        }
+
+        protected readonly record struct SimpleTextSource : ITextSource
+        {
+            private readonly string _text;
+            private readonly TextRunProperties _defaultProperties;
+
+            public SimpleTextSource(string text, TextRunProperties defaultProperties)
+            {
+                _text = text;
+                _defaultProperties = defaultProperties;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex > _text.Length)
+                {
+                    return new TextEndOfParagraph();
+                }
+
+                var runText = _text.AsMemory(textSourceIndex);
+
+                if (runText.IsEmpty)
+                {
+                    return new TextEndOfParagraph();
+                }
+
+                return new TextCharacters(runText, _defaultProperties);
+            }
+        }
+
+        private class EmptyTextSource : ITextSource
+        {
+            public TextRun GetTextRun(int textSourceIndex)
+            {
+                return null;
+            }
+        }
+
         private class EndOfLineTextSource : ITextSource
         {
             public TextRun GetTextRun(int textSourceIndex)
@@ -700,7 +792,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override double Baseline => 0;
             public override void Draw(DrawingContext drawingContext, Point origin)
             {
-                using (drawingContext.PushPreTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
+                using (drawingContext.PushTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
                 {
                     drawingContext.FillRectangle(_fill, _rect);
                 }

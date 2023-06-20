@@ -7,7 +7,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.X11.Glx
 {
-    class GlxContext : IGlContext
+    internal class GlxContext : IGlContext
     {
         public  IntPtr Handle { get; }
         public GlxInterface Glx { get; }
@@ -46,8 +46,8 @@ namespace Avalonia.X11.Glx
         public GlInterface GlInterface { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
-        
-        class RestoreContext : IDisposable
+
+        private class RestoreContext : IDisposable
         {
             private GlxInterface _glx;
             private IntPtr _defaultDisplay;
@@ -106,8 +106,8 @@ namespace Avalonia.X11.Glx
             var success = false;
             try
             {
-                var old = new RestoreContext(Glx, _x11.Display, _lock);
-                if (!Glx.MakeContextCurrent(_x11.Display, xid, xid, Handle))
+                var old = new RestoreContext(Glx, _x11.DeferredDisplay, _lock);
+                if (!Glx.MakeContextCurrent(_x11.DeferredDisplay, xid, xid, Handle))
                     throw new OpenGlException("glXMakeContextCurrent failed ");
 
                 success = true;
@@ -124,9 +124,9 @@ namespace Avalonia.X11.Glx
 
         public void Dispose()
         {
-            Glx.DestroyContext(_x11.Display, Handle);
+            Glx.DestroyContext(_x11.DeferredDisplay, Handle);
             if (_ownsPBuffer)
-                Glx.DestroyPbuffer(_x11.Display, _defaultXid);
+                Glx.DestroyPbuffer(_x11.DeferredDisplay, _defaultXid);
         }
 
         public object TryGetFeature(Type featureType)

@@ -7,10 +7,14 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -70,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234",
                     ContextFlyout = new MenuFlyout
                     {
-                        Items = new List<MenuItem>
+                        Items =
                         {
                             new MenuItem { Header = "Item 1" },
                             new MenuItem {Header = "Item 2" },
@@ -107,7 +111,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -182,7 +186,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 MaskedTextBox textBox = new MaskedTextBox
                 {
@@ -224,7 +228,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Delete_Should_Remove_The_Word_After_The_Caret_If_There_Is_No_Selection()
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var textBox = new MaskedTextBox
                 {
@@ -655,7 +659,6 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Text = "1234",
-                    IsVisible = false
                 };
 
                 var root = new TestRoot { Child = target1 };
@@ -810,7 +813,7 @@ namespace Avalonia.Controls.UnitTests
             bool fromClipboard,
             string expected)
         {
-            using (Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -820,18 +823,25 @@ namespace Avalonia.Controls.UnitTests
                     SelectionStart = selectionStart,
                     SelectionEnd = selectionEnd
                 };
-                
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate()
+                };
+                topLevel.Content = target;
+
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
                 target.ApplyTemplate();
 
                 if (fromClipboard)
                 {
-                    AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
-
-                    var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
-                    clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    topLevel.Clipboard?.SetTextAsync(textInput).GetAwaiter().GetResult();
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                    clipboard.ClearAsync().GetAwaiter().GetResult();
+                    topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -859,10 +869,18 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     AcceptsTab = true
                 };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTopLevelTemplate()
+                };
+                topLevel.Content = target;
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
                 target.SelectionStart = 1;
                 target.SelectionEnd = 3;
-                AvaloniaLocator.CurrentMutable
-                    .Bind<Input.Platform.IClipboard>().ToSingleton<ClipboardStub>();
 
                 RaiseKeyEvent(target, key, modifiers);
                 RaiseKeyEvent(target, Key.Z, KeyModifiers.Control); // undo
@@ -875,15 +893,16 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
-            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            textShaperImpl: new HeadlessTextShaperStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
+            renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),     
-            textShaperImpl: new MockTextShaperImpl(), 
-            fontManagerImpl: new MockFontManagerImpl());
+            textShaperImpl: new HeadlessTextShaperStub(), 
+            fontManagerImpl: new HeadlessFontManagerStub());
 
         private static IControlTemplate CreateTemplate()
         {
@@ -951,7 +970,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
+        internal class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
         {
             private string _text;
 
@@ -974,6 +993,39 @@ namespace Avalonia.Controls.UnitTests
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
             public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+        }
+
+        private class TestTopLevel : TopLevel
+        {
+            private readonly ILayoutManager _layoutManager;
+
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+                : base(impl)
+            {
+                _layoutManager = layoutManager ?? new LayoutManager(this);
+            }
+
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+        }
+
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        {
+            var clipboard = new Mock<ITopLevelImpl>();
+            clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
+                .Returns(new ClipboardStub());
+            clipboard.SetupGet(x => x.RenderScaling).Returns(1);
+            return clipboard;
+        }
+
+        private static FuncControlTemplate<TestTopLevel> CreateTopLevelTemplate()
+        {
+            return new FuncControlTemplate<TestTopLevel>((x, scope) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
+                }.RegisterInNameScope(scope));
         }
 
         private class TestContextMenu : ContextMenu

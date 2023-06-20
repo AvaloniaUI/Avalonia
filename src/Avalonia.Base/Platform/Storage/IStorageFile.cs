@@ -11,21 +11,11 @@ namespace Avalonia.Platform.Storage;
 public interface IStorageFile : IStorageItem
 {
     /// <summary>
-    /// Returns true, if file is readable.
-    /// </summary>
-    bool CanOpenRead { get; }
-
-    /// <summary>
     /// Opens a stream for read access.
     /// </summary>
     /// <exception cref="System.UnauthorizedAccessException" />
     Task<Stream> OpenReadAsync();
-
-    /// <summary>
-    /// Returns true, if file is writeable. 
-    /// </summary>
-    bool CanOpenWrite { get; }
-
+    
     /// <summary>
     /// Opens stream for writing to the file.
     /// </summary>

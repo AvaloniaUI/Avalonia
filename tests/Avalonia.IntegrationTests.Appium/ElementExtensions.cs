@@ -11,19 +11,26 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
+    public record class WindowChrome(
+        AppiumWebElement? Close,
+        AppiumWebElement? Minimize,
+        AppiumWebElement? Maximize,
+        AppiumWebElement? FullScreen);
+
     internal static class ElementExtensions
     {
         public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
             element.FindElementsByXPath("*/*");
 
-        public static (AppiumWebElement close, AppiumWebElement minimize, AppiumWebElement maximize) GetChromeButtons(this AppiumWebElement window)
+        public static WindowChrome GetChromeButtons(this AppiumWebElement window)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                var closeButton = window.FindElementByXPath("//XCUIElementTypeButton[1]");
-                var fullscreenButton = window.FindElementByXPath("//XCUIElementTypeButton[2]");
-                var minimizeButton = window.FindElementByXPath("//XCUIElementTypeButton[3]");
-                return (closeButton, minimizeButton, fullscreenButton);
+                var closeButton = window.FindElementsByAccessibilityId("_XCUI:CloseWindow").FirstOrDefault();
+                var fullscreenButton = window.FindElementsByAccessibilityId("_XCUI:FullScreenWindow").FirstOrDefault();
+                var minimizeButton = window.FindElementsByAccessibilityId("_XCUI:MinimizeWindow").FirstOrDefault();
+                var zoomButton = window.FindElementsByAccessibilityId("_XCUI:ZoomWindow").FirstOrDefault();
+                return new(closeButton, minimizeButton, zoomButton, fullscreenButton);
             }
 
             throw new NotSupportedException("GetChromeButtons not supported on this platform.");
@@ -118,7 +125,16 @@ namespace Avalonia.IntegrationTests.Appium
                 Thread.Sleep(1000);
 
                 var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
-                var newWindowTitles = newWindows.ToDictionary(x => x.Text);
+                
+                // Try to find the new window by looking for a window with a title that didn't exist before the button
+                // was clicked. Sometimes it seems that when a window becomes fullscreen, all other windows in the
+                // application lose their titles, so filter out windows with no title (this may have started happening
+                // with macOS 13.1?)
+                var newWindowTitles = newWindows
+                    .Select(x => (x.Text, x))
+                    .Where(x => !string.IsNullOrEmpty(x.Text))
+                    .ToDictionary(x => x.Text, x => x.x);
+
                 var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
 
                 return Disposable.Create(() =>
@@ -129,8 +145,9 @@ namespace Avalonia.IntegrationTests.Appium
                     var text = windows.Select(x => x.Text).ToList();
                     var newWindow = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
                         .First(x => x.Text == newWindowTitle);
-                    var (close, _, _) = ((AppiumWebElement)newWindow).GetChromeButtons();
+                    var close = ((AppiumWebElement)newWindow).FindElementByAccessibilityId("_XCUI:CloseWindow");
                     close!.Click();
+                    Thread.Sleep(1000);
                 });
             }
         }

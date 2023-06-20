@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
@@ -12,11 +13,14 @@ namespace Avalonia.Win32.OpenGl.Angle;
 internal class AngleWin32PlatformGraphics : IPlatformGraphics, IPlatformGraphicsOpenGlContextFactory
 {
     private readonly Win32AngleEglInterface _egl;
-    private AngleWin32EglDisplay _sharedDisplay;
-    private EglContext _sharedContext;
-    public bool UsesSharedContext => PlatformApi == AngleOptions.PlatformApi.DirectX9;
+    private readonly AngleWin32EglDisplay? _sharedDisplay;
+    private EglContext? _sharedContext;
 
-    public AngleOptions.PlatformApi PlatformApi { get; } = AngleOptions.PlatformApi.DirectX11;
+    [MemberNotNullWhen(true, nameof(_sharedDisplay))]
+    public bool UsesSharedContext => _sharedDisplay is not null;
+
+    public AngleOptions.PlatformApi PlatformApi { get; }
+
     public IPlatformGraphicsContext CreateContext()
     {
         if (UsesSharedContext)
@@ -72,7 +76,7 @@ internal class AngleWin32PlatformGraphics : IPlatformGraphics, IPlatformGraphics
     }
 
 
-    public static AngleWin32PlatformGraphics TryCreate(AngleOptions options)
+    public static AngleWin32PlatformGraphics? TryCreate(AngleOptions? options)
     {
         Win32AngleEglInterface egl;
         try
@@ -109,7 +113,7 @@ internal class AngleWin32PlatformGraphics : IPlatformGraphics, IPlatformGraphics
             }
             else
             {
-                AngleWin32EglDisplay sharedDisplay = null;
+                AngleWin32EglDisplay? sharedDisplay = null;
                 try
                 {
                     sharedDisplay = AngleWin32EglDisplay.CreateD3D9Display(egl);

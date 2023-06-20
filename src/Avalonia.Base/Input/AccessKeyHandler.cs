@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Input
 {
     /// <summary>
     /// Handles access keys for a window.
     /// </summary>
-    public class AccessKeyHandler : IAccessKeyHandler
+    internal class AccessKeyHandler : IAccessKeyHandler
     {
         /// <summary>
         /// Defines the AccessKeyPressed attached event.
@@ -66,14 +65,14 @@ namespace Avalonia.Input
             {
                 if (_mainMenu != null)
                 {
-                    _mainMenu.MenuClosed -= MainMenuClosed;
+                    _mainMenu.Closed -= MainMenuClosed;
                 }
 
                 _mainMenu = value;
 
                 if (_mainMenu != null)
                 {
-                    _mainMenu.MenuClosed += MainMenuClosed;
+                    _mainMenu.Closed += MainMenuClosed;
                 }
             }
         }
@@ -142,9 +141,11 @@ namespace Avalonia.Input
 
                 if (MainMenu == null || !MainMenu.IsOpen)
                 {
+                    var focusManager = FocusManager.GetFocusManager(e.Source as IInputElement);
+                    
                     // TODO: Use FocusScopes to store the current element and restore it when context menu is closed.
                     // Save currently focused input element.
-                    _restoreFocusElement = FocusManager.Instance?.Current;
+                    _restoreFocusElement = focusManager?.GetFocusedElement();
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
@@ -158,8 +159,6 @@ namespace Avalonia.Input
 
                     _restoreFocusElement?.Focus();
                     _restoreFocusElement = null;
-                    
-                    e.Handled = true;
                 }
             }
             else if (_altIsDown)
@@ -177,7 +176,7 @@ namespace Avalonia.Input
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
-            if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) || menuIsOpen)
+            if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && !e.KeyModifiers.HasAllFlags(KeyModifiers.Control) || menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
@@ -190,7 +189,7 @@ namespace Avalonia.Input
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => x is not null && ((Visual)MainMenu!).IsVisualAncestorOf((Visual)x));
+                    matches = matches.Where(x => x is not null && ((Visual)MainMenu!).IsLogicalAncestorOf((Visual)x));
                 }
 
                 var match = matches.FirstOrDefault();
@@ -199,7 +198,6 @@ namespace Avalonia.Input
                 if (match is not null)
                 {
                     match.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
-                    e.Handled = true;
                 }
             }
         }
@@ -224,7 +222,6 @@ namespace Avalonia.Input
                     else if (_showingAccessKeys && MainMenu != null)
                     {
                         MainMenu.Open();
-                        e.Handled = true;
                     }
 
                     break;

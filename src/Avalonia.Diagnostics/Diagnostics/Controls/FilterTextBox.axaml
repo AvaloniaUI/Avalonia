@@ -1,7 +1,8 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Avalonia.Diagnostics.Controls"
-        x:DataType="controls:FilterTextBox">
+        x:DataType="controls:FilterTextBox"
+        x:ClassModifier="internal">
 
   <Design.PreviewWith>
     <Border Padding="10">
@@ -16,6 +17,8 @@
         <StackPanel Orientation="Horizontal" Spacing="1">
           <Button Margin="0,0,2,0"
                   Classes="textBoxClearButton"
+                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}"
+                  Focusable="False"
                   ToolTip.Tip="Clear"
                   Cursor="Hand"
                   Command="{Binding $parent[TextBox].Clear}"

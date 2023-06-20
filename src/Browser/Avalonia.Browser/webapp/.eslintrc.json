@@ -43,5 +43,5 @@
       }
     ]
   },
-  "ignorePatterns": ["types/*"]
+  "ignorePatterns": ["types/*","node_modules/*"]
 }

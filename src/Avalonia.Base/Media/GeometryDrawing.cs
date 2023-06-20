@@ -7,16 +7,16 @@ namespace Avalonia.Media
     /// Represents a drawing operation that combines 
     /// a geometry with and brush and/or pen to produce rendered content.
     /// </summary>
-    public class GeometryDrawing : Drawing
+    public sealed class GeometryDrawing : Drawing
     {
         // Adding the Pen's stroke thickness here could yield wrong results due to transforms.
-        private static readonly IPen s_boundsPen = new ImmutablePen(Colors.Black.ToUint32(), 0);
+        private static readonly IPen s_boundsPen = new ImmutablePen(Colors.Black.ToUInt32(), 0);
 
         /// <summary>
         /// Defines the <see cref="Geometry"/> property.
         /// </summary>
-        public static readonly StyledProperty<Geometry> GeometryProperty =
-            AvaloniaProperty.Register<GeometryDrawing, Geometry>(nameof(Geometry));
+        public static readonly StyledProperty<Geometry?> GeometryProperty =
+            AvaloniaProperty.Register<GeometryDrawing, Geometry?>(nameof(Geometry));
 
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -27,14 +27,14 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Pen"/> property.
         /// </summary>
-        public static readonly StyledProperty<Pen?> PenProperty =
-            AvaloniaProperty.Register<GeometryDrawing, Pen?>(nameof(Pen));
+        public static readonly StyledProperty<IPen?> PenProperty =
+            AvaloniaProperty.Register<GeometryDrawing, IPen?>(nameof(Pen));
 
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.Geometry"/> that describes the shape of this <see cref="GeometryDrawing"/>.
         /// </summary>
         [Content]
-        public Geometry Geometry
+        public Geometry? Geometry
         {
             get => GetValue(GeometryProperty);
             set => SetValue(GeometryProperty, value);
@@ -58,7 +58,7 @@ namespace Avalonia.Media
             set => SetValue(PenProperty, value);
         }
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             if (Geometry != null)
             {

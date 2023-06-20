@@ -7,7 +7,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// A collection of <see cref="KeyFrame"/>s.
     /// </summary>
-    public class KeyFrames : AvaloniaList<KeyFrame>
+    public sealed class KeyFrames : AvaloniaList<KeyFrame>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyFrames"/> class.

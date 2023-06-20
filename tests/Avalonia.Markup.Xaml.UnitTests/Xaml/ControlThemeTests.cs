@@ -27,7 +27,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = Assert.IsType<TestTemplatedControl>(window.Content);
 
-                window.LayoutManager.ExecuteInitialLayoutPass();
+                window.Show();
 
                 Assert.NotNull(button.Template);
 
@@ -63,7 +63,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = Assert.IsType<TestTemplatedControl>(window.Content);
 
-                window.LayoutManager.ExecuteInitialLayoutPass();
+                window.Show();
 
                 Assert.NotNull(button.Template);
 

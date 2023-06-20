@@ -40,7 +40,7 @@ namespace Avalonia.Media
             set { SetValue(Point2Property, value); }
         }
 
-        protected internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(StreamGeometryContext ctx)
         {
             ctx.QuadraticBezierTo(Point1, Point2);
         }

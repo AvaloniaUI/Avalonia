@@ -1,13 +1,12 @@
 using System;
 using Avalonia.Collections;
-using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
-    [NotClientImplementable]
+    [Obsolete("This interface may be removed in 12.0. Use StyledElement, or override StyledElement.StyleKeyOverride to override the StyleKey for a class.")]
     public interface IStyleable : INamed
     {
         /// <summary>
@@ -18,6 +17,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the type by which the control is styled.
         /// </summary>
+        [Obsolete("Override StyledElement.StyleKeyOverride instead.")]
         Type StyleKey { get; }
 
         /// <summary>

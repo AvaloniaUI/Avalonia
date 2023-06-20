@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Xaml.Converters
         /// If <paramref name="value"/> is a <see cref="Color"/> and <paramref name="targetType"/>
         /// is <see cref="IBrush"/> then converts the color to a solid color brush.
         /// </returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return Convert(value, targetType);
         }
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml.Converters
         /// If <paramref name="value"/> is an <see cref="ISolidColorBrush"/> and <paramref name="targetType"/>
         /// is <see cref="Color"/> then converts the solid color brush to a color.
         /// </returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return ConvertBack(value, targetType);
         }
@@ -55,7 +55,7 @@ namespace Avalonia.Markup.Xaml.Converters
         /// If <paramref name="value"/> is a <see cref="Color"/> and <paramref name="targetType"/>
         /// is <see cref="IBrush"/> then converts the color to a solid color brush.
         /// </returns>
-        public static object Convert(object value, Type targetType)
+        public static object? Convert(object? value, Type? targetType)
         {
             if (targetType == typeof(IBrush) && value is Color c)
             {
@@ -75,7 +75,7 @@ namespace Avalonia.Markup.Xaml.Converters
         /// If <paramref name="value"/> is an <see cref="ISolidColorBrush"/> and <paramref name="targetType"/>
         /// is <see cref="Color"/> then converts the solid color brush to a color.
         /// </returns>
-        public static object ConvertBack(object value, Type targetType)
+        public static object? ConvertBack(object? value, Type? targetType)
         {
             if (targetType == typeof(Color) && value is ISolidColorBrush brush)
             {

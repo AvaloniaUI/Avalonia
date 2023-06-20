@@ -84,4 +84,26 @@ export class AvaloniaDOM {
             inputElement
         };
     }
+
+    public static isFullscreen(): boolean {
+        return document.fullscreenElement != null;
+    }
+
+    public static async setFullscreen(isFullscreen: boolean) {
+        if (isFullscreen) {
+            const doc = document.documentElement;
+            await doc.requestFullscreen();
+        } else {
+            await document.exitFullscreen();
+        }
+    }
+
+    public static getSafeAreaPadding(): number[] {
+        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sat"));
+        const bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sab"));
+        const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sal"));
+        const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sar"));
+
+        return [left, top, bottom, right];
+    }
 }

@@ -72,6 +72,7 @@ namespace Avalonia.Controls
         {
             AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x, e) => x.OnAreSeparatorsVisibleChanged(e));
             PressedMixin.Attach<DataGridColumnHeader>();
+            IsTabStopProperty.OverrideDefaultValue<DataGridColumnHeader>(false);
         }
 
         /// <summary>
@@ -240,7 +241,7 @@ namespace Avalonia.Controls
                     DataGrid owningGrid = OwningGrid;
                     DataGridSortDescription newSort;
 
-                    KeyboardHelper.GetMetaKeyState(keyModifiers, out bool ctrl, out bool shift);
+                    KeyboardHelper.GetMetaKeyState(this, keyModifiers, out bool ctrl, out bool shift);
 
                     DataGridSortDescription sort = OwningColumn.GetSortDescription();
                     IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
@@ -440,13 +441,10 @@ namespace Avalonia.Controls
             }
 
             Debug.Assert(OwningGrid.Parent is InputElement);
-
-            double distanceFromLeft = mousePosition.X;
-            double distanceFromRight = Bounds.Width - distanceFromLeft;
-
+            
             OnMouseMove_Resize(ref handled, mousePositionHeaders);
 
-            OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders, distanceFromLeft, distanceFromRight);
+            OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders);
 
             SetDragCursor(mousePosition);
         }
@@ -716,7 +714,7 @@ namespace Avalonia.Controls
         }
 
         //TODO DragEvents
-        private void OnMouseMove_Reorder(ref bool handled, Point mousePosition, Point mousePositionHeaders, double distanceFromLeft, double distanceFromRight)
+        private void OnMouseMove_Reorder(ref bool handled, Point mousePosition, Point mousePositionHeaders)
         {
             if (handled)
             {
@@ -724,7 +722,7 @@ namespace Avalonia.Controls
             }
 
             //handle entry into reorder mode
-            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
+            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null)
             {
                 var distanceFromInitial = (Vector)(mousePositionHeaders - _lastMousePositionHeaders);
                 if (distanceFromInitial.Length > DATAGRIDCOLUMNHEADER_columnsDragTreshold)

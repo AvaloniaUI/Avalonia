@@ -66,7 +66,7 @@ public interface IStorageProvider
     /// It also might ask user for the permission, and throw an exception if it was denied.
     /// </remarks>
     /// <returns>File or null if it doesn't exist.</returns>
-    Task<IStorageFile?> TryGetFileFromPath(Uri filePath);
+    Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath);
     
     /// <summary>
     /// Attempts to read folder from the file-system by its path.
@@ -78,12 +78,12 @@ public interface IStorageProvider
     /// It also might ask user for the permission, and throw an exception if it was denied.
     /// </remarks>
     /// <returns>Folder or null if it doesn't exist.</returns>
-    Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath);
+    Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath);
     
     /// <summary>
     /// Attempts to read folder from the file-system by its path
     /// </summary>
     /// <param name="wellKnownFolder">Well known folder identifier.</param>
     /// <returns>Folder or null if it doesn't exist.</returns>
-    Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder);
+    Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder);
 }

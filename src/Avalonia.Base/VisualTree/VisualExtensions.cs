@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 
 namespace Avalonia.VisualTree
 {
@@ -46,7 +49,7 @@ namespace Avalonia.VisualTree
             Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
             var result = 0;
 
-            v = v?.VisualParent;
+            v = v.VisualParent;
 
             while (v != null)
             {
@@ -64,16 +67,12 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The first visual.</param>
         /// <param name="target">The second visual.</param>
         /// <returns>The common ancestor, or null if not found.</returns>
-        public static Visual? FindCommonVisualAncestor(this Visual visual, Visual target)
+        public static Visual? FindCommonVisualAncestor(this Visual? visual, Visual? target)
         {
-            Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
-
-            if (target is null)
+            if (visual is null || target is null)
             {
                 return null;
             }
-
-            Visual? t = target;
 
             void GoUpwards(ref Visual? node, int count)
             {
@@ -82,6 +81,9 @@ namespace Avalonia.VisualTree
                     node = node?.VisualParent;
                 }
             }
+
+            Visual? v = visual;
+            Visual? t = target;
 
             // We want to find lowest node first, then make sure that both nodes are at the same height.
             // By doing that we can sometimes find out that other node is our lowest common ancestor.
@@ -126,9 +128,9 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<Visual> GetVisualAncestors(this Visual visual)
         {
-            Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            v = v.VisualParent;
+            var v = visual.VisualParent;
 
             while (v != null)
             {
@@ -144,7 +146,7 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The visual.</param>
         /// <param name="includeSelf">If given visual should be included in search.</param>
         /// <returns>First ancestor of given type.</returns>
-        public static T? FindAncestorOfType<T>(this Visual visual, bool includeSelf = false) where T : class
+        public static T? FindAncestorOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
             if (visual is null)
             {
@@ -173,7 +175,7 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The visual.</param>
         /// <param name="includeSelf">If given visual should be included in search.</param>
         /// <returns>First descendant of given type.</returns>
-        public static T? FindDescendantOfType<T>(this Visual visual, bool includeSelf = false) where T : class
+        public static T? FindDescendantOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
             if (visual is null)
             {
@@ -195,7 +197,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual and its ancestors.</returns>
         public static IEnumerable<Visual> GetSelfAndVisualAncestors(this Visual visual)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             yield return visual;
 
@@ -203,6 +205,69 @@ namespace Avalonia.VisualTree
             {
                 yield return ancestor;
             }
+        }
+
+        public static TransformedBounds? GetTransformedBounds(this Visual visual)
+        {
+            Rect clip = default;
+            var transform = Matrix.Identity;
+
+            bool Visit(Visual visual)
+            {
+                if (!visual.IsVisible)
+                    return false;
+
+                // The visual's bounds in local coordinates.
+                var bounds = new Rect(visual.Bounds.Size);
+
+                // If the visual has no parent, we've reached the root. We start the clip
+                // rectangle with these bounds.
+                if (visual.GetVisualParent() is not { } parent)
+                {
+                    clip = bounds;
+                    return true;
+                }
+
+                // Otherwise recurse until the root visual is found, exiting early if one of the
+                // ancestors is invisible.
+                if (!Visit(parent))
+                    return false;
+
+                // Calculate the transform for this control from its offset and render transform.
+                var renderTransform = Matrix.Identity;
+
+                if (visual.HasMirrorTransform)
+                {
+                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
+                    renderTransform *= mirrorMatrix;
+                }
+
+                if (visual.RenderTransform != null)
+                {
+                    var origin = visual.RenderTransformOrigin.ToPixels(bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    var finalTransform = (-offset) * visual.RenderTransform.Value * offset;
+                    renderTransform *= finalTransform;
+                }
+
+                transform = renderTransform *
+                    Matrix.CreateTranslation(visual.Bounds.Position) *
+                    transform;
+
+                // If the visual is clipped, update the clip bounds.
+                if (visual.ClipToBounds)
+                {
+                    var globalBounds = bounds.TransformToAABB(transform);
+                    var clipBounds = visual.ClipToBounds ?
+                        globalBounds.Intersect(clip) :
+                        clip;
+                    clip = clip.Intersect(clipBounds);
+                }
+
+                return true;
+            }
+
+            return Visit(visual) ? new(new(visual.Bounds.Size), clip, transform) : null;
         }
 
         /// <summary>
@@ -213,7 +278,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual at the requested point.</returns>
         public static Visual? GetVisualAt(this Visual visual, Point p)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualAt(p, x => x.IsVisible);
         }
@@ -230,7 +295,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual at the requested point.</returns>
         public static Visual? GetVisualAt(this Visual visual, Point p, Func<Visual, bool> filter)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             var root = visual.GetVisualRoot();
 
@@ -243,7 +308,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.Renderer.HitTestFirst(rootPoint.Value, visual, filter);
+                return root.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
             }
 
             return null;
@@ -259,7 +324,7 @@ namespace Avalonia.VisualTree
             this Visual visual,
             Point p)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
         }
@@ -279,7 +344,7 @@ namespace Avalonia.VisualTree
             Point p,
             Func<Visual, bool> filter)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             var root = visual.GetVisualRoot();
 
@@ -292,7 +357,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.Renderer.HitTest(rootPoint.Value, visual, filter);
+                return root.HitTester.HitTest(rootPoint.Value, visual, filter);
             }
 
             return Enumerable.Empty<Visual>();
@@ -373,7 +438,7 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static IRenderRoot? GetVisualRoot(this Visual visual)
         {
-            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual as IRenderRoot ?? visual.VisualRoot;
         }
@@ -392,7 +457,7 @@ namespace Avalonia.VisualTree
         /// True if <paramref name="visual"/> is an ancestor of <paramref name="target"/>;
         /// otherwise false.
         /// </returns>
-        public static bool IsVisualAncestorOf(this Visual visual, Visual target)
+        public static bool IsVisualAncestorOf(this Visual? visual, Visual? target)
         {
             Visual? current = target?.VisualParent;
 

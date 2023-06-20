@@ -30,17 +30,23 @@ public class AvaloniaView : ComponentBase
         builder.CloseElement();
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (OperatingSystem.IsBrowser())
+        if (firstRender)
         {
-            await AvaloniaModule.ImportMain();
-
             _browserView = new Browser.AvaloniaView(_containerId);
             if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime lifetime)
             {
                 _browserView.Content = lifetime.MainView;
             }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (!OperatingSystem.IsBrowser())
+        {
+            throw new NotSupportedException("Avalonia doesn't support server-side Blazor");
         }
     }
 }

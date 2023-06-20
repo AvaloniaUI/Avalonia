@@ -15,13 +15,6 @@ namespace Avalonia
 #endif
     readonly struct CornerRadius : IEquatable<CornerRadius>
     {
-        static CornerRadius()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<CornerRadiusAnimator>(prop => typeof(CornerRadius).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         public CornerRadius(double uniformRadius)
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
@@ -59,15 +52,6 @@ namespace Avalonia
         /// Radius of the bottom left corner.
         /// </summary>
         public double BottomLeft { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the instance has default values (all corner radii are set to 0).
-        /// </summary>
-        public bool IsDefault => TopLeft == 0 && TopRight == 0 && BottomLeft == 0 && BottomRight == 0;
-
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Gets a value indicating whether all corner radii are equal.

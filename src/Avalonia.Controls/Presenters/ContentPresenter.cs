@@ -1,5 +1,5 @@
 using System;
-
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Presenters
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
     [PseudoClasses(":empty")]
-    public class ContentPresenter : Control, IContentPresenter
+    public class ContentPresenter : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -156,16 +156,13 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="RecognizesAccessKey"/> property
         /// </summary>
-        public static readonly DirectProperty<ContentPresenter, bool> RecognizesAccessKeyProperty =
-            AvaloniaProperty.RegisterDirect<ContentPresenter, bool>(
-                nameof(RecognizesAccessKey),
-                cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
+        public static readonly StyledProperty<bool> RecognizesAccessKeyProperty =
+            AvaloniaProperty.Register<ContentPresenter, bool>(nameof(RecognizesAccessKey));
 
         private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
-        private bool _recognizesAccessKey;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -386,8 +383,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public bool RecognizesAccessKey
         {
-            get => _recognizesAccessKey;
-            set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
+            get => GetValue(RecognizesAccessKeyProperty);
+            set => SetValue(RecognizesAccessKeyProperty, value);
         }
 
         /// <summary>
@@ -445,7 +442,7 @@ namespace Avalonia.Controls.Presenters
             var contentTemplate = ContentTemplate;
             var oldChild = Child;
             var newChild = CreateChild(content, oldChild, contentTemplate);
-            var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
+            var logicalChildren = GetEffectiveLogicalChildren();
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
@@ -491,6 +488,9 @@ namespace Avalonia.Controls.Presenters
 
         }
 
+        private IAvaloniaList<ILogical> GetEffectiveLogicalChildren()
+            => Host?.LogicalChildren ?? LogicalChildren;
+
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -534,21 +534,10 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);
-        }
-
-        /// <summary>
-        /// Creates the child control.
-        /// </summary>
-        /// <returns>The child control or null.</returns>
-        protected virtual Control? CreateChild()
-        {
-            var content = Content;
-            var oldChild = Child;
-            return CreateChild(content, oldChild, ContentTemplate);
         }
 
         private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)
@@ -695,7 +684,7 @@ namespace Avalonia.Controls.Presenters
             else if (Child != null)
             {
                 VisualChildren.Remove(Child);
-                LogicalChildren.Remove(Child);
+                GetEffectiveLogicalChildren().Remove(Child);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _recyclingDataTemplate = null;

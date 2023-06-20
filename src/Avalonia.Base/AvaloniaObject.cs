@@ -118,7 +118,7 @@ namespace Avalonia
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
-            _values.ClearLocalValue(property);
+            _values.ClearValue(property);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
-            _values?.ClearLocalValue(property);
+            _values.ClearValue(property);
         }
 
         /// <summary>
@@ -242,7 +242,14 @@ namespace Avalonia
             return registered.InvokeGetter(this);
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <remarks>
+        /// Gets the value of the property excluding animated values, otherwise <see cref="Optional{T}.Empty"/>.
+        /// Note that this method does not return property values that come from inherited or default values.
+        /// </remarks>
         public Optional<T> GetBaseValue<T>(StyledProperty<T> property)
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
@@ -261,7 +268,7 @@ namespace Avalonia
 
             VerifyAccess();
 
-            return _values?.IsAnimating(property) ?? false;
+            return _values.IsAnimating(property);
         }
 
         /// <summary>
@@ -270,8 +277,8 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <returns>True if the property is set, otherwise false.</returns>
         /// <remarks>
-        /// Checks whether a value is assigned to the property, or that there is a binding to the
-        /// property that is producing a value other than <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// Returns true if <paramref name="property"/> is a styled property which has a value
+        /// assigned to it or a binding targeting it; otherwise false.
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
@@ -279,7 +286,7 @@ namespace Avalonia
 
             VerifyAccess();
 
-            return _values?.IsSet(property) ?? false;
+            return _values.IsSet(property);
         }
 
         /// <summary>
@@ -322,7 +329,7 @@ namespace Avalonia
             if (value is UnsetValueType)
             {
                 if (priority == BindingPriority.LocalValue)
-                    _values.ClearLocalValue(property);
+                    _values.ClearValue(property);
             }
             else if (value is not DoNothingType)
             {
@@ -346,6 +353,57 @@ namespace Avalonia
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
             LogPropertySet(property, value, BindingPriority.LocalValue);
             SetDirectValueUnchecked(property, value);
+        }
+
+        /// <summary>
+        /// Sets the value of a dependency property without changing its value source.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <remarks>
+        /// This method is used by a component that programmatically sets the value of one of its
+        /// own properties without disabling an application's declared use of the property. The
+        /// method changes the effective value of the property, but existing data bindings and
+        /// styles will continue to work.
+        /// 
+        /// The new value will have the property's current <see cref="BindingPriority"/>, even if
+        /// that priority is <see cref="BindingPriority.Unset"/> or 
+        /// <see cref="BindingPriority.Inherited"/>.
+        /// </remarks>
+        public void SetCurrentValue(AvaloniaProperty property, object? value) => 
+            property.RouteSetCurrentValue(this, value);
+
+        /// <summary>
+        /// Sets the value of a dependency property without changing its value source.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <remarks>
+        /// This method is used by a component that programmatically sets the value of one of its
+        /// own properties without disabling an application's declared use of the property. The
+        /// method changes the effective value of the property, but existing data bindings and
+        /// styles will continue to work.
+        /// 
+        /// The new value will have the property's current <see cref="BindingPriority"/>, even if
+        /// that priority is <see cref="BindingPriority.Unset"/> or 
+        /// <see cref="BindingPriority.Inherited"/>.
+        /// </remarks>
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            _ = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
+
+            LogPropertySet(property, value, BindingPriority.LocalValue);
+
+            if (value is UnsetValueType)
+            {
+                _values.ClearValue(property);
+            }
+            else if (value is not DoNothingType)
+            {
+                _values.SetCurrentValue(property, value);
+            }
         }
 
         /// <summary>
@@ -515,14 +573,12 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
-        /// <inheritdoc/>
         internal void AddInheritanceChild(AvaloniaObject child)
         {
             _inheritanceChildren ??= new List<AvaloniaObject>();
             _inheritanceChildren.Add(child);
         }
-        
-        /// <inheritdoc/>
+
         internal void RemoveInheritanceChild(AvaloniaObject child)
         {
             _inheritanceChildren?.Remove(child);
@@ -541,24 +597,12 @@ namespace Avalonia
                 return new AvaloniaPropertyValue(
                     property,
                     GetValue(property),
-                    BindingPriority.Unset,
-                    "Local Value");
-            }
-            else if (_values != null)
-            {
-                var result = _values.GetDiagnostic(property);
-
-                if (result != null)
-                {
-                    return result;
-                }
+                    BindingPriority.LocalValue,
+                    null,
+                    false);
             }
 
-            return new AvaloniaPropertyValue(
-                property,
-                GetValue(property),
-                BindingPriority.Unset,
-                "Unset");
+            return _values.GetDiagnostic(property);
         }
 
         internal ValueStore GetValueStore() => _values;
@@ -620,14 +664,12 @@ namespace Avalonia
         /// <param name="property">The property that has changed.</param>
         /// <param name="oldValue">The old property value.</param>
         /// <param name="newValue">The new property value.</param>
-        /// <param name="priority">The priority of the binding that produced the value.</param>
         protected void RaisePropertyChanged<T>(
             DirectPropertyBase<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority = BindingPriority.LocalValue)
+            T oldValue,
+            T newValue)
         {
-            RaisePropertyChanged(property, oldValue, newValue, priority, true);
+            RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue, true);
         }
 
         /// <summary>
@@ -676,7 +718,7 @@ namespace Avalonia
         /// <returns>
         /// True if the value changed, otherwise false.
         /// </returns>
-        protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
+        protected bool SetAndRaise<T>(DirectPropertyBase<T> property, ref T field, T value)
         {
             VerifyAccess();
 
@@ -740,6 +782,11 @@ namespace Avalonia
             {
                 UpdateDataValidation(property, value.Type, value.Error);
             }
+        }
+
+        internal void OnUpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            UpdateDataValidation(property, state, error);
         }
 
         /// <summary>

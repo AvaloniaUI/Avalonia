@@ -26,17 +26,6 @@ namespace Avalonia.Rendering.Composition.Server
             base.DeserializeChangesCore(reader, committedAt);
         }
 
-        public override long LastChangedBy
-        {
-            get
-            {
-                var seq = base.LastChangedBy;
-                foreach (var i in List)
-                    seq = Math.Max(i.LastChangedBy, seq);
-                return seq;
-            }
-        }
-
         public List<T>.Enumerator GetEnumerator() => List.GetEnumerator();
 
         public ServerList(ServerCompositor compositor) : base(compositor)

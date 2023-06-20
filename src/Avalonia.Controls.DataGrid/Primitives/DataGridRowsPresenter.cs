@@ -66,7 +66,7 @@ namespace Avalonia.Controls.Primitives
 
         internal void InvalidateChildIndex(DataGridRow row)
         {
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row, row.Index));
         }
 
         /// <summary>

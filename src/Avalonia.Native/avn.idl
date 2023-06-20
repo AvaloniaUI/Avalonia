@@ -1,6 +1,7 @@
 @clr-namespace Avalonia.Native.Interop
 @clr-access internal
 @clr-map bool int
+@clr-map u_int64_t ulong
 @cpp-preamble @@
 #pragma once
 #include "com.h"
@@ -503,6 +504,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateTrayIcon(IAvnTrayIcon** ppv);
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
+     HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -545,6 +547,7 @@ interface IAvnWindowBase : IUnknown
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
+     HRESULT GetInputMethod(IAvnTextInputMethod **ppv);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -581,12 +584,12 @@ interface IAvnWindowBaseEvents : IUnknown
      void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
      void PositionChanged(AvnPoint position);
      void RawMouseEvent(AvnRawMouseEventType type,
-                                uint timeStamp,
+                                u_int64_t timeStamp,
                                 AvnInputModifiers modifiers,
                                 AvnPoint point,
                                 AvnVector delta);
-     bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key);
-     bool RawTextInputEvent(uint timeStamp, [const] char* text);
+     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers, uint key);
+     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
      void ScalingChanged(double scaling);
      void RunRenderPriorityJobs();
      void LostFocus();
@@ -611,6 +614,22 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
      void GotInputWhenDisabled();
 }
 
+[uuid(f2079145-a2d9-42b8-a85e-2732e3c2b055)]
+interface IAvnTextInputMethodClient : IUnknown
+{
+    void SetPreeditText(char* preeditText);
+    void SelectInSurroundingText(int start, int length);
+}
+
+[uuid(1382a29f-e260-4c7a-b83f-c99fc72e27c2)]
+interface IAvnTextInputMethod : IUnknown
+{
+    HRESULT SetClient(IAvnTextInputMethodClient* client);
+    void Reset();
+    void SetCursorRect(AvnRect rect);
+    void SetSurroundingText(char* text, int anchorOffset, int cursorOffset);
+}
+
 [uuid(e34ae0f8-18b4-48a3-b09d-2e6b19a3cf5e)]
 interface IAvnMacOptions : IUnknown
 {
@@ -627,9 +646,11 @@ interface IAvnActionCallback : IUnknown
 }
 
 [uuid(6df4d2db-0b80-4f59-ad88-0baa5e21eb14)]
-interface IAvnSignaledCallback : IUnknown
+interface IAvnPlatformThreadingInterfaceEvents : IUnknown
 {
-     void Signaled(int priority, bool priorityContainsMeaningfulValue);
+     void Signaled();
+     void Timer();
+     void ReadyForBackgroundProcessing();
 }
 
 [uuid(97330f88-c22b-4a8e-a130-201520091b01)]
@@ -642,12 +663,12 @@ interface IAvnLoopCancellation : IUnknown
 interface IAvnPlatformThreadingInterface : IUnknown
 {
      bool GetCurrentThreadIsLoopThread();
-     void SetSignaledCallback(IAvnSignaledCallback* cb);
+     void SetEvents(IAvnPlatformThreadingInterfaceEvents* cb);
      IAvnLoopCancellation* CreateLoopCancellation();
-     HRESULT RunLoop(IAvnLoopCancellation* cancel);
-    // Can't pass int* to sharpgentools for some reason
-     void Signal(int priority);
-     IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback);
+     void RunLoop(IAvnLoopCancellation* cancel);
+     void Signal();
+     void UpdateTimer(int ms);
+     void RequestBackgroundProcessing();
 }
 
 [uuid(6c621a6e-e4c1-4ae3-9749-83eeeffa09b6)]
@@ -923,4 +944,10 @@ interface IAvnPlatformSettings : IUnknown
     AvnPlatformThemeVariant GetPlatformTheme();
     uint GetAccentColor();
     void RegisterColorsChange(IAvnActionCallback* callback);
+}
+
+[uuid(12edf00d-5803-4d3f-9947-b4840e5e9372)]
+interface IAvnPlatformBehaviorInhibition : IUnknown
+{
+    void SetInhibitAppSleep(bool inhibitAppSleep, char* reason);
 }

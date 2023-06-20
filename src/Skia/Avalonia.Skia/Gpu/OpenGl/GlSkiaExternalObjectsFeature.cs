@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using Avalonia.OpenGL;
@@ -150,6 +149,11 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
     
     public IBitmapImpl SnapshotWithKeyedMutex(uint acquireIndex, uint releaseIndex)
     {
+        if (_image is null)
+        {
+            throw new NotSupportedException("Only supported with an external image");
+        }
+
         using (_gpu.EnsureCurrent())
         {
             _image.AcquireKeyedMutex(acquireIndex);
@@ -167,6 +171,11 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
     public IBitmapImpl SnapshotWithSemaphores(IPlatformRenderInterfaceImportedSemaphore waitForSemaphore,
         IPlatformRenderInterfaceImportedSemaphore signalSemaphore)
     {
+        if (_image is null)
+        {
+            throw new NotSupportedException("Only supported with an external image");
+        }
+
         var wait = (GlSkiaImportedSemaphore)waitForSemaphore;
         var signal = (GlSkiaImportedSemaphore)signalSemaphore;
         using (_gpu.EnsureCurrent())

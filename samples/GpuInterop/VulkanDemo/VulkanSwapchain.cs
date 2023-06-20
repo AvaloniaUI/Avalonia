@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -7,9 +6,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Vulkan;
-using Metsys.Bson;
 using Silk.NET.Vulkan;
-using SkiaSharp;
 
 namespace GpuInterop.VulkanDemo;
 
@@ -84,7 +81,7 @@ class VulkanSwapchainImage : ISwapchainImage
 
         _image.TransitionLayout(buffer.InternalHandle, 
             ImageLayout.Undefined, AccessFlags.None,
-            ImageLayout.ColorAttachmentOptimal, AccessFlags.AccessColorAttachmentReadBit);
+            ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentReadBit);
 
         if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             buffer.Submit(null,null,null, null, new VulkanCommandBufferPool.VulkanCommandBuffer.KeyedMutexSubmitInfo

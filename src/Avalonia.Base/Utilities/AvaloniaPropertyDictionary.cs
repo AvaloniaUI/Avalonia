@@ -304,13 +304,9 @@ namespace Avalonia.Utilities
             {
                 if (_entryCount == _entries!.Length)
                 {
-                    const double growthFactor = 1.2;
-                    var newSize = (int)(_entryCount * growthFactor);
-
-                    if (newSize == _entryCount)
-                    {
-                        newSize++;
-                    }
+                    var newSize = _entryCount == DefaultInitialCapacity ?
+                        DefaultInitialCapacity * 2 :
+                        (int)(_entryCount * 1.5);
 
                     var destEntries = new Entry[newSize];
 

@@ -48,8 +48,6 @@ namespace Avalonia.Media.Imaging
 
         public CroppedBitmap()
         {
-            Source = null;
-            SourceRect = default;
         }
 
         public CroppedBitmap(IImage source, PixelRect sourceRect)
@@ -79,18 +77,18 @@ namespace Avalonia.Media.Imaging
             {
                 if (Source is not IBitmap bmp)
                     return default;
-                if (SourceRect.IsDefault)
+                if (SourceRect.Width == 0 && SourceRect.Height == 0)
                     return Source.Size;
                 return SourceRect.Size.ToSizeWithDpi(bmp.Dpi);
             }
         }
 
-        public void Draw(DrawingContext context, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void Draw(DrawingContext context, Rect sourceRect, Rect destRect)
         {
             if (Source is not IBitmap bmp)
                 return;
             var topLeft = SourceRect.TopLeft.ToPointWithDpi(bmp.Dpi);
-            Source.Draw(context, sourceRect.Translate(new Vector(topLeft.X, topLeft.Y)), destRect, bitmapInterpolationMode);           
+            Source.Draw(context, sourceRect.Translate(new Vector(topLeft.X, topLeft.Y)), destRect);           
         }
     }
 }

@@ -173,11 +173,11 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            target.Bind(ItemsControl.ItemsProperty, binding);
+            target.Bind(ItemsControl.ItemsSourceProperty, binding);
             Assert.Equal(target.ItemCount, 3);
-            Assert.Equal(target.Items.ElementAt(0), source.A);
-            Assert.Equal(target.Items.ElementAt(1), source.B);
-            Assert.Equal(target.Items.ElementAt(2), source.C);
+            Assert.Equal(target.ItemsView[0], source.A);
+            Assert.Equal(target.ItemsView[1], source.B);
+            Assert.Equal(target.ItemsView[2], source.C);
         }
 
         private class ConcatConverter : IMultiValueConverter

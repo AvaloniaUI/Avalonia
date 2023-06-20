@@ -5,7 +5,7 @@ using Avalonia.Controls.Platform;
 
 namespace Avalonia.FreeDesktop
 {
-    public class LinuxMountedVolumeInfoProvider : IMountedVolumeInfoProvider
+    internal class LinuxMountedVolumeInfoProvider : IMountedVolumeInfoProvider
     {
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {

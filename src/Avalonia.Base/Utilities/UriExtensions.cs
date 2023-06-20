@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media;
 
 namespace Avalonia.Utilities;
 
@@ -10,7 +11,9 @@ internal static class UriExtensions
     public static bool IsResm(this Uri uri) => uri.Scheme == "resm";
     
     public static bool IsAvares(this Uri uri) => uri.Scheme == "avares";
-    
+
+    public static bool IsFontCollection(this Uri uri) => uri.Scheme == FontManager.FontCollectionScheme;
+
     public static Uri EnsureAbsolute(this Uri uri, Uri? baseUri)
     {
         if (uri.IsAbsoluteUri)

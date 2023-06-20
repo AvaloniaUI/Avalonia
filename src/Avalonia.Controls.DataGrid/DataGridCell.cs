@@ -33,6 +33,8 @@ namespace Avalonia.Controls
         {
             PointerPressedEvent.AddClassHandler<DataGridCell>(
                 (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
+            FocusableProperty.OverrideDefaultValue<DataGridCell>(true);
+            IsTabStopProperty.OverrideDefaultValue<DataGridCell>(false);
         }
         public DataGridCell()
         { }
@@ -169,8 +171,7 @@ namespace Avalonia.Controls
             OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                if (!e.Handled)
-                //if (!e.Handled && OwningGrid.IsTabStop)
+                if (!e.Handled && OwningGrid.IsTabStop)
                 {
                     OwningGrid.Focus();
                 }
@@ -190,8 +191,7 @@ namespace Avalonia.Controls
             }
             else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
-                if (!e.Handled)
-                //if (!e.Handled && OwningGrid.IsTabStop)
+                if (!e.Handled && OwningGrid.IsTabStop)
                 {
                     OwningGrid.Focus();
                 }

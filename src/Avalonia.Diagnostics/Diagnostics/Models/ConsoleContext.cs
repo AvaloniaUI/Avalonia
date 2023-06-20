@@ -4,7 +4,7 @@ using Avalonia.Diagnostics.ViewModels;
 
 namespace Avalonia.Diagnostics.Models
 {
-    public class ConsoleContext
+    internal class ConsoleContext
     {
         private readonly ConsoleViewModel _owner;
 

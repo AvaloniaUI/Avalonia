@@ -2,7 +2,7 @@
 
 namespace Avalonia.Data
 {
-    public class IndexerBinding : IBinding
+    internal class IndexerBinding : IBinding
     {
         public IndexerBinding(
             AvaloniaObject source,

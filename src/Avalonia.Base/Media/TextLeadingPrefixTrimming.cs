@@ -15,7 +15,7 @@ namespace Avalonia.Media
 
         public override TextCollapsingProperties CreateCollapsingProperties(TextCollapsingCreateInfo createInfo)
         {
-            return new TextLeadingPrefixCharacterEllipsis(_ellipsis, _prefixLength, createInfo.Width, createInfo.TextRunProperties);
+            return new TextLeadingPrefixCharacterEllipsis(_ellipsis, _prefixLength, createInfo.Width, createInfo.TextRunProperties, createInfo.FlowDirection);
         }
 
         public override string ToString()

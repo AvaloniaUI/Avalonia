@@ -1,11 +1,14 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="using:Avalonia.Controls"
-                    xmlns:primitives="using:Avalonia.Controls.Primitives">
+                    xmlns:primitives="using:Avalonia.Controls.Primitives"
+                    x:ClassModifier="internal">
 
   <ControlTheme x:Key="{x:Type ColorPicker}"
                 TargetType="ColorPicker">
     <Setter Property="CornerRadius" Value="0" />
+    <!-- Alpha position should match CSS (and default slider order) instead of XAML/WinUI -->
+    <Setter Property="HexInputAlphaPosition" Value="Trailing" />
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="64" />
     <Setter Property="MinWidth" Value="64" />
@@ -42,7 +45,7 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout>
+            <Flyout Placement="Top">
 
               <!-- The following is copy-pasted from the ColorView's control template.
                    It MUST always be kept in sync with the ColorView (which is master).
@@ -110,8 +113,8 @@
                       <primitives:ColorSlider x:Name="ColorSpectrumThirdComponentSlider"
                                               AutomationProperties.Name="Third Component"
                                               Grid.Column="0"
-                                              IsAlphaMaxForced="True"
-                                              IsSaturationValueMaxForced="False"
+                                              IsAlphaVisible="False"
+                                              IsPerceptive="True"
                                               Orientation="Vertical"
                                               ColorModel="Hsva"
                                               ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
@@ -165,7 +168,7 @@
                     </TabItem.Header>
                     <ListBox Theme="{StaticResource ColorViewPaletteListBoxTheme}"
                              ItemContainerTheme="{StaticResource ColorViewPaletteListBoxItemTheme}"
-                             Items="{TemplateBinding PaletteColors}"
+                             ItemsSource="{TemplateBinding PaletteColors}"
                              SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DoNothingForNullConverter}, Mode=TwoWay}"
                              UseLayoutRounding="False"
                              Margin="12">
@@ -216,6 +219,7 @@
                                        Content="RGB"
                                        CornerRadius="0,0,0,0"
                                        BorderThickness="1,1,0,1"
+                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=TwoWay}" />
                           <RadioButton x:Name="HsvRadioButton"
                                        Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
@@ -223,6 +227,7 @@
                                        Content="HSV"
                                        CornerRadius="0,0,0,0"
                                        BorderThickness="0,1,1,1"
+                                       Height="{Binding ElementName=PART_HexTextBox, Path=Bounds.Height}"
                                        IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=TwoWay}" />
                         </Grid>
                         <Grid x:Name="HexInputGrid"
@@ -485,11 +490,11 @@
                   </TabItem>
                 </TabControl>
                 <!-- Previewer -->
-                <!-- Note that top/bottom margins have -5 to remove for drop shadow padding -->
+                <!-- Note that the drop shadow is allowed to extend past the control bounds -->
                 <primitives:ColorPreviewer Grid.Row="1"
                                            HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                            IsAccentColorsVisible="{TemplateBinding IsAccentColorsVisible}"
-                                           Margin="12,-5,12,7"
+                                           Margin="12,0,12,12"
                                            IsVisible="{TemplateBinding IsColorPreviewVisible}" />
               </Grid>
             </Flyout>
@@ -497,6 +502,23 @@
         </DropDownButton>
       </ControlTemplate>
     </Setter>
+
+    <!--
+    <Style Selector="^ /template/ primitives|ColorSlider#ColorSpectrumThirdComponentSlider[ColorComponent=Component1]">
+      <Setter Property="IsPerceptive" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ primitives|ColorSlider#Component1Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ primitives|ColorSlider#Component2Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ primitives|ColorSlider#Component3Slider[ColorModel=Rgba]">
+      <Setter Property="IsPerceptive" Value="False" />
+    </Style>
+    -->
+
   </ControlTheme>
 
 </ResourceDictionary>

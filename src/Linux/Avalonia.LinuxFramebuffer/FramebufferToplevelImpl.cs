@@ -8,13 +8,15 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+ using Avalonia.Threading;
 
-namespace Avalonia.LinuxFramebuffer
+ namespace Avalonia.LinuxFramebuffer
 {
     class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
+        private readonly RawEventGrouper _inputQueue;
 
         public IInputRoot InputRoot { get; private set; }
 
@@ -22,15 +24,15 @@ namespace Avalonia.LinuxFramebuffer
         {
             _outputBackend = outputBackend;
             _inputBackend = inputBackend;
+            _inputQueue = new RawEventGrouper(groupedInput => Input?.Invoke(groupedInput),
+                LinuxFramebufferPlatform.EventGrouperDispatchQueue);
 
             Surfaces = new object[] { _outputBackend };
-            _inputBackend.Initialize(this, e => Input?.Invoke(e));
+            _inputBackend.Initialize(this, e =>
+                Dispatcher.UIThread.Post(() => _inputQueue.HandleEvent(e), DispatcherPriority.Send ));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
-        }
+        public Compositor Compositor => LinuxFramebufferPlatform.Compositor;
 
         public void Dispose()
         {
@@ -60,7 +62,7 @@ namespace Avalonia.LinuxFramebuffer
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
@@ -70,9 +72,9 @@ namespace Avalonia.LinuxFramebuffer
 
         public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 

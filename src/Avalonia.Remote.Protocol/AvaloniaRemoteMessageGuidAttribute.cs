@@ -3,7 +3,7 @@
 namespace Avalonia.Remote.Protocol
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class AvaloniaRemoteMessageGuidAttribute : Attribute
+    public sealed class AvaloniaRemoteMessageGuidAttribute : Attribute
     {
         public Guid Guid { get; }
 

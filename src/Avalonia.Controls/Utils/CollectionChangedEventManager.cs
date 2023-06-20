@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Utils
                 else
                 {
                     var eCapture = e;
-                    Dispatcher.UIThread.Post(() => Notify(_collection, eCapture, l));
+                    Dispatcher.UIThread.Post(() => Notify(_collection, eCapture, l), DispatcherPriority.Send);
                 }
             }
         }

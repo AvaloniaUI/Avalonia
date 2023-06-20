@@ -1,6 +1,4 @@
-﻿#nullable enable
-using System;
-using Avalonia.Compatibility;
+﻿using Avalonia.Compatibility;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;

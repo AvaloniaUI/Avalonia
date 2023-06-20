@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!--
+ Copyright (C) 2015 Red Hat, Inc.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+ Author: Alexander Larsson <alexl@redhat.com>
+-->
+
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+      org.freedesktop.portal.Request:
+      @short_description: Shared request interface
+
+      The Request interface is shared by all portal interfaces. When a
+      portal method is called, the reply includes a handle (i.e. object path)
+      for a Request object, which will stay alive for the duration of the
+      user interaction related to the method call.
+
+      The portal indicates that a portal request interaction is over by
+      emitting the #org.freedesktop.portal.Request::Response signal on the
+      Request object.
+
+      The application can abort the interaction calling
+      org.freedesktop.portal.Request.Close() on the Request object.
+
+      Since version 0.9 of xdg-desktop-portal, the handle will be of the form
+       /org/freedesktop/portal/desktop/request/SENDER/TOKEN,
+      where SENDER is the callers unique name, with the initial ':' removed and
+      all '.' replaced by '_', and TOKEN is a unique token that the caller provided
+      with the handle_token key in the options vardict.
+
+      This change was made to let applications subscribe to the Response signal before
+      making the initial portal call, thereby avoiding a race condition. It is recommended
+      that the caller should verify that the returned handle is what it expected, and update
+      its signal subscription if it isn't. This ensures that applications will work with both
+      old and new versions of xdg-desktop-portal.
+
+      The token that the caller provides should be unique and not guessable. To avoid clashes
+      with calls made from unrelated libraries, it is a good idea to use a per-library prefix
+      combined with a random number.
+  -->
+  <interface name="org.freedesktop.portal.Request">
+
+    <!--
+        Close:
+
+        Closes the portal request to which this object refers and ends all
+        related user interaction (dialogs, etc).
+        A Response signal will not be emitted in this case.
+    -->
+    <method name="Close">
+    </method>
+
+    <!--
+        Response:
+        @response: Numeric response
+        @results: Vardict with results. The keys and values in the vardict depend on the request.
+
+        Emitted when the user interaction for a portal request is over.
+
+        The @response indicates how the user interaction ended:
+            <simplelist>
+              <member>0: Success, the request is carried out</member>
+              <member>1: The user cancelled the interaction</member>
+              <member>2: The user interaction was ended in some other way</member>
+            </simplelist>
+    -->
+    <signal name="Response">
+      <arg type="u" name="response"/>
+      <arg type="a{sv}" name="results"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QVariantMap"/>
+    </signal>
+  </interface>
+</node>

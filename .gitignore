@@ -102,6 +102,7 @@ csx
 AppPackages/
 
 # NCrunch
+.NCrunch_*/
 _NCrunch_*/
 *.ncrunchsolution.user
 nCrunchTemp_*

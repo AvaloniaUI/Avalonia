@@ -6,11 +6,12 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
-using static Avalonia.Utilities.SpanHelpers;
 #endif
+using static Avalonia.Utilities.SpanHelpers;
 
 namespace Avalonia.Media
 {
@@ -23,13 +24,6 @@ namespace Avalonia.Media
     readonly struct Color : IEquatable<Color>
     {
         private const double byteToDouble = 1.0 / 255;
-
-        static Color()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
 
         /// <summary>
         /// Gets the Alpha component of the color.
@@ -147,16 +141,11 @@ namespace Avalonia.Media
         /// <param name="s">The color string.</param>
         /// <param name="color">The parsed color</param>
         /// <returns>The status of the operation.</returns>
-        public static bool TryParse(string s, out Color color)
+        public static bool TryParse(string? s, out Color color)
         {
             color = default;
 
-            if (s is null)
-            {
-                return false;
-            }
-
-            if (s.Length == 0)
+            if (string.IsNullOrEmpty(s))
             {
                 return false;
             }
@@ -314,7 +303,7 @@ namespace Avalonia.Media
             if (input.Length == 3 || input.Length == 4)
             {
                 var extendedLength = 2 * input.Length;
-                
+
 #if !BUILDTASK
                 Span<char> extended = stackalloc char[extendedLength];
 #else
@@ -336,7 +325,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Parses the given string representing a CSS color value into a new <see cref="Color"/>.
         /// </summary>
-        private static bool TryParseCssFormat(string s, out Color color)
+        private static bool TryParseCssFormat(string? s, out Color color)
         {
             bool prefixMatched = false;
 
@@ -454,7 +443,7 @@ namespace Avalonia.Media
         /// </returns>
         public override string ToString()
         {
-            uint rgb = ToUint32();
+            uint rgb = ToUInt32();
             return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb.ToString("x8", CultureInfo.InvariantCulture)}";
         }
 
@@ -464,9 +453,16 @@ namespace Avalonia.Media
         /// <returns>
         /// The integer representation of the color.
         /// </returns>
-        public uint ToUint32()
+        public uint ToUInt32()
         {
             return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
+        }
+
+        /// <inheritdoc cref="Color.ToUInt32"/>
+        [Obsolete("Use Color.ToUInt32() instead."), EditorBrowsable(EditorBrowsableState.Never)]
+        public uint ToUint32()
+        {
+            return ToUInt32();
         }
 
         /// <summary>
@@ -475,7 +471,6 @@ namespace Avalonia.Media
         /// <returns>The HSL equivalent color.</returns>
         public HslColor ToHsl()
         {
-            // Don't use the HslColor(Color) constructor to avoid an extra HslColor
             return Color.ToHsl(R, G, B, A);
         }
 
@@ -485,7 +480,6 @@ namespace Avalonia.Media
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
             return Color.ToHsv(R, G, B, A);
         }
 
@@ -512,21 +506,6 @@ namespace Avalonia.Media
                 hashCode = (hashCode * 397) ^ B.GetHashCode();
                 return hashCode;
             }
-        }
-
-        /// <summary>
-        /// Converts the given RGB color to its HSL color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
-        public static HslColor ToHsl(Color color)
-        {
-            // Normalize RGBA components into the 0..1 range
-            return Color.ToHsl(
-                (byteToDouble * color.R),
-                (byteToDouble * color.G),
-                (byteToDouble * color.B),
-                (byteToDouble * color.A));
         }
 
         /// <summary>
@@ -601,21 +580,6 @@ namespace Avalonia.Media
             double saturation = chroma == 0 ? 0 : chroma / (1 - Math.Abs((2 * lightness) - 1));
 
             return new HslColor(a, 60 * h1, saturation, lightness, clampValues: false);
-        }
-
-        /// <summary>
-        /// Converts the given RGB color to its HSV color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
-        public static HsvColor ToHsv(Color color)
-        {
-            // Normalize RGBA components into the 0..1 range
-            return Color.ToHsv(
-                (byteToDouble * color.R),
-                (byteToDouble * color.G),
-                (byteToDouble * color.B),
-                (byteToDouble * color.A));
         }
 
         /// <summary>

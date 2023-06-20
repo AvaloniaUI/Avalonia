@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "Foo",
                     "Bar"
@@ -43,7 +43,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = new[]
+                ItemsSource = new[]
                 {
                     "Foo",
                     "Bar"
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests
             newItems.RemoveAt(0);
             Layout(target);
 
-            target.Items = newItems;
+            target.ItemsSource = newItems;
             Layout(target);
 
             child = GetContainerTextBlock(target.GetRealizedContainers().Single());
@@ -104,7 +104,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -133,7 +133,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -144,7 +144,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("Foo", child.Text);
 
-            target.Items = null;
+            target.ItemsSource = null;
             Layout(target);
 
             var numChildren = target.GetRealizedContainers().Count();
@@ -166,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
                 SelectedIndex = 2
             };
 
@@ -193,7 +193,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -225,7 +225,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = CarouselTemplate(),
-                Items = items,
+                ItemsSource = items,
             };
 
             Prepare(target);
@@ -259,6 +259,71 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(DataValidationErrors.GetHasErrors(target));
                 Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
             }
+        }
+
+        [Fact]
+        public void Can_Move_Forward_Back_Forward()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar" };
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = items,
+            };
+
+            Prepare(target);
+
+            target.SelectedIndex = 1;
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.SelectedIndex = 0;
+            Layout(target);
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.SelectedIndex = 1;
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Can_Move_Forward_Back_Forward_With_Control_Items()
+        {
+            // Issue #11119
+            using var app = Start();
+            var items = new[] { new Canvas(), new Canvas() };
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = items,
+            };
+
+            Prepare(target);
+
+            target.SelectedIndex = 1;
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.SelectedIndex = 0;
+            Layout(target);
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.SelectedIndex = 1;
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == Carousel.SelectedIndexProperty)
+                {
+                }
+            };
+            Layout(target);
+
+            Assert.Equal(1, target.SelectedIndex);
         }
 
         private static IDisposable Start() => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -301,12 +366,6 @@ namespace Avalonia.Controls.UnitTests
                         new ScrollContentPresenter
                         {
                             Name = "PART_ContentPresenter",
-                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
-                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
-                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
-                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
-                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(scope),
                     }
                 });

@@ -2,19 +2,18 @@
 using System.Runtime.ExceptionServices;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    public abstract class NativeCallbackBase : CallbackBase, IMicroComExceptionCallback
+    internal abstract class NativeCallbackBase : CallbackBase, IMicroComExceptionCallback
     {
         public void RaiseException(Exception e)
         {
-            if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() is PlatformThreadingInterface threadingInterface)
+            if (AvaloniaLocator.Current.GetService<IDispatcherImpl>() is DispatcherImpl dispatcherImpl)
             {
-                threadingInterface.TerminateNativeApp();
-
-                threadingInterface.DispatchException(ExceptionDispatchInfo.Capture(e));
+                dispatcherImpl.PropagateCallbackException(ExceptionDispatchInfo.Capture(e));
             }
         }
     }

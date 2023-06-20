@@ -54,8 +54,8 @@ namespace Avalonia.Diagnostics.Screenshots
         protected override async Task<Stream?> GetStream(Control control)
         {
             var storageProvider = GetTopLevel(control).StorageProvider;
-            var defaultFolder = await storageProvider.TryGetFolderFromPath(_screenshotRoot)
-                                ?? await storageProvider.TryGetWellKnownFolder(WellKnownFolder.Pictures);
+            var defaultFolder = await storageProvider.TryGetFolderFromPathAsync(_screenshotRoot)
+                                ?? await storageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Pictures);
 
             var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
@@ -67,10 +67,6 @@ namespace Avalonia.Diagnostics.Screenshots
             if (result is null)
             {
                 return null;
-            }
-            if (!result.CanOpenWrite)
-            {
-                throw new InvalidOperationException("Read-only file was selected.");
             }
 
             return await result.OpenWriteAsync();

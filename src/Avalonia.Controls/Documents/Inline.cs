@@ -13,8 +13,8 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// AvaloniaProperty for <see cref="TextDecorations" /> property.
         /// </summary>
-        public static readonly StyledProperty<TextDecorationCollection> TextDecorationsProperty =
-            AvaloniaProperty.Register<Inline, TextDecorationCollection>(
+        public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
+            AvaloniaProperty.Register<Inline, TextDecorationCollection?>(
                 nameof(TextDecorations));
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// The TextDecorations property specifies decorations that are added to the text of an element.
         /// </summary>
-        public TextDecorationCollection TextDecorations
+        public TextDecorationCollection? TextDecorations
         {
             get { return GetValue(TextDecorationsProperty); }
             set { SetValue(TextDecorationsProperty, value); }
@@ -83,7 +83,8 @@ namespace Avalonia.Controls.Documents
             return new GenericTextRunProperties(new Typeface(FontFamily, fontStyle, fontWeight), FontSize,
                 textDecorations, Foreground, background, BaselineAlignment);
         }
-        
+
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

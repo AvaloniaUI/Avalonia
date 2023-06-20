@@ -41,8 +41,6 @@ BEGIN_INTERFACE_MAP()
 
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl);
 
-    void HideOrShowTrafficLights ();
-
     virtual HRESULT Show (bool activate, bool isDialog) override;
 
     virtual HRESULT SetEnabled (bool enable) override;
@@ -99,10 +97,14 @@ BEGIN_INTERFACE_MAP()
     
     bool CanBecomeKeyWindow ();
 
+    bool CanZoom() override { return _isEnabled && _canResize; }
+    
 protected:
-    virtual NSWindowStyleMask GetStyle() override;
+    virtual NSWindowStyleMask CalculateStyleMask() override;
+    void UpdateStyle () override;
 
 private:
+    void ZOrderChildWindows();
     void OnInitialiseNSWindow();
     NSString *_lastTitle;
 };

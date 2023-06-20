@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:ClassModifier="internal">
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24">
       <StackPanel Spacing="12" >
@@ -27,6 +28,14 @@
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="KnobTransitions">
+      <Transitions>
+          <DoubleTransition
+              Easing="CubicEaseOut"
+              Property="Canvas.Left"
+              Duration="0:0:0.2" />
+        </Transitions>
+    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="{TemplateBinding Background}" RowDefinitions="Auto,*">
@@ -131,18 +140,6 @@
 
     <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter:empty">
       <Setter Property="Margin" Value="0" />
-    </Style>
-
-    <!--  NormalState  -->
-    <Style Selector="^:not(:dragging) /template/ Grid#PART_MovingKnobs">
-      <Setter Property="Transitions">
-        <Transitions>
-          <DoubleTransition
-              Easing="CubicEaseOut"
-              Property="Canvas.Left"
-              Duration="0:0:0.2" />
-        </Transitions>
-      </Setter>
     </Style>
 
     <!--  PointerOverState  -->

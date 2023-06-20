@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
@@ -29,26 +29,18 @@ namespace Avalonia.Benchmarks.Themes
         }
 
         [Benchmark]
-        [Arguments(FluentThemeMode.Dark)]
-        [Arguments(FluentThemeMode.Light)]
-        public bool InitFluentTheme(FluentThemeMode mode)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public bool InitFluentTheme()
         {
-            UnitTestApplication.Current.Styles[0] = new FluentTheme()
-            {
-                Mode = mode
-            };
+            UnitTestApplication.Current.Styles[0] = new FluentTheme();
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("SystemAccentColor", out _);
         }
 
         [Benchmark]
-        [Arguments(SimpleThemeMode.Dark)]
-        [Arguments(SimpleThemeMode.Light)]
-        public bool InitSimpleTheme(SimpleThemeMode mode)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public bool InitSimpleTheme()
         {
-            UnitTestApplication.Current.Styles[0] = new SimpleTheme()
-            {
-                Mode = mode
-            };
+            UnitTestApplication.Current.Styles[0] = new SimpleTheme();
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("ThemeAccentColor", out _);
         }
         
@@ -58,7 +50,7 @@ namespace Avalonia.Benchmarks.Themes
         [Arguments(typeof(DatePicker))]
         public object FindFluentControlTheme(Type type)
         {
-            _reusableFluentTheme.TryGetResource(type, out var theme);
+            _reusableFluentTheme.TryGetResource(type, ThemeVariant.Default, out var theme);
             return theme;
         }
 
@@ -68,7 +60,7 @@ namespace Avalonia.Benchmarks.Themes
         [Arguments(typeof(DatePicker))]
         public object FindSimpleControlTheme(Type type)
         {
-            _reusableSimpleTheme.TryGetResource(type, out var theme);
+            _reusableSimpleTheme.TryGetResource(type, ThemeVariant.Default, out var theme);
             return theme;
         }
 

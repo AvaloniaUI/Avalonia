@@ -4,8 +4,6 @@ using Avalonia.Controls;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#nullable enable
-
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
@@ -65,11 +63,11 @@ namespace Avalonia.Markup.Xaml.Styling
                     _isLoading = false;
                 }
 
-                return _loaded?[0]!;
+                return _loaded[0];
             }
         }
 
-        bool IResourceNode.HasResources => Loaded?.HasResources ?? false;
+        bool IResourceNode.HasResources => Loaded.HasResources;
 
         IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
@@ -91,11 +89,11 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        public bool TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (!_isLoading)
             {
-                return Loaded.TryGetResource(key, out value);
+                return Loaded.TryGetResource(key, theme, out value);
             }
 
             value = null;

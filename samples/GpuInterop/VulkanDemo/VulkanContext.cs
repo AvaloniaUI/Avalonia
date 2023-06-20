@@ -86,12 +86,12 @@ public unsafe class VulkanContext : IDisposable
                 var debugCreateInfo = new DebugUtilsMessengerCreateInfoEXT
                 {
                     SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                    MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt |
-                                      DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt |
-                                      DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt,
-                    MessageType = DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt |
-                                  DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt |
-                                  DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt,
+                    MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt |
+                                      DebugUtilsMessageSeverityFlagsEXT.WarningBitExt |
+                                      DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
+                    MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt |
+                                  DebugUtilsMessageTypeFlagsEXT.ValidationBitExt |
+                                  DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
                     PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(LogCallback),
                 };
 
@@ -173,8 +173,8 @@ public unsafe class VulkanContext : IDisposable
                 api.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref queueFamilyCount, familyProperties);
                 for (uint queueFamilyIndex = 0; queueFamilyIndex < queueFamilyCount; queueFamilyIndex++)
                 {
-                    var family = familyProperties[c];
-                    if (!family.QueueFlags.HasAllFlags(QueueFlags.GraphicsBit))
+                    var family = familyProperties[queueFamilyIndex];
+                    if (!family.QueueFlags.HasFlag(QueueFlags.GraphicsBit))
                         continue;
 
 

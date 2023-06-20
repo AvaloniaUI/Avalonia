@@ -126,7 +126,7 @@ namespace Avalonia.Utilities
         /// <param name="culture">The culture to use.</param>
         /// <param name="result">If successful, contains the convert value.</param>
         /// <returns>True if the cast was successful, otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
         public static bool TryConvert(Type to, object? value, CultureInfo? culture, out object? result)
         {
             if (value == null)
@@ -212,7 +212,7 @@ namespace Avalonia.Utilities
 
             var toTypeConverter = TypeDescriptor.GetConverter(toUnderl);
 
-            if (toTypeConverter.CanConvertFrom(from) == true)
+            if (toTypeConverter.CanConvertFrom(from))
             {
                 result = toTypeConverter.ConvertFrom(null, culture, value);
                 return true;
@@ -220,7 +220,7 @@ namespace Avalonia.Utilities
 
             var fromTypeConverter = TypeDescriptor.GetConverter(from);
 
-            if (fromTypeConverter.CanConvertTo(toUnderl) == true)
+            if (fromTypeConverter.CanConvertTo(toUnderl))
             {
                 result = fromTypeConverter.ConvertTo(null, culture, value, toUnderl);
                 return true;
@@ -246,7 +246,7 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to convert.</param>
         /// <param name="result">If successful, contains the converted value.</param>
         /// <returns>True if the convert was successful, otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConversionRequiresUnreferencedCodeMessage)]
         public static bool TryConvertImplicit(Type to, object? value, out object? result)
         {
             if (value == null)
@@ -306,10 +306,10 @@ namespace Avalonia.Utilities
         /// if the value could not be converted.
         /// </summary>
         /// <param name="value">The value to convert.</param>
-        /// <param name="type">The type to convert to..</param>
+        /// <param name="type">The type to convert to.</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
         public static object? ConvertOrDefault(object? value, Type type, CultureInfo culture)
         {
             return TryConvert(type, value, culture, out var result) ? result : Default(type);
@@ -322,14 +322,14 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to convert.</param>
         /// <param name="type">The type to convert to.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConversionRequiresUnreferencedCodeMessage)]
         public static object? ConvertImplicitOrDefault(object? value, Type type)
         {
             return TryConvertImplicit(type, value, out var result) ? result : Default(type);
         }
 
-        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
-        public static T ConvertImplicit<T>(object value)
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConversionRequiresUnreferencedCodeMessage)]
+        public static T ConvertImplicit<T>(object? value)
         {
             if (TryConvertImplicit(typeof(T), value, out var result))
             {
@@ -369,11 +369,6 @@ namespace Avalonia.Utilities
         /// </remarks>
         public static bool IsNumeric(Type type)
         {
-            if (type == null)
-            {
-                return false;
-            }
-
             var underlyingType = Nullable.GetUnderlyingType(type);
 
             if (underlyingType != null)

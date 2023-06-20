@@ -703,7 +703,7 @@ namespace Avalonia.Controls
         public void ClearSort()
         {
             //InvokeProcessSort is already validating if sorting is possible
-            _headerCell?.InvokeProcessSort(KeyboardHelper.GetPlatformCtrlOrCmdKeyModifier());
+            _headerCell?.InvokeProcessSort(KeyboardHelper.GetPlatformCtrlOrCmdKeyModifier(OwningGrid));
         }
 
         /// <summary>
@@ -1103,6 +1103,16 @@ namespace Avalonia.Controls
             get;
             set;
         }
+
+        /// <summary>
+        /// Gets or sets an object associated with this column.
+        /// </summary>
+        public object Tag
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Holds a Comparer to use for sorting, if not using the default.
         /// </summary>

@@ -1751,8 +1751,7 @@ namespace Avalonia.X11 {
 	{
 		public IntPtr client_data;
 		public XIMProc callback;
-		[NonSerialized]
-		GCHandle gch;
+		[NonSerialized] private GCHandle gch;
 
 		public XIMCallback (IntPtr clientData, XIMProc proc)
 		{
@@ -1769,7 +1768,7 @@ namespace Avalonia.X11 {
     
     [StructLayout(LayoutKind.Sequential)]
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-    public unsafe struct XImage
+    internal unsafe struct XImage
 #pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public int width, height; /* size of image */
@@ -1896,8 +1895,8 @@ namespace Avalonia.X11 {
 		public const string XNSpotLocation = "spotLocation";
 		public const string XNFontSet = "fontSet";
 	}
-	
-    unsafe struct XRRMonitorInfo {
+
+    internal unsafe struct XRRMonitorInfo {
         public IntPtr Name;
         public int Primary;
         public int Automatic;

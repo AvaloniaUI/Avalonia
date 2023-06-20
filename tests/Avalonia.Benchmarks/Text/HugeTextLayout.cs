@@ -15,7 +15,7 @@ namespace Avalonia.Benchmarks.Text;
 public class HugeTextLayout : IDisposable
 {
     private static readonly Random s_rand = new();
-    private static readonly bool s_useSkia = true;
+    private static readonly bool s_useSkia = false;
 
     private readonly IDisposable _app;
     private readonly string[] _manySmallStrings;
@@ -30,10 +30,7 @@ public class HugeTextLayout : IDisposable
     {
         _manySmallStrings = Enumerable.Range(0, 1000).Select(_ => RandomString(s_rand.Next(2, 15))).ToArray();
 
-        var testServices = TestServices.StyledWindow.With(
-            renderInterface: new NullRenderingPlatform(),
-            threadingInterface: new NullThreadingPlatform(),
-            standardCursorFactory: new NullCursorFactory());
+        var testServices = TestServices.StyledWindow;
 
         if (s_useSkia)
         {

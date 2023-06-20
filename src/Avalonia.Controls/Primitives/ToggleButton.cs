@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Data;
@@ -15,12 +16,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsChecked"/> property.
         /// </summary>
-        public static readonly DirectProperty<ToggleButton, bool?> IsCheckedProperty =
-            AvaloniaProperty.RegisterDirect<ToggleButton, bool?>(
-                nameof(IsChecked),
-                o => o.IsChecked,
-                (o, v) => o.IsChecked = v,
-                unsetValue: null,
+        public static readonly StyledProperty<bool?> IsCheckedProperty =
+            AvaloniaProperty.Register<ToggleButton, bool?>(nameof(IsChecked), false,
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -32,7 +29,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Checked"/> event.
         /// </summary>
-        [Obsolete("Use IsCheckedChangedEvent instead.")]
+        [Obsolete("Use IsCheckedChangedEvent instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly RoutedEvent<RoutedEventArgs> CheckedEvent =
             RoutedEvent.Register<ToggleButton, RoutedEventArgs>(
                 nameof(Checked),
@@ -41,7 +38,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Unchecked"/> event.
         /// </summary>
-        [Obsolete("Use IsCheckedChangedEvent instead.")]
+        [Obsolete("Use IsCheckedChangedEvent instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly RoutedEvent<RoutedEventArgs> UncheckedEvent =
             RoutedEvent.Register<ToggleButton, RoutedEventArgs>(
                 nameof(Unchecked),
@@ -50,7 +47,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Unchecked"/> event.
         /// </summary>
-        [Obsolete("Use IsCheckedChangedEvent instead.")]
+        [Obsolete("Use IsCheckedChangedEvent instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly RoutedEvent<RoutedEventArgs> IndeterminateEvent =
             RoutedEvent.Register<ToggleButton, RoutedEventArgs>(
                 nameof(Indeterminate),
@@ -64,8 +61,6 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsCheckedChanged),
                 RoutingStrategies.Bubble);
 
-        private bool? _isChecked = false;
-
         static ToggleButton()
         {
         }
@@ -78,7 +73,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is checked.
         /// </summary>
-        [Obsolete("Use IsCheckedChanged instead.")]
+        [Obsolete("Use IsCheckedChanged instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public event EventHandler<RoutedEventArgs>? Checked
         {
             add => AddHandler(CheckedEvent, value);
@@ -88,7 +83,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is unchecked.
         /// </summary>
-        [Obsolete("Use IsCheckedChanged instead.")]
+        [Obsolete("Use IsCheckedChanged instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public event EventHandler<RoutedEventArgs>? Unchecked
         {
             add => AddHandler(UncheckedEvent, value);
@@ -98,7 +93,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is neither checked nor unchecked.
         /// </summary>
-        [Obsolete("Use IsCheckedChanged instead.")]
+        [Obsolete("Use IsCheckedChanged instead."), EditorBrowsable(EditorBrowsableState.Never)]
         public event EventHandler<RoutedEventArgs>? Indeterminate
         {
             add => AddHandler(IndeterminateEvent, value);
@@ -119,12 +114,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool? IsChecked
         {
-            get => _isChecked;
-            set 
-            { 
-                SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-                UpdatePseudoClasses(IsChecked);
-            }
+            get => GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
         }
 
         /// <summary>
@@ -147,35 +138,38 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected virtual void Toggle()
         {
+            bool? newValue;
             if (IsChecked.HasValue)
             {
                 if (IsChecked.Value)
                 {
                     if (IsThreeState)
                     {
-                        IsChecked = null;
+                        newValue = null;
                     }
                     else
                     {
-                        IsChecked = false;
+                        newValue = false;
                     }
                 }
                 else
                 {
-                    IsChecked = true;
+                    newValue = true;
                 }
             }
             else
             {
-                IsChecked = false;
+                newValue = false;
             }
+
+            SetCurrentValue(IsCheckedProperty, newValue);
         }
 
         /// <summary>
         /// Called when <see cref="IsChecked"/> becomes true.
         /// </summary>
         /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
-        [Obsolete("Use OnIsCheckedChanged instead.")]
+        [Obsolete("Use OnIsCheckedChanged instead."), EditorBrowsable(EditorBrowsableState.Never)]
         protected virtual void OnChecked(RoutedEventArgs e)
         {
             RaiseEvent(e);
@@ -185,7 +179,7 @@ namespace Avalonia.Controls.Primitives
         /// Called when <see cref="IsChecked"/> becomes false.
         /// </summary>
         /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
-        [Obsolete("Use OnIsCheckedChanged instead.")]
+        [Obsolete("Use OnIsCheckedChanged instead."), EditorBrowsable(EditorBrowsableState.Never)]
         protected virtual void OnUnchecked(RoutedEventArgs e)
         {
             RaiseEvent(e);
@@ -195,7 +189,7 @@ namespace Avalonia.Controls.Primitives
         /// Called when <see cref="IsChecked"/> becomes null.
         /// </summary>
         /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
-        [Obsolete("Use OnIsCheckedChanged instead.")]
+        [Obsolete("Use OnIsCheckedChanged instead."), EditorBrowsable(EditorBrowsableState.Never)]
         protected virtual void OnIndeterminate(RoutedEventArgs e)
         {
             RaiseEvent(e);
@@ -223,6 +217,8 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == IsCheckedProperty)
             {
                 var newValue = change.GetNewValue<bool?>();
+
+                UpdatePseudoClasses(newValue);
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (newValue)

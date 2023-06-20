@@ -64,5 +64,23 @@ namespace Avalonia.Controls.Documents
         internal override void AppendText(StringBuilder stringBuilder)
         {
         }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ChildProperty)
+            {
+                if(change.OldValue is Control oldChild)
+                {
+                    LogicalChildren.Remove(oldChild);
+                }
+
+                if(change.NewValue is Control newChild)
+                {
+                    LogicalChildren.Add(newChild);
+                }
+            }
+        }
     }
 }

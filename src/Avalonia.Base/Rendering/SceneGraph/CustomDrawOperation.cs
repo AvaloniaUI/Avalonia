@@ -1,44 +1,32 @@
 using System;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    internal sealed class CustomDrawOperation : DrawOperation
+    public interface ICustomDrawOperation : IEquatable<ICustomDrawOperation>, IDisposable
     {
-        public Matrix Transform { get; }
-        public ICustomDrawOperation Custom { get; }
-        public CustomDrawOperation(ICustomDrawOperation custom, Matrix transform) 
-            : base(custom.Bounds, transform)
-        {
-            Transform = transform;
-            Custom = custom;
-        }
+        /// <summary>
+        /// Gets the bounds of the visible content in the node in global coordinates.
+        /// </summary>
+        Rect Bounds { get; }
 
-        public override bool HitTest(Point p)
-        {
-            if (Transform.HasInverse)
-            {
-                return Custom.HitTest(p * Transform.Invert());
-            }
+        /// <summary>
+        /// Hit test the geometry in this node.
+        /// </summary>
+        /// <param name="p">The point in global coordinates.</param>
+        /// <returns>True if the point hits the node's geometry; otherwise false.</returns>
+        /// <remarks>
+        /// This method does not recurse to childs, if you want
+        /// to hit test children they must be hit tested manually.
+        /// </remarks>
+        bool HitTest(Point p);
 
-            return false;
-        }
-
-        public override void Render(IDrawingContextImpl context)
-        {
-            context.Transform = Transform;
-            Custom.Render(context);
-        }
-
-        public override void Dispose() => Custom.Dispose();
-
-        public bool Equals(Matrix transform, ICustomDrawOperation custom) =>
-            Transform == transform && Custom?.Equals(custom) == true;
-    }
-
-    public interface ICustomDrawOperation : IDrawOperation, IEquatable<ICustomDrawOperation>
-    {
-        
+        /// <summary>
+        /// Renders the node to a drawing context.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        void Render(ImmediateDrawingContext context);
     }
 }

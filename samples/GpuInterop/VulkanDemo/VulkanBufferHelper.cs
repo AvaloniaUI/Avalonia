@@ -38,8 +38,8 @@ static class VulkanBufferHelper
             MemoryTypeIndex = (uint)FindSuitableMemoryTypeIndex(api,
                 physicalDevice,
                 memoryRequirements.MemoryTypeBits,
-                MemoryPropertyFlags.MemoryPropertyHostCoherentBit |
-                MemoryPropertyFlags.MemoryPropertyHostVisibleBit)
+                MemoryPropertyFlags.HostCoherentBit |
+                MemoryPropertyFlags.HostVisibleBit)
         };
 
         api.AllocateMemory(device, memoryAllocateInfo, null, out memory).ThrowOnError();

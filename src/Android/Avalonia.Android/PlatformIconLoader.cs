@@ -3,7 +3,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    class PlatformIconLoader : IPlatformIconLoader
+    internal class PlatformIconLoader : IPlatformIconLoader
     {
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
@@ -29,7 +29,7 @@ namespace Avalonia.Android
     }
 
     // Stores the icon created as a stream to support saving even though an icon is never shown
-    public class FakeIcon : IWindowIconImpl
+    internal class FakeIcon : IWindowIconImpl
     {
         private Stream stream = new MemoryStream();
 

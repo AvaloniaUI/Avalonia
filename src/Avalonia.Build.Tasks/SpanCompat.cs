@@ -85,31 +85,7 @@ namespace System
         {
             return TrimStart().TrimEnd();
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseUInt(NumberStyles style, IFormatProvider provider, out uint value)
-        {
-            return uint.TryParse(ToString(), style, provider, out value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseInt(out int value)
-        {
-            return int.TryParse(ToString(), out value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseDouble(NumberStyles style, IFormatProvider provider, out double value)
-        {
-            return double.TryParse(ToString(), style, provider, out value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseByte(NumberStyles style, IFormatProvider provider, out byte value)
-        {
-            return byte.TryParse(ToString(), style, provider, out value);
-        }
-
+        
         public override string ToString() => _length == 0 ? string.Empty : _s.Substring(_start, _length);
 
         internal int IndexOf(ReadOnlySpan<char> v, StringComparison ordinal, int start = 0)

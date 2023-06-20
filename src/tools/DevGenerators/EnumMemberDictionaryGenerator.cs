@@ -32,7 +32,7 @@ public class EnumMemberDictionaryGenerator : IIncrementalGenerator
             ).Collect();
         context.RegisterSourceOutput(all, static (context, methods) =>
         {
-            foreach (var typeGroup in methods.GroupBy(f => f.ContainingType, SymbolEqualityComparer.Default))
+            foreach (var typeGroup in methods.GroupBy<IMethodSymbol,ISymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))
             {
                 var classBuilder = new StringBuilder();
                 if (typeGroup.Key.ContainingNamespace != null)

@@ -6,6 +6,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
@@ -46,15 +47,12 @@ namespace Avalonia.DesignerSupport.Remote
         {
             s_transport = transport;
             var instance = new PreviewerWindowingPlatform();
-            var threading = new InternalPlatformThreadingInterface();
             AvaloniaLocator.CurrentMutable
-                .Bind<IClipboard>().ToSingleton<ClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IPlatformThreadingInterface>().ToConstant(threading)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
+                .Bind<IRenderTimer>().ToConstant(new UiThreadRenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();

@@ -1,11 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Markup.Xaml;
 using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public class FlyoutsPage : UserControl
+    public partial class FlyoutsPage : UserControl
     {
         public FlyoutsPage()
         {
@@ -26,11 +25,6 @@ namespace ControlCatalog.Pages
             {
                 FlyoutBase.ShowAttachedFlyout(p);
             }
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         private void SetXamlTexts()

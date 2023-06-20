@@ -8,7 +8,7 @@ using SharpDX.DXGI;
 
 namespace Avalonia.Direct2D1
 {   
-    public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
+    internal abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;
         private Size2F _savedDpi;
@@ -19,7 +19,7 @@ namespace Avalonia.Direct2D1
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var size = GetWindowSize();
             var dpi = GetWindowDpi();
@@ -32,7 +32,7 @@ namespace Avalonia.Direct2D1
                 Resize();
             }
 
-            return new DrawingContextImpl(visualBrushRenderer, this, _deviceContext, _swapChain);
+            return new DrawingContextImpl(this, _deviceContext, _swapChain);
         }
 
         public bool IsCorrupted => false;

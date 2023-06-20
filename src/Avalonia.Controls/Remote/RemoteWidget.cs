@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Remote
             base.ArrangeCore(finalRect);
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             if (_lastFrame != null && _lastFrame.Width != 0 && _lastFrame.Height != 0)
             {

@@ -16,13 +16,6 @@ namespace Avalonia
 #endif
     readonly struct Point : IEquatable<Point>
     {
-        static Point()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// The X position.
         /// </summary>
@@ -287,14 +280,6 @@ namespace Avalonia
         {
             x = this._x;
             y = this._y;
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the X and Y coordinates are zero.
-        /// </summary>
-        public bool IsDefault
-        {
-            get { return (_x == 0) && (_y == 0); }
         }
     }
 }

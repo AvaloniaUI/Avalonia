@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Controls.Selection
 {
-    internal class SelectedItems<T> : IReadOnlyList<T>
+    internal class SelectedItems<T> : IReadOnlyList<T?>
     {
         private readonly SelectionModel<T>? _owner;
         private readonly ItemsSourceView<T>? _items;
@@ -19,12 +19,9 @@ namespace Avalonia.Controls.Selection
             _items = items;
         }
 
-        [MaybeNull]
-        public T this[int index]
+        public T? this[int index]
         {
-#pragma warning disable CS8766
             get
-#pragma warning restore CS8766
             {
                 if (index >= Count)
                 {
@@ -64,15 +61,13 @@ namespace Avalonia.Controls.Selection
         private ItemsSourceView<T>? Items => _items ?? _owner?.ItemsView;
         private IReadOnlyList<IndexRange>? Ranges => _ranges ?? _owner!.Ranges;
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<T?> GetEnumerator()
         {
             if (_owner?.SingleSelect == true)
             {
                 if (_owner.SelectedIndex >= 0)
                 {
-#pragma warning disable CS8603
                     yield return _owner.SelectedItem;
-#pragma warning restore CS8603
                 }
             }
             else
@@ -83,9 +78,7 @@ namespace Avalonia.Controls.Selection
                 {
                     for (var i = range.Begin; i <= range.End; ++i)
                     {
-#pragma warning disable CS8603
                         yield return items is object ? items[i] : default;
-#pragma warning restore CS8603
                     }
                 }
             }
@@ -102,8 +95,8 @@ namespace Avalonia.Controls.Selection
 
         public class Untyped : IReadOnlyList<object?>
         {
-            private readonly IReadOnlyList<T> _source;
-            public Untyped(IReadOnlyList<T> source) => _source = source;
+            private readonly IReadOnlyList<T?> _source;
+            public Untyped(IReadOnlyList<T?> source) => _source = source;
             public object? this[int index] => _source[index];
             public int Count => _source.Count;
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

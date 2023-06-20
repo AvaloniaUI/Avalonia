@@ -19,6 +19,7 @@
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />

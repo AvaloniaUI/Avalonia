@@ -1,11 +1,9 @@
 using System.Linq;
 using Avalonia.Media;
-using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public class LinearGradientBrushImpl : BrushImpl
+    internal class LinearGradientBrushImpl : BrushImpl
     {
         public LinearGradientBrushImpl(
             ILinearGradientBrush brush,

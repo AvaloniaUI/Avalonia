@@ -16,6 +16,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -51,7 +52,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = new DataGrid
                         {
-                            Items = _observableCollection
+                            ItemsSource = _observableCollection
                         }
                     };
 
@@ -353,7 +354,7 @@ namespace Avalonia.LeakTests
                                     (x, _) => new TextBlock { Text = x.Name },
                                     x => x.Children)
                             },
-                            Items = nodes
+                            ItemsSource = nodes
                         }
                     };
 
@@ -428,7 +429,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = new TabControl
                         {
-                            Items = new[] { new TabItem() }
+                            ItemsSource = new[] { new TabItem() }
                         }
                     };
 
@@ -440,7 +441,7 @@ namespace Avalonia.LeakTests
                     Assert.IsType<TabItem>(tabControl.Presenter.Panel.Children[0]);
 
                     // Clear the items and ensure the TabItem is removed.
-                    tabControl.Items = null;
+                    tabControl.ItemsSource = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Empty(tabControl.Presenter.Panel.Children);
 
@@ -462,13 +463,11 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
-                var renderer = new Mock<IRenderer>();
-                renderer.Setup(x => x.Dispose());
                 var impl = new Mock<IWindowImpl>();
                 impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
-                impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+                impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
@@ -479,7 +478,7 @@ namespace Avalonia.LeakTests
                 };
                 window.Show();
                 window.Close();
-                renderer.Verify(r => r.Dispose());
+                Assert.True(((CompositingRenderer)window.Renderer).IsDisposed);
             }
         }
 
@@ -545,7 +544,7 @@ namespace Avalonia.LeakTests
                 {
                     var contextMenu = new ContextMenu
                     {
-                        Items = new[]
+                        Items =
                         {
                             new MenuItem { Header = "Foo" },
                             new MenuItem { Header = "Foo" },
@@ -558,10 +557,10 @@ namespace Avalonia.LeakTests
                     control.ContextMenu = null;
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+                Assert.Same(window, window.FocusManager.GetFocusedElement());
 
                 // Context menu in resources means the baseline may not be 0.
                 var initialMenuCount = 0;
@@ -594,7 +593,7 @@ namespace Avalonia.LeakTests
                 {
                     var contextMenu = new ContextMenu
                     {
-                        Items = new[]
+                        Items =
                         {
                             new MenuItem { Header = "Foo" },
                             new MenuItem { Header = "Foo" },
@@ -605,10 +604,10 @@ namespace Avalonia.LeakTests
                     contextMenu.Close();
                 }
 
-                var window = new Window();
+                var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+                Assert.Same(window, window.FocusManager.GetFocusedElement());
 
                 // Context menu in resources means the baseline may not be 0.
                 var initialMenuCount = 0;
@@ -740,7 +739,7 @@ namespace Avalonia.LeakTests
                             }),
                             (lb = new ListBox
                             {
-                                Items = items,
+                                ItemsSource = items,
                                 ItemTemplate = new FuncDataTemplate<int>((_, _) =>
                                     new Canvas
                                     {
@@ -858,7 +857,7 @@ namespace Avalonia.LeakTests
                     // Add the listbox and render it
                     tl.Content = listBox;
                     lm.ExecuteInitialLayoutPass();
-                    listBox.Items = keyGestures;
+                    listBox.ItemsSource = keyGestures;
                     lm.ExecuteLayoutPass();
 
                     // Let the button detach when clearing the source items
@@ -1029,46 +1028,5 @@ namespace Avalonia.LeakTests
             public IEnumerable<Node> Children { get; set; }
         }
 
-        private class NullRenderer : IRenderer
-        {
-            public bool DrawFps { get; set; }
-            public bool DrawDirtyRects { get; set; }
-#pragma warning disable CS0067
-            public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-#pragma warning restore CS0067
-            public void AddDirty(Visual visual)
-            {
-            }
-
-            public void Dispose()
-            {
-            }
-
-            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => null;
-
-            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
-
-            public void Paint(Rect rect)
-            {
-            }
-
-            public void RecalculateChildren(Visual visual)
-            {
-            }
-
-            public void Resized(Size size)
-            {
-            }
-
-            public void Start()
-            {
-            }
-
-            public void Stop()
-            {
-            }
-
-            public ValueTask<object> TryGetRenderInterfaceFeature(Type featureType) => new(null);
-        }
     }
 }

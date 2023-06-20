@@ -10,18 +10,12 @@ namespace Avalonia.Media
         private readonly BoxShadow _first;
         private readonly BoxShadow[]? _list;
         public int Count { get; }
-
-        static BoxShadows()
-        {
-            Animation.Animation.RegisterAnimator<BoxShadowsAnimator>(prop =>
-                typeof(BoxShadows).IsAssignableFrom(prop.PropertyType));
-        }
         
         public BoxShadows(BoxShadow shadow)
         {
             _first = shadow;
             _list = null;
-            Count = _first.IsDefault ? 0 : 1;
+            Count = _first == default ? 0 : 1;
         }
 
         public BoxShadows(BoxShadow first, BoxShadow[] rest)
@@ -45,20 +39,20 @@ namespace Avalonia.Media
 
         public override string ToString()
         {
-            var sb = StringBuilderCache.Acquire();
-
             if (Count == 0)
             {
                 return "none";
             }
 
+            var sb = StringBuilderCache.Acquire();
             foreach (var boxShadow in this)
             {
-                sb.AppendFormat("{0} ", boxShadow.ToString());
+                boxShadow.ToString(sb);
+                sb.Append(',');
+                sb.Append(' ');
             }
-
+            sb.Remove(sb.Length - 2, 2);
             return StringBuilderCache.GetStringAndRelease(sb);
-
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -120,7 +114,7 @@ namespace Avalonia.Media
             get
             {
                 foreach(var boxShadow in this)
-                    if (!boxShadow.IsDefault && boxShadow.IsInset)
+                    if (boxShadow != default && boxShadow.IsInset)
                         return true;
                 return false;
             }

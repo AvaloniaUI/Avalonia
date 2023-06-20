@@ -8,7 +8,7 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1
 {
-    public static class PrimitiveExtensions
+    internal static class PrimitiveExtensions
     {
         /// <summary>
         /// The value for which all absolute numbers smaller than are considered equal to zero.

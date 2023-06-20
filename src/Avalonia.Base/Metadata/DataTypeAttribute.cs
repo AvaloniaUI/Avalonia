@@ -9,7 +9,7 @@ namespace Avalonia.Metadata;
 /// Used on DataTemplate.DataType property so it can be inherited in compiled bindings inside of the template.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
-public class DataTypeAttribute : Attribute
+public sealed class DataTypeAttribute : Attribute
 {
-    
+
 }

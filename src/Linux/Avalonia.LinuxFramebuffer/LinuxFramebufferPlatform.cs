@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
@@ -16,46 +17,59 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
+
 #nullable enable
 
 namespace Avalonia.LinuxFramebuffer
 {
+    internal class LinuxFramebufferIconLoaderStub : IPlatformIconLoader
+    {
+        private class IconStub : IWindowIconImpl
+        {
+            public void Save(Stream outputStream)
+            {
+
+            }
+        }
+
+        public IWindowIconImpl LoadIcon(string fileName) => new IconStub();
+
+        public IWindowIconImpl LoadIcon(Stream stream) => new IconStub();
+
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
+    }
+    
     class LinuxFramebufferPlatform
     {
         IOutputBackend _fb;
-        private static readonly Stopwatch St = Stopwatch.StartNew();
-        internal static uint Timestamp => (uint)St.ElapsedTicks;
-        public static InternalPlatformThreadingInterface? Threading;
+        public static ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue = new();
 
         internal static Compositor Compositor { get; private set; } = null!;
-        
+       
         
         LinuxFramebufferPlatform(IOutputBackend backend)
         {
             _fb = backend;
         }
-
-
+        
         void Initialize()
         {
-            Threading = new InternalPlatformThreadingInterface();
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl.PlatformGraphics);
 
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
+                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
+                .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             
-            Compositor = new Compositor(
-                AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+            Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
 
 
@@ -71,7 +85,7 @@ namespace Avalonia.LinuxFramebuffer
     {
         private readonly IOutputBackend _fb;
         private readonly IInputBackend? _inputBackend;
-        private TopLevel? _topLevel;
+        private EmbeddableControlRoot? _topLevel;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         public CancellationToken Token => _cts.Token;
 
@@ -104,12 +118,13 @@ namespace Avalonia.LinuxFramebuffer
 
                     var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
                     tl.Prepare();
+                    tl.StartRendering();
                     _topLevel = tl;
-                    _topLevel.Renderer.Start();
+                    
 
                     if (_topLevel is IFocusScope scope)
                     {
-                        FocusManager.Instance?.SetFocusScope(scope);
+                        ((FocusManager)_topLevel.FocusManager).SetFocusScope(scope);
                     }
                 }
 
@@ -154,7 +169,7 @@ public static class LinuxFramebufferPlatformExtensions
         var lifetime = LinuxFramebufferPlatform.Initialize(builder, outputBackend, inputBackend);
         builder.SetupWithLifetime(lifetime);
         lifetime.Start(args);
-        builder.Instance.Run(lifetime.Token);
+        builder.Instance!.Run(lifetime.Token);
         return lifetime.ExitCode;
     }
 }

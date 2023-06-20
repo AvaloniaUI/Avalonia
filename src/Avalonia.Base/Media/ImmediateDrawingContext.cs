@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
@@ -68,7 +67,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="source">The bitmap.</param>
         /// <param name="rect">The rect in the output to draw to.</param>
-        public void DrawBitmap(IBitmap source, Rect rect)
+        public void DrawBitmap(Bitmap source, Rect rect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
             DrawBitmap(source, new Rect(source.Size), rect);
@@ -80,11 +79,10 @@ namespace Avalonia.Media
         /// <param name="source">The bitmap.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawBitmap(IBitmap source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        public void DrawBitmap(Bitmap source, Rect sourceRect, Rect destRect)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-            PlatformImpl.DrawBitmap(source.PlatformImpl, 1, sourceRect, destRect, bitmapInterpolationMode);
+            PlatformImpl.DrawBitmap(source.PlatformImpl.Item, 1, sourceRect, destRect);
         }
 
         /// <summary>
@@ -182,11 +180,11 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IImmutableBrush foreground, IRef<IGlyphRunImpl> glyphRun)
+        public void DrawGlyphRun(IImmutableBrush foreground, IImmutableGlyphRunReference glyphRun)
         {
             _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
-
-            PlatformImpl.DrawGlyphRun(foreground, glyphRun);
+            if (glyphRun.GlyphRun != null)
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun.GlyphRun.Item);
         }
 
         /// <summary>
@@ -281,11 +279,12 @@ namespace Avalonia.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
+        /// <param name="bounds">The bounds.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
-        public PushedState PushOpacity(double opacity)
+        public PushedState PushOpacity(double opacity, Rect bounds)
         //TODO: Eliminate platform-specific push opacity call
         {
-            PlatformImpl.PushOpacity(opacity);
+            PlatformImpl.PushOpacity(opacity, bounds);
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
 
@@ -353,12 +352,10 @@ namespace Avalonia.Media
                 throw new ObjectDisposedException(nameof(DrawingContext));
             while (_states.Count != 0)
                 _states.Peek().Dispose();
-            StateStackPool.Return(_states);
-            _states = null;
+            StateStackPool.ReturnAndSetNull(ref _states);
             if (_transformContainers.Count != 0)
                 throw new InvalidOperationException("Transform container stack is non-empty");
-            TransformStackPool.Return(_transformContainers);
-            _transformContainers = null;
+            TransformStackPool.ReturnAndSetNull(ref _transformContainers);
             if (_ownsImpl)
                 PlatformImpl.Dispose();
         }

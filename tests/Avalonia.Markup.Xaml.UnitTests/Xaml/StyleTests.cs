@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
@@ -14,6 +16,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
     public class StyleTests : XamlTestBase
     {
+        static StyleTests()
+        {
+            GC.KeepAlive(typeof(ItemsRepeater));
+        }
+
         [Fact]
         public void Color_Can_Be_Added_To_Style_Resources()
         {
@@ -33,7 +40,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var color = (Color)((Style)userControl.Styles[0]).Resources["color"];
 
-                Assert.Equal(0xff506070, color.ToUint32());
+                Assert.Equal(0xff506070, color.ToUInt32());
             }
         }
 
@@ -105,7 +112,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var brush = (ISolidColorBrush)((Style)userControl.Styles[0]).Resources["brush"];
 
-                Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
 
@@ -371,7 +378,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ListBox>("list");
-                list.Items = collection;
+                list.ItemsSource = collection;
 
                 window.Show();
 
@@ -380,13 +387,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
-                window.LayoutManager.ExecuteLayoutPass();
+                window.UpdateLayout();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
-                window.LayoutManager.ExecuteLayoutPass();
+                window.UpdateLayout();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }
@@ -395,6 +402,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Style_Can_Use_NthChild_Selector_With_ItemsRepeater()
         {
+            GC.KeepAlive(typeof(ItemsRepeater));
+            
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = @"
@@ -417,7 +426,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ItemsRepeater>("list");
-                list.Items = collection;
+                list.ItemsSource = collection;
 
                 window.Show();
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Controls()
         {
-            ResetBehavior = ResetBehavior.Remove;
+            Configure();
         }
 
         /// <summary>
@@ -21,9 +22,22 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="items">The initial items in the collection.</param>
         public Controls(IEnumerable<Control> items)
-            : base(items)
+        {
+            Configure();
+            AddRange(items); // virtual member call in ctor, ok for our current implementation
+        }
+
+        private void Configure()
         {
             ResetBehavior = ResetBehavior.Remove;
+            Validate = item =>
+            {
+                if (item is null)
+                {
+                    throw new ArgumentNullException(nameof(item),
+                        $"A null control cannot be added to a {nameof(Controls)} collection.");
+                }
+            };
         }
     }
 }

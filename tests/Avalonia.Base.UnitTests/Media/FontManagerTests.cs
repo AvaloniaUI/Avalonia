@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -16,16 +17,18 @@ namespace Avalonia.Base.UnitTests.Media
 
                 var typeface = new Typeface(fontFamily);
 
-                var glyphTypeface = FontManager.Current.GetOrAddGlyphTypeface(typeface);
+                Assert.True(FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface));
 
-                Assert.Same(glyphTypeface, FontManager.Current.GetOrAddGlyphTypeface(typeface));
+                FontManager.Current.TryGetGlyphTypeface(typeface, out var other);
+
+                Assert.Same(glyphTypeface, other);
             }
         }
 
         [Fact]
         public void Should_Throw_When_Default_FamilyName_Is_Null()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new MockFontManagerImpl(null))))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new HeadlessFontManagerStub(null!))))
             {
                 Assert.Throws<InvalidOperationException>(() => FontManager.Current);
             }
@@ -37,11 +40,11 @@ namespace Avalonia.Base.UnitTests.Media
             var options = new FontManagerOptions { DefaultFamilyName = "MyFont" };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new MockFontManagerImpl())))
+                .With(fontManagerImpl: new HeadlessFontManagerStub())))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
-                Assert.Equal("MyFont", FontManager.Current.DefaultFontFamilyName);
+                Assert.Equal("MyFont", FontManager.Current.DefaultFontFamily.Name);
             }
         }
 
@@ -60,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Media
             };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new MockFontManagerImpl())))
+                .With(fontManagerImpl: new HeadlessFontManagerStub())))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 

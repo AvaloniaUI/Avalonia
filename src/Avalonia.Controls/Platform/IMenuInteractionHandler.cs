@@ -12,11 +12,11 @@ namespace Avalonia.Controls.Platform
         /// Attaches the interaction handler to a menu.
         /// </summary>
         /// <param name="menu">The menu.</param>
-        void Attach(IMenu menu);
+        void Attach(MenuBase menu);
 
         /// <summary>
         /// Detaches the interaction handler from the attached menu.
         /// </summary>
-        void Detach(IMenu menu);
+        void Detach(MenuBase menu);
     }
 }

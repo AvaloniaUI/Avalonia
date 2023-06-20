@@ -3,8 +3,11 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Logging;
+using Avalonia.Media;
+using Avalonia.Metadata;
+using Avalonia.Rendering;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -13,25 +16,30 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
+    [PrivateApi]
     public class LayoutManager : ILayoutManager, IDisposable
     {
-        private const int MaxPasses = 3;
+        private const int MaxPasses = 10;
         private readonly Layoutable _owner;
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
-        private readonly Action _executeLayoutPass;
+        private readonly List<Layoutable> _toArrangeAfterMeasure = new();
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
         private bool _disposed;
         private bool _queued;
         private bool _running;
+        private int _totalPassCount;
+        private Action _invokeOnRender;
 
         public LayoutManager(ILayoutRoot owner)
         {
             _owner = owner as Layoutable ?? throw new ArgumentNullException(nameof(owner));
-            _executeLayoutPass = ExecuteQueuedLayoutPass;
+            _invokeOnRender = ExecuteQueuedLayoutPass;
         }
 
         public virtual event EventHandler? LayoutUpdated;
+
+        internal Action<LayoutPassTiming>? LayoutPassTimed { get; set; }
 
         /// <inheritdoc/>
         public virtual void InvalidateMeasure(Layoutable control)
@@ -60,7 +68,6 @@ namespace Avalonia.Layout
             }
 
             _toMeasure.Enqueue(control);
-            _toArrange.Enqueue(control);
             QueueLayoutPass();
         }
 
@@ -94,7 +101,7 @@ namespace Avalonia.Layout
             QueueLayoutPass();
         }
 
-        private void ExecuteQueuedLayoutPass()
+        internal void ExecuteQueuedLayoutPass()
         {
             if (!_queued)
             {
@@ -116,10 +123,9 @@ namespace Avalonia.Layout
 
             if (!_running)
             {
-                Stopwatch? stopwatch = null;
-
                 const LogEventLevel timingLogLevel = LogEventLevel.Information;
-                bool captureTiming = Logger.IsEnabled(timingLogLevel, LogArea.Layout);
+                var captureTiming = LayoutPassTimed is not null || Logger.IsEnabled(timingLogLevel, LogArea.Layout);
+                var startingTimestamp = 0L;
 
                 if (captureTiming)
                 {
@@ -129,8 +135,7 @@ namespace Avalonia.Layout
                         _toMeasure.Count,
                         _toArrange.Count);
 
-                    stopwatch = new Stopwatch();
-                    stopwatch.Start();
+                    startingTimestamp = Stopwatch.GetTimestamp();
                 }
 
                 _toMeasure.BeginLoop(MaxPasses);
@@ -139,6 +144,7 @@ namespace Avalonia.Layout
                 try
                 {
                     _running = true;
+                    ++_totalPassCount;
 
                     for (var pass = 0; pass < MaxPasses; ++pass)
                     {
@@ -160,9 +166,10 @@ namespace Avalonia.Layout
 
                 if (captureTiming)
                 {
-                    stopwatch!.Stop();
+                    var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
+                    LayoutPassTimed?.Invoke(new LayoutPassTiming(_totalPassCount, elapsed));
 
-                    Logger.TryGet(timingLogLevel, LogArea.Layout)?.Log(this, "Layout pass finished in {Time}", stopwatch.Elapsed);
+                    Logger.TryGet(timingLogLevel, LogArea.Layout)?.Log(this, "Layout pass finished in {Time}", elapsed);
                 }
             }
 
@@ -245,10 +252,12 @@ namespace Avalonia.Layout
             {
                 var control = _toMeasure.Dequeue();
 
-                if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+                if (!control.IsMeasureValid)
                 {
                     Measure(control);
                 }
+
+                _toArrange.Enqueue(control);
             }
         }
 
@@ -258,28 +267,37 @@ namespace Avalonia.Layout
             {
                 var control = _toArrange.Dequeue();
 
-                if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+                if (!control.IsArrangeValid)
                 {
-                    Arrange(control);
+                    if (Arrange(control) == ArrangeResult.AncestorMeasureInvalid)
+                        _toArrangeAfterMeasure.Add(control);
                 }
             }
+
+            foreach (var i in _toArrangeAfterMeasure)
+                InvalidateArrange(i);
+            _toArrangeAfterMeasure.Clear();
         }
 
-        private void Measure(Layoutable control)
+        private bool Measure(Layoutable control)
         {
+            if (!control.IsVisible || !control.IsAttachedToVisualTree)
+                return false;
+
             // Controls closest to the visual root need to be arranged first. We don't try to store
             // ordered invalidation lists, instead we traverse the tree upwards, measuring the
             // controls closest to the root first. This has been shown by benchmarks to be the
             // fastest and most memory-efficient algorithm.
             if (control.VisualParent is Layoutable parent)
             {
-                Measure(parent);
+                if (!Measure(parent))
+                    return false;
             }
 
             // If the control being measured has IsMeasureValid == true here then its measure was
             // handed by an ancestor and can be ignored. The measure may have also caused the
             // control to be removed.
-            if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+            if (!control.IsMeasureValid)
             {
                 if (control is ILayoutRoot root)
                 {
@@ -290,16 +308,25 @@ namespace Avalonia.Layout
                     control.Measure(control.PreviousMeasure.Value);
                 }
             }
+
+            return true;
         }
 
-        private void Arrange(Layoutable control)
+        private ArrangeResult Arrange(Layoutable control)
         {
+            if (!control.IsVisible || !control.IsAttachedToVisualTree)
+                return ArrangeResult.NotVisible;
+
             if (control.VisualParent is Layoutable parent)
             {
-                Arrange(parent);
+                if (Arrange(parent) is var parentResult && parentResult != ArrangeResult.Arranged)
+                    return parentResult;
             }
 
-            if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+            if (!control.IsMeasureValid)
+                return ArrangeResult.AncestorMeasureInvalid;
+
+            if (!control.IsArrangeValid)
             {
                 if (control is IEmbeddedLayoutRoot embeddedRoot)
                     control.Arrange(new Rect(embeddedRoot.AllocatedSize));
@@ -312,6 +339,8 @@ namespace Avalonia.Layout
                     control.Arrange(control.PreviousArrange.Value);
                 }
             }
+
+            return ArrangeResult.Arranged;
         }
 
         private void QueueLayoutPass()
@@ -319,7 +348,7 @@ namespace Avalonia.Layout
             if (!_queued && !_running)
             {
                 _queued = true;
-                Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
+                MediaContext.Instance.BeginInvokeOnRender(_invokeOnRender);
             }
         }
 
@@ -413,6 +442,13 @@ namespace Avalonia.Layout
 
             public Layoutable Listener { get; }
             public Rect Viewport { get; set; }
+        }
+
+        private enum ArrangeResult
+        {
+            Arranged,
+            NotVisible,
+            AncestorMeasureInvalid,
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.Null(host.Presenter);
 
-            target.SetValue(Control.TemplatedParentProperty, host);
+            target.TemplatedParent = host;
 
             Assert.Same(target, host.Presenter);
         }
@@ -391,7 +391,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             templatedParent.ApplyTemplate();
 
-            return ((ContentPresenter)templatedParent.Presenter, templatedParent);
+            return (templatedParent.Presenter, templatedParent);
         }
 
         private class TestContentControl : ContentControl, IContentPresenterHost

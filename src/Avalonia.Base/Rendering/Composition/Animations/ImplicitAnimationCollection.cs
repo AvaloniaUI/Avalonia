@@ -23,7 +23,7 @@ namespace Avalonia.Rendering.Composition.Animations
     {
         private Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();
         private IDictionary<string, ICompositionAnimationBase> _innerface;
-        internal ImplicitAnimationCollection(Compositor compositor) : base(compositor, null!)
+        internal ImplicitAnimationCollection(Compositor compositor) : base(compositor, null)
         {
             _innerface = _inner;
         }

@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel;
 using Avalonia.Automation.Peers;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -17,7 +16,6 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -25,19 +23,13 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IChildIndexProvider, IScrollSnapPointsInfo
+    public class ItemsControl : TemplatedControl, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new StackPanel());
-
-        /// <summary>
-        /// Defines the <see cref="Items"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ItemsControl, IEnumerable?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new StackPanel());
 
         /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.
@@ -54,8 +46,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
-            AvaloniaProperty.Register<ItemsControl, ITemplate<Panel>>(nameof(ItemsPanel), DefaultPanel);
+        public static readonly StyledProperty<ITemplate<Panel?>> ItemsPanelProperty =
+            AvaloniaProperty.Register<ItemsControl, ITemplate<Panel?>>(nameof(ItemsPanel), DefaultPanel);
+
+        /// <summary>
+        /// Defines the <see cref="ItemsSource"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
+            AvaloniaProperty.Register<ItemsControl, IEnumerable?>(nameof(ItemsSource));
 
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property.
@@ -64,58 +62,36 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ItemsControl, IDataTemplate?>(nameof(ItemTemplate));
 
         /// <summary>
-        /// Defines the <see cref="ItemsView"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ItemsControl, ItemsSourceView> ItemsViewProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, ItemsSourceView>(nameof(ItemsView), o => o.ItemsView);
-
-        /// <summary>
         /// Defines the <see cref="DisplayMemberBinding" /> property
         /// </summary>
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
             AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
-        
-        /// <summary>
-        /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreHorizontalSnapPointsRegular));
-
-        /// <summary>
-        /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreVerticalSnapPointsRegular));
 
         /// <summary>
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IBinding? DisplayMemberBinding
         {
-            get { return GetValue(DisplayMemberBindingProperty); }
-            set { SetValue(DisplayMemberBindingProperty, value); }
+            get => GetValue(DisplayMemberBindingProperty);
+            set => SetValue(DisplayMemberBindingProperty, value);
         }
-        
-        private IEnumerable? _items = new AvaloniaList<object>();
-        private ItemsSourceView _itemsView;
+
+        private readonly ItemCollection _items = new();
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
-        private Tuple<int, Control>? _containerBeingPrepared;
-        private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
-        private IScrollSnapPointsInfo? _scrolSnapPointInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
         /// </summary>
         public ItemsControl()
         {
-            _itemsView = ItemsSourceView.GetOrCreate(_items);
-            _itemsView.PostCollectionChanged += ItemsCollectionChanged;
-            UpdatePseudoClasses(0);
+            UpdatePseudoClasses();
+            _items.CollectionChanged += OnItemsViewCollectionChanged;
         }
 
         /// <summary>
@@ -129,50 +105,85 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the items to display.
+        /// Gets the items to display.
         /// </summary>
+        /// <remarks>
+        /// You use either the <see cref="Items"/> or the <see cref="ItemsSource"/> property to
+        /// specify the collection that should be used to generate the content of your
+        /// <see cref="ItemsControl"/>. When the <see cref="ItemsSource"/> property is set, the
+        /// <see cref="Items"/> collection is made read-only and fixed-size.
+        ///
+        /// When <see cref="ItemsSource"/> is in use, setting the <see cref="ItemsSource"/>
+        /// property to null removes the collection and restores usage to <see cref="Items"/>,
+        /// which will be an empty <see cref="ItemCollection"/>.
+        /// </remarks>
         [Content]
-        public IEnumerable? Items
-        {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
-        }
+        public ItemCollection Items => _items;
 
         /// <summary>
         /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
         /// </summary>
         public ControlTheme? ItemContainerTheme
         {
-            get { return GetValue(ItemContainerThemeProperty); }
-            set { SetValue(ItemContainerThemeProperty, value); }
+            get => GetValue(ItemContainerThemeProperty);
+            set => SetValue(ItemContainerThemeProperty, value);
         }
 
         /// <summary>
-        /// Gets the number of items in <see cref="Items"/>.
+        /// Gets the number of items being displayed by the <see cref="ItemsControl"/>.
         /// </summary>
         public int ItemCount
         {
             get => _itemCount;
-            private set => SetAndRaise(ItemCountProperty, ref _itemCount, value);
+            private set
+            {
+                if (SetAndRaise(ItemCountProperty, ref _itemCount, value))
+                {
+                    UpdatePseudoClasses();
+                    _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
+                }
+            }
         }
 
         /// <summary>
         /// Gets or sets the panel used to display the items.
         /// </summary>
-        public ITemplate<Panel> ItemsPanel
+        public ITemplate<Panel?> ItemsPanel
         {
-            get { return GetValue(ItemsPanelProperty); }
-            set { SetValue(ItemsPanelProperty, value); }
+            get => GetValue(ItemsPanelProperty);
+            set => SetValue(ItemsPanelProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a collection used to generate the content of the <see cref="ItemsControl"/>.
+        /// </summary>
+        /// <remarks>
+        /// A common scenario is to use an <see cref="ItemsControl"/> such as a 
+        /// <see cref="ListBox"/> to display a data collection, or to bind an
+        /// <see cref="ItemsControl"/> to a collection object. To bind an <see cref="ItemsControl"/>
+        /// to a collection object, use the <see cref="ItemsSource"/> property.
+        /// 
+        /// When the <see cref="ItemsSource"/> property is set, the <see cref="Items"/> collection
+        /// is made read-only and fixed-size.
+        ///
+        /// When <see cref="ItemsSource"/> is in use, setting the property to null removes the
+        /// collection and restores usage to <see cref="Items"/>, which will be an empty 
+        /// <see cref="ItemCollection"/>.
+        /// </remarks>
+        public IEnumerable? ItemsSource
+        {
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        [InheritDataTypeFromItems(nameof(Items))]
+        [InheritDataTypeFromItems(nameof(ItemsSource))]
         public IDataTemplate? ItemTemplate
         {
-            get { return GetValue(ItemTemplateProperty); }
-            set { SetValue(ItemTemplateProperty, value); }
+            get => GetValue(ItemTemplateProperty);
+            set => SetValue(ItemTemplateProperty, value);
         }
 
         /// <summary>
@@ -186,31 +197,9 @@ namespace Avalonia.Controls
         public Panel? ItemsPanelRoot => Presenter?.Panel;
 
         /// <summary>
-        /// Gets a standardized view over <see cref="Items"/>.
+        /// Gets a read-only view of the items in the <see cref="ItemsControl"/>.
         /// </summary>
-        /// <remarks>
-        /// The <see cref="Items"/> property may be an enumerable which does not implement
-        /// <see cref="IList"/> or may be null. This view can be used to provide a standardized
-        /// view of the current items regardless of the type of the concrete collection, and
-        /// without having to deal with null values.
-        /// </remarks>
-        public ItemsSourceView ItemsView 
-        {
-            get => _itemsView;
-            private set
-            {
-                if (ReferenceEquals(_itemsView, value))
-                    return;
-
-                var oldValue = _itemsView;
-                RemoveControlItemsFromLogicalChildren(_itemsView);
-                _itemsView.PostCollectionChanged -= ItemsCollectionChanged;
-                _itemsView = value;
-                _itemsView.PostCollectionChanged += ItemsCollectionChanged;
-                AddControlItemsToLogicalChildren(_itemsView);
-                RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
-            }
-        }
+        public ItemsSourceView ItemsView => _items;
 
         private protected bool WrapFocus { get; set; }
 
@@ -220,62 +209,39 @@ namespace Avalonia.Controls
             remove => _childIndexChanged -= value;
         }
 
-
-        public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
-        {
-            add
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.HorizontalSnapPointsChanged += value;
-                }
-            }
-
-            remove
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.HorizontalSnapPointsChanged -= value;
-                }
-            }
-        }
-
-        public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
-        {
-            add
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.VerticalSnapPointsChanged += value;
-                }
-            }
-
-            remove
-            {
-                if (_itemsPresenter != null)
-                {
-                    _itemsPresenter.VerticalSnapPointsChanged -= value;
-                }
-            }
-        }
+        /// <summary>
+        /// Occurs each time a container is prepared for use.
+        /// </summary>
+        /// <remarks>
+        /// The prepared element might be newly created or an existing container that is being re-
+        /// used.
+        /// </remarks>
+        public event EventHandler<ContainerPreparedEventArgs>? ContainerPrepared;
 
         /// <summary>
-        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// Occurs for each realized container when the index for the item it represents has changed.
         /// </summary>
-        public bool AreHorizontalSnapPointsRegular
-        {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
-        }
+        /// <remarks>
+        /// This event is raised for each realized container where the index for the item it
+        /// represents has changed. For example, when another item is added or removed in the data
+        /// source, the index for items that come after in the ordering will be impacted.
+        /// </remarks>
+        public event EventHandler<ContainerIndexChangedEventArgs>? ContainerIndexChanged;
 
         /// <summary>
-        /// Gets or sets whether the vertical snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// Occurs each time a container is cleared.
         /// </summary>
-        public bool AreVerticalSnapPointsRegular
-        {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
-        }
+        /// <remarks>
+        /// This event is raised immediately each time an container is cleared, such as when it
+        /// falls outside the range of realized items or the corresponding item is removed.
+        /// </remarks>
+        public event EventHandler<ContainerClearingEventArgs>? ContainerClearing;
+
+        /// <summary>
+        /// Gets a default recycle key that can be used when an <see cref="ItemsControl"/> supports
+        /// a single container type.
+        /// </summary>
+        protected static object DefaultRecycleKey { get; } = new object();
 
         /// <summary>
         /// Returns the container for the item at the specified index.
@@ -297,7 +263,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Control? ContainerFromItem(object item)
         {
-            var index = ItemsView.IndexOf(item);
+            var index = _items.IndexOf(item);
             return index >= 0 ? ContainerFromIndex(index) : null;
         }
 
@@ -321,7 +287,7 @@ namespace Avalonia.Controls
         public object? ItemFromContainer(Control container)
         {
             var index = IndexFromContainer(container);
-            return index >= 0 && index < ItemsView.Count ? ItemsView[index] : null;
+            return index >= 0 && index < _items.Count ? _items[index] : null;
         }
 
         /// <summary>
@@ -330,9 +296,36 @@ namespace Avalonia.Controls
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
 
         /// <summary>
+        /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>
+        /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
+        /// </returns>
+        public static ItemsControl? ItemsControlFromItemContaner(Control container)
+        {
+            var c = container.Parent as Control;
+
+            while (c is not null)
+            {
+                if (c is ItemsControl itemsControl)
+                {
+                    return itemsControl.IndexFromContainer(container) >= 0 ? itemsControl : null;
+                }
+
+                c = c.Parent as Control;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Creates or a container that can be used to display an item.
         /// </summary>
-        protected internal virtual Control CreateContainerForItemOverride() => new ContentPresenter();
+        protected internal virtual Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ContentPresenter();
+        }
 
         /// <summary>
         /// Prepares the specified element to display the specified item.
@@ -349,51 +342,65 @@ namespace Avalonia.Controls
 
             if (container is HeaderedContentControl hcc)
             {
-                hcc.Content = item;
+                SetIfUnset(hcc, HeaderedContentControl.ContentProperty, item);
 
                 if (item is IHeadered headered)
-                    hcc.Header = headered.Header;
+                    SetIfUnset(hcc, HeaderedContentControl.HeaderProperty, headered.Header);
                 else if (item is not Visual)
-                    hcc.Header = item;
+                    SetIfUnset(hcc, HeaderedContentControl.HeaderProperty, item);
 
                 if (itemTemplate is not null)
-                    hcc.HeaderTemplate = itemTemplate;
+                    SetIfUnset(hcc, HeaderedContentControl.HeaderTemplateProperty, itemTemplate);
             }
             else if (container is ContentControl cc)
             {
-                cc.Content = item;
+                SetIfUnset(cc, ContentControl.ContentProperty, item);
                 if (itemTemplate is not null)
-                    cc.ContentTemplate = itemTemplate;
+                    SetIfUnset(cc, ContentControl.ContentTemplateProperty, itemTemplate);
             }
             else if (container is ContentPresenter p)
             {
-                p.Content = item;
+                SetIfUnset(p, ContentPresenter.ContentProperty, item);
                 if (itemTemplate is not null)
-                    p.ContentTemplate = itemTemplate;
+                    SetIfUnset(p, ContentPresenter.ContentTemplateProperty, itemTemplate);
             }
             else if (container is ItemsControl ic)
             {
                 if (itemTemplate is not null)
-                    ic.ItemTemplate = itemTemplate;
-                if (ItemContainerTheme is { } ict && !ict.IsSet(ItemContainerThemeProperty))
-                    ic.ItemContainerTheme = ict;
+                    SetIfUnset(ic, ItemTemplateProperty, itemTemplate);
+                if (ItemContainerTheme is { } ict)
+                    SetIfUnset(ic, ItemContainerThemeProperty, ict);
             }
 
-            // This condition is separate because HeaderedItemsControl needs to also run the
-            // ItemsControl preparation.
+            // These conditions are separate because HeaderedItemsControl and
+            // HeaderedSelectingItemsControl also need to run the ItemsControl preparation.
             if (container is HeaderedItemsControl hic)
             {
-                hic.Header = item;
-                hic.HeaderTemplate = itemTemplate;
-
-                itemTemplate ??= hic.FindDataTemplate(item) ?? this.FindDataTemplate(item);
-
-                if (itemTemplate is ITreeDataTemplate treeTemplate)
-                {
-                    if (item is not null && treeTemplate.ItemsSelector(item) is { } itemsBinding)
-                        BindingOperations.Apply(hic, ItemsProperty, itemsBinding, null);
-                }
+                SetIfUnset(hic, HeaderedItemsControl.HeaderProperty, item);
+                SetIfUnset(hic, HeaderedItemsControl.HeaderTemplateProperty, itemTemplate);
+                hic.PrepareItemContainer(this);
             }
+            else if (container is HeaderedSelectingItemsControl hsic)
+            {
+                SetIfUnset(hsic, HeaderedSelectingItemsControl.HeaderProperty, item);
+                SetIfUnset(hsic, HeaderedSelectingItemsControl.HeaderTemplateProperty, itemTemplate);
+                hsic.PrepareItemContainer(this);
+            }
+        }
+
+        /// <summary>
+        /// Called when a container has been fully prepared to display an item.
+        /// </summary>
+        /// <param name="container">The container control.</param>
+        /// <param name="item">The item being displayed.</param>
+        /// <param name="index">The index of the item being displayed.</param>
+        /// <remarks>
+        /// This method will be called when a container has been fully prepared and added to the
+        /// logical and visual trees, but may be called before a layout pass has completed. It is
+        /// called immediately before the <see cref="ContainerPrepared"/> event is raised.
+        /// </remarks>
+        protected internal virtual void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
         }
 
         /// <summary>
@@ -413,24 +420,96 @@ namespace Avalonia.Controls
         /// <param name="container">The container element.</param>
         protected internal virtual void ClearContainerForItemOverride(Control container)
         {
+            if (container is HeaderedContentControl hcc)
+            {
+                hcc.ClearValue(HeaderedContentControl.ContentProperty);
+                hcc.ClearValue(HeaderedContentControl.HeaderProperty);
+                hcc.ClearValue(HeaderedContentControl.HeaderTemplateProperty);
+            }
+            else if (container is ContentControl cc)
+            {
+                cc.ClearValue(ContentControl.ContentProperty);
+                cc.ClearValue(ContentControl.ContentTemplateProperty);
+            }
+            else if (container is ContentPresenter p)
+            {
+                p.ClearValue(ContentPresenter.ContentProperty);
+                p.ClearValue(ContentPresenter.ContentTemplateProperty);
+            }
+            else if (container is ItemsControl ic)
+            {
+                ic.ClearValue(ItemTemplateProperty);
+                ic.ClearValue(ItemContainerThemeProperty);
+            }
+            
+            if (container is HeaderedItemsControl hic)
+            {
+                hic.ClearValue(HeaderedItemsControl.HeaderProperty);
+                hic.ClearValue(HeaderedItemsControl.HeaderTemplateProperty);
+            }
+            else if (container is HeaderedSelectingItemsControl hsic)
+            {
+                hsic.ClearValue(HeaderedSelectingItemsControl.HeaderProperty);
+                hsic.ClearValue(HeaderedSelectingItemsControl.HeaderTemplateProperty);
+            }
+
             // Feels like we should be clearing the HeaderedItemsControl.Items binding here, but looking at
             // the WPF source it seems that this isn't done there.
         }
 
         /// <summary>
-        /// Determines whether the specified item is (or is eligible to be) its own container.
+        /// Determines whether the specified item can be its own container.
         /// </summary>
         /// <param name="item">The item to check.</param>
-        /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
-        protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
+        /// <param name="index">The index of the item.</param>
+        /// <param name="recycleKey">
+        /// When the method returns, contains a key that can be used to locate a previously
+        /// recycled container of the correct type, or null if the item cannot be recycled.
+        /// If the item is its own container then by definition it cannot be recycled, so
+        /// <paramref name="recycleKey"/> shoud be set to null.
+        /// </param>
+        /// <returns>
+        /// true if the item needs a container; otherwise false if the item can itself be used
+        /// as a container.
+        /// </returns>
+        protected internal virtual bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<Control>(item, out recycleKey);
+        }
 
+        /// <summary>
+        /// A default implementation of <see cref="NeedsContainerOverride(object, int, out object?)"/>
+        /// that returns true and sets the recycle key to <see cref="DefaultRecycleKey"/> if the item
+        /// is not a <typeparamref name="T"/> .
+        /// </summary>
+        /// <typeparam name="T">The container type.</typeparam>
+        /// <param name="item">The item.</param>
+        /// <param name="recycleKey">
+        /// When the method returns, contains <see cref="DefaultRecycleKey"/> if
+        /// <paramref name="item"/> is not of type <typeparamref name="T"/>; otherwise null.
+        /// </param>
+        /// <returns>
+        /// true if <paramref name="item"/> is of type <typeparamref name="T"/>; otherwise false.
+        /// </returns>
+        protected bool NeedsContainer<T>(object? item, out object? recycleKey) where T : Control
+        {
+            if (item is T)
+            {
+                recycleKey = null;
+                return false;
+            }
+            else
+            {
+                recycleKey = DefaultRecycleKey;
+                return true;
+            }
+        }
+
+        /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
-
-            _scrolSnapPointInfo = _itemsPresenter as IScrollSnapPointsInfo;
         }
 
         /// <summary>
@@ -441,19 +520,20 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                var focus = FocusManager.Instance;
+                var focus = FocusManager.GetFocusManager(this);
                 var direction = e.Key.ToNavigationDirection();
                 var container = Presenter?.Panel as INavigableContainer;
 
-                if (container == null ||
-                    focus?.Current == null ||
+                if (focus == null ||
+                    container == null ||
+                    focus.GetFocusedElement() == null ||
                     direction == null ||
                     direction.Value.IsTab())
                 {
                     return;
                 }
 
-                Visual? current = focus.Current as Visual;
+                Visual? current = focus.GetFocusedElement() as Visual;
 
                 while (current != null)
                 {
@@ -463,7 +543,7 @@ namespace Avalonia.Controls
 
                         if (next != null)
                         {
-                            focus.Focus(next, NavigationMethod.Directional, e.KeyModifiers);
+                            next.Focus(NavigationMethod.Directional, e.KeyModifiers);
                             e.Handled = true;
                         }
 
@@ -477,27 +557,24 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ItemsControlAutomationPeer(this);
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ItemsProperty)
-            {
-                ItemsView = ItemsSourceView.GetOrCreate(change.GetNewValue<IEnumerable?>());
-                ItemCount = ItemsView.Count;
-            }
-            else if (change.Property == ItemCountProperty)
-            {
-                UpdatePseudoClasses(change.GetNewValue<int>());
-            }
-            else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
+            if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
             {
                 RefreshContainers();
+            }
+            else if (change.Property == ItemsSourceProperty)
+            {
+                _items.SetItemsSource(change.GetNewValue<IEnumerable?>());
             }
             else if (change.Property == ItemTemplateProperty)
             {
@@ -524,24 +601,27 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="Items"/>.
+        /// raised on <see cref="ItemsView"/>.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private protected virtual void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            ItemCount = _itemsView.Count;
-
-            switch (e.Action)
+            if (!_items.IsReadOnly)
             {
-                case NotifyCollectionChangedAction.Add:
-                    AddControlItemsToLogicalChildren(e.NewItems);
-                    break;
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        AddControlItemsToLogicalChildren(e.NewItems);
+                        break;
 
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveControlItemsFromLogicalChildren(e.OldItems);
-                    break;
+                    case NotifyCollectionChangedAction.Remove:
+                        RemoveControlItemsFromLogicalChildren(e.OldItems);
+                        break;
+                }
             }
+
+            ItemCount = ItemsView.Count;
         }
 
         /// <summary>
@@ -552,13 +632,18 @@ namespace Avalonia.Controls
         /// TreeView to be able to create a <see cref="TreeItemContainerGenerator"/>. Can be
         /// removed in 12.0.
         /// </remarks>
-        [Obsolete]
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         private protected virtual ItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
         }
 
-        internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);
+        internal void AddLogicalChild(Control c)
+        {
+            if (!LogicalChildren.Contains(c))
+                LogicalChildren.Add(c);
+        }
+
         internal void RemoveLogicalChild(Control c) => LogicalChildren.Remove(c);
 
         /// <summary>
@@ -573,16 +658,16 @@ namespace Avalonia.Controls
         internal void RegisterItemsPresenter(ItemsPresenter presenter)
         {
             Presenter = presenter;
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
         }
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
             var itemContainerTheme = ItemContainerTheme;
 
-            if (itemContainerTheme is not null && 
+            if (itemContainerTheme is not null &&
                 !container.IsSet(ThemeProperty) &&
-                ((IStyleable)container).StyleKey == itemContainerTheme.TargetType)
+                StyledElement.GetStyleKey(container) == itemContainerTheme.TargetType)
             {
                 container.Theme = itemContainerTheme;
             }
@@ -595,29 +680,24 @@ namespace Avalonia.Controls
 
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
-            _containerBeingPrepared = new(index, container);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
-            _containerBeingPrepared = null;
-
-            _scrollViewer?.RegisterAnchorCandidate(container);
+            ContainerForItemPreparedOverride(container, item, index);
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
+            ContainerPrepared?.Invoke(this, new(container, index));
         }
 
         internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
         {
             ContainerIndexChangedOverride(container, oldIndex, newIndex);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, newIndex));
+            ContainerIndexChanged?.Invoke(this, new(container, oldIndex, newIndex));
         }
 
         internal void ClearItemContainer(Control container)
         {
-            _scrollViewer?.UnregisterAnchorCandidate(container);
             ClearContainerForItemOverride(container);
+            ContainerClearing?.Invoke(this, new(container));
         }
 
-        /// <summary>
-        /// Given a collection of items, adds those that are controls to the logical children.
-        /// </summary>
-        /// <param name="items">The items.</param>
         private void AddControlItemsToLogicalChildren(IEnumerable? items)
         {
             if (items is null)
@@ -638,10 +718,12 @@ namespace Avalonia.Controls
                 LogicalChildren.AddRange(toAdd);
         }
 
-        /// <summary>
-        /// Given a collection of items, removes those that are controls to from logical children.
-        /// </summary>
-        /// <param name="items">The items.</param>
+        private void SetIfUnset<T>(AvaloniaObject target, StyledProperty<T> property, T value)
+        {
+            if (!target.IsSet(property))
+                target.SetCurrentValue(property, value);
+        }
+
         private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
             if (items is null)
@@ -679,10 +761,10 @@ namespace Avalonia.Controls
             return _displayMemberItemTemplate;
         }
 
-        private void UpdatePseudoClasses(int itemCount)
+        private void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":empty", itemCount == 0);
-            PseudoClasses.Set(":singleitem", itemCount == 1);
+            PseudoClasses.Set(":empty", ItemCount == 0);
+            PseudoClasses.Set(":singleitem", ItemCount == 1);
         }
 
         protected static IInputElement? GetNextControl(
@@ -736,9 +818,6 @@ namespace Avalonia.Controls
 
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            if (_containerBeingPrepared?.Item2 == child)
-                return _containerBeingPrepared.Item1;
-
             return child is Control container ? IndexFromContainer(container) : -1;
         }
 
@@ -746,18 +825,6 @@ namespace Avalonia.Controls
         {
             count = ItemsView.Count;
             return true;
-        }
-
-        public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
-        {
-            return _itemsPresenter?.GetIrregularSnapPoints(orientation, snapPointsAlignment) ?? new List<double>();
-        }
-
-        public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
-        {
-            offset = 0;
-
-            return _itemsPresenter?.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset) ?? 0;
         }
     }
 }

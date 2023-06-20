@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:VirtualizationDemo.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VirtualizationDemo.Views.PlaygroundPageView"
+             x:DataType="vm:PlaygroundPageViewModel">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Right" Margin="8 0" Width="200">
+      <DropDownButton Content="Selection" HorizontalAlignment="Stretch">
+        <Button.Flyout>
+          <Flyout>
+            <StackPanel>
+              <CheckBox IsChecked="{Binding Multiple}">Multiple</CheckBox>
+              <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
+              <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
+              <CheckBox IsChecked="{Binding #list.AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+              <CheckBox IsChecked="{Binding #list.WrapSelection}">WrapSelection</CheckBox>
+            </StackPanel>
+          </Flyout>
+        </Button.Flyout>
+      </DropDownButton>
+      
+      <Label>_Select Item</Label>
+      <DockPanel>
+        <TextBox x:Name="scrollToIndex" Text="{Binding ScrollToIndex}">
+          <TextBox.InnerRightContent>
+            <StackPanel Orientation="Horizontal">
+              <Button DockPanel.Dock="Right"
+                      Command="{Binding RandomizeScrollToIndex}"
+                      ToolTip.Tip="Randomize">
+                &#x27F3;
+              </Button>
+              <Button DockPanel.Dock="Right"
+                      Command="{Binding ExecuteScrollToIndex}"
+                      ToolTip.Tip="Execute">
+                &#11152;
+              </Button>
+            </StackPanel>
+          </TextBox.InnerRightContent>
+        </TextBox>
+      </DockPanel>
+
+      <Label>New Item</Label>
+      <TextBox Text="{Binding NewItemHeader}">
+        <TextBox.InnerRightContent>
+          <Button Command="{Binding AddAtSelectedIndex}"
+                  ToolTip.Tip="Add at Selected Index">&#x2B;</Button>
+        </TextBox.InnerRightContent>
+      </TextBox>
+
+      <Button Command="{Binding DeleteSelectedItem}" Margin="0 8 0 0">
+        Delete Selected
+      </Button>
+    </StackPanel>
+    
+    <TextBlock Name="itemCount" DockPanel.Dock="Bottom"/>
+    
+    <ListBox Name="list"
+             ItemsSource="{Binding Items}"
+             DisplayMemberBinding="{Binding Header}"
+             Selection="{Binding Selection}"
+             SelectionMode="{Binding SelectionMode}"/>
+  </DockPanel>
+</UserControl>

@@ -14,7 +14,7 @@ namespace Avalonia.Reactive
     /// usage. This class provides a more lightweight base for some internal observable types
     /// in the Avalonia framework.
     /// </remarks>
-    public abstract class LightweightObservableBase<T> : IObservable<T>
+    internal abstract class LightweightObservableBase<T> : IObservable<T>
     {
         private Exception? _error;
         private List<IObserver<T>>? _observers = new List<IObserver<T>>();

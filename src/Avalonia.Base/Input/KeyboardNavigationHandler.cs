@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Avalonia.Input.Navigation;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -9,7 +9,8 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
-    public class KeyboardNavigationHandler : IKeyboardNavigationHandler
+    [Unstable]
+    public sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
         /// The window to which the handler belongs.
@@ -23,6 +24,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
+        [PrivateApi]
         public void SetOwner(IInputRoot owner)
         {
             if (_owner != null)
@@ -51,7 +53,7 @@ namespace Avalonia.Input
 
             // If there's a custom keyboard navigation handler as an ancestor, use that.
             var custom = (element as Visual)?.FindAncestorOfType<ICustomKeyboardNavigation>(true);
-            if (custom is object && HandlePreCustomNavigation(custom, element, direction, out var ce))
+            if (custom is not null && HandlePreCustomNavigation(custom, element, direction, out var ce))
                 return ce;
 
             var result = direction switch
@@ -76,20 +78,23 @@ namespace Avalonia.Input
         /// <param name="direction">The direction to move.</param>
         /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         public void Move(
-            IInputElement element,
+            IInputElement? element,
             NavigationDirection direction,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            element = element ?? throw new ArgumentNullException(nameof(element));
+            if (element is null && _owner is null)
+            {
+                return;
+            }
 
-            var next = GetNext(element, direction);
+            var next = GetNext(element ?? _owner!, direction);
 
             if (next != null)
             {
                 var method = direction == NavigationDirection.Next ||
                              direction == NavigationDirection.Previous ?
                              NavigationMethod.Tab : NavigationMethod.Directional;
-                FocusManager.Instance?.Focus(next, method, keyModifiers);
+                next.Focus(method, keyModifiers);
             }
         }
 
@@ -98,12 +103,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
+        void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            var current = FocusManager.Instance?.Current;
-
-            if (current != null && e.Key == Key.Tab)
+            if (e.Key == Key.Tab)
             {
+                var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
                 Move(current, direction, e.KeyModifiers);
@@ -117,32 +121,27 @@ namespace Avalonia.Input
             NavigationDirection direction,
             [NotNullWhen(true)] out IInputElement? result)
         {
-            if (customHandler != null)
+            var (handled, next) = customHandler.GetNext(element, direction);
+
+            if (handled)
             {
-                var (handled, next) = customHandler.GetNext(element, direction);
-
-                if (handled)
+                if (next is not null)
                 {
-                    if (next != null)
-                    {
-                        result = next;
-                        return true;
-                    }
-                    else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
-                    {
-                        var r = direction switch
-                        {
-                            NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
-                            NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
-                            _ => throw new NotSupportedException(),
-                        };
+                    result = next;
+                    return true;
+                }
 
-                        if (r is object)
-                        {
-                            result = r;
-                            return true;
-                        }
-                    }
+                var r = direction switch
+                {
+                    NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
+                    NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
+                    _ => null
+                };
+
+                if (r is not null)
+                {
+                    result = r;
+                    return true;
                 }
             }
 

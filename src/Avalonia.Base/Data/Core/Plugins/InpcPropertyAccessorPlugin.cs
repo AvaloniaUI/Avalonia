@@ -160,7 +160,7 @@ namespace Avalonia.Data.Core.Plugins
                 var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
                 if (inpc != null) 
-                    WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
+                    WeakEvents.ThreadSafePropertyChanged.Unsubscribe(inpc, this);
             }
 
             private object? GetReferenceTarget()
@@ -185,7 +185,7 @@ namespace Avalonia.Data.Core.Plugins
                 var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
                 if (inpc != null) 
-                    WeakEvents.PropertyChanged.Subscribe(inpc, this);
+                    WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
             }
         }
     }

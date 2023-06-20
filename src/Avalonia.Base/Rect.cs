@@ -11,17 +11,6 @@ namespace Avalonia
     /// </summary>
     public readonly struct Rect : IEquatable<Rect>
     {
-        static Rect()
-        {
-            Animation.Animation.RegisterAnimator<RectAnimator>(prop => typeof(Rect).IsAssignableFrom(prop.PropertyType));
-        }
-
-        /// <summary>
-        /// An empty rectangle.
-        /// </summary>
-        [Obsolete("Use the default keyword instead.")]
-        public static readonly Rect Empty = default;
-
         /// <summary>
         /// The X position.
         /// </summary>
@@ -169,17 +158,6 @@ namespace Avalonia
         /// Gets the center point of the rectangle.
         /// </summary>
         public Point Center => new Point(_x + (_width / 2), _y + (_height / 2));
-
-        /// <summary>
-        /// Gets a value indicating whether the instance has default values (the rectangle is empty).
-        /// </summary>
-        // ReSharper disable CompareOfFloatsByEqualityOperator
-        public bool IsDefault => _width == 0 && _height == 0;
-        // ReSharper restore CompareOfFloatsByEqualityOperator
-
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.
@@ -517,19 +495,18 @@ namespace Avalonia
             return rect;
         }
 
-
-            /// <summary>
-            /// Gets the union of two rectangles.
-            /// </summary>
-            /// <param name="rect">The other rectangle.</param>
-            /// <returns>The union.</returns>
-            public Rect Union(Rect rect)
+        /// <summary>
+        /// Gets the union of two rectangles.
+        /// </summary>
+        /// <param name="rect">The other rectangle.</param>
+        /// <returns>The union.</returns>
+        public Rect Union(Rect rect)
         {
-            if (IsDefault)
+            if (Width == 0 && Height == 0)
             {
                 return rect;
             }
-            else if (rect.IsDefault)
+            else if (rect.Width == 0 && rect.Height == 0)
             {
                 return this;
             }
@@ -542,6 +519,15 @@ namespace Avalonia
 
                 return new Rect(new Point(x1, y1), new Point(x2, y2));
             }
+        }
+
+        internal static Rect? Union(Rect? left, Rect? right)
+        {
+            if (left == null)
+                return right;
+            if (right == null)
+                return left;
+            return left.Value.Union(right.Value);
         }
 
         /// <summary>
@@ -616,5 +602,12 @@ namespace Avalonia
                 );
             }
         }
+
+        /// <summary>
+        /// This method should be used internally to check for the rect emptiness
+        /// Once we add support for WPF-like empty rects, there will be an actual implementation
+        /// For now it's internal to keep some loud community members happy about the API being pretty 
+        /// </summary>
+        internal bool IsEmpty() => this == default;
     }
 }

@@ -8,7 +8,6 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -162,7 +161,7 @@ namespace Avalonia.Controls
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
         }
-
+        
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
@@ -210,13 +209,11 @@ namespace Avalonia.Controls
             remove => RemoveHandler(SizeChangedEvent, value);
         }
 
-        public new Control? Parent => (Control?)base.Parent;
-
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <inheritdoc/>
-        void ISetterValue.Initialize(ISetter setter)
+        void ISetterValue.Initialize(SetterBase setter)
         {
             if (setter is Setter s && s.Property == ContextFlyoutProperty)
             {
@@ -406,7 +403,9 @@ namespace Avalonia.Controls
                 {
                     if (_focusAdorner == null)
                     {
-                        var template = GetValue(FocusAdornerProperty);
+                        var template = IsSet(FocusAdornerProperty)
+                            ? GetValue(FocusAdornerProperty)
+                            : adornerLayer.DefaultFocusAdorner;
 
                         if (template != null)
                         {
@@ -439,6 +438,12 @@ namespace Avalonia.Controls
         protected virtual AutomationPeer OnCreateAutomationPeer()
         {
             return new NoneAutomationPeer(this);
+        }
+
+        internal AutomationPeer? GetAutomationPeer()
+        {
+            VerifyAccess();
+            return _automationPeer;
         }
 
         internal AutomationPeer GetOrCreateAutomationPeer()
@@ -475,7 +480,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.OpenContextMenu;
+                var keymap = TopLevel.GetTopLevel(this)?.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {
@@ -529,6 +534,14 @@ namespace Avalonia.Controls
                     RaiseEvent(sizeChangedEventArgs);
                 }
             }
+        }
+
+        // Since we are resetting the dispatcher instance, the callback might never arrive
+        internal static void ResetLoadedQueueForUnitTests()
+        {
+            _loadedQueue.Clear();
+            _loadedProcessingQueue.Clear();
+            _isLoadedProcessing = false;
         }
     }
 }

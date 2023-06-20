@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:conv="using:Avalonia.Controls.Converters">
+                    xmlns:conv="using:Avalonia.Controls.Converters"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20" Width="320">
       <StackPanel Spacing="20" HorizontalAlignment="Left">
@@ -92,7 +93,7 @@
 
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
-                                ContentTemplate="{TemplateBinding ItemTemplate}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 RecognizesAccessKey="True"
@@ -118,7 +119,7 @@
           </Border>
           <Popup Name="PART_Popup"
                  WindowManagerAddShadowHint="False"
-                 PlacementMode="Right"
+                 Placement="RightEdgeAlignedTop"
                  HorizontalOffset="{DynamicResource MenuFlyoutSubItemPopupHorizontalOffset}"
                  IsLightDismissEnabled="False"
                  IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">

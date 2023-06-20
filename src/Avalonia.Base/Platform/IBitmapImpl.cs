@@ -7,7 +7,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the platform-specific interface for a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
     /// </summary>
-    [Unstable]
+    [PrivateApi]
     public interface IBitmapImpl : IDisposable
     {
         /// <summary>

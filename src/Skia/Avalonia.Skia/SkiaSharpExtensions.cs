@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
@@ -12,13 +13,14 @@ namespace Avalonia.Skia
         {
             switch (interpolationMode)
             {
+                case BitmapInterpolationMode.Unspecified:
                 case BitmapInterpolationMode.LowQuality:
                     return SKFilterQuality.Low;
                 case BitmapInterpolationMode.MediumQuality:
                     return SKFilterQuality.Medium;
                 case BitmapInterpolationMode.HighQuality:
                     return SKFilterQuality.High;
-                case BitmapInterpolationMode.Default:
+                case BitmapInterpolationMode.None:
                     return SKFilterQuality.None;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
@@ -29,6 +31,7 @@ namespace Avalonia.Skia
         {
             switch (blendingMode)
             {
+                case BitmapBlendingMode.Unspecified:
                 case BitmapBlendingMode.SourceOver:
                     return SKBlendMode.SrcOver;
                 case BitmapBlendingMode.Source:
@@ -111,7 +114,7 @@ namespace Avalonia.Skia
             return sm;
         }
 
-        public static SKColor ToSKColor(this Media.Color c)
+        public static SKColor ToSKColor(this Color c)
         {
             return new SKColor(c.R, c.G, c.B, c.A);
         }
@@ -171,14 +174,14 @@ namespace Avalonia.Skia
             };
         }
 
-        public static SKShaderTileMode ToSKShaderTileMode(this Media.GradientSpreadMethod m)
+        public static SKShaderTileMode ToSKShaderTileMode(this GradientSpreadMethod m)
         {
             switch (m)
             {
                 default:
-                case Media.GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
-                case Media.GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
-                case Media.GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
+                case GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
+                case GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
+                case GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
             }
         }
 
@@ -215,7 +218,8 @@ namespace Avalonia.Skia
             };
         }
 
-        public static SKPath Clone(this SKPath src)
+        [return: NotNullIfNotNull(nameof(src))]
+        public static SKPath? Clone(this SKPath? src)
         {
             return src != null ? new SKPath(src) : null;
         }

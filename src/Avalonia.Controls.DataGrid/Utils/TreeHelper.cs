@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Utils
                     {
                         if (child is Control childElement)
                         {
-                            parent = childElement.Parent;
+                            parent = childElement.VisualParent;
                         }
                     }
                     child = parent;
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Utils
         /// <returns>True if the currently focused element is within the visual tree of the parent</returns>
         internal static bool ContainsFocusedElement(this Visual element)
         {
-            return (element == null) ? false : element.ContainsChild(FocusManager.Instance.Current as Visual);
+            return element is InputElement { IsKeyboardFocusWithin: true };
         }
     }
 }

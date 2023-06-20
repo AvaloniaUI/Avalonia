@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Input;
+using Avalonia.Threading;
 
 namespace Avalonia.Utilities;
 
@@ -20,15 +21,30 @@ public class WeakEvents
             });
     
     /// <summary>
-    /// Represents PropertyChanged event from <see cref="INotifyPropertyChanged"/>
+    /// Represents PropertyChanged event from <see cref="INotifyPropertyChanged"/> with auto-dispatching to the UI thread
     /// </summary>
     public static readonly WeakEvent<INotifyPropertyChanged, PropertyChangedEventArgs>
-        PropertyChanged = WeakEvent.Register<INotifyPropertyChanged, PropertyChangedEventArgs>(
+        ThreadSafePropertyChanged = WeakEvent.Register<INotifyPropertyChanged, PropertyChangedEventArgs>(
             (s, h) =>
             {
-                PropertyChangedEventHandler handler = (_, e) => h(s, e);
+                bool unsubscribed = false;
+                PropertyChangedEventHandler handler = (_, e) =>
+                {
+                    if (Dispatcher.UIThread.CheckAccess())
+                        h(s, e);
+                    else
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (!unsubscribed)
+                                h(s, e);
+                        });
+                };
                 s.PropertyChanged += handler;
-                return () => s.PropertyChanged -= handler;
+                return () =>
+                {
+                    unsubscribed = true;
+                    s.PropertyChanged -= handler;
+                };
             });
 
 

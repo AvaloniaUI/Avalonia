@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -14,11 +15,11 @@ namespace Avalonia.Browser
         private bool _signaled;
         private static KeyboardDevice? s_keyboard;
 
-        public IWindowImpl CreateWindow() => throw new NotSupportedException();
+        public IWindowImpl CreateWindow() => throw new NotSupportedException("Browser doesn't support windowing platform. In order to display a single-view content, set ISingleViewApplicationLifetime.MainView.");
 
         IWindowImpl IWindowingPlatform.CreateEmbeddableWindow()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Browser doesn't support embeddable windowing platform.");
         }
 
         public ITrayIconImpl? CreateTrayIcon()
@@ -36,22 +37,22 @@ namespace Avalonia.Browser
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IRuntimePlatform>().ToSingleton<BrowserRuntimePlatform>()
-                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-        }
 
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
+            if (AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() is { } options
+                && options.RegisterAvaloniaServiceWorker)
+            {
+                var swPath = AvaloniaModule.ResolveServiceWorkerPath();
+                AvaloniaModule.RegisterServiceWorker(swPath, options.AvaloniaServiceWorkerScope);
+            }
         }
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)

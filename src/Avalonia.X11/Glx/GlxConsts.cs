@@ -4,7 +4,7 @@
 #pragma warning disable 414
 namespace Avalonia.X11.Glx
 {
-    class GlxConsts
+    internal class GlxConsts
     {
         public const int GLX_USE_GL = 1;
         public const int GLX_BUFFER_SIZE = 2;

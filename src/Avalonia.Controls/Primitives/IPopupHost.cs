@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        IContentPresenter? Presenter { get; }
+        ContentPresenter? Presenter { get; }
 
         /// <summary>
         /// Gets or sets whether the popup appears on top of all other windows.

@@ -203,23 +203,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new ContentPresenter()
-            {
-                Background = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Background).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
         public void Should_Not_Bind_Old_Child_To_New_DataContext()
         {
             // Test for issue #1099.

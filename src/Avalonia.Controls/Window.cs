@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
@@ -11,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -66,7 +65,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IFocusScope, ILayoutRoot
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
@@ -149,11 +148,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="WindowStartupLocation"/> property.
         /// </summary>
-        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
-            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
-                nameof(WindowStartupLocation),
-                o => o.WindowStartupLocation,
-                (o, v) => o.WindowStartupLocation = v);
+        public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.Register<Window, WindowStartupLocation>(nameof(WindowStartupLocation));
 
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
@@ -171,7 +167,6 @@ namespace Avalonia.Controls
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
         private object? _dialogResult;
         private readonly Size _maxPlatformClientSize;
-        private WindowStartupLocation _windowStartupLocation;
         private bool _shown;
         private bool _showingAsDialog;
 
@@ -232,7 +227,7 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
@@ -305,7 +300,7 @@ namespace Avalonia.Controls
         {
             get => GetValue(ExtendClientAreaTitleBarHeightHintProperty);
             set => SetValue(ExtendClientAreaTitleBarHeightHintProperty, value);
-        }        
+        }
 
         /// <summary>
         /// Gets if the ClientArea is Extended into the Window Decorations.
@@ -314,7 +309,7 @@ namespace Avalonia.Controls
         {
             get => _isExtendedIntoWindowDecorations;
             private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
-        }        
+        }
 
         /// <summary>
         /// Gets the WindowDecorationMargin.
@@ -324,7 +319,7 @@ namespace Avalonia.Controls
         {
             get => _windowDecorationMargin;
             private set => SetAndRaise(WindowDecorationMarginProperty, ref _windowDecorationMargin, value);
-        }        
+        }
 
         /// <summary>
         /// Gets the window margin that is hidden off the screen area.
@@ -397,8 +392,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowStartupLocation WindowStartupLocation
         {
-            get { return _windowStartupLocation; }
-            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLocation, value); }
+            get => GetValue(WindowStartupLocationProperty);
+            set => SetValue(WindowStartupLocationProperty, value);
         }
 
         /// <summary>
@@ -425,7 +420,7 @@ namespace Avalonia.Controls
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey => typeof(Window);
+        protected override Type StyleKeyOverride => typeof(Window);
 
         /// <summary>
         /// Fired before a window is closed.
@@ -450,7 +445,7 @@ namespace Avalonia.Controls
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
         /// </remarks>
-        public void Close(object dialogResult)
+        public void Close(object? dialogResult)
         {
             _dialogResult = dialogResult;
             CloseCore(WindowCloseReason.WindowClosing, true);
@@ -488,7 +483,7 @@ namespace Avalonia.Controls
                 CloseInternal();
                 return false;
             }
-            
+
             return true;
         }
 
@@ -540,17 +535,17 @@ namespace Avalonia.Controls
             return true;
         }
 
-        protected virtual void HandleWindowStateChanged(WindowState state)
+        private void HandleWindowStateChanged(WindowState state)
         {
             WindowState = state;
 
             if (state == WindowState.Minimized)
             {
-                Renderer.Stop();
+                StopRendering();
             }
             else
             {
-                Renderer.Start();
+                StartRendering();
             }
         }
 
@@ -573,7 +568,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                Renderer?.Stop();
+                StopRendering();
 
                 if (Owner is Window owner)
                 {
@@ -614,7 +609,7 @@ namespace Avalonia.Controls
 
                 if (_shown != isVisible)
                 {
-                    if(!_shown)
+                    if (!_shown)
                     {
                         Show();
                     }
@@ -657,7 +652,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
         }
-        
+
         private void EnsureParentStateBeforeShow(Window owner)
         {
             if (owner.PlatformImpl == null)
@@ -705,7 +700,7 @@ namespace Avalonia.Controls
 
                 if (initialSize != ClientSize)
                 {
-                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
                 LayoutManager.ExecuteInitialLayoutPass();
@@ -718,10 +713,10 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner?.AddChild(this, false);
 
-                SetWindowStartupLocation(owner?.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, false);
-                Renderer?.Start();
+                StartRendering();
                 OnOpened(EventArgs.Empty);
             }
         }
@@ -783,7 +778,7 @@ namespace Avalonia.Controls
 
                 if (initialSize != ClientSize)
                 {
-                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
                 }
 
                 LayoutManager.ExecuteInitialLayoutPass();
@@ -794,11 +789,11 @@ namespace Avalonia.Controls
                 Owner = owner;
                 owner.AddChild(this, true);
 
-                SetWindowStartupLocation(owner.PlatformImpl);
+                SetWindowStartupLocation(owner);
 
                 PlatformImpl?.Show(ShowActivated, true);
 
-                Renderer?.Start();
+                StartRendering();
 
                 Observable.FromEventPattern(
                         x => Closed += x,
@@ -819,7 +814,7 @@ namespace Avalonia.Controls
         {
             bool isEnabled = true;
 
-            foreach (var (_, isDialog)  in _children)
+            foreach (var (_, isDialog) in _children)
             {
                 if (isDialog)
                 {
@@ -856,7 +851,7 @@ namespace Avalonia.Controls
         {
             Window? firstDialogChild = null;
 
-            foreach (var (child, isDialog)  in _children)
+            foreach (var (child, isDialog) in _children)
             {
                 if (isDialog)
                 {
@@ -875,12 +870,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(IWindowBaseImpl? owner = null)
+        private void SetWindowStartupLocation(Window? owner = null)
         {
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                (owner is null || 
+                (owner is null ||
                  (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
                 )
             {
@@ -902,7 +897,7 @@ namespace Avalonia.Controls
 
                 if (owner is not null)
                 {
-                    screen = Screens.ScreenFromWindow(owner) 
+                    screen = Screens.ScreenFromWindow(owner)
                              ?? Screens.ScreenFromPoint(owner.Position);
                 }
 
@@ -980,11 +975,11 @@ namespace Avalonia.Controls
 
         protected sealed override Size ArrangeSetBounds(Size size)
         {
-            PlatformImpl?.Resize(size, PlatformResizeReason.Layout);
+            PlatformImpl?.Resize(size, WindowResizeReason.Layout);
             return ClientSize;
         }
 
-        protected sealed override void HandleClosed()
+        private protected sealed override void HandleClosed()
         {
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
@@ -999,7 +994,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
             {
@@ -1010,8 +1005,8 @@ namespace Avalonia.Controls
                 // to the requested size.
                 if (sizeToContent != SizeToContent.Manual &&
                     CanResize &&
-                    reason == PlatformResizeReason.Unspecified ||
-                    reason == PlatformResizeReason.User)
+                    reason == WindowResizeReason.Unspecified ||
+                    reason == WindowResizeReason.User)
                 {
                     if (clientSize.Width != ClientSize.Width)
                         sizeToContent &= ~SizeToContent.Width;

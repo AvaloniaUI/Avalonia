@@ -1,37 +1,30 @@
 ﻿using Avalonia.Layout;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
     public partial class RelativePanel
     {
-        private static void OnAlignPropertiesChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (d is Layoutable layoutable && layoutable.Parent is Layoutable layoutableParent)
-            {
-                layoutableParent.InvalidateArrange();
-            }
-        }
 
         static RelativePanel()
         {
             ClipToBoundsProperty.OverrideDefaultValue<RelativePanel>(true);
 
-            AboveProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignBottomWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignBottomWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignHorizontalCenterWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignHorizontalCenterWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignLeftWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignLeftWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignRightWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignRightWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignTopWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignTopWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignVerticalCenterWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            AlignVerticalCenterWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            BelowProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            LeftOfProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            RightOfProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
+            AffectsParentArrange<RelativePanel>(
+                AlignLeftWithPanelProperty, AlignLeftWithProperty, LeftOfProperty,
+                AlignRightWithPanelProperty, AlignRightWithProperty, RightOfProperty,
+                AlignTopWithPanelProperty, AlignTopWithProperty, AboveProperty,
+                AlignBottomWithPanelProperty, AlignBottomWithProperty, BelowProperty,
+                AlignHorizontalCenterWithPanelProperty, AlignHorizontalCenterWithProperty,
+                AlignVerticalCenterWithPanelProperty, AlignVerticalCenterWithProperty);
+            
+            AffectsParentMeasure<RelativePanel>(
+                AlignLeftWithPanelProperty, AlignLeftWithProperty, LeftOfProperty,
+                AlignRightWithPanelProperty, AlignRightWithProperty, RightOfProperty,
+                AlignTopWithPanelProperty, AlignTopWithProperty, AboveProperty,
+                AlignBottomWithPanelProperty, AlignBottomWithProperty, BelowProperty,
+                AlignHorizontalCenterWithPanelProperty, AlignHorizontalCenterWithProperty,
+                AlignVerticalCenterWithPanelProperty, AlignVerticalCenterWithProperty);
         }
 
         /// <summary>

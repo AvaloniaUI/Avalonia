@@ -19,14 +19,16 @@ namespace Avalonia
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
+        /// <param name="hostType">The class that the property being is registered on.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
-        protected AvaloniaProperty(
+        private protected AvaloniaProperty(
             string name,
             Type ownerType,
+            Type hostType,
             AvaloniaPropertyMetadata metadata,
             Action<AvaloniaObject, bool>? notifying = null)
-            : base(name, typeof(TValue), ownerType, metadata, notifying)
+            : base(name, typeof(TValue), ownerType, hostType, metadata, notifying)
         {
             _changed = new LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>>();
         }
@@ -37,7 +39,7 @@ namespace Avalonia
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        protected AvaloniaProperty(
+        private protected AvaloniaProperty(
             AvaloniaProperty<TValue> source,
             Type ownerType,
             AvaloniaPropertyMetadata? metadata)
@@ -66,10 +68,10 @@ namespace Avalonia
             _changed.OnNext(e);
         }
 
-        protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
+        private protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
-        protected BindingValue<object?> TryConvert(object? value)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
+        private protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)
             {

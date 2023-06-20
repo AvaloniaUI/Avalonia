@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Avalonia.Platform;
 
-public struct PlatformGraphicsExternalImageProperties
+public record struct PlatformGraphicsExternalImageProperties
 {
     public int Width { get; set; }
     public int Height { get; set; }

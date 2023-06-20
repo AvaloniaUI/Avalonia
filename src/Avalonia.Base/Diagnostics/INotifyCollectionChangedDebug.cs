@@ -8,7 +8,7 @@ namespace Avalonia.Diagnostics
     /// Provides a debug interface into <see cref="INotifyCollectionChanged"/> subscribers on
     /// <see cref="AvaloniaList{T}"/>
     /// </summary>
-    public interface INotifyCollectionChangedDebug
+    internal interface INotifyCollectionChangedDebug
     {
         /// <summary>
         /// Gets the subscriber list for the <see cref="INotifyCollectionChanged.CollectionChanged"/>

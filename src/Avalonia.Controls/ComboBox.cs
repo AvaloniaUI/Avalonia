@@ -1,10 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Reactive;
-using Avalonia.Controls.Generators;
-using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
@@ -12,8 +9,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
-using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -24,22 +21,20 @@ namespace Avalonia.Controls
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
-        public const string pcDropdownOpen = ":dropdownopen";
-        public const string pcPressed = ":pressed";
+        internal const string pcDropdownOpen = ":dropdownopen";
+        internal const string pcPressed = ":pressed";
+
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<Panel> DefaultPanel =
-            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel?> DefaultPanel =
+            new(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<ComboBox, bool> IsDropDownOpenProperty =
-            AvaloniaProperty.RegisterDirect<ComboBox, bool>(
-                nameof(IsDropDownOpen),
-                o => o.IsDropDownOpen,
-                (o, v) => o.IsDropDownOpen = v);
+        public static readonly StyledProperty<bool> IsDropDownOpenProperty =
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsDropDownOpen));
 
         /// <summary>
         /// Defines the <see cref="MaxDropDownHeight"/> property.
@@ -77,7 +72,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
-        private bool _isDropDownOpen;
         private Popup? _popup;
         private object? _selectionBoxItem;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
@@ -107,8 +101,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsDropDownOpen
         {
-            get => _isDropDownOpen;
-            set => SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value);
+            get => GetValue(IsDropDownOpenProperty);
+            set => SetValue(IsDropDownOpenProperty, value);
         }
 
         /// <summary>
@@ -123,10 +117,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the item to display as the control's content.
         /// </summary>
-        protected object? SelectionBoxItem
+        public object? SelectionBoxItem
         {
             get => _selectionBoxItem;
-            set => SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value);
+            protected set => SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value);
         }
 
         /// <summary>
@@ -171,14 +165,21 @@ namespace Avalonia.Controls
             UpdateSelectionBoxItem(SelectedItem);
         }
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
             UpdateFlowDirection();
         }
 
-        protected internal override Control CreateContainerForItemOverride() => new ComboBoxItem();
-        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ComboBoxItem;
+        protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
+        {
+            return new ComboBoxItem();
+        }
+
+        protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
+        {
+            return NeedsContainer<ComboBoxItem>(item, out recycleKey);
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -191,23 +192,23 @@ namespace Avalonia.Controls
             if ((e.Key == Key.F4 && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == false) ||
                 ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)))
             {
-                IsDropDownOpen = !IsDropDownOpen;
+                SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                 e.Handled = true;
             }
             else if (IsDropDownOpen && e.Key == Key.Escape)
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
             else if (!IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
             {
-                IsDropDownOpen = true;
+                SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
             }
             else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
             {
                 SelectFocusedItem();
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
             else if (!IsDropDownOpen)
@@ -219,7 +220,7 @@ namespace Avalonia.Controls
                 }
                 else if (e.Key == Key.Up)
                 {
-                    SelectPrev();
+                    SelectPrevious();
                     e.Handled = true;
                 }
             }
@@ -230,8 +231,7 @@ namespace Avalonia.Controls
                 var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
                 {
-                    FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
-                    e.Handled = true;
+                    e.Handled = firstChild.Focus(NavigationMethod.Directional);
                 }
             }
         }
@@ -250,7 +250,7 @@ namespace Avalonia.Controls
                         if (e.Delta.Y < 0)
                             SelectNext();
                         else
-                            SelectPrev();
+                            SelectPrevious();
 
                         e.Handled = true;
                     }
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    IsDropDownOpen = !IsDropDownOpen;
+                    SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
                 }
             }
@@ -361,19 +361,6 @@ namespace Avalonia.Controls
 
             _subscriptionsOnOpen.Clear();
 
-            var toplevel = TopLevel.GetTopLevel(this);
-            if (toplevel != null)
-            {
-                toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
-                {
-                    //eat wheel scroll event outside dropdown popup while it's open
-                    if (IsDropDownOpen && (ev.Source as Visual)?.GetVisualRoot() == toplevel)
-                    {
-                        ev.Handled = true;
-                    }
-                }, Interactivity.RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
-            }
-
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
 
             foreach (var parent in this.GetVisualAncestors().OfType<Control>())
@@ -390,7 +377,7 @@ namespace Avalonia.Controls
         {
             if (!isVisible && IsDropDownOpen)
             {
-                IsDropDownOpen = false;
+                SetCurrentValue(IsDropDownOpenProperty, false);
             }
         }
 
@@ -450,7 +437,22 @@ namespace Avalonia.Controls
             }
             else
             {
-                SelectionBoxItem = item;
+                if(ItemTemplate is null && DisplayMemberBinding is { } binding)
+                {
+                    var template = new FuncDataTemplate<object?>((_, _) =>
+                    new TextBlock
+                    {
+                        [TextBlock.DataContextProperty] = item,
+                        [!TextBlock.TextProperty] = binding,
+                    });
+                    var text = template.Build(item);
+                    SelectionBoxItem = text;
+                }
+                else
+                {
+                    SelectionBoxItem = item;
+                }
+                
             }
         }
 
@@ -478,19 +480,40 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SelectNext()
-        {
-            if (ItemCount >= 1)
-            {
-                MoveSelection(NavigationDirection.Next, WrapSelection);
-            }
-        }
+        private void SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
+        private void SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
 
-        private void SelectPrev()
+        private void MoveSelection(int startIndex, int step, bool wrap)
         {
-            if (ItemCount >= 1)
+            static bool IsSelectable(object? o) => (o as AvaloniaObject)?.GetValue(IsEnabledProperty) ?? true;
+
+            var count = ItemCount;
+
+            for (int i = startIndex + step; i != startIndex; i += step)
             {
-                MoveSelection(NavigationDirection.Previous, WrapSelection);
+                if (i < 0 || i >= count)
+                {
+                    if (wrap)
+                    {
+                        if (i < 0)
+                            i += count;
+                        else if (i >= count)
+                            i %= count;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                var item = ItemsView[i];
+                var container = ContainerFromIndex(i);
+                
+                if (IsSelectable(item) && IsSelectable(container))
+                {
+                    SelectedIndex = i;
+                    break;
+                }
             }
         }
     }

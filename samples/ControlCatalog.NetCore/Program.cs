@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -17,9 +18,16 @@ namespace ControlCatalog.NetCore
 {
     static class Program
     {
+        private static bool s_useFramebuffer;
+        
         [STAThread]
         static int Main(string[] args)
         {
+            if (args.Contains("--fbdev"))
+            {
+                s_useFramebuffer = true;
+            }
+
             if (args.Contains("--wait-for-attach"))
             {
                 Console.WriteLine("Attach debugger and use 'Set next statement'");
@@ -41,10 +49,10 @@ namespace ControlCatalog.NetCore
                     return scaling;
                 return 1;
             }
-            if (args.Contains("--fbdev"))
+            if (s_useFramebuffer)
             {
-                SilenceConsole();
-                return builder.StartLinuxFbDev(args, scaling: GetScaling());
+                 SilenceConsole(); 
+                 return builder.StartLinuxFbDev(args, scaling: GetScaling());
             }
             else if (args.Contains("--vnc"))
             {
@@ -124,12 +132,16 @@ namespace ControlCatalog.NetCore
                     EnableIme = true
                 })
                 .UseSkia()
+                .WithInterFont()
                 .AfterSetup(builder =>
                 {
-                    builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                    if (!s_useFramebuffer)
                     {
-                        StartupScreenIndex = 1,
-                    });
+                        builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                        {
+                            StartupScreenIndex = 1,
+                        });
+                    }
 
                     EmbedSample.Implementation = OperatingSystem.IsWindows() ? (INativeDemoControl)new EmbedSampleWin()
                         : OperatingSystem.IsMacOS() ? new EmbedSampleMac()

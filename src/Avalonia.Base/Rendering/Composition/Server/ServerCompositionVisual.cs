@@ -23,49 +23,55 @@ namespace Avalonia.Rendering.Composition.Server
         private bool _isBackface;
         private Rect? _transformedClipBounds;
         private Rect _combinedTransformedClipBounds;
-        
+
         protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
         {
-            
         }
 
         public void Render(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
         {
-            if(Visible == false || IsVisibleInFrame == false)
+            if (Visible == false || IsVisibleInFrame == false)
                 return;
-            if(Opacity == 0)
+            if (Opacity == 0)
                 return;
 
             currentTransformedClip = currentTransformedClip.Intersect(_combinedTransformedClipBounds);
-            if(currentTransformedClip.IsDefault)
+            if (currentTransformedClip.Width == 0 && currentTransformedClip.Height == 0)
                 return;
 
             Root!.RenderedVisuals++;
-            
-            if (Opacity != 1)
-                canvas.PushOpacity(Opacity);
+
+            var boundsRect = new Rect(new Size(Size.X, Size.Y));
+
             if (AdornedVisual != null)
             {
                 canvas.PostTransform = Matrix.Identity;
                 canvas.Transform = Matrix.Identity;
-                canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
+                if (AdornerIsClipped)
+                    canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
             }
             var transform = GlobalTransformMatrix;
-            canvas.PostTransform = MatrixUtils.ToMatrix(transform);
+            canvas.PostTransform = transform;
             canvas.Transform = Matrix.Identity;
+
+            if (Effect != null)
+                canvas.PushEffect(Effect);
             
-            var boundsRect = new Rect(new Size(Size.X, Size.Y));
+            if (Opacity != 1)
+                canvas.PushOpacity(Opacity, ClipToBounds ? boundsRect : null);
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
-            if(OpacityMaskBrush != null)
+            if (OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
-            
+
+            canvas.RenderOptions = RenderOptions;
+
             RenderCore(canvas, currentTransformedClip);
             
             // Hack to force invalidation of SKMatrix
-            canvas.PostTransform = MatrixUtils.ToMatrix(transform);
+            canvas.PostTransform = transform;
             canvas.Transform = Matrix.Identity;
 
             if (OpacityMaskBrush != null)
@@ -74,14 +80,17 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopGeometryClip();
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PopClip();
-            if (AdornedVisual != null)
+            if (AdornedVisual != null && AdornerIsClipped)
                 canvas.PopClip();
-            if(Opacity != 1)
+            if (Opacity != 1)
                 canvas.PopOpacity();
+            
+            if (Effect != null)
+                canvas.PopEffect();
         }
 
         protected virtual bool HandlesClipToBounds => false;
-        
+
         private ReadbackData _readback0, _readback1, _readback2;
 
         /// <summary>
@@ -96,70 +105,88 @@ namespace Avalonia.Rendering.Composition.Server
                 return ref _readback1;
             return ref _readback2;
         }
-        
-        public Matrix4x4 CombinedTransformMatrix { get; private set; } = Matrix4x4.Identity;
-        public Matrix4x4 GlobalTransformMatrix { get; private set; }
 
-        public virtual void Update(ServerCompositionTarget root)
+        public Matrix CombinedTransformMatrix { get; private set; } = Matrix.Identity;
+        public Matrix GlobalTransformMatrix { get; private set; }
+
+        public record struct UpdateResult(Rect? Bounds, bool InvalidatedOld, bool InvalidatedNew)
         {
-            if(Parent == null && Root == null)
-                return;
-            
+            public UpdateResult() : this(null, false, false)
+            {
+                
+            }
+        }
+        
+        public virtual UpdateResult Update(ServerCompositionTarget root)
+        {
+            if (Parent == null && Root == null)
+                return default;
+
             var wasVisible = IsVisibleInFrame;
-            
+
+            if(Parent != null)
+            {
+                RenderOptions = RenderOptions.MergeWith(Parent.RenderOptions);
+            }
+
             // Calculate new parent-relative transform
             if (_combinedTransformDirty)
             {
                 CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
                     // HACK: Ignore RenderTransform set by the adorner layer
-                    AdornedVisual != null ? Matrix4x4.Identity : TransformMatrix,
+                    AdornedVisual != null ? Matrix.Identity : TransformMatrix,
                     Scale, RotationAngle, Orientation, Offset);
                 _combinedTransformDirty = false;
             }
 
-            var parentTransform = (AdornedVisual ?? Parent)?.GlobalTransformMatrix ?? Matrix4x4.Identity;
+            var parentTransform = (AdornedVisual ?? Parent)?.GlobalTransformMatrix ?? Matrix.Identity;
 
             var newTransform = CombinedTransformMatrix * parentTransform;
-            
+
             // Check if visual was moved and recalculate face orientation
             var positionChanged = false;
             if (GlobalTransformMatrix != newTransform)
             {
                 _isBackface = Vector3.Transform(
-                    new Vector3(0, 0, float.PositiveInfinity), GlobalTransformMatrix).Z <= 0;
+                    new Vector3(0, 0, float.PositiveInfinity), MatrixUtils.ToMatrix4x4(GlobalTransformMatrix)).Z <= 0;
                 positionChanged = true;
             }
 
             var oldTransformedContentBounds = TransformedOwnContentBounds;
             var oldCombinedTransformedClipBounds = _combinedTransformedClipBounds;
-            
+
             if (_parent?.IsDirtyComposition == true)
             {
                 IsDirtyComposition = true;
                 _isDirtyForUpdate = true;
             }
-            
+
             var invalidateOldBounds = _isDirtyForUpdate;
             var invalidateNewBounds = _isDirtyForUpdate;
 
             GlobalTransformMatrix = newTransform;
-            
+
             var ownBounds = OwnContentBounds;
+            
+            // Since padding is applied in the current visual's coordinate space we expand bounds before transforming them
+            if (Effect != null)
+                ownBounds = ownBounds.Inflate(Effect.GetEffectOutputPadding());
+            
             if (ownBounds != _oldOwnContentBounds || positionChanged)
             {
                 _oldOwnContentBounds = ownBounds;
-                if (ownBounds.IsDefault)
+                if (ownBounds.Width == 0 && ownBounds.Height == 0)
                     TransformedOwnContentBounds = default;
                 else
                     TransformedOwnContentBounds =
-                        ownBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
+                        ownBounds.TransformToAABB(GlobalTransformMatrix);
             }
 
             if (_clipSizeDirty || positionChanged)
             {
                 _transformedClipBounds = ClipToBounds
                     ? new Rect(new Size(Size.X, Size.Y))
-                        .TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix))
+                        .TransformToAABB(GlobalTransformMatrix)
                     : null;
                 
                 _clipSizeDirty = false;
@@ -167,18 +194,18 @@ namespace Avalonia.Rendering.Composition.Server
 
             _combinedTransformedClipBounds =
                 AdornedVisual?._combinedTransformedClipBounds
-                ?? Parent?._combinedTransformedClipBounds
+                ?? (Parent?.Effect == null ? Parent?._combinedTransformedClipBounds : null)
                 ?? new Rect(Root!.Size);
-            
+
             if (_transformedClipBounds != null)
                 _combinedTransformedClipBounds = _combinedTransformedClipBounds.Intersect(_transformedClipBounds.Value);
-            
+
             EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
 
             IsHitTestVisibleInFrame = _parent?.IsHitTestVisibleInFrame != false
                                       && Visible
                                       && !_isBackface
-                                      && !_combinedTransformedClipBounds.IsDefault;
+                                      && (_combinedTransformedClipBounds.Width != 0 || _combinedTransformedClipBounds.Height != 0);
 
             IsVisibleInFrame = IsHitTestVisibleInFrame
                                && _parent?.IsVisibleInFrame != false
@@ -207,26 +234,27 @@ namespace Avalonia.Rendering.Composition.Server
             readback.Matrix = GlobalTransformMatrix;
             readback.TargetId = Root.Id;
             readback.Visible = IsHitTestVisibleInFrame;
+            return new(TransformedOwnContentBounds, invalidateNewBounds, invalidateOldBounds);
         }
 
-        void AddDirtyRect(Rect rc)
+        protected void AddDirtyRect(Rect rc)
         {
-            if(rc == default)
+            if (rc == default)
                 return;
             Root?.AddDirtyRect(rc);
         }
-        
+
         /// <summary>
         /// Data that can be read from the UI thread
         /// </summary>
         public struct ReadbackData
         {
-            public Matrix4x4 Matrix;
+            public Matrix Matrix;
             public ulong Revision;
             public long TargetId;
             public bool Visible;
         }
-        
+
         partial void DeserializeChangesExtra(BatchStreamReader c)
         {
             ValuesInvalidated();
@@ -243,9 +271,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         protected virtual void OnDetachedFromRoot(ServerCompositionTarget target)
         {
-            
         }
-        
+
         partial void OnRootChanged()
         {
             if (Root != null)
@@ -254,12 +281,11 @@ namespace Avalonia.Rendering.Composition.Server
                 OnAttachedToRoot(Root);
             }
         }
-        
+
         protected virtual void OnAttachedToRoot(ServerCompositionTarget target)
         {
-            
         }
-        
+
         protected override void ValuesInvalidated()
         {
             _isDirtyForUpdate = true;
@@ -272,6 +298,4 @@ namespace Avalonia.Rendering.Composition.Server
         public Rect TransformedOwnContentBounds { get; set; }
         public virtual Rect OwnContentBounds => new Rect(0, 0, Size.X, Size.Y);
     }
-
-
 }

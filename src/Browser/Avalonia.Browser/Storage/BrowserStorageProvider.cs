@@ -1,39 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Browser.Storage;
-
-internal record FilePickerAcceptType(string Description, IReadOnlyDictionary<string, IReadOnlyList<string>> Accept);
 
 internal class BrowserStorageProvider : IStorageProvider
 {
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
 
-    private readonly Lazy<Task> _lazyModule = new(() => AvaloniaModule.ImportStorage());
+    public bool CanOpen => true;
+    public bool CanSave => true;
+    public bool CanPickFolder => true;
 
-    public bool CanOpen => StorageHelper.CanShowOpenFilePicker();
-    public bool CanSave => StorageHelper.CanShowSaveFilePicker();
-    public bool CanPickFolder => StorageHelper.CanShowDirectoryPicker();
-
+    private bool PreferPolyfill =>
+        AvaloniaLocator.Current.GetService<BrowserPlatformOptions>()?.PreferFileDialogPolyfill ?? false;
+    
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         var (types, excludeAll) = ConvertFileTypes(options.FileTypeFilter);
 
         try
         {
-            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll);
+            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll, PreferPolyfill);
             if (items is null)
             {
                 return Array.Empty<IStorageFile>();
@@ -60,14 +58,16 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         var (types, excludeAll) = ConvertFileTypes(options.FileTypeChoices);
 
         try
         {
-            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll);
+            var suggestedName =
+                StorageProviderHelpers.NameWithExtension(options.SuggestedFileName, options.DefaultExtension, null);
+            var item = await StorageHelper.SaveFileDialog(startIn, suggestedName, types, excludeAll, PreferPolyfill);
             return item is not null ? new JSStorageFile(item) : null;
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -88,12 +88,12 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         try
         {
-            var item = await StorageHelper.SelectFolderDialog(startIn);
+            var item = await StorageHelper.SelectFolderDialog(startIn, PreferPolyfill);
             return item is not null ? new[] { new JSStorageFolder(item) } : Array.Empty<IStorageFolder>();
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -104,31 +104,31 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var item = await StorageHelper.OpenBookmark(bookmark);
         return item is not null ? new JSStorageFile(item) : null;
     }
 
     public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var item = await StorageHelper.OpenBookmark(bookmark);
         return item is not null ? new JSStorageFolder(item) : null;
     }
 
-    public Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
         return Task.FromResult<IStorageFile?>(null);
     }
 
-    public Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public async Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    public async Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
-        await _lazyModule.Value;
+        await AvaloniaModule.ImportStorage();
         var directory = StorageHelper.CreateWellKnownDirectory(wellKnownFolder switch
         {
             WellKnownFolder.Desktop => "desktop",
@@ -147,7 +147,7 @@ internal class BrowserStorageProvider : IStorageProvider
     {
         var types = input?
             .Where(t => t.MimeTypes?.Any() == true && t != FilePickerFileTypes.All)
-            .Select(t => StorageHelper.CreateAcceptType(t.Name, t.MimeTypes!.ToArray()))
+            .Select(t => StorageHelper.CreateAcceptType(t.Name, t.MimeTypes!.ToArray(), t.TryGetExtensions()?.ToArray()))
             .ToArray();
         if (types?.Length == 0)
         {
@@ -186,10 +186,15 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
             dateModified: lastModified > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(lastModified.Value) : null);
     }
 
-    public bool CanBookmark => true;
+    public bool CanBookmark => StorageHelper.HasNativeFilePicker();
 
     public Task<string?> SaveBookmarkAsync()
     {
+        if (!CanBookmark)
+        {
+            return Task.FromResult<string?>(null);
+        }
+
         return StorageHelper.SaveBookmark(FileHandle);
     }
 
@@ -198,8 +203,40 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
         return Task.FromResult<IStorageFolder?>(null);
     }
 
+    public Task DeleteAsync()
+    {
+        return StorageHelper.DeleteAsync(FileHandle);
+    }
+
+    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    {
+        if (destination is not JSStorageFolder folder)
+        {
+            throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
+        }
+
+        var storageItem = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
+        if (storageItem is null)
+        {
+            return null;
+        }
+
+        var kind = storageItem.GetPropertyAsString("kind");
+        return kind switch
+        {
+            "directory" => new JSStorageFolder(storageItem),
+            "file" => new JSStorageFile(storageItem),
+            _ => this
+        };
+    }
+
     public Task ReleaseBookmarkAsync()
     {
+        if (!CanBookmark)
+        {
+            return Task.CompletedTask;
+        }
+
         return StorageHelper.DeleteBookmark(FileHandle);
     }
 
@@ -216,7 +253,6 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
     {
     }
 
-    public bool CanOpenRead => true;
     public async Task<Stream> OpenReadAsync()
     {
         try
@@ -230,7 +266,6 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
         }
     }
 
-    public bool CanOpenWrite => true;
     public async Task<Stream> OpenWriteAsync()
     {
         try
@@ -254,24 +289,82 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
-        using var items = await StorageHelper.GetItems(FileHandle);
-        if (items is null)
+        using var itemsIterator = StorageHelper.GetItemsIterator(FileHandle);
+        if (itemsIterator is null)
         {
-            return Array.Empty<IStorageItem>();
+            yield break;
         }
 
-        var itemsArray = StorageHelper.ItemsArray(items);
-
-        return itemsArray
-            .Select(reference => reference.GetPropertyAsString("kind") switch
+        while (true)
+        {
+            var nextResult = await itemsIterator.CallMethodObjectAsync("next");
+            if (nextResult is null)
             {
-                "directory" => (IStorageItem)new JSStorageFolder(reference),
-                "file" => new JSStorageFile(reference),
-                _ => null
-            })
-            .Where(i => i is not null)
-            .ToArray()!;
+                yield break;
+            }
+
+            var isDone = nextResult.GetPropertyAsBoolean("done");
+            if (isDone)
+            {
+                yield break;
+            }
+
+            var valArray = nextResult.GetPropertyAsJSObject("value");
+            var storageItem = valArray?.GetArrayItem(1); // 0 - item name, 1 - item instance
+            if (storageItem is null)
+            {
+                yield break;
+            }
+
+            var kind = storageItem.GetPropertyAsString("kind");
+            var item = StorageHelper.StorageItemFromHandle(storageItem)!;
+            switch (kind)
+            {
+                case "directory":
+                    yield return new JSStorageFolder(item);
+                    break;
+                case "file":
+                    yield return new JSStorageFile(item);
+                    break;
+            }
+        }
+    }
+
+    public async Task<IStorageFile?> CreateFileAsync(string name)
+    {
+        try
+        {
+            var storageFile = await StorageHelper.CreateFile(FileHandle, name);
+            if (storageFile is null)
+            {
+                return null;
+            }
+
+            return new JSStorageFile(storageFile);
+        }
+        catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
+        {
+            throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
+        }
+    }
+
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
+    {
+        try
+        {
+            var storageFile = await StorageHelper.CreateFolder(FileHandle, name);
+            if (storageFile is null)
+            {
+                return null;
+            }
+
+            return new JSStorageFolder(storageFile);
+        }
+        catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
+        {
+            throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
+        }
     }
 }

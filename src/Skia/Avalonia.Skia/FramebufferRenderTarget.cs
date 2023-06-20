@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -15,9 +15,9 @@ namespace Avalonia.Skia
         private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
-        private SKSurface _framebufferSurface;
-        private PixelFormatConversionShim _conversionShim;
-        private IDisposable _preFramebufferCopyHandler;
+        private SKSurface? _framebufferSurface;
+        private PixelFormatConversionShim? _conversionShim;
+        private IDisposable? _preFramebufferCopyHandler;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
@@ -35,7 +35,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var framebuffer = _platformSurface.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
@@ -53,9 +53,7 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _framebufferSurface,
-                Dpi = framebuffer.Dpi,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
+                Dpi = framebuffer.Dpi
             };
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
@@ -81,6 +79,7 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="desiredImageInfo">Desired image info.</param>
         /// <param name="framebuffer">Backing framebuffer.</param>
+        [MemberNotNull(nameof(_framebufferSurface))]
         private void CreateSurface(SKImageInfo desiredImageInfo, ILockedFramebuffer framebuffer)
         {
             if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) && _currentFramebufferAddress == framebuffer.Address)

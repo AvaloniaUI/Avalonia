@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+ Copyright (C) 2018 Igalia S.L.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+ Author: Patrick Griffis <pgriffis@igalia.com>
+-->
+
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+    org.freedesktop.portal.Settings:
+    @short_description: Settings interface
+
+    This interface provides read-only access to a small number
+    of host settings required for toolkits similar to XSettings.
+    It is not for general purpose settings.
+
+    Currently the interface provides the following keys:
+
+    <variablelist>
+      <varlistentry>
+        <term>org.freedesktop.appearance color-scheme u</term>
+        <listitem><para>
+          Indicates the system's preferred color scheme.
+          Supported values are:
+          <simplelist>
+            <member>0: No preference</member>
+            <member>1: Prefer dark appearance</member>
+            <member>2: Prefer light appearance</member>
+          </simplelist>
+          Unknown values should be treated as 0 (no preference).
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+
+    Implementations can provide other keys; they are entirely
+    implementation details that are undocumented. If you are a
+    toolkit and want to use this please open an issue.
+
+    This documentation describes version 1 of this interface.
+  -->
+  <interface name="org.freedesktop.portal.Settings">
+
+    <!--
+      ReadAll:
+      @namespaces: List of namespaces to filter results by, supports simple globbing explained below.
+      @value: Dictionary of namespaces to its keys and values.
+
+      If @namespaces is an empty array or contains an empty string it matches all. Globbing is supported but only for
+      trailing sections, e.g. "org.example.*".
+    -->
+    <method name='ReadAll'>
+      <arg name='namespaces' type='as'/>
+      <arg name='value' direction='out' type='a{sa{sv}}'/>
+    </method>
+
+    <!--
+      Read:
+      @namespace: Namespace to look up @key in.
+      @key: The key to get.
+      @value: The value @key is set to.
+
+      Reads a single value. Returns an error on any unknown namespace or key.
+    -->
+    <method name='Read'>
+      <arg name='namespace' type='s'/>
+      <arg name='key' type='s'/>
+      <arg name='value' direction='out' type='v'/>
+    </method>
+
+    <!--
+      SettingChanged:
+      @namespace: Namespace of changed setting.
+      @key: The key of changed setting.
+      @value: The new value.
+
+      Emitted when a setting changes.
+    -->
+    <signal name='SettingChanged'>
+      <arg name='namespace' direction='out' type='s'/>
+      <arg name='key' direction='out' type='s'/>
+      <arg name='value' direction='out' type='v'/>
+    </signal>
+
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

@@ -29,7 +29,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 { "foo", "bar" },
             };
 
-            Assert.True(target.TryGetResource("foo", out var result));
+            Assert.True(target.TryGetResource("foo", null, out var result));
             Assert.Equal("bar", result);
         }
 
@@ -47,7 +47,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            Assert.True(target.TryGetResource("foo", out var result));
+            Assert.True(target.TryGetResource("foo", null, out var result));
             Assert.Equal("bar", result);
         }
 
@@ -64,7 +64,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 { "foo", "baz" },
             });
 
-            Assert.True(target.TryGetResource("foo", out var result));
+            Assert.True(target.TryGetResource("foo", null, out var result));
             Assert.Equal("bar", result);
         }
 
@@ -86,7 +86,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            Assert.True(target.TryGetResource("foo", out var result));
+            Assert.True(target.TryGetResource("foo", null, out var result));
             Assert.Equal("baz", result);
         }
 

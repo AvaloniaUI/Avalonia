@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Reactive;
 using ObservableEx = Avalonia.Reactive.Observable;
 
@@ -23,7 +24,7 @@ namespace Avalonia.Data
         /// <param name="priority">The priority of the binding.</param>
         /// <remarks>
         /// This constructor can be used to create any type of binding and as such requires an
-        /// <see cref="ISubject{Object}"/> as the binding source because this is the only binding
+        /// <see cref="IObservable{Object}"/> as the binding source because this is the only binding
         /// source which can be used for all binding modes. If you wish to create an instance with
         /// something other than a subject, use one of the static creation methods on this class.
         /// </remarks>
@@ -49,7 +50,7 @@ namespace Avalonia.Data
         /// </summary>
         public IObservable<object?> Source { get; }
 
-        [Obsolete("Use Source property")]
+        [Obsolete("Use Source property"), EditorBrowsable(EditorBrowsableState.Never)]
         public IObservable<object?> Observable => Source;
 
         /// <summary>

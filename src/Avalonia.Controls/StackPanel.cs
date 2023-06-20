@@ -22,13 +22,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Spacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SpacingProperty =
-            StackLayout.SpacingProperty.AddOwner<StackPanel>();
+            AvaloniaProperty.Register<StackPanel, double>(nameof(Spacing));
 
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            StackLayout.OrientationProperty.AddOwner<StackPanel>();
+            AvaloniaProperty.Register<StackPanel, Orientation>(nameof(Orientation), Orientation.Vertical);
 
         /// <summary>
         /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
@@ -261,9 +261,6 @@ namespace Avalonia.Controls
                 // Get next child.
                 var child = children[i];
 
-                if (child == null)
-                { continue; }
-
                 bool isVisible = child.IsVisible;
 
                 if (isVisible && !hasVisibleChild)
@@ -319,8 +316,10 @@ namespace Avalonia.Controls
             {
                 var child = children[i];
 
-                if (child == null || !child.IsVisible)
-                { continue; }
+                if (!child.IsVisible)
+                {
+                    continue;
+                }
 
                 if (fHorizontal)
                 {

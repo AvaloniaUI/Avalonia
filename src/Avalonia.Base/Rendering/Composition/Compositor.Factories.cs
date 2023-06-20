@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 
@@ -13,9 +12,9 @@ public partial class Compositor
     /// </summary>
     /// <param name="surfaces">A factory method to create IRenderTarget to be called from the render thread</param>
     /// <returns></returns>
-    public CompositionTarget CreateCompositionTarget(Func<IEnumerable<object>> surfaces)
+    internal CompositionTarget CreateCompositionTarget(Func<IEnumerable<object>> surfaces)
     {
-        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces));
+        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces, DiagnosticTextRenderer));
     }
     
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));

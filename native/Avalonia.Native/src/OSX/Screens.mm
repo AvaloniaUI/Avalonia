@@ -41,7 +41,7 @@ public:
             ret->WorkingArea.X = [screen visibleFrame].origin.x;
             ret->WorkingArea.Y = ConvertPointY(ToAvnPoint([screen visibleFrame].origin)).Y - ret->WorkingArea.Height;
             
-            ret->Scaling = [screen backingScaleFactor];
+            ret->Scaling = 1;
             
             ret->IsPrimary = index == 0;
             

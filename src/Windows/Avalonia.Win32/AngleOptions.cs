@@ -17,6 +17,6 @@ namespace Avalonia.Win32
             new GlVersion(GlProfileType.OpenGLES, 2, 0)
         };
 
-        public IList<PlatformApi> AllowedPlatformApis { get; set; } = null;
+        public IList<PlatformApi>? AllowedPlatformApis { get; set; } = null;
     }
 }

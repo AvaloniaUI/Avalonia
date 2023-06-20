@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -39,11 +40,11 @@ namespace Avalonia.Dialogs
             return builder;
         }
 
-        [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API")]
+        [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
         public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions? options = null) => ShowManagedAsync<Window>(dialog, parent, options);
 
-        [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API")]
+        [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
         public static async Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions? options = null) where TWindow : Window, new()
         {
@@ -51,7 +52,7 @@ namespace Avalonia.Dialogs
 
             var files = await impl.OpenFilePickerAsync(dialog.ToFilePickerOpenOptions());
             return files
-                .Select(file => file.TryGetFullPath() ?? file.Name)
+                .Select(file => file.TryGetLocalPath() ?? file.Name)
                 .ToArray();
         }
     }

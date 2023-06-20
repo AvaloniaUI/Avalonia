@@ -7,20 +7,17 @@ using Avalonia.Logging;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
-using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
-using Avalonia.Win32.OpenGl.Angle;
-using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition;
 
 internal class WinUiCompositorConnection : IRenderTimer
 {
     private readonly WinUiCompositionShared _shared;
-    public event Action<TimeSpan> Tick;
+    public event Action<TimeSpan>? Tick;
     public bool RunsInBackground => true;
     
-    public unsafe WinUiCompositorConnection()
+    public WinUiCompositorConnection()
     {
         using var compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
         /*
@@ -42,10 +39,9 @@ internal class WinUiCompositorConnection : IRenderTimer
         _shared = new WinUiCompositionShared(compositor);
     }
 
-    static bool TryCreateAndRegisterCore()
+    private static bool TryCreateAndRegisterCore()
     {
         var tcs = new TaskCompletionSource<bool>();
-        var pumpLock = new object();
         var th = new Thread(() =>
         {
             WinUiCompositorConnection connect;
@@ -80,10 +76,10 @@ internal class WinUiCompositorConnection : IRenderTimer
         return tcs.Task.Result;
     }
 
-    class RunLoopHandler : CallbackBase, IAsyncActionCompletedHandler 
+    private class RunLoopHandler : CallbackBase, IAsyncActionCompletedHandler
     {
         private readonly WinUiCompositorConnection _parent;
-        private Stopwatch _st = Stopwatch.StartNew();
+        private readonly Stopwatch _st = Stopwatch.StartNew();
 
         public RunLoopHandler(WinUiCompositorConnection parent)
         {
@@ -101,7 +97,7 @@ internal class WinUiCompositorConnection : IRenderTimer
     private void RunLoop()
     {
         var cts = new CancellationTokenSource();
-        AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             cts.Cancel();
 
         lock (_shared.SyncRoot)

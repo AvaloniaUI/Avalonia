@@ -8,11 +8,11 @@ namespace Avalonia.Win32.OpenGl
 {
     internal class WglRestoreContext : IDisposable
     {
-        private readonly object _monitor;
+        private readonly object? _monitor;
         private readonly IntPtr _oldDc;
         private readonly IntPtr _oldContext;
 
-        public WglRestoreContext(IntPtr gc, IntPtr context, object monitor, bool takeMonitor = true)
+        public WglRestoreContext(IntPtr gc, IntPtr context, object? monitor, bool takeMonitor = true)
         {
             _monitor = monitor;
             _oldDc = wglGetCurrentDC();

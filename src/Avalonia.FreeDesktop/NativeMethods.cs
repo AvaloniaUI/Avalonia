@@ -15,18 +15,18 @@ namespace Avalonia.FreeDesktop
         public static string ReadLink(string path)
         {
             var symlinkSize = Encoding.UTF8.GetByteCount(path);
-            var bufferSize = 4097; // PATH_MAX is (usually?) 4096, but we need to know if the result was truncated
+            const int BufferSize = 4097; // PATH_MAX is (usually?) 4096, but we need to know if the result was truncated
 
             var symlink = ArrayPool<byte>.Shared.Rent(symlinkSize + 1);
-            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
 
             try
             {
                 Encoding.UTF8.GetBytes(path, 0, path.Length, symlink, 0);
                 symlink[symlinkSize] = 0;
 
-                var size = readlink(symlink, buffer, bufferSize);
-                Debug.Assert(size < bufferSize); // if this fails, we need to increase the buffer size (dynamically?)
+                var size = readlink(symlink, buffer, BufferSize);
+                Debug.Assert(size < BufferSize); // if this fails, we need to increase the buffer size (dynamically?)
 
                 return Encoding.UTF8.GetString(buffer, 0, (int)size);
             }

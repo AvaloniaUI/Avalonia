@@ -1,47 +1,36 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using System.Runtime.Versioning;
+using Avalonia.Browser;
 
-namespace Avalonia.Browser;
+namespace Avalonia;
 
-public class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
+internal class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
 {
     public AvaloniaView? View;
 
     public Control? MainView
     {
-        get => View!.Content;
-        set => View!.Content = value;
-    }
-}
-
-public class BrowserPlatformOptions
-{
-    public Func<string, string> FrameworkAssetPathResolver { get; set; } = new(fileName => $"./{fileName}");
-}
-
-public static class WebAppBuilder
-{
-    public static AppBuilder SetupBrowserApp(
-        this AppBuilder builder, string mainDivId)
-    {
-        var lifetime = new BrowserSingleViewLifetime();
-
-        return builder
-            .UseBrowser()
-            .AfterSetup(b =>
-            {
-                lifetime.View = new AvaloniaView(mainDivId);
-            })
-            .SetupWithLifetime(lifetime);
+        get
+        {
+            EnsureView();
+            return View.Content;
+        }
+        set
+        {
+            EnsureView();
+            View.Content = value;
+        }
     }
 
-    public static AppBuilder UseBrowser(
-        this AppBuilder builder)
+    [MemberNotNull(nameof(View))]
+    private void EnsureView()
     {
-        return builder
-            .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
-            .UseSkia();
+        if (View is null)
+        {
+            throw new InvalidOperationException("Browser lifetime was not initialized. Make sure AppBuilder.StartBrowserApp was called.");
+        }
     }
 }

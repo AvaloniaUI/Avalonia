@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Transactions;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Primitives.PopupPositioning
 {
+    [PrivateApi]
     public interface IManagedPopupPositionerPopup
     {
         IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens { get; }
@@ -13,6 +15,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         void MoveAndResize(Point devicePoint, Size virtualSize);
     }
 
+    [PrivateApi]
     public class ManagedPopupPositionerScreenInfo
     {
         public Rect Bounds { get; }
@@ -29,6 +32,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// An <see cref="IPopupPositioner"/> implementation for platforms on which a popup can be
     /// arbitrarily positioned.
     /// </summary>
+    [PrivateApi]
     public class ManagedPopupPositioner : IPopupPositioner
     {
         private readonly IManagedPopupPositionerPopup _popup;
@@ -112,7 +116,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(parentGeometry))
                                    ?? screens.FirstOrDefault();
 
-                if (targetScreen != null && targetScreen.WorkingArea.IsDefault)
+                if (targetScreen != null &&
+                    (targetScreen.WorkingArea.Width == 0 && targetScreen.WorkingArea.Height == 0))
                 {
                     return targetScreen.Bounds;
                 }

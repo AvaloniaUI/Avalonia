@@ -115,7 +115,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     var link = _currentEvent.EventChain[linkIndex];
 
                     link.Handled = true;
-                    _currentEvent.HandledBy = link;
+                    _currentEvent.HandledBy ??= link;
                 }
             }
 

@@ -7,22 +7,13 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal class BclStorageFile : IStorageBookmarkFile
 {
-    public BclStorageFile(string fileName)
-    {
-        FileInfo = new FileInfo(fileName);
-    }
-
     public BclStorageFile(FileInfo fileInfo)
     {
         FileInfo = fileInfo ?? throw new ArgumentNullException(nameof(fileInfo));
     }
 
     public FileInfo FileInfo { get; }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
+    
     public string Name => FileInfo.Name;
 
     public virtual bool CanBookmark => true;
@@ -73,7 +64,8 @@ internal class BclStorageFile : IStorageBookmarkFile
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult<Stream>(FileInfo.OpenWrite());
+        var stream = new FileStream(FileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.Write);
+        return Task.FromResult<Stream>(stream);
     }
 
     public virtual Task<string?> SaveBookmarkAsync()
@@ -100,5 +92,23 @@ internal class BclStorageFile : IStorageBookmarkFile
     {
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    public async Task DeleteAsync()
+    {
+        FileInfo.Delete();
+    }
+
+    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    {
+        if (destination is BclStorageFolder storageFolder)
+        {
+            var newPath = System.IO.Path.Combine(storageFolder.DirectoryInfo.FullName, FileInfo.Name);
+            FileInfo.MoveTo(newPath);
+
+            return new BclStorageFile(new FileInfo(newPath));
+        }
+
+        return null;
     }
 }

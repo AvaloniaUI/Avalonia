@@ -15,13 +15,6 @@ namespace Avalonia
 #endif
     readonly struct Thickness : IEquatable<Thickness>
     {
-        static Thickness()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<ThicknessAnimator>(prop => typeof(Thickness).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// The thickness on the left.
         /// </summary>
@@ -96,10 +89,6 @@ namespace Avalonia
         /// Gets the thickness on the bottom.
         /// </summary>
         public double Bottom => _bottom;
-
-        /// <inheritdoc cref="IsDefault"/>
-        [Obsolete("Use IsDefault instead.")]
-        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Gets a value indicating whether all sides are equal.
@@ -293,11 +282,5 @@ namespace Avalonia
             right = this._right;
             bottom = this._bottom;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the instance has default values
-        /// (the left, top, right and bottom values are zero).
-        /// </summary>
-        public bool IsDefault => (_left == 0) && (_top == 0) && (_right == 0) && (_bottom == 0);
     }
 }

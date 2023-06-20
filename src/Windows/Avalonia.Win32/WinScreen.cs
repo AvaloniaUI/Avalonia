@@ -3,7 +3,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Win32
 {
-    public class WinScreen : Screen
+    internal class WinScreen : Screen
     {
         private readonly IntPtr _hMonitor;
 
@@ -15,14 +15,16 @@ namespace Avalonia.Win32
 
         public IntPtr Handle => _hMonitor;
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
-            return (int)_hMonitor;
+            return _hMonitor.GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
-            return (obj is WinScreen screen) ? _hMonitor == screen._hMonitor : base.Equals(obj);
+            return obj is WinScreen screen && _hMonitor == screen._hMonitor;
         }
     }
 }

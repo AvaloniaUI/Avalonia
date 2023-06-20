@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.iOS.Storage;
@@ -16,6 +17,7 @@ using Foundation;
 using ObjCRuntime;
 using OpenGLES;
 using UIKit;
+using IInsetsManager = Avalonia.Controls.Platform.IInsetsManager;
 
 namespace Avalonia.iOS
 {
@@ -26,6 +28,7 @@ namespace Avalonia.iOS
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
         private ITextInputMethodClient _client;
+        private IAvaloniaViewController _controller;
 
         public AvaloniaView()
         {
@@ -35,7 +38,7 @@ namespace Avalonia.iOS
 
             _topLevel.Prepare();
 
-            _topLevel.Renderer.Start();
+            _topLevel.StartRendering();
 
             var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
@@ -48,10 +51,13 @@ namespace Avalonia.iOS
             MultipleTouchEnabled = true;
         }
 
+        /// <inheritdoc />
         public override bool CanBecomeFirstResponder => true;
 
+        /// <inheritdoc />
         public override bool CanResignFirstResponder => true;
 
+        /// <inheritdoc />
         public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
@@ -60,6 +66,7 @@ namespace Avalonia.iOS
             settings?.TraitCollectionDidChange();
         }
 
+        /// <inheritdoc />
         public override void TintColorDidChange()
         {
             base.TintColorDidChange();
@@ -68,18 +75,34 @@ namespace Avalonia.iOS
             settings?.TraitCollectionDidChange();
         }
 
+        public void InitWithController<TController>(TController controller)
+            where TController : UIViewController, IAvaloniaViewController
+        {
+            _controller = controller;
+            _topLevelImpl._insetsManager.InitWithController(controller);
+        }
+        
         internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
             private readonly INativeControlHostImpl _nativeControlHost;
             private readonly IStorageProvider _storageProvider;
+            internal readonly InsetsManager _insetsManager;
+            private readonly ClipboardImpl _clipboard;
+
             public AvaloniaView View => _view;
 
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
-                _nativeControlHost = new NativeControlHostImpl(_view);
+                _nativeControlHost = new NativeControlHostImpl(view);
                 _storageProvider = new IOSStorageProvider(view);
+                _insetsManager = new InsetsManager(view);
+                _insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
+                {
+                    view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
+                };
+                _clipboard = new ClipboardImpl();
             }
 
             public void Dispose()
@@ -87,9 +110,7 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) =>
-                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
-
+            public Compositor Compositor => Platform.Compositor;
 
             public void Invalidate(Rect rect)
             {
@@ -116,7 +137,7 @@ namespace Avalonia.iOS
                 return null;
             }
 
-            public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+            public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
             {
                 // No-op
             }
@@ -127,7 +148,7 @@ namespace Avalonia.iOS
             public IEnumerable<object> Surfaces { get; set; }
             public Action<RawInputEventArgs> Input { get; set; }
             public Action<Rect> Paint { get; set; }
-            public Action<Size, PlatformResizeReason> Resized { get; set; }
+            public Action<Size, WindowResizeReason> Resized { get; set; }
             public Action<double> ScalingChanged { get; set; }
             public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
             public Action Closed { get; set; }
@@ -136,22 +157,19 @@ namespace Avalonia.iOS
 
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
-            public WindowTransparencyLevel TransparencyLevel { get; }
-            
+            public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
             public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
             {
                 // TODO adjust status bar depending on full screen mode.
-                if (OperatingSystem.IsIOSVersionAtLeast(13))
+                if (OperatingSystem.IsIOSVersionAtLeast(13) && _view._controller is not null)
                 {
-                    var uiStatusBarStyle = themeVariant switch
+                    _view._controller.PreferredStatusBarStyle = themeVariant switch
                     {
                         PlatformThemeVariant.Light => UIStatusBarStyle.DarkContent,
                         PlatformThemeVariant.Dark => UIStatusBarStyle.LightContent,
-                        _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+                        _ => UIStatusBarStyle.Default
                     };
-                    
-                    // Consider using UIViewController.PreferredStatusBarStyle in the future.
-                    UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, true);
                 }
             }
             
@@ -175,6 +193,16 @@ namespace Avalonia.iOS
                     return _nativeControlHost;
                 }
 
+                if (featureType == typeof(IInsetsManager))
+                {
+                    return _insetsManager;
+                }
+
+                if (featureType == typeof(IClipboard))
+                {
+                    return _clipboard;
+                }
+
                 return null;
             }
         }
@@ -195,7 +223,7 @@ namespace Avalonia.iOS
 
         public override void LayoutSubviews()
         {
-            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, PlatformResizeReason.Layout);
+            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
             base.LayoutSubviews();
         }
 

@@ -35,8 +35,6 @@ using MicroCom.CodeGenerator;
 
 partial class Build : NukeBuild
 {
-    [Solution("Avalonia.sln")] readonly Solution Solution;
-
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
     {
@@ -143,10 +141,12 @@ partial class Build : NukeBuild
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
-        var project = Solution.GetProject(projectName).NotNull("project != null");
+        var project = RootDirectory.GlobFiles(@$"**\{projectName}.csproj").FirstOrDefault()
+            ?? throw new InvalidOperationException($"Project {projectName} doesn't exist");
+
         // Nuke and MSBuild tools have build-in helpers to get target frameworks from the project.
         // Unfortunately, it gets broken with every second SDK update, so we had to do it manually.
-        var fileXml = XDocument.Parse(File.ReadAllText(project.Path));
+        var fileXml = XDocument.Parse(File.ReadAllText(project));
         var targetFrameworks = fileXml.Descendants("TargetFrameworks")
             .FirstOrDefault()?.Value.Split(';').Select(f => f.Trim());
         if (targetFrameworks is null)
@@ -165,10 +165,10 @@ partial class Build : NukeBuild
         foreach (var fw in targetFrameworks)
         {
             if (fw.StartsWith("net4")
-                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {projectName} ({fw}) tests on Linux - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({fw}) tests on *nix - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 
@@ -212,6 +212,8 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
+            RunCoreTest("Avalonia.Headless.NUnit.UnitTests");
+            RunCoreTest("Avalonia.Headless.XUnit.UnitTests");
         });
 
     Target RunRenderTests => _ => _
@@ -220,16 +222,18 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             RunCoreTest("Avalonia.Skia.RenderTests");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Parameters.IsRunningOnWindows)
                 RunCoreTest("Avalonia.Direct2D1.RenderTests");
         });
 
-    Target RunDesignerTests => _ => _
-        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+    Target RunToolsTests => _ => _
+        .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("Avalonia.DesignerSupport.Tests");
+            RunCoreTest("Avalonia.Generators.Tests");
+            if (Parameters.IsRunningOnWindows)
+                RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
 
     Target RunLeakTests => _ => _
@@ -271,12 +275,14 @@ partial class Build : NukeBuild
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
+            RefAssemblyGenerator.GenerateRefAsmsInPackage(Parameters.NugetRoot / "Avalonia." +
+                                                          Parameters.Version + ".nupkg");
         });
 
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
-        .DependsOn(RunDesignerTests)
+        .DependsOn(RunToolsTests)
         .DependsOn(RunHtmlPreviewerTests)
         .DependsOn(RunLeakTests);
 

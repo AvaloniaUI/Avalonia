@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
+using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -13,20 +16,16 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using Math = System.Math;
-using AndroidRect = Android.Graphics.Rect;
-using Window = Android.Views.Window;
-using Android.Graphics.Drawables;
-using Android.OS;
+using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -43,7 +42,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly ISystemNavigationManagerImpl _systemNavigationManager;
         private readonly IPlatformFeedback _platformFeedback;
 
+        private readonly AndroidInsetsManager _insetsManager;
+        private readonly ClipboardImpl _clipboard;
         private ViewImpl _view;
+        private WindowTransparencyLevel _transparencyLevel;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -53,15 +55,22 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
+            _clipboard = new ClipboardImpl(avaloniaView.Context?.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
 
             RenderScaling = _view.Scaling;
 
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
+            if (avaloniaView.Context is AvaloniaMainActivity mainActivity)
+            {
+                _insetsManager = new AndroidInsetsManager(mainActivity, this);
+            }
+
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
             _platformFeedback = new AndroidPlatformFeedback(avaloniaView);
+            _transparencyLevel = WindowTransparencyLevel.None;
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
         }
@@ -71,21 +80,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                AndroidRect rect = new AndroidRect();
-                AndroidRect intersection = new AndroidRect();
-
-                _view.GetWindowVisibleDisplayFrame(intersection);
-                _view.GetGlobalVisibleRect(rect);
-
-                intersection.Intersect(rect);
-
-                return new PixelSize(intersection.Right - intersection.Left, intersection.Bottom - intersection.Top).ToSize(RenderScaling);
-            }
-        }
+        public virtual Size ClientSize => _view.Size.ToSize(RenderScaling);
 
         public Size? FrameSize => null;
 
@@ -99,7 +94,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<Rect> Paint { get; set; }
 
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, WindowResizeReason> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
 
@@ -111,9 +106,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
-
+        public Compositor Compositor => AndroidPlatform.Compositor;
+        
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;
@@ -164,12 +158,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         protected virtual void OnResized(Size size)
         {
-            Resized?.Invoke(size, PlatformResizeReason.Unspecified);
+            Resized?.Invoke(size, WindowResizeReason.Unspecified);
         }
 
         internal void Resize(Size size)
         {
-            Resized?.Invoke(size, PlatformResizeReason.Layout);
+            Resized?.Invoke(size, WindowResizeReason.Layout);
         }
 
         class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
@@ -282,11 +276,32 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action LostFocus { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel 
+        {
+            get => _transparencyLevel;
+            private set
+            {
+                if (_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+                    TransparencyLevelChanged?.Invoke(value);
+                }
+            }
+        }
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
-            // TODO adjust status bar depending on full screen mode.
+            if(_insetsManager != null)
+            {
+                _insetsManager.SystemBarTheme = themeVariant switch
+                {
+                    PlatformThemeVariant.Light => SystemBarTheme.Light,
+                    PlatformThemeVariant.Dark => SystemBarTheme.Dark,
+                    _ => null,
+                };
+            }
+
+            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
@@ -297,91 +312,64 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public double Scaling => RenderScaling;
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (TransparencyLevel != transparencyLevel)
+            if (_view.Context is not AvaloniaMainActivity activity)
+                return;
+
+            foreach (var level in transparencyLevels)
             {
-                bool isBelowR = Build.VERSION.SdkInt < BuildVersionCodes.R;
-                bool isAboveR = Build.VERSION.SdkInt > BuildVersionCodes.R;
-                if (_view.Context is AvaloniaMainActivity activity)
+                if (!IsSupported(level))
                 {
-                    switch (transparencyLevel)
-                    {
-                        case WindowTransparencyLevel.AcrylicBlur:
-                        case WindowTransparencyLevel.ForceAcrylicBlur:
-                        case WindowTransparencyLevel.Mica:
-                        case WindowTransparencyLevel.None:
-                            if (!isBelowR)
-                            {
-                                activity.SetTranslucent(false);
-                            }
-                            if (isAboveR)
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 0;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                            }
-                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
-
-                            if(transparencyLevel != WindowTransparencyLevel.None)
-                            {
-                                return;
-                            }
-                            break;
-                        case WindowTransparencyLevel.Transparent:
-                            if (!isBelowR)
-                            {
-                                activity.SetTranslucent(true);
-                            }
-                            if (isAboveR)
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 0;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                            }
-                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-                            break;
-                        case WindowTransparencyLevel.Blur:
-                            if (isAboveR)
-                            {
-                                activity.SetTranslucent(true);
-                                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
-
-                                var attr = activity.Window?.Attributes;
-                                if (attr != null)
-                                {
-                                    attr.BlurBehindRadius = 120;
-
-                                    activity.Window.Attributes = attr;
-                                }
-                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
-                            }
-                            else
-                            {
-                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
-                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
-
-                                return;
-                            }
-                            break;
-                    }
-                    TransparencyLevel = transparencyLevel;
+                    continue;
                 }
+
+                if (level == TransparencyLevel)
+                {
+                    return;
+                }
+
+                if (level == WindowTransparencyLevel.None)
+                {
+                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    {
+                        activity.SetTranslucent(false);
+                    }
+
+                    activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.White));
+                }
+                else if (level == WindowTransparencyLevel.Transparent)
+                {
+                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    {
+                        activity.SetTranslucent(true);
+                        SetBlurBehind(activity, 0);
+                        activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
+                }
+                else if (level == WindowTransparencyLevel.Blur)
+                {
+                    if (OperatingSystem.IsAndroidVersionAtLeast(31))
+                    {
+                        activity.SetTranslucent(true);
+                        SetBlurBehind(activity, 120);
+                        activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                    }
+                }
+
+                TransparencyLevel = level;
+                return;
             }
+
+            // If we get here, we didn't find a supported level. Use the default of None.
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            {
+                activity.SetTranslucent(false);
+            }
+
+            activity.Window?.SetBackgroundDrawable(new ColorDrawable(Color.White));
         }
-        
+
         public virtual object TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IStorageProvider))
@@ -409,7 +397,42 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _platformFeedback;
             }
 
+            if (featureType == typeof(IInsetsManager))
+            {
+                return _insetsManager;
+            }
+
+            if(featureType == typeof(IClipboard))
+            {
+                return _clipboard;
+            }
+
             return null;
+        }
+
+        private static bool IsSupported(WindowTransparencyLevel level)
+        {
+            if (level == WindowTransparencyLevel.None)
+                return true;
+            if (level == WindowTransparencyLevel.Transparent)
+                return OperatingSystem.IsAndroidVersionAtLeast(30);
+            if (level == WindowTransparencyLevel.Blur)
+                return OperatingSystem.IsAndroidVersionAtLeast(31);
+            return false;
+        }
+
+        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
+        {
+            if (radius == 0)
+                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+            else
+                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(31) && activity.Window?.Attributes is { } attr)
+            {
+                attr.BlurBehindRadius = radius;
+                activity.Window.Attributes = attr;
+            }
         }
     }
 
@@ -417,159 +440,73 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly TopLevelImpl _topLevel;
         private readonly IAndroidInputMethod _inputMethod;
+        private readonly InputEditable _editable;
 
         public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
             _topLevel = topLevel;
             _inputMethod = inputMethod;
+            _editable = new InputEditable(_topLevel, _inputMethod, this);
         }
 
-        public TextInputMethodSurroundingText SurroundingText { get; set; }
+        public override IEditable Editable => _editable;
 
-        public string ComposingText { get; internal set; }
-
-        public ComposingRegion? ComposingRegion { get; internal set; }
-
-        public bool IsComposing => !string.IsNullOrEmpty(ComposingText);
-        public bool IsCommiting { get; private set; }
+        internal InputEditable InputEditable => _editable;
 
         public override bool SetComposingRegion(int start, int end)
         {
-            //System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {SurroundingText.Text?.Substring(start, end - start)}");
+            var ret = base.SetComposingRegion(start, end);
 
-            ComposingRegion = new ComposingRegion(start, end);
+            InputEditable.RaiseCompositionChanged();
 
-            return base.SetComposingRegion(start, end);
+            return ret;
         }
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
         {
             var composingText = text.ToString();
 
-            ComposingText = composingText;
+            if (string.IsNullOrEmpty(composingText))
+            {
+                return CommitText(text, newCursorPosition);
+            }
+            else
+            {
+                var ret = base.SetComposingText(text, newCursorPosition);
 
-            _inputMethod.Client?.SetPreeditText(ComposingText);
+                InputEditable.RaiseCompositionChanged();
 
-            return base.SetComposingText(text, newCursorPosition);
+                return ret;
+            }
+        }
+
+        public override bool BeginBatchEdit()
+        {
+            _editable.BeginBatchEdit();
+
+            return base.BeginBatchEdit();
+        }
+
+        public override bool EndBatchEdit()
+        {
+            var ret = base.EndBatchEdit();
+            _editable.EndBatchEdit();
+
+            return ret;
         }
 
         public override bool FinishComposingText()
         {
-            if (!string.IsNullOrEmpty(ComposingText))
-            {
-                CommitText(ComposingText, ComposingText.Length);
-            }
-            else
-            {
-                ComposingRegion = new ComposingRegion(SurroundingText.CursorOffset, SurroundingText.CursorOffset);
-            }
-
-            return base.FinishComposingText();
-        }
-
-        public override ICharSequence GetTextBeforeCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (!string.IsNullOrEmpty(SurroundingText.Text) && length > 0)
-            {
-                var start = System.Math.Max(SurroundingText.CursorOffset - length, 0);
-
-                var end = System.Math.Min(start + length - 1, SurroundingText.CursorOffset);
-
-                var text = SurroundingText.Text.Substring(start, end - start);
-
-                //System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
-
-                return new Java.Lang.String(text);
-            }
-
-            return null;
-        }
-
-        public override ICharSequence GetTextAfterCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (!string.IsNullOrEmpty(SurroundingText.Text))
-            {
-                var start = SurroundingText.CursorOffset;
-
-                var end = System.Math.Min(start + length, SurroundingText.Text.Length);
-
-                var text = SurroundingText.Text.Substring(start, end - start);
-
-                //System.Diagnostics.Debug.WriteLine($"Text After: {text}");
-
-                return new Java.Lang.String(text);
-            }
-
-            return null;
+            var ret = base.FinishComposingText();
+            InputEditable.RaiseCompositionChanged();
+            return ret;
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
-            IsCommiting = true;
-            var committedText = text.ToString();
-
-            _inputMethod.Client.SetPreeditText(null);
-
-            int? start, end;
-
-            if(SurroundingText.CursorOffset != SurroundingText.AnchorOffset)
-            {
-                start = Math.Min(SurroundingText.CursorOffset, SurroundingText.AnchorOffset);
-                end = Math.Max(SurroundingText.CursorOffset, SurroundingText.AnchorOffset);
-            }
-            else if (ComposingRegion != null)
-            {
-                start = ComposingRegion?.Start;
-                end = ComposingRegion?.End;
-
-                ComposingRegion = null;
-            }
-            else
-            {
-                start = end = _inputMethod.Client.SurroundingText.CursorOffset;
-            }
-
-            _inputMethod.Client.SelectInSurroundingText((int)start, (int)end);
-
-            var time = DateTime.Now.TimeOfDay;
-
-            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (ulong)time.Ticks, _topLevel.InputRoot, committedText);
-
-            _topLevel.Input(rawTextEvent);
-
-            ComposingText = null;
-
-            ComposingRegion = new ComposingRegion(newCursorPosition, newCursorPosition);
-
-            return base.CommitText(text, newCursorPosition);
-        }
-
-        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
-        {
-            var surroundingText = _inputMethod.Client.SurroundingText;
-
-            var selectionStart = surroundingText.CursorOffset;
-
-            _inputMethod.Client.SelectInSurroundingText(selectionStart - beforeLength, selectionStart + afterLength);
-
-            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-
-            surroundingText = _inputMethod.Client.SurroundingText;
-
-            selectionStart = surroundingText.CursorOffset;
-
-            ComposingRegion = new ComposingRegion(selectionStart, selectionStart);
-
-            return base.DeleteSurroundingText(beforeLength, afterLength);
-        }
-
-        public override bool SetSelection(int start, int end)
-        {
-            _inputMethod.Client.SelectInSurroundingText(start, end);
-
-            ComposingRegion = new ComposingRegion(start, end);
-
-            return base.SetSelection(start, end);
+            var ret = base.CommitText(text, newCursorPosition);
+            InputEditable.RaiseCompositionChanged();
+            return ret;
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)

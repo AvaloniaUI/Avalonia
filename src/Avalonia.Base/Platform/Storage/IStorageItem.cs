@@ -50,4 +50,17 @@ public interface IStorageItem : IDisposable
     /// Gets the parent folder of the current storage item.
     /// </summary>
     Task<IStorageFolder?> GetParentAsync();
+
+    /// <summary>
+    /// Deletes the current storage item and it's contents
+    /// </summary>
+    /// <returns></returns>
+    Task DeleteAsync();
+
+    /// <summary>
+    /// Moves the current storage item and it's contents to a <see cref="IStorageFolder"/>
+    /// </summary>
+    /// <param name="destination">The <see cref="IStorageFolder"/> to move the item into</param>
+    /// <returns></returns>
+    Task<IStorageItem?> MoveAsync(IStorageFolder destination);
 }

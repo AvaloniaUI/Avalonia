@@ -8,6 +8,7 @@ using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
@@ -66,11 +67,16 @@ namespace Avalonia.Android
                     _timerSubscription = timer.SubscribeView(this);
                 }
 
-                _root.Renderer.Start();
+                _root.StartRendering();
+
+                if (_view.TryGetFeature<IInsetsManager>(out var insetsManager) == true)
+                {
+                    (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
+                }
             }
             else
             {
-                _root.Renderer.Stop();
+                _root.StopRendering();
                 _timerSubscription?.Dispose();
             }
         }

@@ -58,7 +58,6 @@
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
         <Compile Include="XamlLoadException.cs" />
-        <Compile Include="..\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs" />
         <Compile Include="XamlTypes.cs" />
     </ItemGroup>
   <ItemGroup>
@@ -69,8 +68,11 @@
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Designer.HostApp, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 </Project>

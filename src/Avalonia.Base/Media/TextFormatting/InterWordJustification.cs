@@ -15,9 +15,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Justify(TextLine textLine)
         {
-            var lineImpl = textLine as TextLineImpl;
-
-            if(lineImpl is null)
+            if (textLine is not TextLineImpl lineImpl)
             {
                 return;
             }
@@ -27,21 +25,6 @@ namespace Avalonia.Media.TextFormatting
             if (double.IsInfinity(paragraphWidth))
             {
                 return;
-            }
-
-            if (lineImpl.NewLineLength > 0)
-            {
-                return;
-            }
-
-            var textLineBreak = lineImpl.TextLineBreak;
-
-            if (textLineBreak is not null && textLineBreak.TextEndOfLine is not null)
-            {
-                if (textLineBreak.RemainingRuns is null || textLineBreak.RemainingRuns.Count == 0)
-                {
-                    return;
-                }
             }
 
             var breakOportunities = new Queue<int>();
@@ -104,13 +87,15 @@ namespace Avalonia.Media.TextFormatting
                             continue;
                         }
 
-                        var glyphIndex = glyphRun.FindGlyphIndex(characterIndex);
-                        var glyphInfo = shapedBuffer.GlyphInfos[glyphIndex];
+                        var offset = Math.Max(0, currentPosition - glyphRun.Metrics.FirstCluster);
+                        var glyphIndex = glyphRun.FindGlyphIndex(characterIndex - offset);
+                        var glyphInfo = shapedBuffer[glyphIndex];
 
-                        shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex, glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
+                        shapedBuffer[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
+                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
                     }
 
-                    glyphRun.GlyphInfos = shapedBuffer.GlyphInfos;
+                    glyphRun.GlyphInfos = shapedBuffer;
                 }
 
                 currentPosition += textRun.Length;

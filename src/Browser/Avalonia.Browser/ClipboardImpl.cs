@@ -8,14 +8,14 @@ namespace Avalonia.Browser
 {
     internal class ClipboardImpl : IClipboard
     {
-        public Task<string> GetTextAsync()
+        public Task<string?> GetTextAsync()
         {
-            return InputHelper.ReadClipboardTextAsync();
+            return InputHelper.ReadClipboardTextAsync()!;
         }
 
-        public Task SetTextAsync(string text)
+        public Task SetTextAsync(string? text)
         {
-            return InputHelper.WriteClipboardTextAsync(text);
+            return InputHelper.WriteClipboardTextAsync(text ?? string.Empty);
         }
 
         public async Task ClearAsync() => await SetTextAsync("");
@@ -24,6 +24,6 @@ namespace Avalonia.Browser
 
         public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-        public Task<object> GetDataAsync(string format) => Task.FromResult<object>(new());
+        public Task<object?> GetDataAsync(string format) => Task.FromResult<object?>(null);
     }
 }

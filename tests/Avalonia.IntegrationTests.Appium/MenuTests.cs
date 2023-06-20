@@ -7,11 +7,11 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class MenuTests
+    public abstract class MenuTests
     {
         private readonly AppiumDriver<AppiumWebElement> _session;
 
-        public MenuTests(TestAppFixture fixture)
+        public MenuTests(DefaultAppFixture fixture)
         {
             _session = fixture.Session;
 
@@ -180,6 +180,18 @@ namespace Avalonia.IntegrationTests.Appium
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("Menu");
             tab.MovePointerOver();
+        }
+
+        [Collection("Default")]
+        public class Default : MenuTests
+        {
+            public Default(DefaultAppFixture fixture) : base(fixture) { }
+        }
+
+        [Collection("OverlayPopups")]
+        public class OverlayPopups : MenuTests
+        {
+            public OverlayPopups(OverlayPopupsAppFixture fixture) : base(fixture) { }
         }
     }
 }

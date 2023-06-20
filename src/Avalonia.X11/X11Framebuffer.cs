@@ -5,7 +5,7 @@ using SkiaSharp;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    class X11Framebuffer : ILockedFramebuffer
+    internal class X11Framebuffer : ILockedFramebuffer
     {
         private readonly IntPtr _display;
         private readonly IntPtr _xid;

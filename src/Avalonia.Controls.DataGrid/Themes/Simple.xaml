@@ -126,7 +126,6 @@
 
     <ControlTheme x:Key="{x:Type DataGridRowHeader}"
                   TargetType="DataGridRowHeader">
-      <Setter Property="Focusable" Value="False" />
       <Setter Property="Template">
         <ControlTemplate>
           <Grid x:Name="PART_Root"
@@ -202,7 +201,7 @@
 
       <Style Selector="^ /template/ Rectangle#BackgroundRectangle">
         <Setter Property="IsVisible" Value="False" />
-        <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource HighlightBrush2}" />
       </Style>
 
       <Style Selector="^:pointerover /template/ Rectangle#BackgroundRectangle">
@@ -319,7 +318,8 @@
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid ColumnDefinitions="Auto,*,Auto"
-                  RowDefinitions="Auto,*,Auto,Auto">
+                  RowDefinitions="Auto,*,Auto,Auto"
+                  ClipToBounds="True">
               <DataGridColumnHeader Name="PART_TopLeftCornerHeader"
                                     Width="22" />
               <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"

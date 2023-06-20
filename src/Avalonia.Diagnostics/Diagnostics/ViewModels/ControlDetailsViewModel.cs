@@ -59,10 +59,12 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 var styleDiagnostics = styledElement.GetStyleDiagnostics();
 
+                var clipboard = TopLevel.GetTopLevel(_avaloniaObject as Visual)?.Clipboard;
+
                 // We need to place styles without activator first, such styles will be overwritten by ones with activators.
                 foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
                 {
-                    var styleSource = appliedStyle.Source;
+                    var styleSource = appliedStyle.Style;
 
                     var setters = new List<SetterViewModel>();
 
@@ -91,7 +93,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                     var resourceKey = resourceInfo.Value.resourceKey;
                                     var resourceValue = styledElement.FindResource(resourceKey);
 
-                                    setterVm = new ResourceSetterViewModel(regularSetter.Property, resourceKey, resourceValue, resourceInfo.Value.isDynamic);
+                                    setterVm = new ResourceSetterViewModel(regularSetter.Property, resourceKey, resourceValue, resourceInfo.Value.isDynamic, clipboard);
                                 }
                                 else
                                 {
@@ -99,11 +101,11 @@ namespace Avalonia.Diagnostics.ViewModels
 
                                     if (isBinding)
                                     {
-                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue);
+                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue, clipboard);
                                     }
                                     else
                                     {
-                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue);
+                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue, clipboard);
                                     }
                                 }
 
@@ -123,7 +125,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private static (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
         {
-            if (value is StaticResourceExtension staticResource)
+            if (value is StaticResourceExtension staticResource
+                && staticResource.ResourceKey != null)
             {
                 return (staticResource.ResourceKey, false);
             }
@@ -519,7 +522,6 @@ namespace Avalonia.Diagnostics.ViewModels
                 .GroupBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.ToArray());
 
-            TreePage.PropertiesFilter.FilterString = string.Empty;
 
             var view = new DataGridCollectionView(properties);
             view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));

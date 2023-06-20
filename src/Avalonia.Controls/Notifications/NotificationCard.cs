@@ -13,7 +13,6 @@ namespace Avalonia.Controls.Notifications
     [PseudoClasses(":error", ":information", ":success", ":warning")]
     public class NotificationCard : ContentControl
     {
-        private bool _isClosed;
         private bool _isClosing;
 
         static NotificationCard()
@@ -84,15 +83,15 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public bool IsClosed
         {
-            get { return _isClosed; }
-            set { SetAndRaise(IsClosedProperty, ref _isClosed, value); }
+            get => GetValue(IsClosedProperty);
+            set => SetValue(IsClosedProperty, value);
         }
 
         /// <summary>
         /// Defines the <see cref="IsClosed"/> property.
         /// </summary>
-        public static readonly DirectProperty<NotificationCard, bool> IsClosedProperty =
-            AvaloniaProperty.RegisterDirect<NotificationCard, bool>(nameof(IsClosed), o => o.IsClosed, (o, v) => o.IsClosed = v);
+        public static readonly StyledProperty<bool> IsClosedProperty =
+            AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsClosed));
 
         /// <summary>
         /// Defines the <see cref="NotificationClosed"/> event.

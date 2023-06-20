@@ -10,7 +10,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// The OR style selector.
     /// </summary>
-    internal class OrSelector : Selector
+    internal sealed class OrSelector : Selector
     {
         private readonly IReadOnlyList<Selector> _selectors;
         private string? _selectorString;
@@ -36,24 +36,13 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public override bool InTemplate => false;
+        internal override bool InTemplate => false;
 
         /// <inheritdoc/>
-        public override bool IsCombinator => false;
+        internal override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override Type? TargetType
-        {
-            get
-            {
-                if (_targetType == null)
-                {
-                    _targetType = EvaluateTargetType();
-                }
-
-                return _targetType;
-            }
-        }
+        internal override Type? TargetType => _targetType ??= EvaluateTargetType();
 
         /// <inheritdoc/>
         public override string ToString(Style? owner)
@@ -66,14 +55,16 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
 
-            foreach (var selector in _selectors)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
-                var match = selector.Match(control, parent, subscribe);
+                var match = _selectors[i].Match(control, parent, subscribe);
 
                 switch (match.Result)
                 {
@@ -103,21 +94,28 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector? MovePrevious() => null;
-        protected override Selector? MovePreviousOrParent() => null;
+        private protected override Selector? MovePrevious() => null;
+        private protected override Selector? MovePreviousOrParent() => null;
 
         internal override void ValidateNestingSelector(bool inControlTheme)
         {
-            foreach (var selector in _selectors)
-                selector.ValidateNestingSelector(inControlTheme);
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                _selectors[i].ValidateNestingSelector(inControlTheme);
+            }
         }
 
         private Type? EvaluateTargetType()
         {
             Type? result = null;
 
-            foreach (var selector in _selectors)
+            var count = _selectors.Count;
+
+            for (var i = 0; i < count; i++)
             {
+                var selector = _selectors[i];
                 if (selector.TargetType == null)
                 {
                     return null;

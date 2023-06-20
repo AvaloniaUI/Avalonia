@@ -21,6 +21,6 @@ public class TabControlPageViewModelItem
 {
     public string? Header { get; set; }
     public string? Text { get; set; }
-    public IBitmap? Image { get; set; }
+    public Bitmap? Image { get; set; }
     public bool IsEnabled { get; set; } = true;
 }

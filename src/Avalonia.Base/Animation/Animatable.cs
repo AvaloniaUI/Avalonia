@@ -17,7 +17,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="Clock"/> property.
         /// </summary>
-        public static readonly StyledProperty<IClock> ClockProperty =
+        internal static readonly StyledProperty<IClock> ClockProperty =
             AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
 
         /// <summary>
@@ -27,12 +27,16 @@ namespace Avalonia.Animation
             AvaloniaProperty.Register<Animatable, Transitions?>(nameof(Transitions));
 
         private bool _transitionsEnabled = true;
+        private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
+        private NotifyCollectionChangedEventHandler? _collectionChanged;
+        private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
+            _collectionChanged ??= TransitionsCollectionChanged;
 
         /// <summary>
         /// Gets or sets the clock which controls the animations on the control.
         /// </summary>
-        public IClock Clock
+        internal IClock Clock
         {
             get => GetValue(ClockProperty);
             set => SetValue(ClockProperty, value);
@@ -54,15 +58,20 @@ namespace Avalonia.Animation
         /// This method should not be called from user code, it will be called automatically by the framework
         /// when a control is added to the visual tree.
         /// </remarks>
-        protected void EnableTransitions()
+        internal void EnableTransitions()
         {
             if (!_transitionsEnabled)
             {
                 _transitionsEnabled = true;
 
-                if (Transitions is object)
+                if (Transitions is Transitions transitions)
                 {
-                    AddTransitions(Transitions);
+                    if (!_isSubscribedToTransitionsCollection)
+                    {
+                        _isSubscribedToTransitionsCollection = true;
+                        transitions.CollectionChanged += TransitionsCollectionChangedHandler;
+                    }
+                    AddTransitions(transitions);
                 }
             }
         }
@@ -72,17 +81,22 @@ namespace Avalonia.Animation
         /// </summary>
         /// <remarks>
         /// This method should not be called from user code, it will be called automatically by the framework
-        /// when a control is added to the visual tree.
+        /// when a control is removed from the visual tree.
         /// </remarks>
-        protected void DisableTransitions()
+        internal void DisableTransitions()
         {
             if (_transitionsEnabled)
             {
                 _transitionsEnabled = false;
 
-                if (Transitions is object)
+                if (Transitions is Transitions transitions)
                 {
-                    RemoveTransitions(Transitions);
+                    if (_isSubscribedToTransitionsCollection)
+                    {
+                        _isSubscribedToTransitionsCollection = false;
+                        transitions.CollectionChanged -= TransitionsCollectionChangedHandler;
+                    }
+                    RemoveTransitions(transitions);
                 }
             }
         }
@@ -109,7 +123,8 @@ namespace Avalonia.Animation
                         toAdd = newTransitions.Except(oldTransitions).ToList();
                     }
 
-                    newTransitions.CollectionChanged += TransitionsCollectionChanged;
+                    newTransitions.CollectionChanged += TransitionsCollectionChangedHandler;
+                    _isSubscribedToTransitionsCollection = true;
                     AddTransitions(toAdd);
                 }
 
@@ -122,19 +137,19 @@ namespace Avalonia.Animation
                         toRemove = oldTransitions.Except(newTransitions).ToList();
                     }
 
-                    oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
+                    oldTransitions.CollectionChanged -= TransitionsCollectionChangedHandler;
                     RemoveTransitions(toRemove);
                 }
             }
             else if (_transitionsEnabled &&
-                     Transitions is object &&
+                     Transitions is Transitions transitions &&
                      _transitionState is object &&
                      !change.Property.IsDirect &&
                      change.Priority > BindingPriority.Animation)
             {
-                for (var i = Transitions.Count -1; i >= 0; --i)
+                for (var i = transitions.Count - 1; i >= 0; --i)
                 {
-                    var transition = Transitions[i];
+                    var transition = transitions[i];
 
                     if (transition.Property == change.Property &&
                         _transitionState.TryGetValue(transition, out var state))
@@ -154,11 +169,11 @@ namespace Avalonia.Animation
                             {
                                 oldValue = animatedValue;
                             }
-
+                            var clock = Clock ?? AvaloniaLocator.Current.GetRequiredService<IGlobalClock>();
                             state.Instance?.Dispose();
                             state.Instance = transition.Apply(
                                 this,
-                                Clock ?? AvaloniaLocator.Current.GetRequiredService<IGlobalClock>(),
+                                clock,
                                 oldValue,
                                 newValue);
                             return;

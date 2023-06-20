@@ -14,13 +14,14 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    class AvaloniaX11Platform : IWindowingPlatform
+    internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
@@ -34,8 +35,9 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
         [DllImport("libc")]
-        static extern void setlocale(int type, string s);
+        private static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
@@ -48,9 +50,8 @@ namespace Avalonia.X11
                     useXim = true;
             }
 
-            // XIM doesn't work at all otherwise
-            if (useXim)
-                setlocale(0, "");
+            // We have problems with text input otherwise
+            setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
@@ -72,9 +73,8 @@ namespace Avalonia.X11
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
+                .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
@@ -103,7 +103,7 @@ namespace Avalonia.X11
 
             var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+            Compositor = new Compositor(gl);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -138,7 +138,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        static bool EnableIme(X11PlatformOptions options)
+        private static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -160,7 +160,7 @@ namespace Avalonia.X11
             return isCjkLocale;
         }
 
-        static bool ShouldUseXim()
+        private static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"

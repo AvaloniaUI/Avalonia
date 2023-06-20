@@ -6,6 +6,9 @@ using FontFamily = Avalonia.Media.FontFamily;
 using FontStyle = SharpDX.DirectWrite.FontStyle;
 using FontWeight = SharpDX.DirectWrite.FontWeight;
 using FontStretch = SharpDX.DirectWrite.FontStretch;
+using Avalonia.Platform;
+using System.Linq;
+using System;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -53,9 +56,15 @@ namespace Avalonia.Direct2D1.Media
 
         private static FontCollection CreateFontCollection(FontFamilyKey key)
         {
-            var assets = FontFamilyLoader.LoadFontAssets(key);
+            var source = key.BaseUri != null ? new Uri(key.BaseUri, key.Source) : key.Source;
 
-            var fontLoader = new DWriteResourceFontLoader(Direct2D1Platform.DirectWriteFactory, assets);
+            var assets = FontFamilyLoader.LoadFontAssets(source);
+
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+            var fontAssets = assets.Select(x => assetLoader.Open(x)).ToArray();
+
+            var fontLoader = new DWriteResourceFontLoader(Direct2D1Platform.DirectWriteFactory, fontAssets);
 
             return new FontCollection(Direct2D1Platform.DirectWriteFactory, fontLoader, fontLoader.Key);
         }

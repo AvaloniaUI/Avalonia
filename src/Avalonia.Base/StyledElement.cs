@@ -28,12 +28,14 @@ namespace Avalonia
     public class StyledElement : Animatable, 
         IDataContextProvider, 
         ILogical,
-        IResourceHost,
+        IThemeVariantHost,
         IStyleHost,
-        IStyleable,
         ISetLogicalParent,
         ISetInheritanceParent,
-        ISupportInitialize
+        ISupportInitialize,
+#pragma warning disable CS0618 // Type or member is obsolete
+        IStyleable
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -41,7 +43,12 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             AvaloniaProperty.Register<StyledElement, object?>(
                 nameof(DataContext),
+                defaultValue: null,
                 inherits: true,
+                defaultBindingMode: BindingMode.OneWay,
+                validate: null,
+                coerce: null,
+                enableDataValidation: false,
                 notifying: DataContextNotifying);
 
         /// <summary>
@@ -62,8 +69,7 @@ namespace Avalonia
         public static readonly DirectProperty<StyledElement, AvaloniaObject?> TemplatedParentProperty =
             AvaloniaProperty.RegisterDirect<StyledElement, AvaloniaObject?>(
                 nameof(TemplatedParent),
-                o => o.TemplatedParent,
-                (o ,v) => o.TemplatedParent = v);
+                o => o.TemplatedParent);
         
         /// <summary>
         /// Defines the <see cref="Theme"/> property.
@@ -74,7 +80,7 @@ namespace Avalonia
         private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
         private string? _name;
-        private readonly Classes _classes = new Classes();
+        private Classes? _classes;
         private ILogicalRoot? _logicalRoot;
         private IAvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
@@ -139,6 +145,9 @@ namespace Avalonia
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        /// <inheritdoc />
+        public event EventHandler? ActualThemeVariantChanged;
+        
         /// <summary>
         /// Gets or sets the name of the styled element.
         /// </summary>
@@ -176,21 +185,7 @@ namespace Avalonia
         /// collection.
         /// </para>
         /// </remarks>
-        public Classes Classes
-        {
-            get
-            {
-                return _classes;
-            }
-
-            set
-            {
-                if (_classes != value)
-                {
-                    _classes.Replace(value);
-                }
-            }
-        }
+        public Classes Classes => _classes ??= new();
 
         /// <summary>
         /// Gets or sets the control's data context.
@@ -223,6 +218,18 @@ namespace Avalonia
         /// itself and its children.
         /// </remarks>
         public Styles Styles => _styles ??= new Styles(this);
+
+        /// <summary>
+        /// Gets the type by which the element is styled.
+        /// </summary>
+        /// <remarks>
+        /// Usually controls are styled by their own type, but there are instances where you want
+        /// an element to be styled by its base type, e.g. creating SpecialButton that
+        /// derives from Button and adds extra functionality but is still styled as a regular
+        /// Button. To change the style for a control class, override the <see cref="StyleKeyOverride"/>
+        /// property
+        /// </remarks>
+        public Type StyleKey => StyleKeyOverride;
 
         /// <summary>
         /// Gets or sets the styled element's resource dictionary.
@@ -286,6 +293,18 @@ namespace Avalonia
         protected IPseudoClasses PseudoClasses => Classes;
 
         /// <summary>
+        /// Gets the type by which the element is styled.
+        /// </summary>
+        /// <remarks>
+        /// Usually controls are styled by their own type, but there are instances where you want
+        /// an element to be styled by its base type, e.g. creating SpecialButton that
+        /// derives from Button and adds extra functionality but is still styled as a regular
+        /// Button. Override this property to change the style for a control class, returning the
+        /// type that you wish the elements to be styled as.
+        /// </remarks>
+        protected virtual Type StyleKeyOverride => GetType();
+
+        /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
         bool ILogical.IsAttachedToLogicalTree => _logicalRoot != null;
@@ -295,6 +314,10 @@ namespace Avalonia
         /// </summary>
         public StyledElement? Parent { get; private set; }
 
+        /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030:StyledProperty accessors should not have side effects", Justification = "False positive?")]
+        public ThemeVariant ActualThemeVariant => GetValue(ThemeVariant.ActualThemeVariantProperty);
+        
         /// <summary>
         /// Gets the styled element's logical parent.
         /// </summary>
@@ -312,23 +335,11 @@ namespace Avalonia
         /// <inheritdoc/>
         IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
 
-        /// <summary>
-        /// Gets the type by which the styled element is styled.
-        /// </summary>
-        /// <remarks>
-        /// Usually controls are styled by their own type, but there are instances where you want
-        /// a styled element to be styled by its base type, e.g. creating SpecialButton that
-        /// derives from Button and adds extra functionality but is still styled as a regular
-        /// Button.
-        /// </remarks>
-        Type IStyleable.StyleKey => GetType();
-
         /// <inheritdoc/>
         bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
         IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
-
 
         /// <inheritdoc/>
         public virtual void BeginInit()
@@ -364,7 +375,7 @@ namespace Avalonia
         /// </returns>
         public bool ApplyStyling()
         {
-            if (_initCount == 0 && (!_stylesApplied || !_themeApplied))
+            if (_initCount == 0 && (!_stylesApplied || !_themeApplied || !_templatedParentThemeApplied))
             {
                 GetValueStore().BeginStyling();
 
@@ -409,12 +420,12 @@ namespace Avalonia
 
         internal StyleDiagnostics GetStyleDiagnosticsInternal()
         {
-            var styles = new List<IStyleInstance>();
+            var styles = new List<AppliedStyle>();
 
             foreach (var frame in GetValueStore().Frames)
             {
                 if (frame is IStyleInstance style)
-                    styles.Add(style);
+                    styles.Add(new(style));
             }
 
             return new StyleDiagnostics(styles);
@@ -439,11 +450,11 @@ namespace Avalonia
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
-        bool IResourceNode.TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             value = null;
-            return (_resources?.TryGetResource(key, out value) ?? false) ||
-                   (_styles?.TryGetResource(key, out value) ?? false);
+            return (_resources?.TryGetResource(key, theme, out value) ?? false) ||
+                   (_styles?.TryGetResource(key, theme, out value) ?? false);
         }
 
         /// <summary>
@@ -494,13 +505,7 @@ namespace Avalonia
                     NotifyResourcesChanged();
                 }
 
-#nullable disable
-                RaisePropertyChanged(
-                    ParentProperty,
-                    new Optional<StyledElement>(old),
-                    new BindingValue<StyledElement>(Parent),
-                    BindingPriority.LocalValue);
-#nullable enable
+                RaisePropertyChanged(ParentProperty, old, Parent);
             }
         }
 
@@ -551,7 +556,7 @@ namespace Avalonia
         /// Notifies child controls that a change has been made to resources that apply to them.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             if (_logicalChildren is object)
             {
@@ -620,7 +625,20 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
+            {
                 OnControlThemeChanged();
+            }
+            else if (change.Property == ThemeVariant.RequestedThemeVariantProperty)
+            {
+                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
+                    SetValue(ThemeVariant.ActualThemeVariantProperty, themeVariant);
+                else
+                    ClearValue(ThemeVariant.ActualThemeVariantProperty);
+            }
+            else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
+            {
+                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private protected virtual void OnControlThemeChanged()
@@ -658,14 +676,14 @@ namespace Avalonia
         {
             var theme = Theme;
 
-            // Explitly set Theme property takes precedence.
+            // Explicitly set Theme property takes precedence.
             if (theme is not null)
                 return theme;
 
             // If the Theme property is not set, try to find a ControlTheme resource with our StyleKey.
             if (_implicitTheme is null)
             {
-                var key = ((IStyleable)this).StyleKey;
+                var key = GetStyleKey(this);
 
                 if (this.TryFindResource(key, out var value) && value is ControlTheme t)
                     _implicitTheme = t;
@@ -694,6 +712,22 @@ namespace Avalonia
                 for (var i = 0; i < childCount; ++i)
                     (children[i] as StyledElement)?.InvalidateStyles(recurse);
             }
+        }
+
+        /// <summary>
+        /// Internal getter for <see cref="IStyleable.StyleKey"/> so that we only need to suppress the obsolete
+        /// warning in one place.
+        /// </summary>
+        /// <param name="e">The element</param>
+        /// <remarks>
+        /// <see cref="IStyleable"/> is obsolete and will be removed in a future version, but for backwards
+        /// compatibility we need to support code which overrides <see cref="IStyleable.StyleKey"/>.
+        /// </remarks>
+        internal static Type GetStyleKey(StyledElement e)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            return ((IStyleable)e).StyleKey;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private static void DataContextNotifying(AvaloniaObject o, bool updateStarted)
@@ -785,8 +819,11 @@ namespace Avalonia
 
             if (theme.HasChildren)
             {
-                foreach (var child in theme.Children)
-                    ApplyStyle(child, null, type);
+                var children = theme.Children;
+                for (var i = 0; i < children.Count; i++)
+                {
+                    ApplyStyle(children[i], null, type);
+                }
             }
         }
 
@@ -798,8 +835,11 @@ namespace Avalonia
             
             if (host.IsStylesInitialized)
             {
-                foreach (var style in host.Styles)
-                    ApplyStyle(style, host, FrameType.Style);
+                var styles = host.Styles;
+                for (var i = 0; i < styles.Count; ++i)
+                {
+                    ApplyStyle(styles[i], host, FrameType.Style);
+                }
             }
         }
 
@@ -808,8 +848,11 @@ namespace Avalonia
             if (style is Style s)
                 s.TryAttach(this, host, type);
 
-            foreach (var child in style.Children)
-                ApplyStyle(child, host, type);
+            var children = style.Children;
+            for (var i = 0; i < children.Count; i++)
+            {
+                ApplyStyle(children[i], host, type);
+            }
         }
 
         private void ReevaluateImplicitTheme()
@@ -865,7 +908,7 @@ namespace Avalonia
 
             for (var i = 0; i < logicalChildrenCount; i++)
             {
-                if (logicalChildren[i] is StyledElement child)
+                if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToLogicalTreeCore(e);
                 }

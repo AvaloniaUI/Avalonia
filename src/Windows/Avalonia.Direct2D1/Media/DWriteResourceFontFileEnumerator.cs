@@ -6,7 +6,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// Resource FontFileEnumerator.
     /// </summary>
-    public class DWriteResourceFontFileEnumerator : CallbackBase, FontFileEnumerator
+    internal class DWriteResourceFontFileEnumerator : CallbackBase, FontFileEnumerator
     {
         private readonly Factory _factory;
         private readonly FontFileLoader _loader;

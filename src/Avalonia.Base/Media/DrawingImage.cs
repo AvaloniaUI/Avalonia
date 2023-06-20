@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Metadata;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Media
 {
@@ -20,8 +19,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
         /// </summary>
-        public static readonly StyledProperty<Drawing> DrawingProperty =
-            AvaloniaProperty.Register<DrawingImage, Drawing>(nameof(Drawing));
+        public static readonly StyledProperty<Drawing?> DrawingProperty =
+            AvaloniaProperty.Register<DrawingImage, Drawing?>(nameof(Drawing));
 
         /// <inheritdoc/>
         public event EventHandler? Invalidated;
@@ -30,7 +29,7 @@ namespace Avalonia.Media
         /// Gets or sets the drawing content.
         /// </summary>
         [Content]
-        public Drawing Drawing
+        public Drawing? Drawing
         {
             get => GetValue(DrawingProperty);
             set => SetValue(DrawingProperty, value);
@@ -43,8 +42,7 @@ namespace Avalonia.Media
         void IImage.Draw(
             DrawingContext context,
             Rect sourceRect,
-            Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode)
+            Rect destRect)
         {
             var drawing = Drawing;
 
@@ -62,7 +60,7 @@ namespace Avalonia.Media
                 -sourceRect.Y + destRect.Y - bounds.Y);
 
             using (context.PushClip(destRect))
-            using (context.PushPreTransform(translate * scale))
+            using (context.PushTransform(translate * scale))
             {
                 Drawing?.Draw(context);
             }

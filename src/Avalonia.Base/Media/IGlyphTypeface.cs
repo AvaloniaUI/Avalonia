@@ -7,6 +7,26 @@ namespace Avalonia.Media
     public interface IGlyphTypeface : IDisposable
     {
         /// <summary>
+        /// Gets the family name for the <see cref="IGlyphTypeface"/> object.
+        /// </summary>
+        string FamilyName { get; }
+
+        /// <summary>
+        /// Gets the designed weight of the font represented by the <see cref="IGlyphTypeface"/> object.
+        /// </summary>
+        FontWeight Weight { get; }
+
+        /// <summary>
+        /// Gets the style for the <see cref="IGlyphTypeface"/> object.
+        /// </summary>
+        FontStyle Style { get; }
+
+        /// <summary>
+        /// Gets the <see cref="FontStretch"/> value for the <see cref="IGlyphTypeface"/> object.
+        /// </summary>
+        FontStretch Stretch { get; }
+
+        /// <summary>
         ///     Gets the number of glyphs held by this glyph typeface. 
         /// </summary>
         int GlyphCount { get; }

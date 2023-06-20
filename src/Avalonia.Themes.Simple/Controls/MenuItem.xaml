@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:conv="using:Avalonia.Controls.Converters"
-                    xmlns:sys="using:System">
+                    xmlns:sys="using:System"
+                    x:ClassModifier="internal">
   <conv:PlatformKeyGestureConverter x:Key="KeyGestureConverter" />
 
   <ControlTheme x:Key="{x:Type MenuItem}"
@@ -43,7 +44,7 @@
                               Margin="{TemplateBinding Padding}"
                               VerticalAlignment="Center"
                               Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding ItemTemplate}">
+                              ContentTemplate="{TemplateBinding HeaderTemplate}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
                   <AccessText Text="{Binding}" />
@@ -65,7 +66,7 @@
                    IsLightDismissEnabled="False"
                    IsOpen="{TemplateBinding IsSubMenuOpen,
                                             Mode=TwoWay}"
-                   PlacementMode="Right">
+                   Placement="RightEdgeAlignedTop">
               <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">

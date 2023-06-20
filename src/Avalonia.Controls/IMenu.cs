@@ -8,8 +8,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a <see cref="Menu"/> or <see cref="ContextMenu"/>.
     /// </summary>
-    [NotClientImplementable]
-    public interface IMenu : IMenuElement, IInputElement
+    internal interface IMenu : IMenuElement, IInputElement
     {
         /// <summary>
         /// Gets the menu interaction handler.

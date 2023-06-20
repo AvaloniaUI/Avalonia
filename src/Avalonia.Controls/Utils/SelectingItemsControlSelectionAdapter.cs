@@ -140,17 +140,17 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <value>The collection used to generate content for the selection
         /// adapter.</value>
-        public IEnumerable? Items
+        public IEnumerable? ItemsSource
         {
             get
             {
-                return SelectorControl?.Items;
+                return SelectorControl?.ItemsSource;
             }
             set
             {
                 if (SelectorControl != null)
                 {
-                    SelectorControl.Items = value;
+                    SelectorControl.ItemsSource = value;
                 }
             }
         }

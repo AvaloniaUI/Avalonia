@@ -14,8 +14,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Points"/> property.
         /// </summary>
-        public static readonly DirectProperty<PolylineGeometry, Points> PointsProperty =
-            AvaloniaProperty.RegisterDirect<PolylineGeometry, Points>(nameof(Points), g => g.Points, (g, f) => g.Points = f);
+        public static readonly DirectProperty<PolylineGeometry, IList<Point>> PointsProperty =
+            AvaloniaProperty.RegisterDirect<PolylineGeometry, IList<Point>>(nameof(Points), g => g.Points, (g, f) => g.Points = f);
 
         /// <summary>
         /// Defines the <see cref="IsFilled"/> property.
@@ -23,13 +23,13 @@ namespace Avalonia.Media
         public static readonly StyledProperty<bool> IsFilledProperty =
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
-        private Points _points;
+        private IList<Point> _points;
         private IDisposable? _pointsObserver;
 
         static PolylineGeometry()
         {
             AffectsGeometry(IsFilledProperty);
-            PointsProperty.Changed.AddClassHandler<PolylineGeometry>((s, e) => s.OnPointsChanged(e.NewValue as Points));
+            PointsProperty.Changed.AddClassHandler<PolylineGeometry>((s, e) => s.OnPointsChanged(e.NewValue as IList<Point>));
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="PolylineGeometry"/> class.
         /// </summary>
-        public PolylineGeometry(IEnumerable<Point> points, bool isFilled) : this()
+        public PolylineGeometry(IEnumerable<Point> points, bool isFilled)
         {
-            Points.AddRange(points);
+            _points = new Points(points);
             IsFilled = isFilled;
         }
 
@@ -56,7 +56,7 @@ namespace Avalonia.Media
         /// The points.
         /// </value>
         [Content]
-        public Points Points
+        public IList<Point> Points
         {
             get => _points;
             set => SetAndRaise(PointsProperty, ref _points, value);
@@ -97,10 +97,10 @@ namespace Avalonia.Media
             return geometry;
         }
 
-        private void OnPointsChanged(Points? newValue)
+        private void OnPointsChanged(IList<Point>? newValue)
         {
             _pointsObserver?.Dispose();
-            _pointsObserver = newValue?.ForEachItem(
+            _pointsObserver = (newValue as IAvaloniaList<Point>)?.ForEachItem(
                 _ => InvalidateGeometry(),
                 _ => InvalidateGeometry(),
                 InvalidateGeometry);

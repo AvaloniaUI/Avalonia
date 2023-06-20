@@ -1,0 +1,64 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.fcitx.Fcitx.InputContext1">
+    <method name="FocusIn">
+    </method>
+    <method name="FocusOut">
+    </method>
+    <method name="Reset">
+    </method>
+    <method name="SetCursorRect">
+      <arg name="x" direction="in" type="i"/>
+      <arg name="y" direction="in" type="i"/>
+      <arg name="w" direction="in" type="i"/>
+      <arg name="h" direction="in" type="i"/>
+    </method>
+    <method name="SetCapability">
+       <arg name="caps" direction="in" type="t"/>
+    </method>
+    <method name="SetSurroundingText">
+      <arg name="text" direction="in" type="s"/>
+      <arg name="cursor" direction="in" type="u"/>
+      <arg name="anchor" direction="in" type="u"/>
+    </method>
+    <method name="SetSurroundingTextPosition">
+      <arg name="cursor" direction="in" type="u"/>
+      <arg name="anchor" direction="in" type="u"/>
+    </method>
+    <method name="DestroyIC">
+    </method>
+    <method name="ProcessKeyEvent">
+      <arg name="keyval" direction="in" type="u"/>
+      <arg name="keycode" direction="in" type="u"/>
+      <arg name="state" direction="in" type="u"/>
+      <arg name="type" direction="in" type="b"/>
+      <arg name="time" direction="in" type="u"/>
+      <arg name="ret" direction="out" type="b"/>
+    </method>
+    <signal name="CommitString">
+      <arg name="str" type="s"/>
+    </signal>
+    <signal name="CurrentIM">
+      <arg name="name" type="s"/>
+      <arg name="uniqueName" type="s"/>
+      <arg name="langCode" type="s"/>
+    </signal>
+    <signal name="UpdateFormattedPreedit">
+      <arg name="str" type="a(si)" />
+      <arg name="cursorpos" type="i"/>
+      <!-- qt4 / 5 seems use in/out differently -->
+      <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="FcitxFormattedPreeditList" />
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="FcitxFormattedPreeditList" />
+    </signal>
+    <signal name="ForwardKey">
+      <arg name="keyval" type="u"/>
+      <arg name="state" type="u"/>
+      <arg name="type" type="b"/>
+    </signal>
+    <signal name="DeleteSurroundingText">
+      <arg name="offset" type="i"/>
+      <arg name="nchar" type="u"/>
+    </signal>
+  </interface>
+</node>

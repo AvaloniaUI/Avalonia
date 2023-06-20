@@ -48,9 +48,9 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<Geometry?> ClipProperty =
             AvaloniaProperty.Register<Visual, Geometry?>(nameof(Clip));
-
+        
         /// <summary>
-        /// Defines the <see cref="IsVisibleProperty"/> property.
+        /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
             AvaloniaProperty.Register<Visual, bool>(nameof(IsVisible), true);
@@ -66,6 +66,12 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
             AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
+        
+        /// <summary>
+        /// Defines the <see cref="Effect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEffect?> EffectProperty =
+            AvaloniaProperty.Register<Visual, IEffect?>(nameof(Effect));
 
         /// <summary>
         /// Defines the <see cref="HasMirrorTransform"/> property.
@@ -127,6 +133,8 @@ namespace Avalonia
                 ClipToBoundsProperty,
                 IsVisibleProperty,
                 OpacityProperty,
+                OpacityMaskProperty,
+                EffectProperty,
                 HasMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
@@ -233,6 +241,16 @@ namespace Avalonia
             get { return GetValue(OpacityMaskProperty); }
             set { SetValue(OpacityMaskProperty, value); }
         }
+        
+        /// <summary>
+        /// Gets or sets the effect of the control.
+        /// </summary>
+        public IEffect? Effect
+        {
+            get => GetValue(EffectProperty);
+            set => SetValue(EffectProperty, value);
+        }
+
 
         /// <summary>
         /// Gets or sets a value indicating whether to apply mirror transform on this control.
@@ -300,8 +318,10 @@ namespace Avalonia
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
         internal CompositionVisual? ChildCompositionVisual { get; set; }
-        
-        public bool HasNonUniformZIndexChildren { get; private set; }
+
+        internal RenderOptions RenderOptions { get; set; }
+
+        internal bool HasNonUniformZIndexChildren { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
@@ -311,6 +331,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's parent visual.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1032", Justification = "GetVisualParent extension method is supposed to be used instead.")]
         internal Visual? VisualParent => _visualParent;
 
         /// <summary>
@@ -348,7 +369,7 @@ namespace Avalonia
         /// </summary>
         public void InvalidateVisual()
         {
-            VisualRoot?.Renderer?.AddDirty(this);
+            VisualRoot?.Renderer.AddDirty(this);
         }
 
         /// <summary>
@@ -449,7 +470,7 @@ namespace Avalonia
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
-            VisualRoot?.Renderer?.RecalculateChildren(this);
+            VisualRoot?.Renderer.RecalculateChildren(this);
         }
 
         /// <summary>
@@ -477,23 +498,19 @@ namespace Avalonia
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
-            _visualRoot.Renderer?.RecalculateChildren(_visualParent!);
+            _visualRoot.Renderer.RecalculateChildren(_visualParent!);
 
             if (ZIndex != 0 && VisualParent is Visual parent)
                 parent.HasNonUniformZIndexChildren = true;
 
             var visualChildren = VisualChildren;
+            var visualChildrenCount = visualChildren.Count;
 
-            if (visualChildren != null)
+            for (var i = 0; i < visualChildrenCount; i++)
             {
-                var visualChildrenCount = visualChildren.Count;
-
-                for (var i = 0; i < visualChildrenCount; i++)
+                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
                 {
-                    if (visualChildren[i] is Visual child)
-                    {
-                        child.OnAttachedToVisualTreeCore(e);
-                    }
+                    child.OnAttachedToVisualTreeCore(e);
                 }
             }
         }
@@ -540,20 +557,16 @@ namespace Avalonia
             }
 
             DetachedFromVisualTree?.Invoke(this, e);
-            e.Root?.Renderer?.AddDirty(this);
+            e.Root.Renderer.AddDirty(this);
 
             var visualChildren = VisualChildren;
+            var visualChildrenCount = visualChildren.Count;
 
-            if (visualChildren != null)
+            for (var i = 0; i < visualChildrenCount; i++)
             {
-                var visualChildrenCount = visualChildren.Count;
-
-                for (var i = 0; i < visualChildrenCount; i++)
+                if (visualChildren[i] is { } child)
                 {
-                    if (visualChildren[i] is Visual child)
-                    {
-                        child.OnDetachedFromVisualTreeCore(e);
-                    }
+                    child.OnDetachedFromVisualTreeCore(e);
                 }
             }
         }
@@ -581,7 +594,7 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(Visual? oldParent, Visual? newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(VisualParentProperty, oldParent, newParent);
         }
 
         internal override ParametrizedLogger? GetBindingWarningLogger(
@@ -659,7 +672,7 @@ namespace Avalonia
                 parentVisual.HasNonUniformZIndexChildren = true;
             
             sender?.InvalidateVisual();
-            parent?.VisualRoot?.Renderer?.RecalculateChildren(parent);
+            parent?.VisualRoot?.Renderer.RecalculateChildren(parent);
         }
 
         /// <summary>
@@ -740,11 +753,28 @@ namespace Avalonia
             }
         }
 
+        internal override void OnTemplatedParentControlThemeChanged()
+        {
+            base.OnTemplatedParentControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            var templatedParent = TemplatedParent;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == templatedParent)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
+                }
+            }
+        }
+
         /// <summary>
         /// Computes the <see cref="HasMirrorTransform"/> value according to the 
         /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
         /// </summary>
-        public virtual void InvalidateMirrorTransform()
+        protected internal virtual void InvalidateMirrorTransform()
         {
             var flowDirection = this.FlowDirection;
             var parentFlowDirection = FlowDirection.LeftToRight;

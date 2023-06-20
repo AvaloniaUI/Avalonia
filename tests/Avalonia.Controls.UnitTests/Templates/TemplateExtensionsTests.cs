@@ -18,17 +18,17 @@ namespace Avalonia.Controls.Templates.UnitTests
             var border1 = new Border
             {
                 Name = "border1",
-                [StyledElement.TemplatedParentProperty] = target,
+                TemplatedParent = target,
             };
             var inner = new TestTemplatedControl
             {
                 Name = "inner",
-                [StyledElement.TemplatedParentProperty] = target,
+                TemplatedParent = target,
             };
-            var border2 = new Border { Name = "border2", [StyledElement.TemplatedParentProperty] = inner };
-            var border3 = new Border { Name = "border3", [StyledElement.TemplatedParentProperty] = inner };
-            var border4 = new Border { Name = "border4", [StyledElement.TemplatedParentProperty] = target };
-            var border5 = new Border { Name = "border5", [StyledElement.TemplatedParentProperty] = null };
+            var border2 = new Border { Name = "border2", TemplatedParent = inner };
+            var border3 = new Border { Name = "border3", TemplatedParent = inner };
+            var border4 = new Border { Name = "border4", TemplatedParent = target };
+            var border5 = new Border { Name = "border5", TemplatedParent = null };
 
             target.AddVisualChild(border1);
             border1.Child = inner;

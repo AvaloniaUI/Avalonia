@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Translates (moves) an <see cref="Visual"/>.
     /// </summary>
-    public class TranslateTransform : Transform
+    public sealed class TranslateTransform : Transform
     {
         /// <summary>
         /// Defines the <see cref="X"/> property.

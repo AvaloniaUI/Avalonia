@@ -64,7 +64,7 @@ namespace Avalonia.Native
         }
     }
 
-    public class MacOSMountedVolumeInfoProvider : IMountedVolumeInfoProvider
+    internal class MacOSMountedVolumeInfoProvider : IMountedVolumeInfoProvider
     {
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {

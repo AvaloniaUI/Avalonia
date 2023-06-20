@@ -125,7 +125,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
                 
                 Add("Avalonia.Media.IImage","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
-                Add("Avalonia.Media.Imaging.IBitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
+                Add("Avalonia.Media.Imaging.Bitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
+                Add("Avalonia.Media.IImageBrushSource","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
                 var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
                 AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
                     typeSystem.GetType("Avalonia.Markup.Xaml.Converters.PointsListTypeConverter"));

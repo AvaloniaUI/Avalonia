@@ -3,7 +3,7 @@
     /// <summary>
     /// Animator that handles <see cref="RelativePoint"/> properties.
     /// </summary>
-    public class RelativePointAnimator : Animator<RelativePoint>
+    internal class RelativePointAnimator : Animator<RelativePoint>
     {
         private static readonly PointAnimator s_pointAnimator = new PointAnimator();
 

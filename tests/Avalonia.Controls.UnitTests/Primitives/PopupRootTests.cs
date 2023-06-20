@@ -67,7 +67,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var window = new Window();
-                var target = new Popup {PlacementMode = PlacementMode.Pointer};
+                var target = new Popup {Placement = PlacementMode.Pointer};
                 var child = new Control();
 
                 window.Content = target;

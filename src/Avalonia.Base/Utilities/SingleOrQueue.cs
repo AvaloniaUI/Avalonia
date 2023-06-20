@@ -7,7 +7,7 @@ namespace Avalonia.Utilities
     /// FIFO Queue optimized for holding zero or one items.
     /// </summary>
     /// <typeparam name="T">The type of items held in the queue.</typeparam>
-    public class SingleOrQueue<T>
+    internal class SingleOrQueue<T>
     {
         private T? _head;
         private Queue<T>? _tail;

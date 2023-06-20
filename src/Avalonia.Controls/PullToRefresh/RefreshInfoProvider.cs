@@ -17,16 +17,16 @@ namespace Avalonia.Controls.PullToRefresh
         private double _interactionRatio;
         private bool _entered;
 
-        public DirectProperty<RefreshInfoProvider, bool> IsInteractingForRefreshProperty =
+        public static readonly  DirectProperty<RefreshInfoProvider, bool> IsInteractingForRefreshProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, bool>(nameof(IsInteractingForRefresh),
                 s => s.IsInteractingForRefresh, (s, o) => s.IsInteractingForRefresh = o);
 
 
-        public DirectProperty<RefreshInfoProvider, double> ExecutionRatioProperty =
+        public static readonly DirectProperty<RefreshInfoProvider, double> ExecutionRatioProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(ExecutionRatio),
                 s => s.ExecutionRatio);
 
-        public DirectProperty<RefreshInfoProvider, double> InteractionRatioProperty =
+        public static readonly DirectProperty<RefreshInfoProvider, double> InteractionRatioProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(InteractionRatio),
                 s => s.InteractionRatio, (s, o) => s.InteractionRatio = o);
 

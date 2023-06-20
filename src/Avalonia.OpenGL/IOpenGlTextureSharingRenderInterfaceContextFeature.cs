@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Avalonia.Rendering.Composition;
 
@@ -7,7 +6,7 @@ namespace Avalonia.OpenGL
     public interface IOpenGlTextureSharingRenderInterfaceContextFeature
     {
         bool CanCreateSharedContext { get; }
-        IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null);
+        IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null);
         ICompositionImportableOpenGlSharedTexture CreateSharedTextureForComposition(IGlContext context, PixelSize size);
     }
 

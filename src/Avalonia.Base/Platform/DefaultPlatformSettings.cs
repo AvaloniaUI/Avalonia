@@ -1,12 +1,16 @@
 ﻿using System;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
+using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// A default implementation of <see cref="IPlatformSettings"/> for platforms.
     /// </summary>
+    [PrivateApi]
     public class DefaultPlatformSettings : IPlatformSettings
     {
         public virtual Size GetTapSize(PointerType type)
@@ -28,7 +32,10 @@ namespace Avalonia.Platform
         public virtual TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
 
         public virtual TimeSpan HoldWaitDuration => TimeSpan.FromMilliseconds(300);
-        
+
+        public PlatformHotkeyConfiguration HotkeyConfiguration =>
+            AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+
         public virtual PlatformColorValues GetColorValues()
         {
             return new PlatformColorValues
@@ -37,7 +44,7 @@ namespace Avalonia.Platform
             };
         }
 
-        public event EventHandler<PlatformColorValues>? ColorValuesChanged;
+        public virtual event EventHandler<PlatformColorValues>? ColorValuesChanged;
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {

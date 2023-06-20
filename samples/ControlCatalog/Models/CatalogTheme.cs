@@ -2,9 +2,7 @@
 {
     public enum CatalogTheme
     {
-        FluentLight,
-        FluentDark,
-        SimpleLight,
-        SimpleDark
+        Fluent,
+        Simple
     }
 }

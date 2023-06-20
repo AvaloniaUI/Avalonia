@@ -181,7 +181,7 @@ namespace Avalonia.Base.UnitTests
 
         private DrawingContext CreateDrawingContext()
         {
-            return new DrawingContext(Mock.Of<IDrawingContextImpl>());
+            return new PlatformDrawingContext(Mock.Of<IDrawingContextImpl>());
         }
 
         private class TestControl : Control

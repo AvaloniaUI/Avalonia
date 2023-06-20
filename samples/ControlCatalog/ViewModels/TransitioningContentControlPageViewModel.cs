@@ -216,7 +216,6 @@ namespace ControlCatalog.ViewModels
             {
                 var animation = new Animation
                 {
-                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame
@@ -247,7 +246,6 @@ namespace ControlCatalog.ViewModels
                 to.IsVisible = true;
                 var animation = new Animation
                 {
-                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame

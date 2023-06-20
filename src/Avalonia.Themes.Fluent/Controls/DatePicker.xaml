@@ -7,7 +7,8 @@
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="using:System">
+        xmlns:sys="using:System"
+        x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20" Height="500">
       <StackPanel Spacing="20" VerticalAlignment="Center">
@@ -127,7 +128,7 @@
 
             <Popup Name="PART_Popup" WindowManagerAddShadowHint="False"
                    IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}"
-                   PlacementMode="Bottom">
+                   Placement="Bottom">
               <DatePickerPresenter Name="PART_PickerPresenter" />
             </Popup>
 

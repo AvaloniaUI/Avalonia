@@ -17,45 +17,69 @@ namespace Avalonia.Win32.OpenGl;
 
 internal class WglGdiResourceManager
 {
-    class GetDCOp
+    private class GetDCOp
     {
-        public IntPtr Window;
-        public TaskCompletionSource<IntPtr> Result;
+        public readonly IntPtr Window;
+        public readonly TaskCompletionSource<IntPtr> Result;
+
+        public GetDCOp(IntPtr window, TaskCompletionSource<IntPtr> result)
+        {
+            Window = window;
+            Result = result;
+        }
     }
 
-    class ReleaseDCOp
+    private class ReleaseDCOp
     {
-        public IntPtr Window;
-        public IntPtr DC;
-        public TaskCompletionSource<object> Result;
-    }
-    
-    class CreateWindowOp
-    {
-        public TaskCompletionSource<IntPtr> Result;
+        public readonly IntPtr Window;
+        public readonly IntPtr DC;
+        public readonly TaskCompletionSource<object?> Result;
+
+        public ReleaseDCOp(IntPtr window, IntPtr dc, TaskCompletionSource<object?> result)
+        {
+            Window = window;
+            DC = dc;
+            Result = result;
+        }
     }
 
-    class DestroyWindowOp
+    private class CreateWindowOp
     {
-        public IntPtr Window;
-        public TaskCompletionSource<object> Result;
+        public readonly TaskCompletionSource<IntPtr> Result;
+
+        public CreateWindowOp(TaskCompletionSource<IntPtr> result)
+        {
+            Result = result;
+        }
     }
 
-    private static readonly Queue<object> s_Queue = new();
-    private static readonly AutoResetEvent s_Event = new(false);
-    private static readonly ushort s_WindowClass;
+    private class DestroyWindowOp
+    {
+        public readonly IntPtr Window;
+        public readonly TaskCompletionSource<object?> Result;
+
+        public DestroyWindowOp(IntPtr window, TaskCompletionSource<object?> result)
+        {
+            Window = window;
+            Result = result;
+        }
+    }
+
+    private static readonly Queue<object> s_queue = new();
+    private static readonly AutoResetEvent s_event = new(false);
+    private static readonly ushort s_windowClass;
     private static readonly UnmanagedMethods.WndProc s_wndProcDelegate = WndProc;
 
-    static void Worker()
+    private static void Worker()
     {
         while (true)
         {
-            s_Event.WaitOne();
-            lock (s_Queue)
+            s_event.WaitOne();
+            lock (s_queue)
             {
-                if(s_Queue.Count == 0)
+                if(s_queue.Count == 0)
                     continue;
-                var job = s_Queue.Dequeue();
+                var job = s_queue.Dequeue();
                 if (job is GetDCOp getDc)
                     getDc.Result.TrySetResult(UnmanagedMethods.GetDC(getDc.Window));
                 else if (job is ReleaseDCOp releaseDc)
@@ -66,7 +90,7 @@ internal class WglGdiResourceManager
                 else if (job is CreateWindowOp createWindow)
                     createWindow.Result.TrySetResult(UnmanagedMethods.CreateWindowEx(
                         0,
-                        s_WindowClass,
+                        s_windowClass,
                         null,
                         (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
                         0,
@@ -97,16 +121,15 @@ internal class WglGdiResourceManager
             style = (int)UnmanagedMethods.ClassStyles.CS_OWNDC
         };
             
-        s_WindowClass = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+        s_windowClass = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
         var th = new Thread(Worker) { IsBackground = true, Name = "Win32 OpenGL HDC manager" };
         // This makes CLR to automatically pump the event queue from WaitOne
         th.SetApartmentState(ApartmentState.STA);
         th.Start();
     }
-    
-        
-    
-    static IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+
+
+    private static IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
     {
         return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
     }
@@ -114,53 +137,36 @@ internal class WglGdiResourceManager
     public static IntPtr CreateOffscreenWindow()
     {
         var tcs = new TaskCompletionSource<IntPtr>();
-        lock(s_Queue)
-            s_Queue.Enqueue(new CreateWindowOp()
-            {
-                Result = tcs
-            });
-        s_Event.Set();
+        lock (s_queue)
+            s_queue.Enqueue(new CreateWindowOp(tcs));
+        s_event.Set();
         return tcs.Task.Result;
     }
     
     public static IntPtr GetDC(IntPtr hWnd)
     {
         var tcs = new TaskCompletionSource<IntPtr>();
-        lock(s_Queue)
-            s_Queue.Enqueue(new GetDCOp
-            {
-                Window = hWnd,
-                Result = tcs
-            });
-        s_Event.Set();
+        lock (s_queue)
+            s_queue.Enqueue(new GetDCOp(hWnd, tcs));
+        s_event.Set();
         return tcs.Task.Result;
     }
 
     public static void ReleaseDC(IntPtr hWnd, IntPtr hDC)
     {
-        var tcs = new TaskCompletionSource<object>();
-        lock(s_Queue)
-            s_Queue.Enqueue(new ReleaseDCOp()
-            {
-                Window = hWnd,
-                DC = hDC,
-                Result = tcs
-            });
-        s_Event.Set();
+        var tcs = new TaskCompletionSource<object?>();
+        lock (s_queue)
+            s_queue.Enqueue(new ReleaseDCOp(hWnd, hDC, tcs));
+        s_event.Set();
         tcs.Task.Wait();
     }
     
     public static void DestroyWindow(IntPtr hWnd)
     {
-        var tcs = new TaskCompletionSource<object>();
-        lock(s_Queue)
-            s_Queue.Enqueue(new DestroyWindowOp()
-            {
-                Window = hWnd,
-                Result = tcs
-            });
-        s_Event.Set();
+        var tcs = new TaskCompletionSource<object?>();
+        lock (s_queue)
+            s_queue.Enqueue(new DestroyWindowOp(hWnd, tcs));
+        s_event.Set();
         tcs.Task.Wait();
-        
     }
 }

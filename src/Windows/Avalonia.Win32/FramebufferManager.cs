@@ -4,8 +4,6 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
-#nullable enable
-
 namespace Avalonia.Win32
 {
     internal class FramebufferManager : IFramebufferPlatformSurface, IDisposable

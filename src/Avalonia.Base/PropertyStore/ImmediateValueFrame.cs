@@ -18,7 +18,7 @@ namespace Avalonia.PropertyStore
             StyledProperty<T> property,
             IObservable<BindingValue<T>> source)
         {
-            var e = new TypedBindingEntry<T>(this, property, source);
+            var e = new TypedBindingEntry<T>(Owner!.Owner, this, property, source);
             Add(e);
             return e;
         }
@@ -27,7 +27,7 @@ namespace Avalonia.PropertyStore
             StyledProperty<T> property,
             IObservable<T> source)
         {
-            var e = new TypedBindingEntry<T>(this, property, source);
+            var e = new TypedBindingEntry<T>(Owner!.Owner, this, property, source);
             Add(e);
             return e;
         }
@@ -36,7 +36,7 @@ namespace Avalonia.PropertyStore
             StyledProperty<T> property,
             IObservable<object?> source)
         {
-            var e = new SourceUntypedBindingEntry<T>(this, property, source);
+            var e = new SourceUntypedBindingEntry<T>(Owner!.Owner, this, property, source);
             Add(e);
             return e;
         }

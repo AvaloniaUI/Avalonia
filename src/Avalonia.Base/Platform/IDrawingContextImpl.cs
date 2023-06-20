@@ -1,9 +1,8 @@
 using System;
 using Avalonia.Media;
-using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -13,6 +12,11 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IDrawingContextImpl : IDisposable
     {
+        /// <summary>
+        /// Gets or sets the current render options used to control the rendering behavior of drawing operations.
+        /// </summary>
+        RenderOptions RenderOptions { get; set; }
+
         /// <summary>
         /// Gets or sets the current transform of the drawing context.
         /// </summary>
@@ -31,8 +35,7 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
+        void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -41,7 +44,7 @@ namespace Avalonia.Platform
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
+        void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -49,7 +52,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        void DrawLine(IPen pen, Point p1, Point p2);
+        void DrawLine(IPen? pen, Point p1, Point p2);
 
         /// <summary>
         /// Draws a geometry.
@@ -91,7 +94,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun);
+        void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
@@ -128,7 +131,8 @@ namespace Avalonia.Platform
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
-        void PushOpacity(double opacity);
+        /// <param name="bounds">where to apply the opacity.</param>
+        void PushOpacity(double opacity, Rect? bounds);
 
         /// <summary>
         /// Pops the latest pushed opacity value.
@@ -157,26 +161,17 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
-        /// Pushes a bitmap blending value.
-        /// </summary>
-        /// <param name="blendingMode">The bitmap blending mode.</param>
-        void PushBitmapBlendMode(BitmapBlendingMode blendingMode);
-
-        /// <summary>
-        /// Pops the latest pushed bitmap blending value.
-        /// </summary>
-        void PopBitmapBlendMode();
-
-        /// <summary>
-        /// Adds a custom draw operation
-        /// </summary>
-        /// <param name="custom">Custom draw operation</param>
-        void Custom(ICustomDrawOperation custom);
 
         /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation
         /// </summary>
         object? GetFeature(Type t);
+    }
+
+    public interface IDrawingContextImplWithEffects
+    {
+        void PushEffect(IEffect effect);
+        void PopEffect();
     }
 
     public static class DrawingContextImplExtensions

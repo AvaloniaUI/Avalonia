@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -31,7 +32,6 @@ namespace Avalonia.Android
             {
                 lifetime.View = View;
             }
-
             base.OnCreate(savedInstanceState);
 
             SetContentView(View);
@@ -52,6 +52,17 @@ namespace Avalonia.Android
                 ViewContent = value;
                 if (View != null)
                     View.Content = value;
+            }
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
+            {
+                Window.Attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
             }
         }
 

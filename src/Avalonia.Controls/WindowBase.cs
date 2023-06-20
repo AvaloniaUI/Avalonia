@@ -27,10 +27,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
         public static readonly DirectProperty<WindowBase, WindowBase?> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(
-                nameof(Owner),
-                o => o.Owner,
-                (o, v) => o.Owner = v);
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(nameof(Owner), o => o.Owner);
 
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
@@ -63,7 +60,7 @@ namespace Avalonia.Controls
             impl.PositionChanged = HandlePositionChanged;
         }
 
-        protected IDisposable FreezeVisibilityChangeHandling()
+        private protected IDisposable FreezeVisibilityChangeHandling()
         {
             return new IgnoreVisibilityChangesDisposable(this);
         }
@@ -83,6 +80,24 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<PixelPointEventArgs>? PositionChanged;
 
+        /// <summary>
+        /// Occurs when the window is resized.
+        /// </summary>
+        /// <remarks>
+        /// Although this event is similar to the <see cref="Control.SizeChanged"/> event, they are
+        /// conceptually different:
+        /// 
+        /// - <see cref="Resized"/> is a window-level event, fired when a resize notification arrives
+        ///   from the platform windowing subsystem. The event args contain details of the source of
+        ///   the resize event in the <see cref="WindowResizedEventArgs.Reason"/> property. This
+        ///   event is raised before layout has been run on the window's content.
+        /// - <see cref="Control.SizeChanged"/> is a layout-level event, fired when a layout pass
+        ///   completes on a control. <see cref="Control.SizeChanged"/> is present on all controls
+        ///   and is fired when the control's size changes for any reason, including a
+        ///   <see cref="Resized"/> event in the case of a Window.
+        /// </remarks>
+        public event EventHandler<WindowResizedEventArgs>? Resized;
+
         public new IWindowBaseImpl? PlatformImpl => (IWindowBaseImpl?) base.PlatformImpl;
 
         /// <summary>
@@ -94,7 +109,7 @@ namespace Avalonia.Controls
             private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
         }
         
-        public Screens Screens { get; private set; }
+        public Screens Screens { get; }
 
         /// <summary>
         /// Gets or sets the owner of the window.
@@ -115,6 +130,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the scaling factor for Window positioning and sizing.
+        /// </summary>
+        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        
+        /// <summary>
         /// Activates the window.
         /// </summary>
         public void Activate()
@@ -129,7 +149,7 @@ namespace Avalonia.Controls
         {
             using (FreezeVisibilityChangeHandling())
             {
-                Renderer?.Stop();
+                StopRendering();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -153,10 +173,11 @@ namespace Avalonia.Controls
                 }
 
                 PlatformImpl?.Show(true, false);
-                Renderer?.Start();
+                StartRendering();
                 OnOpened(EventArgs.Empty);
             }
         }
+
 
         /// <summary>
         /// Ensures that the window is initialized.
@@ -191,7 +212,13 @@ namespace Avalonia.Controls
             base.OnOpened(e);
         }
 
-        protected override void HandleClosed()
+        /// <summary>
+        /// Raises the <see cref="Resized"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
+        protected virtual void OnResized(WindowResizedEventArgs e) => Resized?.Invoke(this, e);
+
+        private protected override void HandleClosed()
         {
             using (FreezeVisibilityChangeHandling())
             {
@@ -199,7 +226,7 @@ namespace Avalonia.Controls
 
                 if (this is IFocusScope scope)
                 {
-                    FocusManager.Instance?.RemoveFocusScope(scope);
+                    ((FocusManager?)FocusManager)?.RemoveFocusScope(scope);
                 }
 
                 base.HandleClosed();
@@ -211,15 +238,19 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
         /// <param name="reason">The reason for the resize.</param>
-        protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
+        internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
             FrameSize = PlatformImpl?.FrameSize;
 
-            if (ClientSize != clientSize)
+            var clientSizeChanged = ClientSize != clientSize;
+
+            ClientSize = clientSize;
+            OnResized(new WindowResizedEventArgs(clientSize, reason));
+
+            if (clientSizeChanged)
             {
-                ClientSize = clientSize;
                 LayoutManager.ExecuteLayoutPass();
-                Renderer?.Resized(clientSize);
+                Renderer.Resized(clientSize);
             }
         }
 
@@ -287,7 +318,7 @@ namespace Avalonia.Controls
 
             if (scope != null)
             {
-                FocusManager.Instance?.SetFocusScope(scope);
+                ((FocusManager?)FocusManager)?.SetFocusScope(scope);
             }
 
             IsActive = true;

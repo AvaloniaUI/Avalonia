@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering;
 
-public class CompositorTestsBase
+public class CompositorTestsBase : ScopedTestBase
 {
     protected class CompositorCanvas : CompositorTestServices
     {

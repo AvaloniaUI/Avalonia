@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// <param name="soundEffects">The <see cref="SoundEffects"/> to play</param>
         internal static void PlaySoundEffect(this Control control, SoundEffects soundEffects)
         {
-            var platformFeedback = (control.GetVisualRoot() as TopLevel)?.PlatformFeedbackProvider;
+            var platformFeedback = TopLevel.GetTopLevel(control)?.PlatformFeedback;
             platformFeedback?.Play(soundEffects);
         }
 
@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         /// <param name="hapticFeedback">Value representing a predefined haptic feedback</param>
         internal static void Vibrate(this Control control, HapticFeedback hapticFeedback)
         {
-            var platformFeedback = (control.GetVisualRoot() as TopLevel)?.PlatformFeedbackProvider;
+            var platformFeedback = TopLevel.GetTopLevel(control)?.PlatformFeedback;
             platformFeedback?.Vibrate(hapticFeedback);
         }
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// <param name="amplitude">The amplitude of the vibration</param>
         internal static void Vibrate(this Control control, int duration, int amplitude = -1)
         {
-            var platformFeedback = (control.GetVisualRoot() as TopLevel)?.PlatformFeedbackProvider;
+            var platformFeedback = TopLevel.GetTopLevel(control)?.PlatformFeedback;
             platformFeedback?.Vibrate(duration, amplitude);
         }
     }

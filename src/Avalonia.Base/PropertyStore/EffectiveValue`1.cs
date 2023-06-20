@@ -19,29 +19,29 @@ namespace Avalonia.PropertyStore
         private T? _baseValue;
         private UncommonFields? _uncommon;
 
-        public EffectiveValue(AvaloniaObject owner, StyledProperty<T> property)
+        public EffectiveValue(
+            AvaloniaObject owner,
+            StyledProperty<T> property,
+            EffectiveValue<T>? inherited)
         {
             Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
             _metadata = property.GetMetadata(owner.GetType());
 
-            var value = _metadata.DefaultValue;
+            var value = inherited is null ? _metadata.DefaultValue : inherited.Value;
 
-            if (property.HasCoercion && _metadata.CoerceValue is { } coerce)
+            if (_metadata.CoerceValue is { } coerce)
             {
+                HasCoercion = true;
                 _uncommon = new()
                 {
                     _coerce = coerce,
                     _uncoercedValue = value,
                     _uncoercedBaseValue = value,
                 };
+            }
 
-                Value = coerce(owner, value);
-            }
-            else
-            {
-                Value = value;
-            }
+            Value = value;
         }
 
         /// <summary>
@@ -58,6 +58,12 @@ namespace Avalonia.PropertyStore
             UpdateValueEntry(value, priority);
 
             SetAndRaiseCore(owner,  (StyledProperty<T>)value.Property, GetValue(value), priority);
+
+            if (priority > BindingPriority.LocalValue &&
+                value.GetDataValidationState(out var state, out var error))
+            {
+                owner.Owner.OnUpdateDataValidation(value.Property, state, error);
+            }
         }
 
         public void SetLocalValueAndRaise(
@@ -66,6 +72,22 @@ namespace Avalonia.PropertyStore
             T value)
         {
             SetAndRaiseCore(owner, property, value, BindingPriority.LocalValue);
+        }
+
+        public void SetCurrentValueAndRaise(
+            ValueStore owner,
+            StyledProperty<T> property,
+            T value)
+        {
+            SetAndRaiseCore(owner, property, value, Priority, isOverriddenCurrentValue: true);
+        }
+
+        public void SetCoercedDefaultValueAndRaise(
+            ValueStore owner,
+            StyledProperty<T> property,
+            T value)
+        {
+            SetAndRaiseCore(owner, property, value, Priority, isCoercedDefaultValue: true);
         }
 
         public bool TryGetBaseValue([MaybeNullWhen(false)] out T value)
@@ -116,32 +138,48 @@ namespace Avalonia.PropertyStore
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
         {
-            UnsubscribeValueEntries();
-            DisposeAndRaiseUnset(owner, (StyledProperty<T>)property);
-        }
+            ValueEntry?.Unsubscribe();
+            BaseValueEntry?.Unsubscribe();
 
-        public void DisposeAndRaiseUnset(ValueStore owner, StyledProperty<T> property)
-        {
+            var p = (StyledProperty<T>)property;
             BindingPriority priority;
-            T oldValue;
+            T newValue;
 
             if (property.Inherits && owner.TryGetInheritedValue(property, out var i))
             {
-                oldValue = ((EffectiveValue<T>)i).Value;
+                newValue = ((EffectiveValue<T>)i).Value;
                 priority = BindingPriority.Inherited;
             }
             else
             {
-                oldValue = _metadata.DefaultValue;
+                newValue = _metadata.DefaultValue;
                 priority = BindingPriority.Unset;
             }
 
-            if (!EqualityComparer<T>.Default.Equals(oldValue, Value))
+            if (!EqualityComparer<T>.Default.Equals(newValue, Value))
             {
-                owner.Owner.RaisePropertyChanged(property, Value, oldValue, priority, true);
+                owner.Owner.RaisePropertyChanged(p, Value, newValue, priority, true);
                 if (property.Inherits)
-                    owner.OnInheritedEffectiveValueDisposed(property, Value);
+                    owner.OnInheritedEffectiveValueDisposed(p, Value, newValue);
             }
+
+            if (ValueEntry?.GetDataValidationState(out _, out _) ??
+                BaseValueEntry?.GetDataValidationState(out _, out _) ??
+                false)
+            {
+                owner.Owner.OnUpdateDataValidation(p, BindingValueType.UnsetValue, null);
+            }
+        }
+
+        protected override void CoerceDefaultValueAndRaise(ValueStore owner, AvaloniaProperty property)
+        {
+            Debug.Assert(_uncommon?._coerce is not null);
+            Debug.Assert(Priority == BindingPriority.Unset);
+
+            var coercedDefaultValue = _uncommon!._coerce!(owner.Owner, _metadata.DefaultValue);
+
+            if (!EqualityComparer<T>.Default.Equals(_metadata.DefaultValue, coercedDefaultValue))
+                SetCoercedDefaultValueAndRaise(owner, (StyledProperty<T>)property, coercedDefaultValue);
         }
 
         protected override object? GetBoxedValue() => Value;
@@ -158,16 +196,19 @@ namespace Avalonia.PropertyStore
             ValueStore owner,
             StyledProperty<T> property,
             T value,
-            BindingPriority priority)
+            BindingPriority priority,
+            bool isOverriddenCurrentValue = false,
+            bool isCoercedDefaultValue = false)
         {
-            Debug.Assert(priority < BindingPriority.Inherited);
-
             var oldValue = Value;
             var valueChanged = false;
             var baseValueChanged = false;
             var v = value;
 
-            if (_uncommon?._coerce is { } coerce)
+            IsOverridenCurrentValue = isOverriddenCurrentValue;
+            IsCoercedDefaultValue = isCoercedDefaultValue;
+
+            if (!isCoercedDefaultValue && _uncommon?._coerce is { } coerce)
                 v = coerce(owner.Owner, value);
 
             if (priority <= Priority)
@@ -209,7 +250,6 @@ namespace Avalonia.PropertyStore
             T baseValue,
             BindingPriority basePriority)
         {
-            Debug.Assert(priority < BindingPriority.Inherited);
             Debug.Assert(basePriority > BindingPriority.Animation);
             Debug.Assert(priority <= basePriority);
 
@@ -222,10 +262,11 @@ namespace Avalonia.PropertyStore
             if (_uncommon?._coerce is { } coerce)
             {
                 v = coerce(owner.Owner, value);
-                bv = coerce(owner.Owner, baseValue);
+                if (priority != basePriority)
+                    bv = coerce(owner.Owner, baseValue);
             }
 
-            if (priority != BindingPriority.Unset && !EqualityComparer<T>.Default.Equals(Value, v))
+            if (!EqualityComparer<T>.Default.Equals(Value, v))
             {
                 Value = v;
                 valueChanged = true;
@@ -233,9 +274,7 @@ namespace Avalonia.PropertyStore
                     _uncommon._uncoercedValue = value;
             }
 
-            if (priority != BindingPriority.Unset &&
-                (BasePriority == BindingPriority.Unset ||
-                 !EqualityComparer<T>.Default.Equals(_baseValue, bv)))
+            if (!EqualityComparer<T>.Default.Equals(_baseValue, bv))
             {
                 _baseValue = v;
                 baseValueChanged = true;

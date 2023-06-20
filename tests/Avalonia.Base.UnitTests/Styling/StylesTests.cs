@@ -108,7 +108,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            Assert.True(target.TryGetResource("foo", out var result));
+            Assert.True(target.TryGetResource("foo", ThemeVariant.Dark, out var result));
             Assert.Equal("bar", result);
         }
     }

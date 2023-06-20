@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
@@ -27,7 +27,7 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface
+    internal class Direct2D1Platform : IPlatformRenderInterface
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
@@ -55,15 +55,18 @@ namespace Avalonia.Direct2D1
                     return;
                 }
 #if DEBUG
-                try
+                if (Debugger.IsAttached)
                 {
-                    Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
-                        SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                    try
+                    {
+                        Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
+                            SharpDX.Direct2D1.FactoryType.MultiThreaded,
                             SharpDX.Direct2D1.DebugLevel.Error);
-                }
-                catch
-                {
-                    //
+                    }
+                    catch
+                    {
+                        // ignore, retry below without the debug layer
+                    }
                 }
 #endif
                 if (Direct2D1Factory == null)
@@ -155,61 +158,11 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
-        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
-        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
-
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) => new GeometryGroupImpl(fillRule, children);
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) => new CombinedGeometryImpl(combineMode, g1, g2);
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
-
-            var glyphCount = glyphInfos.Count;
-
-            var run = new SharpDX.DirectWrite.GlyphRun
-            {
-                FontFace = glyphTypefaceImpl.FontFace,
-                FontSize = (float)fontRenderingEmSize
-            };
-
-            var indices = new short[glyphCount];
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                indices[i] = (short)glyphInfos[i].GlyphIndex;
-            }
-
-            run.Indices = indices;
-
-            run.Advances = new float[glyphCount];
-
-            var width = 0.0;
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                var advance = glyphInfos[i].GlyphAdvance;
-
-                width += advance;
-
-                run.Advances[i] = (float)advance;
-            }
-
-            run.Offsets = new GlyphOffset[glyphCount];
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                var (x, y) = glyphInfos[i].GlyphOffset;
-
-                run.Offsets[i] = new GlyphOffset
-                {
-                    AdvanceOffset = (float)x,
-                    AscenderOffset = (float)y
-                };
-            }
-
-            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
-            var height = glyphTypeface.Metrics.LineSpacing * scale;
-
-            return new GlyphRunImpl(run, new Size(width, height), baselineOrigin);
+            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin);
         }
 
         class D2DApi : IPlatformRenderInterfaceContext
@@ -257,7 +210,7 @@ namespace Avalonia.Direct2D1
                 sink.Close();
             }
 
-            var (baselineOriginX, baselineOriginY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
+            var (baselineOriginX, baselineOriginY) = glyphRun.BaselineOrigin;
 
             var transformedGeometry = new SharpDX.Direct2D1.TransformedGeometry(
                 Direct2D1Factory,

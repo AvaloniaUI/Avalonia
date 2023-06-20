@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,12 +23,16 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
 
         using (var doc = new UIDocument(url))
         {
-            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl.Path;
-            Name = doc.LocalizedName ?? System.IO.Path.GetFileName(_filePath) ?? url.FilePathUrl.LastPathComponent;
+            _filePath = doc.FileUrl?.Path ?? url.FilePathUrl?.Path ?? string.Empty;
+            Name = doc.LocalizedName 
+                ?? System.IO.Path.GetFileName(_filePath) 
+                ?? url.FilePathUrl?.LastPathComponent
+                ?? string.Empty;
         }
     }
 
     internal NSUrl Url { get; }
+    internal string FilePath => _filePath;
 
     public bool CanBookmark => true;
 
@@ -50,6 +53,38 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
     public Task<IStorageFolder?> GetParentAsync()
     {
         return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(Url.RemoveLastPathComponent()));
+    }
+
+    public Task DeleteAsync()
+    {
+        return NSFileManager.DefaultManager.Remove(Url, out var error)
+            ? Task.CompletedTask
+            : Task.FromException(new NSErrorException(error));
+    }
+
+    public async Task<IStorageItem?> MoveAsync(IStorageFolder destination)
+    {
+        if (destination is not IOSStorageFolder folder)
+        {
+            throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
+        }
+
+        var isDir = this is IStorageFolder;
+        var newPath = new NSUrl(System.IO.Path.Combine(folder.FilePath, Name), isDir);
+
+        if (NSFileManager.DefaultManager.Move(folder.Url, newPath, out var error))
+        {
+            return isDir
+                ? new IOSStorageFolder(newPath)
+                : new IOSStorageFile(newPath);
+        }
+
+        if (error is not null)
+        {
+            throw new NSErrorException(error);
+        }
+
+        return null;
     }
 
     public Task ReleaseBookmarkAsync()
@@ -94,11 +129,7 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
     public IOSStorageFile(NSUrl url) : base(url)
     {
     }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
+    
     public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
@@ -116,8 +147,9 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
     {
+        // TODO: find out if it can be lazily enumerated.
         var tcs = new TaskCompletionSource<IReadOnlyList<IStorageItem>>();
 
         new NSFileCoordinator().CoordinateRead(Url,
@@ -144,6 +176,39 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
             throw new NSErrorException(error);
         }
 
-        return await tcs.Task;
+        var items = await tcs.Task;
+        foreach (var item in items)
+        {
+            yield return item;
+        }
+    }
+
+    public Task<IStorageFile?> CreateFileAsync(string name)
+    {
+        var path = System.IO.Path.Combine(FilePath, name);
+        NSFileAttributes? attributes = null;
+        if (NSFileManager.DefaultManager.CreateFile(path, null, attributes))
+        {
+            return Task.FromResult<IStorageFile?>(new IOSStorageFile(new NSUrl(path, false)));
+        }
+
+        return Task.FromResult<IStorageFile?>(null);
+    }
+
+    public Task<IStorageFolder?> CreateFolderAsync(string name)
+    {
+        var path = System.IO.Path.Combine(FilePath, name);
+        NSFileAttributes? attributes = null;
+        if (NSFileManager.DefaultManager.CreateDirectory(path, false, attributes, out var error))
+        {
+            return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(new NSUrl(path, true)));
+        }
+
+        if (error is not null)
+        {
+            throw new NSErrorException(error);
+        }
+        
+        return Task.FromResult<IStorageFolder?>(null);
     }
 }

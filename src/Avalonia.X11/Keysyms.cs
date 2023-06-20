@@ -3,7 +3,7 @@
 // ReSharper disable CommentTypo
 namespace Avalonia.X11
 {
-    enum X11Key
+    internal enum X11Key
     {
         VoidSymbol = 0xffffff /* Void symbol */,
         BackSpace = 0xff08 /* Back space, back char */,

@@ -14,8 +14,8 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
       </Style>
     </Grid.Styles>
-      <controls:HamburgerMenu Name="Sidebar">
-        <TabItem Header="Composition">
+    <controls:HamburgerMenu Name="Sidebar">
+      <TabItem Header="Composition">
         <pages:CompositionPage/>
       </TabItem>
       <TabItem Header="Acrylic">
@@ -147,9 +147,6 @@
       <TabItem Header="ScrollViewer">
         <pages:ScrollViewerPage />
       </TabItem>
-      <TabItem Header="ScrollViewer Snapping">
-        <pages:ScrollSnapPage />
-      </TabItem>
       <TabItem Header="Slider">
         <pages:SliderPage />
       </TabItem>
@@ -167,6 +164,9 @@
       </TabItem>
       <TabItem Header="TextBlock">
         <pages:TextBlockPage />
+      </TabItem>
+      <TabItem Header="Theme Variants">
+        <pages:ThemePage />
       </TabItem>
       <TabItem Header="ToggleSwitch">
         <pages:ToggleSwitchPage />
@@ -201,14 +201,22 @@
                 <SystemDecorations>Full</SystemDecorations>
               </ComboBox.Items>
             </ComboBox>
+            <ComboBox x:Name="ThemeVariants"
+                      HorizontalAlignment="Stretch"
+                      DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <ThemeVariant>Default</ThemeVariant>
+                <ThemeVariant>Light</ThemeVariant>
+                <ThemeVariant>Dark</ThemeVariant>
+              </ComboBox.Items>
+            </ComboBox>
             <ComboBox x:Name="Themes"
                       HorizontalAlignment="Stretch"
                       SelectedIndex="0">
               <ComboBox.Items>
-                <models:CatalogTheme>FluentLight</models:CatalogTheme>
-                <models:CatalogTheme>FluentDark</models:CatalogTheme>
-                <models:CatalogTheme>SimpleLight</models:CatalogTheme>
-                <models:CatalogTheme>SimpleDark</models:CatalogTheme>
+                <models:CatalogTheme>Fluent</models:CatalogTheme>
+                <models:CatalogTheme>Simple</models:CatalogTheme>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
@@ -230,7 +238,7 @@
               </ComboBox.Items>
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
-                      Items="{Binding WindowStates}"
+                      ItemsSource="{Binding WindowStates}"
                       SelectedItem="{Binding WindowState}" />
           </StackPanel>
         </Flyout>

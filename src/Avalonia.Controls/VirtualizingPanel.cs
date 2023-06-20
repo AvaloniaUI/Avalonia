@@ -34,7 +34,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items to display.
         /// </summary>
-        protected IReadOnlyList<object?> Items => ItemsControl?.ItemsView ?? ItemsSourceView.Empty;
+        protected IReadOnlyList<object?> Items => (IReadOnlyList<object?>?)ItemsControl?.ItemsView ?? 
+            Array.Empty<object?>();
 
         /// <summary>
         /// Gets the <see cref="ItemsControl"/> that the panel is displaying items for.
@@ -75,6 +76,11 @@ namespace Avalonia.Controls
         /// The container for the item at the specified index within the item collection, if the
         /// item is realized; otherwise, null.
         /// </returns>
+        /// <remarks>
+        /// Note for implementors: if the item at the the specified index is an ItemIsOwnContainer
+        /// item that has previously been realized, then the item should be returned even if it
+        /// currently falls outside the realized viewport.
+        /// </remarks>
         protected internal abstract Control? ContainerFromIndex(int index);
 
         /// <summary>
@@ -192,17 +198,13 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The VirtualizingPanel is already attached to an ItemsControl");
 
             ItemsControl = itemsControl;
-            ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
             ItemsControl.ItemsView.PostCollectionChanged += OnItemsControlItemsChanged;
         }
 
         internal void Detach()
         {
             var itemsControl = EnsureItemsControl();
-
-            itemsControl.PropertyChanged -= OnItemsControlPropertyChanged;
             itemsControl.ItemsView.PostCollectionChanged -= OnItemsControlItemsChanged;
-
             ItemsControl = null;
             Children.Clear();
         }
@@ -216,20 +218,9 @@ namespace Avalonia.Controls
             return ItemsControl;
         }
 
-        private protected virtual void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property == ItemsControl.ItemsViewProperty)
-            {
-                var (oldValue, newValue) = e.GetOldAndNewValue<ItemsSourceView>();
-                oldValue.PostCollectionChanged -= OnItemsControlItemsChanged;
-                Refresh();
-                newValue.PostCollectionChanged += OnItemsControlItemsChanged;
-            }
-        }
-
         private void OnItemsControlItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            OnItemsChanged(_itemsControl?.ItemsView ?? ItemsSourceView.Empty, e);
+            OnItemsChanged(Items, e);
         }
 
         [DoesNotReturn]

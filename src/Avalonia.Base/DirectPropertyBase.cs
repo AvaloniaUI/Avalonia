@@ -20,11 +20,11 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
-        protected DirectPropertyBase(
+        private protected DirectPropertyBase(
             string name,
             Type ownerType,
             AvaloniaPropertyMetadata metadata)
-            : base(name, ownerType, metadata)
+            : base(name, ownerType, ownerType, metadata)
         {
             Owner = ownerType;
         }
@@ -35,7 +35,7 @@ namespace Avalonia
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        protected DirectPropertyBase(
+        private protected DirectPropertyBase(
             DirectPropertyBase<TValue> source,
             Type ownerType,
             AvaloniaPropertyMetadata metadata)
@@ -117,6 +117,11 @@ namespace Avalonia
             o.ClearValue<TValue>(this);
         }
 
+        internal override void RouteCoerceDefaultValue(AvaloniaObject o)
+        {
+            // Do nothing.
+        }
+
         /// <inheritdoc/>
         internal override object? RouteGetValue(AvaloniaObject o)
         {
@@ -150,6 +155,11 @@ namespace Avalonia
             }
 
             return null;
+        }
+
+        internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
+        {
+            RouteSetValue(o, value, BindingPriority.LocalValue);
         }
 
         /// <summary>

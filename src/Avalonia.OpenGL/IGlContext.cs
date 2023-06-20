@@ -12,10 +12,9 @@ namespace Avalonia.OpenGL
         int SampleCount { get; }
         int StencilSize { get; }
         IDisposable MakeCurrent();
-        IDisposable EnsureCurrent();
         bool IsSharedWith(IGlContext context);
         bool CanCreateSharedContext { get; }
-        IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null);
+        IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null);
     }
 
     public interface IGlPlatformSurfaceRenderTargetFactory
