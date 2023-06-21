@@ -88,13 +88,15 @@ namespace Avalonia.DesignerSupport.Remote
         
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public SystemDecorations RequestedManagedDecorations => SystemDecorations.None;
+
+        public Action<SystemDecorations> RequestedManagedDecorationsChanged { get; set; }
+
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
-
-        public bool NeedsManagedDecorations => false;
 
         public override object TryGetFeature(Type featureType)
         {

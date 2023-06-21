@@ -49,6 +49,10 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public SystemDecorations RequestedManagedDecorations => SystemDecorations.None;
+
+        public Action<SystemDecorations> RequestedManagedDecorationsChanged { get; set; }
+
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -190,8 +194,6 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
         public bool IsClientAreaExtendedToDecorations { get; }
-
-        public bool NeedsManagedDecorations => false;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 

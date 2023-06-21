@@ -166,7 +166,7 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
         private object? _dialogResult;
-        private readonly Size _maxPlatformClientSize;
+
         private bool _shown;
         private bool _showingAsDialog;
 
@@ -225,8 +225,8 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
-            _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
+            impl.RequestedManagedDecorationsChanged = RequestedManagedDecorationsChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
@@ -554,6 +554,11 @@ namespace Avalonia.Controls
             IsExtendedIntoWindowDecorations = isExtended;
             WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
+        }
+
+        protected virtual void RequestedManagedDecorationsChanged(SystemDecorations systemDecorations)
+        {
+            SystemDecorations = systemDecorations;
         }
 
         /// <summary>

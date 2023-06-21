@@ -25,10 +25,10 @@ namespace Avalonia.Wayland
         private readonly WpFractionalScaleV1? _wpFractionalScale;
         private readonly object _resizeLock = new();
 
+        private bool _didReceiveInitialConfigure;
         private WlCallback? _frameCallback;
         private OrgKdeKwinBlur? _blur;
 
-        internal bool DidReceiveInitialConfigure;
         internal State PendingState;
         internal State AppliedState;
 
@@ -169,7 +169,7 @@ namespace Avalonia.Wayland
 
         public void Resize(Size clientSize, WindowResizeReason reason = WindowResizeReason.Application)
         {
-            if (!DidReceiveInitialConfigure && clientSize != default)
+            if (!_didReceiveInitialConfigure && clientSize != default)
                 PendingState.Size = PixelSize.FromSize(clientSize, RenderScaling);
         }
 
@@ -234,22 +234,20 @@ namespace Avalonia.Wayland
 
         protected virtual void ApplyConfigure()
         {
-            bool didResize = AppliedState.Size != PendingState.Size;
+            var didResize = AppliedState.Size != PendingState.Size;
 
             AppliedState = PendingState;
 
-            if (!DidReceiveInitialConfigure)
+            if (!_didReceiveInitialConfigure)
             {
                 // Emulate Window 7+'s default window size behavior in case no explicit size was set. If no configure_bounds event was send, fall back to a hardcoded size.
                 if (AppliedState.Size == default)
                     AppliedState.Size = new PixelSize(Math.Max((int)(AppliedState.Bounds.Width * 0.75), 300), Math.Max((int)(AppliedState.Bounds.Height * 0.7), 200));
-                DidReceiveInitialConfigure = true;
+                _didReceiveInitialConfigure = true;
                 DoPaint();
             }
-            else if (didResize)
+            else if (didResize && _frameCallback is null)
             {
-                if (_frameCallback is not null)
-                    return;
                 _frameCallback = WlSurface.Frame();
                 _frameCallback.Events = this;
                 DoPaint();

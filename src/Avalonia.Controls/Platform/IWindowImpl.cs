@@ -84,7 +84,12 @@ namespace Avalonia.Platform
         /// Gets a flag that indicates if Managed decorations i.e. caption buttons are required.
         /// This property is used when <see cref="IsClientAreaExtendedToDecorations"/> is set.
         /// </summary>
-        bool NeedsManagedDecorations { get; }
+        SystemDecorations RequestedManagedDecorations { get; }
+
+        /// <summary>
+        /// Gets or Sets an action that is called whenever one of the extend client area properties changed.
+        /// </summary>
+        Action<SystemDecorations>? RequestedManagedDecorationsChanged { get; set; }
 
         /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.

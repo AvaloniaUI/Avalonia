@@ -3,7 +3,6 @@ using System.Text;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using NWayland.Protocols.Wayland;
 
@@ -13,6 +12,7 @@ namespace Avalonia.Wayland
     {
         private readonly AvaloniaWaylandPlatform _platform;
         private readonly WlInputDevice _wlInputDevice;
+        private readonly KeyboardDevice _keyboardDevice;
         private readonly WlKeyboard _wlKeyboard;
         private readonly IntPtr _xkbContext;
 
@@ -43,10 +43,8 @@ namespace Avalonia.Wayland
             _wlKeyboard = platform.WlSeat.GetKeyboard();
             _wlKeyboard.Events = this;
             _xkbContext = LibXkbCommon.xkb_context_new(0);
-            KeyboardDevice = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
+            _keyboardDevice = new KeyboardDevice();
         }
-
-        public IKeyboardDevice KeyboardDevice { get; }
 
         public uint KeyboardEnterSerial { get; private set; }
 
@@ -123,7 +121,7 @@ namespace Avalonia.Wayland
             var sym = LibXkbCommon.xkb_state_key_get_one_sym(_xkbState, code);
             var avaloniaKey = XkbKeyTransform.ConvertKey(sym);
             var eventType = state == WlKeyboard.KeyStateEnum.Pressed ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp;
-            var keyEventArgs = new RawKeyEventArgs(KeyboardDevice, time, _window.InputRoot, eventType, avaloniaKey, _wlInputDevice.RawInputModifiers);
+            var keyEventArgs = new RawKeyEventArgs(_keyboardDevice, time, _window.InputRoot, eventType, avaloniaKey, _wlInputDevice.RawInputModifiers);
             _window.Input?.Invoke(keyEventArgs);
 
             if (state == WlKeyboard.KeyStateEnum.Pressed)
@@ -132,7 +130,7 @@ namespace Avalonia.Wayland
                 var text = GetComposedString(sym, code);
                 if (text is not null)
                 {
-                    var textEventArgs = new RawTextInputEventArgs(KeyboardDevice, time, _window.InputRoot, text);
+                    var textEventArgs = new RawTextInputEventArgs(_keyboardDevice, time, _window.InputRoot, text);
                     _window.Input?.Invoke(textEventArgs);
                 }
 
@@ -201,10 +199,10 @@ namespace Avalonia.Wayland
         {
             if (_window?.InputRoot is null)
                 return false;
-            _window.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, _repeatTime, _window.InputRoot, RawKeyEventType.KeyDown, _repeatKey, _wlInputDevice.RawInputModifiers));
+            _window.Input?.Invoke(new RawKeyEventArgs(_keyboardDevice, _repeatTime, _window.InputRoot, RawKeyEventType.KeyDown, _repeatKey, _wlInputDevice.RawInputModifiers));
             var text = GetComposedString(_repeatSym, _repeatCode);
             if (text is not null)
-                _window.Input?.Invoke( new RawTextInputEventArgs(KeyboardDevice, _repeatTime, _window.InputRoot, text));
+                _window.Input?.Invoke( new RawTextInputEventArgs(_keyboardDevice, _repeatTime, _window.InputRoot, text));
             if (!_firstRepeat)
                 return true;
             _firstRepeat = false;

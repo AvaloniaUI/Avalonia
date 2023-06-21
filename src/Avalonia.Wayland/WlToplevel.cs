@@ -21,7 +21,8 @@ namespace Avalonia.Wayland
         private string? _title;
         private PixelSize _minSize;
         private PixelSize _maxSize;
-        private ExtendClientAreaChromeHints _extendClientAreaChromeHints = ExtendClientAreaChromeHints.Default;
+        private bool _extendIntoClientArea;
+        private SystemDecorations _systemDecorations = SystemDecorations.Full;
 
         public WlToplevel(AvaloniaWaylandPlatform platform) : base(platform)
         {
@@ -36,9 +37,11 @@ namespace Avalonia.Wayland
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public bool IsClientAreaExtendedToDecorations { get; private set; }
+        public Action<SystemDecorations>? RequestedManagedDecorationsChanged { get; set; }
 
-        public bool NeedsManagedDecorations => IsClientAreaExtendedToDecorations && _extendClientAreaChromeHints.HasAnyFlag(ExtendClientAreaChromeHints.PreferSystemChrome | ExtendClientAreaChromeHints.SystemChrome);
+        public bool IsClientAreaExtendedToDecorations => !AppliedState.HasWindowDecorations;
+
+        public SystemDecorations RequestedManagedDecorations => AppliedState.HasWindowDecorations ? SystemDecorations.None : _systemDecorations;
 
         private Thickness _extendedMargins = s_windowDecorationThickness;
         public Thickness ExtendedMargins => IsClientAreaExtendedToDecorations ? _extendedMargins : default;
@@ -87,6 +90,9 @@ namespace Avalonia.Wayland
             {
                 _toplevelDecoration = _platform.ZxdgDecorationManager.GetToplevelDecoration(_xdgToplevel);
                 _toplevelDecoration.Events = this;
+                var extend = _extendIntoClientArea || _systemDecorations != SystemDecorations.Full;
+                var mode = extend ? ZxdgToplevelDecorationV1.ModeEnum.ClientSide : ZxdgToplevelDecorationV1.ModeEnum.ServerSide;
+                _toplevelDecoration.SetMode(mode);
             }
 
             if (_platform.ZxdgExporter is not null)
@@ -131,9 +137,10 @@ namespace Avalonia.Wayland
 
         public void SetSystemDecorations(SystemDecorations enabled)
         {
-            var decorations = enabled == SystemDecorations.Full;
-            _extendClientAreaChromeHints = decorations ? ExtendClientAreaChromeHints.Default : ExtendClientAreaChromeHints.NoChrome;
-            _toplevelDecoration?.SetMode(decorations ? ZxdgToplevelDecorationV1.ModeEnum.ServerSide : ZxdgToplevelDecorationV1.ModeEnum.ClientSide);
+            _systemDecorations = enabled;
+            var extend = _extendIntoClientArea || _systemDecorations != SystemDecorations.Full;
+            var mode = extend ? ZxdgToplevelDecorationV1.ModeEnum.ClientSide : ZxdgToplevelDecorationV1.ModeEnum.ServerSide;
+            _toplevelDecoration?.SetMode(mode);
         }
 
         public void SetIcon(IWindowIconImpl? icon) { } // Impossible on Wayland, an AppId should be used instead.
@@ -182,21 +189,16 @@ namespace Avalonia.Wayland
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
-            _toplevelDecoration?.SetMode(extendIntoClientAreaHint ?
-                ZxdgToplevelDecorationV1.ModeEnum.ClientSide :
-                ZxdgToplevelDecorationV1.ModeEnum.ServerSide);
+            _extendIntoClientArea = extendIntoClientAreaHint;
+            var mode = extendIntoClientAreaHint ? ZxdgToplevelDecorationV1.ModeEnum.ClientSide : ZxdgToplevelDecorationV1.ModeEnum.ServerSide;
+            _toplevelDecoration?.SetMode(mode);
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-            _extendClientAreaChromeHints = hints;
-            ExtendClientAreaToDecorationsChanged?.Invoke(IsClientAreaExtendedToDecorations);
-        }
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints) { }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendedMargins = titleBarHeight is -1 ? s_windowDecorationThickness : new Thickness(0, titleBarHeight, 0, 0);
-            ExtendClientAreaToDecorationsChanged?.Invoke(IsClientAreaExtendedToDecorations);
         }
 
         public void OnConfigure(XdgToplevel eventSender, int width, int height, ReadOnlySpan<XdgToplevel.StateEnum> states)
@@ -250,7 +252,7 @@ namespace Avalonia.Wayland
             if (featureType == typeof(IStorageProvider))
                 return _storageProvider;
             if (featureType == typeof(IClipboard))
-                return AvaloniaLocator.Current.GetService<IClipboard>();
+                return _platform.WlDataHandler;
             return null;
         }
 
@@ -264,19 +266,17 @@ namespace Avalonia.Wayland
 
         protected override void ApplyConfigure()
         {
-            if (PendingState.HasWindowDecorations != !IsClientAreaExtendedToDecorations)
-            {
-                IsClientAreaExtendedToDecorations = !PendingState.HasWindowDecorations;
-                ExtendClientAreaToDecorationsChanged?.Invoke(IsClientAreaExtendedToDecorations);
-            }
-
-            if (PendingState.Activated)
-                Activated?.Invoke();
-
-            if (AppliedState.WindowState != PendingState.WindowState)
-                WindowStateChanged?.Invoke(PendingState.WindowState);
+            var windowStateChanged = PendingState.WindowState != AppliedState.WindowState;
 
             base.ApplyConfigure();
+
+            if (AppliedState.Activated)
+                Activated?.Invoke();
+            if (windowStateChanged)
+                WindowStateChanged?.Invoke(AppliedState.WindowState);
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(IsClientAreaExtendedToDecorations);
+            RequestedManagedDecorationsChanged?.Invoke(RequestedManagedDecorations);
         }
 
         private static readonly Thickness s_windowDecorationThickness = new(0, 30, 0, 0);

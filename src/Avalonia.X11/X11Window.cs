@@ -372,6 +372,10 @@ namespace Avalonia.X11
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public SystemDecorations RequestedManagedDecorations => SystemDecorations.None;
+
+        public Action<SystemDecorations>? RequestedManagedDecorationsChanged { get; set; }
+
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -1325,8 +1329,6 @@ namespace Avalonia.X11
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
-
-        public bool NeedsManagedDecorations => false;
 
         public bool IsEnabled => !_disabled;
 

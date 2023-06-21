@@ -64,6 +64,8 @@ namespace Avalonia.Controls.Chrome
                     window.GetObservable(Window.WindowStateProperty)
                         .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
+                        .Subscribe(_ => UpdateSize(window)),
+                    window.GetObservable(Window.SystemDecorationsProperty)
                         .Subscribe(_ => UpdateSize(window))
                 };
             }
@@ -84,7 +86,7 @@ namespace Avalonia.Controls.Chrome
                 window.OffScreenMargin.Right,
                 window.OffScreenMargin.Bottom);
 
-            IsVisible = window.WindowState == WindowState.Normal && (window.PlatformImpl?.NeedsManagedDecorations ?? false);
+            IsVisible = window is { WindowState: WindowState.Normal, IsExtendedIntoWindowDecorations: true, SystemDecorations: >= SystemDecorations.BorderOnly };
         }
 
         private static void SetupSide(Window window, InputElement border, StandardCursorType cursor, WindowEdge edge)

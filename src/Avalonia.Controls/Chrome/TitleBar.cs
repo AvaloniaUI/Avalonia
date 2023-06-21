@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Chrome
                 }
             }
 
-            IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
+            IsVisible = window is { IsExtendedIntoWindowDecorations: true, SystemDecorations: SystemDecorations.Full };
         }
 
         /// <inheritdoc />
@@ -91,6 +91,8 @@ namespace Avalonia.Controls.Chrome
                             PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
                         }),
                     window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
+                        .Subscribe(_ => UpdateSize(window)),
+                    window.GetObservable(Window.SystemDecorationsProperty)
                         .Subscribe(_ => UpdateSize(window))
                 };
             }
