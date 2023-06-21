@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Dialogs
@@ -23,26 +24,7 @@ namespace Avalonia.Dialogs
             DataContext = this;
         }
 
-        public static void LearnMore()
-        {
-            var url = "https://www.avaloniaui.net/";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                // If no associated application/json MimeType is found xdg-open opens retrun error
-                // but it tries to open it anyway using the console editor (nano, vim, other..)
-                ShellExec($"xdg-open {url}", waitForExit: false);
-            }
-            else
-            {
-                using Process process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
-                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
-                    CreateNoWindow = true,
-                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                });
-            }
-        }
+        
 
         private static void ShellExec(string cmd, bool waitForExit = true)
         {
@@ -65,6 +47,27 @@ namespace Avalonia.Dialogs
                 {
                     process.WaitForExit();
                 }
+            }
+        }
+
+        private void Button_OnClick(object sender, RoutedEventArgs e)
+        {
+            var url = "https://www.avaloniaui.net/";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // If no associated application/json MimeType is found xdg-open opens retrun error
+                // but it tries to open it anyway using the console editor (nano, vim, other..)
+                ShellExec($"xdg-open {url}", waitForExit: false);
+            }
+            else
+            {
+                using Process process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
+                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
+                    CreateNoWindow = true,
+                    UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                });
             }
         }
     }

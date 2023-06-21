@@ -44,7 +44,6 @@
             
       <TextBlock Text="v11"
                  FontWeight="Regular"
-                 Foreground="#5B5B5B"
                  HorizontalAlignment="Center"
                  FontSize="14"
                  Grid.Row="2"/>
@@ -57,9 +56,8 @@
                  TextWrapping="Wrap"/>
         
       <TextBlock Grid.Row="1" 
-                 Text="Avalonia is made possible by the generous support if it's contributors and community"
+                 Text="Avalonia is made possible by the generous support if it's contributors and community."
                  TextWrapping="Wrap"
-                 Foreground="#5B5B5B"
                  Margin="0,15,0,0"/>
         
       <Button Grid.Row="2" Background="#8B44AC"
@@ -67,12 +65,11 @@
               VerticalAlignment="Center"
               Padding="12"
               Content="Learn more about Avalonia"
-              Command="{Binding LearnMore}"
+              Click="Button_OnClick"
               HorizontalAlignment="Center"/>
             
       <TextBlock Grid.Row="4" VerticalAlignment="Bottom"
                  Text="{Binding Copyright}"
-                 Foreground="#5B5B5B"
                  HorizontalAlignment="Center"/>
     </Grid>
   </Grid>
