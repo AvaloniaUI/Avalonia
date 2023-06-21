@@ -46,23 +46,22 @@ namespace Avalonia.Wayland
 
             XdgWmBase.Events = this;
 
-            var wlDataHandler = new WlDataHandler(this);
+            WlScreens = new WlScreens(this);
+            WlInputDevice = new WlInputDevice(this);
+            WlDataHandler = new WlDataHandler(this);
+            WlRawEventGrouper = new WlRawEventGrouper();
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant(new WlPlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
-                .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<ICursorFactory>().ToConstant(new WlCursorFactory(this))
-                .Bind<IClipboard>().ToConstant(wlDataHandler)
-                .Bind<IPlatformDragSource>().ToConstant(wlDataHandler)
+                .Bind<IClipboard>().ToConstant(WlDataHandler)
+                .Bind<IPlatformDragSource>().ToConstant(WlDataHandler)
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new WlIconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider());
-
-            WlScreens = new WlScreens(this);
-            WlInputDevice = new WlInputDevice(this);
-            WlRawEventGrouper = new WlRawEventGrouper();
 
             WlDisplay.Roundtrip();
 
@@ -123,6 +122,8 @@ namespace Avalonia.Wayland
 
         internal WlScreens WlScreens { get; }
 
+        internal WlDataHandler WlDataHandler { get; }
+
         internal WlInputDevice WlInputDevice { get; }
 
         internal WlRawEventGrouper WlRawEventGrouper { get; }
@@ -150,6 +151,7 @@ namespace Avalonia.Wayland
             ZwpPointerGestures?.Dispose();
             WlDataDeviceManager.Dispose();
             WlRawEventGrouper.Dispose();
+            WlDataHandler.Dispose();
             WlInputDevice.Dispose();
             WlScreens.Dispose();
             WlSeat.Dispose();
