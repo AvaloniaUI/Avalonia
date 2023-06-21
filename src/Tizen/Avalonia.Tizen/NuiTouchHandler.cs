@@ -1,6 +1,8 @@
-﻿using Avalonia.Input;
+﻿using System.Threading;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tizen.NUI;
 using static Tizen.NUI.BaseComponents.View;
 

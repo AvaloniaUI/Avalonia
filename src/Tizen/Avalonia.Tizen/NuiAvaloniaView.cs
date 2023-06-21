@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Tizen.Platform;
 using Avalonia.Tizen.Platform.Interop;
@@ -102,8 +101,16 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         UpdateSurface();
         UpdateTexture();
 
-        _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
-        _topLevelImpl.Paint?.Invoke(new Rect(_topLevelImpl.ClientSize));
+        Invalidate();
+    }
+
+    private void Invalidate()
+    {
+        TizenThreadingInterface.MainloopContext.Post(_ =>
+        {
+            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
+            _topLevelImpl.Paint?.Invoke(new Rect(_topLevelImpl.ClientSize));
+        }, null);
     }
 
     #endregion
@@ -220,6 +227,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         {
             _view._nativeImageSource.EnqueueBuffer(_view._buffer);
             _view._buffer = IntPtr.Zero;
+            Window.Instance.KeepRendering(0);
         }
     }
 

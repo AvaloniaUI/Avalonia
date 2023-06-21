@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using Avalonia.Threading;
-using Tizen.NUI;
 
 namespace Avalonia.Tizen;
 internal class TizenThreadingInterface : IPlatformThreadingInterface
 {
+    internal static SynchronizationContext MainloopContext { get; set; }
 
     public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
     {
@@ -38,19 +33,20 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
         },
         null, interval, Timeout.InfiniteTimeSpan);
 
-        return Avalonia.Reactive.Disposable.Create(() =>
+        return Reactive.Disposable.Create(() =>
         {
             stopped = true;
             timer?.Dispose();
         });
     }
 
-    private void EnsureInvokeOnMainThread(Action action) => action();
-
-    public void Signal(DispatcherPriority prio)
+    private void EnsureInvokeOnMainThread(Action action)
     {
-        EnsureInvokeOnMainThread(() => Signaled?.Invoke(null));
+        MainloopContext.Post(_ => action(), null);
     }
+
+    public void Signal(DispatcherPriority prio) =>
+        EnsureInvokeOnMainThread(() => Signaled?.Invoke(null));
 
     public bool CurrentThreadIsLoopThread => true;
     public event Action<DispatcherPriority?> Signaled;

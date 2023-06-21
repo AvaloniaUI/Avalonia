@@ -31,6 +31,9 @@ public class NuiTizenApplication<TApp> : NUIApplication
     protected override void OnCreate()
     {
         base.OnCreate();
+#pragma warning disable CS8601 // Possible null reference assignment.
+        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
+#pragma warning restore CS8601 // Possible null reference assignment.
 
         _lifetime = new SingleViewLifetime();
         _lifetime.View = _view = new NuiAvaloniaView();
@@ -68,7 +71,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
         }
         else
         {
-            //Map the keyboard
+            //TODO: Map the keyboard
         }
     }
 
