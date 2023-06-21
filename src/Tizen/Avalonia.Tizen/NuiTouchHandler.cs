@@ -1,8 +1,7 @@
-﻿using System.Threading;
+﻿using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using Tizen.NUI;
 using static Tizen.NUI.BaseComponents.View;
 
@@ -41,31 +40,65 @@ internal class NuiTouchHandler
                 }
                 _knownTouches.Add(id);
             }
-            
+
             var point = e.Touch.GetLocalPosition(i);
             var state = e.Touch.GetState(i);
             var timestamp = e.Touch.GetTime();
-            var mouseEvent = new RawTouchEventArgs(
+            var avaloniaState = state switch
+            {
+                PointStateType.Down => RawPointerEventType.TouchBegin,
+                PointStateType.Up => RawPointerEventType.TouchEnd,
+                PointStateType.Motion => RawPointerEventType.Move,
+                PointStateType.Interrupted => RawPointerEventType.TouchCancel,
+                _ => RawPointerEventType.Move
+            };
+
+            Debug.WriteLine($"Touch {id} {state} {avaloniaState} {point.X} {point.Y}");
+            var touchEvent = new RawTouchEventArgs(
                 _device,
                 timestamp,
                 InputRoot,
-                state switch
-                {
-                    PointStateType.Down => RawPointerEventType.TouchBegin,
-                    PointStateType.Up => RawPointerEventType.TouchEnd,
-                    PointStateType.Motion => RawPointerEventType.Move,
-                    PointStateType.Interrupted => RawPointerEventType.TouchCancel,
-                    _ => RawPointerEventType.Move
-                },
+                avaloniaState,
                 new Point(point.X, point.Y),
                 RawInputModifiers.None,
                 id);
-            _topLevelImpl.Input?.Invoke(mouseEvent);
+            _topLevelImpl.Input?.Invoke(touchEvent);
 
             if (state is PointStateType.Up or PointStateType.Interrupted)
             {
                 _knownTouches.Remove(id);
             }
         }
+    }
+
+    public void Handle(WheelEventArgs e)
+    {
+        var mouseWheelEvent = new RawMouseWheelEventArgs(
+            _device,
+            e.Wheel.TimeStamp,
+            InputRoot,
+            new Point(e.Wheel.Point.X, e.Wheel.Point.Y),
+            new Vector(
+                e.Wheel.Direction == 1 ? e.Wheel.Z : 0, 
+                e.Wheel.Direction == 0 ? e.Wheel.Z : 0),
+            GetModifierKey(e));
+
+        _topLevelImpl.Input?.Invoke(mouseWheelEvent);
+    }
+
+    private RawInputModifiers GetModifierKey(WheelEventArgs ev)
+    {
+        var modifiers = RawInputModifiers.None;
+
+        if (ev.Wheel.IsShiftModifier())
+            modifiers |= RawInputModifiers.Shift;
+
+        if (ev.Wheel.IsAltModifier())
+            modifiers |= RawInputModifiers.Alt;
+
+        if (ev.Wheel.IsCtrlModifier())
+            modifiers |= RawInputModifiers.Control;
+
+        return modifiers;
     }
 }

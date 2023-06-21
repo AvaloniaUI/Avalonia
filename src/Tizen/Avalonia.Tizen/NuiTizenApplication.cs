@@ -58,20 +58,24 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
     private void WindowKeyEvent(object? sender, Window.KeyEventArgs e)
     {
-        if (Enum.TryParse<global::Tizen.Uix.InputMethod.KeyCode>(e.Key.KeyPressedName, true, out var keyCode))
+        if (Enum.TryParse<global::Tizen.Uix.InputMethod.KeyCode>(e.Key.KeyPressedName, true, out var keyCode) ||
+            Enum.TryParse($"Keypad{e.Key.KeyPressedName}", false, out keyCode))
         {
+            var mapped = TizenKeyboardDevice.ConvertKey(keyCode);
+            if (mapped == Input.Key.None)
+                return;
+
+            var type = GetKeyEventType(e);
+            var modifiers = GetModifierKey(e);
+
             _view?.TopLevelImpl?.Input?.Invoke(
                 new RawKeyEventArgs(
                     TizenKeyboardDevice.Instance!,
                     e.Key.Time,
                     _view.InputRoot,
-                    GetKeyEventType(e),
-                    TizenKeyboardDevice.ConvertKey(keyCode),
-                    GetModifierKey(e)));
-        }
-        else
-        {
-            //TODO: Map the keyboard
+                    type,
+                    mapped,
+                    modifiers));
         }
     }
 

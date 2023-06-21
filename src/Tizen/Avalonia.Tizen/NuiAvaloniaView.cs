@@ -49,6 +49,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         };
 
         TouchEvent += OnTouchEvent;
+        WheelEvent += OnWheelEvent;
     }
 
     internal void Initialise()
@@ -236,6 +237,12 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     #region Event handlers
 
     private bool OnTouchEvent(object source, TouchEventArgs e)
+    {
+        _touchHandler?.Handle(e);
+        return true;
+    }
+
+    private bool OnWheelEvent(object source, WheelEventArgs e)
     {
         _touchHandler?.Handle(e);
         return true;
