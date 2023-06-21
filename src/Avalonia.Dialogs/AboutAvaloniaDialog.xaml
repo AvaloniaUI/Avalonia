@@ -42,7 +42,7 @@
                  FontSize="32"
                  Grid.Row="1"/>
             
-      <TextBlock Text="v11"
+      <TextBlock Text="{Binding Version}"
                  FontWeight="Regular"
                  HorizontalAlignment="Center"
                  FontSize="14"

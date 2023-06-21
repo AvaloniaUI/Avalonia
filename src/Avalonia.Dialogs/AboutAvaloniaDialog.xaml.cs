@@ -12,7 +12,7 @@ namespace Avalonia.Dialogs
     {
         private static readonly Version s_version = typeof(AboutAvaloniaDialog).Assembly.GetName().Version;
 
-        public static string Version { get; } = s_version.ToString(2);
+        public static string Version { get; } = $@"v{s_version.ToString(2)}";
 
         public static bool IsDevelopmentBuild { get; } = s_version.Revision == 999;
 
