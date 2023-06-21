@@ -6,106 +6,71 @@
         MinWidth="430"
         MinHeight="475"
         Title="About Avalonia"
-        Background="Purple"
         FontFamily="/Assets/Roboto-Light.ttf#Roboto"
         x:Class="Avalonia.Dialogs.AboutAvaloniaDialog"
         x:DataType="dialogs:AboutAvaloniaDialog">
+
   <Window.Styles>
     <Style>
       <Style.Resources>
         <DrawingGroup x:Key="AvaloniaLogo">
-          <GeometryDrawing Geometry="m 150.66581 0.66454769 c -54.77764 0 -101.0652 38.86360031 -112.62109 90.33008031 a 26.1 26.1 0 0 1 18.92187 25.070312 26.1 26.1 0 0 1 -18.91992 25.08202 c 11.56024 51.46073 57.8456 90.31837 112.61914 90.31837 63.37832 0 115.40039 -52.02207 115.40039 -115.40039 0 -63.378322 -52.02207 -115.40039231 -115.40039 -115.40039231 z m 0 60.00000031 c 30.95192 0 55.40039 24.44847 55.40039 55.400392 0 30.9519 -24.44847 55.40039 -55.40039 55.40039 -30.95191 0 -55.40039 -24.44848 -55.40039 -55.40039 0 -30.951922 24.44848 -55.400392 55.40039 -55.400392 z">
-            <GeometryDrawing.Brush>
-              <LinearGradientBrush StartPoint="272,411" EndPoint="435,248">
-                <LinearGradientBrush.GradientStops>
-                  <GradientStop Color="#B0B0B0" Offset="0" />
-                  <GradientStop Color="#FFFFFF" Offset="0.6784" />
-                </LinearGradientBrush.GradientStops>
-              </LinearGradientBrush>
-            </GeometryDrawing.Brush>
-          </GeometryDrawing>
-          <GeometryDrawing Brush="#B0B0B0">
-            <GeometryDrawing.Geometry>
-              <EllipseGeometry Rect="9.6,95.8,40.6,40.6" />
-            </GeometryDrawing.Geometry>
-          </GeometryDrawing>
-          <GeometryDrawing Brush="White">
-            <GeometryDrawing.Geometry>
-              <RectangleGeometry Rect="206.06355, 114.56503,60,116.2" />
-            </GeometryDrawing.Geometry>
-          </GeometryDrawing>
+          <GeometryDrawing Brush="#FF8B44AC" Geometry="M215 246.5h1.5a30 30 0 0 0 29.8-26.5l.2-100a123.2 123.2 0 1 0-125.4 126.5H215Z"/>              
+          <GeometryDrawing Brush="#FFF9F9FB" Geometry="M123.7 42a81.3 81.3 0 0 0-79.3 63.5 18.4 18.4 0 0 1 0 35.4 81.3 81.3 0 0 0 118.2 53.6v9.4H205v-80.7A81.2 81.2 0 0 0 123.7 42Zm-39 81.2a39 39 0 1 1 77.9 0 39 39 0 0 1-77.8 0Z"/>
+          <GeometryDrawing Brush="#FFF9F9FB" Geometry="M52 123.2a13 13 0 1 1-26 0 13 13 0 0 1 26 0Z"/>          
         </DrawingGroup>
       </Style.Resources>
     </Style>
-    <Style Selector="Rectangle.Abstract">
-      <Setter Property="Fill" Value="White" />
-      <Setter Property="Width" Value="750" />
-      <Setter Property="Height" Value="700" />
-    </Style>
-    <Style Selector="Button.Hyperlink">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Margin" Value="-5"/>
-      <Setter Property="Foreground" Value="#419df2" />
-      <Setter Property="Command" Value="{Binding OpenBrowser}" />
-      <Setter Property="Content" Value="{Binding $self.CommandParameter}" />
-      <Setter Property="HorizontalAlignment" Value="Center" />
-      <Setter Property="Cursor" Value="Hand" />
-    </Style>
   </Window.Styles>
-  <Grid Background="#4A255D">
-    <Canvas>
-      <Rectangle Classes="Abstract" Canvas.Top="90" Opacity="0.132">
-        <Rectangle.RenderTransform>
-          <RotateTransform Angle="-2" />
-        </Rectangle.RenderTransform>
-      </Rectangle>
-      <Rectangle Classes="Abstract" Canvas.Top="95" Opacity="0.3">
-        <Rectangle.RenderTransform>
-          <RotateTransform Angle="-4" />
-        </Rectangle.RenderTransform>
-      </Rectangle>
-      <Rectangle Classes="Abstract" Canvas.Top="100" Opacity="0.3">
-        <Rectangle.RenderTransform>
-          <RotateTransform Angle="-8" />
-        </Rectangle.RenderTransform>
-      </Rectangle>
-      <Rectangle Classes="Abstract" Canvas.Top="105" Opacity="0.7">
-        <Rectangle.RenderTransform>
-          <RotateTransform Angle="-12" />
-        </Rectangle.RenderTransform>
-      </Rectangle>
-    </Canvas>
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="18">
-      <Border Height="70" Width="70">
-        <Image>
-          <Image.Source>
-            <DrawingImage Drawing="{DynamicResource AvaloniaLogo}"/>
-          </Image.Source>
-        </Image>
-      </Border>
-      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,-10,0,0">
-        <TextBlock Text="{Binding Version, StringFormat=Avalonia {0}}" FontSize="40" Foreground="White" />
-        <TextBlock Text="Development Build" IsVisible="{Binding IsDevelopmentBuild}" Margin="0,-10,0,0" FontSize="15" Foreground="White" />
-      </StackPanel>
-    </StackPanel>
-    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="20" Margin="10 60 10 0">
-      <TextBlock Text="This product is built with the Avalonia cross-platform UI Framework. &#x0A;&#x0A;Avalonia is made possible by the generous support of it's contributors and community." TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-        <TextBlock Text="Main source repository | " />
-        <Button Classes="Hyperlink" CommandParameter="https://github.com/AvaloniaUI/Avalonia/"  />
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-        <TextBlock Text="Documentation and Information | " />
-        <Button Classes="Hyperlink" CommandParameter="https://avaloniaui.net/"  />
-      </StackPanel>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-        <TextBlock Text="Chat Room | " />
-        <Button Classes="Hyperlink" CommandParameter="https://t.me/Avalonia"  />
-      </StackPanel>
-     </StackPanel> 
-    <StackPanel VerticalAlignment="Bottom" Margin="10">
-      <TextBlock Text="© 2022 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
-    </StackPanel>
+  
+  
+  <Grid RowDefinitions="Auto, *" Margin="35,35,35,15">
+        
+    <!-- Header -->
+    <Grid RowDefinitions="*, Auto, Auto">
+            
+      <Image Width="130"
+             Margin="0, 0,0, 20"
+             Grid.Row="0">
+        <Image.Source>
+          <DrawingImage Drawing="{DynamicResource AvaloniaLogo}"/>
+        </Image.Source>
+      </Image>
+            
+      <TextBlock Text="Avalonia"
+                 FontWeight="Bold"
+                 HorizontalAlignment="Center"
+                 FontSize="32"
+                 Grid.Row="1"/>
+            
+      <TextBlock Text="{Binding Version}"
+                 FontWeight="Regular"
+                 HorizontalAlignment="Center"
+                 FontSize="14"
+                 Grid.Row="2"/>
+    </Grid>
+        
+    <Grid RowDefinitions="Auto, Auto, *, Auto" Grid.Row="1" Margin="0, 30,0,0">
+            
+      <TextBlock Grid.Row="0" 
+                 Text="This product is built with Avalonia, a cross-platform UI framework." 
+                 TextWrapping="Wrap"/>
+        
+      <TextBlock Grid.Row="1" 
+                 Text="Avalonia is made possible by the generous support of its contributors and community."
+                 TextWrapping="Wrap"
+                 Margin="0,15,0,0"/>
+        
+      <Button Grid.Row="2" Background="#8B44AC"
+              Foreground="White"
+              VerticalAlignment="Center"
+              Padding="12"
+              Content="Learn more about Avalonia"
+              Click="Button_OnClick"
+              HorizontalAlignment="Center"/>
+            
+      <TextBlock Grid.Row="4" VerticalAlignment="Bottom"
+                 Text="{Binding Copyright}"
+                 HorizontalAlignment="Center"/>
+    </Grid>
   </Grid>
 </Window>
