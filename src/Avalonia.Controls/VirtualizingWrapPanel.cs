@@ -468,8 +468,11 @@ namespace Avalonia.Controls
                 var uLength = viewport.viewportUVEnd.U;
                 var estimatedItemsPerU = (int)(uLength / estimatedSize.U);
                 var estimatedULanes = Math.Ceiling((double)itemCount / estimatedItemsPerU);
-                sizeUV.U = estimatedItemsPerU * estimatedSize.U;
+                sizeUV.U = Math.Max(estimatedItemsPerU * estimatedSize.U, estimatedSize.U);
                 sizeUV.V = estimatedULanes * estimatedSize.V;
+
+                if(double.IsInfinity(sizeUV.V))
+                    sizeUV.V = estimatedSize.V;
             }
             else if (viewport.lastIndex >= 0)
             {
