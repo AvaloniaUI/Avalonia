@@ -100,7 +100,10 @@ namespace Avalonia.Controls
                     ItemsControl.ItemsControlFromItemContaner(this) is ListBox owner)
                 {
                     if (owner.UpdateSelectionFromPointerEvent(this, e))
+                    {
                         e.Handled = true;
+                        this.PlaySoundEffect(SoundEffects.Click);
+                    }
                 }
             }
 

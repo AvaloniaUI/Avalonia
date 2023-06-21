@@ -287,12 +287,14 @@ namespace Avalonia.Controls
                     {
                         _popup?.Close();
                         e.Handled = true;
+                        this.PlaySoundEffect(SoundEffects.Click);
                     }
                 }
                 else
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
+                    this.PlaySoundEffect(SoundEffects.Click);
                 }
             }
 
