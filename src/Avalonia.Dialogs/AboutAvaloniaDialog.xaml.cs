@@ -15,14 +15,17 @@ namespace Avalonia.Dialogs
 
         public static bool IsDevelopmentBuild { get; } = s_version.Revision == 999;
 
+        public static string Copyright { get; } = $"© {DateTime.Now.Year} The Avalonia Project";
+
         public AboutAvaloniaDialog()
         {
             AvaloniaXamlLoader.Load(this);
             DataContext = this;
         }
 
-        public static void OpenBrowser(string url)
+        public static void LearnMore()
         {
+            var url = "https://www.avaloniaui.net/";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 // If no associated application/json MimeType is found xdg-open opens retrun error
