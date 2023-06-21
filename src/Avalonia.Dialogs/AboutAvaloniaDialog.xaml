@@ -56,7 +56,7 @@
                  TextWrapping="Wrap"/>
         
       <TextBlock Grid.Row="1" 
-                 Text="Avalonia is made possible by the generous support if it's contributors and community."
+                 Text="Avalonia is made possible by the generous support of its contributors and community."
                  TextWrapping="Wrap"
                  Margin="0,15,0,0"/>
         
