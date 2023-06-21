@@ -42,7 +42,6 @@ namespace Avalonia.Rendering
         /// Initializes a new instance of the <see cref="RenderLoop"/> class.
         /// </summary>
         /// <param name="timer">The render timer.</param>
-        /// <param name="dispatcher">The UI thread dispatcher.</param>
         public RenderLoop(IRenderTimer timer)
         {
             _timer = timer;
