@@ -73,9 +73,21 @@
       </DockPanel>
 
       <DockPanel IsVisible="{OnPlatform False, Windows=True}">
+        <DockPanel.Resources>
+          <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+              <ResourceDictionary x:Key="Dark">
+                <Image x:Key="Icon" Source="/Assets/avalonia_light.ico"/>
+              </ResourceDictionary>
+              <ResourceDictionary x:Key="Light">
+                <Image x:Key="Icon" Source="/Assets/avalonia_dark.ico"/>
+              </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+          </ResourceDictionary>
+        </DockPanel.Resources>
         <TextBlock Classes="h3">Win32 Icon (<Run Text="{Binding #IconSizeSlider.Value}"/>px)</TextBlock>
         <Slider DockPanel.Dock="Top" Name="IconSizeSlider" Minimum="16" Maximum="256" Value="32" TickFrequency="16" IsSnapToTickEnabled="True"/>
-        <Image Name="iconImage" Source="/Assets/test_icon.ico" Width="{Binding #IconSizeSlider.Value}" Height="{Binding #IconSizeSlider.Value}" 
+        <Image Name="iconImage" DataContext="{DynamicResource Icon}" Source="{Binding Path=(Image.Source)}" Width="{Binding #IconSizeSlider.Value}" Height="{Binding #IconSizeSlider.Value}" 
                ZIndex="-1" RenderOptions.BitmapInterpolationMode="HighQuality"/>
       </DockPanel>
       

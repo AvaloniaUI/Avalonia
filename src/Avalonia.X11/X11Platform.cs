@@ -103,6 +103,8 @@ namespace Avalonia.X11
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
 
+        public static IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+
         private static uint[] X11IconConverter(IWindowIconImpl icon)
         {
             if (!(icon is X11IconData x11icon))

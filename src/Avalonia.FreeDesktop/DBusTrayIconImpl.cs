@@ -17,6 +17,7 @@ namespace Avalonia.FreeDesktop
         private readonly ObjectPath _dbusMenuPath;
         private readonly Connection? _connection;
         private readonly OrgFreedesktopDBus? _dBus;
+        private readonly IPlatformSettings _platformSettings;
 
         private IDisposable? _serviceWatchDisposable;
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
@@ -28,6 +29,7 @@ namespace Avalonia.FreeDesktop
         private bool _isDisposed;
         private bool _serviceConnected;
         private bool _isVisible = true;
+        private IWindowIconImpl? _iconImpl;
 
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
@@ -36,6 +38,8 @@ namespace Avalonia.FreeDesktop
 
         public DBusTrayIconImpl()
         {
+            _platformSettings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+
             _connection = DBusHelper.TryCreateNewConnection();
 
             if (_connection is null)
@@ -53,7 +57,17 @@ namespace Avalonia.FreeDesktop
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
 
+            _platformSettings.ThemeVariantChanged += OnThemeVariantChanged;
+
             WatchAsync();
+        }
+
+        private void OnThemeVariantChanged(object? sender, EventArgs e)
+        {
+            if (_iconImpl is IThemeVariantWindowIconImpl)
+            {
+                RefreshIcon();
+            }
         }
 
         private async void WatchAsync()
@@ -136,16 +150,31 @@ namespace Avalonia.FreeDesktop
 
         public void SetIcon(IWindowIconImpl? icon)
         {
+            _iconImpl = icon;
+            RefreshIcon();
+        }
+
+        private void RefreshIcon()
+        {
             if (_isDisposed || IconConverterDelegate is null)
                 return;
 
-            if (icon is null)
+            if (_iconImpl is not { } icon)
             {
                 _statusNotifierItemDbusObj?.SetIcon(EmptyPixmap);
                 return;
             }
 
-            var x11iconData = IconConverterDelegate(icon);
+            var x11iconData = IconConverterDelegate(icon switch
+            {
+                IThemeVariantWindowIconImpl variantIcons => _platformSettings.ThemeVariant switch
+                {
+                    PlatformThemeVariant.Light => variantIcons.Light,
+                    PlatformThemeVariant.Dark => variantIcons.Dark,
+                    _ => throw new NotImplementedException(),
+                },
+                _ => icon
+            });
 
             if (x11iconData.Length == 0)
                 return;

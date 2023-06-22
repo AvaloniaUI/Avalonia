@@ -19,9 +19,10 @@ namespace Avalonia.Win32
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private static nint s_taskBarMonitor;
+        private static bool _subscribedToPlatformSettings;
 
         private bool _iconAdded;
-        private IconImpl? _iconImpl;
+        private IWindowIconImpl? _iconImpl;
         private bool _iconStale;
         private Icon? _icon;
         private string? _tooltipText;
@@ -32,6 +33,12 @@ namespace Avalonia.Win32
 
         public TrayIconImpl()
         {
+            if (!_subscribedToPlatformSettings) // static constructor is too early to subscribe
+            {
+                Win32Platform.PlatformSettings.ThemeVariantChanged += OnThemeVariantChanged;
+                _subscribedToPlatformSettings = true;
+            }
+
             FindTaskBarMonitor();
 
             _exporter = new Win32NativeToManagedMenuExporter();
@@ -83,10 +90,22 @@ namespace Avalonia.Win32
             }
         }
 
+        private static void OnThemeVariantChanged(object? sender, EventArgs e)
+        {
+            foreach (var tray in s_trayIcons.Values)
+            {
+                if (tray._iconImpl is IThemeVariantWindowIconImpl)
+                {
+                    tray._iconStale = true;
+                    tray.UpdateIcon();
+                }
+            }
+        }
+
         /// <inheritdoc />
         public void SetIcon(IWindowIconImpl? icon)
         {
-            _iconImpl = icon as IconImpl;
+            _iconImpl = icon;
             _iconStale = true;
             UpdateIcon();
         }
@@ -125,7 +144,17 @@ namespace Avalonia.Win32
                     scaling = dpiX / 96.0;
                 }
 
-                newIcon = _iconImpl.LoadSmallIcon(scaling);
+                newIcon = (_iconImpl switch
+                {
+                    IThemeVariantWindowIconImpl variantIcons => (Win32Platform.PlatformSettings.ThemeVariant switch
+                    {
+                        PlatformThemeVariant.Light => variantIcons.Light,
+                        PlatformThemeVariant.Dark => variantIcons.Dark,
+                        _ => throw new NotImplementedException(),
+                    }) as IconImpl,
+                    IconImpl standard => standard,
+                    _ => null,
+                })?.LoadSmallIcon(scaling);
             }
 
             var iconData = new NOTIFYICONDATA

@@ -8,4 +8,11 @@ namespace Avalonia.Platform
     {
         void Save(Stream outputStream);
     }
+
+    [Unstable]
+    public interface IThemeVariantWindowIconImpl : IWindowIconImpl
+    {
+        IWindowIconImpl Light { get; }
+        IWindowIconImpl Dark { get; }
+    }
 }

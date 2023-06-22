@@ -60,7 +60,21 @@ namespace Avalonia.Win32
 
         public Icon LoadSmallIcon(double scaleFactor) => new(_smallIcon, GetScaledSize(16, scaleFactor));
 
-        public Icon LoadBigIcon(double scaleFactor) => new(_bigIcon, GetScaledSize(s_taskbarIconSize, scaleFactor));
+        public Icon LoadBigIcon(double scaleFactor)
+        {
+            var targetSize = GetScaledSize(s_taskbarIconSize, scaleFactor);
+            var icon = new Icon(_bigIcon, targetSize);
+
+            // The exact size of a taskbar icon in Windows 10 and later is 24px @ 96dpi. But if an ICO file doesn't have
+            // that size, 16px can be selected instead. If this happens, fall back to a 32 pixel icon. Windows will downscale it.
+            if (s_taskbarIconSize == 24 && icon.Width < targetSize.Width)
+            {
+                icon.Dispose();
+                icon = new(_bigIcon, GetScaledSize(32, scaleFactor));
+            }
+
+            return icon;
+        }
 
         private static System.Drawing.Size GetScaledSize(int baseSize, double factor)
         {

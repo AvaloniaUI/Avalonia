@@ -27,6 +27,8 @@ namespace Avalonia.FreeDesktop
 
         public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();
 
+        public override PlatformThemeVariant ThemeVariant => _themeVariant ?? base.ThemeVariant;
+
         private async Task TryGetInitialValuesAsync()
         {
             _themeVariant = await TryGetThemeVariantAsync();
@@ -70,7 +72,13 @@ namespace Avalonia.FreeDesktop
             switch (valueTuple)
             {
                 case ("org.freedesktop.appearance", "color-scheme", { } colorScheme):
+                    var lastTheme = _themeVariant;
                     _themeVariant = ToColorScheme((colorScheme.Value as DBusUInt32Item)!.Value);
+                    if (lastTheme != _themeVariant)
+                    {
+                        OnThemeVariantChanged();
+                    }
+
                     _accentColor = await TryGetAccentColorAsync();
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Win32.WinRT;
@@ -9,6 +10,7 @@ namespace Avalonia.Win32;
 internal class Win32PlatformSettings : DefaultPlatformSettings
 {
     private PlatformColorValues? _lastColorValues;
+    private PlatformThemeVariant? _lastThemeVariant;
 
     public override Size GetTapSize(PointerType type)
     {
@@ -76,12 +78,67 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     
     internal void OnColorValuesChanged()
     {
+        var lastThemeVariant = _lastThemeVariant;
+        _lastThemeVariant = null; // clear cached registry value
+
+        if (ThemeVariant != lastThemeVariant)
+        {
+            OnThemeVariantChanged();
+        }
+
         var oldColorValues = _lastColorValues;
         var colorValues = GetColorValues();
 
         if (oldColorValues != colorValues)
         {
             OnColorValuesChanged(colorValues);
+        }
+    }
+
+    public static DwmWindowAttribute? DarkModeAttribute { get; } = Win32Platform.WindowsVersion.Build switch
+    {
+        >= 18985 => DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
+        >= 17763 => DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE_PRE_20H1,
+        _ => null,
+    };
+
+    public override PlatformThemeVariant ThemeVariant
+    {
+        get
+        {
+            if (_lastThemeVariant is { } cached)
+            {
+                return cached;
+            }
+
+            if (DarkModeAttribute == null || RegOpenKeyEx(HKEY_CURRENT_USER, @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", 0, SecurityAccessModel.KEY_READ, out var key) != 0)
+            {
+                return PlatformThemeVariant.Dark;
+            }
+            try
+            {
+                uint type = 0;
+                var size = sizeof(int);
+                var ptr = Marshal.AllocHGlobal(size);
+                try
+                {
+                    if (RegQueryValueEx(key, "SystemUsesLightTheme", 0, ref type, ptr, ref size) != 0)
+                    {
+                        return PlatformThemeVariant.Dark;
+                    }
+
+                    _lastThemeVariant = Marshal.ReadInt32(ptr) == 0 ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
+                    return _lastThemeVariant.Value;
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
+            finally
+            {
+                RegCloseKey(key);
+            }
         }
     }
 }

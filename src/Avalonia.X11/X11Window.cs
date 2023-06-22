@@ -56,6 +56,7 @@ namespace Avalonia.X11
         private IntPtr _xSyncCounter;
         private XSyncValue _xSyncValue;
         private XSyncState _xSyncState = 0;
+        private IWindowIconImpl? _icon;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
         private double? _scalingOverride;
@@ -232,6 +233,15 @@ namespace Avalonia.X11
             });
 
             platform.X11Screens.Changed += OnScreensChanged;
+            AvaloniaX11Platform.PlatformSettings.ThemeVariantChanged += OnThemeVariantChanged;
+        }
+
+        private void OnThemeVariantChanged(object? sender, EventArgs e)
+        {
+            if (_icon is IThemeVariantWindowIconImpl)
+            { 
+                RefreshIcon();
+            }
         }
 
         private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -887,7 +897,9 @@ namespace Avalonia.X11
             if(_cleaningUp)
                 return;
             _cleaningUp = true;
-            
+
+            AvaloniaX11Platform.PlatformSettings.ThemeVariantChanged -= OnThemeVariantChanged;
+
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
@@ -1280,9 +1292,23 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            if (icon != null)
+            _icon = icon;
+            RefreshIcon();
+        }
+
+        private void RefreshIcon()
+        {
+            if (_icon switch
             {
-                var data = ((X11IconData)icon).Data;
+                IThemeVariantWindowIconImpl variantIcons => AvaloniaX11Platform.PlatformSettings.ThemeVariant switch
+                {
+                    PlatformThemeVariant.Light => variantIcons.Light,
+                    PlatformThemeVariant.Dark => variantIcons.Dark,
+                    _ => throw new NotImplementedException()
+                },
+                _ => _icon,
+            } is X11IconData { Data: { } data })
+            {                
                 fixed (void* pdata = data)
                     XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON,
                         new IntPtr((int)Atom.XA_CARDINAL), 32, PropertyMode.Replace,
