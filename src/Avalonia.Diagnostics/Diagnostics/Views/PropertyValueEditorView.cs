@@ -265,7 +265,7 @@ namespace Avalonia.Diagnostics.Views
 
             static bool IsValidNumeric(Type? type)
             {
-                if (type == null)
+                if (type == null || type.IsEnum == true)
                 {
                     return false;
                 }
