@@ -581,11 +581,6 @@ public partial class Dispatcher
     /// <param name="action">
     ///     A Func&lt;Task&lt;TResult&gt;&gt; delegate to invoke through the dispatcher.
     /// </param>
-    /// <param name="priority">
-    ///     The priority that determines in what order the specified
-    ///     callback is invoked relative to the other pending operations
-    ///     in the Dispatcher.
-    /// </param>
     /// <returns>
     ///     An task that completes after the task returned from callback finishes
     /// </returns>
