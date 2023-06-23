@@ -142,7 +142,7 @@ namespace Avalonia.Controls
                 _presenter.CaretBoundsChanged += (s, e) => OnCursorRectangleChanged();
             }
 
-            OnTextViewVisualChanged(oldPresenter, presenter);
+            OnTextViewVisualChanged();
 
             OnCursorRectangleChanged();
         }

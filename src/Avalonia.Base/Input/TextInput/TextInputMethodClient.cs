@@ -59,7 +59,7 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         public virtual void SetPreeditText(string? preeditText) { }
 
-        protected virtual void OnTextViewVisualChanged(Visual? oldValue, Visual? newValue)
+        protected virtual void OnTextViewVisualChanged()
         {
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
         }
