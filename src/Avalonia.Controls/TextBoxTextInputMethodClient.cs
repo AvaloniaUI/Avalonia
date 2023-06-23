@@ -10,9 +10,103 @@ namespace Avalonia.Controls
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
-        private bool _isPropertyChange;
 
         public override Visual TextViewVisual => _presenter!;
+
+        public override string SurroundingText
+        {
+            get
+            {
+                if (_presenter is null || _parent is null)
+                {
+                    return "";
+                }
+
+#if DEBUG
+                if (_parent.CaretIndex != _presenter.CaretIndex)
+                {
+                    throw new InvalidOperationException("TextBox and TextPresenter are out of sync");
+                }
+
+                if (_parent.Text != _presenter.Text)
+                {
+                    throw new InvalidOperationException("TextBox and TextPresenter are out of sync");
+                }
+#endif
+
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
+
+                var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+                var lineText = GetTextLineText(textLine);
+
+                return lineText;
+            }
+        }
+
+        public override Rect CursorRectangle
+        {
+            get
+            {
+                if (_parent == null || _presenter == null)
+                {
+                    return default;
+                }
+
+                var transform = _presenter.TransformToVisual(_parent);
+
+                if (transform == null)
+                {
+                    return default;
+                }
+
+                return _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
+            }
+        }
+
+        public override TextSelection Selection
+        {
+            get
+            {
+                if (_presenter is null || _parent is null)
+                {
+                    return default;
+                }
+
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
+
+                var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+                var lineStart = textLine.FirstTextSourceIndex;
+
+                var selectionStart = Math.Max(0, _parent.SelectionStart - lineStart);
+
+                var selectionEnd = Math.Max(0, _parent.SelectionEnd - lineStart);
+
+                return new TextSelection(selectionStart, selectionEnd);
+            }
+            set
+            {
+                if (_parent is null || _presenter is null)
+                {
+                    return;
+                }
+
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
+
+                var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+                var lineStart = textLine.FirstTextSourceIndex;
+
+                var selectionStart = lineStart + value.Start;
+                var selectionEnd = lineStart + value.End;
+
+                _parent.SelectionStart = selectionStart;
+                _parent.SelectionEnd = selectionEnd;
+
+                OnSelectionChanged();
+            }
+        }
 
         public override bool SupportsPreedit => true;
 
@@ -38,19 +132,19 @@ namespace Avalonia.Controls
             {
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                oldPresenter.CaretBoundsChanged -= OnPresenterCursorRectangleChanged;
+                oldPresenter.CaretBoundsChanged -= (s,e) => OnCursorRectangleChanged();
             }
 
             _presenter = presenter;
 
             if (_presenter != null)
             {
-                _presenter.CaretBoundsChanged += OnPresenterCursorRectangleChanged;
+                _presenter.CaretBoundsChanged += (s, e) => OnCursorRectangleChanged();
             }
 
             OnTextViewVisualChanged(oldPresenter, presenter);
 
-            OnPresenterCursorRectangleChanged(this, EventArgs.Empty);
+            OnCursorRectangleChanged();
         }
 
         public override void SetPreeditText(string? preeditText)
@@ -61,21 +155,6 @@ namespace Avalonia.Controls
             }
 
             _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
-        }
-
-        protected override void OnSelectionChanged(TextSelection oldValue, TextSelection newValue)
-        {
-            base.OnSelectionChanged(oldValue, newValue);
-
-            if (_isPropertyChange)
-            {
-                return;
-            }
-
-            if (oldValue != newValue)
-            {
-                SetParentSelection(newValue);
-            }
         }
 
         private static string GetTextLineText(TextLine textLine)
@@ -101,112 +180,17 @@ namespace Avalonia.Controls
             return lineText;
         }
 
-        private void OnParentTextChanged()
-        {
-            if (_presenter is null || _parent is null)
-            {
-                SurroundingText = "";
-
-                return;
-            }
-
-#if DEBUG
-            if (_parent.CaretIndex != _presenter.CaretIndex)
-            {
-                throw new InvalidOperationException("TextBox and TextPresenter are out of sync");
-            }
-
-            if (_parent.Text != _presenter.Text)
-            {
-                throw new InvalidOperationException("TextBox and TextPresenter are out of sync");
-            }
-#endif
-
-            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
-
-            var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-            var lineText = GetTextLineText(textLine);
-
-            SurroundingText = lineText;
-        }
-
-        private void OnPresenterCursorRectangleChanged(object? sender, EventArgs e)
-        {
-            if (_parent == null || _presenter == null)
-            {
-                CursorRectangle = default;
-
-                return;
-            }
-
-            var transform = _presenter.TransformToVisual(_parent);
-
-            if (transform == null)
-            {
-                CursorRectangle = default;
-
-                return;
-            }
-
-            CursorRectangle = _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
-        }
-
         private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            _isPropertyChange = true;
-
             if (e.Property == TextBox.TextProperty)
             {
-                OnParentTextChanged();
+                OnSurroundingTextChanged();
             }
 
             if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
             {
-                Selection = GetParentSelection();
+                OnSelectionChanged();
             }
-
-            _isPropertyChange = false;
-        }
-
-        private TextSelection GetParentSelection()
-        {
-            if (_presenter is null || _parent is null)
-            {
-                return default;
-            }
-
-            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
-
-            var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-            var lineStart = textLine.FirstTextSourceIndex;
-
-            var selectionStart = Math.Max(0, _parent.SelectionStart - lineStart);
-
-            var selectionEnd = Math.Max(0, _parent.SelectionEnd - lineStart);
-
-            return new TextSelection(selectionStart, selectionEnd);
-        }
-
-        private void SetParentSelection(TextSelection selection)
-        {
-            if (_parent is null || _presenter is null)
-            {
-                return;
-            }
-
-            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
-
-            var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-            var lineStart = textLine.FirstTextSourceIndex;
-
-            var selectionStart = lineStart + selection.Start;
-            var selectionEnd = lineStart + selection.End;
-
-            _parent.SelectionStart = selectionStart;
-            _parent.SelectionEnd = selectionEnd;
         }
     }
 }

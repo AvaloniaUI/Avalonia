@@ -4,10 +4,6 @@ namespace Avalonia.Input.TextInput
 {
     public abstract class TextInputMethodClient
     {
-        private Rect _cursorRectangle;
-        private string _surroundingText = "";
-        private TextSelection _selection;
-
         /// <summary>
         /// Fires when the text view visual has changed
         /// </summary>
@@ -46,87 +42,39 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Returns the text around the cursor, usually the current paragraph
         /// </summary>
-        public string SurroundingText
-        {
-            get => _surroundingText;
-            set
-            {
-                var oldValue = _surroundingText;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                _surroundingText = value;
-
-                OnSurroundingTextChanged(oldValue, value);
-            }
-        }
+        public abstract string SurroundingText { get; }
 
         /// <summary>
         /// Gets the cursor rectangle relative to the TextViewVisual
         /// </summary>
-        public Rect CursorRectangle
-        {
-            get => _cursorRectangle;
-            protected set
-            {
-                var oldvalue = _cursorRectangle;
-
-                if (oldvalue == value)
-                {
-                    return;
-                }
-
-                _cursorRectangle = value;
-
-                OnCursorRectangleChanged(oldvalue, value);
-            }
-        }
+        public abstract Rect CursorRectangle { get; }
 
         /// <summary>
         /// Gets or sets the curent selection range within current surrounding text.
         /// </summary>
-        public TextSelection Selection
-        {
-            get => _selection;
-            set
-            {
-                var oldValue = _selection;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                _selection = value;
-
-                OnSelectionChanged(oldValue, value);
-            }
-        }
+        public abstract TextSelection Selection { get; set; }
 
         /// <summary>
         /// Sets the non-committed input string
         /// </summary>
         public virtual void SetPreeditText(string? preeditText) { }
 
-        protected virtual void OnCursorRectangleChanged(Rect oldValue, Rect newValue)
-        {
-            CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
-        }
-
         protected virtual void OnTextViewVisualChanged(Visual? oldValue, Visual? newValue)
         {
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnSurroundingTextChanged(string? oldValue, string? newValue)
+        protected virtual void OnCursorRectangleChanged()
+        {
+            CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnSurroundingTextChanged()
         {
             SurroundingTextChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnSelectionChanged(TextSelection oldValue, TextSelection newValue)
+        protected virtual void OnSelectionChanged()
         {
             SelectionChanged?.Invoke(this, EventArgs.Empty);
         }
