@@ -11,6 +11,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
+using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -429,78 +430,124 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 activity.Window.Attributes = attr;
             }
         }
+
+        internal void TextInput(string text)
+        {
+            if(Input != null)
+            {
+                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, InputRoot, text);
+
+                Input(args);
+            }
+        }
+    }
+
+    internal class EditableWrapper : SpannableStringBuilder
+    {
+        private readonly AvaloniaInputConnection _inputConnection;
+
+        public EditableWrapper(AvaloniaInputConnection inputConnection)
+        {
+            _inputConnection = inputConnection;
+        }
+
+        public bool IgnoreChange { get; set; }
+
+        public override IEditable Replace(int start, int end, ICharSequence tb)
+        {
+            if (!IgnoreChange && !_inputConnection.IsComposing && start != end)
+            {
+                var text = tb.SubSequence(0, tb.Length());
+
+                //System.Diagnostics.Debug.WriteLine($"Replace: start: {start}, end: {end}, text: {text}");
+
+                _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+            }
+
+            return base.Replace(start, end, tb);
+        }
+
+        public override IEditable Replace(int start, int end, ICharSequence tb, int tbstart, int tbend)
+        {
+            if (!IgnoreChange && !_inputConnection.IsComposing && start != end)
+            {
+                var text = tb.SubSequence(tbstart, tbend);
+
+                //System.Diagnostics.Debug.WriteLine($"Replace: start: {start}, end: {end}, text: {text}");
+
+                _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+            }
+
+            return base.Replace(start, end, tb, tbstart, tbend);
+        }
     }
 
     internal class AvaloniaInputConnection : BaseInputConnection
     {
-        private readonly TopLevelImpl _topLevel;
+        private readonly TopLevelImpl _toplevel;
         private readonly IAndroidInputMethod _inputMethod;
-        private readonly InputEditable _editable;
+        private readonly EditableWrapper _editable;
+        private string _compositionText;
+        private bool _commitInProgress;
 
-        public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
+        public AvaloniaInputConnection(TopLevelImpl toplevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
-            _topLevel = topLevel;
+            _toplevel = toplevel;
             _inputMethod = inputMethod;
-            _editable = new InputEditable(_topLevel, _inputMethod, this);
+            _editable = new EditableWrapper(this);
         }
+
+        public bool IsComposing => !string.IsNullOrEmpty(_compositionText);
+
+        public int ExtractedTextToken { get; private set; }
 
         public override IEditable Editable => _editable;
 
-        internal InputEditable InputEditable => _editable;
+        public EditableWrapper EditableWrapper => _editable;
 
-        public override bool SetComposingRegion(int start, int end)
-        {
-            var ret = base.SetComposingRegion(start, end);
-
-            InputEditable.RaiseCompositionChanged();
-
-            return ret;
-        }
+        public IAndroidInputMethod InputMethod => _inputMethod;
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
         {
-            var composingText = text.ToString();
+            _compositionText = text.SubSequence(0, text.Length());
 
-            if (string.IsNullOrEmpty(composingText))
+            System.Diagnostics.Debug.WriteLine($"Composition Changed: {_compositionText}");
+
+            if(_inputMethod.IsActive && !_commitInProgress)
             {
-                return CommitText(text, newCursorPosition);
+                _inputMethod.Client.SetPreeditText(_compositionText);
             }
-            else
-            {
-                var ret = base.SetComposingText(text, newCursorPosition);
 
-                InputEditable.RaiseCompositionChanged();
-
-                return ret;
-            }
-        }
-
-        public override bool BeginBatchEdit()
-        {
-            _editable.BeginBatchEdit();
-
-            return base.BeginBatchEdit();
-        }
-
-        public override bool EndBatchEdit()
-        {
-            var ret = base.EndBatchEdit();
-            _editable.EndBatchEdit();
-
-            return ret;
-        }
-
-        public override bool FinishComposingText()
-        {
-            var ret = base.FinishComposingText();
-            InputEditable.RaiseCompositionChanged();
-            return ret;
+            return base.SetComposingText(text, newCursorPosition);
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
+            _commitInProgress = true;
+
             var ret = base.CommitText(text, newCursorPosition);
-            InputEditable.RaiseCompositionChanged();
+
+            var committedText = text.SubSequence(0, text.Length());
+
+            if (string.IsNullOrEmpty(committedText))
+            {
+                committedText = _compositionText;
+            }
+
+            if (_inputMethod.IsActive && !string.IsNullOrEmpty(committedText))
+            {
+                if (!string.IsNullOrEmpty(_compositionText))
+                {
+                    _inputMethod.Client.SetPreeditText(null);
+                }
+
+               _toplevel.TextInput(committedText);
+
+                _compositionText = null;
+            }
+
+            _commitInProgress = false;
+
             return ret;
         }
 
@@ -516,6 +563,49 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             return base.PerformEditorAction(actionCode);
+        }
+
+        public override ExtractedText GetExtractedText(ExtractedTextRequest request, [GeneratedEnum] GetTextFlags flags)
+        {
+            if (request == null)
+                return null;
+
+            ExtractedTextToken = request.Token;
+
+            var editable = Editable;
+
+            if (editable == null)
+            {
+                return null;
+            }
+
+            if (!_inputMethod.IsActive)
+            {
+                return null;
+            }
+
+            var selection = _inputMethod.Client.Selection;
+
+            ExtractedText extract = new ExtractedText
+            {
+                Flags = 0,
+                PartialStartOffset = -1,
+                PartialEndOffset = -1,
+                SelectionStart = selection.Start,
+                SelectionEnd = selection.End,
+                StartOffset = 0
+            };
+
+            if ((request.Flags & GetTextFlags.WithStyles) != 0)
+            {
+                extract.Text = new SpannableString(editable);
+            }
+            else
+            {
+                extract.Text = editable;
+            }
+
+            return extract;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Avalonia.Win32.Input
 
         private bool _ignoreComposition;
 
-        public ITextInputMethodClient? Client { get; private set; }
+        public TextInputMethodClient? Client { get; private set; }
 
         [MemberNotNullWhen(true, nameof(Client))]
         public bool IsActive => Client != null;
@@ -145,7 +145,7 @@ namespace Avalonia.Win32.Input
             });
         }
 
-        public void SetClient(ITextInputMethodClient? client)
+        public void SetClient(TextInputMethodClient? client)
         {
             if(Client != null)
             {

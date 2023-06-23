@@ -38,6 +38,10 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+  </PropertyGroup>
+
   <ItemGroup>
     <AndroidEnvironment Condition="'$(IsEmulator)'=='True'" Include="environment.emulator.txt" />
     <AndroidEnvironment Condition="'$(IsEmulator)'!='True'" Include="environment.device.txt" />
