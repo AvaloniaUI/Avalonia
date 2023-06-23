@@ -29,6 +29,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
+using static System.Net.Mime.MediaTypeNames;
 using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -459,9 +460,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 var text = tb.SubSequence(0, tb.Length());
 
-                //System.Diagnostics.Debug.WriteLine($"Replace: start: {start}, end: {end}, text: {text}");
-
-                _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+                SelectSurroundingTextForDeletion(start, end, text);
             }
 
             return base.Replace(start, end, tb);
@@ -473,12 +472,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 var text = tb.SubSequence(tbstart, tbend);
 
-                //System.Diagnostics.Debug.WriteLine($"Replace: start: {start}, end: {end}, text: {text}");
-
-                _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+                SelectSurroundingTextForDeletion(start, end, text);
             }
 
             return base.Replace(start, end, tb, tbstart, tbend);
+        }
+
+        private void SelectSurroundingTextForDeletion(int start, int end, string text)
+        {
+            _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+
+            //_inputConnection.Toplevel.TextInput(text);
         }
     }
 
@@ -506,6 +510,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public EditableWrapper EditableWrapper => _editable;
 
         public IAndroidInputMethod InputMethod => _inputMethod;
+
+        public TopLevelImpl Toplevel => _toplevel;
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
         {
@@ -549,6 +555,24 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _commitInProgress = false;
 
             return ret;
+        }
+
+        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
+        {
+            if (InputMethod.IsActive)
+            {
+                EditableWrapper.IgnoreChange = true;
+
+                var selection = InputMethod.Client.Selection;
+
+                InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.Start + afterLength);
+
+                Toplevel.TextInput("");
+
+                EditableWrapper.IgnoreChange = true;
+            }
+
+            return base.DeleteSurroundingText(beforeLength, afterLength);
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)

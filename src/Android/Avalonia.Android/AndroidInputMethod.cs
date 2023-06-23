@@ -107,6 +107,8 @@ namespace Avalonia.Android
             var selection = Client.Selection;
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
+
+            _inputConnection.SetSelection(selection.Start, selection.End);
         }
 
         private void _client_SurroundingTextChanged(object sender, EventArgs e)
