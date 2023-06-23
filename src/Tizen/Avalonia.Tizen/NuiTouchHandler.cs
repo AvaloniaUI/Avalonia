@@ -48,12 +48,11 @@ internal class NuiTouchHandler
             {
                 PointStateType.Down => RawPointerEventType.TouchBegin,
                 PointStateType.Up => RawPointerEventType.TouchEnd,
-                PointStateType.Motion => RawPointerEventType.Move,
+                PointStateType.Motion => RawPointerEventType.TouchUpdate,
                 PointStateType.Interrupted => RawPointerEventType.TouchCancel,
-                _ => RawPointerEventType.Move
+                _ => RawPointerEventType.TouchUpdate
             };
 
-            Debug.WriteLine($"Touch {id} {state} {avaloniaState} {point.X} {point.Y}");
             var touchEvent = new RawTouchEventArgs(
                 _device,
                 timestamp,
