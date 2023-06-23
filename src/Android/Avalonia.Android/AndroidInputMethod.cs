@@ -124,8 +124,6 @@ namespace Avalonia.Android
             var selection = Client.Selection;
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
-
-            //Debug.WriteLine($"SurroundingText: {surroundingText}, CaretIndex: {selection.Start}");
         }
 
         public void SetCursorRect(Rect rect)
