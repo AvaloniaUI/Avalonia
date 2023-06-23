@@ -104,7 +104,7 @@ namespace Avalonia.Controls
                 _parent.SelectionStart = selectionStart;
                 _parent.SelectionEnd = selectionEnd;
 
-                OnSelectionChanged();
+                RaiseSelectionChanged();
             }
         }
 
@@ -132,19 +132,19 @@ namespace Avalonia.Controls
             {
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                oldPresenter.CaretBoundsChanged -= (s,e) => OnCursorRectangleChanged();
+                oldPresenter.CaretBoundsChanged -= (s,e) => RaiseCursorRectangleChanged();
             }
 
             _presenter = presenter;
 
             if (_presenter != null)
             {
-                _presenter.CaretBoundsChanged += (s, e) => OnCursorRectangleChanged();
+                _presenter.CaretBoundsChanged += (s, e) => RaiseCursorRectangleChanged();
             }
 
-            OnTextViewVisualChanged();
+            RaiseTextViewVisualChanged();
 
-            OnCursorRectangleChanged();
+            RaiseCursorRectangleChanged();
         }
 
         public override void SetPreeditText(string? preeditText)
@@ -184,12 +184,12 @@ namespace Avalonia.Controls
         {
             if (e.Property == TextBox.TextProperty)
             {
-                OnSurroundingTextChanged();
+                RaiseSurroundingTextChanged();
             }
 
             if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
             {
-                OnSelectionChanged();
+                RaiseSelectionChanged();
             }
         }
     }

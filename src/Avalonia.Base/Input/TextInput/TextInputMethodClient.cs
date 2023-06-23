@@ -59,22 +59,22 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         public virtual void SetPreeditText(string? preeditText) { }
 
-        protected virtual void OnTextViewVisualChanged()
+        protected virtual void RaiseTextViewVisualChanged()
         {
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnCursorRectangleChanged()
+        protected virtual void RaiseCursorRectangleChanged()
         {
             CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnSurroundingTextChanged()
+        protected virtual void RaiseSurroundingTextChanged()
         {
             SurroundingTextChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnSelectionChanged()
+        protected virtual void RaiseSelectionChanged()
         {
             SelectionChanged?.Invoke(this, EventArgs.Empty);
         }
