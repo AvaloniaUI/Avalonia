@@ -357,6 +357,15 @@ namespace Avalonia.Controls
             RaiseEvent(eventArgs);
         }
 
+        /// <summary>
+        /// Invoked just before the <see cref="SizeChanged"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            RaiseEvent(e);
+        }
+
         /// <inheritdoc/>
         protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
@@ -435,6 +444,10 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Returns a new, type-specific <see cref="AutomationPeer"/> implementation for the control.
+        /// </summary>
+        /// <returns>The type-specific <see cref="AutomationPeer"/> implementation.</returns>
         protected virtual AutomationPeer OnCreateAutomationPeer()
         {
             return new NoneAutomationPeer(this);
@@ -459,6 +472,7 @@ namespace Avalonia.Controls
             return _automationPeer;
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
@@ -473,6 +487,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
@@ -531,7 +546,7 @@ namespace Avalonia.Controls
                         previousSize: new Size(oldValue.Width, oldValue.Height),
                         newSize: new Size(newValue.Width, newValue.Height));
 
-                    RaiseEvent(sizeChangedEventArgs);
+                    OnSizeChanged(sizeChangedEventArgs);
                 }
             }
         }
