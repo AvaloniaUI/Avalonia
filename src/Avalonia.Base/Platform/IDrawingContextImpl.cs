@@ -161,7 +161,7 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
-
+        /// Get Fetaure from type
         /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation
         /// </summary>
