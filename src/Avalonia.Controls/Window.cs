@@ -558,7 +558,8 @@ namespace Avalonia.Controls
 
         protected virtual void RequestedManagedDecorationsChanged(SystemDecorations systemDecorations)
         {
-            SystemDecorations = systemDecorations;
+            if (systemDecorations != SystemDecorations.None)
+                SystemDecorations = systemDecorations;
         }
 
         /// <summary>
