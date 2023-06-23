@@ -12,7 +12,7 @@ namespace Avalonia.Controls
         /// On desktop-style platforms runs the application's main loop until closable is closed
         /// </summary>
         /// <remarks>
-        /// Consider using StartWithDesktopStyleLifetime instead, see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details
+        /// Consider using StartWithDesktopStyleLifetime instead, see https://github.com/AvaloniaUI/Avalonia/tree/master/Documentation/Application-lifetimes for details
         /// </remarks>
         public static void Run(this Application app, ICloseable closable)
         {
@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         /// On desktop-style platforms runs the application's main loop until main window is closed
         /// </summary>
         /// <remarks>
-        /// Consider using StartWithDesktopStyleLifetime instead, see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details
+        /// Consider using StartWithDesktopStyleLifetime instead, see https://github.com/AvaloniaUI/Avalonia/tree/master/Documentation/Application-lifetimes for details
         /// </remarks>
         public static void Run(this Application app, Window mainWindow)
         {

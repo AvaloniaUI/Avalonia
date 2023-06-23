@@ -20,7 +20,7 @@ For those seeking a cross-platform WPF, we have created [Avalonia XPF](https://a
 To see the status of some of our features, please see our [Roadmap](https://github.com/AvaloniaUI/Avalonia/issues/2239). 
 
 #### Breaking Changes
-You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/issues/3538) we have planned and what our [past breaking changes](https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes) have been. 
+You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/issues/3538) we have planned and what our [past breaking changes](https://github.com/AvaloniaUI/Avalonia/tree/master/Documentation/Breaking-Changes) have been. 
 
 #### Awesome Avalonia
 [Awesome Avalonia](https://github.com/AvaloniaCommunity/awesome-avalonia) is community-curated list of awesome Avalonia UI tools, libraries, projects and resources. Go and see what people are building with Avalonia!
@@ -55,7 +55,7 @@ See what others have built with Avalonia UI on our [Showcase](https://avaloniaui
 
 ## Bleeding Edge Builds
 
-We also have a [nightly build](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed) which tracks the current state of master. Although these packages are less stable than the release on NuGet.org, you'll get all the latest features and bugfixes right away and many of our users actually prefer this feed!
+We also have a [nightly build](https://github.com/AvaloniaUI/Avalonia/tree/master/Documentation/Using-nightly-build-feed) which tracks the current state of master. Although these packages are less stable than the release on NuGet.org, you'll get all the latest features and bugfixes right away and many of our users actually prefer this feed!
 
 ## Learning
 

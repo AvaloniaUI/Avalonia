@@ -192,7 +192,7 @@ The `LogToDebug` method has moved from the `Avalonia.Logging.Serilog` namesapce 
 
 ## Application startup
 
-The preferred way of managing app startup and lifetime is now using [lifetimes](https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes). You still can use AppMain approach introduced in 0.8 for more fine-grained control, but some of Application.Run/AppBuilder.Start overloads were removed or deprecated.
+The preferred way of managing app startup and lifetime is now using [lifetimes](https://github.com/AvaloniaUI/Avalonia/tree/master/Documentation/Application-lifetimes). You still can use AppMain approach introduced in 0.8 for more fine-grained control, but some of Application.Run/AppBuilder.Start overloads were removed or deprecated.
 
 ## XAML
 - x:Class is now mandatory for XAML files with codebehind (windows, user controls, `App.cs`, etc)
