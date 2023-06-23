@@ -567,7 +567,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                 InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.Start + afterLength);
 
-                Toplevel.TextInput("");
+                InputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
 
                 EditableWrapper.IgnoreChange = true;
             }
