@@ -316,7 +316,8 @@ namespace Avalonia.Controls
                 ((ILogical)this).IsAttachedToLogicalTree)
             {
                 _isLoaded = true;
-                OnLoaded();
+
+                OnLoaded(new RoutedEventArgs(LoadedEvent, this));
             }
         }
 
@@ -333,28 +334,27 @@ namespace Avalonia.Controls
                 _loadedQueue.Remove(this);
 
                 _isLoaded = false;
-                OnUnloaded();
+
+                OnUnloaded(new RoutedEventArgs(UnloadedEvent, this));
             }
         }
 
         /// <summary>
         /// Invoked just before the <see cref="Loaded"/> event.
         /// </summary>
-        protected virtual void OnLoaded()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnLoaded(RoutedEventArgs e)
         {
-            var eventArgs = new RoutedEventArgs(LoadedEvent);
-            eventArgs.Source = null;
-            RaiseEvent(eventArgs);
+            RaiseEvent(e);
         }
 
         /// <summary>
         /// Invoked just before the <see cref="Unloaded"/> event.
         /// </summary>
-        protected virtual void OnUnloaded()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnUnloaded(RoutedEventArgs e)
         {
-            var eventArgs = new RoutedEventArgs(UnloadedEvent);
-            eventArgs.Source = null;
-            RaiseEvent(eventArgs);
+            RaiseEvent(e);
         }
 
         /// <summary>
