@@ -1,10 +1,3 @@
-﻿<Styles xmlns="https://github.com/avaloniaui" 
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:ClassModifier="internal">
-    <Style Selector="TextBlock" >
-        <Setter Property="FontSize" Value="14" />
-    </Style>
-    <Styles.Resources>
       <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
       <x:Double x:Key="ContentControlFontSize">14</x:Double>
       <x:Double x:Key="TextControlThemeMinHeight">24</x:Double>
@@ -18,5 +11,7 @@
       <x:Double x:Key="ComboBoxMinHeight">24</x:Double>
       <Thickness x:Key="ComboBoxPadding">12,1,0,3</Thickness>
       <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
-    </Styles.Resources>
-</Styles>
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+</ResourceDictionary>
