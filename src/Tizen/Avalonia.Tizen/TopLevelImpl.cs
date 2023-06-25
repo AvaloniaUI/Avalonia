@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 
@@ -87,10 +88,10 @@ internal class TopLevelImpl : ITopLevelImpl
         //    return _storageProvider;
         //}
 
-        //if (featureType == typeof(ITextInputMethodImpl))
-        //{
-        //    return _view;
-        //}
+        if (featureType == typeof(ITextInputMethodImpl))
+        {
+            return _view;
+        }
 
         //if (featureType == typeof(INativeControlHostImpl))
         //{

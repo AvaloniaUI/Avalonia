@@ -3,16 +3,18 @@ using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Tizen.Platform;
 using Avalonia.Tizen.Platform.Interop;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
+using Tizen.NUI.Text;
 using Window = Tizen.NUI.Window;
 
 namespace Avalonia.Tizen;
 
-public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurface
+public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurface, ITextInputMethodImpl
 {
     private IntPtr _buffer;
 
@@ -27,6 +29,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     private TopLevelImpl _topLevelImpl;
     private EmbeddableControlRoot _topLevel;
     private TouchDevice _device = new TouchDevice();
+    private readonly NuiAvaloniaViewTextEditable _textEditor;
 
     public IInputRoot InputRoot { get; set; }
     public ITopLevelImpl TopLevelImpl => _topLevelImpl;
@@ -43,6 +46,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
 
     public NuiAvaloniaView()
     {
+        _textEditor = new NuiAvaloniaViewTextEditable();
         Layout = new CustomLayout
         {
             SizeUpdated = OnResized
@@ -264,5 +268,20 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         }
         base.Dispose(disposing);
     }
-}
 
+    public void SetClient(ITextInputMethodClient? client)
+    {
+        _textEditor.SetClient(client);
+    }
+
+    public void SetCursorRect(Rect rect)
+    {
+
+    }
+
+    public void SetOptions(TextInputOptions options)
+    {
+        //var inputContext = _textField.GetInputMethodContext();
+        //inputContext.m
+    }
+}
