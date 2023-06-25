@@ -18,7 +18,9 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
         {
             HeightResizePolicy = ResizePolicyType.Fixed,
             WidthResizePolicy = ResizePolicyType.Fixed,
-            Size = new(0, 0),
+            Size = new(1, 1),
+            Position = new Position(-1000, -1000),
+            FontSizeScale = 0.1f, 
         };
 
         _textField.TextChanged += OnTextChanged;
@@ -42,6 +44,7 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
         _textField.Text = client.SurroundingText.Text;
         _textField.PrimaryCursorPosition = client.SurroundingText.CursorOffset;
         Window.Instance.GetDefaultLayer().Add(_textField);
+        _textField.Show();
         _textField.EnableSelection = true;
 
         var inputContext = _textField.GetInputMethodContext();
@@ -103,21 +106,13 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
     public int SelectionStart
     {
         get => _textField.SelectedTextStart;
-        set
-        {
-            Debug.WriteLine($"SelectionStart: {value}");
-            InvokeAvaloniaUpdate(() => _textField.PrimaryCursorPosition = value);
-        }
+        set => InvokeAvaloniaUpdate(() => _textField.PrimaryCursorPosition = value);
     }
 
     public int SelectionEnd
     {
         get => _textField.SelectedTextEnd;
-        set
-        {
-            Debug.WriteLine($"SelectionEnd: {value}");
-            InvokeAvaloniaUpdate(() => _textField.SelectText(_textField.SelectedTextStart, value));
-        }
+        set => InvokeAvaloniaUpdate(() => _textField.SelectText(_textField.SelectedTextStart, value));
     }
 
     public int CompositionStart => -1;
@@ -130,7 +125,7 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
         set => InvokeAvaloniaUpdate(() => _textField.Text = value);
     }
 
-    public event EventHandler TextChanged;
-    public event EventHandler SelectionChanged;
-    public event EventHandler CompositionChanged;
+    public event EventHandler? TextChanged;
+    public event EventHandler? SelectionChanged;
+    public event EventHandler? CompositionChanged;
 }
