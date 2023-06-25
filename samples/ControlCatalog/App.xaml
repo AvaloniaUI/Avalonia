@@ -18,12 +18,14 @@
           <Color x:Key="CatalogBaseMediumColor">#99000000</Color>
           <Color x:Key="CatalogChromeMediumColor">#FFE6E6E6</Color>
           <Color x:Key="CatalogBaseHighColor">#FF000000</Color>
+          <BitmapResource x:Key="AvaloniaIcon" Source="/Assets/avalonia_dark.ico"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <Color x:Key="CatalogBaseLowColor">#33FFFFFF</Color>
           <Color x:Key="CatalogBaseMediumColor">#99FFFFFF</Color>
           <Color x:Key="CatalogChromeMediumColor">#FF1F1F1F</Color>
           <Color x:Key="CatalogBaseHighColor">#FFFFFFFF</Color>
+          <BitmapResource x:Key="AvaloniaIcon" Source="/Assets/avalonia_light.ico"/>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
 
@@ -73,7 +75,7 @@
                 <NativeMenuItem Header="Option 2" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
                 <NativeMenuItemSeparator />
                 <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" Command="{Binding ToggleCommand}" />
-                <NativeMenuItem Icon="/Assets/avalonia_dark.ico" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
+                <NativeMenuItem Icon="{DynamicResource AvaloniaIcon}" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
                 <NativeMenuItem Header="Disabled option" IsEnabled="False" />
               </NativeMenu>
             </NativeMenuItem>

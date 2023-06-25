@@ -18,7 +18,7 @@
     <NativeMenu>
       <NativeMenuItem Header="File">
         <NativeMenu>
-          <NativeMenuItem Icon="/Assets/avalonia_dark.ico" Header="Open" Click="OnOpenClicked" Gesture="Ctrl+O"/>
+          <NativeMenuItem Icon="{DynamicResource AvaloniaIcon}" Header="Open" Click="OnOpenClicked" Gesture="Ctrl+O"/>
           <NativeMenuItemSeparator/>
           <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
             <NativeMenu/>
