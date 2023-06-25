@@ -9,7 +9,6 @@ using Avalonia.Tizen.Platform;
 using Avalonia.Tizen.Platform.Interop;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
-using Tizen.NUI.Text;
 using Window = Tizen.NUI.Window;
 
 namespace Avalonia.Tizen;

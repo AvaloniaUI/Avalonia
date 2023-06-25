@@ -18,8 +18,7 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
         {
             HeightResizePolicy = ResizePolicyType.Fixed,
             WidthResizePolicy = ResizePolicyType.Fixed,
-            Size = new(300, 60),
-            FontSizeScale = 0.5f,
+            Size = new(0, 0),
         };
 
         _textField.TextChanged += OnTextChanged;
@@ -43,9 +42,6 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
         _textField.Text = client.SurroundingText.Text;
         _textField.PrimaryCursorPosition = client.SurroundingText.CursorOffset;
         Window.Instance.GetDefaultLayer().Add(_textField);
-        _textField.RaiseToTop();
-        _textField.Show();
-        _textField.RaiseToTop();
         _textField.EnableSelection = true;
 
         var inputContext = _textField.GetInputMethodContext();
