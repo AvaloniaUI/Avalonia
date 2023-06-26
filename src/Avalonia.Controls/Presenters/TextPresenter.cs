@@ -853,7 +853,7 @@ namespace Avalonia.Controls.Presenters
             {
                 if (!string.IsNullOrEmpty(PreeditText))
                 {
-                    PreeditText = null;
+                    SetCurrentValue(PreeditTextProperty, null);
                 }
             }
 
@@ -861,7 +861,7 @@ namespace Avalonia.Controls.Presenters
             {
                 if (!string.IsNullOrEmpty(PreeditText))
                 {
-                    PreeditText = null;
+                    SetCurrentValue(PreeditTextProperty, null);
                 }
             }
 
