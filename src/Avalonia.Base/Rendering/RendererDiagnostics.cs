@@ -9,9 +9,14 @@ namespace Avalonia.Rendering
     {
         private RendererDebugOverlays _debugOverlays;
         private LayoutPassTiming _lastLayoutPassTiming;
-        private PropertyChangedEventArgs? _debugOverlaysChangedEventArgs;
-        private PropertyChangedEventArgs? _lastLayoutPassTimingChangedEventArgs;
+        private string? _renderedFramesPath;
 
+        private static PropertyChangedEventArgs s_debugOverlaysChangedEventArgs = new(nameof(DebugOverlays));
+        private static PropertyChangedEventArgs s_lastLayoutPassTimingChangedEventArgs =
+            new(nameof(LastLayoutPassTiming));
+
+        private static PropertyChangedEventArgs? s_renderedFramesPathChangedEventArgs = new(nameof(RenderedFramesPath));
+        
         /// <summary>
         /// Gets or sets which debug overlays are displayed by the renderer.
         /// </summary>
@@ -23,7 +28,20 @@ namespace Avalonia.Rendering
                 if (_debugOverlays != value)
                 {
                     _debugOverlays = value;
-                    OnPropertyChanged(_debugOverlaysChangedEventArgs ??= new(nameof(DebugOverlays)));
+                    OnPropertyChanged(s_debugOverlaysChangedEventArgs ??= new(nameof(DebugOverlays)));
+                }
+            }
+        }
+
+        public string? RenderedFramesPath
+        {
+            get => _renderedFramesPath;
+            set
+            {
+                if (_renderedFramesPath != value)
+                {
+                    _renderedFramesPath = value;
+                    OnPropertyChanged(new(nameof(RenderedFramesPath)));
                 }
             }
         }
@@ -39,7 +57,7 @@ namespace Avalonia.Rendering
                 if (!_lastLayoutPassTiming.Equals(value))
                 {
                     _lastLayoutPassTiming = value;
-                    OnPropertyChanged(_lastLayoutPassTimingChangedEventArgs ??= new(nameof(LastLayoutPassTiming)));
+                    OnPropertyChanged(s_lastLayoutPassTimingChangedEventArgs ??= new(nameof(LastLayoutPassTiming)));
                 }
             }
         }

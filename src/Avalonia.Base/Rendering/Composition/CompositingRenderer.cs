@@ -68,6 +68,9 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             case nameof(RendererDiagnostics.LastLayoutPassTiming):
                 CompositionTarget.LastLayoutPassTiming = Diagnostics.LastLayoutPassTiming;
                 break;
+            case nameof(RendererDiagnostics.RenderedFramesPath):
+                CompositionTarget.RenderedFramesPath = Diagnostics.RenderedFramesPath;
+                break;
         }
     }
 

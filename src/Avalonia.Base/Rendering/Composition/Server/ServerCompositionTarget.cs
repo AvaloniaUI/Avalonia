@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -23,6 +25,7 @@ namespace Avalonia.Rendering.Composition.Server
         private readonly Func<IEnumerable<object>> _surfaces;
         private readonly DiagnosticTextRenderer? _diagnosticTextRenderer;
         private static long s_nextId = 1;
+        private int _frameId = 0;
         private IRenderTarget? _renderTarget;
         private FpsCounter? _fpsCounter;
         private FrameTimeGraph? _renderTimeGraph;
@@ -171,12 +174,22 @@ namespace Avalonia.Rendering.Composition.Server
 
                 if (_dirtyRect.Width != 0 || _dirtyRect.Height != 0)
                 {
+                    _frameId++;
                     using (var context = _layer.CreateDrawingContext())
                     {
                         context.PushClip(_dirtyRect);
                         context.Clear(Colors.Transparent);
                         Root.Render(new CompositorDrawingContextProxy(context), _dirtyRect);
                         context.PopClip();
+                    }
+
+                    if (RenderedFramesPath != null)
+                    {
+                        Directory.CreateDirectory(RenderedFramesPath);
+                        var snapshotPath = System.IO.Path.Combine(RenderedFramesPath,
+                            $"Target_{Id:0000}_Frame_{_frameId:00000000}.png");
+                        _layer.Save();
+                        _layer.Save(snapshotPath);
                     }
                 }
 

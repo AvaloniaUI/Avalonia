@@ -11,6 +11,7 @@
     <Manual Name="Avalonia.Media.IImmutableBrush" Passthrough="true"/>
     <Manual Name="Avalonia.Media.IImmutableEffect" Passthrough="true"/>
     <Manual Name="Avalonia.Media.Immutable.ImmutableDashStyle" Passthrough="true"/>
+    <Manual Name="string" Passthrough="true"/>
     <Manual Name="CompositionSurface" />
     <Manual Name="CompositionDrawingSurface" />
     <Object Name="CompositionVisual" Abstract="true">
@@ -53,6 +54,7 @@
         <Property Name="IsEnabled" Type="bool"/>
         <Property Name="DebugOverlays" Type="RendererDebugOverlays"/>
         <Property Name="LastLayoutPassTiming" Type="LayoutPassTiming" Internal="true"/>
+        <Property Name="RenderedFramesPath" Type="string?" Internal="true" />
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
     </Object>
