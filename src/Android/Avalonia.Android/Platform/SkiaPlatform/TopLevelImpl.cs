@@ -632,7 +632,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return null;
             }
 
-            var selection = _inputMethod.Client.Selection;
+            var selection = _selection;
 
             ExtractedText extract = new ExtractedText
             {
