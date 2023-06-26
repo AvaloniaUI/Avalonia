@@ -99,9 +99,24 @@ namespace Avalonia.Win32
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(NonPumpingWaitHelperImpl.Instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
-            
-            var platformGraphics = options.CustomPlatformGraphics
-                                   ?? Win32GlManager.Initialize();
+
+            IPlatformGraphics? platformGraphics;
+            if (options.CustomPlatformGraphics is not null)
+            {
+                if (options.CompositionMode.HasValue
+                    && options.CompositionMode != Win32CompositionMode.RedirectionSurface)
+                {
+                    throw new InvalidOperationException(
+                        $"{nameof(Win32PlatformOptions)}.{nameof(Win32PlatformOptions.CustomPlatformGraphics)} is only " +
+                        $"compatible with {nameof(Win32CompositionMode)}.{nameof(Win32CompositionMode.RedirectionSurface)}");
+                }
+                
+                platformGraphics = options.CustomPlatformGraphics;
+            }
+            else
+            {
+                platformGraphics = Win32GlManager.Initialize();   
+            }
             
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();

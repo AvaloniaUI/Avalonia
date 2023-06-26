@@ -91,7 +91,7 @@ public class Win32PlatformOptions
 
     /// <summary>
     /// Render directly on the UI thread instead of using a dedicated render thread.
-    /// Only applicable if <see cref="CompositionMode"/> is set to <see cref="Win32CompositionMode.None"/>.
+    /// Only applicable if <see cref="CompositionMode"/> is set to <see cref="Win32CompositionMode.RedirectionSurface"/>.
     /// This setting is only recommended for interop with systems that must render on the UI thread, such as WPF.
     /// This setting is false by default.
     /// </summary>
@@ -108,7 +108,8 @@ public class Win32PlatformOptions
 
     /// <summary>
     /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu.
-    /// When this property set <see cref="RenderingMode"/> and <see cref="CompositionMode"/> are completely ignored.
+    /// When this property set <see cref="RenderingMode"/> is ignored
+    /// and <see cref="CompositionMode"/> only accepts null or <see cref="Win32CompositionMode.RedirectionSurface"/>.
     /// </summary>
     public IPlatformGraphics? CustomPlatformGraphics { get; set; }
 }
