@@ -491,6 +491,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly EditableWrapper _editable;
         private bool _commitInProgress;
         private (int Start, int End)? _composingRegion;
+        private TextSelection _selection;
 
         public AvaloniaInputConnection(TopLevelImpl toplevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
@@ -580,10 +581,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             if (InputMethod.IsActive)
             {
+                var selection = _selection;
 
-                var selection = InputMethod.Client.Selection;
-
-                InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.Start + afterLength);
+                InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.End + afterLength);
 
                 InputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
 
@@ -591,6 +591,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             return result;
+        }
+
+        public override bool SetSelection(int start, int end)
+        {
+            _selection = new TextSelection(start, end);
+            return base.SetSelection(start, end);
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
