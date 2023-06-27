@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
 using Avalonia.Platform.Interop;
@@ -9,23 +10,25 @@ namespace Avalonia.Compatibility
     internal class NativeLibraryEx
     {
 #if NET6_0_OR_GREATER
-        public static IntPtr Load(string dll) => System.Runtime.InteropServices.NativeLibrary.Load(dll);
-        public static bool TryGetExport(IntPtr handle, string name, out IntPtr address)
-            => System.Runtime.InteropServices.NativeLibrary.TryGetExport(handle, name, out address);
+        public static IntPtr Load(string dll, Assembly assembly) => NativeLibrary.Load(dll, assembly, null);
+        public static IntPtr Load(string dll) => NativeLibrary.Load(dll);
+        public static bool TryGetExport(IntPtr handle, string name, out IntPtr address) =>
+            NativeLibrary.TryGetExport(handle, name, out address);
 #else
+        public static IntPtr Load(string dll, Assembly assembly) => Load(dll);
         public static IntPtr Load(string dll)
         {
-            var handle = DlOpen(dll);
+            var handle = DlOpen!(dll);
             if (handle != IntPtr.Zero)
                 return handle;
-            throw new InvalidOperationException("Unable to load " + dll, DlErrorString());
+            throw new InvalidOperationException("Unable to load " + dll, DlError!());
         }
 
         public static bool TryGetExport(IntPtr handle, string name, out IntPtr address)
         {
             try
             {
-                address = DlSym(handle, name);
+                address = DlSym!(handle, name);
                 return address != default;
             }
             catch (Exception)
@@ -56,7 +59,7 @@ namespace Avalonia.Compatibility
 
         private static Func<string, IntPtr>? DlOpen;
         private static Func<IntPtr, string, IntPtr>? DlSym;
-        private static Func<Exception?>? DlErrorString;
+        private static Func<Exception?>? DlError;
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
@@ -73,7 +76,7 @@ namespace Avalonia.Compatibility
             {
                 DlOpen = LoadLibrary;
                 DlSym = GetProcAddress;
-                DlErrorString = () => new Win32Exception(Marshal.GetLastWin32Error());
+                DlError = () => new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
         
@@ -92,7 +95,7 @@ namespace Avalonia.Compatibility
             {
                 DlOpen = s => dlopen(s, 1);
                 DlSym = dlsym;
-                DlErrorString = () => new InvalidOperationException(Marshal.PtrToStringAnsi(dlerror()));
+                DlError = () => new InvalidOperationException(Marshal.PtrToStringAnsi(dlerror()));
             }
         }
 
@@ -111,7 +114,7 @@ namespace Avalonia.Compatibility
             {
                 DlOpen = s => dlopen(s, 1);
                 DlSym = dlsym;
-                DlErrorString = () => new InvalidOperationException(Marshal.PtrToStringAnsi(dlerror()));
+                DlError = () => new InvalidOperationException(Marshal.PtrToStringAnsi(dlerror()));
             }
         }
 #endif
