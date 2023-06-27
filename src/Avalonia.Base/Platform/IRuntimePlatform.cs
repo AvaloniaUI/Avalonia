@@ -3,24 +3,13 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
-    [Unstable]
+    [PrivateApi]
     public interface IRuntimePlatform
     {
-        IDisposable StartSystemTimer(TimeSpan interval, Action tick);
         RuntimePlatformInfo GetRuntimeInfo();
-        IUnmanagedBlob AllocBlob(int size);
     }
 
-    [Unstable]
-    public interface IUnmanagedBlob : IDisposable
-    {
-        IntPtr Address { get; }
-        int Size { get; }
-        bool IsDisposed { get; }
-
-    }
-
-    [Unstable]
+    [PrivateApi]
     public record struct RuntimePlatformInfo
     {
         public FormFactorType FormFactor => IsDesktop ? FormFactorType.Desktop :
