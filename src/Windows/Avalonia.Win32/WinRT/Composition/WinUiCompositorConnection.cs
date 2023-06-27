@@ -119,7 +119,7 @@ internal class WinUiCompositorConnection : IRenderTimer
     
     public static bool TryCreateAndRegister()
     {
-        if (Win32Platform.WindowsVersion >= WinUiCompositionShared.MinWinCompositionVersion)
+        if (IsSupported())
         {
             try
             {
