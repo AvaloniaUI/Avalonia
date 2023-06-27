@@ -8,7 +8,9 @@ namespace Avalonia
     {
         public static AppBuilder UseAvaloniaNative(this AppBuilder builder)
         {
-            builder.UseWindowingSubsystem(() =>
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(() =>
             {
                 var platform = AvaloniaNativePlatform.Initialize(
                     AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??

@@ -3,18 +3,15 @@ using Avalonia.Compatibility;
 using Avalonia.Platform.Internal;
 using Avalonia.Platform.Interop;
 
-namespace Avalonia.Platform
-{
-    public static class StandardRuntimePlatformServices
-    {
-        public static void Register(Assembly? assembly = null)
-        {
-            var standardPlatform = new StandardRuntimePlatform();
+namespace Avalonia.Platform;
 
-            AssetLoader.RegisterResUriParsers();
-            AvaloniaLocator.CurrentMutable
-                .Bind<IRuntimePlatform>().ToConstant(standardPlatform)
-                .Bind<IAssetLoader>().ToConstant(new StandardAssetLoader(assembly));
-        }
+internal static class StandardRuntimePlatformServices
+{
+    public static void Register(Assembly? assembly = null)
+    {
+        AssetLoader.RegisterResUriParsers();
+        AvaloniaLocator.CurrentMutable
+            .Bind<IRuntimePlatform>().ToSingleton<StandardRuntimePlatform>()
+            .Bind<IAssetLoader>().ToConstant(new StandardAssetLoader(assembly));
     }
 }

@@ -98,6 +98,7 @@ public static class BrowserAppBuilder
         this AppBuilder builder)
     {
         return builder
+            .UseBrowserRuntimePlatformSubsystem()
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
             .UseSkia();
     }

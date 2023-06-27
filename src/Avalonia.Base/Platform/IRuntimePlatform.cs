@@ -18,7 +18,6 @@ namespace Avalonia.Platform
         public bool IsMobile { get; set; }
     }
 
-    [Unstable]
     public enum FormFactorType
     {
         Unknown,
