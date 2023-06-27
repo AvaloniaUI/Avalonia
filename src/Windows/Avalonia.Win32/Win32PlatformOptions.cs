@@ -4,6 +4,9 @@ using Avalonia.Platform;
 
 namespace Avalonia;
 
+/// <summary>
+/// Represents the rendering mode for platform graphics.
+/// </summary>
 public enum Win32RenderingMode
 {
     /// <summary>
@@ -22,6 +25,9 @@ public enum Win32RenderingMode
     Wgl = 3
 }
 
+/// <summary>
+/// Represents the Win32 window composition mode.
+/// </summary>
 public enum Win32CompositionMode
 {
     /// <summary>

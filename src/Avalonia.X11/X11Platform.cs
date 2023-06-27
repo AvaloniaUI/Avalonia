@@ -220,6 +220,9 @@ namespace Avalonia.X11
 
 namespace Avalonia
 {
+    /// <summary>
+    /// Represents the rendering mode for platform graphics.
+    /// </summary>
     public enum X11RenderingMode
     {
         /// <summary>

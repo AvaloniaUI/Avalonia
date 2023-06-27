@@ -25,6 +25,9 @@ namespace Avalonia
         }
     }
 
+    /// <summary>
+    /// Represents the rendering mode for platform graphics.
+    /// </summary>
     public enum AndroidRenderingMode
     {
         /// <summary>
