@@ -7,7 +7,7 @@ using Avalonia.Input.GestureRecognizers;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System.Linq;
-using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -473,7 +473,15 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = Child!.Bounds.Size.Inflate(Child.Margin);
+
+            var childMargin = Child!.Margin;
+            if (Child.UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(Child);
+                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
+            }
+
+            Extent = Child!.Bounds.Size.Inflate(childMargin);
             _isAnchorElementDirty = true;
 
             return finalSize;
