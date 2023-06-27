@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -103,8 +104,7 @@ namespace Avalonia.Win32
             IPlatformGraphics? platformGraphics;
             if (options.CustomPlatformGraphics is not null)
             {
-                if (options.CompositionMode.HasValue
-                    && options.CompositionMode != Win32CompositionMode.RedirectionSurface)
+                if (options.CompositionMode?.Contains(Win32CompositionMode.RedirectionSurface) == false)
                 {
                     throw new InvalidOperationException(
                         $"{nameof(Win32PlatformOptions)}.{nameof(Win32PlatformOptions.CustomPlatformGraphics)} is only " +
