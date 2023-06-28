@@ -268,19 +268,13 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         base.Dispose(disposing);
     }
 
-    public void SetClient(ITextInputMethodClient? client)
-    {
+    public void SetClient(ITextInputMethodClient? client) => 
         _textEditor.SetClient(client);
-    }
 
     public void SetCursorRect(Rect rect)
     {
-
     }
 
-    public void SetOptions(TextInputOptions options)
-    {
-        //var inputContext = _textField.GetInputMethodContext();
-        //inputContext.m
-    }
+    public void SetOptions(TextInputOptions options) => 
+        _textEditor.SetOptions(options);
 }

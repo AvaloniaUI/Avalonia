@@ -6,63 +6,168 @@ using Window = Tizen.NUI.Window;
 
 namespace Avalonia.Tizen;
 
+internal interface INuiTextInput
+{
+    string Text { get; set; }
+    int PrimaryCursorPosition { get; set; }
+    bool EnableSelection { get; set; }
+    bool Sensitive { get; set; }
+    int SelectedTextStart { get; }
+    int SelectedTextEnd { get; }
+
+    event EventHandler TextChanged;
+    event EventHandler SelectionChanged;
+    event EventHandler CursorPositionChanged;
+
+    void Show();
+    InputMethodContext GetInputMethodContext();
+    void Hide();
+    void SelectText(int selectedTextStart, int value);
+}
+
+public class NuiMultiLineTextInput : TextEditor, INuiTextInput
+{
+    private event EventHandler? _textChanged;
+
+    public NuiMultiLineTextInput()
+    {
+        base.TextChanged += OnTextChanged;
+    }
+
+    event EventHandler INuiTextInput.TextChanged
+    {
+        add => _textChanged += value;
+        remove => _textChanged -= value;
+    }
+
+    private void OnTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        _textChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+public class NuiSingleLineTextInput : TextField, INuiTextInput
+{
+    private event EventHandler? _textChanged;
+
+    public NuiSingleLineTextInput()
+    {
+        base.TextChanged += OnTextChanged;
+    }
+
+    event EventHandler INuiTextInput.TextChanged
+    {
+        add => _textChanged += value;
+        remove => _textChanged -= value;
+    }
+
+    private void OnTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        _textChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+
 internal class NuiAvaloniaViewTextEditable : ITextEditable
 {
-    private TextField _textField;
+    private INuiTextInput TextInput => _multiline ? _multiLineTextInput : _singleLineTextInput;
+    private INuiTextInput _singleLineTextInput;
+    private INuiTextInput _multiLineTextInput;
     private bool _breakTheAvaloniaLoop;
     private bool _breakTheTizenLoop;
+    private bool _keyboardPresented;
+    private bool _multiline = false;
 
     public NuiAvaloniaViewTextEditable()
     {
-        _textField = new TextField
+        _singleLineTextInput = new NuiSingleLineTextInput
         {
             HeightResizePolicy = ResizePolicyType.Fixed,
             WidthResizePolicy = ResizePolicyType.Fixed,
             Size = new(1, 1),
             Position = new Position(-1000, -1000),
-            FontSizeScale = 0.1f, 
+            FontSizeScale = 0.1f,
         };
 
-        _textField.TextChanged += OnTextChanged;
-        _textField.SelectionChanged += OnSelectionChanged;
+        _multiLineTextInput = new NuiMultiLineTextInput
+        {
+            HeightResizePolicy = ResizePolicyType.Fixed,
+            WidthResizePolicy = ResizePolicyType.Fixed,
+            Size = new(1, 1),
+            Position = new Position(-1000, -1000),
+            FontSizeScale = 0.1f,
+        };
 
-        _textField.CursorPositionChanged += OnCursorPositionChanged;
-
-        _textField.Hide();
+        SetupTextInput(_singleLineTextInput);
+        SetupTextInput(_multiLineTextInput);
     }
+
+    private void SetupTextInput(INuiTextInput input)
+    {
+        input.TextChanged += OnTextChanged;
+        input.SelectionChanged += OnSelectionChanged;
+        input.CursorPositionChanged += OnCursorPositionChanged;
+        input.Hide();
+
+        input.GetInputMethodContext().StatusChanged += OnStatusChanged;
+    }
+
+    private void OnStatusChanged(object? sender, InputMethodContext.StatusChangedEventArgs e) =>
+        _keyboardPresented = e.StatusChanged;
 
     public void SetClient(ITextInputMethodClient? client)
     {
-        if (client == null)
+        if (client == null || !_keyboardPresented)
             DettachAndHide();
-        else
+
+        if (client != null)
             AttachAndShow(client);
     }
 
     private void AttachAndShow(ITextInputMethodClient client)
     {
-        _textField.Text = client.SurroundingText.Text;
-        _textField.PrimaryCursorPosition = client.SurroundingText.CursorOffset;
-        Window.Instance.GetDefaultLayer().Add(_textField);
-        _textField.Show();
-        _textField.EnableSelection = true;
+        _breakTheTizenLoop = true;
+        _breakTheAvaloniaLoop = true;
+        try
+        {
+            TextInput.Text = client.SurroundingText.Text;
+            TextInput.PrimaryCursorPosition = client.SurroundingText.CursorOffset;
+            Window.Instance.GetDefaultLayer().Add((View)TextInput);
+            TextInput.Show();
+            TextInput.EnableSelection = true;
 
-        var inputContext = _textField.GetInputMethodContext();
-        inputContext.Activate();
-        inputContext.ShowInputPanel();
-        inputContext.RestoreAfterFocusLost();
+            var inputContext = TextInput.GetInputMethodContext();
+            inputContext.Activate();
+            inputContext.ShowInputPanel();
+            inputContext.RestoreAfterFocusLost();
 
-        client.TextEditable = this;
+            client.TextEditable = this;
+        }
+        finally
+        {
+            _breakTheTizenLoop = false;
+            _breakTheAvaloniaLoop = false;
+        }
     }
 
     private void DettachAndHide()
     {
-        Window.Instance.GetDefaultLayer().Remove(_textField);
-        _textField.Hide();
+        if (Window.Instance.GetDefaultLayer().Children.Contains((View)TextInput))
+            Window.Instance.GetDefaultLayer().Remove((View)TextInput);
+        TextInput.Hide();
 
-        var inputContext = _textField.GetInputMethodContext();
+        var inputContext = TextInput.GetInputMethodContext();
         inputContext.Deactivate();
         inputContext.HideInputPanel();
+    }
+
+    public void SetOptions(TextInputOptions options)
+    {
+        TextInput.Sensitive = options.IsSensitive;
+        if (_multiline != options.Multiline)
+        {
+            DettachAndHide();
+            _multiline = options.Multiline;
+        }
     }
 
     private void InvokeTizenUpdate(Action action)
@@ -97,7 +202,7 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
     private void OnCursorPositionChanged(object? sender, EventArgs e) =>
         InvokeTizenUpdate(() => SelectionChanged?.Invoke(this, EventArgs.Empty));
 
-    private void OnTextChanged(object? sender, TextField.TextChangedEventArgs e) => InvokeTizenUpdate(() =>
+    private void OnTextChanged(object? sender, EventArgs e) => InvokeTizenUpdate(() =>
     {
         TextChanged?.Invoke(this, EventArgs.Empty);
         SelectionChanged?.Invoke(this, EventArgs.Empty);
@@ -105,14 +210,14 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
 
     public int SelectionStart
     {
-        get => _textField.SelectedTextStart;
-        set => InvokeAvaloniaUpdate(() => _textField.PrimaryCursorPosition = value);
+        get => TextInput.SelectedTextStart;
+        set => InvokeAvaloniaUpdate(() => TextInput.PrimaryCursorPosition = value);
     }
 
     public int SelectionEnd
     {
-        get => _textField.SelectedTextEnd;
-        set => InvokeAvaloniaUpdate(() => _textField.SelectText(_textField.SelectedTextStart, value));
+        get => TextInput.SelectedTextEnd;
+        set => InvokeAvaloniaUpdate(() => TextInput.SelectText(TextInput.SelectedTextStart, value));
     }
 
     public int CompositionStart => -1;
@@ -121,8 +226,8 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
 
     public string? Text
     {
-        get => _textField.Text;
-        set => InvokeAvaloniaUpdate(() => _textField.Text = value);
+        get => TextInput.Text;
+        set => InvokeAvaloniaUpdate(() => TextInput.Text = value);
     }
 
     public event EventHandler? TextChanged;
