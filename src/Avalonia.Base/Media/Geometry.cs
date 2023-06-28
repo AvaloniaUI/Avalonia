@@ -28,6 +28,11 @@ namespace Avalonia.Media
             TransformProperty.Changed.AddClassHandler<Geometry>((x,e) => x.TransformChanged(e));
         }
 
+        internal Geometry()
+        {
+            
+        }
+        
         /// <summary>
         /// Raised when the geometry changes.
         /// </summary>
