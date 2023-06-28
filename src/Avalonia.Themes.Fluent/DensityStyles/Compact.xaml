@@ -1,22 +1,25 @@
-﻿<Styles xmlns="https://github.com/avaloniaui" 
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:ClassModifier="internal">
-    <Style Selector="TextBlock" >
-        <Setter Property="FontSize" Value="14" />
-    </Style>
-    <Styles.Resources>
-      <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
-      <x:Double x:Key="ContentControlFontSize">14</x:Double>
-      <x:Double x:Key="TextControlThemeMinHeight">24</x:Double>
-      <Thickness x:Key="TextControlThemePadding">2,2,6,1</Thickness>
-      <x:Double x:Key="ListViewItemMinHeight">32</x:Double>
-      <x:Double x:Key="TreeViewItemMinHeight">24</x:Double>
-      <Thickness x:Key="TimePickerHostPadding">0,1,0,2</Thickness>
-      <Thickness x:Key="DatePickerHostPadding">0,1,0,2</Thickness>
-      <Thickness x:Key="DatePickerHostMonthPadding">9,0,0,1</Thickness>
-      <Thickness x:Key="ComboBoxEditableTextPadding">10,0,30,0</Thickness>
-      <x:Double x:Key="ComboBoxMinHeight">24</x:Double>
-      <Thickness x:Key="ComboBoxPadding">12,1,0,3</Thickness>
-      <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
-    </Styles.Resources>
-</Styles>
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
+  <x:Double x:Key="ContentControlFontSize">14</x:Double>
+  <x:Double x:Key="TextControlThemeMinHeight">24</x:Double>
+  <x:Double x:Key="TextControlThemeMinWidth">32</x:Double>
+  <Thickness x:Key="TextControlThemePadding">4, 2</Thickness>
+  <Thickness x:Key="ListBoxItemPadding">4,2</Thickness>
+  <x:Double x:Key="ListViewItemMinHeight">24</x:Double>
+  <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
+  <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">4 4 8 4</Thickness>
+  <Thickness x:Key="MenuBarItemPadding">5, 2</Thickness>
+  <x:Double x:Key="TreeViewItemMinHeight">24</x:Double>
+  <Thickness x:Key="TimePickerHostPadding">0,1,0,2</Thickness>
+  <Thickness x:Key="DatePickerHostPadding">0,1,0,2</Thickness>
+  <Thickness x:Key="DatePickerHostMonthPadding">9,0,0,1</Thickness>
+  <Thickness x:Key="ComboBoxEditableTextPadding">10,0,30,0</Thickness>
+  <x:Double x:Key="ComboBoxMinHeight">24</x:Double>
+  <Thickness x:Key="ComboBoxPadding">12,1,0,3</Thickness>
+  <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
+  <x:Double x:Key="TabItemMinHeight">28</x:Double>
+  <Thickness x:Key="TabItemHeaderMargin">6, 0</Thickness>
+  <Thickness x:Key="ButtonPadding">6,4</Thickness>
+</ResourceDictionary>
