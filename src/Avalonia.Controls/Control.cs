@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -473,13 +474,31 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            var contextGestures = AvaloniaLocator.Current.GetService<PlatformPointerConfiguration>()?.OpenContextMenu;
+
+            if (e.Source == this
+                && !e.Handled
+                && contextGestures?.Any(x => x.Matches(e)) == true)
+            {
+                e.Handled = true; // Prevent click if it is context menu event
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
 
+            var contextGestures = AvaloniaLocator.Current.GetService<PlatformPointerConfiguration>()?.OpenContextMenu;
+
             if (e.Source == this
                 && !e.Handled
-                && e.InitialPressMouseButton == MouseButton.Right)
+                && e.InitialPressMouseButton == MouseButton.Right
+                && contextGestures?.Any(x => x.Matches(e)) == true)
             {
                 var args = new ContextRequestedEventArgs(e);
                 RaiseEvent(args);

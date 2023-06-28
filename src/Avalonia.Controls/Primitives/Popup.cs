@@ -474,12 +474,12 @@ namespace Avalonia.Controls.Primitives
                         dismissLayer.IsVisible = false;
                         dismissLayer.InputPassThroughElement = null;
                     }).DisposeWith(handlerCleanup);
-                    
+
                     SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
                         dismissLayer,
                         PointerPressedDismissOverlay,
-                        (x, handler) => x.PointerPressed += handler,
-                        (x, handler) => x.PointerPressed -= handler).DisposeWith(handlerCleanup);
+                        (x, handler) => x.AddHandler(PointerPressedEvent, handler, handledEventsToo:true),
+                        (x, handler) => x.RemoveHandler(PointerPressedEvent, handler)).DisposeWith(handlerCleanup);
                 }
             }
 

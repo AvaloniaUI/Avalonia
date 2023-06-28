@@ -67,6 +67,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// </summary>
+        public TreeView()
+        {
+            AddHandler(PointerPressedEvent, OnPointerPressedHandler, handledEventsToo: true);
+        }
+
+        /// <summary>
         /// Occurs when the control's selection changes.
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
@@ -656,11 +663,8 @@ namespace Avalonia.Controls
             return result;
         }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        private void OnPointerPressedHandler(object? sender, PointerPressedEventArgs e)
         {
-            base.OnPointerPressed(e);
-
             if (e.Source is Visual source)
             {
                 var point = e.GetCurrentPoint(source);
@@ -668,7 +672,7 @@ namespace Avalonia.Controls
                 if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
                 {
                     var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
-                    e.Handled = UpdateSelectionFromEventSource(
+                    e.Handled |= UpdateSelectionFromEventSource(
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
