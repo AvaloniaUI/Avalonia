@@ -1827,8 +1827,21 @@ namespace Avalonia.Win32.Interop
             return result;
         }
 
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+        internal static int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data)
+        {
+            var user32 = LoadLibrary("user32.dll");
+            var pfnSetWindowCompositionAttribute = (delegate* unmanaged[Stdcall]<IntPtr, WindowCompositionAttributeData*, int>)GetProcAddress(user32, nameof(SetWindowCompositionAttribute));
+            if (pfnSetWindowCompositionAttribute == null)
+            {
+                // This preserves the same behavior as using the DllImport attribute.
+                throw new EntryPointNotFoundException("The unsupported SetWindowCompositionAttribute-function has been removed from the operating system.");
+            }
+
+            fixed (WindowCompositionAttributeData* pData = &data)
+            {
+                return pfnSetWindowCompositionAttribute(hwnd, pData);
+            }
+        }
 
         [Flags]
         public enum GCS : uint
