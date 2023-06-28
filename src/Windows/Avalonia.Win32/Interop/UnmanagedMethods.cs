@@ -1827,6 +1827,9 @@ namespace Avalonia.Win32.Interop
             return result;
         }
 
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
         [Flags]
         public enum GCS : uint
         {

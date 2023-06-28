@@ -371,7 +371,7 @@ namespace Avalonia.Win32
                 if (level == WindowTransparencyLevel.Transparent)
                     SetTransparencyTransparent(windowsVersion);
                 else if (level == WindowTransparencyLevel.Blur)
-                    continue; // Unsupported on all versions (unreachable)
+                    SetTransparencyBlur(windowsVersion);
                 else if (level == WindowTransparencyLevel.AcrylicBlur)
                     SetTransparencyAcrylicBlur(windowsVersion);
                 else if (level == WindowTransparencyLevel.Mica)
@@ -409,9 +409,9 @@ namespace Avalonia.Win32
             if (level == WindowTransparencyLevel.Transparent)
                 return windowsVersion >= PlatformConstants.Windows8;
 
-            // Support for legacy, undocumented DWM blur has been removed.
+            // Blur only supported on Windows 8 and lower.
             if (level == WindowTransparencyLevel.Blur)
-                return false;
+                return windowsVersion < PlatformConstants.Windows10;
 
             // Acrylic is supported on Windows >= 10.0.15063.
             if (level == WindowTransparencyLevel.AcrylicBlur)
@@ -426,12 +426,35 @@ namespace Avalonia.Win32
 
         private void SetTransparencyTransparent(Version windowsVersion)
         {
-            // Transparent only supported with composition on Windows 10+.
-            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows10)
+            // Transparent only supported with composition on Windows 8+.
+            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows8)
                 return;
+
+            if (windowsVersion < PlatformConstants.Windows10)
+            {
+                // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
+                // Windows 10, hence using ACCENT_ENABLE_BLURBEHIND to disable blurbehind  ¯\_(ツ)_/¯.
+                // Hey, I'm just porting what was here before.
+                SetAccentState(AccentState.ACCENT_ENABLE_BLURBEHIND);
+                var blurInfo = new DWM_BLURBEHIND(false);
+                DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+            }
 
             SetUseHostBackdropBrush(false);
             _blurHost?.SetBlur(BlurEffect.None);
+        }
+
+        private void SetTransparencyBlur(Version windowsVersion)
+        {
+            // Blur only supported with composition on Windows 8 and lower.
+            if (!_isUsingComposition || windowsVersion >= PlatformConstants.Windows10)
+                return;
+
+            // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
+            // Windows 10.
+            SetAccentState(AccentState.ACCENT_DISABLED);
+            var blurInfo = new DWM_BLURBEHIND(true);
+            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
         }
 
         private void SetTransparencyAcrylicBlur(Version windowsVersion)
@@ -452,6 +475,26 @@ namespace Avalonia.Win32
 
             SetUseHostBackdropBrush(false);
             _blurHost?.SetBlur(BlurEffect.Mica);
+        }
+
+        private void SetAccentState(AccentState state)
+        {
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
+            accent.AccentState = state;
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+            Marshal.FreeHGlobal(accentPtr);
         }
 
         private void SetUseHostBackdropBrush(bool useHostBackdropBrush)
