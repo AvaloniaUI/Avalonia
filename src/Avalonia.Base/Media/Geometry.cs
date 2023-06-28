@@ -139,7 +139,7 @@ namespace Avalonia.Media
         /// Creates the platform implementation of the geometry, without the transform applied.
         /// </summary>
         /// <returns></returns>
-        protected abstract IGeometryImpl? CreateDefiningGeometry();
+        private protected abstract IGeometryImpl? CreateDefiningGeometry();
 
         /// <summary>
         /// Invalidates the platform implementation of the geometry.
