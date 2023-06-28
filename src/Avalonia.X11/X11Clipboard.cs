@@ -224,7 +224,7 @@ namespace Avalonia.X11
 
         private Task<object> SendDataRequest(IntPtr format)
         {
-            if (_requestedDataTcs == null || _requestedFormatsTcs.Task.IsCompleted)
+            if (_requestedDataTcs == null || _requestedDataTcs.Task.IsCompleted)
                 _requestedDataTcs = new TaskCompletionSource<object>();
             XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD, format, format, _handle, IntPtr.Zero);
             return _requestedDataTcs.Task;
