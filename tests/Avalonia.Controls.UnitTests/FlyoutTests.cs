@@ -291,7 +291,7 @@ namespace Avalonia.Controls.UnitTests
                 button.Focus();
                 Assert.True(window.FocusManager.GetFocusedElement() == button);
                 button.Flyout.ShowAt(button);
-                Assert.False(button.IsFocused);
+                Assert.False(button.IsKeyboardFocusWithin);
                 Assert.True(window.FocusManager.GetFocusedElement() == flyoutTextBox);
             }
         }

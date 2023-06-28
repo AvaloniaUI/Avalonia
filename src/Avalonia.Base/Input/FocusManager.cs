@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -20,6 +21,9 @@ namespace Avalonia.Input
         private readonly ConditionalWeakTable<IFocusScope, IInputElement?> _focusScopes =
             new ConditionalWeakTable<IFocusScope, IInputElement?>();
 
+        private readonly ConditionalWeakTable<IRenderRoot, HashSet<Visual>> _focusedControls =
+            new ConditionalWeakTable<IRenderRoot, HashSet<Visual>>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FocusManager"/> class.
         /// </summary>
@@ -31,7 +35,10 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        private IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
+        /// <summary>
+        /// Gets the currently focused <see cref="IInputElement"/>.
+        /// </summary>
+        public IInputElement? Current => Scope != null && _focusScopes.TryGetValue(Scope, out var result) && result != null ? result : KeyboardDevice.Instance?.FocusedElement;
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
@@ -45,6 +52,25 @@ namespace Avalonia.Input
         {
             get;
             private set;
+        }
+
+        public void ClearFocus(IInputElement control, IInputElement? parent)
+        {
+            var currentControl = control;
+            while (currentControl != null)
+            {
+                if (currentControl is IFocusScope scope && _focusScopes.TryGetValue(scope, out var scopeFocus))
+                {
+                    if (KeyboardDevice.Instance?.FocusedElement == scopeFocus)
+                        KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                    SetFocusedElement(scope, null);
+                }
+
+                currentControl = (currentControl as Visual)?.GetVisualParent<IInputElement>() ?? (currentControl == control ? parent : null);
+            }
+
+            if (KeyboardDevice.Instance?.FocusedElement == control)
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
 
         /// <summary>
@@ -103,6 +129,9 @@ namespace Avalonia.Input
             return result;
         }
 
+        public IEnumerable<IInputElement> GetFocusedElements(IRenderRoot root) =>
+            root != null && _focusedControls.TryGetValue(root, out var result) ? result.Cast<IInputElement>() : Enumerable.Empty<IInputElement>();
+
         /// <summary>
         /// Sets the currently focused element in the specified scope.
         /// </summary>
@@ -122,22 +151,34 @@ namespace Avalonia.Input
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
 
+            IRenderRoot? oldRoot = null;
+            IRenderRoot? newRoot = null;
+
             if (element is not null && !CanFocus(element))
             {
                 return false;
             }
 
+            var visual = element as Visual;
+            Visual? existingVisual = null;
+
             if (_focusScopes.TryGetValue(scope, out var existingElement))
             {
+                existingVisual = existingElement as Visual;
                 if (element != existingElement)
                 {
                     _focusScopes.Remove(scope);
                     _focusScopes.Add(scope, element);
+
+                    oldRoot = existingVisual?.VisualRoot;
+                    newRoot = visual?.VisualRoot;
                 }
             }
             else
             {
                 _focusScopes.Add(scope, element);
+
+                oldRoot = newRoot = (element as Visual)?.VisualRoot;
             }
 
             if (Scope == scope)
@@ -145,7 +186,57 @@ namespace Avalonia.Input
                 KeyboardDevice.Instance?.SetFocusedElement(element, method, keyModifiers);
             }
 
+            if (!Equals(visual, existingVisual))
+            {
+                if (existingVisual?.VisualRoot != null && _focusedControls.TryGetValue(existingVisual.VisualRoot, out var existingSet))
+                {
+                    existingSet.Remove(existingVisual);
+                    if (!existingSet.Any())
+                        _focusedControls.Remove(existingVisual.VisualRoot);
+                }
+
+                existingElement?.RaiseEvent(new RoutedEventArgs { RoutedEvent = InputElement.LostFocusEvent, });
+
+                if (visual?.VisualRoot != null)
+                {
+                    if (!_focusedControls.TryGetValue(visual.VisualRoot, out var newSet))
+                    {
+                        newSet = new HashSet<Visual>();
+                        _focusedControls.Add(visual.VisualRoot, newSet);
+                    }
+
+                    newSet.Add(visual);
+                }
+
+                element?.RaiseEvent(new GotFocusEventArgs { RoutedEvent = InputElement.GotFocusEvent, NavigationMethod = method, KeyModifiers = keyModifiers, });
+
+                if (oldRoot != null)
+                    UpdateFocusWithin(oldRoot);
+
+                if (newRoot != null && (oldRoot == null || oldRoot != newRoot))
+                    UpdateFocusWithin(newRoot);
+            }
+
             return true;
+        }
+
+        public void UpdateFocusWithin(IRenderRoot root)
+        {
+            HashSet<Visual>? setFocusWithin = null;
+            if (_focusedControls.TryGetValue(root, out var oldFocusedControls))
+            {
+                oldFocusedControls.RemoveWhere(x => !x.IsAttachedToVisualTree);
+                if (!oldFocusedControls.Any())
+                    _focusedControls.Remove(root);
+                setFocusWithin = new HashSet<Visual>(oldFocusedControls.SelectMany(x => x.GetSelfAndVisualAncestors()));
+            }
+
+            if (root is Visual visual)
+            {
+                var allChildren = visual.GetSelfAndVisualDescendants().OfType<InputElement>().ToArray();
+                foreach (var child in allChildren)
+                    child.IsFocusWithin = setFocusWithin?.Contains(child) == true;
+            }
         }
 
         /// <summary>
@@ -173,7 +264,7 @@ namespace Avalonia.Input
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
             
-            if (_focusScopes.TryGetValue(scope, out _))
+            if (_focusScopes.TryGetValue(scope, out var existingElement))
             {
                 SetFocusedElement(scope, null);
                 _focusScopes.Remove(scope);
@@ -182,6 +273,10 @@ namespace Avalonia.Input
             if (Scope == scope)
             {
                 Scope = null;
+            }
+            else if (existingElement is Visual { VisualRoot: not null } visual)
+            {
+                UpdateFocusWithin(visual.VisualRoot);
             }
         }
 

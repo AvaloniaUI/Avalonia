@@ -135,9 +135,7 @@ namespace Avalonia.Input
         {
             if (element != FocusedElement)
             {
-                var interactive = FocusedElement as Interactive;
-
-                if (FocusedElement != null && 
+                if (FocusedElement != null &&
                     (!((Visual)FocusedElement).IsAttachedToVisualTree ||
                      _focusedRoot != ((Visual?)element)?.VisualRoot as IInputRoot) &&
                     _focusedRoot != null)
@@ -148,19 +146,6 @@ namespace Avalonia.Input
                 SetIsFocusWithin(FocusedElement, element);
                 _focusedElement = element;
                 _focusedRoot = ((Visual?)_focusedElement)?.VisualRoot as IInputRoot;
-
-                interactive?.RaiseEvent(new RoutedEventArgs
-                {
-                    RoutedEvent = InputElement.LostFocusEvent,
-                });
-
-                interactive = element as Interactive;
-
-                interactive?.RaiseEvent(new GotFocusEventArgs
-                {
-                    NavigationMethod = method,
-                    KeyModifiers = keyModifiers,
-                });
 
                 _textInputManager.SetFocusedElement(element);
                 RaisePropertyChanged(nameof(FocusedElement));

@@ -136,33 +136,5 @@ namespace Avalonia.Base.UnitTests.Input
             public bool CanExecute(object parameter) => true;
             public void Execute(object parameter) => _action();
         }
-
-        [Fact]
-        public void Control_Focus_Should_Be_Set_Before_FocusedElement_Raises_PropertyChanged()
-        {
-            var target = new KeyboardDevice();
-            var focused = new Control();
-            var root = new TestRoot();
-            var gotFocusRaised = 0;
-            var propertyChangedRaised = 0;
-
-            focused.GotFocus += (s, e) => ++gotFocusRaised;
-
-            target.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(target.FocusedElement))
-                {
-                    Assert.Equal(1, gotFocusRaised);
-                    ++propertyChangedRaised;
-                }
-            };
-
-            target.SetFocusedElement(
-                focused,
-                NavigationMethod.Unspecified,
-                KeyModifiers.None);
-
-            Assert.Equal(1, propertyChangedRaised);
-        }
     }
 }
