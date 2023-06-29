@@ -526,8 +526,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
             var compositionText = text.SubSequence(0, text.Length());
 
-            System.Diagnostics.Debug.WriteLine($"Composition Changed: {compositionText}");
-
             if (_inputMethod.IsActive && !_commitInProgress)
             {
                 if (string.IsNullOrEmpty(compositionText))
