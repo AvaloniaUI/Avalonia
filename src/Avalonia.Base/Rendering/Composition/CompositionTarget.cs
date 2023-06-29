@@ -70,7 +70,7 @@ namespace Avalonia.Rendering.Composition
                 return false;
             }
 
-            var m33 = MatrixUtils.ToMatrix(m.Value);
+            var m33 = m.Value;
             return m33.TryInvert(out matrix);
         }
 

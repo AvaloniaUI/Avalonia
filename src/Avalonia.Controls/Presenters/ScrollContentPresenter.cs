@@ -7,6 +7,7 @@ using Avalonia.Input.GestureRecognizers;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System.Linq;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -99,6 +100,8 @@ namespace Avalonia.Controls.Presenters
         private double _horizontalSnapPointOffset;
         private CompositeDisposable? _ownerSubscriptions;
         private ScrollViewer? _owner;
+        private IScrollSnapPointsInfo? _scrollSnapPointsInfo;
+        private bool _isSnapPointsUpdated;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -377,6 +380,13 @@ namespace Avalonia.Controls.Presenters
                 CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
 
             Child.Measure(constraint);
+
+            if (!_isSnapPointsUpdated)
+            {
+                _isSnapPointsUpdated = true;
+                UpdateSnapPoints();
+            }
+
             return Child.DesiredSize.Constrain(availableSize);
         }
 
@@ -463,7 +473,15 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = Child!.Bounds.Size.Inflate(Child.Margin);
+
+            var childMargin = Child!.Margin;
+            if (Child.UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(Child);
+                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
+            }
+
+            Extent = Child!.Bounds.Size.Inflate(childMargin);
             _isAnchorElementDirty = true;
 
             return finalSize;
@@ -570,7 +588,12 @@ namespace Avalonia.Controls.Presenters
 
         private void OnScrollGestureInertiaStartingEnded(object? sender, ScrollGestureInertiaStartingEventArgs e)
         {
-            if (Content is not IScrollSnapPointsInfo)
+            var scrollable = Content;
+
+            if (Content is ItemsControl itemsControl)
+                scrollable = itemsControl.Presenter?.Panel;
+
+            if (scrollable is not IScrollSnapPointsInfo)
                 return;
 
             if (_scrollGestureSnapPoints == null)
@@ -675,22 +698,6 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 _owner?.SetCurrentValue(OffsetProperty, change.GetNewValue<Vector>());
-            }
-            else if (change.Property == ContentProperty)
-            {
-                if (change.OldValue is IScrollSnapPointsInfo oldSnapPointsInfo)
-                {
-                    oldSnapPointsInfo.VerticalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
-                    oldSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
-                }
-
-                if (Content is IScrollSnapPointsInfo scrollSnapPointsInfo)
-                {
-                    scrollSnapPointsInfo.VerticalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
-                    scrollSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
-                }
-
-                UpdateSnapPoints();
             }
             else if (change.Property == ChildProperty)
             {
@@ -875,7 +882,9 @@ namespace Avalonia.Controls.Presenters
 
         private void UpdateSnapPoints()
         {
-            if (Content is IScrollSnapPointsInfo scrollSnapPointsInfo)
+            var scrollable = GetScrollSnapPointsInfo(Content);
+
+            if (scrollable is IScrollSnapPointsInfo scrollSnapPointsInfo)
             {
                 _areVerticalSnapPointsRegular = scrollSnapPointsInfo.AreVerticalSnapPointsRegular;
                 _areHorizontalSnapPointsRegular = scrollSnapPointsInfo.AreHorizontalSnapPointsRegular;
@@ -910,7 +919,9 @@ namespace Avalonia.Controls.Presenters
 
         private Vector SnapOffset(Vector offset)
         {
-            if(Content is not IScrollSnapPointsInfo)
+            var scrollable = GetScrollSnapPointsInfo(Content);
+
+            if(scrollable is null)
                 return offset;
 
             var diff = GetAlignedDiff();
@@ -1011,6 +1022,38 @@ namespace Avalonia.Controls.Presenters
                 point += 1;
             }
             return snapPoints[Math.Min(point, snapPoints.Count - 1)];
+        }
+
+        private IScrollSnapPointsInfo? GetScrollSnapPointsInfo(object? content)
+        {
+            var scrollable = content;
+
+            if (Content is ItemsControl itemsControl)
+                scrollable = itemsControl.Presenter?.Panel;
+
+            if (Content is ItemsPresenter itemsPresenter)
+                scrollable = itemsPresenter.Panel;
+
+            var snapPointsInfo = scrollable as IScrollSnapPointsInfo;
+
+            if(snapPointsInfo != _scrollSnapPointsInfo)
+            {
+                if(_scrollSnapPointsInfo != null)
+                {
+                    _scrollSnapPointsInfo.VerticalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
+                    _scrollSnapPointsInfo.HorizontalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
+                }
+
+                _scrollSnapPointsInfo = snapPointsInfo;
+
+                if(_scrollSnapPointsInfo != null)
+                {
+                    _scrollSnapPointsInfo.VerticalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+                    _scrollSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+                }
+            }
+
+            return snapPointsInfo;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -1223,6 +1224,29 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(item, root.FocusManager.GetFocusedElement());
         }
 
+        [Fact]
+        public void Reads_Only_Realized_Items_From_ItemsSource()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var data = new DataVirtualizingList();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                ItemsSource = data,
+            };
+
+            Prepare(target);
+
+            var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
+            Assert.Equal(0, panel.FirstRealizedIndex);
+            Assert.Equal(9, panel.LastRealizedIndex);
+
+            Assert.Equal(
+                Enumerable.Range(0, 10).Select(x => $"Item{x}"),
+                data.GetRealizedItems());
+        }
+
         private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
         {
             target.RaiseEvent(new KeyEventArgs
@@ -1251,6 +1275,33 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
+        }
+
+        private class DataVirtualizingList : IList
+        {
+            private readonly List<string> _inner = new(Enumerable.Repeat<string>(null, 100));
+
+            public object this[int index] 
+            { 
+                get => _inner[index] = $"Item{index}"; 
+                set => throw new NotSupportedException();
+            }
+
+            public IEnumerable<string> GetRealizedItems() => _inner.Where(x => x is not null);
+            public bool IsFixedSize => true;
+            public bool IsReadOnly => true;
+            public int Count => _inner.Count;
+            public bool IsSynchronized => false;
+            public object SyncRoot => this;
+            public int Add(object value) => throw new NotSupportedException();
+            public void Clear() => throw new NotSupportedException();
+            public bool Contains(object value) => throw new NotImplementedException();
+            public void CopyTo(Array array, int index) => throw new NotImplementedException();
+            public IEnumerator GetEnumerator() => _inner.GetEnumerator();
+            public int IndexOf(object value) => throw new NotImplementedException();
+            public void Insert(int index, object value) => throw new NotSupportedException();
+            public void Remove(object value) => throw new NotSupportedException();
+            public void RemoveAt(int index) => throw new NotSupportedException();
         }
     }
 }

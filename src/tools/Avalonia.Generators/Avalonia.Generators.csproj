@@ -6,6 +6,7 @@
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
     <IsPackable>true</IsPackable>
     <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
   <ItemGroup>

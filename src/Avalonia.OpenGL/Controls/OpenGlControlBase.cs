@@ -105,7 +105,7 @@ namespace Avalonia.OpenGL.Controls
             }
             
             _visual = _compositor.CreateSurfaceVisual();
-            _visual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+            _visual.Size = new Vector(Bounds.Width, Bounds.Height);
             _visual.Surface = _resources.Surface;
             ElementComposition.SetElementChildVisual(this, _visual);
             using (_resources.Context.MakeCurrent())
@@ -118,7 +118,7 @@ namespace Avalonia.OpenGL.Controls
         {
             if (_visual != null && change.Property == BoundsProperty)
             {
-                _visual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+                _visual.Size = new Vector(Bounds.Width, Bounds.Height);
                 RequestNextFrameRendering();
             }
 
