@@ -13,5 +13,6 @@
   <!-- Allow loading the AvaloniaVS extension when referencing the Avalonia nuget package -->
   <ItemGroup>
     <ProjectCapability Include="Avalonia"/>
+    <PackageReference Include="Avalonia.BuildServices" Version="0.0.*" />
   </ItemGroup>
 </Project>
