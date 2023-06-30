@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Platform;
 
-#nullable enable
-
 namespace Avalonia.Media
 {
     public enum GeometryCombineMode
@@ -147,7 +145,7 @@ namespace Avalonia.Media
             return new CombinedGeometry(GeometryCombineMode, Geometry1, Geometry2, Transform);
         }
 
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var g1 = Geometry1;
             var g2 = Geometry2;
