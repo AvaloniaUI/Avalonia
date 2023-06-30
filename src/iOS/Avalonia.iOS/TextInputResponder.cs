@@ -78,7 +78,7 @@ partial class AvaloniaView
             public NSObject Copy(NSZone? zone) => this;
         }
 
-        public TextInputResponder(AvaloniaView view, ITextInputMethodClient client)
+        public TextInputResponder(AvaloniaView view, TextInputMethodClient client)
         {
             _view = view;
             NextResponder = view;
@@ -88,12 +88,12 @@ partial class AvaloniaView
 
         public override UIResponder NextResponder { get; }
 
-        private readonly ITextInputMethodClient _client;
+        private readonly TextInputMethodClient _client;
         private int _inSurroundingTextUpdateEvent;
         private readonly UITextPosition _beginningOfDocument = new AvaloniaTextPosition(0);
         private readonly UITextInputStringTokenizer _tokenizer;
 
-        public ITextInputMethodClient? Client => _client;
+        public TextInputMethodClient? Client => _client;
 
         public override bool CanResignFirstResponder => true;
 
@@ -201,17 +201,23 @@ partial class AvaloniaView
         string IUITextInput.TextInRange(UITextRange range)
         {
             var r = (AvaloniaTextRange)range;
-            var s = _client.SurroundingText;
+            var surroundingText = _client.SurroundingText;
+
+            var currentSelection = _client.Selection;
+
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.TextInRange {start} {end}", r.StartIndex, r.EndIndex);
 
             string result = "";
             if (string.IsNullOrEmpty(_markedText))
-                result = s.Text[r.StartIndex..r.EndIndex];
+                if(surroundingText != null && r.EndIndex < surroundingText.Length)
+                {
+                    result = surroundingText[r.StartIndex..r.EndIndex];
+                }
             else
             {
-                var span = new CombinedSpan3<char>(s.Text.AsSpan().Slice(0, s.CursorOffset),
+                var span = new CombinedSpan3<char>(surroundingText.AsSpan().Slice(0, currentSelection.Start),
                     _markedText,
-                    s.Text.AsSpan().Slice(s.CursorOffset));
+                    surroundingText.AsSpan().Slice(currentSelection.Start));
                 var buf = new char[r.EndIndex - r.StartIndex];
                 span.CopyTo(buf, r.StartIndex);
                 result = new string(buf);
@@ -226,7 +232,7 @@ partial class AvaloniaView
             var r = (AvaloniaTextRange)range;
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUIKeyInput.ReplaceText {start} {end} {text}", r.StartIndex, r.EndIndex, text);
-            _client.SelectInSurroundingText(r.StartIndex, r.EndIndex);
+            _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
             TextInput(text);
         }
 
@@ -447,21 +453,19 @@ partial class AvaloniaView
         {
             get
             {
-                return new AvaloniaTextRange(
-                    Math.Min(_client.SurroundingText.CursorOffset, _client.SurroundingText.AnchorOffset),
-                    Math.Max(_client.SurroundingText.CursorOffset, _client.SurroundingText.AnchorOffset));
+                return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.End);
             }
             set
             {
                 if (_inSurroundingTextUpdateEvent > 0)
                     return;
                 if (value == null)
-                    _client.SelectInSurroundingText(_client.SurroundingText.CursorOffset,
-                        _client.SurroundingText.CursorOffset);
+                    _client.Selection = default;
                 else
                 {
                     var r = (AvaloniaTextRange)value;
-                    _client.SelectInSurroundingText(r.StartIndex, r.EndIndex);
+
+                    _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
                 }
             }
         }
@@ -474,7 +478,7 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.BeginningOfDocument => _beginningOfDocument;
 
-        private int DocumentLength => (_client.SurroundingText.Text?.Length ?? 0) + (_markedText?.Length ?? 0);
+        private int DocumentLength => (_client.SurroundingText?.Length ?? 0) + (_markedText?.Length ?? 0);
         UITextPosition IUITextInput.EndOfDocument => new AvaloniaTextPosition(DocumentLength);
 
         UITextRange IUITextInput.MarkedTextRange
@@ -483,7 +487,7 @@ partial class AvaloniaView
             {
                 if (string.IsNullOrWhiteSpace(_markedText))
                     return null!;
-                return new AvaloniaTextRange(_client.SurroundingText.CursorOffset, _client.SurroundingText.CursorOffset + _markedText.Length);
+                return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.Start + _markedText.Length);
             }
         }
 

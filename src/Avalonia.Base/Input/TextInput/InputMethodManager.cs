@@ -7,7 +7,7 @@ namespace Avalonia.Input.TextInput
     {
         private ITextInputMethodImpl? _im;
         private IInputElement? _focusedElement;
-        private ITextInputMethodClient? _client;
+        private TextInputMethodClient? _client;
         private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper();
 
         public TextInputMethodManager()
@@ -16,7 +16,7 @@ namespace Avalonia.Input.TextInput
             InputMethod.IsInputMethodEnabledProperty.Changed.Subscribe(OnIsInputMethodEnabledChanged);
         }
 
-        private ITextInputMethodClient? Client
+        private TextInputMethodClient? Client
         {
             get => _client;
             set

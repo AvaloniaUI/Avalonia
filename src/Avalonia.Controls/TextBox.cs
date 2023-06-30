@@ -1000,7 +1000,9 @@ namespace Avalonia.Controls
 
                 textBuilder.Insert(caretIndex, input);
 
-                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
+                var text = StringBuilderCache.GetStringAndRelease(textBuilder);
+
+                SetCurrentValue(TextProperty, text);
 
                 ClearSelection();
 
