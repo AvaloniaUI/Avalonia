@@ -344,7 +344,9 @@ namespace Avalonia
     {
         public static AppBuilder UseX11(this AppBuilder builder)
         {
-            builder.UseWindowingSubsystem(() =>
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(() =>
                 new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??
                                                      new X11PlatformOptions()));
             return builder;
