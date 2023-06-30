@@ -123,10 +123,24 @@ namespace Avalonia.Native
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
 
             AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
-            
-            if (_options.UseGpu)
+
+            foreach (var mode in _options.RenderingMode)
             {
-                if (_options.UseMetal)
+                if (mode == AvaloniaNativeRenderingMode.OpenGl)
+                {
+                    try
+                    {
+                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
+                }
+#pragma warning disable CS0618
+                else if (mode == AvaloniaNativeRenderingMode.Metal)
+#pragma warning restore CS0618
                 {
                     try
                     {
@@ -139,23 +153,14 @@ namespace Avalonia.Native
                         // Ignored
                     }
                 }
-
-                if (_platformGraphics == null)
-                {
-                    try
-                    {
-                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
-                }
-
-                if(_platformGraphics != null)
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformGraphics>().ToConstant(_platformGraphics);
+                else if (mode == AvaloniaNativeRenderingMode.Software)
+                    break;
             }
+
+            if (_platformGraphics != null)
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IPlatformGraphics>().ToConstant(_platformGraphics);
+            
 
             Compositor = new Compositor(_platformGraphics, true);
         }
