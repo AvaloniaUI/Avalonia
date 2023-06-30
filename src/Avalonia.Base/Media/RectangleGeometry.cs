@@ -47,7 +47,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override Geometry Clone() => new RectangleGeometry(Rect);
 
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 

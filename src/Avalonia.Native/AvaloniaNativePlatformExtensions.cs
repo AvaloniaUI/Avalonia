@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Native;
 
@@ -30,11 +31,6 @@ namespace Avalonia
     /// </summary>
     public class AvaloniaNativePlatformOptions
     {
-        /// <summary>
-        /// Determines whether to use GPU for rendering in your project. The default value is true.
-        /// </summary>
-        public bool UseGpu { get; set; } = true;
-
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>

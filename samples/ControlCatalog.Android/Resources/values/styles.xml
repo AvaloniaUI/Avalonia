@@ -6,16 +6,7 @@
 
   <style name="MyTheme.NoActionBar" parent="@style/Theme.AppCompat.DayNight.NoActionBar">
     <item name="android:windowActionBar">false</item>
+    <item name="android:windowBackground">@drawable/splash_screen</item>
     <item name="android:windowNoTitle">true</item>
   </style>
-
-  <style name="MyTheme.Splash" parent ="MyTheme.NoActionBar">
-    <item name="android:windowBackground">@drawable/splash_screen</item>
-    <item name="android:windowContentOverlay">@null</item>
-  </style>
-
-  <style name="MyTheme.Main" parent ="MyTheme.NoActionBar">
-    <item name="android:windowIsTranslucent">true</item>
-  </style>
-
 </resources>

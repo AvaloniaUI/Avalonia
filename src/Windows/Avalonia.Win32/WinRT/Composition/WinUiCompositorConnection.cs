@@ -112,35 +112,36 @@ internal class WinUiCompositorConnection : IRenderTimer
         }
     }
 
-    public static void TryCreateAndRegister()
+    public static bool IsSupported()
     {
-        const int majorRequired = 10;
-        const int buildRequired = 17134;
-
-        var majorInstalled = Win32Platform.WindowsVersion.Major;
-        var buildInstalled = Win32Platform.WindowsVersion.Build;
-
-        if (majorInstalled >= majorRequired &&
-            buildInstalled >= buildRequired)
+        return Win32Platform.WindowsVersion >= WinUiCompositionShared.MinWinCompositionVersion;
+    }
+    
+    public static bool TryCreateAndRegister()
+    {
+        if (IsSupported())
         {
             try
             {
                 TryCreateAndRegisterCore();
-                return;
+                return true;
             }
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
                     ?.Log(null, "Unable to initialize WinUI compositor: {0}", e);
-
             }
         }
+        else
+        {
+            var osVersionNotice =
+                $"Windows {WinUiCompositionShared.MinWinCompositionVersion} is required. Your machine has Windows {Win32Platform.WindowsVersion} installed.";
 
-        var osVersionNotice =
-            $"Windows {majorRequired} Build {buildRequired} is required. Your machine has Windows {majorInstalled} Build {buildInstalled} installed.";
+            Logger.TryGet(LogEventLevel.Warning, "WinUIComposition")?.Log(null,
+                $"Unable to initialize WinUI compositor: {osVersionNotice}");
+        }
 
-        Logger.TryGet(LogEventLevel.Warning, "WinUIComposition")?.Log(null,
-            $"Unable to initialize WinUI compositor: {osVersionNotice}");
+        return false;
     }
 
     public WinUiCompositedWindowSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new(_shared, info);

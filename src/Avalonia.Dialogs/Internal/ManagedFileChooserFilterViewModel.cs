@@ -18,9 +18,9 @@ namespace Avalonia.Dialogs.Internal
                 return;
             }
 
-            _patterns = filter.Patterns?
-                .Select(e => new Regex(Regex.Escape(e).Replace(@"\*", ".*").Replace(@"\?", "."), RegexOptions.Singleline | RegexOptions.IgnoreCase))
-                .ToArray();
+             _patterns = filter.Patterns?
+                           .Select(e => new Regex("^" + Regex.Escape(e).Replace("\\*", ".*") + "$", RegexOptions.Singleline | RegexOptions.IgnoreCase))
+                           .ToArray();
         }
 
         public bool Match(string filename)

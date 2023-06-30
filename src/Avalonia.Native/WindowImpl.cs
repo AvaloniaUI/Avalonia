@@ -24,7 +24,7 @@ namespace Avalonia.Native
         private bool _canResize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
+            AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, glFeature)
         {
             _opts = opts;
             _glFeature = glFeature;
