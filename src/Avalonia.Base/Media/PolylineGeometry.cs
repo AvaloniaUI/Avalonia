@@ -74,7 +74,7 @@ namespace Avalonia.Media
             return new PolylineGeometry(Points, IsFilled);
         }
 
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();

@@ -148,7 +148,7 @@ namespace Avalonia.Controls
             }
             else if (e.Key == Key.Space || e.Key == Key.Enter)
             {
-                e.Handled |= UpdateSelectionFromEventSource(
+                UpdateSelectionFromEventSource(
                     e.Source,
                     true,
                     e.KeyModifiers.HasFlag(KeyModifiers.Shift),

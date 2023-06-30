@@ -139,7 +139,7 @@ namespace Avalonia
             }
 
             throw new InvalidOperationException(
-                $"Unable to create AppBuilder from type {entryPointType.Name}." +
+                $"Unable to create AppBuilder from type \"{entryPointType.FullName}\". " +
                 $"Input type either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application type.");
         }
         

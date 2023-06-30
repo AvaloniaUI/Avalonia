@@ -4,6 +4,6 @@ namespace Avalonia.Input
 {
     public class TextInputEventArgs : RoutedEventArgs
     {
-        public string? Text { get; init; }
+        public string? Text { get; set; }
     }
 }

@@ -161,6 +161,8 @@ public class CompositorTestServices : IDisposable
                 return new LockedFramebuffer(ptr, new PixelSize(1, 1), 4, new Vector(96, 96),
                     PixelFormat.Rgba8888, () => Marshal.FreeHGlobal(ptr));
             }
+            
+            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
 
         public Compositor Compositor => _compositor;

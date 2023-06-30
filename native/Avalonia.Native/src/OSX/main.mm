@@ -191,16 +191,20 @@ public:
 @end
 
 static ComPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
+static ComPtr<IAvnDispatcher> _dispatcher;
 class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAvaloniaNativeFactory>
 {
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* events) override
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator,
+            IAvnApplicationEvents* events,
+            IAvnDispatcher* dispatcher) override
     {
         START_COM_CALL;
         
         _deallocator = deallocator;
+        _dispatcher = dispatcher;
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
@@ -213,7 +217,7 @@ public:
         return (IAvnMacOptions*)new MacOptions();
     }
     
-    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv)  override
+    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
     {
         START_COM_CALL;
         
@@ -221,12 +225,12 @@ public:
         {
             if(cb == nullptr || ppv == nullptr)
                 return E_POINTER;
-            *ppv = CreateAvnWindow(cb, gl);
+            *ppv = CreateAvnWindow(cb);
             return S_OK;
         }
     };
     
-    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) override
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv) override
     {
         START_COM_CALL;
         
@@ -235,7 +239,7 @@ public:
             if(cb == nullptr || ppv == nullptr)
                 return E_POINTER;
             
-            *ppv = CreateAvnPopup(cb, gl);
+            *ppv = CreateAvnPopup(cb);
             return S_OK;
         }
     }
@@ -320,7 +324,22 @@ public:
             return S_OK;
         }
     }
-    
+
+    virtual HRESULT ObtainMetalDisplay(IAvnMetalDisplay** ppv) override
+    {
+        START_COM_CALL;
+        @autoreleasepool
+        {
+            auto rv = ::GetMetalDisplay();
+            if(rv == NULL)
+                return E_FAIL;
+            rv->AddRef();
+            *ppv = rv;
+            return S_OK;
+        }
+    }
+
+
     virtual HRESULT CreateTrayIcon (IAvnTrayIcon** ppv) override
     {
         START_COM_CALL;
@@ -430,6 +449,11 @@ extern void FreeAvnGCHandle(void* handle)
 {
     if(_deallocator != nil)
         _deallocator->FreeGCHandle(handle);
+}
+
+extern void PostDispatcherCallback(IAvnActionCallback* cb)
+{
+    _dispatcher->Post(cb);
 }
 
 NSSize ToNSSize (AvnSize s)

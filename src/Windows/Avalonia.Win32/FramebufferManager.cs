@@ -61,6 +61,8 @@ namespace Avalonia.Win32
                 }
             }
         }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
 
         public void Dispose()
         {
