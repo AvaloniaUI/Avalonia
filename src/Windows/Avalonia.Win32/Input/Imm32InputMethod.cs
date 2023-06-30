@@ -324,6 +324,11 @@ namespace Avalonia.Win32.Input
             if (IsActive)
             {
                 Client.SetPreeditText(null);
+
+                if (Client.SupportsSurroundingText && Client.SurroundingText.AnchorOffset != Client.SurroundingText.CursorOffset)
+                {
+                    KeyPress(Key.Delete);
+                }
             }
 
             IsComposing = true;
@@ -391,6 +396,19 @@ namespace Avalonia.Win32.Input
                 return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+        private void KeyPress(Key key)
+        {
+            if (_parent?.Input != null)
+            {
+                _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
+                RawKeyEventType.KeyDown, key, RawInputModifiers.None));
+
+                _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
+                RawKeyEventType.KeyUp, key, RawInputModifiers.None));
+
+            }
         }
 
         ~Imm32InputMethod()
