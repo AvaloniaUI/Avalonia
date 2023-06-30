@@ -24,6 +24,7 @@
       "src\\Avalonia.Dialogs\\Avalonia.Dialogs.csproj",
       "src\\Avalonia.Fonts.Inter\\Avalonia.Fonts.Inter.csproj",
       "src\\Avalonia.FreeDesktop\\Avalonia.FreeDesktop.csproj",
+      "src\\Avalonia.Metal\\Avalonia.Metal.csproj",
       "src\\Avalonia.MicroCom\\Avalonia.MicroCom.csproj",
       "src\\Avalonia.Native\\Avalonia.Native.csproj",
       "src\\Avalonia.OpenGL\\Avalonia.OpenGL.csproj",

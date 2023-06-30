@@ -485,10 +485,11 @@ enum AvnPlatformThemeVariant
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
-     HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* appCb);
+     HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* appCb,
+        IAvnDispatcher* dispatcher);
      IAvnMacOptions* GetMacOptions();
-     HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv);
-     HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv);
+     HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv);
+     HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv);
      HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv);
      HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv);
      HRESULT CreateScreens(IAvnScreens** ppv);
@@ -496,6 +497,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateDndClipboard(IAvnClipboard** ppv);
      HRESULT CreateCursorFactory(IAvnCursorFactory** ppv);
      HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv);
+     HRESULT ObtainMetalDisplay(IAvnMetalDisplay** ppv);
      HRESULT SetAppMenu(IAvnMenu* menu);
      HRESULT SetServicesMenu(IAvnMenu* menu);
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
@@ -533,10 +535,11 @@ interface IAvnWindowBase : IUnknown
      HRESULT SetPosition(AvnPoint point);
      HRESULT PointToClient(AvnPoint point, AvnPoint*ret);
      HRESULT PointToScreen(AvnPoint point, AvnPoint*ret);
-     HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose);
      HRESULT SetTopMost(bool value);
      HRESULT SetCursor(IAvnCursor* cursor);
-     HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret);
+     HRESULT CreateGlRenderTarget(IAvnGlContext* context, IAvnGlSurfaceRenderTarget** ret);
+     HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget** ret);
+     HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget** ret);
      HRESULT SetMainMenu(IAvnMenu* menu);
      HRESULT ObtainNSWindowHandle([intptr]void** retOut);
      HRESULT ObtainNSWindowHandleRetained([intptr]void** retOut);
@@ -734,6 +737,13 @@ interface IAvnCursorFactory : IUnknown
      HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, IAvnCursor** retOut);
 }
 
+[uuid(931062d2-5bc8-4062-8588-83dd8deb99c2)]
+interface IAvnSoftwareRenderTarget : IUnknown
+{
+     HRESULT SetFrame(AvnFramebuffer* fb);
+}
+
+
 [uuid(60452465-8616-40af-bc00-042e69828ce7)]
 interface IAvnGlDisplay : IUnknown
 {
@@ -764,6 +774,33 @@ interface IAvnGlSurfaceRenderingSession : IUnknown
 {
      HRESULT GetPixelSize(AvnPixelSize* ret);
      HRESULT GetScaling(double* ret);
+}
+
+[uuid(da291767-4db3-4598-893d-09ecaa23893f)]
+interface IAvnMetalDisplay : IUnknown
+{
+    HRESULT CreateDevice(IAvnMetalDevice** ret);
+}
+
+[uuid(969fa914-b74a-4c9f-8725-5160dc63579e)]
+interface IAvnMetalDevice : IUnknown
+{
+    [intptr]void* GetDevice();
+    [intptr]void* GetQueue();
+}
+
+[uuid(f1306b71-eca0-426e-8700-105192693b1a)]
+interface IAvnMetalRenderTarget : IUnknown
+{
+    HRESULT BeginDrawing(IAvnMetalRenderingSession** ret);
+}
+    
+[uuid(e625b406-f04c-484e-946a-4abd2c6015ad)]
+interface IAvnMetalRenderingSession : IUnknown
+{
+     HRESULT GetPixelSize(AvnPixelSize* ret);
+     double GetScaling();
+     [intptr]void* GetTexture();
 }
 
 [uuid(60992d19-38f0-4141-a0a9-76ac303801f3)]
@@ -826,6 +863,12 @@ interface IAvnDndResultCallback : IUnknown
 interface IAvnGCHandleDeallocatorCallback : IUnknown
 {
      void FreeGCHandle([intptr]void* handle);
+}
+
+[uuid(96688589-5dc7-41ec-9ce3-d481942454ee)]
+interface IAvnDispatcher : IUnknown
+{
+    void Post(IAvnActionCallback* cb);
 }
 
 [uuid(91c7f677-f26b-4ff3-93cc-cf15aa966ffa)]

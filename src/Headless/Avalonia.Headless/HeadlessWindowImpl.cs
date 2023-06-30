@@ -218,6 +218,8 @@ namespace Avalonia.Headless
             });
         }
 
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
+
         public WriteableBitmap? GetLastRenderedFrame()
         {
             lock (_sync)
