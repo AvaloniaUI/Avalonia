@@ -84,5 +84,7 @@ namespace Avalonia.Browser.Skia
                 Marshal.FreeHGlobal(Address);
             }
         }
+
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
     }
 }

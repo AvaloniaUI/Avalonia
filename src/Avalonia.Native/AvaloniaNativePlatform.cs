@@ -19,7 +19,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
-        private AvaloniaNativeGlPlatformGraphics? _platformGl;
+        private IPlatformGraphics? _platformGraphics;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -93,7 +93,7 @@ namespace Avalonia.Native
             if (_factory.MacOptions != null)
                 _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
 
-            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
+            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform, new AvnDispatcher());
             
             if (_factory.MacOptions != null)
             {
@@ -126,20 +126,38 @@ namespace Avalonia.Native
             
             if (_options.UseGpu)
             {
-                try
+                if (_options.UseMetal)
                 {
-                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
+                    try
+                    {
+                        var metal = new MetalPlatformGraphics(_factory);
+                        metal.CreateContext().Dispose();
+                        _platformGraphics = metal;
+                    }
+                    catch
+                    {
+                        // Ignored
+                    }
+                }
 
-                }
-                catch (Exception)
+                if (_platformGraphics == null)
                 {
-                    // ignored
+                    try
+                    {
+                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
                 }
+
+                if(_platformGraphics != null)
+                    AvaloniaLocator.CurrentMutable
+                        .Bind<IPlatformGraphics>().ToConstant(_platformGraphics);
             }
-            
-            Compositor = new Compositor(_platformGl, true);
+
+            Compositor = new Compositor(_platformGraphics, true);
         }
 
         public ITrayIconImpl CreateTrayIcon()
@@ -149,7 +167,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options, _platformGl);
+            return new WindowImpl(_factory, _options);
         }
 
         public IWindowImpl CreateEmbeddableWindow()

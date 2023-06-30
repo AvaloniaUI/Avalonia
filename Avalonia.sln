@@ -274,6 +274,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Headless.XUnit.Uni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobileSandbox.Browser", "samples\MobileSandbox.Browser\MobileSandbox.Browser.csproj", "{43FCC14E-EEBE-44B3-BCBC-F1C537EECBF8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Metal", "src\Avalonia.Metal\Avalonia.Metal.csproj", "{60B4ED1F-ECFA-453B-8A70-1788261C8355}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -661,6 +663,10 @@ Global
 		{43FCC14E-EEBE-44B3-BCBC-F1C537EECBF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43FCC14E-EEBE-44B3-BCBC-F1C537EECBF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43FCC14E-EEBE-44B3-BCBC-F1C537EECBF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

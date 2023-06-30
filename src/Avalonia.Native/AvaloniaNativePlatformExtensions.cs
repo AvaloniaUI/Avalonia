@@ -35,6 +35,8 @@ namespace Avalonia
         /// </summary>
         public bool UseGpu { get; set; } = true;
 
+        public bool UseMetal { get; set; }
+
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>

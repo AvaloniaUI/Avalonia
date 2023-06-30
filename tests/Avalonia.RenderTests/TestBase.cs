@@ -135,7 +135,10 @@ namespace Avalonia.Direct2D1.RenderTests
                 _bitmap = bitmap;
             }
             
-            public ILockedFramebuffer Lock() => _bitmap.Lock();
+            public IFramebufferRenderTarget CreateFramebufferRenderTarget()
+            {
+                return new FuncFramebufferRenderTarget(() => _bitmap.Lock());
+            }
         }
 
         protected void CompareImages([CallerMemberName] string testName = "",
