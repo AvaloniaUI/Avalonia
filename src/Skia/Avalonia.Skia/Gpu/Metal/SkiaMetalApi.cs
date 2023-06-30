@@ -35,11 +35,21 @@ internal unsafe class SkiaMetalApi
             _gr_direct_context_make_metal_with_options =
                 (delegate* unmanaged[Stdcall] <IntPtr, IntPtr, IntPtr, IntPtr>)address;
         }
+        else
+        {
+            throw new InvalidOperationException(
+                "Unable to export gr_direct_context_make_metal_with_options. Make sure SkiaSharp is up to date.");
+        }
 
         if(NativeLibraryEx.TryGetExport(dll, "gr_backendrendertarget_new_metal", out address))
         {
             _gr_backendrendertarget_new_metal =
                 (delegate* unmanaged[Stdcall]<int, int, int, GRMtlTextureInfoNative*, IntPtr>)address;
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                "Unable to export gr_backendrendertarget_new_metal. Make sure SkiaSharp is up to date.");
         }
 
         _contextCtor = typeof(GRContext).GetConstructor(
