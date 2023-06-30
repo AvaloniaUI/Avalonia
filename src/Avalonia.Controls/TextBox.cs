@@ -812,14 +812,14 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if (IsFocused)
+            if (_presenter != null)
             {
-                if(_presenter != null)
+                if (IsFocused)
                 {
                     _presenter.ShowCaret();
-
-                    _presenter.PropertyChanged += PresenterPropertyChanged;
                 }
+
+                _presenter.PropertyChanged += PresenterPropertyChanged;
             }
         }
 
