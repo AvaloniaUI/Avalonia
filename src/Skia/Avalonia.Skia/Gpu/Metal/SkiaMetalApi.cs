@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
 using Avalonia.Platform.Interop;
 using SkiaSharp;
 using BindingFlags = System.Reflection.BindingFlags;
@@ -25,23 +24,19 @@ internal unsafe class SkiaMetalApi
     {
         // Make sure that skia is loaded
         GC.KeepAlive(new SKPaint());
-
-        var dll = NativeLibraryEx.Load("libSkiaSharp");
-
-        IntPtr address;
-
-        if (NativeLibraryEx.TryGetExport(dll, "gr_direct_context_make_metal_with_options", out address))
-        {
-            _gr_direct_context_make_metal_with_options =
-                (delegate* unmanaged[Stdcall] <IntPtr, IntPtr, IntPtr, IntPtr>)address;
-        }
-
-        if(NativeLibraryEx.TryGetExport(dll, "gr_backendrendertarget_new_metal", out address))
-        {
-            _gr_backendrendertarget_new_metal =
-                (delegate* unmanaged[Stdcall]<int, int, int, GRMtlTextureInfoNative*, IntPtr>)address;
-        }
-
+        
+        var loader = AvaloniaLocator.Current.GetRequiredService<IDynamicLibraryLoader>();
+#if NET6_0_OR_GREATER
+        var dll = NativeLibrary.Load("libSkiaSharp", typeof(SKPaint).Assembly, null);
+#else
+        var dll = loader.LoadLibrary("libSkiaSharp");
+#endif
+        _gr_direct_context_make_metal_with_options = (delegate* unmanaged[Stdcall] <IntPtr, IntPtr, IntPtr, IntPtr>)
+            loader.GetProcAddress(dll, "gr_direct_context_make_metal_with_options", false);
+        _gr_backendrendertarget_new_metal =
+            (delegate* unmanaged[Stdcall]<int, int, int, GRMtlTextureInfoNative*, IntPtr>)
+            loader.GetProcAddress(dll, "gr_backendrendertarget_new_metal", false);
+        
         _contextCtor = typeof(GRContext).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
             new[] { typeof(IntPtr), typeof(bool) }, null) ?? throw new MissingMemberException("GRContext.ctor(IntPtr,bool)");
