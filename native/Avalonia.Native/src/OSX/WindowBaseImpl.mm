@@ -16,6 +16,7 @@
 #import "WindowInterfaces.h"
 #include "WindowBaseImpl.h"
 #include "AvnTextInputMethod.h"
+#include "AvnView.h"
 
 
 WindowBaseImpl::~WindowBaseImpl() {
@@ -23,12 +24,10 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) {
     _shown = false;
     _inResize = false;
     BaseEvents = events;
-    _glContext = gl;
-    renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext:gl];
     View = [[AvnView alloc] initWithParent:this];
     InputMethod = new AvnTextInputMethod(View);
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
@@ -448,13 +447,6 @@ HRESULT WindowBaseImpl::PointToScreen(AvnPoint point, AvnPoint *ret) {
     }
 }
 
-HRESULT WindowBaseImpl::ThreadSafeSetSwRenderedFrame(AvnFramebuffer *fb, IUnknown *dispose) {
-    START_COM_CALL;
-
-    [View setSwRenderedFrame:fb dispose:dispose];
-    return S_OK;
-}
-
 HRESULT WindowBaseImpl::SetCursor(IAvnCursor *cursor) {
     START_COM_CALL;
 
@@ -479,13 +471,49 @@ void WindowBaseImpl::UpdateCursor() {
     }
 }
 
-HRESULT WindowBaseImpl::CreateGlRenderTarget(IAvnGlSurfaceRenderTarget **ppv) {
+HRESULT WindowBaseImpl::CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget **ppv) {
     START_COM_CALL;
+
+    if(![NSThread isMainThread])
+        return COR_E_INVALIDOPERATION;
 
     if (View == NULL)
         return E_FAIL;
-    *ppv = [renderTarget createSurfaceRenderTarget];
-    return static_cast<HRESULT>(*ppv == nil ? E_FAIL : S_OK);
+
+    auto target = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: nil];
+    *ppv = [target createSoftwareRenderTarget];
+    [View setRenderTarget: target];
+    return S_OK;
+}
+
+HRESULT WindowBaseImpl::CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfaceRenderTarget **ppv) {
+    START_COM_CALL;
+
+    if(![NSThread isMainThread])
+        return COR_E_INVALIDOPERATION;
+
+    if (View == NULL)
+        return E_FAIL;
+
+    auto target = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: glContext];
+    *ppv = [target createSurfaceRenderTarget];
+    [View setRenderTarget: target];
+    return S_OK;
+}
+
+HRESULT WindowBaseImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget **ppv) {
+    START_COM_CALL;
+
+    if(![NSThread isMainThread])
+        return COR_E_INVALIDOPERATION;
+
+    if (View == NULL)
+        return E_FAIL;
+
+    auto target = [[MetalRenderTarget alloc] initWithDevice: device];
+    [View setRenderTarget: target];
+    [target getRenderTarget: ppv];
+    return S_OK;
 }
 
 HRESULT WindowBaseImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) {
@@ -615,11 +643,11 @@ HRESULT WindowBaseImpl::GetInputMethod(IAvnTextInputMethod **retOut) {
     return S_OK;
 }
 
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {
     @autoreleasepool
     {
-        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events, gl);
+        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
         return ptr;
     }
 }
