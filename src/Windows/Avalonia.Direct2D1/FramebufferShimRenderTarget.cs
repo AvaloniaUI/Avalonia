@@ -11,20 +11,24 @@ namespace Avalonia.Direct2D1
 {
     class FramebufferShimRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferPlatformSurface _surface;
+        private IFramebufferRenderTarget? _target;
 
         public FramebufferShimRenderTarget(IFramebufferPlatformSurface surface)
         {
-            _surface = surface;
+            _target = surface.CreateFramebufferRenderTarget();
         }
 
         public void Dispose()
-        {            
+        {
+            _target?.Dispose();
+            _target = null;
         }
 
         public IDrawingContextImpl CreateDrawingContext()
         {
-            var locked = _surface.Lock();
+            if (_target == null)
+                throw new ObjectDisposedException(nameof(FramebufferShimRenderTarget));
+            var locked = _target.Lock();
             if (locked.Format == PixelFormat.Rgb565)
             {
                 locked.Dispose();

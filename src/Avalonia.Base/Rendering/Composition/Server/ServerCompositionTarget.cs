@@ -135,7 +135,18 @@ namespace Avalonia.Rendering.Composition.Server
                 _redrawRequested = true;
             }
 
-            _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            try
+            {
+                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                return;
+            }
+            catch (RenderTargetCorruptedException)
+            {
+                return;
+            }
 
             if ((_dirtyRect.Width == 0 && _dirtyRect.Height == 0) && !_redrawRequested)
                 return;
