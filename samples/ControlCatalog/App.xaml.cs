@@ -30,8 +30,8 @@ namespace ControlCatalog
 
             AvaloniaXamlLoader.Load(this);
 
-            _fluentTheme = new FluentTheme();
-            _simpleTheme = new SimpleTheme();
+            _fluentTheme = (FluentTheme)Resources["FluentTheme"]!;
+            _simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
             _dataGridFluent = (IStyle)Resources["DataGridFluent"]!;
