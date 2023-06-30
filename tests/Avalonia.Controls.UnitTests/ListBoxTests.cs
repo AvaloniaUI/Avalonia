@@ -1247,6 +1247,51 @@ namespace Avalonia.Controls.UnitTests
                 data.GetRealizedItems());
         }
 
+        [Fact]
+        public void Should_Not_Handle_Space_When_TextBox_Inside_ListBoxItem()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new TextBox
+                {
+                    Focusable = true
+                };
+                var listbox = new ListBox()
+                {
+                    Template = ListBoxTemplate(),
+                    Items =
+                    {
+                        new ListBoxItem()
+                        {
+                            Template = ListBoxItemTemplate(),
+                            Content = target,
+                        }
+                    }
+                };
+
+                var nKeyDown = 0;
+
+                var root = new TestRoot()
+                {
+                    Width = 1000,
+                    Height = 1000,
+                    Child = listbox,
+                };
+
+                root.KeyDown += (s, e) => nKeyDown++;
+
+
+                listbox.ApplyTemplate();
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                target.Focus();
+
+                RaiseKeyEvent(target, Key.Space, KeyModifiers.None);
+
+                Assert.Equal(1, nKeyDown);
+            }
+        }
+
         private static void RaiseKeyEvent(Control target, Key key, KeyModifiers inputModifiers = 0)
         {
             target.RaiseEvent(new KeyEventArgs

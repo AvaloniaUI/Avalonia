@@ -2,7 +2,7 @@
 
 namespace Avalonia.Media
 {
-    internal class PlatformGeometry : Geometry
+    internal sealed class PlatformGeometry : Geometry
     {
         private readonly IGeometryImpl _geometryImpl;
 
@@ -16,7 +16,7 @@ namespace Avalonia.Media
             return new PlatformGeometry(_geometryImpl);
         }
 
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected override IGeometryImpl? CreateDefiningGeometry()
         {
            return _geometryImpl;
         }
