@@ -814,7 +814,12 @@ namespace Avalonia.Controls
 
             if (IsFocused)
             {
-                _presenter?.ShowCaret();
+                if(_presenter != null)
+                {
+                    _presenter.ShowCaret();
+
+                    _presenter.PropertyChanged += PresenterPropertyChanged;
+                }
             }
         }
 
@@ -822,7 +827,27 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
+            if (_presenter != null)
+            {
+                _presenter.HideCaret();
+
+                _presenter.PropertyChanged -= PresenterPropertyChanged;
+            }
+
             _imClient.SetPresenter(null, null);
+        }
+
+        private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if(e.Property == TextPresenter.PreeditTextProperty)
+            {
+                if(string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
+                {
+                    PseudoClasses.Set(":empty", false);
+
+                    DeleteSelection();
+                }
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
