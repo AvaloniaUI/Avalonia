@@ -25,15 +25,14 @@ namespace Avalonia.Controls
 #if DEBUG
                 if (_parent.CaretIndex != _presenter.CaretIndex)
                 {
-                    throw new InvalidOperationException("TextBox and TextPresenter are out of sync");
+                    _presenter.SetCurrentValue(TextPresenter.CaretIndexProperty, _parent.CaretIndex);
                 }
 
                 if (_parent.Text != _presenter.Text)
                 {
-                    throw new InvalidOperationException("TextBox and TextPresenter are out of sync");
+                    _presenter.SetCurrentValue(TextPresenter.TextProperty, _parent.Text);
                 }
 #endif
-
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
 
                 var textLine = _presenter.TextLayout.TextLines[lineIndex];
