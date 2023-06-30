@@ -21,8 +21,7 @@ namespace Avalonia.Controls
                 {
                     return "";
                 }
-
-#if DEBUG
+                
                 if (_parent.CaretIndex != _presenter.CaretIndex)
                 {
                     _presenter.SetCurrentValue(TextPresenter.CaretIndexProperty, _parent.CaretIndex);
@@ -32,7 +31,7 @@ namespace Avalonia.Controls
                 {
                     _presenter.SetCurrentValue(TextPresenter.TextProperty, _parent.Text);
                 }
-#endif
+                
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
 
                 var textLine = _presenter.TextLayout.TextLines[lineIndex];
