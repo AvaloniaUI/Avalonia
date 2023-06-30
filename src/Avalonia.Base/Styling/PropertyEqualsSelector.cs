@@ -28,13 +28,13 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public override bool InTemplate => _previous?.InTemplate ?? false;
+        internal override bool InTemplate => _previous?.InTemplate ?? false;
 
         /// <inheritdoc/>
-        public override bool IsCombinator => false;
+        internal override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override Type? TargetType => _previous?.TargetType;
+        internal override Type? TargetType => _previous?.TargetType;
 
         /// <inheritdoc/>
         public override string ToString(Style? owner)
@@ -73,7 +73,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
+        private protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (subscribe)
             {
@@ -88,11 +88,11 @@ namespace Avalonia.Styling
             
         }
 
-        protected override Selector? MovePrevious() => _previous;
-        protected override Selector? MovePreviousOrParent() => _previous;
+        private protected override Selector? MovePrevious() => _previous;
+        private protected override Selector? MovePreviousOrParent() => _previous;
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
-        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
         internal static bool Compare(Type propertyType, object? propertyValue, object? value)
         {
             if (propertyType == typeof(object) &&

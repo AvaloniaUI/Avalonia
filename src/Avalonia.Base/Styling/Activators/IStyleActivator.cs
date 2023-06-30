@@ -15,8 +15,7 @@ namespace Avalonia.Styling.Activators
     /// - The activation state can be re-evaluated at any time by calling <see cref="GetIsActive"/>
     /// - No error or completion messages
     /// </remarks>
-    [Unstable]
-    public interface IStyleActivator : IDisposable
+    internal interface IStyleActivator : IDisposable
     {
         /// <summary>
         /// Gets a value indicating whether the style is subscribed.

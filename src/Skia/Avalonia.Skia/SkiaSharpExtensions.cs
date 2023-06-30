@@ -13,6 +13,7 @@ namespace Avalonia.Skia
         {
             switch (interpolationMode)
             {
+                case BitmapInterpolationMode.Unspecified:
                 case BitmapInterpolationMode.LowQuality:
                     return SKFilterQuality.Low;
                 case BitmapInterpolationMode.MediumQuality:
@@ -20,7 +21,6 @@ namespace Avalonia.Skia
                 case BitmapInterpolationMode.HighQuality:
                     return SKFilterQuality.High;
                 case BitmapInterpolationMode.None:
-                case BitmapInterpolationMode.Unspecified:
                     return SKFilterQuality.None;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);

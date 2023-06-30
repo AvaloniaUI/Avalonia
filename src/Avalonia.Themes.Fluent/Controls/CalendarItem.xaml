@@ -6,7 +6,8 @@
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="using:System">
+        xmlns:sys="using:System"
+        x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20">
       <Calendar DisplayDate="2000-01-01">

@@ -49,6 +49,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
         }
+        
         public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
         {
             if(options != null) 

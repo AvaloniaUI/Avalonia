@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Rotates an <see cref="Visual"/>.
     /// </summary>
-    public class RotateTransform : Transform
+    public sealed class RotateTransform : Transform
     {
         /// <summary>
         /// Defines the <see cref="Angle"/> property.

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia.Reactive;
@@ -22,6 +23,9 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
+using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -64,8 +68,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TransparencyLevelHint"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelHintProperty =
-            AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevelHint), WindowTransparencyLevel.None);
+        public static readonly StyledProperty<IReadOnlyList<WindowTransparencyLevel>> TransparencyLevelHintProperty =
+            AvaloniaProperty.Register<TopLevel, IReadOnlyList<WindowTransparencyLevel>>(nameof(TransparencyLevelHint), Array.Empty<WindowTransparencyLevel>());
 
         /// <summary>
         /// Defines the <see cref="ActualTransparencyLevel"/> property.
@@ -172,7 +176,7 @@ namespace Avalonia.Controls
             PlatformImpl = impl ?? throw new InvalidOperationException(
                 "Could not create window implementation: maybe no windowing subsystem was initialized?");
 
-            _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
+            _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
             dependencyResolver ??= AvaloniaLocator.Current;
 
@@ -182,7 +186,7 @@ namespace Avalonia.Controls
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
-            Renderer = impl.CreateRenderer(this);
+            Renderer = new CompositingRenderer(this, impl.Compositor, () => impl.Surfaces);
             Renderer.SceneInvalidated += SceneInvalidated;
 
             impl.SetInputRoot(this);
@@ -247,7 +251,7 @@ namespace Avalonia.Controls
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
                 {
-                    var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Back;
+                    var keymap = PlatformSettings?.HotkeyConfiguration.Back;
 
                     if (keymap != null)
                     {
@@ -310,8 +314,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
+        /// Accepts multiple values which are applied in a fallback order.
+        /// For instance, with "Mica, Blur" Mica will be applied only on platforms where it is possible,
+        /// and Blur will be used on the rest of them. Default value is an empty array or "None".    
         /// </summary>
-        public WindowTransparencyLevel TransparencyLevelHint
+        public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint
         {
             get { return GetValue(TransparencyLevelHintProperty); }
             set { SetValue(TransparencyLevelHintProperty, value); }
@@ -352,7 +359,7 @@ namespace Avalonia.Controls
             remove { RemoveHandler(BackRequestedEvent, value); }
         }
 
-        public ILayoutManager LayoutManager
+        internal ILayoutManager LayoutManager
         {
             get
             {
@@ -371,22 +378,48 @@ namespace Avalonia.Controls
             }
         }
 
+        ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
+
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
         public ITopLevelImpl? PlatformImpl { get; private set; }
-        
+
+        /// <summary>
+        /// Trys to get the platform handle for the TopLevel-derived control.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
+        /// could not be retrieved.
+        /// </returns>
+        public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
+
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
-        public IRenderer Renderer { get; }
+        internal CompositingRenderer Renderer { get; }
+
+        internal IHitTester HitTester => HitTesterOverride ?? Renderer;
+
+        // This property setter is here purely for lazy unit tests
+        // that don't want to set up a proper hit-testable visual tree
+        // and should be removed after fixing those tests
+        internal IHitTester? HitTesterOverride;
+
+        IRenderer IRenderRoot.Renderer => Renderer;
+        IHitTester IRenderRoot.HitTester => HitTester;
+
+        /// <summary>
+        /// Gets a value indicating whether the renderer should draw specific diagnostics.
+        /// </summary>
+        public RendererDiagnostics RendererDiagnostics => Renderer.Diagnostics;
 
         internal PixelPoint? LastPointerPosition => _pointerOverPreProcessor?.LastPosition;
         
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler!;
+        internal IAccessKeyHandler AccessKeyHandler => _accessKeyHandler!;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
@@ -452,6 +485,12 @@ namespace Avalonia.Controls
         /// </summary>
         public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
 
+        /// <inheritdoc />
+        public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+
+        /// <inheritdoc />
+        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -497,7 +536,16 @@ namespace Avalonia.Controls
                     return Disposable.Create(() => { });
             }
         }
-
+        
+        /// <summary>
+        /// Enqueues a callback to be called on the next animation tick
+        /// </summary>
+        public void RequestAnimationFrame(Action<TimeSpan> action)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            MediaContext.Instance.RequestAnimationFrame(action);
+        }
+        
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -506,8 +554,8 @@ namespace Avalonia.Controls
             {
                 if (PlatformImpl != null)
                 {
-                    PlatformImpl.SetTransparencyLevelHint(change.GetNewValue<WindowTransparencyLevel>());
-                    HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
+                    PlatformImpl.SetTransparencyLevelHint(
+                        change.GetNewValue<IReadOnlyList<WindowTransparencyLevel>>() ?? Array.Empty<WindowTransparencyLevel>());
                 }
             }
             else if (change.Property == ActualThemeVariantProperty)
@@ -520,21 +568,25 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
+        private protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="rect">The dirty area.</param>
-        protected virtual void HandlePaint(Rect rect)
+        private void HandlePaint(Rect rect)
         {
             Renderer.Paint(rect);
         }
 
+        protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);
+
+        protected void StopRendering() => MediaContext.Instance.RemoveTopLevel(this);
+
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
-        protected virtual void HandleClosed()
+        private protected virtual void HandleClosed()
         {
             Renderer.SceneInvalidated -= SceneInvalidated;
             // We need to wait for the renderer to complete any in-flight operations
@@ -592,33 +644,17 @@ namespace Avalonia.Controls
         /// <see cref="ITopLevelImpl.ScalingChanged"/>.
         /// </summary>
         /// <param name="scaling">The window scaling.</param>
-        protected virtual void HandleScalingChanged(double scaling)
+        private void HandleScalingChanged(double scaling)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             ScalingChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
+        private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
         {
-            if(requested == received)
+            if (_transparencyFallbackBorder != null)
             {
-                return true;
-            }
-            else if(requested >= WindowTransparencyLevel.Blur && received >= WindowTransparencyLevel.Blur)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        protected virtual void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
-        {
-            if(_transparencyFallbackBorder != null)
-            {
-                if(transparencyLevel == WindowTransparencyLevel.None || 
-                    TransparencyLevelHint == WindowTransparencyLevel.None || 
-                    !TransparencyLevelsMatch(TransparencyLevelHint, transparencyLevel))
+                if (transparencyLevel == WindowTransparencyLevel.None)
                 {
                     _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
                 }
@@ -648,7 +684,6 @@ namespace Avalonia.Controls
                 return;
 
             _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
-
             HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
         }
 
@@ -725,7 +760,7 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (Visual?)FocusManager.Instance?.Current;
+            var focused = (Visual?)FocusManager?.GetFocusedElement();
             if (focused == null)
                 return;
             while (focused.VisualParent != null)
@@ -737,7 +772,7 @@ namespace Avalonia.Controls
 
         protected override bool BypassFlowDirectionPolicies => true;
 
-        public override void InvalidateMirrorTransform()
+        protected internal override void InvalidateMirrorTransform()
         {
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }

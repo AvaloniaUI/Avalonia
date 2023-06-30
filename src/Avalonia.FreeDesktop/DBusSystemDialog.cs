@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
@@ -66,8 +67,9 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
-                    return;
-                tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
+                    tsc.TrySetException(e);
+                else
+                    tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
             });
 
             var uris = await tsc.Task ?? Array.Empty<string>();
@@ -86,7 +88,7 @@ namespace Avalonia.FreeDesktop
             if (options.SuggestedFileName is { } currentName)
                 chooserOptions.Add("current_name", new DBusVariantItem("s", new DBusStringItem(currentName)));
             if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath)
-                chooserOptions.Add("current_folder", new DBusVariantItem("s", new DBusStringItem(folderPath)));
+                chooserOptions.Add("current_folder", new DBusVariantItem("ay", new DBusArrayItem(DBusType.Byte, Encoding.UTF8.GetBytes(folderPath).Select(static x => new DBusByteItem(x)))));
 
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
@@ -94,8 +96,9 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
-                    return;
-                tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
+                    tsc.TrySetException(e);
+                else
+                    tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
             });
 
             var uris = await tsc.Task;
@@ -124,8 +127,9 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
-                    return;
-                tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
+                    tsc.TrySetException(e);
+                else
+                    tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
             });
 
             var uris = await tsc.Task ?? Array.Empty<string>();

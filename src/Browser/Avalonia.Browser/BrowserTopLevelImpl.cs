@@ -39,7 +39,6 @@ namespace Avalonia.Browser
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
-            TransparencyLevel = WindowTransparencyLevel.None;
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
@@ -187,12 +186,7 @@ namespace Avalonia.Browser
 
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
-            return new CompositingRenderer(root,
-                new Compositor(loop, AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>()), () => Surfaces);
-        }
+        public Compositor Compositor { get; } = new(AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>());
 
         public void Invalidate(Rect rect)
         {
@@ -223,13 +217,8 @@ namespace Avalonia.Browser
             return null;
         }
 
-        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            if (transparencyLevel == WindowTransparencyLevel.None
-                || transparencyLevel == WindowTransparencyLevel.Transparent)
-            {
-                TransparencyLevel = transparencyLevel;
-            }
         }
 
         public Size ClientSize => _clientSize;
@@ -249,7 +238,7 @@ namespace Avalonia.Browser
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.

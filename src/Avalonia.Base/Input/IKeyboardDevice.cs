@@ -43,14 +43,8 @@ namespace Avalonia.Input
         PenBarrelButton = 2048
     }
 
-    [NotClientImplementable]
-    public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
+    [PrivateApi]
+    public interface IKeyboardDevice : IInputDevice
     {
-        IInputElement? FocusedElement { get; }
-
-        void SetFocusedElement(
-            IInputElement? element, 
-            NavigationMethod method,
-            KeyModifiers modifiers);
     }
 }

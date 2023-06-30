@@ -576,8 +576,9 @@ namespace Avalonia.Controls.UnitTests
             });
 
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
+            var focusManager = ((IInputRoot)target.VisualRoot!).FocusManager;
 
-            Assert.Equal(panel.Children[1], FocusManager.Instance!.Current);
+            Assert.Equal(panel.Children[1], focusManager?.GetFocusedElement());
         }
 
         [Fact]
@@ -601,8 +602,9 @@ namespace Avalonia.Controls.UnitTests
             });
 
             var panel = Assert.IsAssignableFrom<Panel>(target.ItemsPanelRoot);
+            var focusManager = ((IInputRoot)target.VisualRoot!).FocusManager;
 
-            Assert.Equal(panel.Children[2], FocusManager.Instance!.Current);
+            Assert.Equal(panel.Children[2], focusManager?.GetFocusedElement());
         }
 
         [Fact]
@@ -1031,9 +1033,9 @@ namespace Avalonia.Controls.UnitTests
                     textShaperImpl: new HeadlessTextShaperStub()));
         }
 
-        private class ItemsControlWithContainer : ItemsControl, IStyleable
+        private class ItemsControlWithContainer : ItemsControl
         {
-            Type IStyleable.StyleKey => typeof(ItemsControl);
+            protected override Type StyleKeyOverride => typeof(ItemsControl);
 
             protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {
@@ -1046,9 +1048,9 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class ContainerControl : ContentControl, IStyleable
+        private class ContainerControl : ContentControl
         {
-            Type IStyleable.StyleKey => typeof(ContentControl);
+            protected override Type StyleKeyOverride => typeof(ContentControl);
         }
 
         private record Item(string Caption, string? Value = null);

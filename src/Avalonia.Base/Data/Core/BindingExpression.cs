@@ -12,7 +12,7 @@ namespace Avalonia.Data.Core
     /// Binds to an expression on an object using a type value converter to convert the values
     /// that are sent and received.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
     internal class BindingExpression : LightweightObservableBase<object?>, IAvaloniaSubject<object?>, IDescription
     {
         private readonly ExpressionObserver _inner;

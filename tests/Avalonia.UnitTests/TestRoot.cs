@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -17,9 +19,17 @@ namespace Avalonia.UnitTests
         public TestRoot()
         {
             Renderer = RendererMocks.CreateRenderer().Object;
+            HitTester = new NullHitTester();
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
+        }
+
+        class NullHitTester : IHitTester
+        {
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+
+            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
         }
 
         public TestRoot(Control child)
@@ -45,15 +55,19 @@ namespace Avalonia.UnitTests
 
         public double LayoutScaling { get; set; } = 1;
 
-        public ILayoutManager LayoutManager { get; set; }
+        internal ILayoutManager LayoutManager { get; set; }
+        ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
         public double RenderScaling => 1;
 
-        public IRenderer Renderer { get; set; }
-
-        public IAccessKeyHandler AccessKeyHandler => null;
+        internal IRenderer Renderer { get; set; }
+        internal IHitTester HitTester { get; set; }
+        IRenderer IRenderRoot.Renderer => Renderer;
+        IHitTester IRenderRoot.HitTester => HitTester;
 
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
+        public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement PointerOverElement { get; set; }
         

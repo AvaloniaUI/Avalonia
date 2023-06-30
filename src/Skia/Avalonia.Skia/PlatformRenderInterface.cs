@@ -77,13 +77,10 @@ namespace Avalonia.Skia
 
             var fontRenderingEmSize = (float)glyphRun.FontRenderingEmSize;
 
-            var skFont = SKFontCache.Shared.Get();
+            var skFont = glyphTypeface.SKFont;
 
-            skFont.Typeface = glyphTypeface.Typeface;
             skFont.Size = fontRenderingEmSize;
-            skFont.Edging = SKFontEdging.Alias;
             skFont.Hinting = SKFontHinting.None;
-            skFont.LinearMetrics = true;
 
             SKPath path = new SKPath();
 
@@ -101,8 +98,6 @@ namespace Avalonia.Skia
 
                 currentX += glyphRun.GlyphInfos[i].GlyphAdvance;
             }
-
-            SKFontCache.Shared.Return(skFont);
 
             return new StreamGeometryImpl(path, path);
         }
@@ -201,9 +196,9 @@ namespace Avalonia.Skia
         }
 
         public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin, bounds);
+            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin);
         }
     }
 }

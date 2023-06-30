@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -15,8 +17,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(RendererMocks.CreateRenderer().Object);
+            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
 
             using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
@@ -100,8 +101,7 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_After_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(() => RendererMocks.CreateRenderer().Object);
+            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             windowImpl.SetupProperty(x => x.Closed);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -273,12 +273,10 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = RendererMocks.CreateRenderer();
-                var target = new Window(CreateImpl(renderer));
+                var target = new Window(CreateImpl());
 
                 target.Show();
-
-                renderer.Verify(x => x.Start(), Times.Once);
+                Assert.True(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -288,13 +286,12 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var parent = new Window();
-                var renderer = RendererMocks.CreateRenderer();
-                var target = new Window(CreateImpl(renderer));
+                var target = new Window(CreateImpl());
 
                 parent.Show();
                 target.ShowDialog<object>(parent);
 
-                renderer.Verify(x => x.Start(), Times.Once);
+                Assert.True(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -321,13 +318,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = RendererMocks.CreateRenderer();
-                var target = new Window(CreateImpl(renderer));
+                var target = new Window(CreateImpl());
 
                 target.Show();
                 target.Hide();
-
-                renderer.Verify(x => x.Stop(), Times.Once);
+                Assert.False(MediaContext.Instance.IsTopLevelActive(target));
             }
         }
 
@@ -338,8 +333,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
-                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                    .Returns(() => RendererMocks.CreateRenderer().Object);
+                windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -381,8 +375,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
-                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                    .Returns(() => RendererMocks.CreateRenderer().Object);
+                windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -1054,11 +1047,11 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private static IWindowImpl CreateImpl(Mock<IRenderer> renderer)
+        private static IWindowImpl CreateImpl()
         {
-            return Mock.Of<IWindowImpl>(x =>
-                x.RenderScaling == 1 &&
-                x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
+            var compositor = RendererMocks.CreateDummyCompositor();
+            return Mock.Of<IWindowImpl>(x => x.RenderScaling == 1 &&
+                                             x.Compositor == compositor);
         }
 
         private class ChildControl : Control

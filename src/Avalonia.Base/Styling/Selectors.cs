@@ -76,7 +76,7 @@ namespace Avalonia.Styling
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="previous">The previous selector.</param>
         /// <returns>The selector.</returns>
-        public static Selector Is<T>(this Selector? previous) where T : IStyleable
+        public static Selector Is<T>(this Selector? previous) where T : StyledElement
         {
             return previous.Is(typeof(T));
         }
@@ -171,7 +171,7 @@ namespace Avalonia.Styling
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="previous">The previous selector.</param>
         /// <returns>The selector.</returns>
-        public static Selector OfType<T>(this Selector? previous) where T : IStyleable
+        public static Selector OfType<T>(this Selector? previous) where T : StyledElement
         {
             return previous.OfType(typeof(T));
         }

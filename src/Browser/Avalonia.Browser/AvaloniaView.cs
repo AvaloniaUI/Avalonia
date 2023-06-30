@@ -12,6 +12,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -472,7 +473,7 @@ namespace Avalonia.Browser
 
             if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                dr.CompositionTarget.ImmediateUIThreadRender();
+                MediaContext.Instance.ImmediateRenderRequested(dr.CompositionTarget);
             }
         }
 

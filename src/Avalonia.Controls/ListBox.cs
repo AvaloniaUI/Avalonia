@@ -1,10 +1,15 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -47,7 +52,7 @@ namespace Avalonia.Controls
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1010",
             Justification = "This property is owned by SelectingItemsControl, but protected there. ListBox changes its visibility.")]
-        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
+        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty =
             SelectingItemsControl.SelectionModeProperty;
 
         private IScrollable? _scroll;
@@ -58,6 +63,9 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(ListBox),
+                KeyboardNavigationMode.Once);
         }
 
         /// <summary>
@@ -118,47 +126,55 @@ namespace Avalonia.Controls
             return NeedsContainer<ListBoxItem>(item, out recycleKey);
         }
 
-        /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            base.OnGotFocus(e);
+            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (!ctrl &&
+                e.Key.ToNavigationDirection() is { } direction && 
+                direction.IsDirectional())
             {
-                e.Handled = UpdateSelectionFromEventSource(
+                e.Handled |= MoveSelection(
+                    direction,
+                    WrapSelection,
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
+            }
+            else if (SelectionMode.HasAllFlags(SelectionMode.Multiple) &&
+                hotkeys is not null && hotkeys.SelectAll.Any(x => x.Matches(e)))
+            {
+                Selection.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Space || e.Key == Key.Enter)
+            {
+                e.Handled |= UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
-                    fromFocus: true);
+                    e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                    ctrl);
             }
-        }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (e.Source is Visual source)
-            {
-                var point = e.GetCurrentPoint(source);
-
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                {
-                    e.Handled = UpdateSelectionFromEventSource(
-                        e.Source,
-                        true,
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
-                        point.Properties.IsRightButtonPressed);
-                }
-            }
+            base.OnKeyDown(e);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+        }
+
+        internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
+        {
+            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+
+            return UpdateSelectionFromEventSource(
+                source,
+                true,
+                e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                toggle,
+                e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
         }
     }
 }

@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
 using Avalonia.Headless.Vnc;
+using Avalonia.Platform;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
 
@@ -22,7 +23,8 @@ namespace Avalonia
             return builder
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions
                 {
-                    UseHeadlessDrawing = false
+                    UseHeadlessDrawing = false,
+                    FrameBufferFormat = PixelFormat.Bgra8888
                 })
                 .AfterSetup(_ =>
                 {

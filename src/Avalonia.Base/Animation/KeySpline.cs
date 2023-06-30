@@ -17,7 +17,7 @@ namespace Avalonia.Animation
     /// See https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.animation.keyspline
     /// </summary>
     [TypeConverter(typeof(KeySplineTypeConverter))]
-    public class KeySpline : AvaloniaObject
+    public sealed class KeySpline : AvaloniaObject
     {
         // Control points
         private double _controlPointX1;

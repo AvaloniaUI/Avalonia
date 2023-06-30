@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class GridTests
+    public class GridTests : ScopedTestBase
     {
         private readonly ITestOutputHelper output;
 

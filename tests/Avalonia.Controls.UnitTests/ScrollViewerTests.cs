@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ScrollViewerTests
+    public class ScrollViewerTests : ScopedTestBase
     {
         private readonly MouseTestHelper _mouse = new();
 
@@ -358,6 +358,77 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(100, thumb.Bounds.Top);
         }
 
+        [Fact]
+        public void BringIntoViewOnFocusChange_Scrolls_Child_Control_Into_View_When_Focused()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var content = new StackPanel
+            {
+                Children =
+                {
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                }
+            };
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var button = (Button)content.Children[1];
+            button.Focus();
+
+            Assert.Equal(new Vector(0, 800), target.Offset);
+        }
+
+        [Fact]
+        public void BringIntoViewOnFocusChange_False_Does_Not_Scroll_Child_Control_Into_View_When_Focused()
+        {
+            var content = new StackPanel
+            {
+                Children =
+                {
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                    new Button
+                    {
+                        Width = 100,
+                        Height = 900,
+                    },
+                }
+            };
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = content,
+            };
+            var root = new TestRoot(target);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var button = (Button)content.Children[1];
+            button.Focus();
+
+            Assert.Equal(new Vector(0, 0), target.Offset);
+        }
+
         private Point GetRootPoint(Visual control, Point p)
         {
             if (control.GetVisualRoot() is Visual root &&
@@ -369,7 +440,7 @@ namespace Avalonia.Controls.UnitTests
             throw new InvalidOperationException("Could not get the point in root coordinates.");
         }
 
-        private Control CreateTemplate(ScrollViewer control, INameScope scope)
+        internal static Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
             {
@@ -409,7 +480,7 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private Control CreateScrollBarTemplate(ScrollBar scrollBar, INameScope scope)
+        private static Control CreateScrollBarTemplate(ScrollBar scrollBar, INameScope scope)
         {
             return new Border
             {

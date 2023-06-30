@@ -3,7 +3,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-    public class ChildNameScope : INameScope
+    internal class ChildNameScope : INameScope
     {
         private readonly INameScope _parentScope;
         private readonly NameScope _inner = new NameScope();

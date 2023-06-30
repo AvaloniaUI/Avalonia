@@ -161,10 +161,10 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
                 case Key.Tab:
-                    if (FocusManager.Instance?.Current is IInputElement focus)
+                    if (FocusManager.GetFocusManager(this)?.GetFocusedElement() is { } focus)
                     {
                         var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
-                        KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
+                        nextFocus?.Focus(NavigationMethod.Tab);
                         e.Handled = true;
                     }
                     break;
@@ -216,7 +216,7 @@ namespace Avalonia.Controls
             _periodSelector.SelectedValue = hr >= 12 ? 1 : 0;
 
             SetGrid();
-            KeyboardDevice.Instance?.SetFocusedElement(_hourSelector, NavigationMethod.Pointer, KeyModifiers.None);
+            _hourSelector?.Focus(NavigationMethod.Pointer);
         }
 
         private void SetGrid()

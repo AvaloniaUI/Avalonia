@@ -18,6 +18,7 @@ namespace Avalonia.Base.UnitTests.Utilities
                 TestProperties[i] = new StyledProperty<string>(
                     $"Test{i}",
                     typeof(AvaloniaPropertyDictionaryTests),
+                    typeof(AvaloniaPropertyDictionaryTests),
                     new StyledPropertyMetadata<string>());
             }
 

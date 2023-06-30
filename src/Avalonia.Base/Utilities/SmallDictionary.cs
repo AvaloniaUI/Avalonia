@@ -2,13 +2,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Avalonia.Utilities;
 
-public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : class where TValue : class
+internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : class
 {
     object? _data;
     TValue? _value;
+
+    struct KeyValuePair
+    {
+        public TKey? Key;
+        public TValue? Value;
+
+        public KeyValuePair(TKey key, TValue? value)
+        {
+            Key = key;
+            Value = value;
+        }
+
+        public static implicit operator KeyValuePair<TKey?, TValue?>(KeyValuePair kvp) => new(kvp.Key, kvp.Value);
+    }
 
     void SetCore(TKey key, TValue value, bool overwrite)
     {
@@ -19,7 +35,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
             _data = key;
             _value = value;
         } 
-        else if (_data is KeyValuePair<TKey?, TValue?>[] arr)
+        else if (_data is KeyValuePair[] arr)
         {
             var free = -1;
             for (var c = 0; c < arr.Length; c++)
@@ -41,7 +57,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
 
             if (free != -1)
             {
-                arr[free] = new KeyValuePair<TKey?, TValue?>(key, value);
+                arr[free] = new KeyValuePair(key, value);
                 return;
             }
 
@@ -62,14 +78,14 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
         else
         {
             // We have a single element, upgrade to array
-            arr = new KeyValuePair<TKey?, TValue?>[6];
-            arr[0] = new KeyValuePair<TKey?, TValue?>((TKey)_data, _value);
-            arr[1] = new KeyValuePair<TKey?, TValue?>(key, value);
+            arr = new KeyValuePair[6];
+            arr[0] = new KeyValuePair((TKey)_data, _value);
+            arr[1] = new KeyValuePair(key, value);
             _data = arr;
-            _value = null;
+            _value = default;
         }
     }
-    
+
     public void Add(TKey key, TValue value) => SetCore(key, value, false);
     public void Set(TKey key, TValue value) => SetCore(key, value, true);
 
@@ -89,10 +105,10 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
         if (_data == key)
         {
             _data = null;
-            _value = null;
+            _value = default;
             return true;
         } 
-        else if (_data is KeyValuePair<TKey?, TValue?>[] arr)
+        else if (_data is KeyValuePair[] arr)
         {
             for (var c = 0; c < arr.Length; c++)
             {
@@ -111,6 +127,8 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
         return false;
     }
 
+    public bool HasEntries => _data != null;
+    
     public bool TryGetValue(TKey key, [MaybeNullWhen(false)]out TValue value)
     {
         if (_data == key)
@@ -118,7 +136,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
             value = _value!;
             return true;
         } 
-        else if (_data is KeyValuePair<TKey?, TValue?>[] arr)
+        else if (_data is KeyValuePair[] arr)
         {
             for (var c = 0; c < arr.Length; c++)
             {
@@ -129,27 +147,115 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
                 }
             }
 
-            value = null;
+            value = default;
             return false;
         }
         else if (_data is Dictionary<TKey, TValue?> dic)
             return dic.TryGetValue(key, out value);
 
-        value = null;
+        value = default;
         return false;
     }
+
+#if NET6_0_OR_GREATER
+    [UnscopedRef]
+    public ref TValue GetValueRefOrNullRef(TKey key)
+    {
+        if (_data == key)
+        {
+            return ref (_value!);
+        } 
+        else if (_data is KeyValuePair[] arr)
+        {
+            for (var c = 0; c < arr.Length; c++)
+            {
+                if (arr[c].Key == key)
+                    return ref arr[c].Value!;
+            }
+
+            return ref Unsafe.NullRef<TValue>();
+        }
+        if (_data is Dictionary<TKey, TValue?> dic)
+            return ref CollectionsMarshal.GetValueRefOrNullRef(dic, key)!;
+        return ref Unsafe.NullRef<TValue>();
+    }
     
+    [UnscopedRef]
+    public ref TValue GetValueRefOrAddDefault(TKey key, [UnscopedRef] out bool exists)
+    {
+        if (_data == null)
+        {
+            exists = false;
+            _data = key;
+            return ref _value!;
+        }
+        
+        // Single element
+        if (_data == key)
+        {
+            exists = true;
+            return ref (_value!);
+        }
+
+        // Small array
+        if (_data is KeyValuePair[] arr)
+        {
+            // Try to find the element and look for the first free slot while we are at it
+            int free = -1;
+            for (var c = 0; c < arr.Length; c++)
+            {
+                if (arr[c].Key == key)
+                {
+                    exists = true;
+                    return ref arr[c].Value!;
+                }
+                else if (free == -1 && arr[c].Key == null)
+                    free = c;
+            }
+
+            // There is a free slot, use it
+            if (free != -1)
+            {
+                arr[free] = new(key, default);
+                exists = false;
+                return ref arr[free].Value!;
+            }
+            
+            // Upgrade to dictionary
+            var newDic = new Dictionary<TKey, TValue?>();
+            foreach (var kvp in arr)
+                newDic.Add(kvp.Key!, kvp.Value!);
+            _data = newDic;
+            return ref CollectionsMarshal.GetValueRefOrAddDefault(newDic, key, out exists)!;
+        }
+        
+        if (_data is Dictionary<TKey, TValue?> dic)
+            return ref CollectionsMarshal.GetValueRefOrAddDefault(dic, key, out exists)!;
+
+        // This is a second element, convert to array 
+        // We have a single element, upgrade to array
+        arr = new KeyValuePair[6];
+        arr[0] = new KeyValuePair((TKey)_data, _value);
+        arr[1] = new KeyValuePair(key, default);
+        _data = arr;
+        _value = default;
+        exists = false;
+        return ref arr[1].Value!;
+
+    }
     
+#endif
+
     public bool TryGetAndRemoveValue(TKey key, [MaybeNullWhen(false)]out TValue value)
     {
         if (_data == key)
         {
             value = _value!;
-            _value = null;
+            _value = default;
             _data = null;
             return true;
         } 
-        else if (_data is KeyValuePair<TKey?, TValue?>[] arr)
+        else if (_data is KeyValuePair[] arr)
         {
             for (var c = 0; c < arr.Length; c++)
             {
@@ -161,7 +267,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
                 }
             }
 
-            value = null;
+            value = default;
             return false;
         }
         else if (_data is Dictionary<TKey, TValue?> dic)
@@ -171,7 +277,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
             dic.Remove(key);
         }
 
-        value = null;
+        value = default;
         return false;
     }
 
@@ -185,7 +291,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
     public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
     {
         private Dictionary<TKey, TValue>.Enumerator _inner;
-        private readonly KeyValuePair<TKey?, TValue?>[]? _arr;
+        private readonly KeyValuePair[]? _arr;
         private KeyValuePair<TKey, TValue> _first;
         private int _index;
         private Type _type;
@@ -205,7 +311,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
                 _inner = inner.GetEnumerator();
                 _type = Type.Dictionary;
             }
-            else if (parent._data is KeyValuePair<TKey?, TValue?>[] arr)
+            else if (parent._data is KeyValuePair[] arr)
             {
                 _type = Type.Array;
                 _arr = arr;
@@ -227,6 +333,7 @@ public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<T
                 if (_index != -1)
                     return false;
                 _index = 0;
+                return true;
             }
             else if (_type == Type.Array)
             {

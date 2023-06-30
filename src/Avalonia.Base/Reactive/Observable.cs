@@ -165,6 +165,18 @@ internal static class Observable
         });
     }
     
+    public static IObservable<T> FromEventPattern<T>(Action<EventHandler<T>> addHandler, Action<EventHandler<T>> removeHandler) where T : EventArgs
+    {
+        return Create<T>(observer =>
+        {
+            var handler = new Action<T>(observer.OnNext);
+            var converted = new EventHandler<T>((_, args) => handler(args));
+            addHandler(converted);
+
+            return Disposable.Create(() => removeHandler(converted));
+        });
+    }
+    
     public static IObservable<T> Return<T>(T value)
     {
         return new ReturnImpl<T>(value);

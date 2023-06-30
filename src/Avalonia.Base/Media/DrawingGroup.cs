@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -8,7 +7,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public class DrawingGroup : Drawing
+    public sealed class DrawingGroup : Drawing
     {
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);
@@ -69,12 +68,11 @@ namespace Avalonia.Media
 
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
 
-        public override void Draw(DrawingContext context)
+        internal override void DrawCore(DrawingContext context)
         {
             var bounds = GetBounds();
-
             using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
-            using (context.PushOpacity(Opacity, bounds))
+            using (context.PushOpacity(Opacity))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
             using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
             {
@@ -178,22 +176,30 @@ namespace Avalonia.Media
 
             protected override void PushClipCore(Rect rect)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.ClipGeometry = new RectangleGeometry(rect);
             }
 
             protected override void PushGeometryClipCore(Geometry clip)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.ClipGeometry = clip;
             }
 
-            protected override void PushOpacityCore(double opacity, Rect bounds)
+            protected override void PushOpacityCore(double opacity)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.Opacity = opacity;
             }
 
             protected override void PushOpacityMaskCore(IBrush mask, Rect bounds)
             {
-                throw new NotImplementedException();
+                var drawingGroup = PushNewDrawingGroup();
+
+                drawingGroup.OpacityMask = mask;
             }
 
             internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)

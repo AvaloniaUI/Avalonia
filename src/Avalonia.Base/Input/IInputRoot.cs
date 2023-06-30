@@ -1,4 +1,5 @@
 using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Input
 {
@@ -9,15 +10,26 @@ namespace Avalonia.Input
     public interface IInputRoot : IInputElement
     {
         /// <summary>
-        /// Gets or sets the access key handler.
-        /// </summary>
-        IAccessKeyHandler AccessKeyHandler { get; }
-
-        /// <summary>
         /// Gets or sets the keyboard navigation handler.
         /// </summary>
         IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
 
+        /// <summary>
+        /// Gets focus manager of the root.
+        /// </summary>
+        /// <remarks>
+        /// Focus manager can be null only if window wasn't initialized yet.
+        /// </remarks>
+        IFocusManager? FocusManager { get; }
+        
+        /// <summary>
+        /// Represents a contract for accessing top-level platform-specific settings.
+        /// </summary>
+        /// <remarks>
+        /// PlatformSettings can be null only if window wasn't initialized yet.
+        /// </remarks>
+        IPlatformSettings? PlatformSettings { get; }
+        
         /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
         /// </summary>

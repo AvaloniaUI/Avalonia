@@ -47,6 +47,9 @@
           <Button Name="DisabledButton" IsEnabled="False">
             Disabled Button
           </Button>
+          <Button Name="EffectivelyDisabledButton" Command="{ReflectionBinding DoesntExist}">
+            Effectively Disabled Button
+          </Button>
           <Button Name="BasicButton">
             Basic Button
           </Button>

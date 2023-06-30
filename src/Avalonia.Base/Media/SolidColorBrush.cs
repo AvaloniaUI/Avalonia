@@ -1,24 +1,23 @@
+using System;
 using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
+    public sealed class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Color"/> property.
         /// </summary>
         public static readonly StyledProperty<Color> ColorProperty =
             AvaloniaProperty.Register<SolidColorBrush, Color>(nameof(Color));
-
-        static SolidColorBrush()
-        {
-            AffectsRender<SolidColorBrush>(ColorProperty);
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SolidColorBrush"/> class.
         /// </summary>
@@ -83,6 +82,15 @@ namespace Avalonia.Media
         public IImmutableBrush ToImmutable()
         {
             return new ImmutableSolidColorBrush(this);
+        }
+        
+        internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
+            static c => new ServerCompositionSimpleSolidColorBrush(c.Server);
+
+        private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+        {
+            base.SerializeChanges(c, writer);
+            ServerCompositionSimpleSolidColorBrush.SerializeAllChanges(writer, Color);
         }
     }
 }

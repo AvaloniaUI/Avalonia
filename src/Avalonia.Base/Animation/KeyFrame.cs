@@ -15,7 +15,7 @@ namespace Avalonia.Animation
     /// Stores data regarding a specific key
     /// point and value in an animation.
     /// </summary>
-    public class KeyFrame : AvaloniaObject
+    public sealed class KeyFrame : AvaloniaObject
     {
         private TimeSpan _ktimeSpan;
         private Cue _kCue;

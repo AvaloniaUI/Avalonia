@@ -4,35 +4,14 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(RunNativeAotCompilation)' == 'true'">
-    <IlcTrimMetadata>true</IlcTrimMetadata>
-    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json</RestoreAdditionalProjectSources>
-    <NativeAotCompilerVersion>7.0.0-*</NativeAotCompilerVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\src\Avalonia.X11\NativeDialogs\Gtk.cs" Link="NativeControls\Gtk\Gtk.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\MobileSandbox\MobileSandbox.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
     <!-- For native controls test -->
     <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(RunNativeAotCompilation)' == 'true'">
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="$(NativeAotCompilerVersion)" />
-    <!-- Cross-compilation for Windows x64-arm64 and Linux x64-arm64 -->
-    <PackageReference Condition="'$(RuntimeIdentifier)'=='win-arm64'" Include="runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="$(NativeAotCompilerVersion)" />
-    <PackageReference Condition="'$(RuntimeIdentifier)'=='linux-arm64'" Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler" Version="$(NativeAotCompilerVersion)" />
   </ItemGroup>
 
   <PropertyGroup>

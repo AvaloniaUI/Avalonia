@@ -118,7 +118,7 @@
       <Compile Include="..\Avalonia.Base\Utilities\SpanHelpers.cs" Link="Utilities\SpanHelpers.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
-      <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+      <PackageReference Include="Mono.Cecil" Version="0.11.5" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     </ItemGroup>

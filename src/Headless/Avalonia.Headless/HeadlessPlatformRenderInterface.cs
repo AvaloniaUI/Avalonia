@@ -126,10 +126,9 @@ namespace Avalonia.Headless
             IGlyphTypeface glyphTypeface, 
             double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, 
-            Point baselineOrigin,
-            Rect bounds)
+            Point baselineOrigin)
         {
-            return new HeadlessGlyphRunStub(glyphTypeface, fontRenderingEmSize, baselineOrigin, bounds);
+            return new HeadlessGlyphRunStub(glyphTypeface, fontRenderingEmSize, baselineOrigin);
         }
 
         internal class HeadlessGlyphRunStub : IGlyphRunImpl
@@ -137,13 +136,11 @@ namespace Avalonia.Headless
             public HeadlessGlyphRunStub(
                 IGlyphTypeface glyphTypeface,
                 double fontRenderingEmSize,
-                Point baselineOrigin,
-                Rect bounds)
+                Point baselineOrigin)
             {
                 GlyphTypeface = glyphTypeface;
                 FontRenderingEmSize = fontRenderingEmSize;
                 BaselineOrigin = baselineOrigin;
-                Bounds =bounds;
             }
 
             public Rect Bounds { get; }
@@ -460,7 +457,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushOpacity(double opacity, Rect rect)
+            public void PushOpacity(double opacity, Rect? rect)
             {
 
             }
@@ -517,12 +514,12 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+            public void DrawBitmap(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
             {
                 
             }
 
-            public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+            public void DrawBitmap(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
             {
                 
             }
@@ -536,7 +533,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
+            public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
             {
                 
             }

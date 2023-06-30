@@ -30,7 +30,7 @@ namespace Avalonia.Controls
                 o => o.SelectedText);
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>(new(new Data.Optional<IBrush?>(Brushes.Blue)));
+            TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>();
 
         public static readonly DirectProperty<SelectableTextBlock, bool> CanCopyProperty =
             TextBox.CanCopyProperty.AddOwner<SelectableTextBlock>(o => o.CanCopy);
@@ -198,7 +198,7 @@ namespace Avalonia.Controls
 
             var handled = false;
             var modifiers = e.KeyModifiers;
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 
@@ -323,8 +323,8 @@ namespace Avalonia.Controls
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
                 point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.Bounds.Width, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Bounds.Height, 0)));
+                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
+                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0)));
 
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;

@@ -1,16 +1,14 @@
 using System;
-using Moq;
-using Avalonia.Collections;
-using Avalonia.Markup.Xaml.Converters;
-using Avalonia.Styling;
-using Xunit;
 using System.ComponentModel;
+using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
-using System.Collections.Generic;
+using Avalonia.Styling;
+using Moq;
+using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
-    public class AvaloniaPropertyConverterTest
+    public class AvaloniaPropertyConverterTest : XamlTestBase
     {
         public AvaloniaPropertyConverterTest()
         {
@@ -112,61 +110,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             return tdMock.Object;
         }
 
-        private class Class1 : AvaloniaObject, IStyleable
+        private class Class1 : StyledElement
         {
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo");
-
-            public IAvaloniaReadOnlyList<string> Classes
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public string Name
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public Type StyleKey
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public AvaloniaObject TemplatedParent
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public ControlTheme GetEffectiveTheme()
-            {
-                throw new NotImplementedException();
-            }
 
             public ThemeVariant ThemeVariant 
             {
                 get { throw new NotImplementedException(); }
             }
+
             public event EventHandler ThemeVariantChanged;
-
-            public void DetachStyles()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void DetachStyles(IReadOnlyList<IStyle> styles)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void InvalidateStyles()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void StyleApplied(IStyleInstance instance)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private class AttachedOwner

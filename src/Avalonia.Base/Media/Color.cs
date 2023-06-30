@@ -25,13 +25,6 @@ namespace Avalonia.Media
     {
         private const double byteToDouble = 1.0 / 255;
 
-        static Color()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// Gets the Alpha component of the color.
         /// </summary>
@@ -478,7 +471,6 @@ namespace Avalonia.Media
         /// <returns>The HSL equivalent color.</returns>
         public HslColor ToHsl()
         {
-            // Don't use the HslColor(Color) constructor to avoid an extra HslColor
             return Color.ToHsl(R, G, B, A);
         }
 
@@ -488,7 +480,6 @@ namespace Avalonia.Media
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
             return Color.ToHsv(R, G, B, A);
         }
 
@@ -515,21 +506,6 @@ namespace Avalonia.Media
                 hashCode = (hashCode * 397) ^ B.GetHashCode();
                 return hashCode;
             }
-        }
-
-        /// <summary>
-        /// Converts the given RGB color to its HSL color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
-        public static HslColor ToHsl(Color color)
-        {
-            // Normalize RGBA components into the 0..1 range
-            return Color.ToHsl(
-                (byteToDouble * color.R),
-                (byteToDouble * color.G),
-                (byteToDouble * color.B),
-                (byteToDouble * color.A));
         }
 
         /// <summary>
@@ -604,21 +580,6 @@ namespace Avalonia.Media
             double saturation = chroma == 0 ? 0 : chroma / (1 - Math.Abs((2 * lightness) - 1));
 
             return new HslColor(a, 60 * h1, saturation, lightness, clampValues: false);
-        }
-
-        /// <summary>
-        /// Converts the given RGB color to its HSV color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
-        public static HsvColor ToHsv(Color color)
-        {
-            // Normalize RGBA components into the 0..1 range
-            return Color.ToHsv(
-                (byteToDouble * color.R),
-                (byteToDouble * color.G),
-                (byteToDouble * color.B),
-                (byteToDouble * color.A));
         }
 
         /// <summary>

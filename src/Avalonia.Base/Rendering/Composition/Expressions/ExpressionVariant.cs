@@ -17,6 +17,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         Vector2,
         Vector3,
         Vector4,
+        Vector,
+        Vector3D,
         AvaloniaMatrix,
         Matrix3x2,
         Matrix4x4,
@@ -38,6 +40,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(4)] public Vector2 Vector2;
         [FieldOffset(4)] public Vector3 Vector3;
         [FieldOffset(4)] public Vector4 Vector4;
+        [FieldOffset(4)] public Vector Vector;
+        [FieldOffset(4)] public Vector3D Vector3D;
         [FieldOffset(4)] public Matrix AvaloniaMatrix;
         [FieldOffset(4)] public Matrix3x2 Matrix3x2;
         [FieldOffset(4)] public Matrix4x4 Matrix4x4;
@@ -53,6 +57,15 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Vector2.X;
                 if (ReferenceEquals(property, "Y"))
                     return Vector2.Y;
+                return default;
+            }
+            
+            if (Type == VariantType.Vector)
+            {
+                if (ReferenceEquals(property, "X"))
+                    return Vector.X;
+                if (ReferenceEquals(property, "Y"))
+                    return Vector.Y;
                 return default;
             }
 
@@ -76,6 +89,29 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return new Vector2(Vector3.Y, Vector3.Z);
                 if(ReferenceEquals(property, "ZY"))
                     return new Vector2(Vector3.Z, Vector3.Y);
+                return default;
+            }
+            
+            if (Type == VariantType.Vector3D)
+            {
+                if (ReferenceEquals(property, "X"))
+                    return Vector3D.X;
+                if (ReferenceEquals(property, "Y"))
+                    return Vector3D.Y;
+                if (ReferenceEquals(property, "Z"))
+                    return Vector3D.Z;
+                if(ReferenceEquals(property, "XY"))
+                    return new Vector(Vector3D.X, Vector3D.Y);
+                if(ReferenceEquals(property, "YX"))
+                    return new Vector(Vector3D.Y, Vector3D.X);
+                if(ReferenceEquals(property, "XZ"))
+                    return new Vector(Vector3D.X, Vector3D.Z);
+                if(ReferenceEquals(property, "ZX"))
+                    return new Vector(Vector3D.Z, Vector3D.X);
+                if(ReferenceEquals(property, "YZ"))
+                    return new Vector(Vector3D.Y, Vector3D.Z);
+                if(ReferenceEquals(property, "ZY"))
+                    return new Vector(Vector3D.Z, Vector3D.Y);
                 return default;
             }
 
@@ -115,14 +151,20 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return AvaloniaMatrix.M11;
                 if (ReferenceEquals(property, "M12"))
                     return AvaloniaMatrix.M12;
+                if (ReferenceEquals(property, "M13"))
+                    return AvaloniaMatrix.M13;
                 if (ReferenceEquals(property, "M21"))
                     return AvaloniaMatrix.M21;
                 if (ReferenceEquals(property, "M22"))
                     return AvaloniaMatrix.M22;
+                if (ReferenceEquals(property, "M23"))
+                    return AvaloniaMatrix.M23;
                 if (ReferenceEquals(property, "M31"))
                     return AvaloniaMatrix.M31;
                 if (ReferenceEquals(property, "M32"))
                     return AvaloniaMatrix.M32;
+                if (ReferenceEquals(property, "M33"))
+                    return AvaloniaMatrix.M33;
                 return default;
             }
 
@@ -220,13 +262,26 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Vector2,
                 Vector2 = value
             };
-
+        
+        public static implicit operator ExpressionVariant(Vector value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.Vector,
+                Vector = value
+            };
 
         public static implicit operator ExpressionVariant(Vector3 value) =>
             new ExpressionVariant
             {
                 Type = VariantType.Vector3,
                 Vector3 = value
+            };
+        
+        public static implicit operator ExpressionVariant(Vector3D value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.Vector3D,
+                Vector3D = value
             };
 
 
@@ -285,9 +340,15 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector2)
                 return left.Vector2 + right.Vector2;
+            
+            if (left.Type == VariantType.Vector)
+                return left.Vector + right.Vector;
 
             if (left.Type == VariantType.Vector3)
                 return left.Vector3 + right.Vector3;
+
+            if (left.Type == VariantType.Vector3D)
+                return Avalonia.Vector3D.Add(left.Vector3D, right.Vector3D);
 
             if (left.Type == VariantType.Vector4)
                 return left.Vector4 + right.Vector4;
@@ -317,9 +378,15 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector2)
                 return left.Vector2 - right.Vector2;
+            
+            if (left.Type == VariantType.Vector)
+                return left.Vector - right.Vector;
 
             if (left.Type == VariantType.Vector3)
                 return left.Vector3 - right.Vector3;
+
+            if (left.Type == VariantType.Vector3D)
+                return Vector3D.Add(left.Vector3D, -right.Vector3D);
 
             if (left.Type == VariantType.Vector4)
                 return left.Vector4 - right.Vector4;
@@ -347,9 +414,15 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector2)
                 return -left.Vector2;
+            
+            if (left.Type == VariantType.Vector)
+                return -left.Vector;
 
             if (left.Type == VariantType.Vector3)
                 return -left.Vector3;
+            
+            if (left.Type == VariantType.Vector3D)
+                return -left.Vector3D;
 
             if (left.Type == VariantType.Vector4)
                 return -left.Vector4;
@@ -383,14 +456,29 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Vector2 && right.Type == VariantType.Vector2)
                 return left.Vector2 * right.Vector2;
 
+            if (left.Type == VariantType.Vector && right.Type == VariantType.Vector)
+                return Vector.Multiply(left.Vector, right.Vector);
+
             if (left.Type == VariantType.Vector2 && right.Type == VariantType.Scalar)
                 return left.Vector2 * right.Scalar;
+            
+            if (left.Type == VariantType.Vector && right.Type == VariantType.Scalar)
+                return left.Vector * right.Scalar;
+            
+            if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
+                return left.Vector * right.Double;
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Vector3)
                 return left.Vector3 * right.Vector3;
+            
+            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
+                return Vector3D.Multiply(left.Vector3D, right.Vector3D);
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Scalar)
                 return left.Vector3 * right.Scalar;
+            
+            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Scalar)
+                return Vector3D.Multiply(left.Vector3D, right.Scalar);
 
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Vector4)
                 return left.Vector4 * right.Vector4;
@@ -436,14 +524,32 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Vector2 && right.Type == VariantType.Vector2)
                 return left.Vector2 / right.Vector2;
 
+            if (left.Type == VariantType.Vector && right.Type == VariantType.Vector)
+                return Vector.Divide(left.Vector, right.Vector);
+
             if (left.Type == VariantType.Vector2 && right.Type == VariantType.Scalar)
                 return left.Vector2 / right.Scalar;
+            
+            if (left.Type == VariantType.Vector && right.Type == VariantType.Scalar)
+                return left.Vector / right.Scalar;
+            
+            if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
+                return left.Vector / right.Scalar;
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Vector3)
                 return left.Vector3 / right.Vector3;
 
+            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
+                return Vector3D.Divide(left.Vector3D, right.Vector3D);
+
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Scalar)
                 return left.Vector3 / right.Scalar;
+
+            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Scalar)
+                return Avalonia.Vector3D.Divide(left.Vector3D, right.Scalar);
+            
+            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Double)
+                return Avalonia.Vector3D.Divide(left.Vector3D, right.Double);
 
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Vector4)
                 return left.Vector4 / right.Vector4;
@@ -471,9 +577,15 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (Type == VariantType.Vector2)
                 return Vector2 == right.Vector2;
-
+            
+            if (Type == VariantType.Vector)
+                return Vector == right.Vector;
+            
             if (Type == VariantType.Vector3)
                 return Vector3 == right.Vector3;
+            
+            if (Type == VariantType.Vector3D)
+                return Vector3D == right.Vector3D;
 
             if (Type == VariantType.Vector4)
                 return Vector4 == right.Vector4;
@@ -571,6 +683,11 @@ namespace Avalonia.Rendering.Composition.Expressions
                     res = (T) (object) Scalar;
                     return true;
                 }
+                if (Type == VariantType.Double)
+                {
+                    res = (T)(object)Scalar;
+                    return true;
+                }
             }
             
             if (typeof(T) == typeof(double))
@@ -578,6 +695,12 @@ namespace Avalonia.Rendering.Composition.Expressions
                 if (Type == VariantType.Double)
                 {
                     res = (T) (object) Double;
+                    return true;
+                }
+
+                if (Type == VariantType.Scalar)
+                {
+                    res = (T)(object)(float)Double;
                     return true;
                 }
             }
@@ -589,6 +712,27 @@ namespace Avalonia.Rendering.Composition.Expressions
                     res = (T) (object) Vector2;
                     return true;
                 }
+
+                if (Type == VariantType.Vector)
+                {
+                    res = (T) (object) Vector.ToVector2();
+                    return true;
+                }
+            }
+            
+            if (typeof(T) == typeof(Vector))
+            {
+                if (Type == VariantType.Vector)
+                {
+                    res = (T) (object) Vector;
+                    return true;
+                }
+
+                if (Type == VariantType.Vector2)
+                {
+                    res = (T)(object)new Vector(Vector2);
+                    return true;
+                }
             }
 
             if (typeof(T) == typeof(Vector3))
@@ -596,6 +740,26 @@ namespace Avalonia.Rendering.Composition.Expressions
                 if (Type == VariantType.Vector3)
                 {
                     res = (T) (object) Vector3;
+                    return true;
+                }
+                if (Type == VariantType.Vector3D)
+                {
+                    res = (T) (object) Vector3D.ToVector3();
+                    return true;
+                }
+            }
+            
+            if (typeof(T) == typeof(Vector3D))
+            {
+                if (Type == VariantType.Vector3D)
+                {
+                    res = (T) (object) Vector3D;
+                    return true;
+                }
+                
+                if (Type == VariantType.Vector3)
+                {
+                    res = (T)(object)new Vector3D(Vector3);
                     return true;
                 }
             }
@@ -668,9 +832,15 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (typeof(T) == typeof(Vector2))
                 return (Vector2) (object) v;
+            
+            if (typeof(T) == typeof(Vector))
+                return (Vector) (object) v;
 
             if (typeof(T) == typeof(Vector3))
                 return (Vector3) (object) v;
+            
+            if (typeof(T) == typeof(Vector3D))
+                return (Vector3D) (object) v;
 
             if (typeof(T) == typeof(Vector4))
                 return (Vector4) (object) v;
@@ -709,8 +879,12 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return Double.ToString(CultureInfo.InvariantCulture);
             if (Type == VariantType.Vector2)
                 return Vector2.ToString();
+            if (Type == VariantType.Vector)
+                return Vector.ToString();
             if (Type == VariantType.Vector3)
                 return Vector3.ToString();
+            if (Type == VariantType.Vector3D)
+                return Vector3D.ToString();
             if (Type == VariantType.Vector4)
                 return Vector4.ToString();
             if (Type == VariantType.Quaternion)

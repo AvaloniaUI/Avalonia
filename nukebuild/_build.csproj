@@ -15,7 +15,7 @@
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
@@ -34,6 +34,12 @@
 	<EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe"></EmbeddedResource>
 	<EmbeddedResource Include="../build/avalonia.snk"></EmbeddedResource>
     <Compile Remove="il-repack\ILRepack\Application.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\dirs.proj">
+      <Link>dirs.proj</Link>
+    </Content>
   </ItemGroup>
     
     

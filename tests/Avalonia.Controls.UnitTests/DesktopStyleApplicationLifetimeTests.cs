@@ -5,6 +5,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -201,8 +202,7 @@ namespace Avalonia.Controls.UnitTests
         public void Impl_Closing_Should_Remove_Window_From_OpenWindows()
         {
             var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(() => RendererMocks.CreateRenderer().Object);
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             windowImpl.SetupProperty(x => x.Closed);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);

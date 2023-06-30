@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Rendering
@@ -8,6 +9,7 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Defines the interface for a renderer.
     /// </summary>
+    [PrivateApi]
     public interface IRenderer : IDisposable
     {
         /// <summary>
@@ -29,31 +31,7 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="visual">The visual.</param>
         void AddDirty(Visual visual);
-
-        /// <summary>
-        /// Hit tests a location to find the visuals at the specified point.
-        /// </summary>
-        /// <param name="p">The point, in client coordinates.</param>
-        /// <param name="root">The root of the subtree to search.</param>
-        /// <param name="filter">
-        /// A filter predicate. If the predicate returns false then the visual and all its
-        /// children will be excluded from the results.
-        /// </param>
-        /// <returns>The visuals at the specified point, topmost first.</returns>
-        IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter);
-
-        /// <summary>
-        /// Hit tests a location to find first visual at the specified point.
-        /// </summary>
-        /// <param name="p">The point, in client coordinates.</param>
-        /// <param name="root">The root of the subtree to search.</param>
-        /// <param name="filter">
-        /// A filter predicate. If the predicate returns false then the visual and all its
-        /// children will be excluded from the results.
-        /// </param>
-        /// <returns>The visual at the specified point, topmost first.</returns>
-        Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool> filter);
-
+        
         /// <summary>
         /// Informs the renderer that the z-ordering of a visual's children has changed.
         /// </summary>
@@ -88,11 +66,39 @@ namespace Avalonia.Rendering
         public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType);
     }
     
-    public interface IRendererWithCompositor : IRenderer
+    internal interface IRendererWithCompositor : IRenderer
     {
         /// <summary>
         /// The associated <see cref="Avalonia.Rendering.Composition.Compositor"/> object
         /// </summary>
         Compositor Compositor { get; }
+    }
+
+    [PrivateApi]
+    public interface IHitTester
+    {
+        /// <summary>
+        /// Hit tests a location to find the visuals at the specified point.
+        /// </summary>
+        /// <param name="p">The point, in client coordinates.</param>
+        /// <param name="root">The root of the subtree to search.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visuals at the specified point, topmost first.</returns>
+        IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter);
+
+        /// <summary>
+        /// Hit tests a location to find first visual at the specified point.
+        /// </summary>
+        /// <param name="p">The point, in client coordinates.</param>
+        /// <param name="root">The root of the subtree to search.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visual at the specified point, topmost first.</returns>
+        Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool> filter);
     }
 }

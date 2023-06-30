@@ -17,6 +17,12 @@ namespace Avalonia.Controls
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
+        /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> BringIntoViewOnFocusChangeProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(nameof(BringIntoViewOnFocusChange), true);
+
+        /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, Size> ExtentProperty =
@@ -172,6 +178,26 @@ namespace Avalonia.Controls
         {
             add => AddHandler(ScrollChangedEvent, value);
             remove => RemoveHandler(ScrollChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the <see cref="ScrollViewer"/> uses a
+        /// bring-into-view scroll behavior when an item in the view gets focus.
+        /// </summary>
+        /// <value>
+        /// true to use a behavior that brings focused items into view. false to use a behavior
+        /// that focused items do not automatically scroll into view. The default is true.
+        /// </value>
+        /// <remarks>
+        /// <see cref="BringIntoViewOnFocusChange"/> can either be set explicitly on a
+        /// <see cref="ScrollViewer"/>, or a the attached 
+        /// <code>ScrollViewer.BringIntoViewOnFocusChange</code> property can be set on an element
+        /// that hosts a <see cref="ScrollViewer"/>.
+        /// </remarks>
+        public bool BringIntoViewOnFocusChange
+        {
+            get => GetValue(BringIntoViewOnFocusChangeProperty);
+            set => SetValue(BringIntoViewOnFocusChangeProperty, value);
         }
 
         /// <summary>
@@ -401,6 +427,26 @@ namespace Avalonia.Controls
         public void ScrollToEnd() => SetCurrentValue(OffsetProperty, new Vector(double.NegativeInfinity, double.PositiveInfinity));
 
         /// <summary>
+        /// Gets the value of the <see cref="BringIntoViewOnFocusChange"/> attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static bool GetBringIntoViewOnFocusChange(Control control)
+        {
+            return control.GetValue(BringIntoViewOnFocusChangeProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the <see cref="BringIntoViewOnFocusChange"/> attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetBringIntoViewOnFocusChange(Control control, bool value)
+        {
+            control.SetValue(BringIntoViewOnFocusChangeProperty, value);
+        }
+
+        /// <summary>
         /// Gets the value of the HorizontalScrollBarVisibility attached property.
         /// </summary>
         /// <param name="control">The control to read the value from.</param>
@@ -598,7 +644,7 @@ namespace Avalonia.Controls
             (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             _childSubscription?.Dispose();
             _childSubscription = null;
@@ -694,6 +740,14 @@ namespace Avalonia.Controls
             {
                 CoerceValue(OffsetProperty);
             }
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (e.Source != this && e.Source is Control c && BringIntoViewOnFocusChange)
+                c.BringIntoView();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

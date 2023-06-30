@@ -1392,9 +1392,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public void Toggle(int index) => UpdateSelection(index, true, false, true);
         }
 
-        private class TestSelectorWithContainers : TestSelector, IStyleable
+        private class TestSelectorWithContainers : TestSelector
         {
-            Type IStyleable.StyleKey => typeof(TestSelector);
+            protected override Type StyleKeyOverride => typeof(TestSelector);
 
             protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
             {

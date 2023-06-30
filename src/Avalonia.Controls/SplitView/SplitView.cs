@@ -22,15 +22,15 @@ namespace Avalonia.Controls
     [PseudoClasses(pcLightDismiss)]
     public class SplitView : ContentControl
     {
-        protected const string pcOpen = ":open";
-        protected const string pcClosed = ":closed";
-        protected const string pcCompactOverlay = ":compactoverlay";
-        protected const string pcCompactInline = ":compactinline";
-        protected const string pcOverlay = ":overlay";
-        protected const string pcInline = ":inline";
-        protected const string pcLeft = ":left";
-        protected const string pcRight = ":right";
-        protected const string pcLightDismiss = ":lightDismiss";
+        private const string pcOpen = ":open";
+        private const string pcClosed = ":closed";
+        private const string pcCompactOverlay = ":compactoverlay";
+        private const string pcCompactInline = ":compactinline";
+        private const string pcOverlay = ":overlay";
+        private const string pcInline = ":inline";
+        private const string pcLeft = ":left";
+        private const string pcRight = ":right";
+        private const string pcLightDismiss = ":lightDismiss";
 
         /// <summary>
         /// Defines the <see cref="CompactPaneLength"/> property
@@ -279,7 +279,7 @@ namespace Avalonia.Controls
             remove => RemoveHandler(PaneOpeningEvent, value);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(ContentPresenter presenter)
         {
             var result = base.RegisterContentPresenter(presenter);
 

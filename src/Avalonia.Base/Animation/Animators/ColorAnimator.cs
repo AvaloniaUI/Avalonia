@@ -12,7 +12,7 @@ namespace Avalonia.Animation.Animators
     /// Animator that interpolates <see cref="Color"/> through 
     /// gamma sRGB color space for better visual result.
     /// </summary>
-    public class ColorAnimator : Animator<Color>
+    internal class ColorAnimator : Animator<Color>
     {
         /// <summary>
         /// Opto-electronic conversion function for the sRGB color space.

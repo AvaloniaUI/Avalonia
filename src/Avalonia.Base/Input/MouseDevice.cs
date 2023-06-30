@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Reactive;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
+using Avalonia.Input.GestureRecognizers;
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
@@ -11,6 +15,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Represents a mouse device.
     /// </summary>
+    [PrivateApi]
     public class MouseDevice : IMouseDevice, IDisposable
     {
         private int _clickCount;
@@ -124,9 +129,10 @@ namespace Avalonia.Input
             if (source != null)
             {
                 _pointer.Capture(source);
-                if (source != null)
+
+                var settings = ((IInputRoot?)(source as Interactive)?.GetVisualRoot())?.PlatformSettings;
+                if (settings is not null)
                 {
-                    var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
                     var doubleClickTime = settings.GetDoubleTapTime(PointerType.Mouse).TotalMilliseconds;
                     var doubleClickSize = settings.GetDoubleTapSize(PointerType.Mouse);
 
@@ -139,11 +145,12 @@ namespace Avalonia.Input
                     _lastClickTime = timestamp;
                     _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
-                    _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                    var e = new PointerPressedEventArgs(source, _pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
-                    source.RaiseEvent(e);
-                    return e.Handled;
                 }
+
+                _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
+                var e = new PointerPressedEventArgs(source, _pointer, (Visual)root, p, timestamp, properties, inputModifiers, _clickCount);
+                source.RaiseEvent(e);
+                return e.Handled;
             }
 
             return false;
@@ -156,16 +163,20 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
-            var source = _pointer.Captured ?? hitTest;
+            var source = _pointer.CapturedGestureRecognizer?.Target ?? _pointer.Captured ?? hitTest;
 
             if (source is object)
             {
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)root,
                     p, timestamp, properties, inputModifiers, intermediatePoints);
 
-                source.RaiseEvent(e);
+                if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                    gestureRecognizer.PointerMovedInternal(e);
+                else
+                    source.RaiseEvent(e);
                 return e.Handled;
             }
+
 
             return false;
         }
@@ -176,15 +187,19 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
-            var source = _pointer.Captured ?? hitTest;
+            var source = _pointer.CapturedGestureRecognizer?.Target ?? _pointer.Captured ?? hitTest;
 
             if (source is not null)
             {
                 var e = new PointerReleasedEventArgs(source, _pointer, (Visual)root, p, timestamp, props, inputModifiers,
                     _lastMouseDownButton);
 
-                source?.RaiseEvent(e);
+                if (_pointer.CapturedGestureRecognizer is GestureRecognizer gestureRecognizer)
+                    gestureRecognizer.PointerReleasedInternal(e);
+                else
+                    source?.RaiseEvent(e);
                 _pointer.Capture(null);
+                _pointer.CaptureGestureRecognizer(null);
                 _lastMouseDownButton = default;
                 return e.Handled;
             }

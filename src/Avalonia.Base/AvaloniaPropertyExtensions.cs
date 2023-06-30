@@ -7,7 +7,7 @@ namespace Avalonia
     /// <summary>
     /// Extensions for <see cref="AvaloniaProperty"/>.
     /// </summary>
-    public static class AvaloniaPropertyExtensions
+    internal static class AvaloniaPropertyExtensions
     {
         /// <summary>
         /// Checks if values of given property can affect rendering (via <see cref="IAffectsRender"/>).

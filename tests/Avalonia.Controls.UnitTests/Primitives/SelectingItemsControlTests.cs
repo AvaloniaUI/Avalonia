@@ -28,7 +28,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public partial class SelectingItemsControlTests
+    public partial class SelectingItemsControlTests : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
 
@@ -1234,15 +1234,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = new[] { "Foo", "Bar", "Baz " },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
-                _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
+
+                var container = target.ContainerFromIndex(1)!;
+                _helper.Down(container);
 
                 var panel = target.Presenter.Panel;
 
-                Assert.Equal(
-                    KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
-                    panel.Children[1]);
+                Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
             }
         }
 
@@ -1258,7 +1258,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = items,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
                 _helper.Down(target.Presenter.Panel.Children[1]);
@@ -1355,7 +1355,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
                 _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
@@ -1373,7 +1373,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     ItemsSource = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
                 _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
@@ -1536,7 +1536,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Prepare(target);
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
@@ -1561,7 +1561,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
             Prepare(target);
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
@@ -1632,7 +1632,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             root.Child = null;
             target.SelectedIndex = 1;
             root.Child = target;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
@@ -1689,11 +1689,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var raised = false;
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.False(raised);
 
             target.AutoScrollToSelectedItem = true;
-
+            Threading.Dispatcher.UIThread.RunJobs();
             Assert.True(raised);
         }
 
@@ -2141,7 +2141,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.RaiseEvent(new TextInputEventArgs
                 {
                     RoutedEvent = InputElement.TextInputEvent,
-                    Device = KeyboardDevice.Instance, 
                     Text = "Foo"
                 });
 
@@ -2152,12 +2151,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.RaiseEvent(new TextInputEventArgs
                 {
                     RoutedEvent = InputElement.TextInputEvent, 
-                    Device = KeyboardDevice.Instance, 
                     Text = "Foo"
                 });
 
                 Assert.Equal(items[0], target.SelectedItem);
             }
+        }
+
+        [Fact]
+        public void Does_Not_Write_To_Bound_SelectedItem_When_DataContext_Changes()
+        {
+            // Issue #9438.
+            var vm1 = new SelectionViewModel();
+            vm1.Items.Add("foo");
+            vm1.Items.Add("bar");
+            vm1.SelectedItem = "bar";
+
+            var vm2 = new SelectionViewModel();
+            vm2.Items.Add("foo");
+            vm2.Items.Add("bar");
+            vm2.SelectedItem = "bar";
+
+            var target = new SelectingItemsControl
+            {
+                DataContext = vm1,
+                [!ItemsControl.ItemsSourceProperty] = new Binding("Items"),
+                [!SelectingItemsControl.SelectedItemProperty] = new Binding("SelectedItem"),
+                Template = Template(),
+            };
+
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            var selectedItemChangedRaised = 0;
+            vm2.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(vm2.SelectedItem))
+                {
+                    ++selectedItemChangedRaised;
+                }
+            };
+
+            target.DataContext = vm2;
+
+            Assert.Equal(0, selectedItemChangedRaised);
         }
 
         private static IDisposable Start()
@@ -2238,6 +2275,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private class SelectionViewModel : NotifyingBase
         {
             private int _selectedIndex = -1;
+            private object _selectedItem;
 
             public SelectionViewModel()
             {
@@ -2255,6 +2293,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }
             }
 
+            public object SelectedItem
+            {
+                get => _selectedItem;
+                set
+                {
+                    _selectedItem = value;
+                    RaisePropertyChanged();
+                }
+            }
+
             public ObservableCollection<string> Items { get; }
             public ObservableCollection<string> SelectedItems { get; }
         }
@@ -2267,6 +2315,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
+            public new static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+                SelectingItemsControl.SelectedItemsProperty;
+
             public TestSelector()
             {
                 

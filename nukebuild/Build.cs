@@ -312,7 +312,7 @@ partial class Build : NukeBuild
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? Execute<Build>(x => x.RunToolsTests)
+            ? Execute<Build>(x => x.Package)
             : Execute<Build>(x => x.RunTests);
 
 }

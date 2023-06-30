@@ -659,7 +659,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                result = Minimum;
+                // if Minimum is set we set value to Minimum on Increment. 
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                result = IsSet(MinimumProperty) ? Minimum : 0;
             }
 
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));
@@ -678,7 +680,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                result = Maximum;
+                // if Maximum is set we set value to Maximum on decrement. 
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                result = IsSet(MaximumProperty) ? Maximum : 0;
             }
 
             SetCurrentValue(ValueProperty, MathUtilities.Clamp(result, Minimum, Maximum));

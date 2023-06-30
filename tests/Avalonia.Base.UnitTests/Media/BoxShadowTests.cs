@@ -41,5 +41,13 @@ namespace Avalonia.Base.UnitTests.Media
                     Assert.Equal(Colors.Red, parsed.Color);
                 }
         }
+
+        [Fact]
+        public void BoxShadows_Should_ToString()
+        {
+            const string source = "-20 -20 60 #CCFFFFFF, 20 20 60 #33000000";
+            var parsed = BoxShadows.Parse(source);
+            Assert.Equal(source, parsed.ToString(), true);
+        }
     }
 }

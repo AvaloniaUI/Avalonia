@@ -107,25 +107,21 @@ namespace Avalonia.Direct2D1.RenderTests
             
             var timer = new ManualRenderTimer();
 
-            var compositor = new Compositor(new RenderLoop(timer, Dispatcher.UIThread), null);
+            var compositor = new Compositor(new RenderLoop(timer), null, true,
+                new DispatcherCompositorScheduler(), true);
             using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
             {
                 var root = new TestRenderRoot(dpiVector.X / 96, null!);
                 using (var renderer = new CompositingRenderer(root, compositor, () => new[]
                        {
                            new BitmapFramebufferSurface(writableBitmap)
-                       }) { RenderOnlyOnRenderThread = false })
+                       }))
                 {
                     root.Initialize(renderer, target);
                     renderer.Start();
                     Dispatcher.UIThread.RunJobs();
                     timer.TriggerTick();
                 }
-
-                // Free pools
-                for (var c = 0; c < 11; c++)
-                    foreach (var dp in Dispatcher.SnapshotTimersForUnitTests())
-                        dp.ForceFire();
                 writableBitmap.Save(compositedPath);
             }
         }

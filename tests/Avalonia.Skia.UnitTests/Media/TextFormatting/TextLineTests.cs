@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
-using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
@@ -708,6 +706,28 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_CharacterHit_For_Distance_With_TextEndOfLine()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource("Hello World", defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 1000,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(1000);
+
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
+                Assert.Equal(1, characterHit.TrailingLength);
+            }
+        }
+
         private class MixedTextBufferTextSource : ITextSource
         {
             public TextRun? GetTextRun(int textSourceIndex)
@@ -1046,6 +1066,82 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var firstBounds = textBounds.First();
 
                 Assert.True(firstBounds.TextRunBounds.Count > 0);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_Bidi()
+        {
+            var text = "אבגדה 12345 ABCDEF אבגדה";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var bounds = textLine.GetTextBounds(6, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(0, bounds[0].Rectangle.Left);
+
+                bounds = textLine.GetTextBounds(5, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(36.005859374999993, bounds[0].Rectangle.Left);
+
+                bounds = textLine.GetTextBounds(0, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(71.165859375, bounds[0].Rectangle.Right);
+
+                bounds = textLine.GetTextBounds(11, 1);
+
+                Assert.Equal(1, bounds.Count);
+
+                Assert.Equal(71.165859375, bounds[0].Rectangle.Left);
+
+                bounds = textLine.GetTextBounds(0, 25);
+
+                Assert.Equal(4, bounds.Count);
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_Bidi_2()
+        {
+            var text = "אבג ABC אבג 123";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var bounds = textLine.GetTextBounds(0, text.Length);
+
+                Assert.Equal(4, bounds.Count);
+
+                var right = bounds.Last().Rectangle.Right;
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, right);
             }
         }
 

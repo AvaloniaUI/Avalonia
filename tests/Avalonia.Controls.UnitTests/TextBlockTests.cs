@@ -30,40 +30,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new TextBlock()
-            {
-                Background = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Background).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
-        public void Changing_Foreground_Brush_Color_Should_Invalidate_Visual()
-        {
-            var target = new TextBlock()
-            {
-                Foreground = new SolidColorBrush(Colors.Red),
-            };
-
-            var root = new TestRoot(target);
-            var renderer = Mock.Get(root.Renderer);
-            renderer.Invocations.Clear();
-
-            ((SolidColorBrush)target.Foreground).Color = Colors.Green;
-
-            renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
         public void Changing_InlinesCollection_Should_Invalidate_Measure()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -146,6 +112,39 @@ namespace Avalonia.Controls.UnitTests
                 target.Inlines = new InlineCollection { run };
 
                 Assert.Equal(target, run.Parent);
+            }
+        }
+
+        [Fact]
+        public void Changing_Inlines_Should_Reset_InlineUIContainer_VisualParent_On_Measure()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock();
+
+                var control = new Control();
+
+                var run = new InlineUIContainer(control);
+
+                target.Inlines.Add(run);
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(target.IsMeasureValid);
+
+                Assert.Equal(target, control.VisualParent);
+
+                target.Inlines = null;
+
+                Assert.Null(run.Parent);
+
+                target.Inlines = new InlineCollection { new Run("Hello World") };
+
+                Assert.Null(run.Parent);
+
+                target.Measure(Size.Infinity);
+
+                Assert.Null(control.VisualParent);
             }
         }
 

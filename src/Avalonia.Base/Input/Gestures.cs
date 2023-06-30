@@ -182,7 +182,7 @@ namespace Avalonia.Input
                     s_lastPressPoint = e.GetPosition((Visual)ev.Source);
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
-                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    var settings = ((IInputRoot?)visual.GetVisualRoot())?.PlatformSettings;
 
                     if (settings != null)
                     {
@@ -221,7 +221,7 @@ namespace Avalonia.Input
                     e.Source is Interactive i)
                 {
                     var point = e.GetCurrentPoint((Visual)target);
-                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
                     var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                     var tapRect = new Rect(s_lastPressPoint, new Size())
                         .Inflate(new Thickness(tapSize.Width, tapSize.Height));
@@ -260,10 +260,10 @@ namespace Avalonia.Input
                 var e = (PointerEventArgs)ev;
                 if (s_lastPress.TryGetTarget(out var target))
                 {
-                    if (e.Pointer == s_lastPointer)
+                    if (e.Pointer == s_lastPointer && ev.Source is Interactive i)
                     {
                         var point = e.GetCurrentPoint((Visual)target);
-                        var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                        var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
                         var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                         var tapRect = new Rect(s_lastPressPoint, new Size())
                             .Inflate(new Thickness(tapSize.Width, tapSize.Height));
@@ -273,7 +273,7 @@ namespace Avalonia.Input
                             return;
                         }
 
-                        if (s_isHolding && ev.Source is Interactive i)
+                        if (s_isHolding)
                         {
                             i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type));
                         }

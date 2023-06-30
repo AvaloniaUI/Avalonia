@@ -144,8 +144,8 @@ public partial class CompositionPage : UserControl
         {
             if(_solidVisual == null)
                 return;
-            _solidVisual.Size = new Vector2((float)v.Bounds.Width / 3, (float)v.Bounds.Height / 3);
-            _solidVisual.Offset = new Vector3((float)v.Bounds.Width / 3, (float)v.Bounds.Height / 3, 0);
+            _solidVisual.Size = new (v.Bounds.Width / 3, v.Bounds.Height / 3);
+            _solidVisual.Offset = new (v.Bounds.Width / 3, v.Bounds.Height / 3, 0);
         }
         v.AttachedToVisualTree += delegate
         {
@@ -164,7 +164,7 @@ public partial class CompositionPage : UserControl
             animation.Direction = PlaybackDirection.Alternate;
             _solidVisual.StartAnimation("Color", animation);
 
-            _solidVisual.AnchorPoint = new Vector2(0, 0);
+            _solidVisual.AnchorPoint = new (0, 0);
 
             var scale = _solidVisual.Compositor.CreateVector3KeyFrameAnimation();
             scale.Duration = TimeSpan.FromSeconds(5);
@@ -195,8 +195,8 @@ public partial class CompositionPage : UserControl
             if (_customVisual == null)
                 return;
             var h = (float)Math.Min(v.Bounds.Height, v.Bounds.Width / 3);
-            _customVisual.Size = new Vector2((float)v.Bounds.Width, h);
-            _customVisual.Offset = new Vector3(0, (float)(v.Bounds.Height - h) / 2, 0);
+            _customVisual.Size = new (v.Bounds.Width, h);
+            _customVisual.Offset = new (0, (v.Bounds.Height - h) / 2, 0);
         }
         v.AttachedToVisualTree += delegate
         {

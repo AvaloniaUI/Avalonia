@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -57,22 +56,13 @@ namespace Avalonia.FreeDesktop
             WatchAsync();
         }
 
-        private void InitializeSNWService()
-        {
-            if (_connection is null || _isDisposed)
-                return;
-
-            _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
-            _serviceConnected = true;
-        }
-
         private async void WatchAsync()
         {
             try
             {
-                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item2));
+                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item1, x.Item3));
                 var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
-                OnNameChange(nameOwner);
+                OnNameChange("org.kde.StatusNotifierWatcher", nameOwner);
             }
             catch
             {
@@ -82,15 +72,15 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private void OnNameChange(string? newOwner)
+        private void OnNameChange(string name, string? newOwner)
         {
-            if (_isDisposed)
+            if (_isDisposed || _connection is null || name != "org.kde.StatusNotifierWatcher")
                 return;
 
             if (!_serviceConnected & newOwner is not null)
             {
                 _serviceConnected = true;
-                InitializeSNWService();
+                _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
 
                 DestroyTrayIcon();
 
@@ -182,8 +172,11 @@ namespace Avalonia.FreeDesktop
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed)
+            if (_isDisposed || !_serviceConnected)
+            {
+                _isVisible = visible;
                 return;
+            }
 
             switch (visible)
             {

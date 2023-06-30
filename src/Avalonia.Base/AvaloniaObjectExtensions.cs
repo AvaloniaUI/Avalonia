@@ -334,7 +334,7 @@ namespace Avalonia
         /// <typeparamref name="TTarget"/>.
         /// </summary>
         /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
-        /// /// <typeparam name="TValue">The type of the property..</typeparam>
+        /// <typeparam name="TValue">The type of the property.</typeparam>
         /// <param name="observable">The property changed observable.</param>
         /// <param name="action">
         /// The method to call. The parameters are the sender and the event args.

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -236,7 +238,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            FocusManager.Instance?.Focus(treeViewItem, NavigationMethod.Directional);
+                            treeViewItem.Focus(NavigationMethod.Directional);
                         }
 
                         return true;
@@ -286,6 +288,30 @@ namespace Avalonia.Controls
             {
                 SetCurrentValue(IsExpandedProperty, !IsExpanded);
                 e.Handled = true;
+            }
+        }
+
+        private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsViewCollectionChanged(sender, e);
+
+            if (_treeView is null)
+                return;
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var i in e.OldItems!)
+                        _treeView.SelectedItems.Remove(i);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    foreach (var i in GetRealizedContainers())
+                    {
+                        if (i is TreeViewItem tvi && tvi.IsSelected)
+                            _treeView.SelectedItems.Remove(i.DataContext);
+                    }
+                    break;
             }
         }
 

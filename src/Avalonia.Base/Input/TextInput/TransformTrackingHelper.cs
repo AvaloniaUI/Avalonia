@@ -91,7 +91,7 @@ namespace Avalonia.Input.TextInput
             if(_queuedForUpdate)
                 return;
             _queuedForUpdate = true;
-            Dispatcher.UIThread.Post(UpdateMatrix, DispatcherPriority.Render);
+            Dispatcher.UIThread.Post(UpdateMatrix, DispatcherPriority.AfterRender);
         }
 
         private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)

@@ -15,7 +15,7 @@ namespace Avalonia.Animation.Animators
     /// redirect them to the properly registered
     /// animators in this class.
     /// </summary>
-    public class BaseBrushAnimator : Animator<IBrush?>
+    internal class BaseBrushAnimator : Animator<IBrush?>
     {
         private static readonly List<(Func<Type, bool> Match, Type AnimatorType, Func<IAnimator> AnimatorFactory)> _brushAnimators = new();
 

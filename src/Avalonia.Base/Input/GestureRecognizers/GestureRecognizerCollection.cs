@@ -6,29 +6,26 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Input.GestureRecognizers
 {
-    public class GestureRecognizerCollection : IReadOnlyCollection<IGestureRecognizer>, IGestureRecognizerActionsDispatcher
+    public class GestureRecognizerCollection : IReadOnlyCollection<GestureRecognizer>
     {
         private readonly IInputElement _inputElement;
-        private List<IGestureRecognizer>? _recognizers;
-        private Dictionary<IPointer, IGestureRecognizer>? _pointerGrabs;
-
+        private List<GestureRecognizer>? _recognizers;
 
         public GestureRecognizerCollection(IInputElement inputElement)
         {
             _inputElement = inputElement;
         }
 
-        public void Add(IGestureRecognizer recognizer)
+        public void Add(GestureRecognizer recognizer)
         {
             if (_recognizers == null)
             {
                 // We initialize the collection when the first recognizer is added
-                _recognizers = new List<IGestureRecognizer>();
-                _pointerGrabs = new Dictionary<IPointer, IGestureRecognizer>();
+                _recognizers = new List<GestureRecognizer>();
             }
 
             _recognizers.Add(recognizer);
-            recognizer.Initialize(_inputElement, this);
+            recognizer.Target = _inputElement;
 
             // Hacks to make bindings work
 
@@ -41,15 +38,14 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
 
-        static readonly List<IGestureRecognizer> s_Empty = new List<IGestureRecognizer>();
+        static readonly List<GestureRecognizer> s_Empty = new List<GestureRecognizer>();
 
-        public IEnumerator<IGestureRecognizer> GetEnumerator()
+        public IEnumerator<GestureRecognizer> GetEnumerator()
             => _recognizers?.GetEnumerator() ?? s_Empty.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public int Count => _recognizers?.Count ?? 0;
-
 
         internal bool HandlePointerPressed(PointerPressedEventArgs e)
         {
@@ -57,9 +53,7 @@ namespace Avalonia.Input.GestureRecognizers
                 return false;
             foreach (var r in _recognizers)
             {
-                if (e.Handled)
-                    break;
-                r.PointerPressed(e);
+                r.PointerPressedInternal(e);
             }
 
             return e.Handled;
@@ -69,17 +63,15 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (_recognizers == null)
                 return false;
-            if (_pointerGrabs!.TryGetValue(e.Pointer, out var capture))
+            var pointer = e.Pointer as Pointer;
+
+            foreach (var r in _recognizers)
             {
-                capture.PointerReleased(e);
+                if (pointer?.CapturedGestureRecognizer != null)
+                    break;
+
+                r.PointerReleasedInternal(e);
             }
-            else
-                foreach (var r in _recognizers)
-                {
-                    if (e.Handled)
-                        break;
-                    r.PointerReleased(e);
-                }
             return e.Handled;
         }
 
@@ -87,41 +79,16 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (_recognizers == null)
                 return false;
-            if (_pointerGrabs!.TryGetValue(e.Pointer, out var capture))
-            {
-                capture.PointerMoved(e);
-            }
-            else
-                foreach (var r in _recognizers)
-                {
-                    if (e.Handled)
-                        break;
-                    r.PointerMoved(e);
-                }
-            return e.Handled;
-        }
+            var pointer = e.Pointer as Pointer;
 
-        internal void HandlePointerCaptureLost(PointerCaptureLostEventArgs e)
-        {
-            if (_recognizers == null)
-                return;
-            _pointerGrabs!.Remove(e.Pointer);
             foreach (var r in _recognizers)
             {
-                r.PointerCaptureLost(e.Pointer);
-            }
-        }
+                if (pointer?.CapturedGestureRecognizer != null)
+                    break;
 
-        void IGestureRecognizerActionsDispatcher.Capture(IPointer pointer, IGestureRecognizer recognizer)
-        {
-            pointer.Capture(_inputElement);
-            _pointerGrabs![pointer] = recognizer;
-            foreach (var r in _recognizers!)
-            {
-                if (r != recognizer)
-                    r.PointerCaptureLost(pointer);
+                r.PointerMovedInternal(e);
             }
+            return e.Handled;
         }
-
     }
 }

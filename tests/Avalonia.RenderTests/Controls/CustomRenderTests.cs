@@ -141,7 +141,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         new Rect(control.Bounds.Size),
                         4);
 
-                    using (context.PushOpacity(0.5, control.Bounds))
+                    using (context.PushOpacity(0.5))
                     {
                         context.FillRectangle(
                             Brushes.Blue,

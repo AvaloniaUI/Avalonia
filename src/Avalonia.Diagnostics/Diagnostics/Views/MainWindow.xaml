@@ -15,6 +15,7 @@
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
+    <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/BrushEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
   </Window.Styles>
   <Window.KeyBindings>

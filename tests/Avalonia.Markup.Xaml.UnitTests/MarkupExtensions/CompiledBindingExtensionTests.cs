@@ -472,7 +472,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -694,7 +694,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -727,7 +727,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -760,7 +760,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+                target.Presenter.UpdateChild();
 
                 Assert.Equal(dataContext.StringProperty, ((TextBlock)target.Presenter.Child).Text);
             }
@@ -1690,7 +1690,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:MethodAsCommandDataContext'>
-    <Button Name='button' Command='{CompiledBinding Do}' CommandParameter='{CompiledBinding Parameter, Mode=OneWay}'/>
+    <Button Name='button' Command='{CompiledBinding Do}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
@@ -1795,7 +1795,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(123, comboBox.SelectedItem);
             }
         }
-        
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Should_Use_StringFormat_Without_Braces(bool compileBindings)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='{compileBindings}'>
+    <TextBlock Name='textBlock' Text='{{Binding DecimalValue, StringFormat=c2}}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext();
+                window.DataContext = dataContext;
+
+                Assert.Equal(string.Format("{0:c2}", TestDataContext.ExpectedDecimal)
+                    , textBlock.GetValue(TextBlock.TextProperty));
+            }
+        }
+
         static void Throws(string type, Action cb)
         {
             try
@@ -1891,7 +1917,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public static string StaticProperty => "World";
 
         public ListItemCollectionView<int> GenericProperty { get; } = new();
-        
+
+        public const decimal ExpectedDecimal = 15.756m;
+        public decimal DecimalValue { get; set; } = ExpectedDecimal;
+
         public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
             private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
@@ -1963,7 +1992,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Metadata.DependsOn(nameof(Parameter))]
         public bool CanDo(object parameter)
         {
-            return ReferenceEquals(null, parameter) == false;
+            return ReferenceEquals(null, Parameter) == false;
         }
     }
 

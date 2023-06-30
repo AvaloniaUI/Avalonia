@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -136,8 +137,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 // The user has resized the window, so we can no longer auto-size.
@@ -154,8 +154,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 bool raised = false;
                 var target = new TestTopLevel(impl.Object);
@@ -172,8 +171,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 var target = new TestTopLevel(impl.Object);
                 var raised = 0;
@@ -203,8 +201,7 @@ namespace Avalonia.Controls.UnitTests
 
             using (UnitTestApplication.Start(services))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 var target = new TestTopLevel(impl.Object);
 
@@ -225,8 +222,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
                 var target = new TestTopLevel(impl.Object);
                 var child = new TestTopLevel(impl.Object);
 
@@ -243,8 +239,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
                 var target = new TestTopLevel(impl.Object);
                 var raised = false;
 
@@ -260,8 +255,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = CreateMockTopLevelImpl();
-                impl.SetupAllProperties();
+                var impl = CreateMockTopLevelImpl(true);
 
                 var layoutManager = new Mock<ILayoutManager>();
                 var target = new TestTopLevel(impl.Object, layoutManager.Object);
@@ -320,12 +314,14 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(bool setupProperties = false)
         {
-            var renderer = new Mock<ITopLevelImpl>();
-            renderer.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
-                .Returns(RendererMocks.CreateRenderer().Object);
-            return renderer;
+            var topLevel = new Mock<ITopLevelImpl>();
+            if (setupProperties)
+                topLevel.SetupAllProperties();
+            topLevel.Setup(x => x.RenderScaling).Returns(1);
+            topLevel.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            return topLevel;
         }
 
         private class TestTopLevel : TopLevel
@@ -339,7 +335,7 @@ namespace Avalonia.Controls.UnitTests
                 _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
-            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
     }
 }

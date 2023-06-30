@@ -157,7 +157,7 @@ namespace Avalonia.Base.UnitTests
         private class TestProperty<TValue> : AvaloniaProperty<TValue>
         {
             public TestProperty(string name, Type ownerType, TestMetadata metadata = null)
-                : base(name, ownerType, metadata ?? new TestMetadata())
+                : base(name, ownerType, ownerType, metadata ?? new TestMetadata())
             {
             }
 
