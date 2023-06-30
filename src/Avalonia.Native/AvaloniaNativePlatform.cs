@@ -123,20 +123,18 @@ namespace Avalonia.Native
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
 
             AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
-            
-            if (_options.UseGpu)
-            {
-                try
-                {
-                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
 
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
+            // TODO: add software and metal support via RenderingMode options param
+            try
+            {
+                _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IPlatformGraphics>().ToConstant(_platformGl);
+
+            }
+            catch (Exception)
+            {
+                // ignored
             }
             
             Compositor = new Compositor(_platformGl, true);

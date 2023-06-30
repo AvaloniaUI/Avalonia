@@ -67,11 +67,10 @@ namespace Avalonia.Native
         private PlatformBehaviorInhibition _platformBehaviorInhibition;
         private WindowTransparencyLevel _transparencyLevel = WindowTransparencyLevel.None;
 
-        internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativeGlPlatformGraphics glFeature)
+        internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativeGlPlatformGraphics glFeature)
         {
             _factory = factory;
-            _gpu = opts.UseGpu && glFeature != null;
+            _gpu = glFeature != null;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
