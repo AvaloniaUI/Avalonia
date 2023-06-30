@@ -56,6 +56,7 @@ namespace Avalonia.Wayland
                 .Bind<IDispatcherImpl>().ToConstant(new WlPlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
+                .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<ICursorFactory>().ToConstant(new WlCursorFactory(this))
                 .Bind<IClipboard>().ToConstant(WlDataHandler)
                 .Bind<IPlatformDragSource>().ToConstant(WlDataHandler)

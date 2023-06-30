@@ -12,7 +12,7 @@ namespace Avalonia.Wayland
     {
         private readonly AvaloniaWaylandPlatform _platform;
         private readonly WlInputDevice _wlInputDevice;
-        private readonly KeyboardDevice _keyboardDevice;
+        private readonly IKeyboardDevice _keyboardDevice;
         private readonly WlKeyboard _wlKeyboard;
         private readonly IntPtr _xkbContext;
 
@@ -43,7 +43,7 @@ namespace Avalonia.Wayland
             _wlKeyboard = platform.WlSeat.GetKeyboard();
             _wlKeyboard.Events = this;
             _xkbContext = LibXkbCommon.xkb_context_new(0);
-            _keyboardDevice = new KeyboardDevice();
+            _keyboardDevice = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
         }
 
         public uint KeyboardEnterSerial { get; private set; }
