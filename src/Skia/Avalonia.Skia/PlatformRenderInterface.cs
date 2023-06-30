@@ -7,6 +7,8 @@ using Avalonia.Platform;
 using Avalonia.Media.Imaging;
 using SkiaSharp;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Metal;
+using Avalonia.Skia.Metal;
 
 namespace Avalonia.Skia
 {
@@ -32,6 +34,8 @@ namespace Avalonia.Skia
                 return new SkiaContext(skiaGpu);
             if (graphicsContext is IGlContext gl)
                 return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes));
+            if (graphicsContext is IMetalDevice metal)
+                return new SkiaContext(new SkiaMetalGpu(metal, _maxResourceBytes));
             throw new ArgumentException("Graphics context of type is not supported");
         }
 

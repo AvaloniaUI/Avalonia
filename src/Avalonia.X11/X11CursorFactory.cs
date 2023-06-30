@@ -139,6 +139,8 @@ namespace Avalonia.X11
                     _pixelSize, _pixelSize.Width * 4,
                     new Vector(96, 96), PixelFormat.Bgra8888, null);
             }
+            
+            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
     }
 

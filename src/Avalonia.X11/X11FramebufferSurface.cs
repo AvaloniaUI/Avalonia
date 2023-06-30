@@ -27,5 +27,7 @@ namespace Avalonia.X11
             XUnlockDisplay(_display);
             return new X11Framebuffer(_display, _xid, _depth, width, height, _scaling());
         }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
     }
 }
