@@ -3,6 +3,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
@@ -200,9 +201,10 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnLoaded()
+        /// <inheritdoc/>
+        protected override void OnLoaded(RoutedEventArgs e)
         {
-            base.OnLoaded();
+            base.OnLoaded(e);
             UpdateKnobTransitions();
         }
 

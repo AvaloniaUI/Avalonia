@@ -15,7 +15,7 @@ namespace Avalonia.Native
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature,
-            IWindowBaseImpl parent) : base(factory, opts, glFeature)
+            IWindowBaseImpl parent) : base(factory, glFeature)
         {
             _opts = opts;
             _glFeature = glFeature;

@@ -10,11 +10,17 @@ internal class ColorPaletteResourcesCollection : AvaloniaDictionary<ThemeVariant
     public ColorPaletteResourcesCollection() : base(2)
     {
         this.ForEachItem(
-            (_, x) =>
+            (key, x) =>
             {
                 if (Owner is not null)
                 {
                     x.PropertyChanged += Palette_PropertyChanged;
+                }
+
+                if (key != ThemeVariant.Dark && key != ThemeVariant.Light)
+                {
+                    throw new InvalidOperationException(
+                        $"{nameof(FluentTheme)}.{nameof(FluentTheme.Palettes)} only supports Light and Dark variants.");
                 }
             },
             (_, x) =>
@@ -30,9 +36,13 @@ internal class ColorPaletteResourcesCollection : AvaloniaDictionary<ThemeVariant
     public bool HasResources => Count > 0;
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
-        theme ??= ThemeVariant.Default;
-        if (base.TryGetValue(theme, out var paletteResources)
-            && paletteResources.TryGetResource(key, theme, out value))
+        if (theme == null || theme == ThemeVariant.Default)
+        {
+            theme = ThemeVariant.Light;
+        }
+
+        if (base.TryGetValue(theme, out var themePaletteResources)
+            && themePaletteResources.TryGetResource(key, theme, out value))
         {
             return true;
         }

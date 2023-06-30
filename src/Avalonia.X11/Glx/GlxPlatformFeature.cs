@@ -15,18 +15,6 @@ namespace Avalonia.X11.Glx
         IPlatformGraphicsContext IPlatformGraphics.CreateContext() => Display.CreateContext();
 
         public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
-
-        public static bool TryInitialize(X11Info x11, IList<GlVersion> glProfiles)
-        {
-            var feature = TryCreate(x11, glProfiles);
-            if (feature != null)
-            {
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(feature);
-                return true;
-            }
-
-            return false;
-        }
         
         public static GlxPlatformGraphics TryCreate(X11Info x11, IList<GlVersion> glProfiles)
         {

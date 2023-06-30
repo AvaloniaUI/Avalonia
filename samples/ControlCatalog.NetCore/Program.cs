@@ -110,8 +110,7 @@ namespace ControlCatalog.NetCore
             {
                 builder.With(new Win32PlatformOptions()
                 {
-                    UseLowLatencyDxgiSwapChain = true,
-                    UseWindowsUIComposition = false
+                    CompositionMode = new [] { Win32CompositionMode.LowLatencyDxgiSwapChain }
                 });
                 return builder.StartWithClassicDesktopLifetime(args);
             }
