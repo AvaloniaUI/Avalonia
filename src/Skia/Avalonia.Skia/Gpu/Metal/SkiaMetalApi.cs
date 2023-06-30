@@ -26,7 +26,7 @@ internal unsafe class SkiaMetalApi
         // Make sure that skia is loaded
         GC.KeepAlive(new SKPaint());
 
-        var dll = NativeLibraryEx.Load("libSkiaSharp");
+        var dll = NativeLibraryEx.Load("libSkiaSharp", typeof(SKPaint).Assembly);
 
         IntPtr address;
 
