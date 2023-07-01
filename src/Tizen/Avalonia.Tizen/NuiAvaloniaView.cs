@@ -13,7 +13,7 @@ using Window = Tizen.NUI.Window;
 
 namespace Avalonia.Tizen;
 
-public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurface, ITextInputMethodImpl
+public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurface, IFramebufferRenderTarget, ITextInputMethodImpl
 {
     private IntPtr _buffer;
 
@@ -31,7 +31,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     private readonly NuiAvaloniaViewTextEditable _textEditor;
 
     public IInputRoot InputRoot { get; set; }
-    public ITopLevelImpl TopLevelImpl => _topLevelImpl;
+    public TopLevelImpl TopLevelImpl => _topLevelImpl;
     public double Scaling => ScalingInfo.ScalingFactor;
     public Size ClientSize => new Size(Size.Width, Size.Height);
 
@@ -45,7 +45,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
 
     public NuiAvaloniaView()
     {
-        _textEditor = new NuiAvaloniaViewTextEditable();
+        _textEditor = new NuiAvaloniaViewTextEditable(this);
         Layout = new CustomLayout
         {
             SizeUpdated = OnResized
@@ -184,6 +184,11 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
 
     #region Framebuffer
 
+    public IFramebufferRenderTarget CreateFramebufferRenderTarget()
+    {
+        return this;
+    }
+
     public ILockedFramebuffer Lock()
     {
         var lockBuffer = new LockedFramebuffer(this);
@@ -268,8 +273,11 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         base.Dispose(disposing);
     }
 
-    public void SetClient(ITextInputMethodClient? client) => 
+    public void SetClient(TextInputMethodClient? client)
+    {
         _textEditor.SetClient(client);
+        //KeyInputFocus = true;
+    }
 
     public void SetCursorRect(Rect rect)
     {

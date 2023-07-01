@@ -6,6 +6,7 @@ public static class TizenApplicationExtensions
     {
         return builder
             .UseWindowingSubsystem(TizenPlatform.Initialize, "Tizen")
+            .UseStandardRuntimePlatformSubsystem()
             .UseSkia();
     }
 }

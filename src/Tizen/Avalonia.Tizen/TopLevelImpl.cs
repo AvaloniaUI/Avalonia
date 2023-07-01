@@ -4,10 +4,11 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
+using Avalonia.Tizen.Platform.Input;
 
 namespace Avalonia.Tizen;
 
-internal class TopLevelImpl : ITopLevelImpl
+public class TopLevelImpl : ITopLevelImpl
 {
     private readonly ITizenView _view;
 
@@ -109,5 +110,15 @@ internal class TopLevelImpl : ITopLevelImpl
         //}
 
         return null;
+    }
+
+    internal void TextInput(string text)
+    {
+        if (Input != null)
+        {
+            var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
+
+            Input(args);
+        }
     }
 }

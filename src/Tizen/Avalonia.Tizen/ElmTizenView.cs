@@ -147,21 +147,24 @@ public class ElmAvaloniaView : Widget, ITizenView, EglGlPlatformSurface.IEglWind
             // set the image callback; will be invoked when image is marked as dirty
             Evas.evas_object_image_pixels_get_callback_set(evasImage, redrawCallback, IntPtr.Zero);
 
-            if (!_isInitalised)
+            TizenThreadingInterface.MainloopContext.Post(_ =>
             {
-                EglPlatformGraphics.TryInitialize();
+                if (!_isInitalised)
+                {
+                    //EglPlatformGraphics.TryInitialize();
 
-                _isInitalised = true;
-                _topLevel.Prepare();
-                _topLevel.StartRendering();
-            }
-            else
-            {
-                _topLevelImpl?.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
-            }
+                    _isInitalised = true;
+                    _topLevel.Prepare();
+                    _topLevel.StartRendering();
+                }
+                else
+                {
+                    _topLevelImpl?.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
+                }
 
-            // repaint
-            Invalidate();
+                // repaint
+                Invalidate();
+            }, null);
         }
     }
 
@@ -240,7 +243,8 @@ public class ElmAvaloniaView : Widget, ITizenView, EglGlPlatformSurface.IEglWind
     {
         if (glSurface != IntPtr.Zero)
         {
-            _topLevelImpl.Compositor.Commit();
+            TizenThreadingInterface.MainloopContext.Post(_ =>
+                _topLevelImpl.Paint?.Invoke(new Rect(_topLevelImpl.ClientSize)), null);
         }
     }
 

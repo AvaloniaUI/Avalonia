@@ -29,6 +29,10 @@ public class ElmTizenApplication<TApp> : CoreUIApplication
     {
         base.OnCreate();
 
+#pragma warning disable CS8601 // Possible null reference assignment.
+        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
+#pragma warning restore CS8601 // Possible null reference assignment.
+
         _window = new Window("Avalonia");
         //_window.BackButtonPressed += OnBackButtonPressed;
         _window.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270 | DisplayRotation.Degree_90;
