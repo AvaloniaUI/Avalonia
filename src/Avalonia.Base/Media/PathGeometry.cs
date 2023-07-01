@@ -43,7 +43,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="pathData">The s.</param>
         /// <returns></returns>
-        public static new PathGeometry Parse(string pathData)
+        public new static PathGeometry Parse(string pathData)
         {
             var pathGeometry = new PathGeometry();
 
@@ -81,7 +81,7 @@ namespace Avalonia.Media
             set { SetValue(FillRuleProperty, value); }
         }
 
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var figures = Figures;
 

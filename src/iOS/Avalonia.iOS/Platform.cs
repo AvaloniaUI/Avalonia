@@ -16,6 +16,7 @@ namespace Avalonia
         public static AppBuilder UseiOS(this AppBuilder builder)
         {
             return builder
+                .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(iOS.Platform.Register, "iOS")
                 .UseSkia();
         }

@@ -715,8 +715,8 @@ namespace Avalonia.Controls
 
                 SetWindowStartupLocation(owner);
 
-                PlatformImpl?.Show(ShowActivated, false);
                 StartRendering();
+                PlatformImpl?.Show(ShowActivated, false);
                 OnOpened(EventArgs.Empty);
             }
         }
@@ -791,9 +791,8 @@ namespace Avalonia.Controls
 
                 SetWindowStartupLocation(owner);
 
-                PlatformImpl?.Show(ShowActivated, true);
-
                 StartRendering();
+                PlatformImpl?.Show(ShowActivated, true);
 
                 Observable.FromEventPattern(
                         x => Closed += x,

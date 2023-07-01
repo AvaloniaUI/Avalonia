@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -10,7 +10,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -25,83 +24,13 @@ namespace Avalonia
     {
         public static AppBuilder UseWin32(this AppBuilder builder)
         {
-            return builder.UseWindowingSubsystem(
+            return builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(
                 () => Win32.Win32Platform.Initialize(
                     AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions()),
                 "Win32");
         }
-    }
-
-    /// <summary>
-    /// Platform-specific options which apply to Windows.
-    /// </summary>
-    public class Win32PlatformOptions
-    {
-        /// <summary>
-        /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
-        /// </summary>
-        /// <remarks>
-        /// GPU rendering will not be enabled if this is set to false.
-        /// </remarks>
-        public bool? AllowEglInitialization { get; set; }
-
-        /// <summary>
-        /// Embeds popups to the window when set to true. The default value is false.
-        /// </summary>
-        public bool OverlayPopups { get; set; }
-
-        /// <summary>
-        /// Avalonia would try to use native Widows OpenGL when set to true. The default value is false.
-        /// </summary>
-        public bool UseWgl { get; set; }
-
-        public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
-        {
-            new GlVersion(GlProfileType.OpenGL, 4, 0),
-            new GlVersion(GlProfileType.OpenGL, 3, 2),
-        };
-
-        /// <summary>
-        /// Render Avalonia to a Texture inside the Windows.UI.Composition tree.
-        /// This setting is true by default.
-        /// </summary>
-        /// <remarks>
-        /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
-        /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
-        /// </remarks>
-        public bool UseWindowsUIComposition { get; set; } = true;
-
-        /// <summary>
-        /// When <see cref="UseWindowsUIComposition"/> enabled, create rounded corner blur brushes
-        /// If set to null the brushes will be created using default settings (sharp corners)
-        /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
-        /// </summary>
-        public float? CompositionBackdropCornerRadius { get; set; }
-
-        /// <summary>
-        /// When <see cref="UseLowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
-        /// Requires Feature Level 11_3 to be active, Windows 8.1+ Any Subversion. 
-        /// This is only recommended if low input latency is desirable, and there is no need for the transparency
-        /// and stylings / blurrings offered by <see cref="UseWindowsUIComposition"/><br/>
-        /// This is mutually exclusive with 
-        /// <see cref="UseWindowsUIComposition"/> which if active will override this setting.
-        /// This setting is false by default.
-        /// </summary>
-        public bool UseLowLatencyDxgiSwapChain { get; set; }
-
-        /// <summary>
-        /// Render directly on the UI thread instead of using a dedicated render thread.
-        /// Only applicable if both <see cref="UseWindowsUIComposition"/> and <see cref="UseLowLatencyDxgiSwapChain"/>
-        /// are false.
-        /// This setting is only recommended for interop with systems that must render on the UI thread, such as WPF.
-        /// This setting is false by default.
-        /// </summary>
-        public bool ShouldRenderOnUIThread { get; set; }
-        
-        /// <summary>
-        /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu
-        /// </summary>
-        public IPlatformGraphics? CustomPlatformGraphics { get; set; }
     }
 }
 
@@ -173,9 +102,23 @@ namespace Avalonia.Win32
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(NonPumpingWaitHelperImpl.Instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
-            
-            var platformGraphics = options.CustomPlatformGraphics
-                                   ?? Win32GlManager.Initialize();
+
+            IPlatformGraphics? platformGraphics;
+            if (options.CustomPlatformGraphics is not null)
+            {
+                if (options.CompositionMode?.Contains(Win32CompositionMode.RedirectionSurface) == false)
+                {
+                    throw new InvalidOperationException(
+                        $"{nameof(Win32PlatformOptions)}.{nameof(Win32PlatformOptions.CustomPlatformGraphics)} is only " +
+                        $"compatible with {nameof(Win32CompositionMode)}.{nameof(Win32CompositionMode.RedirectionSurface)}");
+                }
+                
+                platformGraphics = options.CustomPlatformGraphics;
+            }
+            else
+            {
+                platformGraphics = Win32GlManager.Initialize();   
+            }
             
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();

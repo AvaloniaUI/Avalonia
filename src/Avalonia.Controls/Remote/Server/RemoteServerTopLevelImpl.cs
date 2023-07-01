@@ -282,9 +282,6 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
-        public ILockedFramebuffer Lock()
-            => GetOrCreateFramebuffer().Lock(_sendLastFrameIfNeeded);
-
         private void SendLastFrameIfNeeded()
         {
             if (IsDisposed)
@@ -328,5 +325,8 @@ namespace Avalonia.Controls.Remote.Server
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() =>
+            new FuncFramebufferRenderTarget(() => GetOrCreateFramebuffer().Lock(_sendLastFrameIfNeeded));
     }
 }

@@ -28,16 +28,18 @@ namespace Avalonia.Win32.DirectX
             _syncLock = syncLock;
         }
         
-        public static void TryCreateAndRegister()
+        public static bool TryCreateAndRegister()
         {
             try
             {
                 TryCreateAndRegisterCore();
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea)
                     ?.Log(null, "Unable to establish Dxgi: {0}", ex);
+                return false;
             }
         }
 

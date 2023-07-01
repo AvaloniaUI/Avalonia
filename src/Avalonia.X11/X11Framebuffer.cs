@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using SkiaSharp;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
@@ -10,7 +11,7 @@ namespace Avalonia.X11
         private readonly IntPtr _display;
         private readonly IntPtr _xid;
         private readonly int _depth;
-        private IUnmanagedBlob _blob;
+        private UnmanagedBlob _blob;
 
         public X11Framebuffer(IntPtr display, IntPtr xid, int depth, int width, int height, double factor)
         {
@@ -25,7 +26,7 @@ namespace Avalonia.X11
             RowBytes = width * 4;
             Dpi = new Vector(96, 96) * factor;
             Format = PixelFormat.Bgra8888;
-            _blob = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().AllocBlob(RowBytes * height);
+            _blob = new UnmanagedBlob(RowBytes * height);
             Address = _blob.Address;
         }
         
