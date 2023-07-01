@@ -163,11 +163,14 @@ internal class NuiAvaloniaViewTextEditable : ITextEditable
     public void SetOptions(TextInputOptions options)
     {
         TextInput.Sensitive = options.IsSensitive;
-        if (_multiline != options.Multiline)
-        {
-            DettachAndHide();
-            _multiline = options.Multiline;
-        }
+
+        //TODO: This should be revert when Avalonia used Multiline property
+        _multiline = true;
+        //if (_multiline != options.Multiline)
+        //{
+        //    DettachAndHide();
+        //    _multiline = options.Multiline;
+        //}
     }
 
     private void InvokeTizenUpdate(Action action)
