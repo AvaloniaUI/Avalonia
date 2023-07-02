@@ -1,8 +1,6 @@
 using System;
 using Avalonia.Controls.Platform.Surfaces;
-using Avalonia.FreeDesktop;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using NWayland.Protocols.Wayland;
 
 namespace Avalonia.Wayland
@@ -51,5 +49,7 @@ namespace Avalonia.Wayland
         }
 
         public ILockedFramebuffer Lock() => new LockedFramebuffer(_data, _cursor.PixelSize, _stride, new Vector(96, 96), PixelFormat.Bgra8888, null);
+
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
     }
 }

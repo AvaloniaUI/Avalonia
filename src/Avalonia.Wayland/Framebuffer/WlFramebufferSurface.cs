@@ -6,7 +6,7 @@ using NWayland.Protocols.Wayland;
 
 namespace Avalonia.Wayland.Framebuffer
 {
-    internal class WlFramebufferSurface : IFramebufferPlatformSurface, IDisposable
+    internal class WlFramebufferSurface : IFramebufferRenderTarget
     {
         private readonly AvaloniaWaylandPlatform _platform;
         private readonly WlWindow _wlWindow;
