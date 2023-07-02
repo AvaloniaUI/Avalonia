@@ -176,7 +176,7 @@ internal class NuiAvaloniaViewTextEditable
 
     private void InvokeTizenUpdate(Action action)
     {
-        if (_breakTheTizenLoop && !IsActive)
+        if (_breakTheTizenLoop || !IsActive)
             return;
 
         _breakTheAvaloniaLoop = true;
@@ -189,7 +189,7 @@ internal class NuiAvaloniaViewTextEditable
 
     private void InvokeAvaloniaUpdate(Action action)
     {
-        if (_breakTheAvaloniaLoop && !IsActive)
+        if (_breakTheAvaloniaLoop || !IsActive)
             return;
 
         _breakTheTizenLoop = true;

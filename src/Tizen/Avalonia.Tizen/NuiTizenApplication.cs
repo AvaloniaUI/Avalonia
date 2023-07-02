@@ -58,6 +58,9 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
     private void WindowKeyEvent(object? sender, Window.KeyEventArgs e)
     {
+        if (_view?.TextEditor.IsActive ?? false)
+            return;
+
         if (Enum.TryParse<global::Tizen.Uix.InputMethod.KeyCode>(e.Key.KeyPressedName, true, out var keyCode) ||
             Enum.TryParse($"Keypad{e.Key.KeyPressedName}", false, out keyCode))
         {

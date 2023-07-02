@@ -41,6 +41,8 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         set => _topLevel.Content = value;
     }
 
+    internal NuiAvaloniaViewTextEditable TextEditor => _textEditor;
+
     #region Setup
 
     public NuiAvaloniaView()
