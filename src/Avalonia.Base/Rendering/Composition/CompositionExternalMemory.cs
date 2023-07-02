@@ -91,7 +91,8 @@ public interface ICompositionGpuImportedObject : IAsyncDisposable
     /// the user code is allowed to free the resource owner in case when a non-owning
     /// sharing handle was used
     /// </summary>
-    Task ImportCompeted { get; }
+    Task ImportCompleted { get; }
+
     /// <summary>
     /// Indicates if the device context this instance is associated with is no longer available
     /// </summary>
