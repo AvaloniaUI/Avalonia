@@ -31,11 +31,6 @@ namespace Avalonia.Wayland
         private Key _repeatKey;
         private IDisposable? _keyboardTimer;
 
-        private int _ctrlMask;
-        private int _altMask;
-        private int _shiftMask;
-        private int _metaMask;
-
         public WlKeyboardHandler(AvaloniaWaylandPlatform platform, WlInputDevice wlInputDevice)
         {
             _platform = platform;
@@ -90,11 +85,6 @@ namespace Avalonia.Wayland
 
             _xkbKeymap = keymap;
             _xkbState = state;
-
-            _ctrlMask = 1 << (int)LibXkbCommon.xkb_keymap_mod_get_index(keymap, "Control");
-            _altMask = 1 << (int)LibXkbCommon.xkb_keymap_mod_get_index(keymap, "Mod1");
-            _shiftMask = 1 << (int)LibXkbCommon.xkb_keymap_mod_get_index(keymap, "Shift");
-            _metaMask = 1 << (int)LibXkbCommon.xkb_keymap_mod_get_index(keymap, "Mod4");
         }
 
         public void OnEnter(WlKeyboard eventSender, uint serial, WlSurface surface, ReadOnlySpan<int> keys)
@@ -119,7 +109,7 @@ namespace Avalonia.Wayland
                 return;
             var code = key + 8;
             var sym = LibXkbCommon.xkb_state_key_get_one_sym(_xkbState, code);
-            var avaloniaKey = XkbKeyTransform.ConvertKey(sym);
+            var avaloniaKey = GetAvaloniaKey(sym, code);
             var eventType = state == WlKeyboard.KeyStateEnum.Pressed ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp;
             var keyEventArgs = new RawKeyEventArgs(_keyboardDevice, time, _window.InputRoot, eventType, avaloniaKey, _wlInputDevice.RawInputModifiers);
             _window.Input?.Invoke(keyEventArgs);
@@ -145,7 +135,7 @@ namespace Avalonia.Wayland
                     _keyboardTimer = DispatcherTimer.Run(OnRepeatKey, _repeatDelay);
                 }
             }
-            else if (_repeatKey == avaloniaKey)
+            else if (_repeatCode == code)
             {
                 _keyboardTimer?.Dispose();
                 _keyboardTimer = null;
@@ -156,20 +146,19 @@ namespace Avalonia.Wayland
         {
             _wlInputDevice.Serial = serial;
             LibXkbCommon.xkb_state_update_mask(_xkbState, modsDepressed, modsLatched, modsLocked, 0, 0, group);
-            var mask = LibXkbCommon.xkb_state_serialize_mods(_xkbState, LibXkbCommon.XkbStateComponent.XKB_STATE_MODS_EFFECTIVE);
-            if ((mask & _ctrlMask) != 0)
+            if (LibXkbCommon.xkb_state_mod_name_is_active(_xkbState, "Control", LibXkbCommon.XkbStateComponent.XKB_STATE_MODS_EFFECTIVE) > 0)
                 _wlInputDevice.RawInputModifiers |= RawInputModifiers.Control;
             else
                 _wlInputDevice.RawInputModifiers &= ~RawInputModifiers.Control;
-            if ((mask & _altMask) != 0)
+            if (LibXkbCommon.xkb_state_mod_name_is_active(_xkbState, "Mod1", LibXkbCommon.XkbStateComponent.XKB_STATE_MODS_EFFECTIVE) > 0)
                 _wlInputDevice.RawInputModifiers |= RawInputModifiers.Alt;
             else
                 _wlInputDevice.RawInputModifiers &= ~RawInputModifiers.Alt;
-            if ((mask & _shiftMask) != 0)
+            if (LibXkbCommon.xkb_state_mod_name_is_active(_xkbState, "Shift", LibXkbCommon.XkbStateComponent.XKB_STATE_MODS_EFFECTIVE) > 0)
                 _wlInputDevice.RawInputModifiers |= RawInputModifiers.Shift;
             else
                 _wlInputDevice.RawInputModifiers &= ~RawInputModifiers.Shift;
-            if ((mask & _metaMask) != 0)
+            if (LibXkbCommon.xkb_state_mod_name_is_active(_xkbState, "Mod4", LibXkbCommon.XkbStateComponent.XKB_STATE_MODS_EFFECTIVE) > 0)
                 _wlInputDevice.RawInputModifiers |= RawInputModifiers.Meta;
             else
                 _wlInputDevice.RawInputModifiers &= ~RawInputModifiers.Meta;
@@ -242,5 +231,39 @@ namespace Avalonia.Wayland
                     return null;
             }
         }
+
+        private Key GetAvaloniaKey(XkbKey sym, uint code)
+        {
+            if (_wlInputDevice.RawInputModifiers.HasAllFlags(RawInputModifiers.Control))
+            {
+                var latinKeySym = GetLatinKey(code);
+                if (latinKeySym != 0)
+                    sym = (XkbKey)latinKeySym;
+            }
+
+            return XkbKeyTransform.ConvertKey(sym);
+        }
+
+        private unsafe uint GetLatinKey(uint code)
+        {
+            var sym = 0u;
+            var keymap = LibXkbCommon.xkb_state_get_keymap(_xkbState);
+            var layoutCount = LibXkbCommon.xkb_keymap_num_layouts_for_key(keymap, code);
+            for (var layout = 0u; layout < layoutCount; layout++)
+            {
+                uint* syms;
+                var level = LibXkbCommon.xkb_state_key_get_level(_xkbState, code, layout);
+                if (LibXkbCommon.xkb_keymap_key_get_syms_by_level(keymap, code, layout, level, &syms) != 1)
+                    continue;
+                if (!IsLatin1(syms[0]))
+                    continue;
+                sym = syms[0];
+                break;
+            }
+
+            return sym;
+        }
+
+        private static bool IsLatin1(uint c) => c < 256;
     }
 }

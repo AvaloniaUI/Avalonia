@@ -18,7 +18,13 @@ namespace Avalonia.Wayland
         public static extern IntPtr xkb_keymap_new_from_string(IntPtr context, IntPtr keymapFormat, uint format, uint flags);
 
         [DllImport(XkbCommon)]
-        public static extern uint xkb_keymap_mod_get_index(IntPtr keymap, string name);
+        public static extern uint xkb_keymap_num_layouts_for_key(IntPtr keymap, uint key);
+
+        [DllImport(XkbCommon)]
+        public static extern uint xkb_state_mod_name_is_active(IntPtr keymap, string name, XkbStateComponent type);
+
+        [DllImport(XkbCommon)]
+        public static extern unsafe int xkb_keymap_key_get_syms_by_level(IntPtr keymap, uint code, uint layout, uint level, uint** syms_out);
 
         [DllImport(XkbCommon)]
         public static extern bool xkb_keymap_key_repeats(IntPtr keymap, uint key);
@@ -30,10 +36,16 @@ namespace Avalonia.Wayland
         public static extern IntPtr xkb_state_new(IntPtr keymap);
 
         [DllImport(XkbCommon)]
+        public static extern IntPtr xkb_state_get_keymap(IntPtr state);
+
+        [DllImport(XkbCommon)]
         public static extern void xkb_state_update_mask(IntPtr state, uint modsDepressed, uint modsLatched, uint modsLocked, uint layoutDepressed, uint layoutLatched, uint layoutLocked);
 
         [DllImport(XkbCommon)]
         public static extern uint xkb_state_serialize_mods(IntPtr state, XkbStateComponent components);
+
+        [DllImport(XkbCommon)]
+        public static extern uint xkb_state_key_get_level(IntPtr state, uint code, uint layout);
 
         [DllImport(XkbCommon)]
         public static extern XkbKey xkb_state_key_get_one_sym(IntPtr state, uint key);
