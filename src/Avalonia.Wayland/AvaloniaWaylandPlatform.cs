@@ -170,13 +170,15 @@ namespace Avalonia
 {
     public static class AvaloniaWaylandPlatformExtensions
     {
-        public static void UseWayland(this AppBuilder builder) =>
-            builder.UseWindowingSubsystem(static () =>
-            {
-                var options = AvaloniaLocator.Current.GetService<WaylandPlatformOptions>() ?? new WaylandPlatformOptions();
-                var platform = new AvaloniaWaylandPlatform(options);
-                AvaloniaLocator.CurrentMutable.BindToSelf(platform);
-            });
+        public static AppBuilder UseWayland(this AppBuilder builder) =>
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(static () =>
+                {
+                    var options = AvaloniaLocator.Current.GetService<WaylandPlatformOptions>() ?? new WaylandPlatformOptions();
+                    var platform = new AvaloniaWaylandPlatform(options);
+                    AvaloniaLocator.CurrentMutable.BindToSelf(platform);
+                });
     }
 
     public class WaylandPlatformOptions
