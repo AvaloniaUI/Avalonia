@@ -1,8 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Tizen.Platform.Input;
 
@@ -11,19 +13,21 @@ namespace Avalonia.Tizen;
 public class TopLevelImpl : ITopLevelImpl
 {
     private readonly ITizenView _view;
+    private readonly NuiClipboardImpl _clipboard;
+    //private IStorageProvider _storageProvider;
 
     public TopLevelImpl(ITizenView view)
     {
         _view = view;
 
         //_nativeControlHost = new NativeControlHostImpl(view);
-        //_storageProvider = new TizenStorageProvider(view);
+        //_storageProvider = new TizenStorageProvider();
         //_insetsManager = new InsetsManager(view);
         //_insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
         //{
         //    view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
         //};
-        //_clipboard = new ClipboardImpl();
+        _clipboard = new NuiClipboardImpl();
     }
 
     public Size ClientSize => _view.ClientSize;
@@ -104,10 +108,10 @@ public class TopLevelImpl : ITopLevelImpl
         //    return _insetsManager;
         //}
 
-        //if (featureType == typeof(IClipboard))
-        //{
-        //    return _clipboard;
-        //}
+        if (featureType == typeof(IClipboard))
+        {
+            return _clipboard;
+        }
 
         return null;
     }
