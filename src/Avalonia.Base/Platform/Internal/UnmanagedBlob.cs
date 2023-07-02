@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Avalonia.Platform.Internal;
 
-internal class UnmanagedBlob : IUnmanagedBlob
+internal class UnmanagedBlob
 {
     private IntPtr _address;
     private readonly object _lock = new object();

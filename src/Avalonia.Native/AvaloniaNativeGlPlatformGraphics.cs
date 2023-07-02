@@ -192,10 +192,13 @@ namespace Avalonia.Native
         {
             _window = window;
         }
+        
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
+            if (!Dispatcher.UIThread.CheckAccess())
+                throw new RenderTargetNotReadyException();
             var avnContext = (GlContext)context;
-            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget(), avnContext);
+            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget(avnContext.Context), avnContext);
         }
 
     }

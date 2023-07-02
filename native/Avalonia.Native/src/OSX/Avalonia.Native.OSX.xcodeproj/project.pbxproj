@@ -43,6 +43,11 @@
 		523484CA26EA688F00EA0C2C /* trayicon.mm in Sources */ = {isa = PBXBuildFile; fileRef = 523484C926EA688F00EA0C2C /* trayicon.mm */; };
 		5B21A982216530F500CEE36E /* cursor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B21A981216530F500CEE36E /* cursor.mm */; };
 		5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */; };
+		64B1EA48E308E574685AFB07 /* metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 64B1EBEECBE13D8616D7C934 /* metal.mm */; };
+		64B1ECA861163C0EFF0E502B /* noarc.h in Headers */ = {isa = PBXBuildFile; fileRef = 64B1E26F2B1B9C577BF52F06 /* noarc.h */; };
+		64B1ED7C5433AC3B815FFCC5 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64B1E23CAFE5FEC7AD981B1B /* Metal.framework */; };
+		64B1EE5DD4D882D587CE76CE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64B1E677F7791226F783ACE4 /* CoreGraphics.framework */; };
+		64B1EF3C757B71526FFAF436 /* noarc.mm in Sources */ = {isa = PBXBuildFile; fileRef = 64B1E4FA7D9D6E5F47AA8606 /* noarc.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		855EDC9F28C6546F00807998 /* PlatformBehaviorInhibition.mm in Sources */ = {isa = PBXBuildFile; fileRef = 855EDC9E28C6546F00807998 /* PlatformBehaviorInhibition.mm */; };
 		8D2F3512292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */; };
 		8D300D65292D0A6800320C49 /* AvnTextInputMethod.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D300D64292D0A6800320C49 /* AvnTextInputMethod.h */; };
@@ -99,6 +104,11 @@
 		5B21A981216530F500CEE36E /* cursor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cursor.mm; sourceTree = "<group>"; };
 		5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = clipboard.mm; sourceTree = "<group>"; };
 		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
+		64B1E23CAFE5FEC7AD981B1B /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		64B1E26F2B1B9C577BF52F06 /* noarc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = noarc.h; path = ../../inc/noarc.h; sourceTree = "<group>"; };
+		64B1E4FA7D9D6E5F47AA8606 /* noarc.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = noarc.mm; sourceTree = "<group>"; };
+		64B1E677F7791226F783ACE4 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		64B1EBEECBE13D8616D7C934 /* metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = metal.mm; sourceTree = "<group>"; };
 		855EDC9E28C6546F00807998 /* PlatformBehaviorInhibition.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformBehaviorInhibition.mm; sourceTree = "<group>"; };
 		8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnTextInputMethodDelegate.h; sourceTree = "<group>"; };
 		8D300D64292D0A6800320C49 /* AvnTextInputMethod.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnTextInputMethod.h; sourceTree = "<group>"; };
@@ -126,6 +136,8 @@
 				AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */,
 				522D5959258159C1006F7F7A /* Carbon.framework in Frameworks */,
 				AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */,
+				64B1ED7C5433AC3B815FFCC5 /* Metal.framework in Frameworks */,
+				64B1EE5DD4D882D587CE76CE /* CoreGraphics.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,6 +153,8 @@
 				1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */,
 				AB1E522B217613570091CD71 /* OpenGL.framework */,
 				AB661C1D2148230F00291242 /* AppKit.framework */,
+				64B1E23CAFE5FEC7AD981B1B /* Metal.framework */,
+				64B1E677F7791226F783ACE4 /* CoreGraphics.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -198,6 +212,9 @@
 				18391DB45C7D892E61BF388C /* WindowInterfaces.h */,
 				18391BB698579F40F1783F31 /* PopupImpl.mm */,
 				183910513F396141938832B5 /* PopupImpl.h */,
+				64B1EBEECBE13D8616D7C934 /* metal.mm */,
+				64B1E4FA7D9D6E5F47AA8606 /* noarc.mm */,
+				64B1E26F2B1B9C577BF52F06 /* noarc.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -230,6 +247,7 @@
 				18391F1E2411C79405A9943A /* WindowProtocol.h in Headers */,
 				183914E50CF6D2EFC1667F7C /* WindowInterfaces.h in Headers */,
 				18391AC65ADD7DDD33FBE737 /* PopupImpl.h in Headers */,
+				64B1ECA861163C0EFF0E502B /* noarc.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,6 +337,8 @@
 				18391AC16726CBC45856233B /* AvnWindow.mm in Sources */,
 				18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */,
 				EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */,
+				64B1EA48E308E574685AFB07 /* metal.mm in Sources */,
+				64B1EF3C757B71526FFAF436 /* noarc.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

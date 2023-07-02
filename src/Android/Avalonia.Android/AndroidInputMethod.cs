@@ -1,10 +1,10 @@
 ﻿using System;
 using Android.Content;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
-using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 
 namespace Avalonia.Android
@@ -13,7 +13,7 @@ namespace Avalonia.Android
     {
         public View View { get; }
 
-        public ITextInputMethodClient Client { get; }
+        public TextInputMethodClient Client { get; }
 
         public bool IsActive { get; }
 
@@ -36,7 +36,7 @@ namespace Avalonia.Android
     {
         private readonly TView _host;
         private readonly InputMethodManager _imm;
-        private ITextInputMethodClient _client;
+        private TextInputMethodClient _client;
         private AvaloniaInputConnection _inputConnection;
 
         public AndroidInputMethod(TView host)
@@ -56,7 +56,7 @@ namespace Avalonia.Android
 
         public bool IsActive => Client != null;
 
-        public ITextInputMethodClient Client => _client;
+        public TextInputMethodClient Client => _client;
 
         public InputMethodManager IMM => _imm;
 
@@ -65,7 +65,7 @@ namespace Avalonia.Android
 
         }
 
-        public void SetClient(ITextInputMethodClient client)
+        public void SetClient(TextInputMethodClient client)
         {
             _client = client;
 
@@ -77,14 +77,53 @@ namespace Avalonia.Android
 
                 _imm.ShowSoftInput(_host, ShowFlags.Implicit);
 
-                var surroundingText = Client.SurroundingText;
+                var selection = Client.Selection;
 
-                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
+
+                var surroundingText = _client.SurroundingText ?? "";
+
+                var extractedText = new ExtractedText
+                {
+                    Text = new Java.Lang.String(surroundingText),
+                    SelectionStart = selection.Start,
+                    SelectionEnd = selection.End,
+                    PartialEndOffset = surroundingText.Length
+                };
+
+                _imm.UpdateExtractedText(_host, _inputConnection?.ExtractedTextToken ?? 0, extractedText);
+
+                _client.SurroundingTextChanged += _client_SurroundingTextChanged;
+                _client.SelectionChanged += _client_SelectionChanged;
             }
             else
             {
                 _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
             }
+        }
+
+        private void _client_SelectionChanged(object sender, EventArgs e)
+        {
+            var selection = Client.Selection;
+
+            _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
+
+            _inputConnection.SetSelection(selection.Start, selection.End);
+        }
+
+        private void _client_SurroundingTextChanged(object sender, EventArgs e)
+        {
+            var surroundingText = _client.SurroundingText ?? "";
+
+            _inputConnection.EditableWrapper.IgnoreChange = true;
+
+            _inputConnection.Editable.Replace(0, _inputConnection.Editable.Length(), surroundingText);
+
+            _inputConnection.EditableWrapper.IgnoreChange = false;
+
+            var selection = Client.Selection;
+
+            _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
         }
 
         public void SetCursorRect(Rect rect)
@@ -134,25 +173,8 @@ namespace Avalonia.Android
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
 
-                _client.TextEditable = _inputConnection.InputEditable;
-
                 return _inputConnection;
             });
         }
-    }
-
-    internal readonly record struct ComposingRegion
-    {
-        private readonly int _start = -1;
-        private readonly int _end = -1;
-
-        public ComposingRegion(int start, int end)
-        {
-            _start = start;
-            _end = end;
-        }
-
-        public int Start => _start;
-        public int End => _end;
     }
 }

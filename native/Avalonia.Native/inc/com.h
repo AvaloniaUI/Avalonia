@@ -28,6 +28,7 @@ typedef DWORD ULONG;
 #define E_UNEXPECTED                     0x8000FFFFL
 #define E_HANDLE                         0x80070006L
 #define E_INVALIDARG                     0x80070057L
+#define COR_E_INVALIDOPERATION 0x80131509L
 
 struct IUnknown
 {

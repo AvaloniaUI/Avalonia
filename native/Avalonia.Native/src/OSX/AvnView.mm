@@ -17,7 +17,7 @@
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
-    NSObject<IRenderTarget>* _renderTarget;
+    NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
@@ -41,15 +41,39 @@
 
 - (void) updateRenderTarget
 {
-    [_renderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
-    [self setNeedsDisplayInRect:[self frame]];
+    if(_currentRenderTarget) {
+        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        [self setNeedsDisplayInRect:[self frame]];
+    }
+}
+
+
+-(void) setRenderTarget:(NSObject<IRenderTarget>*)target
+{
+    if([self layer])
+    {
+        [self layer].delegate = nil;
+    }
+    _currentRenderTarget = target;
+    auto layer = [target layer];
+    [self setLayer: layer];
+    [layer setDelegate: self];
+    layer.needsDisplayOnBoundsChange = YES;
+    [self updateRenderTarget];
+}
+
+-(void)displayLayer: (CALayer*)layer
+{
+    [self updateLayer];
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
-    _renderTarget = parent->renderTarget;
     [self setWantsLayer:YES];
+    [self setLayerContentsPlacement: NSViewLayerContentsPlacementTopLeft];
+
+    [self setCanDrawSubviewsIntoLayer: NO];
     [self setLayerContentsRedrawPolicy: NSViewLayerContentsRedrawDuringViewResize];
 
     _parent = parent;
@@ -75,12 +99,6 @@
 - (BOOL)wantsUpdateLayer
 {
     return YES;
-}
-
-- (void)setLayer:(CALayer *)layer
-{
-    [_renderTarget setNewLayer: layer];
-    [super setLayer: layer];
 }
 
 - (BOOL)isOpaque
@@ -162,14 +180,6 @@
 - (void)drawRect:(NSRect)dirtyRect
 {
     return;
-}
-
--(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
-{
-    @autoreleasepool {
-        [_renderTarget setSwFrame:fb];
-        dispose->Release();
-    }
 }
 
 - (AvnPoint) translateLocalPoint:(AvnPoint)pt

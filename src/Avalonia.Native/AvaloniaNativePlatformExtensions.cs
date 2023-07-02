@@ -9,7 +9,9 @@ namespace Avalonia
     {
         public static AppBuilder UseAvaloniaNative(this AppBuilder builder)
         {
-            builder.UseWindowingSubsystem(() =>
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(() =>
             {
                 var platform = AvaloniaNativePlatform.Initialize(
                     AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
@@ -26,11 +28,44 @@ namespace Avalonia
         }
     }
 
+    public enum AvaloniaNativeRenderingMode
+    {
+        /// <summary>
+        /// Avalonia would try to use native OpenGL with GPU rendering.
+        /// </summary>
+        OpenGl = 1,
+        /// <summary>
+        /// Avalonia is rendered into a framebuffer.
+        /// </summary>
+        Software = 2,
+        /// <summary>
+        /// Avalonia would try to use Metal with GPU rendering.
+        /// </summary>
+        [Obsolete("Experimental, unstable, not for production usage")]
+        Metal = 3
+    }
+    
     /// <summary>
     /// OSX backend options.
     /// </summary>
     public class AvaloniaNativePlatformOptions
     {
+        /// <summary>
+        /// Gets or sets Avalonia rendering modes with fallbacks.
+        /// The first element in the array has the highest priority.
+        /// The default value is: <see cref="AvaloniaNativeRenderingMode.OpenGl"/>, <see cref="AvaloniaNativeRenderingMode.Software"/>.
+        /// </summary>
+        /// <remarks>
+        /// If application should work on as wide range of devices as possible,
+        /// at least add <see cref="AvaloniaNativeRenderingMode.Software"/> as a fallback value.
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
+        public IReadOnlyList<AvaloniaNativeRenderingMode> RenderingMode { get; set; } = new[]
+        {
+            AvaloniaNativeRenderingMode.OpenGl,
+            AvaloniaNativeRenderingMode.Software
+        };
+        
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>

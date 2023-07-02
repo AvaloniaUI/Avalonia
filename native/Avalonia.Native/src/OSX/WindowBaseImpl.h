@@ -27,7 +27,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual ~WindowBaseImpl();
 
-    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel = false);
+    WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel = false);
 
     virtual HRESULT ObtainNSWindowHandle(void **ret) override;
 
@@ -81,13 +81,15 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT PointToScreen(AvnPoint point, AvnPoint *ret) override;
 
-    virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer *fb, IUnknown *dispose) override;
-
     virtual HRESULT SetCursor(IAvnCursor *cursor) override;
 
     virtual void UpdateCursor();
 
-    virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget **ppv) override;
+    virtual HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget **ppv) override;
+
+    virtual HRESULT CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfaceRenderTarget **ppv) override;
+
+    virtual HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget **ppv) override;
 
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost **retOut) override;
 
@@ -118,7 +120,6 @@ private:
     void CleanNSWindow ();
 
     NSCursor *cursor;
-    ComPtr<IAvnGlContext> _glContext;
     bool hasPosition;
     NSSize lastSize;
     NSSize lastMinSize;
@@ -132,7 +133,7 @@ protected:
     bool _shown;
 
 public:
-    NSObject <IRenderTarget> *renderTarget;
+    NSObject <IRenderTarget> *currentRenderTarget;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     ComPtr<AvnTextInputMethod> InputMethod;
