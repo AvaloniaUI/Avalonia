@@ -14,7 +14,7 @@ namespace Avalonia.X11
         private readonly X11Info _x11;
         private IDataObject _storedDataObject;
         private IntPtr _handle;
-        private TaskCompletionSource _storeAtomTcs;
+        private TaskCompletionSource<bool> _storeAtomTcs;
         private TaskCompletionSource<IntPtr[]> _requestedFormatsTcs;
         private TaskCompletionSource<object> _requestedDataTcs;
         private readonly IntPtr[] _textAtoms;
@@ -55,7 +55,7 @@ namespace Avalonia.X11
         {
             if (ev.type == XEventName.SelectionClear)
             {   
-                _storeAtomTcs?.TrySetResult();
+                _storeAtomTcs?.TrySetResult(true);
                 return;
             }
 
@@ -273,7 +273,7 @@ namespace Avalonia.X11
                 if (clipboardManager != IntPtr.Zero)
                 {          
                     if (_storeAtomTcs == null || _storeAtomTcs.Task.IsCompleted)
-                        _storeAtomTcs = new TaskCompletionSource();   
+                        _storeAtomTcs = new TaskCompletionSource<bool>();   
                            
                     var atoms = ConvertDataObject(data);
                     XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.XA_ATOM, 32,
