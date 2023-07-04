@@ -2,10 +2,7 @@ using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition;
-
 
 /// <summary>
 /// A composition visual that holds a list of drawing commands issued by <see cref="Avalonia.Visual"/>
