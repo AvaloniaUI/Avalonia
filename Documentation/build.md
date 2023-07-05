@@ -43,6 +43,25 @@ Build and run `ControlCatalog.NetCore` project to see the sample application.
     >CSC : error CS0006: Metadata file 'C:\...\Avalonia\packages\Avalonia\bin\Debug\netcoreapp2.0\Avalonia.dll' could not be found
     ```
     To correct this, right click on the `Avalonia.DesktopRuntime` project then press `Build` to build the project manually. Afterwards the solution should build normally and the ControlCatalog can be run.
+ * **Error MSB4062 GenerateAvaloniaResourcesTask**
+
+    Same as previous one, you need to manually build `Avalonia.Build.Tasks` project at least once.
+
+    Alternatively, you can build the solution once with Nuke.
+
+## Building packages with Nuke
+
+Install Nuke
+`dotnet tool install --global Nuke.GlobalTool --version 6.2.1`
+
+Build project:
+`nuke --target Compile --configuration Release`
+
+And run tests:
+`nuke --target RunTests --configuration Release`
+
+Or if you need to create nuget packages as well (it will compile and run tests automatically):
+`nuke --target Package --configuration Release`
 
 # Linux/macOS
 
