@@ -1320,17 +1320,14 @@ namespace Avalonia.Controls
             // Evaluate the conditions needed for completion.
             // 1. Minimum prefix length
             // 2. If a delay timer is in use, use it
-            bool populateReady = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
-            if (populateReady && MinimumPrefixLength == 0 && String.IsNullOrEmpty(newText) && String.IsNullOrEmpty(SearchText))
-            {
-                populateReady = false;
-            }
-            _userCalledPopulate = populateReady ? userInitiated : false;
+            bool minimumLengthReached = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
+
+            _userCalledPopulate = minimumLengthReached && userInitiated;
 
             // Update the interface and values only as necessary
             UpdateTextValue(newText, userInitiated);
 
-            if (populateReady)
+            if (minimumLengthReached)
             {
                 _ignoreTextSelectionChange = true;
 
