@@ -6,8 +6,6 @@
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia)  ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
-⚠️ **v11 Update - [Pausing community contributions](https://github.com/AvaloniaUI/Avalonia/discussions/10599)**
-
 ## 📖 About 
 
 [Avalonia](https://avaloniaui.net) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [Github](https://avaloniaui.net/showcase#github).
