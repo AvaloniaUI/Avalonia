@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Moq;
 using Xunit;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -436,6 +430,29 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
                 Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+            });
+        }
+
+        [Fact]
+        public void Explicit_Dropdown_Open_Request_MinimumPrefixLength_0()
+        {
+            RunTest((control, textbox) =>
+            {
+                control.Text = "";
+                control.MinimumPrefixLength = 0;
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.False(control.IsDropDownOpen);
+
+                control.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down
+                });
+
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.True(control.IsDropDownOpen);
             });
         }
 
@@ -1072,14 +1089,14 @@ namespace Avalonia.Controls.UnitTests
 
         private AutoCompleteBox CreateControl()
         {
-            var datePicker =
+            var autoCompleteBox =
                 new AutoCompleteBox
                 {
                     Template = CreateTemplate()
                 };
 
-            datePicker.ApplyTemplate();
-            return datePicker;
+            autoCompleteBox.ApplyTemplate();
+            return autoCompleteBox;
         }
         private TextBox GetTextBox(AutoCompleteBox control)
         {
