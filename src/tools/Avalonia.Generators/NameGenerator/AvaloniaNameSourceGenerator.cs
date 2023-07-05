@@ -22,8 +22,16 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
                 return;
             }
 
-            var partials = generator.GenerateNameReferences(context.AdditionalFiles);
-            foreach (var (fileName, content) in partials) context.AddSource(fileName, content);
+            var partials = generator.GenerateNameReferences(context.AdditionalFiles, context.CancellationToken);
+            foreach (var (fileName, content) in partials)
+            {
+                if(context.CancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                context.AddSource(fileName, content);
+            }
         }
         catch (Exception exception)
         {

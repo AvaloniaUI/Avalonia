@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Avalonia.Generators.Common.Domain;
 using Microsoft.CodeAnalysis;
 
@@ -31,7 +32,7 @@ internal class AvaloniaNameGenerator : INameGenerator
         _code = code;
     }
 
-    public IReadOnlyList<GeneratedPartialClass> GenerateNameReferences(IEnumerable<AdditionalText> additionalFiles)
+    public IEnumerable<GeneratedPartialClass> GenerateNameReferences(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken)
     {
         var resolveViews =
             from file in additionalFiles
@@ -39,7 +40,8 @@ internal class AvaloniaNameGenerator : INameGenerator
                    file.Path.EndsWith(".paml") ||
                    file.Path.EndsWith(".axaml")) &&
                   _pathPattern.Matches(file.Path)
-            let xaml = file.GetText()!.ToString()
+            let xaml = file.GetText(cancellationToken)?.ToString()
+            where xaml != null
             let view = _classes.ResolveView(xaml)
             where view != null && _namespacePattern.Matches(view.Namespace)
             select view;
@@ -51,7 +53,7 @@ internal class AvaloniaNameGenerator : INameGenerator
             let fileName = ResolveViewFileName(view, _naming)
             select new GeneratedPartialClass(fileName, code);
 
-        return query.ToList();
+        return query;
     }
 
     private static string ResolveViewFileName(ResolvedView view, ViewFileNamingStrategy strategy) => strategy switch
