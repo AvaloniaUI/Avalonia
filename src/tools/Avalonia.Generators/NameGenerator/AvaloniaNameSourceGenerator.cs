@@ -33,6 +33,9 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
                 context.AddSource(fileName, content);
             }
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception exception)
         {
             context.ReportNameGeneratorUnhandledError(exception);
