@@ -36,9 +36,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 AvaloniaProperty ap => ap,
                 PropertyInfo pi => new Avalonia.Data.Core.ReflectionClrPropertyInfo(pi),
-                _ => provideTarget.TargetProperty,
-            }
-                ;
+                _ => provideTarget?.TargetProperty,
+            };
+
             var themeVariant = (targetObject as IThemeVariantHost)?.ActualThemeVariant
                 ?? GetDictionaryVariant(serviceProvider);
 
