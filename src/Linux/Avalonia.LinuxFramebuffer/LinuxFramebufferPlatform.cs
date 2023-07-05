@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
@@ -22,13 +23,30 @@ using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
 {
+    internal class LinuxFramebufferIconLoaderStub : IPlatformIconLoader
+    {
+        private class IconStub : IWindowIconImpl
+        {
+            public void Save(Stream outputStream)
+            {
+
+            }
+        }
+
+        public IWindowIconImpl LoadIcon(string fileName) => new IconStub();
+
+        public IWindowIconImpl LoadIcon(Stream stream) => new IconStub();
+
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
+    }
+    
     class LinuxFramebufferPlatform
     {
         IOutputBackend _fb;
         public static ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue = new();
 
         internal static Compositor Compositor { get; private set; } = null!;
-        
+       
         
         LinuxFramebufferPlatform(IOutputBackend backend)
         {
@@ -47,6 +65,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
+                .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             
@@ -57,7 +76,10 @@ namespace Avalonia.LinuxFramebuffer
         internal static LinuxFramebufferLifetime Initialize(AppBuilder builder, IOutputBackend outputBackend, IInputBackend? inputBackend)
         {
             var platform = new LinuxFramebufferPlatform(outputBackend);
-            builder.UseSkia().UseWindowingSubsystem(platform.Initialize, "fbdev");
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseSkia()
+                .UseWindowingSubsystem(platform.Initialize, "fbdev");
             return new LinuxFramebufferLifetime(platform._fb, inputBackend);
         }
     }

@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-using System.Xml;
 using Avalonia.Controls;
 using Avalonia.DesignerSupport.Remote.HtmlTransport;
-using Avalonia.Input;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
@@ -20,6 +17,7 @@ namespace Avalonia.DesignerSupport.Remote
         private static ClientSupportedPixelFormatsMessage s_supportedPixelFormats;
         private static ClientViewportAllocatedMessage s_viewportAllocatedMessage;
         private static ClientRenderInfoMessage s_renderInfoMessage;
+        private static double s_lastRenderScaling = 1.0;
 
         private static IAvaloniaRemoteTransportConnection s_transport;
         class CommandLineArgs
@@ -140,6 +138,7 @@ namespace Avalonia.DesignerSupport.Remote
                 CommandLineArgs args, object obj)
             {
                 var builder = (AppBuilder)obj;
+                builder = builder.UseStandardRuntimePlatformSubsystem();
                 if (args.Method == Methods.AvaloniaRemote)
                     builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
                 if (args.Method == Methods.Html)
@@ -226,6 +225,9 @@ namespace Avalonia.DesignerSupport.Remote
             }
             if (obj is UpdateXamlMessage xaml)
             {
+                if (s_currentWindow is not null)
+                    s_lastRenderScaling = s_currentWindow.RenderScaling;
+
                 try
                 {
                     s_currentWindow?.Close();
@@ -237,7 +239,7 @@ namespace Avalonia.DesignerSupport.Remote
                 s_currentWindow = null;
                 try
                 {
-                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, xaml.XamlFileProjectPath);
+                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, xaml.XamlFileProjectPath, s_lastRenderScaling);
                     s_transport.Send(new UpdateXamlResultMessage(){Handle = s_currentWindow.PlatformImpl?.Handle?.Handle.ToString()});
                 }
                 catch (Exception e)

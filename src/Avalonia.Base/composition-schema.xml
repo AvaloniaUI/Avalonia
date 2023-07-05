@@ -21,14 +21,14 @@
         
         <Property Name="Clip" Type="Avalonia.Platform.IGeometryImpl?" Internal="true" />
         <Property Name="ClipToBounds" Type="bool" Animated="true" DefaultValue="true"/>
-        <Property Name="Offset" Type="Vector3" Animated="true"/>
-        <Property Name="Size" Type="Vector2" Animated="true"/>
-        <Property Name="AnchorPoint" Type="Vector2" Animated="true"/>
-        <Property Name="CenterPoint" Type="Vector3" Animated="true"/>
+        <Property Name="Offset" Type="Vector3D" Animated="true"/>
+        <Property Name="Size" Type="Vector" Animated="true"/>
+        <Property Name="AnchorPoint" Type="Vector" Animated="true"/>
+        <Property Name="CenterPoint" Type="Vector3D" Animated="true"/>
         <Property Name="RotationAngle" Type="float" Animated="true"/>
         <Property Name="Orientation" Type="Quaternion" DefaultValue="Quaternion.Identity" Animated="true"/>
-        <Property Name="Scale" Type="Vector3" DefaultValue="new Vector3(1, 1, 1)" Animated="true"/>
-        <Property Name="TransformMatrix" Type="Matrix4x4" DefaultValue="Matrix4x4.Identity" Animated="true"/>
+        <Property Name="Scale" Type="Vector3D" DefaultValue="new Avalonia.Vector3D(1, 1, 1)" Animated="true"/>
+        <Property Name="TransformMatrix" Type="Avalonia.Matrix" DefaultValue="Avalonia.Matrix.Identity" Animated="true" Internal="true"/>
         <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
         <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IImmutableBrush?" Internal="true" />
@@ -57,10 +57,13 @@
         <Property Name="Size" Type="Size" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
+    <KeyFrameAnimation Name="Double" Type="double"/>
     <KeyFrameAnimation Name="Boolean" Type="bool"/>
     <KeyFrameAnimation Name="Color" Type="Avalonia.Media.Color"/>
+    <KeyFrameAnimation Type="Vector"/>
     <KeyFrameAnimation Type="Vector2"/>
     <KeyFrameAnimation Type="Vector3"/>
+    <KeyFrameAnimation Type="Vector3D"/>
     <KeyFrameAnimation Type="Vector4"/>
     <KeyFrameAnimation Type="Quaternion"/>
     <Object Name="CompositionSimpleTransform" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">

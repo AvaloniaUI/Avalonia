@@ -6,6 +6,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class OverlayLayer : Canvas
     {
+        protected override bool BypassFlowDirectionPolicies => true;
         public Size AvailableSize { get; private set; }
         public static OverlayLayer? GetOverlayLayer(Visual visual)
         {

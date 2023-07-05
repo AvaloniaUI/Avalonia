@@ -1,0 +1,56 @@
+﻿:root {
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+}
+
+#out {
+    height: 100vh;
+    width: 100vw
+}
+
+#avalonia-splash {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    color: whitesmoke;
+    background: #171C2C;
+    font-family: 'Nunito', sans-serif;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#avalonia-splash a{
+    color: whitesmoke;
+    text-decoration: none;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    height: 250px;
+}
+
+.splash-close {
+    animation: slide 0.5s linear 1s forwards;
+}
+
+@keyframes slide {
+    0% {
+        top: 0%;
+    }
+
+    50% {
+        opacity: 80%;
+    }
+
+    100% {
+        top: 100%;
+        overflow: hidden;
+        opacity: 0;
+        display: none;
+        visibility: collapse;
+    }
+}

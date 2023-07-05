@@ -16,13 +16,6 @@ namespace Avalonia
 #endif
     readonly struct Point : IEquatable<Point>
     {
-        static Point()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// The X position.
         /// </summary>
@@ -170,6 +163,19 @@ namespace Avalonia
         /// <param name="matrix">The matrix.</param>
         /// <returns>The resulting point.</returns>
         public static Point operator *(Point point, Matrix matrix) => matrix.Transform(point);
+
+        /// <summary>
+        /// Computes the Euclidean distance between the two given points.
+        /// </summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The Euclidean distance.</returns>
+        public static double Distance(Point value1, Point value2)
+        {
+            double distanceSquared = ((value2.X - value1.X) * (value2.X - value1.X)) +
+                                     ((value2.Y - value1.Y) * (value2.Y - value1.Y));
+            return Math.Sqrt(distanceSquared);
+        }
 
         /// <summary>
         /// Parses a <see cref="Point"/> string.

@@ -114,23 +114,26 @@ namespace Avalonia.Headless
         public Size MaxClientSize { get; } = new Size(1920, 1280);
         public void Resize(Size clientSize, WindowResizeReason reason)
         {
+            if (ClientSize == clientSize)
+                return;
+
             // Emulate X11 behavior here
             if (IsPopup)
-                DoResize(clientSize);
+                DoResize(clientSize, reason);
             else
                 Dispatcher.UIThread.Post(() =>
                 {
-                    DoResize(clientSize);
-                });
+                    DoResize(clientSize, reason);
+                }, DispatcherPriority.Send);
         }
 
-        private void DoResize(Size clientSize)
+        private void DoResize(Size clientSize, WindowResizeReason reason)
         {
             // Uncomment this check and experience a weird bug in layout engine
             if (ClientSize != clientSize)
             {
                 ClientSize = clientSize;
-                Resized?.Invoke(clientSize, WindowResizeReason.Unspecified);
+                Resized?.Invoke(clientSize, reason);
             }
         }
 
@@ -214,6 +217,8 @@ namespace Avalonia.Headless
                 }
             });
         }
+
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
 
         public WriteableBitmap? GetLastRenderedFrame()
         {

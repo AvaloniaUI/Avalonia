@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents items inside an <see cref="Avalonia.Controls.ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : Control, ILogicalScrollable, IScrollSnapPointsInfo
+    public class ItemsPresenter : Control, ILogicalScrollable
     {
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -21,36 +21,7 @@ namespace Avalonia.Controls.Presenters
 
         private PanelContainerGenerator? _generator;
         private ILogicalScrollable? _logicalScrollable;
-        private IScrollSnapPointsInfo? _scrollSnapPointsInfo;
         private EventHandler? _scrollInvalidated;
-
-        /// <summary>
-        /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsPresenter, bool>(nameof(AreHorizontalSnapPointsRegular));
-
-        /// <summary>
-        /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsPresenter, bool>(nameof(AreVerticalSnapPointsRegular));
-
-        /// <summary>
-        /// Defines the <see cref="HorizontalSnapPointsChanged"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> HorizontalSnapPointsChangedEvent =
-            RoutedEvent.Register<ItemsPresenter, RoutedEventArgs>(
-                nameof(HorizontalSnapPointsChanged),
-                RoutingStrategies.Bubble);
-
-        /// <summary>
-        /// Defines the <see cref="VerticalSnapPointsChanged"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> VerticalSnapPointsChangedEvent =
-            RoutedEvent.Register<ItemsPresenter, RoutedEventArgs>(
-                nameof(VerticalSnapPointsChanged),
-                RoutingStrategies.Bubble);
 
         event EventHandler? ILogicalScrollable.ScrollInvalidated
         {
@@ -107,47 +78,12 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        /// <summary>
-        /// Occurs when the measurements for horizontal snap points change.
-        /// </summary>
-        public event EventHandler<RoutedEventArgs>? HorizontalSnapPointsChanged
-        {
-            add => AddHandler(HorizontalSnapPointsChangedEvent, value);
-            remove => RemoveHandler(HorizontalSnapPointsChangedEvent, value);
-        }
-
-        /// <summary>
-        /// Occurs when the measurements for vertical snap points change.
-        /// </summary>
-        public event EventHandler<RoutedEventArgs>? VerticalSnapPointsChanged
-        {
-            add => AddHandler(VerticalSnapPointsChangedEvent, value);
-            remove => RemoveHandler(VerticalSnapPointsChangedEvent, value);
-        }
-
         bool ILogicalScrollable.IsLogicalScrollEnabled => _logicalScrollable?.IsLogicalScrollEnabled ?? false;
         Size ILogicalScrollable.ScrollSize => _logicalScrollable?.ScrollSize ?? default;
         Size ILogicalScrollable.PageScrollSize => _logicalScrollable?.PageScrollSize ?? default;
         Size IScrollable.Extent => _logicalScrollable?.Extent ?? default;
         Size IScrollable.Viewport => _logicalScrollable?.Viewport ?? default;
 
-        /// <summary>
-        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsPresenter"/> are equidistant from each other.
-        /// </summary>
-        public bool AreHorizontalSnapPointsRegular
-        {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets whether the vertical snap points for the <see cref="ItemsPresenter"/> are equidistant from each other.
-        /// </summary>
-        public bool AreVerticalSnapPointsRegular
-        {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
-        }
 
         public override sealed void ApplyTemplate()
         {
@@ -167,35 +103,13 @@ namespace Avalonia.Controls.Presenters
 
                 Panel.TemplatedParent = TemplatedParent;
                 Panel.IsItemsHost = true;
-                _scrollSnapPointsInfo = Panel as IScrollSnapPointsInfo;
                 LogicalChildren.Add(Panel);
                 VisualChildren.Add(Panel);
-
-                if (_scrollSnapPointsInfo != null)
-                {
-                    _scrollSnapPointsInfo.AreVerticalSnapPointsRegular = AreVerticalSnapPointsRegular;
-                    _scrollSnapPointsInfo.AreHorizontalSnapPointsRegular = AreHorizontalSnapPointsRegular;
-                }
 
                 if (Panel is VirtualizingPanel v)
                     v.Attach(ItemsControl);
                 else
                     CreateSimplePanelGenerator();
-
-                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-                {
-                    scrollSnapPointsInfo.VerticalSnapPointsChanged += (s, e) =>
-                    {
-                        e.RoutedEvent = VerticalSnapPointsChangedEvent;
-                        RaiseEvent(e);
-                    };
-
-                    scrollSnapPointsInfo.HorizontalSnapPointsChanged += (s, e) =>
-                    {
-                        e.RoutedEvent = HorizontalSnapPointsChangedEvent;
-                        RaiseEvent(e);
-                    };
-                }
 
                 _logicalScrollable = Panel as ILogicalScrollable;
 
@@ -239,16 +153,6 @@ namespace Avalonia.Controls.Presenters
             {
                 ResetState();
                 InvalidateMeasure();
-            }
-            else if(change.Property == AreHorizontalSnapPointsRegularProperty)
-            {
-                if (_scrollSnapPointsInfo != null)
-                    _scrollSnapPointsInfo.AreHorizontalSnapPointsRegular = AreHorizontalSnapPointsRegular;
-            }
-            else if (change.Property == AreVerticalSnapPointsRegularProperty)
-            {
-                if (_scrollSnapPointsInfo != null)
-                    _scrollSnapPointsInfo.AreVerticalSnapPointsRegular = AreVerticalSnapPointsRegular;
             }
         }
 
@@ -303,27 +207,5 @@ namespace Avalonia.Controls.Presenters
         }
 
         private void OnLogicalScrollInvalidated(object? sender, EventArgs e) => _scrollInvalidated?.Invoke(this, e);
-
-        public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
-        {
-            if(Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-            {
-                return scrollSnapPointsInfo.GetIrregularSnapPoints(orientation, snapPointsAlignment);
-            }
-
-            return new List<double>();
-        }
-
-        public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
-        {
-            if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-            {
-                return scrollSnapPointsInfo.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset);
-            }
-
-            offset = 0;
-
-            return 0;
-        }
     }
 }

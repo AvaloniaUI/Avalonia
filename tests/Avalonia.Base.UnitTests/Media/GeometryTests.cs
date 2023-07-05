@@ -103,7 +103,7 @@ namespace Avalonia.Base.UnitTests.Media
                 throw new NotImplementedException();
             }
 
-            protected override IGeometryImpl CreateDefiningGeometry()
+            private protected sealed override IGeometryImpl CreateDefiningGeometry()
             {
                 return Mock.Of<IGeometryImpl>(
                     x => x.WithTransform(It.IsAny<Matrix>()) == 

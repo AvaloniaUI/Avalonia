@@ -13,9 +13,6 @@ using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
-
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -130,7 +127,7 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.UIThread.VerifyAccess();
             using var noPump = NonPumpingLockHelper.Use();
             
-            _nextCommit ??= new();
+            var commit = _nextCommit ??= new();
 
             (_invokeBeforeCommitRead, _invokeBeforeCommitWrite) = (_invokeBeforeCommitWrite, _invokeBeforeCommitRead);
             while (_invokeBeforeCommitRead.Count > 0)
@@ -188,7 +185,7 @@ namespace Avalonia.Rendering.Composition
                 }, TaskContinuationOptions.ExecuteSynchronously);
                 _nextCommit = null;
                 
-                return _pendingBatch;
+                return commit;
             }
         }
 

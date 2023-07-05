@@ -687,7 +687,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <remarks>
         /// This method resolves the sos and eos values for the run
         /// and adds the run to the list
-        /// /// </remarks>
+        /// </remarks>
         /// <param name="start">The index of the start of the run (in x9 removed units)</param>
         /// <param name="length">The length of the run (in x9 removed units)</param>
         /// <param name="level">The level of the run</param>

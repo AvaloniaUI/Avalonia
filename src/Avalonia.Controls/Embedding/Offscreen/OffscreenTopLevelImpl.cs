@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
@@ -17,7 +13,6 @@ namespace Avalonia.Controls.Embedding.Offscreen
     {
         private double _scaling = 1;
         private Size _clientSize;
-        private ManualRenderTimer _manualRenderTimer = new();
 
         public IInputRoot? InputRoot { get; private set; }
         public bool IsDisposed { get; private set; }
@@ -27,21 +22,10 @@ namespace Avalonia.Controls.Embedding.Offscreen
             IsDisposed = true;
         }
 
-        class ManualRenderTimer : IRenderTimer
-        {
-            static Stopwatch St = Stopwatch.StartNew(); 
-            public event Action<TimeSpan>? Tick;
-            public bool RunsInBackground => false;
-            public void TriggerTick() => Tick?.Invoke(St.Elapsed);
-        }
-
         public Compositor Compositor { get; }
 
         public OffscreenTopLevelImplBase()
-        {
-            Compositor = new Compositor(new RenderLoop(_manualRenderTimer), null, false,
-                MediaContext.Instance, false);
-        }
+            => Compositor = new Compositor(null);
 
         public abstract IEnumerable<object> Surfaces { get; }
 
@@ -76,7 +60,6 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
-        /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;

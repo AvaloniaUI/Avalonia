@@ -209,13 +209,13 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
                 
                 contextMenu.Open();
-                Assert.Equal(2, canExecuteCallCount);//2 because popup is changing logical child
+                Assert.Equal(3, canExecuteCallCount);// 3 because popup is changing logical child and moreover we need to invalidate again after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
-                Assert.Equal(3, canExecuteCallCount);
+                Assert.Equal(4, canExecuteCallCount);
 
                 target.CommandParameter = true;
-                Assert.Equal(4, canExecuteCallCount);
+                Assert.Equal(5, canExecuteCallCount);
             }
         }
         
@@ -249,13 +249,13 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
-                Assert.Equal(1, canExecuteCallCount);
+                Assert.Equal(2, canExecuteCallCount); // 2 because we need to invalidate after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
-                Assert.Equal(2, canExecuteCallCount);
+                Assert.Equal(3, canExecuteCallCount);
 
                 target.CommandParameter = true;
-                Assert.Equal(3, canExecuteCallCount);
+                Assert.Equal(4, canExecuteCallCount);
             }
         }
         

@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         private ICellEditBinding _editBinding;
         private IBinding _clipboardContentBinding;
         private ControlTheme _cellTheme;
-        private readonly Classes _cellStyleClasses = new Classes();
+        private Classes _cellStyleClasses;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridColumn" /> class.
@@ -393,17 +393,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public Classes CellStyleClasses
-        {
-            get => _cellStyleClasses;
-            set
-            {
-                if(_cellStyleClasses != value)
-                {
-                    _cellStyleClasses.Replace(value);
-                }
-            }
-        }
+        public Classes CellStyleClasses => _cellStyleClasses ??= new();
 
         /// <summary>
         ///    Backing field for CellTheme property.
@@ -1103,6 +1093,16 @@ namespace Avalonia.Controls
             get;
             set;
         }
+
+        /// <summary>
+        /// Gets or sets an object associated with this column.
+        /// </summary>
+        public object Tag
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Holds a Comparer to use for sorting, if not using the default.
         /// </summary>

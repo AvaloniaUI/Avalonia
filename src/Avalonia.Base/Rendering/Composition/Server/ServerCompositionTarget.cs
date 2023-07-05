@@ -9,8 +9,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -128,12 +126,25 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (_renderTarget?.IsCorrupted == true)
             {
-                _renderTarget!.Dispose();
+                _layer?.Dispose();
+                _layer = null;
+                _renderTarget.Dispose();
                 _renderTarget = null;
                 _redrawRequested = true;
             }
 
-            _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            try
+            {
+                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                return;
+            }
+            catch (RenderTargetCorruptedException)
+            {
+                return;
+            }
 
             if ((_dirtyRect.Width == 0 && _dirtyRect.Height == 0) && !_redrawRequested)
                 return;
@@ -157,14 +168,15 @@ namespace Avalonia.Rendering.Composition.Server
             _redrawRequested = false;
             using (var targetContext = _renderTarget.CreateDrawingContext())
             {
-                var layerSize = Size * Scaling;
+                var size = Size;
+                var layerSize = size * Scaling;
                 if (layerSize != _layerSize || _layer == null || _layer.IsCorrupted)
                 {
                     _layer?.Dispose();
                     _layer = null;
-                    _layer = targetContext.CreateLayer(Size);
+                    _layer = targetContext.CreateLayer(size);
                     _layerSize = layerSize;
-                    _dirtyRect = new Rect(0, 0, layerSize.Width, layerSize.Height);
+                    _dirtyRect = new Rect(0, 0, size.Width, size.Height);
                 }
 
                 if (_dirtyRect.Width != 0 || _dirtyRect.Height != 0)
@@ -185,7 +197,7 @@ namespace Avalonia.Rendering.Composition.Server
                 else
                     targetContext.DrawBitmap(_layer, 1,
                         new Rect(_layerSize),
-                        new Rect(Size));
+                        new Rect(size));
 
                 if (DebugOverlays != RendererDebugOverlays.None)
                 {

@@ -152,6 +152,8 @@ namespace Avalonia.LinuxFramebuffer
                     new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress))
                 .Lock(new Vector(96, 96) * Scaling);
         }
+        
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
 
 
         private void ReleaseUnmanagedResources()

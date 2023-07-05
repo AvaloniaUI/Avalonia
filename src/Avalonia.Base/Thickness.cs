@@ -15,13 +15,6 @@ namespace Avalonia
 #endif
     readonly struct Thickness : IEquatable<Thickness>
     {
-        static Thickness()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<ThicknessAnimator>(prop => typeof(Thickness).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         /// <summary>
         /// The thickness on the left.
         /// </summary>

@@ -6,9 +6,14 @@ namespace Avalonia.Styling.Activators
     internal abstract class StyleActivatorBase : IStyleActivator
     {
         private IStyleActivatorSink? _sink;
-        private bool _value;
+        private bool? _value;
 
-        public bool GetIsActive() => _value = EvaluateIsActive();
+        public bool GetIsActive()
+        {
+            var value = EvaluateIsActive();
+            _value ??= value;
+            return value;
+        }
 
         public bool IsSubscribed => _sink is not null;
 
@@ -63,7 +68,7 @@ namespace Avalonia.Styling.Activators
         /// </returns>
         protected bool ReevaluateIsActive()
         {
-            var value = EvaluateIsActive();
+            var value = GetIsActive();
 
             if (value != _value)
             {

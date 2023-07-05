@@ -29,7 +29,7 @@ public partial class AvaloniaView
 
     private bool IsDrivingText => CurrentAvaloniaResponder is TextInputResponder t && ReferenceEquals(t.NextResponder, this);
 
-    void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
+    void ITextInputMethodImpl.SetClient(TextInputMethodClient? client)
     {
         _client = client;
         if (_client == null && IsDrivingText)

@@ -11,6 +11,12 @@
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\drawable-night-v31\avalonia_anim.xml" />
+    <None Remove="Resources\drawable-v31\avalonia_anim.xml" />
+    <None Remove="Resources\values-v31\styles.xml" />
+    <None Remove="Resources\values-night\colors.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
       <Link>Resources\drawable\Icon.png</Link>
     </AndroidResource>
@@ -35,6 +41,10 @@
   <ItemGroup>
     <AndroidEnvironment Condition="'$(IsEmulator)'=='True'" Include="environment.emulator.txt" />
     <AndroidEnvironment Condition="'$(IsEmulator)'!='True'" Include="environment.device.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

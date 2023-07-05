@@ -316,7 +316,8 @@ namespace Avalonia.Controls
                 ((ILogical)this).IsAttachedToLogicalTree)
             {
                 _isLoaded = true;
-                OnLoaded();
+
+                OnLoaded(new RoutedEventArgs(LoadedEvent, this));
             }
         }
 
@@ -333,28 +334,36 @@ namespace Avalonia.Controls
                 _loadedQueue.Remove(this);
 
                 _isLoaded = false;
-                OnUnloaded();
+
+                OnUnloaded(new RoutedEventArgs(UnloadedEvent, this));
             }
         }
 
         /// <summary>
         /// Invoked just before the <see cref="Loaded"/> event.
         /// </summary>
-        protected virtual void OnLoaded()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnLoaded(RoutedEventArgs e)
         {
-            var eventArgs = new RoutedEventArgs(LoadedEvent);
-            eventArgs.Source = null;
-            RaiseEvent(eventArgs);
+            RaiseEvent(e);
         }
 
         /// <summary>
         /// Invoked just before the <see cref="Unloaded"/> event.
         /// </summary>
-        protected virtual void OnUnloaded()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnUnloaded(RoutedEventArgs e)
         {
-            var eventArgs = new RoutedEventArgs(UnloadedEvent);
-            eventArgs.Source = null;
-            RaiseEvent(eventArgs);
+            RaiseEvent(e);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="SizeChanged"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            RaiseEvent(e);
         }
 
         /// <inheritdoc/>
@@ -435,6 +444,10 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Returns a new, type-specific <see cref="AutomationPeer"/> implementation for the control.
+        /// </summary>
+        /// <returns>The type-specific <see cref="AutomationPeer"/> implementation.</returns>
         protected virtual AutomationPeer OnCreateAutomationPeer()
         {
             return new NoneAutomationPeer(this);
@@ -459,6 +472,7 @@ namespace Avalonia.Controls
             return _automationPeer;
         }
 
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
@@ -473,6 +487,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
@@ -480,7 +495,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
+                var keymap = TopLevel.GetTopLevel(this)?.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {
@@ -531,7 +546,7 @@ namespace Avalonia.Controls
                         previousSize: new Size(oldValue.Width, oldValue.Height),
                         newSize: new Size(newValue.Width, newValue.Height));
 
-                    RaiseEvent(sizeChangedEventArgs);
+                    OnSizeChanged(sizeChangedEventArgs);
                 }
             }
         }

@@ -105,8 +105,10 @@ namespace Avalonia.Headless
         public static AppBuilder UseHeadless(this AppBuilder builder, AvaloniaHeadlessPlatformOptions opts)
         {
             if(opts.UseHeadlessDrawing)
-                builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
-            return builder.UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
+                builder = builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
+            return builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
         }
     }
 }

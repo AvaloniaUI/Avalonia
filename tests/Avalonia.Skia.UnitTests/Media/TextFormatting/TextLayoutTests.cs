@@ -1112,6 +1112,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_HitTestTextPosition_EndOfLine_RTL()
+        {
+            var text = "גש\r\n";
+
+            using (Start())
+            {
+                var textLayout = new TextLayout(text, Typeface.Default, 12, Brushes.Black, flowDirection: FlowDirection.RightToLeft);
+
+                var rect = textLayout.HitTestTextPosition(text.Length);
+
+                Assert.Equal(14.0625, rect.Top);
+            }
+        }
+
 
         private static IDisposable Start()
         {

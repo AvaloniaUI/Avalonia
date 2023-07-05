@@ -43,6 +43,18 @@ public:
             _obj->AddRef();
         }
     }
+
+    ComPtr(TInterface* pObj, bool ownsHandle)
+    {
+        _obj = 0;
+
+        if (pObj)
+        {
+            _obj = pObj;
+            if(!ownsHandle)
+                _obj->AddRef();
+        }
+    }
     
     ComPtr(const ComPtr& ptr)
     {
@@ -91,6 +103,13 @@ public:
     TInterface** getPPV()
     {
         return &_obj;
+    }
+
+    void setNoAddRef(TInterface* value)
+    {
+        if(_obj != nullptr)
+            _obj->Release();
+        _obj = value;
     }
     
     operator TInterface*() const
