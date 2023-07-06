@@ -72,12 +72,13 @@ namespace Avalonia.Diagnostics.ViewModels
             var s = sender!;
             var handled = e.Handled;
             var route = e.Route;
+            var triggerTime = DateTime.Now;
 
             void handler()
             {
                 if (_currentEvent == null || !_currentEvent.IsPartOfSameEventChain(e))
                 {
-                    _currentEvent = new FiredEvent(e, new EventChainLink(s, handled, route));
+                    _currentEvent = new FiredEvent(e, new EventChainLink(s, handled, route), triggerTime);
 
                     _parentViewModel.RecordedEvents.Add(_currentEvent);
 
