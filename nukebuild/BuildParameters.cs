@@ -22,6 +22,12 @@ public partial class Build
     [Parameter("skip-previewer")]
     public bool SkipPreviewer { get; set; }
 
+    [Parameter("api-baseline")]
+    public string ApiValidationBaseline { get; set; }
+    
+    [Parameter("update-api-suppression")]
+    public bool UpdateApiValidationSuppression { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
@@ -57,7 +63,9 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-
+        public Version ApiValidationBaseline { get; }
+        public bool UpdateApiValidationSuppression { get; }
+        public AbsolutePath ApiValidationSuppressionFiles { get; }
 
         public BuildParameters(Build b)
         {
@@ -65,6 +73,10 @@ public partial class Build
             Configuration = b.Configuration ?? "Release";
             SkipTests = b.SkipTests;
             SkipPreviewer = b.SkipPreviewer;
+            ApiValidationBaseline = b.ApiValidationBaseline is not null ?
+                new Version(b.ApiValidationBaseline) :
+                new Version(11, 0);
+            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -125,6 +137,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
+            ApiValidationSuppressionFiles = RootDirectory / "api";
         }
 
         string GetVersion()

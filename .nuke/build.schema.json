@@ -6,6 +6,10 @@
     "build": {
       "type": "object",
       "properties": {
+        "ApiValidationBaseline": {
+          "type": "string",
+          "description": "api-baseline"
+        },
         "Configuration": {
           "type": "string",
           "description": "configuration"
@@ -89,6 +93,7 @@
               "RunRenderTests",
               "RunTests",
               "RunToolsTests",
+              "ValidateApiDiff",
               "ZipFiles"
             ]
           }
@@ -124,9 +129,14 @@
               "RunRenderTests",
               "RunTests",
               "RunToolsTests",
+              "ValidateApiDiff",
               "ZipFiles"
             ]
           }
+        },
+        "UpdateApiValidationSuppression": {
+          "type": "boolean",
+          "description": "update-api-suppression"
         },
         "Verbosity": {
           "type": "string",
