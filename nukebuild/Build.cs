@@ -285,14 +285,12 @@ partial class Build : NukeBuild
     
     Target ValidateApiDiff => _ => _
         .DependsOn(CreateNugetPackages)
-        .Executes(() =>
+        .Executes(async () =>
         {
-            foreach (var nugetPackage in Directory.GetFiles(Parameters.NugetRoot))
-            {
-                ApiDiffValidation.ValidatePackage(
+            await Task.WhenAll(
+                Directory.GetFiles(Parameters.NugetRoot).Select(nugetPackage => ApiDiffValidation.ValidatePackage(
                     ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
-                    Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression);
-            }
+                    Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
         });
     
     Target RunTests => _ => _

@@ -5,11 +5,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Nuke.Common.Tooling;
 
 public static class ApiDiffValidation
 {
-    public static void ValidatePackage(
+    public static async Task ValidatePackage(
         Tool apiCompatTool, string packagePath, Version baselineVersion,
         string suppressionFilesFolder, bool updateSuppressionFile)
     {
@@ -24,7 +25,7 @@ public static class ApiDiffValidation
             Directory.CreateDirectory(suppressionFilesFolder!);
         }
 
-        using (var baselineStream = DownloadBaselinePackage(packagePath, baselineVersion))
+        using (var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion))
         using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
         using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
         using (Helpers.UseTempDir(out var tempFolder))
@@ -44,7 +45,7 @@ public static class ApiDiffValidation
                 Directory.CreateDirectory(Path.GetDirectoryName(baselineDllRealPath)!);
                 using (var baselineDllFile = File.Create(baselineDllRealPath))
                 {
-                    baselineDll.entry.Open().CopyTo(baselineDllFile);
+                    await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
                 }
 
                 var targetDll = targetDlls.FirstOrDefault(e =>
@@ -59,7 +60,7 @@ public static class ApiDiffValidation
                 Directory.CreateDirectory(Path.GetDirectoryName(targetDllRealPath)!);
                 using (var targetDllFile = File.Create(targetDllRealPath))
                 {
-                    targetDll.entry.Open().CopyTo(targetDllFile);
+                    await targetDll.entry.Open().CopyToAsync(targetDllFile);
                 }
 
                 left.Add(baselineDllPath);
@@ -67,7 +68,6 @@ public static class ApiDiffValidation
             }
 
             var args = $""" -l={string.Join(',', left)} -r="{string.Join(',', right)}" """;
-            updateSuppressionFile = true;
             if (File.Exists(suppressionFile))
             {
                 args += $""" --suppression-file="{suppressionFile}" """;
@@ -96,7 +96,7 @@ public static class ApiDiffValidation
             .ToArray();
     }
 
-    static Stream DownloadBaselinePackage(string packagePath, Version baselineVersion)
+    static async Task<Stream> DownloadBaselinePackage(string packagePath, Version baselineVersion)
     {
         Build.Information("Downloading {0} baseline package for version {1}", Path.GetFileName(packagePath), baselineVersion);
 
@@ -107,11 +107,11 @@ public static class ApiDiffValidation
                 """(\.\d+\.\d+\.\d+)$""", "");
 
             using var httpClient = new HttpClient();
-            using var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get,
+            using var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
                 $"https://www.nuget.org/api/v2/package/{packageId}/{baselineVersion}"));
-            using var stream = response.Content.ReadAsStream(); 
+            await using var stream = await response.Content.ReadAsStreamAsync(); 
             var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
+            await stream.CopyToAsync(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
         }
