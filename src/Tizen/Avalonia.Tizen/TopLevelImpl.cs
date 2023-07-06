@@ -14,14 +14,14 @@ public class TopLevelImpl : ITopLevelImpl
 {
     private readonly ITizenView _view;
     private readonly NuiClipboardImpl _clipboard;
-    //private IStorageProvider _storageProvider;
+    private IStorageProvider _storageProvider;
 
     public TopLevelImpl(ITizenView view)
     {
         _view = view;
 
         //_nativeControlHost = new NativeControlHostImpl(view);
-        //_storageProvider = new TizenStorageProvider();
+        _storageProvider = new TizenStorageProvider();
         //_insetsManager = new InsetsManager(view);
         //_insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
         //{
@@ -88,10 +88,10 @@ public class TopLevelImpl : ITopLevelImpl
 
     public object? TryGetFeature(Type featureType)
     {
-        //if (featureType == typeof(IStorageProvider))
-        //{
-        //    return _storageProvider;
-        //}
+        if (featureType == typeof(IStorageProvider))
+        {
+            return _storageProvider;
+        }
 
         if (featureType == typeof(ITextInputMethodImpl))
         {

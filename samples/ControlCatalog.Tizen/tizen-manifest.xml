@@ -13,4 +13,12 @@
     <icon>ControlCatalog.Avalonia.png</icon>
     <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
   </ui-application>
+  <privileges>
+    <privilege>http://tizen.org/privilege/appdir.shareddata</privilege>
+    <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
+    <privilege>http://tizen.org/privilege/externalstorage</privilege>
+    <privilege>http://tizen.org/privilege/externalstorage.appdata</privilege>
+    <privilege>http://tizen.org/privilege/internet</privilege>
+    <privilege>http://tizen.org/privilege/network.get</privilege>
+  </privileges>
 </manifest>
