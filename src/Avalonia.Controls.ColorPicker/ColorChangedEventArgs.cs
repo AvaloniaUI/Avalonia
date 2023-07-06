@@ -24,14 +24,14 @@ namespace Avalonia.Controls
         /// <param name="newColor">The new/updated color that triggered the change event.</param>
         public ColorChangedEventArgs(Color oldColor, Color newColor)
         {
-            OldColor = oldColor;
+            //OldColor = oldColor;
             NewColor = newColor;
         }
 
         /// <summary>
         /// Gets the old/original color from before the change event.
         /// </summary>
-        public Color OldColor { get; private set; }
+        //public Color OldColor { get; private set; }
 
         /// <summary>
         /// Gets the new/updated color that triggered the change event.
