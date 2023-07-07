@@ -97,7 +97,9 @@ public static class ApiDiffValidation
     private static IReadOnlyCollection<(string target, ZipArchiveEntry entry)> GetDlls(ZipArchive archive)
     {
         return archive.Entries
-            .Where(e => Path.GetExtension(e.FullName) == ".dll")
+            .Where(e => Path.GetExtension(e.FullName) == ".dll"
+                // Exclude analyzers and build task, as we don't care about breaking changes there
+                && !e.FullName.Contains("analyzers/") && !e.Name.Contains("Avalonia.Build.Tasks"))
             .Select(e => (
                 entry: e,
                 isRef: e.FullName.Contains("ref/"),
