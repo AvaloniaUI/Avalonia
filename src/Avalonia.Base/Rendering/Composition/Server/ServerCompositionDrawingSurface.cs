@@ -31,12 +31,12 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
             throw new PlatformGraphicsContextLostException();
 
         // This should never happen, but check for it anyway to avoid a deadlock
-        if (!image.ImportCompleted.IsCompleted)
+        if (!image.ImportCompeted.IsCompleted)
             throw new InvalidOperationException("The import operation is not completed yet");
 
         // Rethrow the import here exception
-        if (image.ImportCompleted.IsFaulted)
-            image.ImportCompleted.GetAwaiter().GetResult();
+        if (image.ImportCompeted.IsFaulted)
+            image.ImportCompeted.GetAwaiter().GetResult();
     }
 
     void Update(IBitmapImpl newImage, IPlatformRenderInterfaceContext context)
