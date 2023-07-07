@@ -514,6 +514,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Window_Should_Not_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_And_Window_Is_Hidden_And_Shown()
+        {
+            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.Screen).Returns(screens.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window(windowImpl.Object)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                };
+
+                window.Show();
+
+                var expected = new PixelPoint(150, 400);
+                window.Position = expected;
+
+                window.IsVisible = false;
+                window.IsVisible = true;
+
+                Assert.Equal(expected, window.Position);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
             var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
