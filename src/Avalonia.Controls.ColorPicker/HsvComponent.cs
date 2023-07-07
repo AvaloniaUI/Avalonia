@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Also see: <see cref="HsvColor.A"/>
         /// </remarks>
-        // Alpha = 0,
+        Alpha = 0,
 
         /// <summary>
         /// The Hue component.
