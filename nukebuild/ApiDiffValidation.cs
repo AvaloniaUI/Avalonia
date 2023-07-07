@@ -10,8 +10,10 @@ using Nuke.Common.Tooling;
 
 public static class ApiDiffValidation
 {
+    private static readonly HttpClient s_httpClient = new();
+
     public static async Task ValidatePackage(
-        Tool apiCompatTool, string packagePath, Version baselineVersion,
+        Tool apiCompatTool, string packagePath, string baselineVersion,
         string suppressionFilesFolder, bool updateSuppressionFile)
     {
         if (baselineVersion is null)
@@ -25,7 +27,7 @@ public static class ApiDiffValidation
             Directory.CreateDirectory(suppressionFilesFolder!);
         }
 
-        using (var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion))
+        await using (var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion))
         using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
         using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
         using (Helpers.UseTempDir(out var tempFolder))
@@ -43,7 +45,7 @@ public static class ApiDiffValidation
                 var baselineDllPath = Path.Combine("baseline", baselineDll.target, baselineDll.entry.Name);
                 var baselineDllRealPath = Path.Combine(tempFolder, baselineDllPath);
                 Directory.CreateDirectory(Path.GetDirectoryName(baselineDllRealPath)!);
-                using (var baselineDllFile = File.Create(baselineDllRealPath))
+                await using (var baselineDllFile = File.Create(baselineDllRealPath))
                 {
                     await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
                 }
@@ -58,7 +60,7 @@ public static class ApiDiffValidation
                 var targetDllPath = Path.Combine("target", targetDll.target, targetDll.entry.Name);
                 var targetDllRealPath = Path.Combine(tempFolder, targetDllPath);
                 Directory.CreateDirectory(Path.GetDirectoryName(targetDllRealPath)!);
-                using (var targetDllFile = File.Create(targetDllRealPath))
+                await using (var targetDllFile = File.Create(targetDllRealPath))
                 {
                     await targetDll.entry.Open().CopyToAsync(targetDllFile);
                 }
@@ -96,7 +98,7 @@ public static class ApiDiffValidation
             .ToArray();
     }
 
-    static async Task<Stream> DownloadBaselinePackage(string packagePath, Version baselineVersion)
+    static async Task<Stream> DownloadBaselinePackage(string packagePath, string baselineVersion)
     {
         Build.Information("Downloading {0} baseline package for version {1}", Path.GetFileName(packagePath), baselineVersion);
 
@@ -106,9 +108,10 @@ public static class ApiDiffValidation
                 Path.GetFileNameWithoutExtension(packagePath),
                 """(\.\d+\.\d+\.\d+)$""", "");
 
-            using var httpClient = new HttpClient();
-            using var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
-                $"https://www.nuget.org/api/v2/package/{packageId}/{baselineVersion}"));
+            using var response = await s_httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
+                $"https://www.nuget.org/api/v2/package/{packageId}/{baselineVersion}"), HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
             await using var stream = await response.Content.ReadAsStreamAsync(); 
             var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);

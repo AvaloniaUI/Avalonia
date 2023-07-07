@@ -10,22 +10,22 @@ using static Nuke.Common.IO.PathConstruction;
 
 public partial class Build
 {
-    [Parameter("configuration")]
+    [Parameter(Name = "configuration")]
     public string Configuration { get; set; }
 
-    [Parameter("skip-tests")]
+    [Parameter(Name = "skip-tests")]
     public bool SkipTests { get; set; }
 
-    [Parameter("force-nuget-version")]
+    [Parameter(Name = "force-nuget-version")]
     public string ForceNugetVersion { get; set; }
 
-    [Parameter("skip-previewer")]
+    [Parameter(Name = "skip-previewer")]
     public bool SkipPreviewer { get; set; }
 
-    [Parameter("api-baseline")]
+    [Parameter(Name = "api-baseline")]
     public string ApiValidationBaseline { get; set; }
     
-    [Parameter("update-api-suppression")]
+    [Parameter(Name = "update-api-suppression")]
     public bool UpdateApiValidationSuppression { get; set; }
 
     public class BuildParameters
@@ -63,7 +63,7 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-        public Version ApiValidationBaseline { get; }
+        public string ApiValidationBaseline { get; }
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
 
@@ -73,10 +73,6 @@ public partial class Build
             Configuration = b.Configuration ?? "Release";
             SkipTests = b.SkipTests;
             SkipPreviewer = b.SkipPreviewer;
-            ApiValidationBaseline = b.ApiValidationBaseline is not null ?
-                new Version(b.ApiValidationBaseline) :
-                new Version(11, 0);
-            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -115,6 +111,9 @@ public partial class Build
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
+            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version).Major, 0).ToString();
+            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression;
+            
             if (IsRunningOnAzure)
             {
                 if (!IsNuGetRelease)

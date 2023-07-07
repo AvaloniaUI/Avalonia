@@ -6,21 +6,18 @@
     "build": {
       "type": "object",
       "properties": {
-        "ApiValidationBaseline": {
-          "type": "string",
-          "description": "api-baseline"
+        "api-baseline": {
+          "type": "string"
         },
-        "Configuration": {
-          "type": "string",
-          "description": "configuration"
+        "configuration": {
+          "type": "string"
         },
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
         },
-        "ForceNugetVersion": {
-          "type": "string",
-          "description": "force-nuget-version"
+        "force-nuget-version": {
+          "type": "string"
         },
         "Help": {
           "type": "boolean",
@@ -98,13 +95,11 @@
             ]
           }
         },
-        "SkipPreviewer": {
-          "type": "boolean",
-          "description": "skip-previewer"
+        "skip-previewer": {
+          "type": "boolean"
         },
-        "SkipTests": {
-          "type": "boolean",
-          "description": "skip-tests"
+        "skip-tests": {
+          "type": "boolean"
         },
         "Target": {
           "type": "array",
@@ -134,9 +129,8 @@
             ]
           }
         },
-        "UpdateApiValidationSuppression": {
-          "type": "boolean",
-          "description": "update-api-suppression"
+        "update-api-suppression": {
+          "type": "boolean"
         },
         "Verbosity": {
           "type": "string",
