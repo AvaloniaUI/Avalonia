@@ -154,6 +154,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         [DllImport(LibInput)]
         public extern static IntPtr libinput_event_get_pointer_event(IntPtr ev);
 
+        [DllImport((LibInput))]
+        public extern static double libinput_event_pointer_get_axis_value_discrete(IntPtr ev, LibInputPointerAxis axis);
+
         [DllImport(LibInput)]
         public extern static ulong libinput_event_pointer_get_time_usec(IntPtr ev);
         
@@ -198,8 +201,5 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         
         [DllImport(LibInput)]
         public extern static IntPtr libinput_event_get_keyboard_event(IntPtr ev);
-
-        [DllImport(LibInput)]
-        public extern static libinput_key libinput_event_keyboard_get_key(IntPtr ev);
     }
 }

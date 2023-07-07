@@ -16,11 +16,6 @@ internal static unsafe class LibXKBNative
         [SecurityCritical]
         public xkb_keymap() :base(true)
         {
-                
-        }
-        
-        public xkb_keymap() : base(true)
-        {
         }
 
         [SecurityCritical]
@@ -254,8 +249,4 @@ internal static unsafe class LibXKBNative
     [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public  static  extern xkb_keymap xkb_keymap_new_from_file(xkb_context ctx, IntPtr file, xkb_keymap_format format,
         xkb_keymap_compile_flags flags);
-
-    [DllImport("libc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public  static  extern IntPtr fopen([MarshalAs(UnmanagedType.LPStr)] string pathname,[MarshalAs(UnmanagedType.LPStr)] string mode);
-
 }

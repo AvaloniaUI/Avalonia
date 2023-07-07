@@ -11,7 +11,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
     public partial class LibInputBackend : IInputBackend
     {
-        private const string LibInput = nameof(Logging.LogArea.X11Platform) + "/" + nameof(LibInput);
         private IScreenInfoProvider _screen;
         private IInputRoot _inputRoot;
         private const string LibInput = nameof(LinuxFramebuffer) + "/" + nameof(Input) + "/" + nameof(LibInput);
@@ -94,11 +93,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                         case LibInputEventType.LIBINPUT_EVENT_KEYBOARD_KEY:
                             HandleKeyboardEvent(ev, type);
                             break;
-                    }
-
-                    if (type == LibInputEventType.LIBINPUT_EVENT_KEYBOARD_KEY)
-                    {
-                        HandleKeyboardEvent(ev, type);
                     }
                     libinput_event_destroy(ev);
                 }

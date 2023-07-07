@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.Input;
-using Avalonia.Logging;
 using static Avalonia.LinuxFramebuffer.Input.LibXKB.LibXKBNative;
 
 namespace Avalonia.LinuxFramebuffer.Input.LibXKB
@@ -17,18 +16,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
 
         public KeyboardLayoutManager()
         {
-            Logger.TryGet(LogEventLevel.Debug,LibXKB)
-                ?.Log(this,$"XKB_DEFAULT_LAYOUT:{Environment.GetEnvironmentVariable("XKB_DEFAULT_LAYOUT")}");
-            Logger.TryGet(LogEventLevel.Debug,LibXKB)
-                ?.Log(this,$"XKB_DEFAULT_RULES:{Environment.GetEnvironmentVariable("XKB_DEFAULT_RULES")}");
-            Logger.TryGet(LogEventLevel.Debug,LibXKB)
-                ?.Log(this,$"XKB_DEFAULT_MODEL:{Environment.GetEnvironmentVariable("XKB_DEFAULT_MODEL")}");
-            Logger.TryGet(LogEventLevel.Debug,LibXKB)
-                ?.Log(this,$"XKB_DEFAULT_VARIANT:{Environment.GetEnvironmentVariable("XKB_DEFAULT_VARIANT")}");
-            
-            //XKB_DEFAULT_RULES
-            //XKB_DEFAULT_MODEL
-            //XKB_DEFAULT_VARIANT
+            Logging.Logger.TryGet(Logging.LogEventLevel.Debug, LibXKB)
+                ?.Log(this, $"XKB_DEFAULT_LAYOUT:{Environment.GetEnvironmentVariable("XKB_DEFAULT_LAYOUT")}");
+            Logging.Logger.TryGet(Logging.LogEventLevel.Debug, LibXKB)
+                ?.Log(this, $"XKB_DEFAULT_RULES:{Environment.GetEnvironmentVariable("XKB_DEFAULT_RULES")}");
+            Logging.Logger.TryGet(Logging.LogEventLevel.Debug, LibXKB)
+                ?.Log(this, $"XKB_DEFAULT_MODEL:{Environment.GetEnvironmentVariable("XKB_DEFAULT_MODEL")}");
+            Logging.Logger.TryGet(Logging.LogEventLevel.Debug, LibXKB)
+                ?.Log(this, $"XKB_DEFAULT_VARIANT:{Environment.GetEnvironmentVariable("XKB_DEFAULT_VARIANT")}");
+
             _ctx = xkb_context_new(xkb_context_flags.XKB_CONTEXT_NO_FLAGS);
             if (_ctx.IsInvalid)
             {
@@ -38,8 +34,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
             }
 
             xkb_context_set_log_level(_ctx, xkb_log_level.XKB_LOG_LEVEL_DEBUG);
-            xkb_context_set_log_verbosity(_ctx,9);
-            
+            xkb_context_set_log_verbosity(_ctx, 9);
+
         }
 
         public bool TtyGetModifiers(out RawInputModifiers modifiers)
@@ -63,8 +59,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
 
             var keycode = (uint)key + 8;
             var sym = xkb_state_key_get_one_sym(_state, keycode);
-            Logging.Logger.TryGet(LogEventLevel.Verbose,"X11Platform/LibXKB")
-                ?.Log(this,$"{key} -> {(XKBKeysEnum)sym}");
+            Logging.Logger.TryGet(Logging.LogEventLevel.Verbose, LibXKB)
+                ?.Log(this, $"{key} -> {(XKBKeysEnum)sym}");
 
             var pressed = key_State == LibInput.libinput_key_state.Pressed;
 
@@ -76,7 +72,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
             var (avaloniakey, text) = AXkbCommon.KeysymToAvaloniaKey(sym, modifiers, _state, keycode);
 
             xkb_state_update_key(_state, keycode, pressed ? xkb_key_direction.XKB_KEY_DOWN : xkb_key_direction.XKB_KEY_UP);
-            
+
             var isRepeats = pressed && xkb_keymap_key_repeats(_keymap, keycode);
             avaloniaKeyState = (avaloniakey, modifiers, isRepeats, text);
             return true;
@@ -116,7 +112,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
             names.variant = null;
             names.options = null;
 
-            _keymap = xkb_keymap_new_from_names(_ctx,ref names, xkb_keymap_compile_flags.XKB_KEYMAP_COMPILE_NO_FLAGS);
+            _keymap = xkb_keymap_new_from_names(_ctx, ref names, xkb_keymap_compile_flags.XKB_KEYMAP_COMPILE_NO_FLAGS);
             if (_keymap.IsInvalid)
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Warning, LibXKB)
@@ -132,7 +128,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
                     ?.Log(this, $"{nameof(KeyboardLayoutManager)}: Failed to compile keymap Error {Marshal.GetLastWin32Error()}.");
                 return false;
             }
-            
+
             return true;
         }
     }

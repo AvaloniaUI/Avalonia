@@ -26,10 +26,8 @@ namespace Avalonia.LinuxFramebuffer
     internal class LinuxFramebufferPlatform
     {
         private readonly IOutputBackend _fb;
-        private static readonly Stopwatch s_st = new ();
-        internal static uint Timestamp => (uint)s_st.ElapsedTicks;
-        public static InternalPlatformThreadingInterface? Threading { get; private set; }
-
+        public static ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue = new();
+        
         internal static Compositor Compositor { get; private set; } = null!;
         
         private LinuxFramebufferPlatform(IOutputBackend backend)
@@ -51,7 +49,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IPlatformIconLoader>().ToConstant(new LinuxFramebufferIconLoader())
+                .Bind<IPlatformIconLoader>().ToConstant(new LinuxFramebufferIconLoaderStub())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
