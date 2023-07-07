@@ -10,17 +10,20 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly RoutedEventArgs _eventArgs;
         private EventChainLink? _handledBy;
 
-        public FiredEvent(RoutedEventArgs eventArgs, EventChainLink originator)
+        public FiredEvent(RoutedEventArgs eventArgs, EventChainLink originator, DateTime triggerTime)
         {
             _eventArgs = eventArgs ?? throw new ArgumentNullException(nameof(eventArgs));
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
             AddToChain(originator);
+            TriggerTime = triggerTime;
         }
 
         public bool IsPartOfSameEventChain(RoutedEventArgs e)
         {
             return e == _eventArgs;
         }
+
+        public DateTime TriggerTime { get; }
 
         public RoutedEvent Event => _eventArgs.RoutedEvent!;
 
