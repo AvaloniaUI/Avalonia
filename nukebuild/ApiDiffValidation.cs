@@ -69,17 +69,28 @@ public static class ApiDiffValidation
                 right.Add(targetDllPath);
             }
 
-            var args = $""" -l={string.Join(',', left)} -r="{string.Join(',', right)}" """;
-            if (File.Exists(suppressionFile))
+            if (left.Any())
             {
-                args += $""" --suppression-file="{suppressionFile}" """;
-            }
-            if (updateSuppressionFile)
-            {
-                args += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
-            }
+                var args = $""" -l={string.Join(',', left)} -r="{string.Join(',', right)}" """;
+                if (File.Exists(suppressionFile))
+                {
+                    args += $""" --suppression-file="{suppressionFile}" """;
+                }
 
-            apiCompatTool(args, tempFolder);
+                if (updateSuppressionFile)
+                {
+                    args += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
+                }
+
+                var result = apiCompatTool(args, tempFolder)
+                    .Where(t => t.Type == OutputType.Err).ToArray();
+                if (result.Any())
+                {
+                    throw new AggregateException(
+                        $"ApiDiffValidation task has failed for \"{Path.GetFileName(packagePath)}\" package",
+                        result.Select(r => new Exception(r.Text)));
+                }
+            }
         }
     }
 

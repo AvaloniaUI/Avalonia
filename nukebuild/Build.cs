@@ -37,7 +37,7 @@ partial class Build : NukeBuild
 {
     BuildParameters Parameters { get; set; }
 
-    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll")]
+    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
     Tool ApiCompatTool;
 
     protected override void OnBuildInitialized()
