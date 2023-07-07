@@ -12,6 +12,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -210,7 +211,8 @@ namespace Avalonia.Controls
         private void InitializeData(bool showsPreview)
         {
             // If not in a grid or can't resize, do nothing.
-            if (Parent is Grid grid)
+            Grid? grid = Parent is Grid ? Parent as Grid : this.FindAncestorOfType<Grid>();
+            if (grid != null)
             {
                 GridResizeDirection resizeDirection = GetEffectiveResizeDirection();
 
