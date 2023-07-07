@@ -26,7 +26,7 @@ public partial class Build
     public string ApiValidationBaseline { get; set; }
     
     [Parameter(Name = "update-api-suppression")]
-    public bool UpdateApiValidationSuppression { get; set; }
+    public bool? UpdateApiValidationSuppression { get; set; }
 
     public class BuildParameters
     {
@@ -112,7 +112,7 @@ public partial class Build
             Version = b.ForceNugetVersion ?? GetVersion();
 
             ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version).Major, 0).ToString();
-            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression;
+            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
             {
