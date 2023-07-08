@@ -117,9 +117,15 @@ public static class ApiDiffValidation
 
         try
         {
+            /*
+             Gets package name from versions like:
+             Avalonia.0.10.0-preview1
+             Avalonia.11.0.999-cibuild0037534-beta
+             Avalonia.11.0.0
+             */
             var packageId = Regex.Replace(
                 Path.GetFileNameWithoutExtension(packagePath),
-                """(\.\d+\.\d+\.\d+)$""", "");
+                """(\.\d+\.\d+\.\d+(?:-.+)?)$""", "");
 
             using var response = await s_httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
                 $"https://www.nuget.org/api/v2/package/{packageId}/{baselineVersion}"), HttpCompletionOption.ResponseHeadersRead);
