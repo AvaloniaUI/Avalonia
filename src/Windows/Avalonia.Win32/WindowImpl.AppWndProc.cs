@@ -128,7 +128,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DPICHANGED:
                     {
-                        _dpi = ToInt32(wParam) & 0xffff;
+                        _dpi = (uint)wParam;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                         _scaling = _dpi / 96.0;
                         RefreshIcon();
@@ -156,7 +156,7 @@ namespace Avalonia.Win32
                     }
 
                     var requestIcon = (Icons)wParam;
-                    var requestDpi = ToInt32(lParam);
+                    var requestDpi = (uint) lParam;
 
                     if (requestDpi == 0)
                     {

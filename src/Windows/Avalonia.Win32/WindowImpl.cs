@@ -81,11 +81,11 @@ namespace Avalonia.Win32
         private IInputRoot? _owner;
         protected WindowProperties _windowProperties;
         private IWindowIconImpl? _iconImpl;
-        private readonly Dictionary<(Icons type, int dpi, PlatformThemeVariant theme), Icon> _iconCache = new();
+        private readonly Dictionary<(Icons type, uint dpi, PlatformThemeVariant theme), Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
-        private int _dpi = 96;
+        private uint _dpi = 96;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
         private OleDropTarget? _dropTarget;
@@ -753,7 +753,7 @@ namespace Avalonia.Win32
             _iconCache.Clear();
         }
 
-        private Icon? LoadIcon(Icons type, int dpi)
+        private Icon? LoadIcon(Icons type, uint dpi)
         {
             if (_iconImpl == null)
             {
@@ -976,10 +976,10 @@ namespace Avalonia.Win32
                 if (GetDpiForMonitor(
                     monitor,
                     MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
-                    out var dpix,
+                    out _dpi,
                     out _) == 0)
                 {
-                    _scaling = dpix / 96.0;
+                    _scaling = _dpi / 96.0;
                 }
             }
         }
