@@ -84,14 +84,21 @@ public enum CompositionGpuImportedImageSynchronizationCapabilities
 /// <summary>
 /// An imported GPU object that's usable by composition APIs 
 /// </summary>
+[NotClientImplementable]
 public interface ICompositionGpuImportedObject : IAsyncDisposable
 {
     /// <summary>
     /// Tracks the import status of the object. Once the task is completed,
     /// the user code is allowed to free the resource owner in case when a non-owning
-    /// sharing handle was used
+    /// sharing handle was used.
     /// </summary>
-    Task ImportCompeted { get; }
+    Task ImportCompleted { get; }
+    
+    /// <inheritdoc cref="ImportCompleted"/>
+    /// <seealso cref="ImportCompleted">ImportCompleted (recommended replacement)</seealso>
+    [Obsolete("Please use ICompositionGpuImportedObject.ImportCompleted instead")]
+    Task ImportCompeted => ImportCompleted;
+    
     /// <summary>
     /// Indicates if the device context this instance is associated with is no longer available
     /// </summary>
