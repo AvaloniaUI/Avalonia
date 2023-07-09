@@ -36,6 +36,10 @@ using MicroCom.CodeGenerator;
 partial class Build : NukeBuild
 {
     BuildParameters Parameters { get; set; }
+
+    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
+    Tool ApiCompatTool;
+
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this);
@@ -278,7 +282,17 @@ partial class Build : NukeBuild
             RefAssemblyGenerator.GenerateRefAsmsInPackage(Parameters.NugetRoot / "Avalonia." +
                                                           Parameters.Version + ".nupkg");
         });
-
+    
+    Target ValidateApiDiff => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(async () =>
+        {
+            await Task.WhenAll(
+                Directory.GetFiles(Parameters.NugetRoot).Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                    ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
+                    Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+        });
+    
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
@@ -288,7 +302,8 @@ partial class Build : NukeBuild
 
     Target Package => _ => _
         .DependsOn(RunTests)
-        .DependsOn(CreateNugetPackages);
+        .DependsOn(CreateNugetPackages)
+        .DependsOn(ValidateApiDiff);
 
     Target CiAzureLinux => _ => _
         .DependsOn(RunTests);

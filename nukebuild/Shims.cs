@@ -9,12 +9,12 @@ using Numerge;
 
 public partial class Build
 {
-    static void Information(string info)
+    internal static void Information(string info)
     {
         Logger.Info(info);
     }
 
-    static void Information(string info, params object[] args)
+    internal static void Information(string info, params object[] args)
     {
         Logger.Info(info, args);
     }
