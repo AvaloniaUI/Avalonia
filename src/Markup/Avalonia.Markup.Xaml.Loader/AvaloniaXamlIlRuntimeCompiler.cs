@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -231,10 +232,19 @@ namespace Avalonia.Markup.Xaml.XamlIl
                                ?? ((IXamlAstValueNode)parsed.Root).Type.GetClrType().Name;
                 var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + xamlName);
                 var builder = _sreTypeSystem.CreateTypeBuilder(tb);
-                parsedDocuments.Add(new XamlDocumentResource(parsed, document.BaseUri?.ToString(),
-                    null, null, true, builder,
-                    compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
-                    document.RootInstance is null ? compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true) : null));
+
+                parsedDocuments.Add(new XamlDocumentResource(
+                    parsed,
+                    document.BaseUri?.ToString(),
+                    null,
+                    null,
+                    true,
+                    () => new XamlDocumentTypeBuilderProvider(
+                        builder,
+                        compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
+                        document.RootInstance is null ?
+                            compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true) :
+                            null)));
                 originalDocuments.Add(document);
             }
 
@@ -242,9 +252,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             var createdTypes = parsedDocuments.Select(document =>
             {
-                compiler.Compile(document.XamlDocument, document.TypeBuilder, document.PopulateMethod,
-                    document.BuildMethod, document.Uri, document.FileSource);
-                return _sreTypeSystem.GetType(document.TypeBuilder.CreateType());
+                compiler.Compile(document.XamlDocument, document.TypeBuilderProvider, document.Uri, document.FileSource);
+                return _sreTypeSystem.GetType(document.TypeBuilderProvider.TypeBuilder.CreateType());
             }).ToArray();
             
             clrPropertyBuilder.CreateTypeInfo();

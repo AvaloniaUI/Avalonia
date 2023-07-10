@@ -1,6 +1,5 @@
 ﻿using System;
 using XamlX.Ast;
-using XamlX.IL;
 using XamlX.TypeSystem;
 #nullable enable
 
@@ -8,24 +7,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 
 internal class XamlDocumentResource : IXamlDocumentResource
 {
+    private readonly Func<XamlDocumentTypeBuilderProvider> _createTypeBuilderProvider;
+    private XamlDocumentTypeBuilderProvider? _typeBuilderProvider;
+
     public XamlDocumentResource(
         XamlDocument xamlDocument,
         string? uri,
         IFileSource? fileSource,
         IXamlType? classType,
         bool isPublic,
-        IXamlTypeBuilder<IXamlILEmitter> typeBuilder,
-        IXamlMethodBuilder<IXamlILEmitter> populateMethod,
-        IXamlMethodBuilder<IXamlILEmitter>? buildMethod)
+        Func<XamlDocumentTypeBuilderProvider> createTypeBuilderProvider)
     {
+        _createTypeBuilderProvider = createTypeBuilderProvider;
         XamlDocument = xamlDocument;
         Uri = uri;
         FileSource = fileSource;
         ClassType = classType;
         IsPublic = isPublic;
-        TypeBuilder = typeBuilder;
-        PopulateMethod = populateMethod;
-        BuildMethod = buildMethod;
     }
 
     public XamlDocument XamlDocument { get; }
@@ -34,10 +32,22 @@ internal class XamlDocumentResource : IXamlDocumentResource
 
     public IXamlType? ClassType { get; }
     public bool IsPublic { get; }
-    public IXamlTypeBuilder<IXamlILEmitter> TypeBuilder { get; }
-    public IXamlMethodBuilder<IXamlILEmitter> PopulateMethod { get; }
-    public IXamlMethodBuilder<IXamlILEmitter>? BuildMethod { get; }
+    public XamlDocumentUsage Usage { get; set; }
 
-    IXamlMethod? IXamlDocumentResource.BuildMethod => BuildMethod;
-    IXamlMethod IXamlDocumentResource.PopulateMethod => PopulateMethod;
+    public XamlDocumentTypeBuilderProvider TypeBuilderProvider
+    {
+        get
+        {
+            if (_typeBuilderProvider is null)
+            {
+                _typeBuilderProvider = _createTypeBuilderProvider();
+                Usage = XamlDocumentUsage.Used;
+            }
+
+            return _typeBuilderProvider;
+        }
+    }
+
+    IXamlMethod? IXamlDocumentResource.BuildMethod => TypeBuilderProvider.BuildMethod;
+    IXamlMethod IXamlDocumentResource.PopulateMethod => TypeBuilderProvider.PopulateMethod;
 }

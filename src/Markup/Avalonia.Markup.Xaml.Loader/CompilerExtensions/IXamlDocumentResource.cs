@@ -1,5 +1,4 @@
-﻿using System;
-using XamlX.Ast;
+﻿using XamlX.Ast;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
@@ -14,4 +13,5 @@ internal interface IXamlDocumentResource
     IXamlMethod PopulateMethod { get; }
     IFileSource? FileSource { get; }
     XamlDocument XamlDocument { get; }
+    XamlDocumentUsage Usage { get; set; }
 }
