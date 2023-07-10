@@ -10,7 +10,7 @@
 
   <StackPanel Spacing="20">
     <StackPanel.Styles>
-      <Media Query="min-width:721">
+      <Media Query="min-width:720">
         <Style Selector="UniformGrid#UGrid">
           <Setter Property="Columns"
                   Value="3"/>

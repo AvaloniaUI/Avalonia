@@ -44,12 +44,7 @@ namespace Avalonia.Styling
 
         internal override void SetParent(StyleBase? parent)
         {
-            if (parent is Style)
-            {
-                throw new InvalidOperationException("Media can not be children of Style.");
-            }
-
-            base.SetParent(parent);
+            throw new InvalidOperationException("Media cannot be added as a nested style.");
         }
 
         internal SelectorMatchResult TryAttach(StyledElement target, object? host, FrameType type)
