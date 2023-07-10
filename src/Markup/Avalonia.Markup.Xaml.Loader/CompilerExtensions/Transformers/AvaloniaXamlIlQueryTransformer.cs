@@ -263,7 +263,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldc_I4((int)_argument.Operator);
             codeGen.Ldc_R8(_argument.Value);
             EmitCall(context, codeGen,
-                m => m.Name == "Width" && m.Parameters.Count == 5);
+                m => m.Name == "Width" && m.Parameters.Count == 3);
         }
     }
     
@@ -282,7 +282,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldc_I4((int)_argument.Operator);
             codeGen.Ldc_R8(_argument.Value);
             EmitCall(context, codeGen,
-                m => m.Name == "Height" && m.Parameters.Count == 5);
+                m => m.Name == "Height" && m.Parameters.Count == 3);
         }
     }
     

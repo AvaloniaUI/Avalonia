@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Styling
 {
-    internal static class Queries
+    public static class Queries
     {
         public static Query Platform(this Query? previous, string argument)
         {
