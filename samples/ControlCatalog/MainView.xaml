@@ -114,6 +114,9 @@
       <TabItem Header="ListBox" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:ListBoxPage />
       </TabItem>
+      <TabItem Header="Media Queries">
+        <pages:MediaQueryPage />
+      </TabItem>
       <TabItem Header="Menu">
         <pages:MenuPage />
       </TabItem>

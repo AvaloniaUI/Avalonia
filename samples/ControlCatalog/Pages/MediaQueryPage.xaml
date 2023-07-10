@@ -1,0 +1,121 @@
+﻿<UserControl x:Class="ControlCatalog.Pages.MediaQueryPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             d:DesignHeight="800"
+             d:DesignWidth="400"
+             mc:Ignorable="d">
+
+  <StackPanel Spacing="20">
+    <StackPanel.Styles>
+      <Media Query="min-width:721">
+        <Style Selector="UniformGrid#UGrid">
+          <Setter Property="Columns"
+                  Value="3"/>
+        </Style>
+        <Style Selector="TextBlock#widthMatch">
+          <Setter Property="Text"
+                  Value="Matched=min-width:721. 3 Columns"/>
+        </Style>
+      </Media>
+      <Media Query="max-width:720">
+        <Style Selector="UniformGrid#UGrid">
+          <Setter Property="Columns"
+                  Value="2"/>
+        </Style>
+        <Style Selector="TextBlock#widthMatch">
+          <Setter Property="Text"
+                  Value="Matched=max-width:720. 2 Columns"/>
+        </Style>
+      </Media>
+      <Media Query="max-width:640">
+        <Style Selector="UniformGrid#UGrid">
+          <Setter Property="Columns"
+                  Value="1"/>
+        </Style>
+        <Style Selector="TextBlock#widthMatch">
+          <Setter Property="Text"
+                  Value="Matched=max-width:640. 1 Column"/>
+        </Style>
+      </Media>
+      <Media Query="orientation:portrait">
+        <Style Selector="TextBlock#orientation">
+          <Setter Property="Text"
+                  Value="Orientation: Portrait. Query:`orientation:portrait`"/>
+        </Style>
+      </Media>
+      <Media Query="orientation:landscape">
+        <Style Selector="TextBlock#orientation">
+          <Setter Property="Text"
+                  Value="Orientation: Landscape. Query:`orientation:landscape`"/>
+        </Style>
+      </Media>
+      <Media Query="platform:windows">
+        <Style Selector="TextBlock#platform">
+          <Setter Property="Text"
+                  Value="Platform: Windows. Query:`platform:windows`"/>
+        </Style>
+      </Media>
+      <Media Query="platform:osx">
+        <Style Selector="TextBlock#platform">
+          <Setter Property="Text"
+                  Value="Platform: OSX. Query:`platform:osx`"/>
+        </Style>
+      </Media>
+      <Media Query="platform:linux">
+        <Style Selector="TextBlock#platform">
+          <Setter Property="Text"
+                  Value="Platform: Linux. Query:`platform:linux`"/>
+        </Style>
+      </Media>
+      <Media Query="platform:android">
+        <Style Selector="TextBlock#platform">
+          <Setter Property="Text"
+                  Value="Platform: Android. Query:`platform:android`"/>
+        </Style>
+      </Media>
+      <Media Query="platform:ios">
+        <Style Selector="TextBlock#platform">
+          <Setter Property="Text"
+                  Value="Platform: iOS. Query:`platform:ios`"/>
+        </Style>
+      </Media>
+    </StackPanel.Styles>
+    <TextBlock Text="Media Queries" />
+    
+    <TextBlock Name="platform"/>
+    <TextBlock Name="orientation"/>
+
+    <TextBlock Text="Screen Queries"/>
+    <TextBlock Name="widthMatch"/>
+    <UniformGrid HorizontalAlignment="Stretch"
+                 Name="UGrid">
+      <Border Margin="10"
+              VerticalAlignment="Stretch"
+              Height="100"
+              Background="Lime"/>
+      <Border Margin="10"
+              VerticalAlignment="Stretch"
+              Height="100"
+              Background="Lime"/>
+      <Border Margin="10"
+              VerticalAlignment="Stretch"
+              Height="100"
+              Background="Lime"/>
+      <Border Margin="10"
+              VerticalAlignment="Stretch"
+              Height="100"
+              Background="Lime"/>
+      <Border Margin="10"
+              VerticalAlignment="Stretch"
+              Height="100"
+              Background="Lime"/>
+      <Border Margin="10"
+              VerticalAlignment="Stretch"
+              Height="100"
+              Background="Lime"/>
+    </UniformGrid>
+  </StackPanel>
+</UserControl>
