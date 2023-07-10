@@ -6,17 +6,18 @@
     "build": {
       "type": "object",
       "properties": {
-        "Configuration": {
-          "type": "string",
-          "description": "configuration"
+        "api-baseline": {
+          "type": "string"
+        },
+        "configuration": {
+          "type": "string"
         },
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
         },
-        "ForceNugetVersion": {
-          "type": "string",
-          "description": "force-nuget-version"
+        "force-nuget-version": {
+          "type": "string"
         },
         "Help": {
           "type": "boolean",
@@ -89,17 +90,16 @@
               "RunRenderTests",
               "RunTests",
               "RunToolsTests",
+              "ValidateApiDiff",
               "ZipFiles"
             ]
           }
         },
-        "SkipPreviewer": {
-          "type": "boolean",
-          "description": "skip-previewer"
+        "skip-previewer": {
+          "type": "boolean"
         },
-        "SkipTests": {
-          "type": "boolean",
-          "description": "skip-tests"
+        "skip-tests": {
+          "type": "boolean"
         },
         "Target": {
           "type": "array",
@@ -124,9 +124,13 @@
               "RunRenderTests",
               "RunTests",
               "RunToolsTests",
+              "ValidateApiDiff",
               "ZipFiles"
             ]
           }
+        },
+        "update-api-suppression": {
+          "type": "boolean"
         },
         "Verbosity": {
           "type": "string",
