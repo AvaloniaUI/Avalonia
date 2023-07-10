@@ -211,7 +211,23 @@ namespace Avalonia.Controls
         private void InitializeData(bool showsPreview)
         {
             // If not in a grid or can't resize, do nothing.
-            Grid? grid = Parent is Grid ? Parent as Grid : this.FindAncestorOfType<Grid>();
+            Grid? grid = null;
+            Control? gridChild = null;
+            if (Parent is Grid)
+            {
+                grid = Parent as Grid;
+                gridChild = this;
+            }
+            else
+            {
+                Visual? visual = this;
+                while (visual.VisualParent is not null and not Grid)
+                {
+                    visual = visual.VisualParent;
+                }
+                grid = visual.VisualParent as Grid;
+                gridChild = visual as Control;
+            }
             if (grid != null)
             {
                 GridResizeDirection resizeDirection = GetEffectiveResizeDirection();
@@ -220,6 +236,7 @@ namespace Avalonia.Controls
                 _resizeData = new ResizeData
                 {
                     Grid = grid,
+                    GridChild = gridChild!,
                     ShowsPreview = showsPreview,
                     ResizeDirection = resizeDirection,
                     SplitterLength = Math.Min(Bounds.Width, Bounds.Height),
@@ -227,7 +244,7 @@ namespace Avalonia.Controls
                     Scaling = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1,
                 };
 
-                // Store the rows and columns to resize on drag events.
+                // Store the rows and columns to resize on drag events.                             
                 if (!SetupDefinitionsToResize())
                 {
                     // Unable to resize, clear data.
@@ -245,7 +262,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SetupDefinitionsToResize()
         {
-            int gridSpan = GetValue(_resizeData!.ResizeDirection == GridResizeDirection.Columns ?
+            int gridSpan = _resizeData!.GridChild!.GetValue(_resizeData.ResizeDirection == GridResizeDirection.Columns ?
                 Grid.ColumnSpanProperty :
                 Grid.RowSpanProperty);
 
@@ -612,7 +629,7 @@ namespace Avalonia.Controls
         private void MoveSplitter(double horizontalChange, double verticalChange)
         {
             Debug.Assert(_resizeData != null, "_resizeData should not be null when calling MoveSplitter");
-            
+
             // Calculate the offset to adjust the splitter.  If layout rounding is enabled, we
             // need to round to an integer physical pixel value to avoid round-ups of children that
             // expand the bounds of the Grid.  In practice this only happens in high dpi because
@@ -620,12 +637,12 @@ namespace Avalonia.Controls
             // across logical pixels).  Rounding error only creeps in when converting to a physical
             // display with something other than the logical 96 dpi.
             double delta = _resizeData.ResizeDirection == GridResizeDirection.Columns ? horizontalChange : verticalChange;
-            
+
             if (UseLayoutRounding)
             {
                 delta = LayoutHelper.RoundLayoutValue(delta, LayoutHelper.GetLayoutScale(this));
             }
-            
+
             DefinitionBase? definition1 = _resizeData.Definition1;
             DefinitionBase? definition2 = _resizeData.Definition2;
 
@@ -674,8 +691,8 @@ namespace Avalonia.Controls
             }
 
             // Don't show preview.
-            InitializeData(false); 
-                
+            InitializeData(false);
+
             // Check that we are actually able to resize.
             if (_resizeData == null)
             {
@@ -706,7 +723,7 @@ namespace Avalonia.Controls
 
                 _decorator = new Decorator
                 {
-                    Child = previewControl, 
+                    Child = previewControl,
                     RenderTransform = _translation
                 };
 
@@ -778,6 +795,8 @@ namespace Avalonia.Controls
 
             // The grid to Resize.
             public Grid? Grid;
+            //Child of the grid that is the GridSplitter itself of its ancestor.
+            public Control? GridChild;
 
             // Cache of Resize Direction and Behavior.
             public GridResizeDirection ResizeDirection;
