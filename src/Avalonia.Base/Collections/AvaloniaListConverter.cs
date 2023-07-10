@@ -19,12 +19,11 @@ namespace Avalonia.Collections
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
         {
-            if (value is not string stringValue)
+            if (!(value is string stringValue))
                 return null;
 
             var result = new AvaloniaList<T>();
 
-            // TODO: Use StringTokenizer here.
             var values = stringValue.Split(',');
 
             foreach (var s in values)
