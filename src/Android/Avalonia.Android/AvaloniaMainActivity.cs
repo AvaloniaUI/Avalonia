@@ -11,60 +11,10 @@ using AndroidX.AppCompat.App;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService, IActivityConfigurationService
+    public class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService, IActivityConfigurationService
     {
-        internal static object ViewContent;
-
         public Action<int, Result, Intent> ActivityResult { get; set; }
         public Action<int, string[], Permission[]> RequestPermissionsResult { get; set; }
-        internal AvaloniaView View;
-        private GlobalLayoutListener _listener;
-
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            View = new AvaloniaView(this);
-            if (ViewContent != null)
-            {
-                View.Content = ViewContent;
-            }
-
-            if (Avalonia.Application.Current.ApplicationLifetime is SingleViewLifetime lifetime)
-            {
-                lifetime.View = View;
-            }
-            base.OnCreate(savedInstanceState);
-
-            SetContentView(View);
-
-            _listener = new GlobalLayoutListener(View);
-
-            View.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
-        }
-
-        public object Content
-        {
-            get
-            {
-                return ViewContent;
-            }
-            set
-            {
-                ViewContent = value;
-                if (View != null)
-                    View.Content = value;
-            }
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-
-            // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
-            {
-                Window.Attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
-            }
-        }
 
         public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
         public event EventHandler ConfigurationChanged;
@@ -79,15 +29,6 @@ namespace Avalonia.Android
             {
                 base.OnBackPressed();
             }
-        }
-
-        protected override void OnDestroy()
-        {
-            View.Content = null;
-
-            View.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
-
-            base.OnDestroy();
         }
 
         public override void OnConfigurationChanged(Configuration newConfig)
@@ -107,8 +48,47 @@ namespace Avalonia.Android
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-            
+
             RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
+        }
+    }
+
+    public abstract partial class AvaloniaMainActivity<TApp> : AvaloniaMainActivity  where TApp : Application, new()
+    {
+        internal AvaloniaView View;
+        private GlobalLayoutListener _listener;
+
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            InitializeApp();
+
+            base.OnCreate(savedInstanceState);
+
+            SetContentView(View);
+
+            _listener = new GlobalLayoutListener(View);
+
+            View.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
+            {
+                Window.Attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            View.Content = null;
+
+            View.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
+
+            base.OnDestroy();
         }
 
         class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener

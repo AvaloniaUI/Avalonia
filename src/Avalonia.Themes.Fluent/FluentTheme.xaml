@@ -18,7 +18,7 @@
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
-      <StyleInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
+      <ResourceInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
     </ResourceDictionary>
   </Styles.Resources>
   

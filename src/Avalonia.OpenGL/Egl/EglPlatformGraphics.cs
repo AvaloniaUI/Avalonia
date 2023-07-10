@@ -16,13 +16,6 @@ namespace Avalonia.OpenGL.Egl
             _display = display;
         }
         
-        public static void TryInitialize()
-        {
-            var feature = TryCreate();
-            if (feature != null)
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(feature);
-        }
-        
         public static EglPlatformGraphics? TryCreate() => TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
         {
             Egl = new EglInterface(),

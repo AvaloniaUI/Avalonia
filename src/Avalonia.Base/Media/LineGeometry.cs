@@ -68,7 +68,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 

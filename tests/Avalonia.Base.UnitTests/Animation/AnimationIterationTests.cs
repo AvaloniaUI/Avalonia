@@ -71,11 +71,14 @@ namespace Avalonia.Base.UnitTests.Animation
             var clock = new TestClock();
             var animationRun = animation.RunAsync(border, clock);
 
+            border.Measure(Size.Infinity);
+            border.Arrange(new Rect(border.DesiredSize));
+            
             clock.Step(TimeSpan.Zero);
 
             // Initial Delay.
-            clock.Step(TimeSpan.FromSeconds(1));
-            Assert.Equal(border.Width, 0d);
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.Equal(100d, border.Width);
 
             clock.Step(TimeSpan.FromSeconds(6));
 
@@ -126,7 +129,84 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(0.100d));
             Assert.Equal(border.Width, 300d);
         }
+        
+        [Theory]
+        [InlineData(FillMode.Backward, 0, 0d, 0.7d)]
+        [InlineData(FillMode.Both, 0, 0d, 0.7d)]
+        [InlineData(FillMode.Forward, 100, 0d, 0.7d)]
+        [InlineData(FillMode.Backward, 0, 0.3d, 0.7d)]
+        [InlineData(FillMode.Both, 0, 0.3d, 0.7d)]
+        [InlineData(FillMode.Forward, 100, 0.3d, 0.7d)]
+        public void Check_FillMode_Start_Value(FillMode fillMode, double target, double startCue, double endCue)
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, Cue = new Cue(startCue)
+            };
 
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 300d), }, Cue = new Cue(endCue)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10d),
+                Delay = TimeSpan.FromSeconds(5d),
+                FillMode = fillMode,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 100d, };
+            
+            var clock = new TestClock();
+            
+            animation.RunAsync(border, clock);
+            
+            clock.Step(TimeSpan.Zero);
+            
+            Assert.Equal(target, border.Width);
+        }
+        
+        [Theory]
+        [InlineData(FillMode.Backward, 100, 0.3d, 1d)]
+        [InlineData(FillMode.Both, 300, 0.3d, 1d)]
+        [InlineData(FillMode.Forward, 300, 0.3d, 1d)]
+        [InlineData(FillMode.Backward, 100, 0.3d, 0.7d)]
+        [InlineData(FillMode.Both, 300, 0.3d, 0.7d)]
+        [InlineData(FillMode.Forward, 300, 0.3d, 0.7d)]
+        public void Check_FillMode_End_Value(FillMode fillMode, double target, double startCue, double endCue)
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 0d), }, Cue = new Cue(0.7d)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 300d), }, Cue = new Cue(1d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10d),
+                Delay = TimeSpan.FromSeconds(5d),
+                FillMode = fillMode,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 100d, };
+            
+            var clock = new TestClock();
+            
+            animation.RunAsync(border, clock);
+            
+            clock.Step(TimeSpan.FromSeconds(0));
+            clock.Step(TimeSpan.FromSeconds(20));
+            
+            Assert.Equal(target, border.Width);
+        }
+        
         [Fact]
         public void Dispose_Subscription_Should_Stop_Animation()
         {

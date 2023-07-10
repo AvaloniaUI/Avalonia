@@ -10,17 +10,23 @@ using static Nuke.Common.IO.PathConstruction;
 
 public partial class Build
 {
-    [Parameter("configuration")]
+    [Parameter(Name = "configuration")]
     public string Configuration { get; set; }
 
-    [Parameter("skip-tests")]
+    [Parameter(Name = "skip-tests")]
     public bool SkipTests { get; set; }
 
-    [Parameter("force-nuget-version")]
+    [Parameter(Name = "force-nuget-version")]
     public string ForceNugetVersion { get; set; }
 
-    [Parameter("skip-previewer")]
+    [Parameter(Name = "skip-previewer")]
     public bool SkipPreviewer { get; set; }
+
+    [Parameter(Name = "api-baseline")]
+    public string ApiValidationBaseline { get; set; }
+    
+    [Parameter(Name = "update-api-suppression")]
+    public bool? UpdateApiValidationSuppression { get; set; }
 
     public class BuildParameters
     {
@@ -57,7 +63,9 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-
+        public string ApiValidationBaseline { get; }
+        public bool UpdateApiValidationSuppression { get; }
+        public AbsolutePath ApiValidationSuppressionFiles { get; }
 
         public BuildParameters(Build b)
         {
@@ -103,6 +111,9 @@ public partial class Build
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
+            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version).Major, 0).ToString();
+            UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
+            
             if (IsRunningOnAzure)
             {
                 if (!IsNuGetRelease)
@@ -125,6 +136,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
+            ApiValidationSuppressionFiles = RootDirectory / "api";
         }
 
         string GetVersion()

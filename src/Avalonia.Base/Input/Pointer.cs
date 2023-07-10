@@ -88,7 +88,6 @@ namespace Avalonia.Input
         /// Captures pointer input to the specified gesture recognizer.
         /// </summary>
         /// <param name="gestureRecognizer">The gesture recognizer.</param>
-        /// </remarks>
         internal void CaptureGestureRecognizer(GestureRecognizer? gestureRecognizer)
         {
             if (CapturedGestureRecognizer != gestureRecognizer)

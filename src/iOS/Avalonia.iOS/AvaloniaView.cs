@@ -27,7 +27,7 @@ namespace Avalonia.iOS
         private TopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
-        private ITextInputMethodClient _client;
+        private TextInputMethodClient _client;
         private IAvaloniaViewController _controller;
 
         public AvaloniaView()

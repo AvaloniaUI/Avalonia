@@ -17,10 +17,11 @@ public partial class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void OnLoaded()
+    /// <inheritdoc/>
+    protected override void OnLoaded(RoutedEventArgs e)
     {
         this.AttachDevTools();
-        base.OnLoaded();
+        base.OnLoaded(e);
     }
 
     public void Open(object sender, RoutedEventArgs e)

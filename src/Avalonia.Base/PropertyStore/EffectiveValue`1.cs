@@ -216,7 +216,7 @@ namespace Avalonia.PropertyStore
                 valueChanged = !EqualityComparer<T>.Default.Equals(Value, v);
                 Value = v;
                 Priority = priority;
-                if (_uncommon is not null)
+                if (!isCoercedDefaultValue && _uncommon is not null)
                     _uncommon._uncoercedValue = value;
             }
 
@@ -225,7 +225,7 @@ namespace Avalonia.PropertyStore
                 baseValueChanged = !EqualityComparer<T>.Default.Equals(_baseValue, v);
                 _baseValue = v;
                 BasePriority = priority;
-                if (_uncommon is not null)
+                if (!isCoercedDefaultValue && _uncommon is not null)
                     _uncommon._uncoercedBaseValue = value;
             }
 

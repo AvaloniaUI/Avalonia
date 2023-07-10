@@ -140,7 +140,7 @@ namespace Avalonia.Platform
         void PopOpacity();
 
         /// <summary>
-        /// Pushes an opacity mask
+        /// Pushes an opacity mask.
         /// </summary>
         void PushOpacityMask(IBrush mask, Rect bounds);
 
@@ -161,9 +161,7 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
-
-        /// <summary>
-        /// Attempts to get an optional feature from the drawing context implementation
+        /// Attempts to get an optional feature from the drawing context implementation.
         /// </summary>
         object? GetFeature(Type t);
     }
@@ -177,7 +175,7 @@ namespace Avalonia.Platform
     public static class DrawingContextImplExtensions
     {
         /// <summary>
-        /// Attempts to get an optional feature from the drawing context implementation
+        /// Attempts to get an optional feature from the drawing context implementation.
         /// </summary>
         public static T? GetFeature<T>(this IDrawingContextImpl context) where T : class =>
             (T?)context.GetFeature(typeof(T));
@@ -186,13 +184,13 @@ namespace Avalonia.Platform
     public interface IDrawingContextLayerImpl : IRenderTargetBitmapImpl
     {
         /// <summary>
-        /// Does optimized blit with Src blend mode
+        /// Does optimized blit with Src blend mode.
         /// </summary>
         /// <param name="context"></param>
         void Blit(IDrawingContextImpl context);
         
         /// <summary>
-        /// Returns true if layer supports optimized blit
+        /// Returns true if layer supports optimized blit.
         /// </summary>
         bool CanBlit { get; }
     }

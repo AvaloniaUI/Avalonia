@@ -38,12 +38,10 @@ namespace Avalonia.Win32.OpenGl
 
         [MemberNotNullWhen(true, nameof(s_wglChoosePixelFormatArb))]
         [MemberNotNullWhen(true, nameof(s_wglCreateContextAttribsArb))]
-        [MemberNotNullWhen(true, nameof(s_glDebugMessageCallback))]
         private static bool Initialize() => _initialized ??= InitializeCore();
 
         [MemberNotNullWhen(true, nameof(s_wglChoosePixelFormatArb))]
         [MemberNotNullWhen(true, nameof(s_wglCreateContextAttribsArb))]
-        [MemberNotNullWhen(true, nameof(s_glDebugMessageCallback))]
         private static bool InitializeCore()
         {
             Dispatcher.UIThread.VerifyAccess();
@@ -74,9 +72,9 @@ namespace Avalonia.Win32.OpenGl
                 Marshal.GetDelegateForFunctionPointer<WglChoosePixelFormatARBDelegate>(
                     wglGetProcAddress("wglChoosePixelFormatARB"));
 
-            s_glDebugMessageCallback =
-                Marshal.GetDelegateForFunctionPointer<GlDebugMessageCallbackDelegate>(
-                    wglGetProcAddress("glDebugMessageCallback"));
+            s_glDebugMessageCallback = wglGetProcAddress("glDebugMessageCallback") is { } setDebugCallback && setDebugCallback != default ?
+                Marshal.GetDelegateForFunctionPointer<GlDebugMessageCallbackDelegate>(setDebugCallback) :
+                null;
             
 
             var formats = new int[1];
@@ -144,8 +142,12 @@ namespace Avalonia.Win32.OpenGl
                             });
                     }
 
-                    using(new WglRestoreContext(dc, context, null))
-                        s_glDebugMessageCallback(Marshal.GetFunctionPointerForDelegate(_debugCallback), IntPtr.Zero);
+                    if (s_glDebugMessageCallback is not null)
+                    {
+                        using (new WglRestoreContext(dc, context, null))
+                            s_glDebugMessageCallback(Marshal.GetFunctionPointerForDelegate(_debugCallback), IntPtr.Zero);
+                    }
+
                     if (context != IntPtr.Zero)
                         return new WglContext(shareContext, version, context, window, dc,
                             _defaultPixelFormat, _defaultPfd);

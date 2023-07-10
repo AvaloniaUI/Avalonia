@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Avalonia.SourceGenerator;
 using Avalonia.Utilities;
 
@@ -92,17 +93,16 @@ namespace Avalonia.X11
         private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
         {
             private readonly PixelSize _pixelSize;
-            private readonly IUnmanagedBlob _blob;
+            private readonly UnmanagedBlob _blob;
 
             public XImageCursor(IntPtr display, IBitmapImpl bitmap, PixelPoint hotSpot)
             {
                 var size = Marshal.SizeOf<XcursorImage>() +
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
-                var runtimePlatform = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
                 var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
                 _pixelSize = bitmap.PixelSize;
-                _blob = runtimePlatform.AllocBlob(size);
+                _blob = new UnmanagedBlob(size);
                 
                 var image = (XcursorImage*)_blob.Address;
                 image->version = 1;
@@ -139,6 +139,8 @@ namespace Avalonia.X11
                     _pixelSize, _pixelSize.Width * 4,
                     new Vector(96, 96), PixelFormat.Bgra8888, null);
             }
+            
+            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
     }
 
