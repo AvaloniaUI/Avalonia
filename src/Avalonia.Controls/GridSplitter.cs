@@ -267,7 +267,7 @@ namespace Avalonia.Controls
 
             if (gridSpan == 1)
             {
-                var splitterIndex = GetValue(_resizeData.ResizeDirection == GridResizeDirection.Columns ?
+                var splitterIndex = _resizeData.GridChild.GetValue(_resizeData.ResizeDirection == GridResizeDirection.Columns ?
                     Grid.ColumnProperty :
                     Grid.RowProperty);
 
