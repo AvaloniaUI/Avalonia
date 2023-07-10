@@ -15,14 +15,14 @@ namespace Avalonia.Styling
             return new OrientationMediaQuery(previous, argument);
         }
 
-        public static Query Width(this Query? previous, QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right)
+        public static Query Width(this Query? previous, QueryComparisonOperator @operator, double value)
         {
-            return new WidthMediaQuery(previous, leftOperator, left, rightOperator, right);
+            return new WidthMediaQuery(previous, @operator, value);
         }
 
-        public static Query Height(this Query? previous, QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right)
+        public static Query Height(this Query? previous, QueryComparisonOperator @operator, double value)
         {
-            return new HeightMediaQuery(previous, leftOperator, left, rightOperator, right);
+            return new HeightMediaQuery(previous, @operator, value);
         }
 
         /// <summary>

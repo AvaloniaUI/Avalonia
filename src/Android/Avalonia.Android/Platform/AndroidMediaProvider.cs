@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.App;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Platform;
+using Avalonia.Styling;
 
 namespace Avalonia.Android.Platform
 {

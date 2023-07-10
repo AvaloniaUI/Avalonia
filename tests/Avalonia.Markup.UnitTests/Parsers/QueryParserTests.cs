@@ -11,14 +11,14 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public void Parses_Or_Queries()
         {
             var target = new MediaQueryParser();
-            var result = target.Parse("orientation:portrait , width > 0");
+            var result = target.Parse("orientation:portrait , min-width:0");
         }
 
         [Fact]
         public void Parses_And_Queries()
         {
             var target = new MediaQueryParser();
-            var result = target.Parse("orientation:portrait and width > 0");
+            var result = target.Parse("orientation:portrait and min-width:0");
         }
     }
 }

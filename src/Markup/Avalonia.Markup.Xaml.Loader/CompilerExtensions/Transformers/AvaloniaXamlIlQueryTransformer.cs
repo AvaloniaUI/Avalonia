@@ -260,10 +260,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public override IXamlType TargetType => Previous?.TargetType;
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
-            codeGen.Ldc_I4((int)_argument.LeftOperator);
-            codeGen.Ldc_R8(_argument.Left);
-            codeGen.Ldc_I4((int)_argument.RightOperator);
-            codeGen.Ldc_R8(_argument.Right);
+            codeGen.Ldc_I4((int)_argument.Operator);
+            codeGen.Ldc_R8(_argument.Value);
             EmitCall(context, codeGen,
                 m => m.Name == "Width" && m.Parameters.Count == 5);
         }
@@ -281,10 +279,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public override IXamlType TargetType => Previous?.TargetType;
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
-            codeGen.Ldc_I4((int)_argument.LeftOperator);
-            codeGen.Ldc_R8(_argument.Left);
-            codeGen.Ldc_I4((int)_argument.RightOperator);
-            codeGen.Ldc_R8(_argument.Right);
+            codeGen.Ldc_I4((int)_argument.Operator);
+            codeGen.Ldc_R8(_argument.Value);
             EmitCall(context, codeGen,
                 m => m.Name == "Height" && m.Parameters.Count == 5);
         }

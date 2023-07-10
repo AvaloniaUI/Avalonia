@@ -13,16 +13,19 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class MediaQueryGrammar
     {
+        const string MinWidthKeyword = "min-width";
+        const string MinHeightKeyword = "min-height";
+        const string MaxWidthKeyword = "max-width";
+        const string MaxHeightKeyword = "max-height";
         const string WidthKeyword = "width";
         const string HeightKeyword = "height";
         const string OrientationKeyword = "orientation";
         const string PlatformKeyword = "platform";
-        static string[] Keywords = new string[] { WidthKeyword, HeightKeyword, OrientationKeyword, PlatformKeyword };
+        static string[] Keywords = new string[] { MinWidthKeyword, MinHeightKeyword, MaxWidthKeyword, MaxHeightKeyword, WidthKeyword, HeightKeyword, OrientationKeyword, PlatformKeyword };
 
         private enum State
         {
             Start,
-            Left,
             Middle,
             End,
         }
@@ -45,9 +48,6 @@ namespace Avalonia.Markup.Parsers
                     case State.Start:
                         (state, syntax) = ParseStart(ref r);
                         break;
-                    case State.Left:
-                        (state, syntax) = ParseLeft(ref r, end);
-                        break;
                     case State.Middle:
                         (state, syntax) = ParseMiddle(ref r, end);
                         break;
@@ -66,55 +66,6 @@ namespace Avalonia.Markup.Parsers
             return selector;
         }
 
-        private static (State, ISyntax?) ParseLeft(ref CharacterReader r, char? end)
-        {
-            var leftArgument = r.TakeWhile(x => !char.IsWhiteSpace(x));
-            var leftOperator = ParseOperator(ref r);
-
-            // Reverse the operators
-            switch (leftOperator)
-            {
-                case QueryComparisonOperator.LessThan:
-                    leftOperator = QueryComparisonOperator.GreaterThan;
-                    break;
-                case QueryComparisonOperator.GreaterThan:
-                    leftOperator = QueryComparisonOperator.LessThan;
-                    break;
-                case QueryComparisonOperator.LessThanOrEquals:
-                    leftOperator = QueryComparisonOperator.GreaterThanOrEquals;
-                    break;
-                case QueryComparisonOperator.GreaterThanOrEquals:
-                    leftOperator = QueryComparisonOperator.LessThanOrEquals;
-                    break;
-            }
-
-            var position = r.Position;
-
-            var feature = ParseFeature(ref r);
-
-            if(feature == null)
-            {
-                throw new InvalidOperationException("Invalid syntax found");
-            }
-
-            if (feature is not RangeSyntax && leftArgument.Length > 0)
-            {
-                throw new ExpressionParseException(position, $"Unexpected value.");
-            }
-
-            if (feature is RangeSyntax syntax)
-            {
-                if (double.TryParse(leftArgument.ToString(), out var value))
-                {
-                    syntax.Left = value;
-                    syntax.LeftOperator = leftOperator;
-                }
-            }
-
-            return (State.Middle, feature);
-
-        }
-
         private static ISyntax? ParseFeature(ref CharacterReader r)
         {
             r.SkipWhitespace();
@@ -125,35 +76,42 @@ namespace Avalonia.Markup.Parsers
             {
                 throw new ExpressionParseException(r.Position, "Expected query feature name.");
             }
+
             var s = identifier.ToString();
             if (!Keywords.Any(x => s == x))
             {
                 throw new InvalidOperationException($"Unknown feature name found: {identifier.ToString()}");
             }
 
-            if (identifier.SequenceEqual(WidthKeyword.AsSpan()))
+            if (identifier.SequenceEqual(MinWidthKeyword.AsSpan()) || identifier.SequenceEqual(MaxWidthKeyword.AsSpan()) || identifier.SequenceEqual(WidthKeyword.AsSpan()))
             {
-                var op = ParseOperator(ref r);
-                double val = op == QueryComparisonOperator.None ? 0 : ParseDecimal(ref r);
+                if (!r.TakeIf(':'))
+                    throw new ExpressionParseException(r.Position, "Expected ':' after 'orientation'.");
+                double val = ParseDecimal(ref r);
 
                 var syntax = new WidthSyntax()
                 {
-                    Right = val,
-                    RightOperator = op
+                    Value = val,
+                    Operator = identifier.SequenceEqual(WidthKeyword.AsSpan()) ? QueryComparisonOperator.Equals 
+                    : identifier.SequenceEqual(MinWidthKeyword.AsSpan()) ? QueryComparisonOperator.GreaterThanOrEquals 
+                    : QueryComparisonOperator.LessThanOrEquals
                 };
 
                 return syntax;
             }
 
-            if (identifier.SequenceEqual(HeightKeyword.AsSpan()))
+            if (identifier.SequenceEqual(MinHeightKeyword.AsSpan()) || identifier.SequenceEqual(MaxHeightKeyword.AsSpan()) || identifier.SequenceEqual(HeightKeyword.AsSpan()))
             {
-                var op = ParseOperator(ref r);
-                double val = op == QueryComparisonOperator.None ? 0 : ParseDecimal(ref r);
+                if (!r.TakeIf(':'))
+                    throw new ExpressionParseException(r.Position, "Expected ':' after 'orientation'.");
+                double val = ParseDecimal(ref r);
 
                 var syntax = new HeightSyntax()
                 {
-                    Right = val,
-                    RightOperator = op
+                    Value = val,
+                    Operator = identifier.SequenceEqual(WidthKeyword.AsSpan()) ? QueryComparisonOperator.Equals 
+                    : identifier.SequenceEqual(MinHeightKeyword.AsSpan()) ? QueryComparisonOperator.GreaterThanOrEquals 
+                    : QueryComparisonOperator.LessThanOrEquals
                 };
 
                 return syntax;
@@ -200,11 +158,6 @@ namespace Avalonia.Markup.Parsers
             if (r.End)
             {
                 return (State.End, null);
-            }
-
-            if(int.TryParse(r.Peek.ToString(), out _))
-            {
-                return (State.Left,  null);
             }
 
             if(char.IsLetter(r.Peek))
@@ -333,10 +286,8 @@ namespace Avalonia.Markup.Parsers
 
         public abstract class QuerySyntax<T> : ISyntax
         {
-            public T? Left { get; set; }
-            public QueryComparisonOperator LeftOperator { get; set; }
-            public T? Right { get; set; }
-            public QueryComparisonOperator RightOperator { get; set; }
+            public T? Value { get; set; }
+            public QueryComparisonOperator Operator { get; set; }
         }
 
         public abstract class RangeSyntax : QuerySyntax<double>
@@ -348,10 +299,8 @@ namespace Avalonia.Markup.Parsers
         {
             public override bool Equals(object? obj)
             {
-                return (obj is WidthSyntax width) && width.Left == Left 
-                    && width.Right == Right
-                    && width.LeftOperator == LeftOperator
-                    && width.RightOperator == RightOperator;
+                return (obj is WidthSyntax width) && width.Value == Value
+                    && width.Operator == Operator;
             }
         }
 
@@ -359,10 +308,8 @@ namespace Avalonia.Markup.Parsers
         {
             public override bool Equals(object? obj)
             {
-                return (obj is HeightSyntax width) && width.Left == Left 
-                    && width.Right == Right
-                    && width.LeftOperator == LeftOperator
-                    && width.RightOperator == RightOperator;
+                return (obj is HeightSyntax width) && width.Value == Value
+                    && width.Operator == Operator;
             }
         }
     }

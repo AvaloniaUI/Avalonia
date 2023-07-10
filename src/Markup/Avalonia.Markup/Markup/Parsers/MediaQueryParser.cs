@@ -46,10 +46,10 @@ namespace Avalonia.Markup.Parsers
                         result = result.Orientation(orientation.Argument);
                         break;
                     case MediaQueryGrammar.WidthSyntax width:
-                        result = result.Width(width.LeftOperator, width.Left, width.RightOperator, width.Right);
+                        result = result.Width(width.Operator, width.Value);
                         break;
                     case MediaQueryGrammar.HeightSyntax height:
-                        result = result.Height(height.LeftOperator, height.Left, height.RightOperator, height.Right);
+                        result = result.Height(height.Operator, height.Value);
                         break;
                     case MediaQueryGrammar.PlatformSyntax platform:
                         result = result.Platform(platform.Argument);

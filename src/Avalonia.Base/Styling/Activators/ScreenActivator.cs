@@ -19,9 +19,9 @@ namespace Avalonia.Styling.Activators
 
     internal sealed class WidthActivator : MediaQueryActivatorBase
     {
-        private readonly (QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) _argument;
+        private readonly (QueryComparisonOperator @operator, double value) _argument;
 
-        public WidthActivator(Visual visual, (QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) argument) : base(visual)
+        public WidthActivator(Visual visual, (QueryComparisonOperator @operator, double value) argument) : base(visual)
         {
             _argument = argument;
         }
@@ -31,9 +31,9 @@ namespace Avalonia.Styling.Activators
 
     internal sealed class HeightActivator : MediaQueryActivatorBase
     {
-        private readonly (QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) _argument;
+        private readonly (QueryComparisonOperator @operator, double value) _argument;
 
-        public HeightActivator(Visual visual, (QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) argument) : base(visual)
+        public HeightActivator(Visual visual, (QueryComparisonOperator @operator, double value) argument) : base(visual)
         {
             _argument = argument;
         }

@@ -10,35 +10,23 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Width()
         {
-            var result = MediaQueryGrammar.Parse("width >= 100");
+            var result = MediaQueryGrammar.Parse("min-width:100");
 
             Assert.Equal(
                 new[] { new MediaQueryGrammar.WidthSyntax()
                 {
-                    Right = 100,
-                    RightOperator = Styling.QueryComparisonOperator.GreaterThanOrEquals
+                    Value = 100,
+                    Operator = Styling.QueryComparisonOperator.GreaterThanOrEquals
                 }, },
                 result);
 
-            result = MediaQueryGrammar.Parse("100 <= width");
+            result = MediaQueryGrammar.Parse("max-width:100");
 
             Assert.Equal(
                 new[] { new MediaQueryGrammar.WidthSyntax()
                 {
-                    Left = 100,
-                    LeftOperator = Styling.QueryComparisonOperator.GreaterThanOrEquals
-                }, },
-                result);
-
-            result = MediaQueryGrammar.Parse("100 <= width < 200");
-
-            Assert.Equal(
-                new[] { new MediaQueryGrammar.WidthSyntax()
-                {
-                    Left = 100,
-                    LeftOperator = Styling.QueryComparisonOperator.GreaterThanOrEquals,
-                    Right = 200,
-                    RightOperator = Styling.QueryComparisonOperator.LessThan
+                    Value = 100,
+                    Operator = Styling.QueryComparisonOperator.LessThanOrEquals
                 }, },
                 result);
         }
@@ -46,35 +34,23 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Height()
         {
-            var result = MediaQueryGrammar.Parse("height >= 100");
+            var result = MediaQueryGrammar.Parse("min-height:100");
 
             Assert.Equal(
                 new[] { new MediaQueryGrammar.HeightSyntax()
                 {
-                    Right = 100,
-                    RightOperator = Styling.QueryComparisonOperator.GreaterThanOrEquals
+                    Value = 100,
+                    Operator = Styling.QueryComparisonOperator.GreaterThanOrEquals
                 }, },
                 result);
 
-            result = MediaQueryGrammar.Parse("100 <= height");
+            result = MediaQueryGrammar.Parse("max-height:100");
 
             Assert.Equal(
                 new[] { new MediaQueryGrammar.HeightSyntax()
                 {
-                    Left = 100,
-                    LeftOperator = Styling.QueryComparisonOperator.GreaterThanOrEquals
-                }, },
-                result);
-
-            result = MediaQueryGrammar.Parse("100 <= height < 200");
-
-            Assert.Equal(
-                new[] { new MediaQueryGrammar.HeightSyntax()
-                {
-                    Left = 100,
-                    LeftOperator = Styling.QueryComparisonOperator.GreaterThanOrEquals,
-                    Right = 200,
-                    RightOperator = Styling.QueryComparisonOperator.LessThan
+                    Value = 100,
+                    Operator = Styling.QueryComparisonOperator.LessThanOrEquals
                 }, },
                 result);
         }

@@ -45,9 +45,9 @@ namespace Avalonia.Styling
         }
     }
 
-    internal sealed class WidthMediaQuery : MediaQuery<(QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right)>
+    internal sealed class WidthMediaQuery : MediaQuery<(QueryComparisonOperator @operator, double value)>
     {
-        public WidthMediaQuery(Query? previous, QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) : base(previous, (leftOperator, left, rightOperator, right))
+        public WidthMediaQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -71,12 +71,9 @@ namespace Avalonia.Styling
             return SelectorMatch.NeverThisInstance;
         }
 
-        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, (QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) argument)
+        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, (QueryComparisonOperator @operator, double value) argument)
         {
             var width = screenSizeProvider.GetScreenWidth();
-
-            var isLeftTrue = IsTrue(argument.leftOperator, argument.left);
-            var isRightTrue = IsTrue(argument.rightOperator, argument.right);
 
             bool IsTrue(QueryComparisonOperator comparisonOperator, double value)
             {
@@ -99,7 +96,7 @@ namespace Avalonia.Styling
                 return false;
             }
 
-            return isLeftTrue && isRightTrue ? 
+            return IsTrue(argument.@operator, argument.value)  ? 
                 SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
@@ -111,9 +108,9 @@ namespace Avalonia.Styling
         }
     }
 
-    internal sealed class HeightMediaQuery : MediaQuery<(QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right)>
+    internal sealed class HeightMediaQuery : MediaQuery<(QueryComparisonOperator @operator, double value)>
     {
-        public HeightMediaQuery(Query? previous, QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) : base(previous, (leftOperator, left, rightOperator, right))
+        public HeightMediaQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -137,12 +134,11 @@ namespace Avalonia.Styling
             return SelectorMatch.NeverThisInstance;
         }
 
-        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, (QueryComparisonOperator leftOperator, double left, QueryComparisonOperator rightOperator, double right) argument)
+        internal static SelectorMatch Evaluate(IMediaProvider screenSizeProvider, (QueryComparisonOperator @operator, double value) argument)
         {
             var height = screenSizeProvider.GetScreenHeight();
 
-            var isLeftTrue = IsTrue(argument.leftOperator, argument.left);
-            var isRightTrue = IsTrue(argument.rightOperator, argument.right);
+            var isvalueTrue = IsTrue(argument.@operator, argument.value);
 
             bool IsTrue(QueryComparisonOperator comparisonOperator, double value)
             {
@@ -165,7 +161,7 @@ namespace Avalonia.Styling
                 return false;
             }
 
-            return isLeftTrue && isRightTrue ?
+            return IsTrue(argument.@operator, argument.value) ?
                 SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
