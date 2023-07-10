@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -97,6 +98,7 @@ public interface ICompositionGpuImportedObject : IAsyncDisposable
     /// <inheritdoc cref="ImportCompleted"/>
     /// <seealso cref="ImportCompleted">ImportCompleted (recommended replacement)</seealso>
     [Obsolete("Please use ICompositionGpuImportedObject.ImportCompleted instead")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     Task ImportCompeted => ImportCompleted;
     
     /// <summary>
