@@ -12,7 +12,7 @@ internal class TizenKeyboardDevice: KeyboardDevice, IKeyboardDevice
     private static readonly Dictionary<KeyCode, Key> KeyDic = new Dictionary<KeyCode, Key>
      {
          //   { KeyCode.Cancel?, Key.Cancel },
-            //{ KeyCode.Delete, Key.Back },
+            { KeyCode.BackSpace, Key.Back },
             { KeyCode.Tab, Key.Tab },
           //  { KeyCode.Linefeed?, Key.LineFeed },
             { KeyCode.Clear, Key.Clear },

@@ -6,18 +6,26 @@ using Tizen.NUI;
 using Window = Tizen.NUI.Window;
 using Key = Tizen.NUI.Key;
 using Avalonia.Tizen.Platform.Input;
+using static System.Net.Mime.MediaTypeNames;
+using Avalonia.Logging;
 
 namespace Avalonia.Tizen;
 
 public class NuiTizenApplication<TApp> : NUIApplication
     where TApp : Application, new()
 {
-    private NuiAvaloniaView _view;
-    private NuiTizenApplication<TApp>.SingleViewLifetime _lifetime;
+    private const string AppLog = "TIZENAPP";
+
+    private SingleViewLifetime? _lifetime;
 
     class SingleViewLifetime : ISingleViewApplicationLifetime
     {
-        public NuiAvaloniaView View;
+        public NuiAvaloniaView View { get; }
+
+        public SingleViewLifetime(NuiAvaloniaView view)
+        {
+            View = view;
+        }
 
         public Control MainView
         {
@@ -35,12 +43,11 @@ public class NuiTizenApplication<TApp> : NUIApplication
         TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
 #pragma warning restore CS8601 // Possible null reference assignment.
 
-        _lifetime = new SingleViewLifetime();
-        _lifetime.View = _view = new NuiAvaloniaView();
+        _lifetime = new SingleViewLifetime(new NuiAvaloniaView());
 
-        _view.HeightResizePolicy = ResizePolicyType.FillToParent;
-        _view.WidthResizePolicy = ResizePolicyType.FillToParent;
-        Window.Instance.GetDefaultLayer().Add(_view);
+        _lifetime.View.HeightResizePolicy = ResizePolicyType.FillToParent;
+        _lifetime.View.WidthResizePolicy = ResizePolicyType.FillToParent;
+        Window.Instance.GetDefaultLayer().Add(_lifetime.View);
         Window.Instance.RenderingBehavior = RenderingBehaviorType.Continuously;
 
         Window.Instance.KeyEvent += WindowKeyEvent;
@@ -48,21 +55,23 @@ public class NuiTizenApplication<TApp> : NUIApplication
         var builder = AppBuilder.Configure<TApp>().UseTizen();
         CustomizeAppBuilder(builder);
 
-        builder.AfterSetup(_ =>
-        {
-            _view.Initialise();
-        });
+        builder.AfterSetup(_ => _lifetime.View.Initialise());
 
         builder.SetupWithLifetime(_lifetime);
     }
 
     private void WindowKeyEvent(object? sender, Window.KeyEventArgs e)
     {
-        if (_view?.TextEditor.IsActive ?? false)
-            return;
-
-        if (Enum.TryParse<global::Tizen.Uix.InputMethod.KeyCode>(e.Key.KeyPressedName, true, out var keyCode) ||
-            Enum.TryParse($"Keypad{e.Key.KeyPressedName}", false, out keyCode))
+        if ((string.IsNullOrEmpty(e.Key.KeyString) &&
+            Enum.TryParse<global::Tizen.Uix.InputMethod.KeyCode>(
+                e.Key.KeyPressedName,
+                true,
+                out var keyCode)) ||
+            (e.Key.IsCtrlModifier() &&
+            Enum.TryParse(
+                $"Keypad{e.Key.KeyPressedName}",
+                true,
+                out keyCode)))
         {
             var mapped = TizenKeyboardDevice.ConvertKey(keyCode);
             if (mapped == Input.Key.None)
@@ -71,14 +80,24 @@ public class NuiTizenApplication<TApp> : NUIApplication
             var type = GetKeyEventType(e);
             var modifiers = GetModifierKey(e);
 
-            _view?.TopLevelImpl?.Input?.Invoke(
+            _lifetime?.View?.TopLevelImpl?.Input?.Invoke(
                 new RawKeyEventArgs(
                     TizenKeyboardDevice.Instance!,
                     e.Key.Time,
-                    _view.InputRoot,
+                    _lifetime.View.InputRoot,
                     type,
                     mapped,
                     modifiers));
+        }
+        else if (e.Key.State == Key.StateType.Up)
+        {
+            Logger.TryGet(LogEventLevel.Debug, AppLog)?.Log(null, "Triggering text input {text}", e.Key.KeyString);
+            _lifetime?.View?.TopLevelImpl?.Input?.Invoke(
+                new RawTextInputEventArgs(
+                    TizenKeyboardDevice.Instance!,
+                    e.Key.Time,
+                    _lifetime.View.InputRoot,
+                    e.Key.KeyString));
         }
     }
 
