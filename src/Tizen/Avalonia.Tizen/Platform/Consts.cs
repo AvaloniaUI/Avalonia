@@ -26,6 +26,4 @@ internal static class Consts
         "{\n" +
         "   gl_FragColor = texture2D(sTexture, vTexCoord) * uColor;\n" +
         "}\n";
-
-
 }
