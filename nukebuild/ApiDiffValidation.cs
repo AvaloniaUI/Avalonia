@@ -38,7 +38,7 @@ public static class ApiDiffValidation
             var left = new List<string>();
             var right = new List<string>();
 
-            var suppressionFile = Path.Combine(suppressionFilesFolder, Path.GetFileName(packagePath) + ".xml");
+            var suppressionFile = Path.Combine(suppressionFilesFolder, GetPackageId(packagePath) + ".nupkg.xml");
 
             foreach (var baselineDll in baselineDlls)
             {
@@ -113,20 +113,17 @@ public static class ApiDiffValidation
 
     static async Task<Stream> DownloadBaselinePackage(string packagePath, string baselineVersion)
     {
-        Build.Information("Downloading {0} baseline package for version {1}", Path.GetFileName(packagePath), baselineVersion);
+        /*
+         Gets package name from versions like:
+         Avalonia.0.10.0-preview1
+         Avalonia.11.0.999-cibuild0037534-beta
+         Avalonia.11.0.0
+         */
+        var packageId = GetPackageId(packagePath);
+        Build.Information("Downloading {0} {1} baseline package", packageId, baselineVersion);
 
         try
         {
-            /*
-             Gets package name from versions like:
-             Avalonia.0.10.0-preview1
-             Avalonia.11.0.999-cibuild0037534-beta
-             Avalonia.11.0.0
-             */
-            var packageId = Regex.Replace(
-                Path.GetFileNameWithoutExtension(packagePath),
-                """(\.\d+\.\d+\.\d+(?:-.+)?)$""", "");
-
             using var response = await s_httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
                 $"https://www.nuget.org/api/v2/package/{packageId}/{baselineVersion}"), HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
@@ -139,7 +136,14 @@ public static class ApiDiffValidation
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Downloading baseline package for {packagePath} failed.\r" + ex.Message, ex);
+            throw new InvalidOperationException($"Downloading baseline package for {packageId} {baselineVersion} failed.\r" + ex.Message, ex);
         }
+    }
+
+    static string GetPackageId(string packagePath)
+    {
+        return Regex.Replace(
+            Path.GetFileNameWithoutExtension(packagePath),
+            """(\.\d+\.\d+\.\d+(?:-.+)?)$""", "");
     }
 }
