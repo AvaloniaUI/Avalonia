@@ -11,7 +11,7 @@ namespace ControlCatalog.ViewModels
         {
             ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
             {
-                NotificationManager?.Show(new NotificationViewModel() { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" , NotificationManager = NotificationManager});
+                NotificationManager?.Show(new NotificationViewModel() { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" , NotificationManager = NotificationManager}, NotificationType.Warning);
             });
 
             ShowManagedNotificationCommand = MiniCommand.Create(() =>

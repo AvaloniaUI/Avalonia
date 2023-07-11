@@ -80,32 +80,32 @@ namespace Avalonia.Controls.Notifications
         /// <inheritdoc/>
         public void Show(INotification content)
         {
-            Show(content as object);
+            Show(content, content.Type, content.Expiration, content.OnClick, content.OnClose);
         }
 
         /// <inheritdoc/>
-        public async void Show(object content)
+        public async void Show(object content, 
+            NotificationType type = NotificationType.Information, 
+            TimeSpan? expiration = null,
+            Action? onClick = null, 
+            Action? onClose = null)
         {
-            var notification = content as INotification;
-
             var notificationControl = new NotificationCard
             {
-                Content = content
+                Content = content,
+                NotificationType = type
             };
 
             notificationControl.NotificationClosed += (sender, args) =>
             {
-                notification?.OnClose?.Invoke();
+                onClose?.Invoke();
 
                 _items?.Remove(sender);
             };
 
             notificationControl.PointerPressed += (sender, args) =>
             {
-                if (notification != null && notification.OnClick != null)
-                {
-                    notification.OnClick.Invoke();
-                }
+                onClick?.Invoke();
 
                 (sender as NotificationCard)?.Close();
             };
@@ -117,12 +117,12 @@ namespace Avalonia.Controls.Notifications
                 _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
             }
 
-            if (notification != null && notification.Expiration == TimeSpan.Zero)
+            if (expiration == TimeSpan.Zero)
             {
                 return;
             }
 
-            await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(5));
+            await Task.Delay(expiration ?? TimeSpan.FromSeconds(5));
 
             notificationControl.Close();
         }
