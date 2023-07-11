@@ -15,25 +15,26 @@ namespace Avalonia.Tizen;
 
 public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurface, IFramebufferRenderTarget, ITextInputMethodImpl
 {
-    private IntPtr _buffer;
+    private readonly NuiKeyboardHandler _keyboardHandler;
+    private readonly NuiTouchHandler _touchHandler;
+    private readonly NuiAvaloniaViewTextEditable _textEditor;
 
+    private TopLevelImpl _topLevelImpl;
+    private EmbeddableControlRoot _topLevel;
+    private TouchDevice _device = new();
+
+    private IntPtr _buffer;
     private Renderer _renderer;
-    private NuiTouchHandler _touchHandler;
     private Geometry _geometry;
     private Shader _shader;
     private Texture _texture;
     private TextureSet _textureSet;
     private NativeImageQueue _nativeImageSource;
 
-    private TopLevelImpl _topLevelImpl;
-    private EmbeddableControlRoot _topLevel;
-    private TouchDevice _device = new TouchDevice();
-    private readonly NuiAvaloniaViewTextEditable _textEditor;
-
     public IInputRoot InputRoot { get; set; }
     public TopLevelImpl TopLevelImpl => _topLevelImpl;
     public double Scaling => ScalingInfo.ScalingFactor;
-    public Size ClientSize => new Size(Size.Width, Size.Height);
+    public Size ClientSize => new(Size.Width, Size.Height);
 
     public Control? Content
     {
@@ -42,12 +43,16 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     }
 
     internal NuiAvaloniaViewTextEditable TextEditor => _textEditor;
+    internal NuiKeyboardHandler KeyboardHandler => _keyboardHandler;
 
     #region Setup
 
     public NuiAvaloniaView()
     {
         _textEditor = new NuiAvaloniaViewTextEditable(this);
+        _keyboardHandler = new NuiKeyboardHandler(this);
+        _touchHandler = new NuiTouchHandler(this);
+
         Layout = new CustomLayout
         {
             SizeUpdated = OnResized
@@ -64,14 +69,12 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
             Surfaces = new[] { this }
         };
 
-        _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+        _topLevel = new(_topLevelImpl);
         _topLevel.Prepare();
         _topLevel.StartRendering();
 
-        _touchHandler = new NuiTouchHandler(this, _topLevelImpl);
-
         _geometry = CreateQuadGeometry();
-        _shader = new Shader(Consts.VertexShader, Consts.FragmentShader);
+        _shader = new(Consts.VertexShader, Consts.FragmentShader);
         OnResized();
     }
 
@@ -278,7 +281,6 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     public void SetClient(TextInputMethodClient? client)
     {
         _textEditor.SetClient(client);
-        //KeyInputFocus = true;
     }
 
     public void SetCursorRect(Rect rect)

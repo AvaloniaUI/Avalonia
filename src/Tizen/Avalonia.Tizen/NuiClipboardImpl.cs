@@ -1,5 +1,6 @@
 ﻿using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 
 namespace Avalonia.Tizen;
@@ -9,25 +10,34 @@ internal class NuiClipboardImpl : IClipboard
     private TextEditor _textEditor;
     public NuiClipboardImpl()
     {
-        _textEditor = new TextEditor();
+        _textEditor = new TextEditor()
+        {
+            HeightResizePolicy = ResizePolicyType.Fixed,
+            WidthResizePolicy = ResizePolicyType.Fixed,
+            Position = new Position(-1000, -1000),
+        };
+        Window.Instance.GetDefaultLayer().Add(_textEditor);
     }
 
-    public Task ClearAsync() => 
+    public Task ClearAsync() =>
         SetTextAsync("");
 
     public Task<string?> GetTextAsync()
     {
+        _textEditor.Show();
         _textEditor.Text = "";
         TextUtils.PasteTo(_textEditor);
+        _textEditor.Hide();
         return Task.FromResult<string?>(_textEditor.Text);
     }
-    
+
     public Task SetTextAsync(string? text)
     {
+        _textEditor.Show();
         _textEditor.Text = text;
         _textEditor.SelectWholeText();
         TextUtils.CopyToClipboard(_textEditor);
-
+        _textEditor.Hide();
         return Task.CompletedTask;
     }
 

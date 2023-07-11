@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 using Tizen.NUI;
 using static Tizen.NUI.BaseComponents.View;
 
@@ -9,13 +7,11 @@ namespace Avalonia.Tizen;
 internal class NuiTouchHandler
 {
     private readonly NuiAvaloniaView _view;
-    private readonly ITopLevelImpl _topLevelImpl;
     public TouchDevice _device = new TouchDevice();
 
-    public NuiTouchHandler(NuiAvaloniaView view, ITopLevelImpl tl)
+    public NuiTouchHandler(NuiAvaloniaView view)
     {
         _view = view;
-        _topLevelImpl = tl;
     }
 
     private IInputRoot InputRoot => _view.InputRoot;
@@ -61,7 +57,7 @@ internal class NuiTouchHandler
                 new Point(point.X, point.Y),
                 RawInputModifiers.None,
                 id);
-            _topLevelImpl.Input?.Invoke(touchEvent);
+            _view.TopLevelImpl.Input?.Invoke(touchEvent);
 
             if (state is PointStateType.Up or PointStateType.Interrupted)
             {
@@ -82,7 +78,7 @@ internal class NuiTouchHandler
                 e.Wheel.Direction == 0 ? e.Wheel.Z : 0),
             GetModifierKey(e));
 
-        _topLevelImpl.Input?.Invoke(mouseWheelEvent);
+        _view.TopLevelImpl.Input?.Invoke(mouseWheelEvent);
     }
 
     private RawInputModifiers GetModifierKey(WheelEventArgs ev)
