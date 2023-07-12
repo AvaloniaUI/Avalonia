@@ -4,61 +4,61 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Fluent/ColorPicker.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Fluent/ColorPreviewer.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Fluent/ColorSlider.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Fluent/ColorSpectrum.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Fluent/ColorView.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Simple/ColorPicker.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Simple/ColorPreviewer.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Simple/ColorSlider.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Simple/ColorSpectrum.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:CompiledAvaloniaXaml.!AvaloniaResources.NamespaceInfo:/Themes/Simple/ColorView.xaml</Target>
-    <Left>baseline\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Left>
-    <Right>target\lib\netstandard2.0\Avalonia.Controls.ColorPicker.dll</Right>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.ColorPicker.dll</Right>
   </Suppression>
 </Suppressions>
