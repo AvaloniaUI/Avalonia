@@ -64,6 +64,12 @@ internal class Permissions
     public static Task<bool> RequestPrivilegeAsync(params Privilege[] requiredPrivileges) => CheckPrivilegeAsync(requiredPrivileges, true);
     private static async Task<bool> CheckPrivilegeAsync(Privilege[] requiredPrivileges, bool ask)
     {
+        var ret = global::Tizen.System.Information.TryGetValue("http://tizen.org/feature/profile", out string profile);
+        if (!ret || (ret && (!profile.Equals("mobile") || !profile.Equals("wearable"))))
+        {
+            return true;
+        }
+
         if (requiredPrivileges == null || !requiredPrivileges.Any())
             return true;
 
