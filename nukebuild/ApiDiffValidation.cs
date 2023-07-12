@@ -40,9 +40,12 @@ public static class ApiDiffValidation
 
             var suppressionFile = Path.Combine(suppressionFilesFolder, GetPackageId(packagePath) + ".nupkg.xml");
 
+            // Don't use Path.Combine with these left and right tool parameters.
+            // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
+            // So, always use Unix '/'
             foreach (var baselineDll in baselineDlls)
             {
-                var baselineDllPath = Path.Combine("baseline", baselineDll.target, baselineDll.entry.Name);
+                var baselineDllPath = $"baseline/{baselineDll.target}/{baselineDll.entry.Name}";
                 var baselineDllRealPath = Path.Combine(tempFolder, baselineDllPath);
                 Directory.CreateDirectory(Path.GetDirectoryName(baselineDllRealPath)!);
                 await using (var baselineDllFile = File.Create(baselineDllRealPath))
@@ -57,7 +60,7 @@ public static class ApiDiffValidation
                     throw new InvalidOperationException($"Some assemblies are missing in the new package: {baselineDll.entry.Name} for {baselineDll.target}");
                 }
 
-                var targetDllPath = Path.Combine("target", targetDll.target, targetDll.entry.Name);
+                var targetDllPath = $"target/{targetDll.target}/{targetDll.entry.Name}";
                 var targetDllRealPath = Path.Combine(tempFolder, targetDllPath);
                 Directory.CreateDirectory(Path.GetDirectoryName(targetDllRealPath)!);
                 await using (var targetDllFile = File.Create(targetDllRealPath))
@@ -99,11 +102,12 @@ public static class ApiDiffValidation
         return archive.Entries
             .Where(e => Path.GetExtension(e.FullName) == ".dll"
                 // Exclude analyzers and build task, as we don't care about breaking changes there
-                && !e.FullName.Contains("analyzers/") && !e.Name.Contains("Avalonia.Build.Tasks"))
+                && !e.FullName.Contains("analyzers/") && !e.FullName.Contains("analyzers\\")
+                && !e.Name.Contains("Avalonia.Build.Tasks"))
             .Select(e => (
                 entry: e,
-                isRef: e.FullName.Contains("ref/"),
-                target: Path.GetDirectoryName(e.FullName)!.Split('/').Last())
+                isRef: e.FullName.Contains("ref/") || e.FullName.Contains("ref\\"),
+                target: Path.GetDirectoryName(e.FullName)!.Split(new [] { '/', '\\' }).Last())
             )
             .GroupBy(e => (e.target, e.entry.Name))
             .Select(g => g.MaxBy(e => e.isRef))
