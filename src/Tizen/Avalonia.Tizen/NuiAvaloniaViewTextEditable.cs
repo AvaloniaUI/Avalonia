@@ -104,7 +104,6 @@ internal class NuiAvaloniaViewTextEditable
         _updating = true;
         try
         {
-
             TextInput.Text = client.SurroundingText;
             TextInput.PrimaryCursorPosition = client.Selection.Start;
             Window.Instance.GetDefaultLayer().Add((View)TextInput);
@@ -121,6 +120,9 @@ internal class NuiAvaloniaViewTextEditable
             client.TextViewVisualChanged += OnTextViewVisualChanged;
             client.SurroundingTextChanged += OnSurroundingTextChanged;
             client.SelectionChanged += OnClientSelectionChanged;
+
+            TextInput.SelectWholeText();
+            OnClientSelectionChanged(this, EventArgs.Empty);
         }
         finally { _updating = false; }
     }
@@ -191,6 +193,7 @@ internal interface INuiTextInput
     InputMethodContext GetInputMethodContext();
     void Hide();
     void SelectText(int selectedTextStart, int value);
+    void SelectWholeText();
 }
 
 public class NuiMultiLineTextInput : TextEditor, INuiTextInput { }
