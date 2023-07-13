@@ -2970,10 +2970,7 @@ namespace Avalonia.Controls
                 if (detailsContent != null)
                 {
                     _rowsPresenter.Children.Add(detailsContent);
-                    if (dataItem != null)
-                    {
-                        detailsContent.DataContext = dataItem;
-                    }
+                    detailsContent.DataContext = dataItem;
                     detailsContent.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                     RowDetailsHeightEstimate = detailsContent.DesiredSize.Height;
                     _rowsPresenter.Children.Remove(detailsContent);
