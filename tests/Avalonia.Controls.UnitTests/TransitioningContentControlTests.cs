@@ -188,12 +188,12 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = Start();
             var (target, transition) = CreateTarget("");
+            target.PageTransition = null;
 
             var childControl = new Control();
             target.Content = childControl;
 
-            // There should be two, One the initial content and one the new content.
-            Assert.Equal(2, target.LogicalChildren.Count);
+            Assert.Equal(1, target.LogicalChildren.Count);
         }
 
         [Fact]
