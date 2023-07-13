@@ -183,6 +183,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("bar", presenter2.Content);
         }
 
+        [Fact]
+        public void Logical_Children_Dont_Duplicated()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget("");
+
+            var childControl = new Control();
+            target.Content = childControl;
+
+            // There should be two, One the initial content and one the new content.
+            Assert.Equal(2, target.LogicalChildren.Count);
+        }
+
+        [Fact]
+        public void First_Presenter_Register_TCC_As_Host()
+        {
+            using var app = Start();
+            var (target, transition) = CreateTarget("");
+
+            var childControl = new Control();
+            target.Presenter!.Content = childControl;
+
+            Assert.Contains(childControl, target.LogicalChildren);
+        }
+
         private static IDisposable Start()
         {
             return UnitTestApplication.Start(
