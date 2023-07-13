@@ -42,20 +42,29 @@ class ServerCompositionRenderData : SimpleServerRenderResource
             _items.Add(reader.ReadObject<IRenderDataItem>());
         
         var collector = s_resourceHashSetPool.Get();
-        foreach(var item in _items)
-            if (item is IRenderDataItemWithServerResources resourceItem)
-                resourceItem.Collect(collector);
-        
+        CollectResources(_items, collector);
+
         foreach (var r in collector.Resources)
         {
             _referencedResources.Add(r);
             r.AddObserver(this);
         }
-        
+
         collector.Resources.Clear();
         s_resourceHashSetPool.ReturnAndSetNull(ref collector);
         
         base.DeserializeChangesCore(reader, committedAt);
+    }
+
+    private static void CollectResources(PooledInlineList<IRenderDataItem> items, IRenderDataServerResourcesCollector collector)
+    {
+        foreach (var item in items)
+        {
+            if (item is IRenderDataItemWithServerResources resourceItem)
+                resourceItem.Collect(collector);
+            else if (item is RenderDataPushNode pushNode)
+                CollectResources(pushNode.Children, collector);
+        }
     }
 
     public Rect? Bounds

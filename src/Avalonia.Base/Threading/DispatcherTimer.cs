@@ -62,7 +62,7 @@ public partial class DispatcherTimer
     {
         if (callback == null)
         {
-            throw new ArgumentNullException("callback");
+            throw new ArgumentNullException(nameof(callback));
         }
 
         Tick += callback;
@@ -253,7 +253,7 @@ public partial class DispatcherTimer
     {
         if (dispatcher == null)
         {
-            throw new ArgumentNullException("dispatcher");
+            throw new ArgumentNullException(nameof(dispatcher));
         }
 
         DispatcherPriority.Validate(priority, "priority");
