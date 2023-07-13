@@ -90,7 +90,7 @@ public partial class Dispatcher
     {
         if (callback == null)
         {
-            throw new ArgumentNullException("callback");
+            throw new ArgumentNullException(nameof(callback));
         }
 
         DispatcherPriority.Validate(priority, "priority");
@@ -212,7 +212,7 @@ public partial class Dispatcher
     {
         if (callback == null)
         {
-            throw new ArgumentNullException("callback");
+            throw new ArgumentNullException(nameof(callback));
         }
 
         DispatcherPriority.Validate(priority, "priority");
@@ -304,7 +304,7 @@ public partial class Dispatcher
     {
         if (callback == null)
         {
-            throw new ArgumentNullException("callback");
+            throw new ArgumentNullException(nameof(callback));
         }
 
         DispatcherPriority.Validate(priority, "priority");
@@ -379,7 +379,7 @@ public partial class Dispatcher
     {
         if (callback == null)
         {
-            throw new ArgumentNullException("callback");
+            throw new ArgumentNullException(nameof(callback));
         }
 
         DispatcherPriority.Validate(priority, "priority");
