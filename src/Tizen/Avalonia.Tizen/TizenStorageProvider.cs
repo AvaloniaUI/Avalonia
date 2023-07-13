@@ -11,11 +11,12 @@ internal class TizenStorageProvider : IStorageProvider
 
     public bool CanSave => false;
 
-    public bool CanPickFolder => true;
+    public bool CanPickFolder => false;
 
     public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        throw new NotImplementedException();
+        return Task.FromException<IStorageBookmarkFile?>(
+           new PlatformNotSupportedException("Bookmark is not supported by Tizen"));
     }
 
     private static async Task CheckPermission()
@@ -111,12 +112,14 @@ internal class TizenStorageProvider : IStorageProvider
 
     public Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        throw new NotImplementedException();
+        return Task.FromException<IStorageBookmarkFolder?>(
+           new PlatformNotSupportedException("Open folder is not supported by Tize"));
     }
 
     public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        throw new NotImplementedException();
+        return Task.FromException<IStorageFile?>(
+            new PlatformNotSupportedException("Save file picker is not supported by Tizen"));
     }
 
     public async Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -179,6 +182,4 @@ internal class TizenStorageProvider : IStorageProvider
         var storageFolder = new BclStorageFolder(new System.IO.DirectoryInfo(folder));
         return Task.FromResult<IStorageFolder?>(storageFolder);
     }
-
-
 }
