@@ -36,6 +36,9 @@ public class TransitioningContentControl : ContentControl
         set => SetValue(PageTransitionProperty, value);
     }
 
+    /// <inheritdoc/>
+    protected override bool BypassLogicalChildrenManangment => true;
+
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
@@ -79,8 +82,12 @@ public class TransitioningContentControl : ContentControl
 
     protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
-        if (!base.RegisterContentPresenter(presenter) &&
-            presenter is ContentPresenter p &&
+        if (base.RegisterContentPresenter(presenter))
+        {
+            return true;
+        }
+
+        if (presenter is ContentPresenter p &&
             p.Name == "PART_ContentPresenter2")
         {
             _presenter2 = p;

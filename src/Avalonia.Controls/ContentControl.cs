@@ -95,6 +95,17 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
+        /// <summary>
+        /// Determine whether <see cref="ContentControl"/> manage his LogicalChildren 
+        ///(default behavior) himself, or leaves the management to the inherited control.
+        /// </summary>
+        /// <remarks>
+		/// The default value is false, So the <see cref="ContentControl"/> manages itself, 
+        /// if you want to bypass this behavior and manage LogicalChildren yourself, set 
+        /// the <see cref="BypassLogicalChildrenManangment"/> to true.
+		/// </remarks>
+        protected virtual bool BypassLogicalChildrenManangment => false;
+
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
@@ -118,6 +129,11 @@ namespace Avalonia.Controls
 
         private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            if (BypassLogicalChildrenManangment)
+            {
+                return;
+            }
+            
             if (e.OldValue is ILogical oldChild)
             {
                 LogicalChildren.Remove(oldChild);
