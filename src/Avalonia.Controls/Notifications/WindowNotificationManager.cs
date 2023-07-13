@@ -88,7 +88,8 @@ namespace Avalonia.Controls.Notifications
             NotificationType type = NotificationType.Information, 
             TimeSpan? expiration = null,
             Action? onClick = null, 
-            Action? onClose = null)
+            Action? onClose = null, 
+            string[]? classes = null)
         {
             var notificationControl = new NotificationCard
             {
@@ -96,6 +97,15 @@ namespace Avalonia.Controls.Notifications
                 NotificationType = type
             };
 
+            // Add style classes if any
+            if (classes != null)
+            {
+                foreach (var @class in classes)
+                {
+                    notificationControl.Classes.Add(@class);
+                }
+            }
+            
             notificationControl.NotificationClosed += (sender, args) =>
             {
                 onClose?.Invoke();
