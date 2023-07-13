@@ -37,7 +37,7 @@ public class TransitioningContentControl : ContentControl
     }
 
     /// <inheritdoc/>
-    protected override bool BypassLogicalChildrenManangment => true;
+    protected override bool BypassLogicalChildrenManagement => true;
 
     protected override Size ArrangeOverride(Size finalSize)
     {

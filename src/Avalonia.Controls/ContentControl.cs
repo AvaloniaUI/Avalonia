@@ -102,9 +102,9 @@ namespace Avalonia.Controls
         /// <remarks>
 		/// The default value is false, So the <see cref="ContentControl"/> manages itself, 
         /// if you want to bypass this behavior and manage LogicalChildren yourself, set 
-        /// the <see cref="BypassLogicalChildrenManangment"/> to true.
+        /// the <see cref="BypassLogicalChildrenManagement"/> to true.
 		/// </remarks>
-        protected virtual bool BypassLogicalChildrenManangment => false;
+        protected virtual bool BypassLogicalChildrenManagement => false;
 
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
