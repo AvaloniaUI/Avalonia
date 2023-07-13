@@ -222,7 +222,7 @@ namespace Avalonia.Controls
         {
             if (element == null)
             {
-                throw new ArgumentNullException("element");
+                throw new ArgumentNullException(nameof(element));
             }
             if (element is CheckBox checkBox)
             {
