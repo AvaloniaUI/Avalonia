@@ -129,7 +129,7 @@ namespace Avalonia.Controls
 
         private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (BypassLogicalChildrenManangment)
+            if (BypassLogicalChildrenManagement)
             {
                 return;
             }
