@@ -138,6 +138,27 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(BindingMode.OneWay, data.DefaultBindingMode);
         }
 
+        [Fact]
+        public void SetCurrentValue_Notify_Fired_When_Depend_Property_Changed()
+        {
+            var target = new Class1();
+
+            target.SetCurrentValue(Class1.ContentProperty, "a");
+            target.SetCurrentValue(Class1.ContentTemplateProperty, 0);
+            Assert.Equal(2, target.NotifyCount);
+        }
+
+        [Fact]
+        public void SetValue_Notify_Fired_When_Depend_Property_Changed()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.ContentProperty, "a");
+            target.SetValue(Class1.ContentTemplateProperty, 0);
+            Assert.Equal(2, target.NotifyCount);
+        }
+
+
         private class TestMetadata : AvaloniaPropertyMetadata
         {
             public Action<AvaloniaObject> OwnerSpecificAction { get; }
@@ -229,6 +250,34 @@ namespace Avalonia.Base.UnitTests
             private static void FooNotifying(AvaloniaObject o, bool n)
             {
                 ++((Class1)o).NotifyCount;
+            }
+
+            public static readonly StyledProperty<object> ContentProperty =
+                AvaloniaProperty.Register<Class1, object>(nameof(Content), null);
+
+            public static readonly StyledProperty<object> ContentTemplateProperty =
+                AvaloniaProperty.Register<Class1, object>(nameof(Content), null);
+
+            [Metadata.DependsOn(nameof(ContentTemplate))]
+            public object Content
+            {
+                get => this.GetValue(ContentProperty);
+                set => SetValue(ContentProperty, value);
+            }
+
+            public object ContentTemplate
+            {
+                get => this.GetValue(ContentTemplateProperty);
+                set => SetValue(ContentTemplateProperty, value);
+            }
+
+            protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+            {
+                base.OnPropertyChanged(change);
+                if (change.Property == ContentProperty)
+                {
+                    NotifyCount++;
+                }
             }
         }
 
