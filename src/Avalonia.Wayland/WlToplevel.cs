@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using NWayland.Protocols.XdgDecorationUnstableV1;
@@ -251,9 +250,7 @@ namespace Avalonia.Wayland
         {
             if (featureType == typeof(IStorageProvider))
                 return _storageProvider;
-            if (featureType == typeof(IClipboard))
-                return _platform.WlDataHandler;
-            return null;
+            return base.TryGetFeature(featureType);
         }
 
         public override void Dispose()

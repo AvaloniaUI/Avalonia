@@ -78,14 +78,6 @@ namespace Avalonia.Wayland
 
         public void OnRepositioned(XdgPopup eventSender, uint token) => PositionChanged?.Invoke(AppliedState.Position);
 
-        public override object? TryGetFeature(Type featureType)
-        {
-            var window = Parent;
-            while (window is not WlToplevel && window is not null)
-                window = (window as WlPopup)!.Parent;
-            return (window as WlToplevel)!.TryGetFeature(featureType);
-        }
-
         public override void Dispose()
         {
             _xdgPositioner.Dispose();

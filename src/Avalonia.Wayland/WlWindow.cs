@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -195,7 +197,14 @@ namespace Avalonia.Wayland
 
         public void OnPreferredBufferTransform(WlSurface eventSender, WlOutput.TransformEnum transform) { }
 
-        public abstract object? TryGetFeature(Type featureType);
+        public virtual object? TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IClipboard))
+                return _platform.WlDataHandler;
+            if (featureType == typeof(ITextInputMethodImpl))
+                return _platform.WlInputDevice;
+            return null;
+        }
 
         public void OnConfigure(XdgSurface eventSender, uint serial)
         {
