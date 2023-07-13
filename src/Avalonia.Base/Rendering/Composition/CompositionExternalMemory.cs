@@ -6,6 +6,8 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition;
+
+[NotClientImplementable]
 public interface ICompositionGpuInterop
 {
     /// <summary>
@@ -99,7 +101,7 @@ public interface ICompositionGpuImportedObject : IAsyncDisposable
     /// <seealso cref="ImportCompleted">ImportCompleted (recommended replacement)</seealso>
     [Obsolete("Please use ICompositionGpuImportedObject.ImportCompleted instead")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    Task ImportCompeted => ImportCompleted;
+    Task ImportCompeted { get; }
     
     /// <summary>
     /// Indicates if the device context this instance is associated with is no longer available
