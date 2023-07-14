@@ -374,8 +374,10 @@ namespace Avalonia.Win32
                     SetTransparencyBlur(windowsVersion);
                 else if (level == WindowTransparencyLevel.AcrylicBlur)
                     SetTransparencyAcrylicBlur(windowsVersion);
-                else if (level == WindowTransparencyLevel.Mica)
-                    SetTransparencyMica(windowsVersion);
+                else if (level == WindowTransparencyLevel.MicaLight)
+                    SetTransparencyMicaLight(windowsVersion);
+                else if (level == WindowTransparencyLevel.MicaDark)
+                    SetTransparencyMicaDark(windowsVersion);
 
                 TransparencyLevel = level;
                 return;
@@ -418,7 +420,7 @@ namespace Avalonia.Win32
                 return windowsVersion >= WinUiCompositionShared.MinAcrylicVersion;
 
             // Mica is supported on Windows >= 10.0.22000.
-            if (level == WindowTransparencyLevel.Mica)
+            if (level == WindowTransparencyLevel.MicaLight || level == WindowTransparencyLevel.MicaDark)
                 return windowsVersion >= WinUiCompositionShared.MinHostBackdropVersion;
 
             return false;
@@ -467,14 +469,24 @@ namespace Avalonia.Win32
             _blurHost?.SetBlur(BlurEffect.Acrylic);
         }
 
-        private void SetTransparencyMica(Version windowsVersion)
+        private void SetTransparencyMicaLight(Version windowsVersion)
         {
             // Mica only supported with composition on Windows >= 10.0.22000.
             if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
                 return;
 
             SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.Mica);
+            _blurHost?.SetBlur(BlurEffect.MicaLight);
+        }      
+        
+        private void SetTransparencyMicaDark(Version windowsVersion)
+        {
+            // Mica only supported with composition on Windows >= 10.0.22000.
+            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
+                return;
+
+            SetUseHostBackdropBrush(false);
+            _blurHost?.SetBlur(BlurEffect.MicaDark);
         }
 
         private void SetAccentState(AccentState state)
