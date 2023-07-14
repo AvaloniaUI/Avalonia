@@ -94,7 +94,11 @@ namespace Avalonia.Controls.Utils
                         return true;
                     }
                 }
-                return true;
+                else
+                {
+                    return true;
+                }
+               
             }
 
             switch (codepoint.GeneralCategory)
