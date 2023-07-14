@@ -11,7 +11,6 @@ internal class WinUiCompositionShared : IDisposable
     public ICompositionBrush BlurBrush { get; }
     public ICompositionBrush? MicaBrushLight { get; }
     public ICompositionBrush? MicaBrushDark { get; }
-    public ICompositionBrush? MicaBrush { get; }
     public object SyncRoot { get; } = new();
 
     public static readonly Version MinWinCompositionVersion = new(10, 0, 17134);
