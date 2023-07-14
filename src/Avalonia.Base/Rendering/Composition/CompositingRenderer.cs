@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
@@ -293,7 +294,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
     {
-        await batchCompletion;
+        Dispatcher.UIThread.AwaitWithPriority(batchCompletion, DispatcherPriority.BeforeRender);
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
     }
 

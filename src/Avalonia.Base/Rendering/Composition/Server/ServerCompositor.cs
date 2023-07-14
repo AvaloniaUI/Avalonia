@@ -7,6 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
+using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition.Server
 {
@@ -32,6 +33,7 @@ namespace Avalonia.Rendering.Composition.Server
         internal BatchStreamMemoryPool BatchMemoryPool;
         private object _lock = new object();
         private Thread? _safeThread;
+        private bool _rendering;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
         internal static readonly object RenderThreadDisposeStartMarker = new();
         internal static readonly object RenderThreadJobsStartMarker = new();
@@ -157,17 +159,23 @@ namespace Avalonia.Rendering.Composition.Server
         {
             lock (_lock)
             {
-                try
+                if (_rendering)
+                    throw new InvalidOperationException("Reentrancy is not supported for this method");
+                using (Dispatcher.UIThread.CheckAccess() ? Dispatcher.UIThread.DisableProcessing() : default)
                 {
-                    _safeThread = Thread.CurrentThread;
-                    RenderCore();
+                    try
+                    {
+                        _safeThread = Thread.CurrentThread;
+                        _rendering = true;
+                        RenderCore();
+                    }
+                    finally
+                    {
+                        NotifyBatchesRendered();
+                        _rendering = false;
+                        _safeThread = null;
+                    }
                 }
-                finally
-                {
-                    NotifyBatchesRendered();
-                    _safeThread = null;
-                }
-                
             }
         }
         
