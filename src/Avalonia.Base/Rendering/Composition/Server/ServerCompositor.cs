@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly IRenderLoop _renderLoop;
 
-        private readonly Queue<Batch> _batches = new Queue<Batch>();
+        private readonly Queue<CompositionBatch> _batches = new Queue<CompositionBatch>();
         private readonly Queue<Action> _receivedJobQueue = new();
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
@@ -47,7 +47,7 @@ namespace Avalonia.Rendering.Composition.Server
             _renderLoop.Add(this);
         }
 
-        public void EnqueueBatch(Batch batch)
+        public void EnqueueBatch(CompositionBatch batch)
         {
             lock (_batches) 
                 _batches.Enqueue(batch);
@@ -55,13 +55,13 @@ namespace Avalonia.Rendering.Composition.Server
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
-        List<Batch> _reusableToNotifyProcessedList = new();
-        List<Batch> _reusableToNotifyRenderedList = new();
+        List<CompositionBatch> _reusableToNotifyProcessedList = new();
+        List<CompositionBatch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
             while (true)
             {
-                Batch batch;
+                CompositionBatch batch;
                 lock (_batches)
                 {
                     if(_batches.Count == 0)

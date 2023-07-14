@@ -9,16 +9,17 @@ namespace Avalonia.Rendering.Composition.Transport
     /// <summary>
     /// Represents a group of serialized changes from the UI thread to be atomically applied at the render thread
     /// </summary>
-    internal class Batch
+    public class CompositionBatch
     {
         private static long _nextSequenceId = 1;
         private static ConcurrentBag<BatchStreamData> _pool = new();
-        private readonly TaskCompletionSource<int> _acceptedTcs = new();
-        private readonly TaskCompletionSource<int> _renderedTcs = new();
+        private readonly TaskCompletionSource<int> _committed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<int> _acceptedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<int> _renderedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         
-        public long SequenceId { get; }
+        internal long SequenceId { get; }
         
-        public Batch()
+        public CompositionBatch()
         {
             SequenceId = Interlocked.Increment(ref _nextSequenceId);
             if (!_pool.TryTake(out var lst))
@@ -27,12 +28,13 @@ namespace Avalonia.Rendering.Composition.Transport
         }
 
         
-        public BatchStreamData Changes { get; private set; }
-        public TimeSpan CommittedAt { get; set; }
+        internal BatchStreamData Changes { get; private set; }
+        internal TimeSpan CommittedAt { get; set; }
+        public Task Committed => _committed.Task;
         public Task Processed => _acceptedTcs.Task;
         public Task Rendered => _renderedTcs.Task;
         
-        public void NotifyProcessed()
+        internal void NotifyProcessed()
         {
             _pool.Add(Changes);
             Changes = null!;
@@ -40,6 +42,7 @@ namespace Avalonia.Rendering.Composition.Transport
             _acceptedTcs.TrySetResult(0);
         }
         
-        public void NotifyRendered() => _renderedTcs.TrySetResult(0);
+        internal void NotifyRendered() => _renderedTcs.TrySetResult(0);
+        internal void NotifyCommitted() => _committed.TrySetResult(0);
     }
 }
