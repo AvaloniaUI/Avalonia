@@ -106,6 +106,7 @@ namespace Avalonia.Win32
         private static POINTER_PEN_INFO[]? s_historyPenInfos;
         private static POINTER_INFO[]? s_historyInfos;
         private static MOUSEMOVEPOINT[]? s_mouseHistoryInfos;
+        private PlatformThemeVariant _currentThemeVariant;
 
         public WindowImpl()
         {
@@ -374,10 +375,8 @@ namespace Avalonia.Win32
                     SetTransparencyBlur(windowsVersion);
                 else if (level == WindowTransparencyLevel.AcrylicBlur)
                     SetTransparencyAcrylicBlur(windowsVersion);
-                else if (level == WindowTransparencyLevel.MicaLight)
-                    SetTransparencyMicaLight(windowsVersion);
-                else if (level == WindowTransparencyLevel.MicaDark)
-                    SetTransparencyMicaDark(windowsVersion);
+                else if (level == WindowTransparencyLevel.Mica)
+                    SetTransparencyMica(windowsVersion);
 
                 TransparencyLevel = level;
                 return;
@@ -420,7 +419,7 @@ namespace Avalonia.Win32
                 return windowsVersion >= WinUiCompositionShared.MinAcrylicVersion;
 
             // Mica is supported on Windows >= 10.0.22000.
-            if (level == WindowTransparencyLevel.MicaLight || level == WindowTransparencyLevel.MicaDark)
+            if (level == WindowTransparencyLevel.Mica)
                 return windowsVersion >= WinUiCompositionShared.MinHostBackdropVersion;
 
             return false;
@@ -469,24 +468,19 @@ namespace Avalonia.Win32
             _blurHost?.SetBlur(BlurEffect.Acrylic);
         }
 
-        private void SetTransparencyMicaLight(Version windowsVersion)
+        private void SetTransparencyMica(Version windowsVersion)
         {
             // Mica only supported with composition on Windows >= 10.0.22000.
             if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
                 return;
 
             SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.MicaLight);
-        }      
-        
-        private void SetTransparencyMicaDark(Version windowsVersion)
-        {
-            // Mica only supported with composition on Windows >= 10.0.22000.
-            if (!_isUsingComposition || windowsVersion < WinUiCompositionShared.MinHostBackdropVersion)
-                return;
-
-            SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.MicaDark);
+            _blurHost?.SetBlur(_currentThemeVariant switch
+            {
+                PlatformThemeVariant.Light => BlurEffect.MicaLight,
+                PlatformThemeVariant.Dark => BlurEffect.MicaDark,
+                _ => throw new ArgumentOutOfRangeException()
+            });
         }
 
         private void SetAccentState(AccentState state)
@@ -790,6 +784,7 @@ namespace Avalonia.Win32
 
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
+            _currentThemeVariant = themeVariant;
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {
                 var pvUseBackdropBrush = themeVariant == PlatformThemeVariant.Dark ? 1 : 0;
@@ -798,6 +793,10 @@ namespace Avalonia.Win32
                     (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
                     &pvUseBackdropBrush,
                     sizeof(int));
+                if (TransparencyLevel == WindowTransparencyLevel.Mica)
+                {
+                    SetTransparencyMica(Win32Platform.WindowsVersion);
+                }
             }
         }
         

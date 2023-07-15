@@ -76,9 +76,6 @@ internal class WinUiCompositedWindow : IDisposable
         using var compositionBrush = _surfaceBrush.QueryInterface<ICompositionBrush>();
         spriteVisual.SetBrush(compositionBrush);
         _target.SetRoot(containerVisual);
-        
-        
-        
     }
 
     public void SetSurface(ICompositionSurface surface) => _surfaceBrush.SetSurface(surface);

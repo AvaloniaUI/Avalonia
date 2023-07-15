@@ -226,8 +226,7 @@
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
                 <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
-                <WindowTransparencyLevel>MicaLight</WindowTransparencyLevel>
-                <WindowTransparencyLevel>MicaDark</WindowTransparencyLevel>
+                <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="FlowDirection"
