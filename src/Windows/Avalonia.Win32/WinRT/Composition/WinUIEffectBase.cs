@@ -52,6 +52,110 @@ namespace Avalonia.Win32.WinRT.Composition
             _sources = null;
         }
     }
+    
+     class BorderEffect : WinUIEffectBase
+    {
+        private readonly int _x;
+        private readonly int _y;
+        public override Guid EffectId => D2DEffects.CLSID_D2D1Border;
+        public override uint PropertyCount => 2;
+
+        public BorderEffect(int x, int y, params IGraphicsEffectSource[] _sources):base(_sources)
+        {
+            _x = x;
+            _y = y;
+        }
+        
+        public override IPropertyValue? GetProperty(uint index)
+        {
+            if (index == 0)
+                return new WinRTPropertyValue((uint)_x);
+            if (index == 1)
+                return new WinRTPropertyValue((uint)_y);
+            return null;
+        }
+    }
+
+    class BlendEffect : WinUIEffectBase
+    {
+        private readonly int _mode;
+
+        public BlendEffect(int mode, params IGraphicsEffectSource[] _sources) : base(_sources)
+        {
+            _mode = mode;
+        }
+
+        public override Guid EffectId => D2DEffects.CLSID_D2D1Blend;
+        public override uint PropertyCount => 1;
+
+        public override IPropertyValue? GetProperty(uint index)
+        {
+            if (index == 0)
+                return new WinRTPropertyValue((uint)_mode);
+            return null;
+        }
+    }
+
+    class CompositeStepEffect : WinUIEffectBase
+    {
+        private readonly float _mode;
+
+        public CompositeStepEffect(int mode, params IGraphicsEffectSource[] _sources) : base(_sources)
+        {
+            _mode = mode;
+        }
+
+        public override Guid EffectId => D2DEffects.CLSID_D2D1Composite;
+        public override uint PropertyCount => 1;
+
+        public override IPropertyValue? GetProperty(uint index)
+        {
+            if (index == 0)
+                return new WinRTPropertyValue((uint)_mode);
+            return null;
+        }
+    }  
+    
+    class OpacityEffect : WinUIEffectBase
+    {
+        private readonly float _opacity;
+
+        public OpacityEffect(float opacity, params IGraphicsEffectSource[] _sources) : base(_sources)
+        {
+            _opacity = opacity;
+        }
+
+        public override Guid EffectId => D2DEffects.CLSID_D2D1Opacity;
+        public override uint PropertyCount => 1;
+
+        public override IPropertyValue? GetProperty(uint index)
+        {
+            if (index == 0)
+                return new WinRTPropertyValue(_opacity);
+            return null;
+        }
+    }
+
+    class ColorSourceEffect : WinUIEffectBase
+    {
+        private readonly float[] _color;
+
+        public ColorSourceEffect(float[] color)
+        {
+            _color = color;
+        }
+
+        public override Guid EffectId => D2DEffects.CLSID_D2D1Flood;
+        public override uint PropertyCount => 1;
+
+        public override IPropertyValue? GetProperty(uint index)
+        {
+            if (index == 0)
+                return new WinRTPropertyValue(_color);
+            return null;
+        }
+    }
+    
 
     internal class WinUIGaussianBlurEffect : WinUIEffectBase
     {
