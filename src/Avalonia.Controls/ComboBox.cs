@@ -270,6 +270,7 @@ namespace Avalonia.Controls
             {
                 if (_popup?.IsInsidePopup(source) == true)
                 {
+                    e.Handled = true;
                     return;
                 }
             }
