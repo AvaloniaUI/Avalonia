@@ -33,10 +33,7 @@ internal static class WinUiCompositionUtils
         using var luminosityOpacityEffectBrushEffect = luminosityOpacityEffectFactory.CreateBrush();
         using var luminosityOpacityEffectBrush =
             luminosityOpacityEffectBrushEffect.QueryInterface<ICompositionBrush>();
-
-
-        // using var backDropParameterAsSource = GetParameterSource("BlurredWallpaperBackdrop", backDropParameterFactory, out var backdropHandle);
-        // using var backdropCompositionBrsuh = backDropParameterAsSource.QueryInterface<ICompositionBrush>();
+        
         using var compositorWithBlurredWallpaperBackdropBrush =
             compositor.QueryInterface<ICompositorWithBlurredWallpaperBackdropBrush>();
         using var blurredWallpaperBackdropBrush =
