@@ -167,12 +167,12 @@ jobs:
       script: |
        dotnet workload install android ios wasm-tools wasm-experimental
 
-  - task: CmdLine@2
+  - task: PowerShell@2
     displayName: 'Install Tizen Workload'
     inputs:
       targetType: 'inline'
       script: |
-       powershell.exe -File https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1
+       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
