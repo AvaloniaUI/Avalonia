@@ -23,7 +23,7 @@ internal class NativePlatformSettings : DefaultPlatformSettings
             AvnPlatformThemeVariant.Dark => (PlatformThemeVariant.Dark, ColorContrastPreference.NoPreference),
             AvnPlatformThemeVariant.Light => (PlatformThemeVariant.Light, ColorContrastPreference.NoPreference),
             AvnPlatformThemeVariant.HighContrastDark => (PlatformThemeVariant.Dark, ColorContrastPreference.High),
-            AvnPlatformThemeVariant.HighContrastLight => (PlatformThemeVariant.Dark, ColorContrastPreference.High),
+            AvnPlatformThemeVariant.HighContrastLight => (PlatformThemeVariant.Light, ColorContrastPreference.High),
             _ => throw new ArgumentOutOfRangeException()
         };
         var color = _platformSettings.AccentColor;
