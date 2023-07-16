@@ -172,7 +172,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
+       powershell.exe -File https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
