@@ -517,5 +517,14 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Clears the selection
+        /// </summary>
+        public void Clear()
+        {
+            SelectedItem = null;
+            SelectedIndex = -1;
+        }
     }
 }
