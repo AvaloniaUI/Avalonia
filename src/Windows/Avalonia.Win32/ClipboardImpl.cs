@@ -8,6 +8,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
+using System.Collections.Generic;
 
 namespace Avalonia.Win32
 {
@@ -77,6 +78,7 @@ namespace Avalonia.Win32
         public async Task SetDataObjectAsync(IDataObject data)
         {
             Dispatcher.UIThread.VerifyAccess();
+            TryConvertFileList(data);
             using var wrapper = new DataObject(data);
             var i = OleRetryCount;
 
@@ -141,6 +143,23 @@ namespace Avalonia.Win32
 
                 await Task.Delay(OleRetryDelay);
             }
+        }
+
+        private static void TryConvertFileList(IDataObject data)
+        {
+            if (!(data is Avalonia.Input.DataObject inputDataObject))
+            {
+                return;
+            }
+
+            if (!(data.Get(DataFormats.Files) is IEnumerable<string> fileList))
+            {
+                return;
+            }
+
+            var storageItems = fileList.Select(f => Platform.Storage.FileIO.StorageProviderHelpers.TryCreateBclStorageItem(f)!)
+                     .Where(f => f is not null);
+            inputDataObject.Set(DataFormats.Files, storageItems);
         }
     }
 }
