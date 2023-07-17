@@ -121,10 +121,7 @@ namespace ControlCatalog.Pages
 
         private void CopyBitmapDataObject(object? sender, RoutedEventArgs args)
         {
-            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-            {
-
-            }
+            throw new NotSupportedException();
         }
 
         private async void PasteBitmapDataObject(object? sender, RoutedEventArgs args)
