@@ -98,14 +98,14 @@ namespace Avalonia.Controls.PullToRefresh
 
             if (_scrollViewer.Content == null)
             {
-                throw new ArgumentException(nameof(adaptee), "Adaptee's content property cannot be null.");
+                throw new ArgumentException("Adaptee's content property cannot be null.", nameof(adaptee));
             }
 
             var content = adaptee.Content as Visual;
 
             if (content == null)
             {
-                throw new ArgumentException(nameof(adaptee), "Adaptee's content property must be a Visual");
+                throw new ArgumentException("Adaptee's content property must be a Visual", nameof(adaptee));
             }
 
             if (content.GetVisualParent() == null)
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.PullToRefresh
 
                 if (content.Parent is not InputElement)
                 {
-                    throw new ArgumentException(nameof(adaptee), "Adaptee's content's parent must be a InputElement");
+                    throw new ArgumentException("Adaptee's content's parent must be a InputElement", nameof(adaptee));
                 }
             }
 
@@ -194,12 +194,12 @@ namespace Avalonia.Controls.PullToRefresh
             var content = _scrollViewer?.Content as Visual;
             if (content == null)
             {
-                throw new ArgumentException(nameof(_scrollViewer), "Adaptee's content property must be a Visual");
+                throw new ArgumentException("Adaptee's content property must be a Visual", nameof(_scrollViewer));
             }
 
             if (content.Parent is not InputElement parent)
             {
-                throw new ArgumentException(nameof(_scrollViewer), "Adaptee's content parent must be an InputElement");
+                throw new ArgumentException("Adaptee's content parent must be an InputElement", nameof(_scrollViewer));
             }
 
             MakeInteractionSource(parent);

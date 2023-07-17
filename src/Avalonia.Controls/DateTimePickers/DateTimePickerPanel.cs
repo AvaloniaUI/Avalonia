@@ -165,7 +165,7 @@ namespace Avalonia.Controls.Primitives
             set
             {
                 if (value > MaximumValue || value < MinimumValue)
-                    throw new ArgumentOutOfRangeException("SelectedValue");
+                    throw new ArgumentOutOfRangeException(nameof(value));
 
                 var sel = CoerceSelected(value);
                 _selectedValue = sel;
@@ -195,7 +195,7 @@ namespace Avalonia.Controls.Primitives
             set
             {
                 if (value <= 0 || value > _range)
-                    throw new ArgumentOutOfRangeException("Increment");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 _increment = value;
                 UpdateHelperInfo();
                 var sel = CoerceSelected(SelectedValue);

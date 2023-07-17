@@ -752,7 +752,7 @@ namespace Metsys.Bson
 
                         if (memberExpression.Expression.NodeType != ExpressionType.Parameter && memberExpression.Expression.NodeType != ExpressionType.Convert)
                         {
-                            throw new ArgumentException(string.Format("Expression '{0}' must resolve to top-level member.", lambdaExpression), nameof(lambdaExpression));
+                            throw new ArgumentException($"Expression '{lambdaExpression}' must resolve to top-level member.", nameof(lambdaExpression));
                         }
                         return memberExpression.Member.Name;
                     default:
@@ -942,7 +942,7 @@ namespace Metsys.Bson
                     return new ListWrapper();
                 }
             }
-            throw new BsonException(string.Format("Collection of type {0} cannot be deserialized", type.FullName));
+            throw new BsonException($"Collection of type {type.FullName} cannot be deserialized");
         }
 
         public abstract void Add(object value);
@@ -1514,7 +1514,7 @@ namespace Metsys.Bson.Configuration
                     result = Visit((MemberExpression)expression.Left);
                 }
                 var index = Expression.Lambda(expression.Right).Compile().DynamicInvoke();
-                return result + string.Format("[{0}]", index);
+                return result + $"[{index}]";
             }
 
             private string Visit(MemberExpression expression)
@@ -1540,7 +1540,7 @@ namespace Metsys.Bson.Configuration
                 if (expression.Method.Name == "get_Item" && expression.Arguments.Count == 1)
                 {
                     var index = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
-                    name += string.Format("[{0}]", index);
+                    name += $"[{index}]";
                 }
                 return name;
             }
