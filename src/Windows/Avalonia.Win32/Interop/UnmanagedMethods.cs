@@ -2162,6 +2162,10 @@ namespace Avalonia.Win32.Interop
             /// A handle to type HDROP that identifies a list of files. 
             /// </summary>
             CF_HDROP = 15,
+            /// <summary>
+            /// A memory object containing a BITMAPV5HEADER structure followed by the bitmap color space information and the bitmap bits.
+            /// </summary>
+            CF_DIBV5 = 17,
         }
 
         public struct MSG

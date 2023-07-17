@@ -36,7 +36,7 @@ namespace Avalonia.Win32
 
             new ClipboardFormat("Bitmap", (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP),
             new ClipboardFormat("MetafilePict", (ushort)UnmanagedMethods.ClipboardFormat.CF_METAFILEPICT),
-            new ClipboardFormat("Dib", (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB),
+            new ClipboardFormat("Dib", (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIBV5),
             new ClipboardFormat("EnhancedMetafile", (ushort)UnmanagedMethods.ClipboardFormat.CF_ENHMETAFILE),
             new ClipboardFormat("Palette", (ushort)UnmanagedMethods.ClipboardFormat.CF_PALETTE),
             new ClipboardFormat("PenData", (ushort)UnmanagedMethods.ClipboardFormat.CF_PENDATA),
