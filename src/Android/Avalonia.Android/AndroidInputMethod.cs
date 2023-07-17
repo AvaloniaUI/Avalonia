@@ -127,10 +127,6 @@ namespace Avalonia.Android
                 _inputConnection.EditableWrapper.IgnoreChange = false;
             }
 
-            var selection = Client.Selection;
-
-            _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
-
             (int index, string diff) GetDiff()
             {
                 int index = 0;
