@@ -218,8 +218,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            using (RenderInterface.EnsureCurrent())
-                return RenderInterface.CreateRenderTarget(surfaces);
+            using var _ = RenderInterface.EnsureCurrent();
+            return RenderInterface.CreateRenderTarget(surfaces);
         }
 
         public bool CheckAccess() => _safeThread == Thread.CurrentThread;
