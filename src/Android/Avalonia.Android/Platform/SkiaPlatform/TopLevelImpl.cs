@@ -447,6 +447,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly AvaloniaInputConnection _inputConnection;
 
+        public event EventHandler<int> SelectionChanged;
+
         public EditableWrapper(AvaloniaInputConnection inputConnection)
         {
             _inputConnection = inputConnection;
@@ -458,8 +460,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if (!IgnoreChange && start != end)
             {
-                var text = tb.SubSequence(0, tb.Length());
-
                 SelectSurroundingTextForDeletion(start, end);
             }
 
@@ -470,8 +470,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if (!IgnoreChange && start != end)
             {
-                var text = tb.SubSequence(tbstart, tbend);
-
                 SelectSurroundingTextForDeletion(start, end);
             }
 
@@ -481,6 +479,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private void SelectSurroundingTextForDeletion(int start, int end)
         {
             _inputConnection.InputMethod.Client.Selection = new TextSelection(start, end);
+        }
+
+        public override void SetSpan(Java.Lang.Object what, int start, int end, [GeneratedEnum] SpanTypes flags)
+        {
+            base.SetSpan(what, start, end, flags);
         }
     }
 
@@ -548,11 +551,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             if (_inputMethod.IsActive && !string.IsNullOrEmpty(committedText))
             {
-                if(_composingRegion != null)
-                {
-                    _inputMethod.Client.Selection = new TextSelection(_composingRegion.Value.Start, _composingRegion.Value.End);
-                }
-
                _toplevel.TextInput(committedText);
 
                 _composingRegion = null;

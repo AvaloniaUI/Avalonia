@@ -114,16 +114,42 @@ namespace Avalonia.Android
         private void _client_SurroundingTextChanged(object sender, EventArgs e)
         {
             var surroundingText = _client.SurroundingText ?? "";
+            var editableText = _inputConnection.EditableWrapper.ToString();
 
-            _inputConnection.EditableWrapper.IgnoreChange = true;
+            if (editableText != surroundingText)
+            {
+                _inputConnection.EditableWrapper.IgnoreChange = true;
 
-            _inputConnection.Editable.Replace(0, _inputConnection.Editable.Length(), surroundingText);
+                var diff = GetDiff();
 
-            _inputConnection.EditableWrapper.IgnoreChange = false;
+                _inputConnection.Editable.Replace(diff.index, editableText.Length, diff.diff);
+
+                _inputConnection.EditableWrapper.IgnoreChange = false;
+            }
 
             var selection = Client.Selection;
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
+
+            (int index, string diff) GetDiff()
+            {
+                int index = 0;
+
+                var longerLength = Math.Max(surroundingText.Length, editableText.Length);
+
+                for(int i = 0; i < longerLength; i++)
+                {
+                    if (surroundingText.Length == i || editableText.Length == i || surroundingText[i] != editableText[i])
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+
+                var diffString = surroundingText.Substring(index, surroundingText.Length - index);                
+
+                return (index, diffString);
+            }
         }
 
         public void SetCursorRect(Rect rect)
