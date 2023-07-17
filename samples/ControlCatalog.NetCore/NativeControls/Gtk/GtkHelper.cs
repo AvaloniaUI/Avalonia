@@ -39,15 +39,13 @@ internal class GtkHelper
     {
         return GtkInteropHelper.RunOnGlibThread(() =>
         {
-            using (var title = new Utf8Buffer("Embedded"))
-            {
-                var widget = gtk_file_chooser_dialog_new(title, IntPtr.Zero, GtkFileChooserAction.SelectFolder,
-                    IntPtr.Zero);
-                gtk_widget_realize(widget);
-                var xid = gdk_x11_window_get_xid(gtk_widget_get_window(widget));
-                gtk_window_present(widget);
-                return new FileChooser(widget, xid);
-            }
+            using var title = new Utf8Buffer("Embedded");
+            var widget = gtk_file_chooser_dialog_new(title, IntPtr.Zero, GtkFileChooserAction.SelectFolder,
+                IntPtr.Zero);
+            gtk_widget_realize(widget);
+            var xid = gdk_x11_window_get_xid(gtk_widget_get_window(widget));
+            gtk_window_present(widget);
+            return new FileChooser(widget, xid);
         }).Result;
     }
 }

@@ -27,73 +27,72 @@ public static class ApiDiffValidation
             Directory.CreateDirectory(suppressionFilesFolder!);
         }
 
-        await using (var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion))
-        using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
-        using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
-        using (Helpers.UseTempDir(out var tempFolder))
+        await using var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion);
+        using var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read);
+        using var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read);
+        using var _ = Helpers.UseTempDir(out var tempFolder);
+        
+        var targetDlls = GetDlls(target);
+        var baselineDlls = GetDlls(baseline);
+
+        var left = new List<string>();
+        var right = new List<string>();
+
+        var packageId = GetPackageId(packagePath);
+        var suppressionFile = Path.Combine(suppressionFilesFolder, packageId + ".nupkg.xml");
+
+        // Don't use Path.Combine with these left and right tool parameters.
+        // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
+        // So, always use Unix '/'
+        foreach (var baselineDll in baselineDlls)
         {
-            var targetDlls = GetDlls(target);
-            var baselineDlls = GetDlls(baseline);
-
-            var left = new List<string>();
-            var right = new List<string>();
-
-            var packageId = GetPackageId(packagePath);
-            var suppressionFile = Path.Combine(suppressionFilesFolder, packageId + ".nupkg.xml");
-
-            // Don't use Path.Combine with these left and right tool parameters.
-            // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
-            // So, always use Unix '/'
-            foreach (var baselineDll in baselineDlls)
+            var baselineDllPath = $"baseline/{baselineDll.target}/{baselineDll.entry.Name}";
+            var baselineDllRealPath = Path.Combine(tempFolder, baselineDllPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(baselineDllRealPath)!);
+            await using (var baselineDllFile = File.Create(baselineDllRealPath))
             {
-                var baselineDllPath = $"baseline/{baselineDll.target}/{baselineDll.entry.Name}";
-                var baselineDllRealPath = Path.Combine(tempFolder, baselineDllPath);
-                Directory.CreateDirectory(Path.GetDirectoryName(baselineDllRealPath)!);
-                await using (var baselineDllFile = File.Create(baselineDllRealPath))
-                {
-                    await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
-                }
-
-                var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target == baselineDll.target && e.entry.Name == baselineDll.entry.Name);
-                if (targetDll.entry is null)
-                {
-                    throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
-                }
-
-                var targetDllPath = $"target/{targetDll.target}/{targetDll.entry.Name}";
-                var targetDllRealPath = Path.Combine(tempFolder, targetDllPath);
-                Directory.CreateDirectory(Path.GetDirectoryName(targetDllRealPath)!);
-                await using (var targetDllFile = File.Create(targetDllRealPath))
-                {
-                    await targetDll.entry.Open().CopyToAsync(targetDllFile);
-                }
-
-                left.Add(baselineDllPath);
-                right.Add(targetDllPath);
+                await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
             }
 
-            if (left.Any())
+            var targetDll = targetDlls.FirstOrDefault(e =>
+                e.target == baselineDll.target && e.entry.Name == baselineDll.entry.Name);
+            if (targetDll.entry is null)
             {
-                var args = $""" -l={string.Join(',', left)} -r="{string.Join(',', right)}" """;
-                if (File.Exists(suppressionFile))
-                {
-                    args += $""" --suppression-file="{suppressionFile}" """;
-                }
+                throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
+            }
 
-                if (updateSuppressionFile)
-                {
-                    args += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
-                }
+            var targetDllPath = $"target/{targetDll.target}/{targetDll.entry.Name}";
+            var targetDllRealPath = Path.Combine(tempFolder, targetDllPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(targetDllRealPath)!);
+            await using (var targetDllFile = File.Create(targetDllRealPath))
+            {
+                await targetDll.entry.Open().CopyToAsync(targetDllFile);
+            }
 
-                var result = apiCompatTool(args, tempFolder)
-                    .Where(t => t.Type == OutputType.Err).ToArray();
-                if (result.Any())
-                {
-                    throw new AggregateException(
-                        $"ApiDiffValidation task has failed for \"{Path.GetFileName(packagePath)}\" package",
-                        result.Select(r => new Exception(r.Text)));
-                }
+            left.Add(baselineDllPath);
+            right.Add(targetDllPath);
+        }
+
+        if (left.Any())
+        {
+            var args = $""" -l={string.Join(',', left)} -r="{string.Join(',', right)}" """;
+            if (File.Exists(suppressionFile))
+            {
+                args += $""" --suppression-file="{suppressionFile}" """;
+            }
+
+            if (updateSuppressionFile)
+            {
+                args += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
+            }
+
+            var result = apiCompatTool(args, tempFolder)
+                .Where(t => t.Type == OutputType.Err).ToArray();
+            if (result.Any())
+            {
+                throw new AggregateException(
+                    $"ApiDiffValidation task has failed for \"{Path.GetFileName(packagePath)}\" package",
+                    result.Select(r => new Exception(r.Text)));
             }
         }
     }

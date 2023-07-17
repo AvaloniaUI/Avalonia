@@ -94,25 +94,24 @@ namespace Avalonia
         {
             const string exceptionMessage = "Invalid CornerRadius.";
 
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage))
+            using var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage);
+            
+            if (tokenizer.TryReadDouble(out var a))
             {
-                if (tokenizer.TryReadDouble(out var a))
+                if (tokenizer.TryReadDouble(out var b))
                 {
-                    if (tokenizer.TryReadDouble(out var b))
+                    if (tokenizer.TryReadDouble(out var c))
                     {
-                        if (tokenizer.TryReadDouble(out var c))
-                        {
-                            return new CornerRadius(a, b, c, tokenizer.ReadDouble());
-                        }
-
-                        return new CornerRadius(a, b);
+                        return new CornerRadius(a, b, c, tokenizer.ReadDouble());
                     }
 
-                    return new CornerRadius(a);
+                    return new CornerRadius(a, b);
                 }
 
-                throw new FormatException(exceptionMessage);
+                return new CornerRadius(a);
             }
+
+            throw new FormatException(exceptionMessage);
         }
 
         public static bool operator ==(CornerRadius left, CornerRadius right)

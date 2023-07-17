@@ -592,15 +592,14 @@ namespace Avalonia
         /// <returns>The parsed <see cref="Rect"/>.</returns>
         public static Rect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect."))
-            {
-                return new Rect(
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble()
-                );
-            }
+            using var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect.");
+            
+            return new Rect(
+                tokenizer.ReadDouble(),
+                tokenizer.ReadDouble(),
+                tokenizer.ReadDouble(),
+                tokenizer.ReadDouble()
+            );
         }
 
         /// <summary>

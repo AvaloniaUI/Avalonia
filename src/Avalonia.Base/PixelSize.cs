@@ -69,12 +69,11 @@ namespace Avalonia
         /// <returns>The <see cref="PixelSize"/>.</returns>
         public static PixelSize Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelSize."))
-            {
-                return new PixelSize(
-                    tokenizer.ReadInt32(),
-                    tokenizer.ReadInt32());
-            }
+            using var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelSize.");
+            
+            return new PixelSize(
+                tokenizer.ReadInt32(),
+                tokenizer.ReadInt32());
         }
 
         /// <summary>

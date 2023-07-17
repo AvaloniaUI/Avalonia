@@ -27,45 +27,44 @@ public partial class Build
         bool finished = false, atLeastOneFileAdded = false;
         try
         {
-            using (var targetStream = File.Create(targetPath))
-            using(var archive = new System.IO.Compression.ZipArchive(targetStream, ZipArchiveMode.Create))
+            using var targetStream = File.Create(targetPath);
+            using var archive = new System.IO.Compression.ZipArchive(targetStream, ZipArchiveMode.Create);
+            
+            void AddFile(string path, string relativePath)
             {
-                void AddFile(string path, string relativePath)
-                {
-                    var e = archive.CreateEntry(relativePath.Replace("\\", "/"), CompressionLevel.Optimal);
-                    using (var entryStream = e.Open())
-                    using (var fileStream = File.OpenRead(path))
-                        fileStream.CopyTo(entryStream);
-                    atLeastOneFileAdded = true;
-                }
-
-                foreach (var path in paths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        var dirInfo = new DirectoryInfo(path);
-                        var rootPath = Path.GetDirectoryName(dirInfo.FullName);
-                        foreach(var fsEntry in dirInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
-                        {
-                            if (fsEntry is FileInfo)
-                            {
-#if NET6
-                                var relPath = Path.GetRelativePath(rootPath, fsEntry.FullName);
-#else
-                                var relPath = GetRelativePath(rootPath, fsEntry.FullName);
-#endif
-                                AddFile(fsEntry.FullName, relPath);
-                            }
-                        }
-                    }
-                    else if(File.Exists(path))
-                    {
-                        var name = Path.GetFileName(path);
-                        AddFile(path, name);
-                    }
-                }
+                var e = archive.CreateEntry(relativePath.Replace("\\", "/"), CompressionLevel.Optimal);
+                using var entryStream = e.Open();
+                using var fileStream = File.OpenRead(path);
+                fileStream.CopyTo(entryStream);
+                atLeastOneFileAdded = true;
             }
 
+            foreach (var path in paths)
+            {
+                if (Directory.Exists(path))
+                {
+                    var dirInfo = new DirectoryInfo(path);
+                    var rootPath = Path.GetDirectoryName(dirInfo.FullName);
+                    foreach(var fsEntry in dirInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        if (fsEntry is FileInfo)
+                        {
+#if NET6
+                            var relPath = Path.GetRelativePath(rootPath, fsEntry.FullName);
+#else
+                            var relPath = GetRelativePath(rootPath, fsEntry.FullName);
+#endif
+                            AddFile(fsEntry.FullName, relPath);
+                        }
+                    }
+                }
+                else if(File.Exists(path))
+                {
+                    var name = Path.GetFileName(path);
+                    AddFile(path, name);
+                }
+            }
+            
             finished = true;
         }
         finally

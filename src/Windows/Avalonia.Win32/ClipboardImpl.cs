@@ -32,46 +32,42 @@ namespace Avalonia.Win32
 
         public async Task<string?> GetTextAsync()
         {
-            using(await OpenClipboard())
+            using var _ = await OpenClipboard();
+            
+            IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
+            if (hText == IntPtr.Zero)
             {
-                IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
-                if (hText == IntPtr.Zero)
-                {
-                    return null;
-                }
-
-                var pText = UnmanagedMethods.GlobalLock(hText);
-                if (pText == IntPtr.Zero)
-                {
-                    return null;
-                }
-
-                var rv = Marshal.PtrToStringUni(pText);
-                UnmanagedMethods.GlobalUnlock(hText);
-                return rv;
+                return null;
             }
+
+            var pText = UnmanagedMethods.GlobalLock(hText);
+            if (pText == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var rv = Marshal.PtrToStringUni(pText);
+            UnmanagedMethods.GlobalUnlock(hText);
+            return rv;
         }
 
         public async Task SetTextAsync(string? text)
         {
-            using(await OpenClipboard())
-            {
-                UnmanagedMethods.EmptyClipboard();
+            using var _ = await OpenClipboard();
+            
+            UnmanagedMethods.EmptyClipboard();
 
-                if (text is not null)
-                {
-                    var hGlobal = Marshal.StringToHGlobalUni(text);
-                    UnmanagedMethods.SetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, hGlobal);
-                }
+            if (text is not null)
+            {
+                var hGlobal = Marshal.StringToHGlobalUni(text);
+                UnmanagedMethods.SetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, hGlobal);
             }
         }
 
         public async Task ClearAsync()
         {
-            using(await OpenClipboard())
-            {
-                UnmanagedMethods.EmptyClipboard();
-            }
+            using var _ = await OpenClipboard();
+            UnmanagedMethods.EmptyClipboard();
         }
 
         public async Task SetDataObjectAsync(IDataObject data)

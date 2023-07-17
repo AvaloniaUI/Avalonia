@@ -45,39 +45,38 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            using (drawingContext.PushTransform(Matrix.CreateTranslation(origin)))
+            using var _ = drawingContext.PushTransform(Matrix.CreateTranslation(origin));
+            
+            if (GlyphRun.GlyphInfos.Count == 0)
             {
-                if (GlyphRun.GlyphInfos.Count == 0)
-                {
-                    return;
-                }
+                return;
+            }
 
-                if (Properties.Typeface == default)
-                {
-                    return;
-                }
+            if (Properties.Typeface == default)
+            {
+                return;
+            }
 
-                if (Properties.ForegroundBrush == null)
-                {
-                    return;
-                }
+            if (Properties.ForegroundBrush == null)
+            {
+                return;
+            }
 
-                if (Properties.BackgroundBrush != null)
-                {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
-                }
+            if (Properties.BackgroundBrush != null)
+            {
+                drawingContext.DrawRectangle(Properties.BackgroundBrush, null, GlyphRun.Bounds);
+            }
 
-                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
+            drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
 
-                if (Properties.TextDecorations == null)
-                {
-                    return;
-                }
+            if (Properties.TextDecorations == null)
+            {
+                return;
+            }
 
-                foreach (var textDecoration in Properties.TextDecorations)
-                {
-                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
-                }
+            foreach (var textDecoration in Properties.TextDecorations)
+            {
+                textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
             }
         }
 

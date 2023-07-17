@@ -49,14 +49,12 @@ namespace PlatformSanityChecks
 
         static void EnterLoop(Action<CancellationTokenSource> cb, [CallerMemberName] string caller = null)
         {
-            using (Enter(caller))
-            {
-                var cts = new CancellationTokenSource();
-                cb(cts);
-                Dispatcher.UIThread.MainLoop(cts.Token);
-                if (!cts.IsCancellationRequested)
-                    Die("Unexpected loop exit");
-            }
+            using var _ = Enter(caller);
+            var cts = new CancellationTokenSource();
+            cb(cts);
+            Dispatcher.UIThread.MainLoop(cts.Token);
+            if (!cts.IsCancellationRequested)
+                Die("Unexpected loop exit");
         }
         
         static void CheckTimerOrdering() => EnterLoop(cts =>

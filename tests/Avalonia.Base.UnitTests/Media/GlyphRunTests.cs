@@ -60,17 +60,12 @@ namespace Avalonia.Base.UnitTests.Media
         public void Should_Find_Nearest_CharacterHit(double[] advances, int[] clusters, int bidiLevel,
             int index, int expectedIndex, int expectedLength, double expectedWidth)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
-            {
-                var textBounds = glyphRun.FindNearestCharacterHit(index, out var width);
-
-                Assert.Equal(expectedIndex, textBounds.FirstCharacterIndex);
-
-                Assert.Equal(expectedLength, textBounds.TrailingLength);
-
-                Assert.Equal(expectedWidth, width, 2);
-            }
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            using var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel);
+            var textBounds = glyphRun.FindNearestCharacterHit(index, out var width);
+            Assert.Equal(expectedIndex, textBounds.FirstCharacterIndex);
+            Assert.Equal(expectedLength, textBounds.TrailingLength);
+            Assert.Equal(expectedWidth, width, 2);
         }
 
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0, 3, 0)]
@@ -85,15 +80,11 @@ namespace Avalonia.Base.UnitTests.Media
             int nextIndex, int nextLength,
             int bidiLevel)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
-            {
-                var characterHit = glyphRun.GetNextCaretCharacterHit(new CharacterHit(firstCharacterIndex, trailingLength));
-
-                Assert.Equal(nextIndex, characterHit.FirstCharacterIndex);
-
-                Assert.Equal(nextLength, characterHit.TrailingLength);
-            }
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            using var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel);
+            var characterHit = glyphRun.GetNextCaretCharacterHit(new CharacterHit(firstCharacterIndex, trailingLength));
+            Assert.Equal(nextIndex, characterHit.FirstCharacterIndex);
+            Assert.Equal(nextLength, characterHit.TrailingLength);
         }
 
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0, 0, 0)]
@@ -108,15 +99,11 @@ namespace Avalonia.Base.UnitTests.Media
             int previousIndex, int previousLength,
             int bidiLevel)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
-            {
-                var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
-
-                Assert.Equal(previousIndex, characterHit.FirstCharacterIndex);
-
-                Assert.Equal(previousLength, characterHit.TrailingLength);
-            }
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            using var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel);
+            var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
+            Assert.Equal(previousIndex, characterHit.FirstCharacterIndex);
+            Assert.Equal(previousLength, characterHit.TrailingLength);
         }
 
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0)]
@@ -128,44 +115,42 @@ namespace Avalonia.Base.UnitTests.Media
         [Theory]
         public void Should_Find_Glyph_Index(double[] advances, int[] clusters, int bidiLevel)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            using var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel);
+            if (glyphRun.IsLeftToRight)
             {
-                if (glyphRun.IsLeftToRight)
+                for (var i = 0; i < clusters.Length; i++)
                 {
-                    for (var i = 0; i < clusters.Length; i++)
+                    var cluster = clusters[i];
+
+                    var found = glyphRun.FindGlyphIndex(cluster);
+
+                    var expected = i;
+
+                    while (expected - 1 >= 0 && clusters[expected - 1] == cluster)
                     {
-                        var cluster = clusters[i];
-
-                        var found = glyphRun.FindGlyphIndex(cluster);
-
-                        var expected = i;
-
-                        while (expected - 1 >= 0 && clusters[expected - 1] == cluster)
-                        {
-                            expected--;
-                        }
-
-                        Assert.Equal(expected, found);
+                        expected--;
                     }
+
+                    Assert.Equal(expected, found);
                 }
-                else
+            }
+            else
+            {
+                for (var i = clusters.Length - 1; i > 0; i--)
                 {
-                    for (var i = clusters.Length - 1; i > 0; i--)
+                    var cluster = clusters[i];
+
+                    var found = glyphRun.FindGlyphIndex(cluster);
+
+                    var expected = i;
+
+                    while (expected + 1 < clusters.Length && clusters[expected + 1] == cluster)
                     {
-                        var cluster = clusters[i];
-
-                        var found = glyphRun.FindGlyphIndex(cluster);
-
-                        var expected = i;
-
-                        while (expected + 1 < clusters.Length && clusters[expected + 1] == cluster)
-                        {
-                            expected++;
-                        }
-
-                        Assert.Equal(expected, found);
+                        expected++;
                     }
+
+                    Assert.Equal(expected, found);
                 }
             }
         }

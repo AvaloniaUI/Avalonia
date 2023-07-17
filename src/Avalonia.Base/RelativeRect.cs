@@ -160,43 +160,42 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
+            using var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect.");
+            
+            var x = tokenizer.ReadString();
+            var y = tokenizer.ReadString();
+            var width = tokenizer.ReadString();
+            var height = tokenizer.ReadString();
+
+            var unit = RelativeUnit.Absolute;
+            var scale = 1.0;
+
+            var xRelative = x.EndsWith("%", StringComparison.Ordinal);
+            var yRelative = y.EndsWith("%", StringComparison.Ordinal);
+            var widthRelative = width.EndsWith("%", StringComparison.Ordinal);
+            var heightRelative = height.EndsWith("%", StringComparison.Ordinal);
+
+            if (xRelative && yRelative && widthRelative && heightRelative)
             {
-                var x = tokenizer.ReadString();
-                var y = tokenizer.ReadString();
-                var width = tokenizer.ReadString();
-                var height = tokenizer.ReadString();
+                x = x.TrimEnd(PercentChar);
+                y = y.TrimEnd(PercentChar);
+                width = width.TrimEnd(PercentChar);
+                height = height.TrimEnd(PercentChar);
 
-                var unit = RelativeUnit.Absolute;
-                var scale = 1.0;
-
-                var xRelative = x.EndsWith("%", StringComparison.Ordinal);
-                var yRelative = y.EndsWith("%", StringComparison.Ordinal);
-                var widthRelative = width.EndsWith("%", StringComparison.Ordinal);
-                var heightRelative = height.EndsWith("%", StringComparison.Ordinal);
-
-                if (xRelative && yRelative && widthRelative && heightRelative)
-                {
-                    x = x.TrimEnd(PercentChar);
-                    y = y.TrimEnd(PercentChar);
-                    width = width.TrimEnd(PercentChar);
-                    height = height.TrimEnd(PercentChar);
-
-                    unit = RelativeUnit.Relative;
-                    scale = 0.01;
-                }
-                else if (xRelative || yRelative || widthRelative || heightRelative)
-                {
-                    throw new FormatException("If one coordinate is relative, all must be.");
-                }
-
-                return new RelativeRect(
-                    double.Parse(x, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(y, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(width, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(height, CultureInfo.InvariantCulture) * scale,
-                    unit);
+                unit = RelativeUnit.Relative;
+                scale = 0.01;
             }
+            else if (xRelative || yRelative || widthRelative || heightRelative)
+            {
+                throw new FormatException("If one coordinate is relative, all must be.");
+            }
+
+            return new RelativeRect(
+                double.Parse(x, CultureInfo.InvariantCulture) * scale,
+                double.Parse(y, CultureInfo.InvariantCulture) * scale,
+                double.Parse(width, CultureInfo.InvariantCulture) * scale,
+                double.Parse(height, CultureInfo.InvariantCulture) * scale,
+                unit);
         }
     }
 }

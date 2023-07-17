@@ -13,12 +13,11 @@ namespace Avalonia.Media
         public static PathFigures Parse(string pathData)
         {
             var pathGeometry = new PathGeometry();
-            
-            using (var context = new PathGeometryContext(pathGeometry))
-            using (var parser = new PathMarkupParser(context))
-            {
-                parser.Parse(pathData);
-            }
+
+            using var context = new PathGeometryContext(pathGeometry);
+            using var parser = new PathMarkupParser(context);
+
+            parser.Parse(pathData);
 
             return pathGeometry.Figures!;
         }

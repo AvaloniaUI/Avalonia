@@ -279,8 +279,8 @@ public unsafe class VulkanImage : IDisposable
             {
                 using var snap = surface.Snapshot();
                 using var encoded = snap.Encode();
-                using (var s = File.Create(path))
-                    encoded.SaveTo(s);
+                using var s = File.Create(path);
+                encoded.SaveTo(s);
             }
         }
     }

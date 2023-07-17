@@ -115,14 +115,10 @@ unsafe class VulkanContent : IDisposable
     {
         var name = typeof(VulkanContent).Assembly.GetManifestResourceNames()
             .First(x => x.Contains((fragment ? "frag" : "vert") + ".spirv"));
-        using (var sr = typeof(VulkanContent).Assembly.GetManifestResourceStream(name))
-        {
-            using (var mem = new MemoryStream())
-            {
-                sr.CopyTo(mem);
-                return mem.ToArray();
-            }
-        }
+        using var sr = typeof(VulkanContent).Assembly.GetManifestResourceStream(name);
+        using var mem = new MemoryStream();
+        sr.CopyTo(mem);
+        return mem.ToArray();
     }
 
     private PixelSize? _previousImageSize = PixelSize.Empty;

@@ -61,29 +61,28 @@ public class VulkanDemoControl : DrawingSurfaceDemoBase
     {
         if (_resources == null)
             return;
-        using (_resources.Swapchain.BeginDraw(pixelSize, out var image))
-        {
-            /*
-            var commandBuffer = _resources.Context.Pool.CreateCommandBuffer();
-            commandBuffer.BeginRecording();
-            image.TransitionLayout(commandBuffer.InternalHandle, ImageLayout.TransferDstOptimal, AccessFlags.None);
+        using var _ = _resources.Swapchain.BeginDraw(pixelSize, out var image);
+        
+        /*
+        var commandBuffer = _resources.Context.Pool.CreateCommandBuffer();
+        commandBuffer.BeginRecording();
+        image.TransitionLayout(commandBuffer.InternalHandle, ImageLayout.TransferDstOptimal, AccessFlags.None);
 
-            var range = new ImageSubresourceRange
-            {
-                AspectMask = ImageAspectFlags.ColorBit,
-                LayerCount = 1,
-                LevelCount = 1,
-                BaseArrayLayer = 0,
-                BaseMipLevel = 0
-            };
-            var color = new ClearColorValue
-            {
-                Float32_0 = 1, Float32_1 = 0, Float32_2 = 0, Float32_3 = 1
-            };
-            _resources.Context.Api.CmdClearColorImage(commandBuffer.InternalHandle, image.InternalHandle.Value, ImageLayout.TransferDstOptimal,
-                &color, 1, &range);
-            commandBuffer.Submit();*/
-            _resources.Content.Render(image, Yaw, Pitch, Roll, Disco);
-        }
+        var range = new ImageSubresourceRange
+        {
+            AspectMask = ImageAspectFlags.ColorBit,
+            LayerCount = 1,
+            LevelCount = 1,
+            BaseArrayLayer = 0,
+            BaseMipLevel = 0
+        };
+        var color = new ClearColorValue
+        {
+            Float32_0 = 1, Float32_1 = 0, Float32_2 = 0, Float32_3 = 1
+        };
+        _resources.Context.Api.CmdClearColorImage(commandBuffer.InternalHandle, image.InternalHandle.Value, ImageLayout.TransferDstOptimal,
+            &color, 1, &range);
+        commandBuffer.Submit();*/
+        _resources.Content.Render(image, Yaw, Pitch, Roll, Disco);
     }
 }

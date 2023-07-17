@@ -122,62 +122,61 @@ namespace Avalonia.Data.Core
                 return;
             }
 
-            using (_inner.Subscribe(_ => { }))
+            using var _ = _inner.Subscribe(_ => { });
+            
+            var type = _inner.ResultType;
+
+            if (type != null)
             {
-                var type = _inner.ResultType;
+                var converted = Converter.ConvertBack(
+                    value,
+                    type,
+                    ConverterParameter,
+                    CultureInfo.CurrentCulture);
 
-                if (type != null)
+                if (converted == BindingOperations.DoNothing)
                 {
-                    var converted = Converter.ConvertBack(
-                        value,
-                        type,
-                        ConverterParameter,
-                        CultureInfo.CurrentCulture);
+                    return;
+                }
 
-                    if (converted == BindingOperations.DoNothing)
+                if (converted == AvaloniaProperty.UnsetValue)
+                {
+                    converted = TypeUtilities.Default(type);
+                    _inner.SetValue(converted, _priority);
+                }
+                else if (converted is BindingNotification notification)
+                {
+                    if (notification.ErrorType == BindingErrorType.None)
                     {
-                        return;
+                        throw new AvaloniaInternalException(
+                            "IValueConverter should not return non-errored BindingNotification.");
                     }
 
-                    if (converted == AvaloniaProperty.UnsetValue)
+                    PublishNext(notification);
+
+                    if (_fallbackValue != AvaloniaProperty.UnsetValue)
                     {
-                        converted = TypeUtilities.Default(type);
-                        _inner.SetValue(converted, _priority);
-                    }
-                    else if (converted is BindingNotification notification)
-                    {
-                        if (notification.ErrorType == BindingErrorType.None)
+                        if (TypeUtilities.TryConvert(
+                            type,
+                            _fallbackValue,
+                            CultureInfo.InvariantCulture,
+                            out converted))
                         {
-                            throw new AvaloniaInternalException(
-                                "IValueConverter should not return non-errored BindingNotification.");
+                            _inner.SetValue(converted, _priority);
                         }
-
-                        PublishNext(notification);
-
-                        if (_fallbackValue != AvaloniaProperty.UnsetValue)
+                        else
                         {
-                            if (TypeUtilities.TryConvert(
-                                type,
+                            Logger.TryGet(LogEventLevel.Error, LogArea.Binding)?.Log(
+                                this,
+                                "Could not convert FallbackValue {FallbackValue} to {Type}",
                                 _fallbackValue,
-                                CultureInfo.InvariantCulture,
-                                out converted))
-                            {
-                                _inner.SetValue(converted, _priority);
-                            }
-                            else
-                            {
-                                Logger.TryGet(LogEventLevel.Error, LogArea.Binding)?.Log(
-                                    this,
-                                    "Could not convert FallbackValue {FallbackValue} to {Type}",
-                                    _fallbackValue,
-                                    type);
-                            }
+                                type);
                         }
                     }
-                    else
-                    {
-                        _inner.SetValue(converted, _priority);
-                    }
+                }
+                else
+                {
+                    _inner.SetValue(converted, _priority);
                 }
             }
         }

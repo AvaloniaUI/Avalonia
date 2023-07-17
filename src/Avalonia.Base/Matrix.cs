@@ -489,23 +489,22 @@ namespace Avalonia
             double v8 = 0;
             double v9 = 0;
 
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix."))
-            {
-                var v1 = tokenizer.ReadDouble();
-                var v2 = tokenizer.ReadDouble();
-                var v3 = tokenizer.ReadDouble();
-                var v4 = tokenizer.ReadDouble();
-                var v5 = tokenizer.ReadDouble();
-                var v6 = tokenizer.ReadDouble();
-                var persp = tokenizer.TryReadDouble(out var v7);
-                persp = persp && tokenizer.TryReadDouble(out v8);
-                persp = persp && tokenizer.TryReadDouble(out v9);
+            using var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix.");
+            
+            var v1 = tokenizer.ReadDouble();
+            var v2 = tokenizer.ReadDouble();
+            var v3 = tokenizer.ReadDouble();
+            var v4 = tokenizer.ReadDouble();
+            var v5 = tokenizer.ReadDouble();
+            var v6 = tokenizer.ReadDouble();
+            var persp = tokenizer.TryReadDouble(out var v7);
+            persp = persp && tokenizer.TryReadDouble(out v8);
+            persp = persp && tokenizer.TryReadDouble(out v9);
 
-                if (persp) 
-                    return new Matrix(v1, v2, v7, v3, v4, v8, v5, v6, v9);
-                else
-                    return new Matrix(v1, v2, v3, v4, v5, v6);
-            }
+            if (persp) 
+                return new Matrix(v1, v2, v7, v3, v4, v8, v5, v6, v9);
+            else
+                return new Matrix(v1, v2, v3, v4, v5, v6);
         }
 
         /// <summary>
