@@ -2137,7 +2137,7 @@ namespace Avalonia.Win32.Interop
             /// <summary>
             /// A memory object containing a BITMAPINFO structure followed by the bitmap bits.
             /// </summary>
-            CF_DIB = 3,
+            CF_DIB = 8,
             /// <summary>
             /// Unicode text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data.
             /// </summary>
