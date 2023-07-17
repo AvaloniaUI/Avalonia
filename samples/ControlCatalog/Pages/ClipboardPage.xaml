@@ -12,7 +12,7 @@
     <Button Click="CopyFilesDataObject" Content="Copy files to clipboard (data object)" />
     <Button Click="PasteFilesDataObject" Content="Paste files from clipboard (data object)" />
 
-    <Button Click="CopyBitmapDataObject" Content="Copy bitmap (CF_DIB, image/bmp) to clipboard (data object)" IsEnabled="False" />
+    <Button Click="CopyBitmapDataObject" Content="Copy bitmap (CF_DIB, image/bmp) to clipboard (data object)" />
     <Button Click="PasteBitmapDataObject" Content="Paste bitmap (CF_DIB, image/bmp) from clipboard (data object)" />
 
     <Button Click="GetFormats" Content="Get clipboard formats" />
@@ -21,7 +21,6 @@
     <TextBox x:Name="ClipboardContent"
              MinHeight="400"
              AcceptsReturn="True"
-             Watermark="Text to copy of file names per line"
-             TextWrapping="Wrap"/>
+             Watermark="Text to copy of file names per line" />
   </StackPanel>
 </UserControl>
