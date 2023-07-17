@@ -127,7 +127,7 @@ public partial class Dispatcher
         if (needToPromoteTimers)
             PromoteTimers();
         if (needToProcessQueue)
-            ExecuteJobsCore();
+            ExecuteJobsCore(false);
         UpdateOSTimer();
     }
     

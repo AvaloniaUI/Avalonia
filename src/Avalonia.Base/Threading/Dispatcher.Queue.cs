@@ -9,7 +9,9 @@ public partial class Dispatcher
     private readonly DispatcherPriorityQueue _queue = new();
     private bool _signaled;
     private bool _explicitBackgroundProcessingRequested;
-    private const int MaximumTimeProcessingBackgroundJobs = 50;
+    private const int MaximumInputStarvationTimeInFallbackMode = 50;
+    private const int MaximumInputStarvationTimeInExplicitProcessingExplicitMode = 50;
+    private int _maximumInputStarvationTime;
     
     void RequestBackgroundProcessing()
     {
@@ -35,8 +37,8 @@ public partial class Dispatcher
         lock (InstanceLock)
         {
             _explicitBackgroundProcessingRequested = false;
-            ExecuteJobsCore();
         }
+        ExecuteJobsCore(true);
     }
 
     /// <summary>
@@ -130,10 +132,10 @@ public partial class Dispatcher
         lock (InstanceLock)
             _signaled = false;
 
-        ExecuteJobsCore();
+        ExecuteJobsCore(false);
     }
 
-    void ExecuteJobsCore()
+    void ExecuteJobsCore(bool fromExplicitBackgroundProcessingCallback)
     {
         long? backgroundJobExecutionStartedAt = null;
         while (true)
@@ -151,7 +153,6 @@ public partial class Dispatcher
             if (job.Priority > DispatcherPriority.Input)
             {
                 ExecuteJob(job);
-                backgroundJobExecutionStartedAt = null;
             }
             // If platform supports pending input query, ask the platform if we can continue running low priority jobs
             else if (_pendingInputImpl?.CanQueryPendingInput == true)
@@ -164,6 +165,13 @@ public partial class Dispatcher
                     return;
                 }
             }
+            // We can't ask if the implementation has pending input, so we should let it to call us back
+            // Once it thinks that input is handled
+            else if (_backgroundProcessingImpl != null && !fromExplicitBackgroundProcessingCallback)
+            {
+                RequestBackgroundProcessing();
+                return;
+            }
             // We can't check if there is pending input, but still need to enforce interactivity
             // so we stop processing background jobs after some timeout and start a timer to continue later
             else
@@ -171,7 +179,7 @@ public partial class Dispatcher
                 if (backgroundJobExecutionStartedAt == null)
                     backgroundJobExecutionStartedAt = Now;
                 
-                if (Now - backgroundJobExecutionStartedAt.Value > MaximumTimeProcessingBackgroundJobs)
+                if (Now - backgroundJobExecutionStartedAt.Value > _maximumInputStarvationTime)
                 {
                     _signaled = true;
                     RequestBackgroundProcessing();
