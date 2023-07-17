@@ -131,14 +131,40 @@ namespace ControlCatalog.Pages
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var bytes = await clipboard.GetDataAsync("Bitmap") as IEnumerable<byte> 
-                    ?? await clipboard.GetDataAsync("Dib") as IEnumerable<byte>;
+                var format = "Bitmap";
+
+                var obj = await clipboard.GetDataAsync(format);
+                var bytes = obj as IEnumerable<byte>;
+                if (bytes == null)
+                {
+                    format = "Dib";
+                    obj = await clipboard.GetDataAsync(format);
+                    bytes = obj as IEnumerable<byte>;
+                }
+                if (bytes == null)
+                {
+                    format = "image/bmp";
+                    obj = await clipboard.GetDataAsync(format);
+                    bytes = obj as IEnumerable<byte>;
+                }
+                if (bytes == null)
+                {
+                    format = "image/png";
+                    obj = await clipboard.GetDataAsync(format);
+                    bytes = obj as IEnumerable<byte>;
+                }
+                if (bytes == null)
+                {
+                    format = "image/jpeg";
+                    obj = await clipboard.GetDataAsync(format);
+                    bytes = obj as IEnumerable<byte>;
+                }
 
                 if (bytes != null)
                 {
                     var printable = bytes.Take(1000);
                     var sb = new StringBuilder(256 + printable.Count() * 3);
-                    sb.AppendLine($"{bytes.Count()} bytes, list of first {printable.Count()}");
+                    sb.AppendLine($"format: {format}, {bytes.Count()} bytes, list of first {printable.Count()}");
                     sb.AppendJoin(" ", printable.Select(x => x.ToString("X2")));
                     ClipboardContent.Text = sb.ToString();
                 }
