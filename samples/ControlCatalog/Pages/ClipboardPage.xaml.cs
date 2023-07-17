@@ -181,9 +181,9 @@ namespace ControlCatalog.Pages
                 if (bytes != null)
                 {
                     var printable = bytes.ToArray();
-                    var sb = new StringBuilder(256 + printable.Count() * 3);
+                    var sb = new StringBuilder(256 + printable.Length * 3);
                     sb.AppendLine($"{format}");
-                    sb.AppendLine($"{bytes.Count()} bytes (list of first {printable.Count()} bytes)");
+                    sb.AppendLine($"{printable.Length} bytes");
                     sb.Append(BitConverter.ToString(printable).Replace('-', ' '));
                     ClipboardContent.TextWrapping = Avalonia.Media.TextWrapping.NoWrap;
                     ClipboardContent.Text = sb.ToString();

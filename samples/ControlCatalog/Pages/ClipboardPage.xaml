@@ -19,7 +19,7 @@
     <Button Click="Clear" Content="Clear clipboard" />
 
     <TextBox x:Name="ClipboardContent"
-             MinHeight="400"
+             MinHeight="100"
              AcceptsReturn="True"
              Watermark="Text to copy of file names per line" />
   </StackPanel>
