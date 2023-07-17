@@ -50,7 +50,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
+       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
 
   - task: CmdLine@2
     displayName: 'Run Build'
