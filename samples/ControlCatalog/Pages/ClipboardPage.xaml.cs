@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
@@ -115,6 +116,36 @@ namespace ControlCatalog.Pages
                 var files = await clipboard.GetDataAsync(DataFormats.Files) as IEnumerable<Avalonia.Platform.Storage.IStorageItem>;
 
                 ClipboardContent.Text = files != null ? string.Join(Environment.NewLine, files.Select(f => f.TryGetLocalPath() ?? f.Name)) : string.Empty;
+            }
+        }
+
+        private void CopyBitmapDataObject(object? sender, RoutedEventArgs args)
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+
+            }
+        }
+
+        private async void PasteBitmapDataObject(object? sender, RoutedEventArgs args)
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+                var bytes = await clipboard.GetDataAsync("Bitmap") as IEnumerable<byte> 
+                    ?? await clipboard.GetDataAsync("Dib") as IEnumerable<byte>;
+
+                if (bytes != null)
+                {
+                    var printable = bytes.Take(1000);
+                    var sb = new StringBuilder(256 + printable.Count() * 3);
+                    sb.AppendLine($"{bytes.Count()} bytes, list of first {printable.Count()}");
+                    sb.AppendJoin(" ", printable.Select(x => x.ToString("X2")));
+                    ClipboardContent.Text = sb.ToString();
+                }
+                else
+                {
+                    ClipboardContent.Text = string.Empty;
+                }
             }
         }
 
