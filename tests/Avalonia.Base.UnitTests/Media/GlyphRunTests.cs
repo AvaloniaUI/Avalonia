@@ -99,11 +99,15 @@ namespace Avalonia.Base.UnitTests.Media
             int previousIndex, int previousLength,
             int bidiLevel)
         {
-            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
-            using var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel);
-            var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
-            Assert.Equal(previousIndex, characterHit.FirstCharacterIndex);
-            Assert.Equal(previousLength, characterHit.TrailingLength);
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
+            {
+                var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex + currentLength));
+
+                Assert.Equal(previousIndex, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(previousLength, characterHit.TrailingLength);
+            }
         }
 
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0)]
