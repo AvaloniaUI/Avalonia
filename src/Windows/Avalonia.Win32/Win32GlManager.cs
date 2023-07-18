@@ -20,6 +20,10 @@ static class Win32GlManager
         {
             AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl);
         }
+        if (gl is IPlatformGraphicsOpenGlContextFactory openGlFactory)
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphicsOpenGlContextFactory>().ToConstant(openGlFactory);
+        }
 
         return gl;
     }
