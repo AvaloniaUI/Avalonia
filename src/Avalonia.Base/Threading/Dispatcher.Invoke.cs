@@ -98,7 +98,7 @@ public partial class Dispatcher
         if (timeout.TotalMilliseconds < 0 &&
             timeout != TimeSpan.FromMilliseconds(-1))
         {
-            throw new ArgumentOutOfRangeException("timeout");
+            throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
         // Fast-Path: if on the same thread, and invoking at Send priority,
@@ -106,7 +106,7 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            using (AvaloniaSynchronizationContext.Ensure(priority))
+            using (AvaloniaSynchronizationContext.Ensure(this, priority))
                 callback();
             return;
         }
@@ -220,7 +220,7 @@ public partial class Dispatcher
         if (timeout.TotalMilliseconds < 0 &&
             timeout != TimeSpan.FromMilliseconds(-1))
         {
-            throw new ArgumentOutOfRangeException("timeout");
+            throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
         // Fast-Path: if on the same thread, and invoking at Send priority,
@@ -228,7 +228,7 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            using (AvaloniaSynchronizationContext.Ensure(priority))
+            using (AvaloniaSynchronizationContext.Ensure(this, priority))
                 return callback();
         }
 

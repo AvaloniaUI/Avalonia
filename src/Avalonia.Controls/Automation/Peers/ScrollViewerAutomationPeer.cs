@@ -146,12 +146,12 @@ namespace Avalonia.Automation.Peers
 
             if (scrollHorizontally && (horizontalPercent < 0.0) || (horizontalPercent > 100.0))
             {
-                throw new ArgumentOutOfRangeException("horizontalPercent");
+                throw new ArgumentOutOfRangeException(nameof(horizontalPercent));
             }
 
             if (scrollVertically && (verticalPercent < 0.0) || (verticalPercent > 100.0))
             {
-                throw new ArgumentOutOfRangeException("verticalPercent");
+                throw new ArgumentOutOfRangeException(nameof(verticalPercent));
             }
 
             var offset = Owner.Offset;
