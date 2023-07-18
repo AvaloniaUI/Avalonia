@@ -3,9 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -163,6 +161,14 @@ namespace Avalonia.Native
             
 
             Compositor = new Compositor(_platformGraphics, true);
+
+            Dispatcher.UIThread.ShutdownFinished += OnDispatcherShutdownFinished;
+        }
+
+        private void OnDispatcherShutdownFinished(object? sender, EventArgs e)
+        {
+            Dispatcher.UIThread.ShutdownFinished -= OnDispatcherShutdownFinished;
+            _factory.Dispose();
         }
 
         public ITrayIconImpl CreateTrayIcon()
