@@ -132,7 +132,7 @@ namespace ControlCatalog.Pages
                 var format = lines[0];
                 var hexLine = string.Join(" ", lines.Skip(2));
                 var hexBytes = hexLine.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
-                var bytes = hexBytes.Select(x => Convert.ToByte(x, 16));
+                var bytes = hexBytes.Select(x => Convert.ToByte(x, 16)).ToArray();
                 var dataObject = new DataObject();
                 dataObject.Set(format, bytes);
                 await clipboard.SetDataObjectAsync(dataObject);
