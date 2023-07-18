@@ -5,10 +5,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <Import Project="../../build/TrimmingEnable.props" />
+  <Import Project="../../../build/TrimmingEnable.props" />
 
   <ItemGroup>
-    <Compile Include="../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="../../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Avalonia.Controls/Avalonia.Controls.csproj" />
-    <ProjectReference Include="../Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
+    <ProjectReference Include="../../Avalonia.Controls/Avalonia.Controls.csproj" />
+    <ProjectReference Include="../../Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">

@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\Avalonia.X11\NativeDialogs\Gtk.cs" Link="NativeControls\Gtk\Gtk.cs" />
+    <Compile Include="..\..\src\Linux\Avalonia.X11\NativeDialogs\Gtk.cs" Link="NativeControls\Gtk\Gtk.cs" />
     <Compile Include="..\..\src\Avalonia.Base\Platform\Interop\Utf8Buffer.cs" Link="NativeControls\Utf8Buffer.cs" />
   </ItemGroup>
 
@@ -31,7 +31,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
+    <ProjectReference Include="..\..\src\Linux\Avalonia.X11\Avalonia.X11.csproj" />
     <!-- For native controls test -->
     <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
   </ItemGroup>
