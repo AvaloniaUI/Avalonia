@@ -144,15 +144,8 @@ namespace ControlCatalog.Pages
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var format = "Bitmap";
-
                 var obj = await clipboard.GetDataAsync(format);
                 var bytes = obj as IEnumerable<byte>;
-                if (bytes == null)
-                {
-                    format = "Unknown_Format_8";
-                    obj = await clipboard.GetDataAsync(format);
-                    bytes = obj as IEnumerable<byte>;
-                }
                 if (bytes == null)
                 {
                     format = "Dib";
