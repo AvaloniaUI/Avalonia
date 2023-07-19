@@ -575,10 +575,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             var committedText = text.SubSequence(0, text.Length());
 
-            if (_inputMethod.IsActive && !string.IsNullOrEmpty(committedText))
-            {
-                _toplevel.TextInput(committedText);
-            }
+            if (_inputMethod.IsActive)
+                if (string.IsNullOrEmpty(committedText))
+                    _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                else
+                    _toplevel.TextInput(committedText);
 
             _commitInProgress = false;
             EndBatchEdit();
