@@ -258,7 +258,7 @@ public class DispatcherOperation
 
         try
         {
-            using (AvaloniaSynchronizationContext.Ensure(Priority))
+            using (AvaloniaSynchronizationContext.Ensure(Dispatcher, Priority))
                 InvokeCore();
         }
         finally
