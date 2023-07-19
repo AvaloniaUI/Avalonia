@@ -18,7 +18,7 @@ namespace Avalonia.Automation.Peers
 
         public ControlAutomationPeer(Control owner)
         {
-            Owner = owner ?? throw new ArgumentNullException("owner");
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             Initialize();
         }
 

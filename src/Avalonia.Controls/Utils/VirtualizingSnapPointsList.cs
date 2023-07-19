@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Utils
             get
             {
                 if(index < 0 || index >= Count)
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
 
                 index += _start;
 

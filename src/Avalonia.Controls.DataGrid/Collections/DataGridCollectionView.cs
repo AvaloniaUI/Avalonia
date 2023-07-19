@@ -807,7 +807,7 @@ namespace Avalonia.Collections
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("PageSize cannot have a negative value.");
+                    throw new ArgumentOutOfRangeException(nameof(value), "PageSize cannot have a negative value.");
                 }
 
                 // if the Refresh is currently deferred, cache the desired PageSize
@@ -1954,7 +1954,7 @@ namespace Avalonia.Collections
             // for indices larger than the count
             if (index >= Count || index < 0)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             if (IsGrouping)

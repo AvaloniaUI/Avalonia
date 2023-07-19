@@ -1395,10 +1395,8 @@ namespace Avalonia.Controls.Primitives
 
             public object Evaluate(object? dataContext)
             {
-                dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-
                 // Only update the DataContext if necessary
-                if (!dataContext.Equals(DataContext))
+                if (!Equals(dataContext, DataContext))
                     DataContext = dataContext;
 
                 return GetValue(ValueProperty);

@@ -288,7 +288,7 @@ partial class Build : NukeBuild
         .Executes(async () =>
         {
             await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot).Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffValidation.ValidatePackage(
                     ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
                     Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
         });
