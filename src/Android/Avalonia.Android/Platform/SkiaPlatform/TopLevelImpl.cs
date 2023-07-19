@@ -583,7 +583,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _commitInProgress = false;
             EndBatchEdit();
 
-            return ret;
+            return true;
         }
 
         public override bool DeleteSurroundingText(int beforeLength, int afterLength)
@@ -592,7 +592,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 EditableWrapper.IgnoreChange = true;
             }
-            var result = base.DeleteSurroundingText(beforeLength, afterLength);
 
             if (InputMethod.IsActive)
             {
@@ -605,7 +604,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 EditableWrapper.IgnoreChange = true;
             }
 
-            return result;
+            return true;
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
