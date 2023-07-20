@@ -138,6 +138,11 @@ namespace Avalonia.Android
 
         private void OnSurroundingTextChanged()
         {
+            if(_client is null)
+            {
+                return;
+            }
+
             var surroundingText = _client.SurroundingText ?? "";
             var editableText = _inputConnection.EditableWrapper.ToString();
 
