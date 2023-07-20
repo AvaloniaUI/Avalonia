@@ -39,16 +39,12 @@ namespace Avalonia.Native.Interop.Impl
             }
             else
             {
-                using(var ms = new MemoryStream())
+                using var ms = new MemoryStream();
+                icon.Save(ms);
+                var imageData = ms.ToArray();
+                fixed(void* ptr = imageData)
                 {
-                    icon.Save(ms);
-
-                    var imageData = ms.ToArray();
-
-                    fixed(void* ptr = imageData)
-                    {
-                        SetIcon(ptr, new IntPtr(imageData.Length));
-                    }
+                    SetIcon(ptr, new IntPtr(imageData.Length));
                 }
             }
         }

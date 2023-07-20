@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using Avalonia.Input;
-using Avalonia.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
@@ -42,19 +42,15 @@ namespace Avalonia.Native
 
         public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
-            using(var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            cursor.Save(ms);
+            var imageData = ms.ToArray();
+            fixed(void* ptr = imageData)
             {
-                cursor.Save(ms);
+                var avnCursor = _native.CreateCustomCursor(ptr, new IntPtr(imageData.Length),
+                    new AvnPixelSize { Width = hotSpot.X, Height = hotSpot.Y });
 
-                var imageData = ms.ToArray();
-
-                fixed(void* ptr = imageData)
-                {
-                    var avnCursor = _native.CreateCustomCursor(ptr, new IntPtr(imageData.Length),
-                        new AvnPixelSize { Width = hotSpot.X, Height = hotSpot.Y });
-
-                    return new AvaloniaNativeCursor(avnCursor);
-                }
+                return new AvaloniaNativeCursor(avnCursor);
             }
         }
     }

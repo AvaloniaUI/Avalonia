@@ -79,19 +79,18 @@ namespace Avalonia.Media
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();
 
-            using (var context = geometry.Open())
+            using var context = geometry.Open();
+            
+            var points = Points;
+            var isFilled = IsFilled;
+            if (points.Count > 0)
             {
-                var points = Points;
-                var isFilled = IsFilled;
-                if (points.Count > 0)
+                context.BeginFigure(points[0], isFilled);
+                for (int i = 1; i < points.Count; i++)
                 {
-                    context.BeginFigure(points[0], isFilled);
-                    for (int i = 1; i < points.Count; i++)
-                    {
-                        context.LineTo(points[i]);
-                    }
-                    context.EndFigure(isFilled);
+                    context.LineTo(points[i]);
                 }
+                context.EndFigure(isFilled);
             }
 
             return geometry;

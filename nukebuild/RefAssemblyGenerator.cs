@@ -174,41 +174,42 @@ public class RefAssemblyGenerator
     
     public static void GenerateRefAsmsInPackage(string packagePath)
     {
-        using (var archive = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.ReadWrite),
-            ZipArchiveMode.Update))
-        {
-            foreach (var entry in archive.Entries.ToList())
-            {
-                if (entry.FullName.StartsWith("ref/"))
-                    entry.Delete();
-            }
-            
-            foreach (var entry in archive.Entries.ToList())
-            {
-                if (entry.FullName.StartsWith("lib/") && entry.Name.EndsWith(".xml"))
-                {
-                    var newEntry = archive.CreateEntry("ref/" + entry.FullName.Substring(4),
-                        CompressionLevel.Optimal);
-                    using (var src = entry.Open())
-                    using (var dst = newEntry.Open())
-                        src.CopyTo(dst);
-                }
-            }
+        using var archive = new ZipArchive (
+            File.Open(packagePath, FileMode.Open, FileAccess.ReadWrite),
+            ZipArchiveMode.Update
+        );
 
-            var libs = archive.Entries.Where(e => e.FullName.StartsWith("lib/") && e.FullName.EndsWith(".dll"))
-                .Select((e => new { s = e.FullName.Split('/'), e = e }))
-                .Select(e => new { Tfm = e.s[1], Name = e.s[2], Entry = e.e })
-                .GroupBy(x => x.Tfm);
-            foreach(var tfm in libs)
-                using (Helpers.UseTempDir(out var temp))
-                {
-                    foreach (var l in tfm) 
-                        l.Entry.ExtractToFile(Path.Combine(temp, l.Name));
-                    foreach (var l in tfm) 
-                        PatchRefAssembly(Path.Combine(temp, l.Name));
-                    foreach (var l in tfm)
-                        archive.CreateEntryFromFile(Path.Combine(temp, l.Name), $"ref/{l.Tfm}/{l.Name}");
-                }
+        foreach (var entry in archive.Entries.ToList())
+        {
+            if (entry.FullName.StartsWith("ref/"))
+                entry.Delete();
         }
+            
+        foreach (var entry in archive.Entries.ToList())
+        {
+            if (entry.FullName.StartsWith("lib/") && entry.Name.EndsWith(".xml"))
+            {
+                var newEntry = archive.CreateEntry("ref/" + entry.FullName.Substring(4),
+                    CompressionLevel.Optimal);
+                using var src = entry.Open();
+                using var dst = newEntry.Open();
+                src.CopyTo(dst);
+            }
+        }
+
+        var libs = archive.Entries.Where(e => e.FullName.StartsWith("lib/") && e.FullName.EndsWith(".dll"))
+            .Select((e => new { s = e.FullName.Split('/'), e = e }))
+            .Select(e => new { Tfm = e.s[1], Name = e.s[2], Entry = e.e })
+            .GroupBy(x => x.Tfm);
+        foreach(var tfm in libs)
+            using (Helpers.UseTempDir(out var temp))
+            {
+                foreach (var l in tfm) 
+                    l.Entry.ExtractToFile(Path.Combine(temp, l.Name));
+                foreach (var l in tfm) 
+                    PatchRefAssembly(Path.Combine(temp, l.Name));
+                foreach (var l in tfm)
+                    archive.CreateEntryFromFile(Path.Combine(temp, l.Name), $"ref/{l.Tfm}/{l.Name}");
+            }
     }
 }

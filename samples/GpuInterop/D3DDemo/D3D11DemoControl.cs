@@ -80,40 +80,37 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
             _lastSize = pixelSize;
             Resize(pixelSize);
         }
-        using (_swapchain.BeginDraw(pixelSize, out var renderView))
-        {
+        using var _ = _swapchain.BeginDraw(pixelSize, out var renderView);
             
-            _device.ImmediateContext.OutputMerger.SetTargets(_depthView, renderView);
-            var viewProj = Matrix.Multiply(_view, _proj);
-            var context = _device.ImmediateContext;
+        _device.ImmediateContext.OutputMerger.SetTargets(_depthView, renderView);
+        var viewProj = Matrix.Multiply(_view, _proj);
+        var context = _device.ImmediateContext;
 
-            var now = _st.Elapsed.TotalSeconds * 5;
-            var scaleX = (float)(1f + Disco * (Math.Sin(now) + 1) / 6);
-            var scaleY = (float)(1f + Disco * (Math.Cos(now) + 1) / 8);
-            var colorOff =(float) (Math.Sin(now) + 1) / 2 * Disco;
+        var now = _st.Elapsed.TotalSeconds * 5;
+        var scaleX = (float)(1f + Disco * (Math.Sin(now) + 1) / 6);
+        var scaleY = (float)(1f + Disco * (Math.Cos(now) + 1) / 8);
+        var colorOff =(float) (Math.Sin(now) + 1) / 2 * Disco;
             
             
-            // Clear views
-            context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth, 1.0f, 0);
-            context.ClearRenderTargetView(renderView,
-                new RawColor4(1 - colorOff, colorOff, (float)0.5 + colorOff / 2, 1));
+        // Clear views
+        context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth, 1.0f, 0);
+        context.ClearRenderTargetView(renderView,
+            new RawColor4(1 - colorOff, colorOff, (float)0.5 + colorOff / 2, 1));
 
             
-            var ypr = Matrix4x4.CreateFromYawPitchRoll(Yaw, Pitch, Roll);
-            // Update WorldViewProj Matrix
-            var worldViewProj = Matrix.RotationX((float)Yaw) * Matrix.RotationY((float)Pitch)
-                                                                          * Matrix.RotationZ((float)Roll)
-                                                                          * Matrix.Scaling(new Vector3(scaleX, scaleY, 1))
-                                                                          * viewProj;
-            worldViewProj.Transpose();
-            context.UpdateSubresource(ref worldViewProj, _constantBuffer);
+        var ypr = Matrix4x4.CreateFromYawPitchRoll(Yaw, Pitch, Roll);
+        // Update WorldViewProj Matrix
+        var worldViewProj = Matrix.RotationX((float)Yaw) * Matrix.RotationY((float)Pitch)
+                                                                        * Matrix.RotationZ((float)Roll)
+                                                                        * Matrix.Scaling(new Vector3(scaleX, scaleY, 1))
+                                                                        * viewProj;
+        worldViewProj.Transpose();
+        context.UpdateSubresource(ref worldViewProj, _constantBuffer);
 
-            // Draw the cube
-            context.Draw(36, 0);
-            
-            
-            _context.Flush();
-        }
+        // Draw the cube
+        context.Draw(36, 0);
+        
+        _context.Flush();
     }
 
     private void Resize(PixelSize size)

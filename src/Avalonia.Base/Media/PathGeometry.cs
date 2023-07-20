@@ -47,11 +47,10 @@ namespace Avalonia.Media
         {
             var pathGeometry = new PathGeometry();
 
-            using (var context = new PathGeometryContext(pathGeometry))
-            using (var parser = new PathMarkupParser(context))
-            {
-                parser.Parse(pathData);
-            }
+            using var context = new PathGeometryContext(pathGeometry);
+            using var parser = new PathMarkupParser(context);
+            
+            parser.Parse(pathData);
 
             return pathGeometry;
         }
@@ -91,13 +90,12 @@ namespace Avalonia.Media
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();
 
-            using (var ctx = new StreamGeometryContext(geometry.Open()))
+            using var ctx = new StreamGeometryContext(geometry.Open());
+            
+            ctx.SetFillRule(FillRule);
+            foreach (var f in figures)
             {
-                ctx.SetFillRule(FillRule);
-                foreach (var f in figures)
-                {
-                    f.ApplyTo(ctx);
-                }
+                f.ApplyTo(ctx);
             }
 
             return geometry;

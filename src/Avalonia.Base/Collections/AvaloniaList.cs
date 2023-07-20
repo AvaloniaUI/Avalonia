@@ -367,40 +367,39 @@ namespace Avalonia.Collections
             }
             else
             {
-                using (IEnumerator<T> en = items.GetEnumerator())
+                using IEnumerator<T> en = items.GetEnumerator();
+                
+                if (en.MoveNext())
                 {
-                    if (en.MoveNext())
+                    // Avoid allocating list for collection notification if there is no event subscriptions.
+                    List<T>? notificationItems = willRaiseCollectionChanged ?
+                        new List<T>() :
+                        null;
+
+                    int insertIndex = index;
+
+                    do
                     {
-                        // Avoid allocating list for collection notification if there is no event subscriptions.
-                        List<T>? notificationItems = willRaiseCollectionChanged ?
-                            new List<T>() :
-                            null;
+                        T item = en.Current;
 
-                        int insertIndex = index;
-
-                        do
+                        if (hasValidation)
                         {
-                            T item = en.Current;
-
-                            if (hasValidation)
-                            {
-                                Validate!(item);
-                            }
-
-                            _inner.Insert(insertIndex++, item);
-
-                            notificationItems?.Add(item);
-
-                        } while (en.MoveNext());
-
-                        if (notificationItems is not null)
-                        {
-                            NotifyAdd(notificationItems, index);
+                            Validate!(item);
                         }
-                        else
-                        {
-                            NotifyCountChanged();
-                        }
+
+                        _inner.Insert(insertIndex++, item);
+
+                        notificationItems?.Add(item);
+
+                    } while (en.MoveNext());
+
+                    if (notificationItems is not null)
+                    {
+                        NotifyAdd(notificationItems, index);
+                    }
+                    else
+                    {
+                        NotifyCountChanged();
                     }
                 }
             }

@@ -40,31 +40,30 @@ namespace RenderDemo.Pages
         {
             void FillPixels(WriteableBitmap bitmap, byte fillAlpha, bool premul)
             {
-                using (var fb = bitmap.Lock())
+                using var fb = bitmap.Lock();
+                
+                var data = new int[fb.Size.Width * fb.Size.Height];
+
+                for (int y = 0; y < fb.Size.Height; y++)
                 {
-                    var data = new int[fb.Size.Width * fb.Size.Height];
-
-                    for (int y = 0; y < fb.Size.Height; y++)
+                    for (int x = 0; x < fb.Size.Width; x++)
                     {
-                        for (int x = 0; x < fb.Size.Width; x++)
+                        var color = new Color(fillAlpha, 0, 255, 0);
+
+                        if (premul)
                         {
-                            var color = new Color(fillAlpha, 0, 255, 0);
+                            byte r = (byte) (color.R * color.A / 255);
+                            byte g = (byte) (color.G * color.A / 255);
+                            byte b = (byte) (color.B * color.A / 255);
 
-                            if (premul)
-                            {
-                                byte r = (byte) (color.R * color.A / 255);
-                                byte g = (byte) (color.G * color.A / 255);
-                                byte b = (byte) (color.B * color.A / 255);
-
-                                color = new Color(fillAlpha, r, g, b);
-                            }
-
-                            data[y * fb.Size.Width + x] = (int) color.ToUInt32();
+                            color = new Color(fillAlpha, r, g, b);
                         }
-                    }
 
-                    Marshal.Copy(data, 0, fb.Address, fb.Size.Width * fb.Size.Height);
+                        data[y * fb.Size.Width + x] = (int) color.ToUInt32();
+                    }
                 }
+
+                Marshal.Copy(data, 0, fb.Address, fb.Size.Width * fb.Size.Height);
             }
 
             base.Render(context);

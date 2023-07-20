@@ -7,11 +7,9 @@ namespace Avalonia.Android
     {
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
-            using (var stream = new MemoryStream())
-            {
-                bitmap.Save(stream);
-                return LoadIcon(stream);
-            }
+            using var stream = new MemoryStream();
+            bitmap.Save(stream);
+            return LoadIcon(stream);
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
@@ -21,10 +19,8 @@ namespace Avalonia.Android
 
         public IWindowIconImpl LoadIcon(string fileName)
         {
-            using (var file = File.Open(fileName, FileMode.Open))
-            {
-                return new FakeIcon(file);
-            }
+            using var file = File.Open(fileName, FileMode.Open);
+            return new FakeIcon(file);
         }
     }
 

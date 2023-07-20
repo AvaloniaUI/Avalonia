@@ -166,54 +166,52 @@ namespace Avalonia.Rendering.Composition.Server
             Readback.CompleteWrite(Revision);
 
             _redrawRequested = false;
-            using (var targetContext = _renderTarget.CreateDrawingContext())
+            using var targetContext = _renderTarget.CreateDrawingContext();
+            
+            var size = Size;
+            var layerSize = size * Scaling;
+            if (layerSize != _layerSize || _layer == null || _layer.IsCorrupted)
             {
-                var size = Size;
-                var layerSize = size * Scaling;
-                if (layerSize != _layerSize || _layer == null || _layer.IsCorrupted)
-                {
-                    _layer?.Dispose();
-                    _layer = null;
-                    _layer = targetContext.CreateLayer(size);
-                    _layerSize = layerSize;
-                    _dirtyRect = new Rect(0, 0, size.Width, size.Height);
-                }
-
-                if (_dirtyRect.Width != 0 || _dirtyRect.Height != 0)
-                {
-                    using (var context = _layer.CreateDrawingContext())
-                    {
-                        context.PushClip(_dirtyRect);
-                        context.Clear(Colors.Transparent);
-                        Root.Render(new CompositorDrawingContextProxy(context), _dirtyRect);
-                        context.PopClip();
-                    }
-                }
-
-                targetContext.Clear(Colors.Transparent);
-                targetContext.Transform = Matrix.Identity;
-                if (_layer.CanBlit)
-                    _layer.Blit(targetContext);
-                else
-                    targetContext.DrawBitmap(_layer, 1,
-                        new Rect(_layerSize),
-                        new Rect(size));
-
-                if (DebugOverlays != RendererDebugOverlays.None)
-                {
-                    if (captureTiming)
-                    {
-                        var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
-                        RenderTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
-                    }
-
-                    DrawOverlays(targetContext);
-                }
-
-                RenderedVisuals = 0;
-
-                _dirtyRect = default;
+                _layer?.Dispose();
+                _layer = null;
+                _layer = targetContext.CreateLayer(size);
+                _layerSize = layerSize;
+                _dirtyRect = new Rect(0, 0, size.Width, size.Height);
             }
+
+            if (_dirtyRect.Width != 0 || _dirtyRect.Height != 0)
+            {
+                using var context = _layer.CreateDrawingContext();
+                
+                context.PushClip(_dirtyRect);
+                context.Clear(Colors.Transparent);
+                Root.Render(new CompositorDrawingContextProxy(context), _dirtyRect);
+                context.PopClip();
+            }
+
+            targetContext.Clear(Colors.Transparent);
+            targetContext.Transform = Matrix.Identity;
+            if (_layer.CanBlit)
+                _layer.Blit(targetContext);
+            else
+                targetContext.DrawBitmap(_layer, 1,
+                    new Rect(_layerSize),
+                    new Rect(size));
+
+            if (DebugOverlays != RendererDebugOverlays.None)
+            {
+                if (captureTiming)
+                {
+                    var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
+                    RenderTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
+                }
+
+                DrawOverlays(targetContext);
+            }
+
+            RenderedVisuals = 0;
+
+            _dirtyRect = default;
         }
 
         private void DrawOverlays(IDrawingContextImpl targetContext)

@@ -156,32 +156,31 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativePoint"/>.</returns>
         public static RelativePoint Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid RelativePoint."))
+            using var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid RelativePoint.");
+            
+            var x = tokenizer.ReadString();
+            var y = tokenizer.ReadString();
+
+            var unit = RelativeUnit.Absolute;
+            var scale = 1.0;
+
+            if (x.EndsWith("%"))
             {
-                var x = tokenizer.ReadString();
-                var y = tokenizer.ReadString();
-
-                var unit = RelativeUnit.Absolute;
-                var scale = 1.0;
-
-                if (x.EndsWith("%"))
+                if (!y.EndsWith("%"))
                 {
-                    if (!y.EndsWith("%"))
-                    {
-                        throw new FormatException("If one coordinate is relative, both must be.");
-                    }
-
-                    x = x.TrimEnd('%');
-                    y = y.TrimEnd('%');
-                    unit = RelativeUnit.Relative;
-                    scale = 0.01;
+                    throw new FormatException("If one coordinate is relative, both must be.");
                 }
 
-                return new RelativePoint(
-                    double.Parse(x, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(y, CultureInfo.InvariantCulture) * scale,
-                    unit);
+                x = x.TrimEnd('%');
+                y = y.TrimEnd('%');
+                unit = RelativeUnit.Relative;
+                scale = 0.01;
             }
+
+            return new RelativePoint(
+                double.Parse(x, CultureInfo.InvariantCulture) * scale,
+                double.Parse(y, CultureInfo.InvariantCulture) * scale,
+                unit);
         }
 
         /// <summary>

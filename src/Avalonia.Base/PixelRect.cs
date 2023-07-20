@@ -433,15 +433,14 @@ namespace Avalonia
         /// <returns>The parsed <see cref="PixelRect"/>.</returns>
         public static PixelRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect."))
-            {
-                return new PixelRect(
-                    tokenizer.ReadInt32(),
-                    tokenizer.ReadInt32(),
-                    tokenizer.ReadInt32(),
-                    tokenizer.ReadInt32()
-                );
-            }
+            using var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect.");
+            
+            return new PixelRect(
+                tokenizer.ReadInt32(),
+                tokenizer.ReadInt32(),
+                tokenizer.ReadInt32(),
+                tokenizer.ReadInt32()
+            );
         }
 
         private static PixelPoint FromPointCeiling(Point point, Vector scale)

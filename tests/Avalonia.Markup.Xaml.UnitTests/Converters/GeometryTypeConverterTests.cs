@@ -28,19 +28,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         [MemberData(nameof(Get_GeometryTypeConverter_Data))]
         public void GeometryTypeConverter_Value_Work(object vm, bool nullData)
         {
-            using(UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+            
+            var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:c='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Converters;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <Path Name='path' Data='{Binding PathData}' Height='10' Width='10'/>
 </Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var path = window.FindControl<Path>("path");
-                window.DataContext = vm;
-                Assert.Equal(nullData, path.Data is null);
-            }
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var path = window.FindControl<Path>("path");
+            window.DataContext = vm;
+            Assert.Equal(nullData, path.Data is null);
         }
 
         public static IEnumerable<object[]> Get_GeometryTypeConverter_Data()
