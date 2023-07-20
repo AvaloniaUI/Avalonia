@@ -109,7 +109,6 @@ internal class NuiAvaloniaViewTextEditable
             Window.Instance.GetDefaultLayer().Add((View)TextInput);
             TextInput.Show();
             TextInput.EnableSelection = true;
-            _multiLineTextInput.RaiseToTop();
 
             var inputContext = TextInput.GetInputMethodContext();
             inputContext.Activate();
