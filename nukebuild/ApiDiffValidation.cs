@@ -42,7 +42,8 @@ public static class ApiDiffValidation
             var left = new List<string>();
             var right = new List<string>();
 
-            var suppressionFile = Path.Combine(suppressionFilesFolder, GetPackageId(packagePath) + ".nupkg.xml");
+            var packageId = GetPackageId(packagePath);
+            var suppressionFile = Path.Combine(suppressionFilesFolder, packageId + ".nupkg.xml");
 
             // Don't use Path.Combine with these left and right tool parameters.
             // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
@@ -61,7 +62,7 @@ public static class ApiDiffValidation
                     e.target == baselineDll.target && e.entry.Name == baselineDll.entry.Name);
                 if (targetDll.entry is null)
                 {
-                    throw new InvalidOperationException($"Some assemblies are missing in the new package: {baselineDll.entry.Name} for {baselineDll.target}");
+                    throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
                 }
 
                 var targetDllPath = $"target/{targetDll.target}/{targetDll.entry.Name}";

@@ -111,7 +111,7 @@ namespace Avalonia.Base.UnitTests.Media
             using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
-                var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
+                var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex + currentLength));
 
                 Assert.Equal(previousIndex, characterHit.FirstCharacterIndex);
 

@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
@@ -12,10 +12,6 @@
   
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <DebugType Condition="$(ContinuousIntegrationBuild) == 'true'">embedded</DebugType>
   </PropertyGroup>
   
   <ItemGroup>
