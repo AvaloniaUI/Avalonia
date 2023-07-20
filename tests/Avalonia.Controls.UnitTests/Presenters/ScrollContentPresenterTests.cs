@@ -276,6 +276,37 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Extent_Should_Be_Rounded_To_Viewport_When_Close()
+        {
+            var root = new TestRoot
+            {
+                LayoutScaling = 1.75,
+                UseLayoutRounding = true
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = new Border
+                {
+                    Width = 164.57142857142858,
+                    Height = 164.57142857142858,
+                    Margin = new Thickness(6)
+                }
+            };
+
+            root.Child = target;
+            target.UpdateChild();
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            Assert.Equal(new Size(176.00000000000003, 176.00000000000003), target.Child!.DesiredSize);
+            Assert.Equal(new Size(176, 176), target.Viewport);
+            Assert.Equal(new Size(176, 176), target.Extent);
+        }
+
+        [Fact]
         public void Extent_Width_Should_Be_Arrange_Width_When_CanScrollHorizontally_False()
         {
             var child = new WrapPanel

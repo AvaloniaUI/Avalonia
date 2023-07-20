@@ -106,7 +106,7 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            using (AvaloniaSynchronizationContext.Ensure(priority))
+            using (AvaloniaSynchronizationContext.Ensure(this, priority))
                 callback();
             return;
         }
@@ -228,7 +228,7 @@ public partial class Dispatcher
         // call the callback directly.
         if (!cancellationToken.IsCancellationRequested && priority == DispatcherPriority.Send && CheckAccess())
         {
-            using (AvaloniaSynchronizationContext.Ensure(priority))
+            using (AvaloniaSynchronizationContext.Ensure(this, priority))
                 return callback();
         }
 
