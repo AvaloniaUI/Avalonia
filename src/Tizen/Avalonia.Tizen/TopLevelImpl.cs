@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -10,7 +11,7 @@ using Avalonia.Tizen.Platform.Input;
 
 namespace Avalonia.Tizen;
 
-public class TopLevelImpl : ITopLevelImpl
+internal class TopLevelImpl : ITopLevelImpl
 {
     private readonly ITizenView _view;
     private readonly NuiClipboardImpl _clipboard;
@@ -20,7 +21,6 @@ public class TopLevelImpl : ITopLevelImpl
     {
         _view = view;
 
-        //_nativeControlHost = new NativeControlHostImpl(view);
         _storageProvider = new TizenStorageProvider();
         //_insetsManager = new InsetsManager(view);
         //_insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
@@ -98,10 +98,10 @@ public class TopLevelImpl : ITopLevelImpl
             return _view;
         }
 
-        //if (featureType == typeof(INativeControlHostImpl))
-        //{
-        //    return _nativeControlHost;
-        //}
+        if (featureType == typeof(INativeControlHostImpl))
+        {
+            return _view.NativeControlHost;
+        }
 
         //if (featureType == typeof(IInsetsManager))
         //{

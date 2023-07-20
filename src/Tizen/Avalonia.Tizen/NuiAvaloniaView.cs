@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
@@ -32,7 +33,8 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
     private NativeImageQueue _nativeImageSource;
 
     public IInputRoot InputRoot { get; set; }
-    public TopLevelImpl TopLevelImpl => _topLevelImpl;
+    public INativeControlHostImpl NativeControlHost { get; }
+    internal TopLevelImpl TopLevelImpl => _topLevelImpl;
     public double Scaling => ScalingInfo.ScalingFactor;
     public Size ClientSize => new(Size.Width, Size.Height);
 
@@ -52,6 +54,7 @@ public class NuiAvaloniaView : ImageView, ITizenView, IFramebufferPlatformSurfac
         _textEditor = new NuiAvaloniaViewTextEditable(this);
         _keyboardHandler = new NuiKeyboardHandler(this);
         _touchHandler = new NuiTouchHandler(this);
+        NativeControlHost = new NuiNativeControlHostImpl(this);
 
         Layout = new CustomLayout
         {

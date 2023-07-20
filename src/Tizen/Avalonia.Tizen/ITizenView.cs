@@ -1,10 +1,12 @@
-﻿using Avalonia.Input;
+﻿using Avalonia.Controls.Platform;
+using Avalonia.Input;
 
 namespace Avalonia.Tizen;
 
-public interface ITizenView
+internal interface ITizenView
 {
     Size ClientSize { get; }
     double Scaling { get; }
     IInputRoot InputRoot { get; set; }
+    INativeControlHostImpl NativeControlHost { get; }
 }
