@@ -150,6 +150,13 @@ namespace Avalonia.Android
                 _inputConnection.Editable.Replace(diff.index, editableText.Length, diff.diff);
 
                 _inputConnection.EditableWrapper.IgnoreChange = false;
+
+                if(diff.index == 0)
+                {
+                    var selection = _client.Selection;
+                    _client.Selection = new TextSelection(selection.Start, 0);
+                    _client.Selection = selection;
+                }
             }
 
             (int index, string diff) GetDiff()

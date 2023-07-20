@@ -571,7 +571,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             BeginBatchEdit();
             _commitInProgress = true;
 
+            var composingRegion = _editable.CurrentComposition;
+
             var ret = base.CommitText(text, newCursorPosition);
+
+            if(composingRegion.Start != -1)
+            {
+                InputMethod.Client.Selection = composingRegion;
+            }
 
             var committedText = text.SubSequence(0, text.Length());
 
