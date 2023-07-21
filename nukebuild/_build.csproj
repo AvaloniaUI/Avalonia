@@ -8,8 +8,8 @@
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
- 
- <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
+
+  <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="6.2.1" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
@@ -22,6 +22,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[7.0.305]" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,9 +32,9 @@
 
     <!-- Common build related files -->
     <Compile Remove="Numerge/**/*.*" />
-    <Compile Include="Numerge/Numerge/**/*.cs" />
-	<EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe"></EmbeddedResource>
-	<EmbeddedResource Include="../build/avalonia.snk"></EmbeddedResource>
+    <Compile Include="Numerge/Numerge/**/*.cs" Exclude="Numerge/Numerge/obj/**/*.cs" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe" />
+    <EmbeddedResource Include="../build/avalonia.snk" />
     <Compile Remove="il-repack\ILRepack\Application.cs" />
   </ItemGroup>
 
@@ -41,7 +43,5 @@
       <Link>dirs.proj</Link>
     </Content>
   </ItemGroup>
-    
-    
 
 </Project>

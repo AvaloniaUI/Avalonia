@@ -12,7 +12,8 @@ internal class WinUiCompositedWindow : IDisposable
     public EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo WindowInfo { get; }
     private readonly WinUiCompositionShared _shared;
     private readonly ICompositionRoundedRectangleGeometry? _compositionRoundedRectangleGeometry;
-    private readonly IVisual? _mica;
+    private readonly IVisual? _micaLight;
+    private readonly IVisual? _micaDark;
     private readonly IVisual _blur;
     private readonly IVisual _visual;
     private PixelSize _size;
@@ -25,7 +26,8 @@ internal class WinUiCompositedWindow : IDisposable
         {
             _compositionRoundedRectangleGeometry?.Dispose();
             _blur.Dispose();
-            _mica?.Dispose();
+            _micaLight?.Dispose();
+            _micaDark?.Dispose();
             _visual.Dispose();
             _surfaceBrush.Dispose();
             _target.Dispose();
@@ -50,14 +52,20 @@ internal class WinUiCompositedWindow : IDisposable
         _target.SetRoot(containerVisual);
 
         _blur = WinUiCompositionUtils.CreateBlurVisual(shared.Compositor, shared.BlurBrush);
-        if (shared.MicaBrush != null)
+        if (shared.MicaBrushLight != null)
         {
-            _mica = WinUiCompositionUtils.CreateBlurVisual(shared.Compositor, shared.MicaBrush);
-            containerChildren.InsertAtTop(_mica);
+            _micaLight = WinUiCompositionUtils.CreateBlurVisual(shared.Compositor, shared.MicaBrushLight);
+            containerChildren.InsertAtTop(_micaLight);
+        }   
+        
+        if (shared.MicaBrushDark != null)
+        {
+            _micaDark = WinUiCompositionUtils.CreateBlurVisual(shared.Compositor, shared.MicaBrushDark);
+            containerChildren.InsertAtTop(_micaDark);
         }
 
         _compositionRoundedRectangleGeometry =
-            WinUiCompositionUtils.ClipVisual(shared.Compositor, backdropCornerRadius, _blur, _mica);
+            WinUiCompositionUtils.ClipVisual(shared.Compositor, backdropCornerRadius, _blur, _micaLight, _micaDark);
 
         containerChildren.InsertAtTop(_blur);
         using var spriteVisual = shared.Compositor.CreateSpriteVisual();
@@ -68,9 +76,6 @@ internal class WinUiCompositedWindow : IDisposable
         using var compositionBrush = _surfaceBrush.QueryInterface<ICompositionBrush>();
         spriteVisual.SetBrush(compositionBrush);
         _target.SetRoot(containerVisual);
-        
-        
-        
     }
 
     public void SetSurface(ICompositionSurface surface) => _surfaceBrush.SetSurface(surface);
@@ -79,12 +84,13 @@ internal class WinUiCompositedWindow : IDisposable
     {
         lock (_shared.SyncRoot)
         {
-
             _blur.SetIsVisible(blurEffect == BlurEffect.Acrylic
-                               || blurEffect == BlurEffect.Mica && _mica == null ?
+                               || (blurEffect == BlurEffect.MicaLight && _micaLight == null) ||
+                               (blurEffect == BlurEffect.MicaDark && _micaDark == null) ?
                 1 :
                 0);
-            _mica?.SetIsVisible(blurEffect == BlurEffect.Mica ? 1 : 0);
+            _micaLight?.SetIsVisible(blurEffect == BlurEffect.MicaLight ? 1 : 0);
+            _micaDark?.SetIsVisible(blurEffect == BlurEffect.MicaDark ? 1 : 0);
         }
     }
 
