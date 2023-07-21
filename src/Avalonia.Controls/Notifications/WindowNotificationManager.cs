@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
@@ -18,6 +17,7 @@ namespace Avalonia.Controls.Notifications
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
+        private AdornerLayer? adornerLayer;
 
         /// <summary>
         /// Defines the <see cref="Position"/> property.
@@ -51,16 +51,39 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <summary>
+        /// Defines the <see cref="Host" /> property
+        /// </summary>
+        public static readonly DirectProperty<WindowNotificationManager, Visual?> HostProperty =
+            AvaloniaProperty.RegisterDirect<WindowNotificationManager, Visual?>(
+                nameof(Host),
+                o => o.Host,
+                (o, v) => o.Host = v);
+
+        private Visual? _Host;
+
+        /// <summary>
+        /// The Host that this NotificationManger should register to. If the Host is null, the Parent will be used.
+        /// </summary>
+        public Visual? Host
+        {
+            get { return _Host; }
+            set { SetAndRaise(HostProperty, ref _Host, value); }
+        }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
-        /// <param name="host">The window that will host the control.</param>
-        public WindowNotificationManager(TopLevel? host)
+        /// <param name="host">The visual that will host the control.</param>
+        public WindowNotificationManager(Visual? host) : this()
         {
-            if (host != null)
-            {
-                Install(host);
-            }
+            Host = host;
+        }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
+        /// </summary>
+        public WindowNotificationManager()
+        {
             UpdatePseudoClasses(Position);
         }
 
@@ -73,6 +96,8 @@ namespace Avalonia.Controls.Notifications
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
+            
             var itemsControl = e.NameScope.Find<Panel>("PART_Items");
             _items = itemsControl?.Children;
         }
@@ -120,12 +145,15 @@ namespace Avalonia.Controls.Notifications
                 (sender as NotificationCard)?.Close();
             };
 
-            _items?.Add(notificationControl);
-
-            if (_items?.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
+            Dispatcher.UIThread.Post(() =>
             {
-                _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
-            }
+                _items?.Add(notificationControl);
+
+                if (_items?.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
+                {
+                    _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
+                }
+            });
 
             if (expiration == TimeSpan.Zero)
             {
@@ -145,16 +173,32 @@ namespace Avalonia.Controls.Notifications
             {
                 UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
             }
+
+            if (change.Property == HostProperty)
+            {
+                Install();
+            }
         }
 
         /// <summary>
         /// Installs the <see cref="WindowNotificationManager"/> within the <see cref="AdornerLayer"/>
-        /// of the host <see cref="Window"/>.
         /// </summary>
-        /// <param name="host">The <see cref="Window"/> that will be the host.</param>
-        private void Install(TemplatedControl host)
+        private void Install()
         {
-            var adornerLayer = host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
+            // unregister from AdornerLayer if this control was already installed
+            if (adornerLayer is not null && !adornerLayer.Children.Contains(this))
+            {
+                adornerLayer.Children.Remove(this);
+            }
+            
+            // Try to get the host. If host was null, use the TopLevel instead.
+            var host = Host ?? Parent as Visual;
+
+            if (host is null) throw new InvalidOperationException("NotificationControl cannot be installed. Host was not found.");
+
+            adornerLayer = host is TopLevel 
+                ? host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer 
+                : AdornerLayer.GetAdornerLayer(host);
 
             if (adornerLayer is not null)
             {
