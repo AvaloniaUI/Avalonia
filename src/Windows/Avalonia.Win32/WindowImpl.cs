@@ -397,29 +397,25 @@ namespace Avalonia.Win32
 
         private bool IsSupported(WindowTransparencyLevel level, Version windowsVersion)
         {
-            // Only None is suppported when composition is disabled.
-            if (!_isUsingComposition)
-                return level == WindowTransparencyLevel.None;
-
             // When composition is enabled, None is not supported because the backing visual always
             // has an alpha channel
-            if (level == WindowTransparencyLevel.None)
+            if (_isUsingComposition && level == WindowTransparencyLevel.None)
                 return false;
 
             // Transparent only supported on Windows 8+.
             if (level == WindowTransparencyLevel.Transparent)
                 return windowsVersion >= PlatformConstants.Windows8;
 
-            // Blur only supported on Windows 8 and lower.
+            // Blur only supported on any Windows version
             if (level == WindowTransparencyLevel.Blur)
-                return windowsVersion < PlatformConstants.Windows10;
+                return true;
 
             // Acrylic is supported on Windows >= 10.0.15063.
-            if (level == WindowTransparencyLevel.AcrylicBlur)
+            if (_isUsingComposition && level == WindowTransparencyLevel.AcrylicBlur)
                 return windowsVersion >= WinUiCompositionShared.MinAcrylicVersion;
 
             // Mica is supported on Windows >= 10.0.22000.
-            if (level == WindowTransparencyLevel.Mica)
+            if (_isUsingComposition && level == WindowTransparencyLevel.Mica)
                 return windowsVersion >= WinUiCompositionShared.MinHostBackdropVersion;
 
             return false;
@@ -428,34 +424,47 @@ namespace Avalonia.Win32
         private void SetTransparencyTransparent(Version windowsVersion)
         {
             // Transparent only supported with composition on Windows 8+.
-            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows8)
+            if (windowsVersion < PlatformConstants.Windows8)
                 return;
 
-            if (windowsVersion < PlatformConstants.Windows10)
+            // Set accent on Windows 7 or 8 even when composition is enabled
+            if (!_isUsingComposition || windowsVersion < PlatformConstants.Windows10)
             {
                 // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
                 // Windows 10, hence using ACCENT_ENABLE_BLURBEHIND to disable blurbehind  ¯\_(ツ)_/¯.
                 // Hey, I'm just porting what was here before.
-                SetAccentState(AccentState.ACCENT_ENABLE_BLURBEHIND);
+                SetAccentState(windowsVersion < PlatformConstants.Windows10 ?
+                    AccentState.ACCENT_ENABLE_BLURBEHIND :
+                    AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT);
                 var blurInfo = new DWM_BLURBEHIND(false);
                 DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
             }
 
-            SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.None);
+            // Use host backdrop only when composition is enabled
+            if (_isUsingComposition)
+            {
+                SetUseHostBackdropBrush(false);
+                _blurHost?.SetBlur(BlurEffect.None);
+            }
         }
 
         private void SetTransparencyBlur(Version windowsVersion)
         {
             // Blur only supported with composition on Windows 8 and lower.
-            if (!_isUsingComposition || windowsVersion >= PlatformConstants.Windows10)
-                return;
-
-            // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
-            // Windows 10.
-            SetAccentState(AccentState.ACCENT_DISABLED);
-            var blurInfo = new DWM_BLURBEHIND(true);
-            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+            if (windowsVersion < PlatformConstants.Windows10)
+            {
+                // Some of the AccentState Enum's values have different meanings on Windows 8.x than on
+                // Windows 10.
+                SetAccentState(AccentState.ACCENT_DISABLED);
+                var blurInfo = new DWM_BLURBEHIND(true);
+                DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+            }
+            else
+            {
+                SetAccentState(AccentState.ACCENT_ENABLE_BLURBEHIND);
+                var blurInfo = new DWM_BLURBEHIND(true);
+                DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+            }
         }
 
         private void SetTransparencyAcrylicBlur(Version windowsVersion)
@@ -490,6 +499,8 @@ namespace Avalonia.Win32
 
             //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
             accent.AccentState = state;
+            accent.AccentFlags = 2;
+            accent.GradientColor = 0x01000000;
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
