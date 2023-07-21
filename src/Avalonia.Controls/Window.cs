@@ -169,6 +169,7 @@ namespace Avalonia.Controls
         private readonly Size _maxPlatformClientSize;
         private bool _shown;
         private bool _showingAsDialog;
+        private bool _wasShownBefore;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -718,6 +719,7 @@ namespace Avalonia.Controls
                 StartRendering();
                 PlatformImpl?.Show(ShowActivated, false);
                 OnOpened(EventArgs.Empty);
+                _wasShownBefore = true;
             }
         }
 
@@ -871,6 +873,11 @@ namespace Avalonia.Controls
 
         private void SetWindowStartupLocation(Window? owner = null)
         {
+            if (_wasShownBefore == true)
+            {
+                return;
+            }
+
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
