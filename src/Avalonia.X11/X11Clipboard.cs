@@ -197,7 +197,6 @@ namespace Avalonia.X11
 
         private unsafe IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)
         {
-            Encoding textEnc;
             if (target == _x11.Atoms.TARGETS)
             {
                 var atoms = ConvertDataObject(_storedDataObject);
@@ -208,20 +207,6 @@ namespace Avalonia.X11
 
             if (target == _x11.Atoms.SAVE_TARGETS && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
             {
-                return property;
-            }
-
-            if ((textEnc = GetStringEncoding(target)) != null
-                     && _storedDataObject?.Contains(DataFormats.Text) == true)
-            {
-                var text = _storedDataObject.GetText();
-                if (text == null)
-                    return IntPtr.Zero;
-                var data = textEnc.GetBytes(text);
-                fixed (void* pdata = data)
-                    XChangeProperty(_x11.Display, window, property, target, 8,
-                        PropertyMode.Replace,
-                        pdata, data.Length);
                 return property;
             }
 
@@ -249,21 +234,22 @@ namespace Avalonia.X11
                 return property;
             }
 
-            if (_storedDataObject?.Contains(_x11.Atoms.GetAtomName(target)) == true)
+            if (_storedDataObject?.Contains(DataFormats.Text) == true || _storedDataObject?.Contains(_x11.Atoms.GetAtomName(target)) == true)
             {
-                var objValue = _storedDataObject.Get(_x11.Atoms.GetAtomName(target));
+                var objValue = _storedDataObject.Get(DataFormats.Text) ?? _storedDataObject.Get(_x11.Atoms.GetAtomName(target));
 
                 if (!(objValue is byte[] bytes))
                 {
                     if (objValue is string s)
-                        bytes = Encoding.UTF8.GetBytes(s);
+                    {
+                        var textEnc = GetStringEncoding(target) ?? Encoding.UTF8;
+                        bytes = textEnc.GetBytes(s);
+                    }
                     else
                         return IntPtr.Zero;
                 }
 
-                XChangeProperty(_x11.Display, window, property, target, 8,
-                    PropertyMode.Replace,
-                    bytes, bytes.Length);
+                XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, bytes, bytes.Length);
                 return property;
             }
 
