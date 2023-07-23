@@ -24,6 +24,8 @@ namespace Avalonia.X11
         {
             _x11 = platform.Info;
             _handle = CreateEventWindow(platform, OnEvent);
+            XSelectInput(_x11.Display, _handle, new IntPtr((int)(EventMask.StructureNotifyMask | EventMask.PropertyChangeMask)));
+
             _avaloniaSaveTargetsAtom = XInternAtom(_x11.Display, "AVALONIA_SAVE_TARGETS_PROPERTY_ATOM", false);
             _textAtoms = new[]
             {
@@ -138,6 +140,12 @@ namespace Avalonia.X11
 
                 XFree(prop);
                 return;
+            }
+
+            if (ev.type == XEventName.PropertyNotify && (PropertyState)ev.PropertyEvent.state == PropertyState.NewValue)
+            {
+
+
             }
         }
 
