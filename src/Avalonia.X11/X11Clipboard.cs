@@ -19,6 +19,8 @@ namespace Avalonia.X11
         private TaskCompletionSource<object> _requestedDataTcs;
         private readonly IntPtr[] _textAtoms;
         private readonly IntPtr _avaloniaSaveTargetsAtom;
+        private IntPtr _incrTargetAtom;
+        private readonly List<byte> _incrData;
 
         public X11Clipboard(AvaloniaX11Platform platform)
         {
@@ -34,6 +36,9 @@ namespace Avalonia.X11
                 _x11.Atoms.UTF8_STRING,
                 _x11.Atoms.UTF16_STRING
             }.Where(a => a != IntPtr.Zero).ToArray();
+
+            _incrTargetAtom = IntPtr.Zero;
+            _incrData = new List<byte>();
         }
 
         private bool IsStringAtom(IntPtr atom)
@@ -126,8 +131,14 @@ namespace Avalonia.X11
                     {
                         if (actualTypeAtom == _x11.Atoms.INCR)
                         {
-                            // TODO: Actually implement that monstrosity
-                            _requestedDataTcs.TrySetResult(null);
+                            if (actualFormat != 32 || (int)nitems != 1)
+                                _requestedDataTcs?.TrySetResult(null);
+                            else
+                            {
+                                _incrTargetAtom = sel.property;
+                                var total = *((int*)prop.ToPointer());
+                                _incrData.Capacity = total;
+                            }
                         }
                         else
                         {
@@ -144,7 +155,42 @@ namespace Avalonia.X11
 
             if (ev.type == XEventName.PropertyNotify && (PropertyState)ev.PropertyEvent.state == PropertyState.NewValue)
             {
+                if (_incrTargetAtom == ev.PropertyEvent.atom)
+                {
+                    XGetWindowProperty(_x11.Display, _handle, _incrTargetAtom, IntPtr.Zero, new IntPtr(0x7fffffff), true, (IntPtr)Atom.AnyPropertyType,
+                                out var actualTypeAtom, out var actualFormat, out var nitems, out var bytes_after, out var prop);
 
+                    if (_incrTargetAtom == actualTypeAtom && (int)nitems > 0)
+                    {
+                        var chunkSize = (int)nitems * (actualFormat / 8);
+                        var arrayPool = System.Buffers.ArrayPool<byte>.Shared;
+                        var buffer = arrayPool.Rent(chunkSize);
+                        Marshal.Copy(prop, buffer, 0, chunkSize);
+                        _incrData.AddRange(buffer.Take(chunkSize));
+                    }
+                    else
+                    {
+                        var bytes = _incrData.ToArray();
+                        var textEnc = GetStringEncoding(_incrTargetAtom);
+                        _incrData.Clear();
+                        _incrTargetAtom = IntPtr.Zero;
+
+                        if (bytes.Length == 0)
+                        {
+                            _requestedDataTcs?.TrySetResult(null);
+                        }
+                        else if (textEnc != null)
+                        {
+                            var text = textEnc.GetString(bytes);
+                            _requestedDataTcs?.TrySetResult(text);
+                        }
+                        else
+                        {
+                            _requestedDataTcs?.TrySetResult(bytes);
+                        }
+                    }
+                    XFree(prop);
+                }
 
             }
         }
