@@ -174,10 +174,8 @@ namespace Avalonia.X11
             {
                 XGetWindowProperty(_x11.Display, window, property, IntPtr.Zero, new IntPtr(0x7fffffff), false,
                     _x11.Atoms.ATOM_PAIR, out _, out var actualFormat, out var nitems, out _, out var prop);
-                if (nitems == IntPtr.Zero)
-                    return IntPtr.Zero;
-                    
-                if (actualFormat == 32)
+
+                if (nitems != IntPtr.Zero && actualFormat == 32)
                 {
                     var data = (IntPtr*)prop.ToPointer();
                     for (var c = 0; c < nitems.ToInt32(); c += 2)
