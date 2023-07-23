@@ -82,79 +82,7 @@ namespace Avalonia.X11
                 }
 
                 XSendEvent(_x11.Display, sel.requestor, false, new IntPtr((int)EventMask.NoEventMask), ref resp);
-            }
-
-            IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)
-            {
-                Encoding textEnc;
-                if (target == _x11.Atoms.TARGETS)
-                {
-                    var atoms = ConvertDataObject(_storedDataObject);
-                    XChangeProperty(_x11.Display, window, property,
-                        _x11.Atoms.XA_ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
-                    return property;
-                }
-                else if (target == _x11.Atoms.SAVE_TARGETS && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
-                {
-                    return property;
-                }
-                else if ((textEnc = GetStringEncoding(target)) != null
-                         && _storedDataObject?.Contains(DataFormats.Text) == true)
-                {
-                    var text = _storedDataObject.GetText();
-                    if (text == null)
-                        return IntPtr.Zero;
-                    var data = textEnc.GetBytes(text);
-                    fixed (void* pdata = data)
-                        XChangeProperty(_x11.Display, window, property, target, 8,
-                            PropertyMode.Replace,
-                            pdata, data.Length);
-                    return property;
-                }
-                else if (target == _x11.Atoms.MULTIPLE && _x11.Atoms.MULTIPLE != IntPtr.Zero)
-                {
-                    XGetWindowProperty(_x11.Display, window, property, IntPtr.Zero, new IntPtr(0x7fffffff), false,
-                        _x11.Atoms.ATOM_PAIR, out _, out var actualFormat, out var nitems, out _, out var prop);
-                    if (nitems == IntPtr.Zero)
-                        return IntPtr.Zero;
-                    if (actualFormat == 32)
-                    {
-                        var data = (IntPtr*)prop.ToPointer();
-                        for (var c = 0; c < nitems.ToInt32(); c += 2)
-                        {
-                            var subTarget = data[c];
-                            var subProp = data[c + 1];
-                            var converted = WriteTargetToProperty(subTarget, window, subProp);
-                            data[c + 1] = converted;
-                        }
-
-                        XChangeProperty(_x11.Display, window, property, _x11.Atoms.ATOM_PAIR, 32, PropertyMode.Replace,
-                            prop.ToPointer(), nitems.ToInt32());
-                    }
-
-                    XFree(prop);
-
-                    return property;
-                }
-                else if (_storedDataObject?.Contains(_x11.Atoms.GetAtomName(target)) == true)
-                {
-                    var objValue = _storedDataObject.Get(_x11.Atoms.GetAtomName(target));
-
-                    if (!(objValue is byte[] bytes))
-                    {
-                        if (objValue is string s)
-                            bytes = Encoding.UTF8.GetBytes(s);
-                        else
-                            return IntPtr.Zero;
-                    }
-
-                    XChangeProperty(_x11.Display, window, property, target, 8,
-                        PropertyMode.Replace,
-                        bytes, bytes.Length);
-                    return property;
-                }
-                else
-                    return IntPtr.Zero;
+                return;
             }
 
             if (ev.type == XEventName.SelectionNotify && ev.SelectionEvent.selection == _x11.Atoms.CLIPBOARD)
@@ -208,7 +136,85 @@ namespace Avalonia.X11
                 }
 
                 XFree(prop);
+                return;
             }
+        }
+
+        private unsafe IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)
+        {
+            Encoding textEnc;
+            if (target == _x11.Atoms.TARGETS)
+            {
+                var atoms = ConvertDataObject(_storedDataObject);
+                XChangeProperty(_x11.Display, window, property,
+                    _x11.Atoms.XA_ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
+                return property;
+            }
+
+            if (target == _x11.Atoms.SAVE_TARGETS && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
+            {
+                return property;
+            }
+
+            if ((textEnc = GetStringEncoding(target)) != null
+                     && _storedDataObject?.Contains(DataFormats.Text) == true)
+            {
+                var text = _storedDataObject.GetText();
+                if (text == null)
+                    return IntPtr.Zero;
+                var data = textEnc.GetBytes(text);
+                fixed (void* pdata = data)
+                    XChangeProperty(_x11.Display, window, property, target, 8,
+                        PropertyMode.Replace,
+                        pdata, data.Length);
+                return property;
+            }
+
+            if (target == _x11.Atoms.MULTIPLE && _x11.Atoms.MULTIPLE != IntPtr.Zero)
+            {
+                XGetWindowProperty(_x11.Display, window, property, IntPtr.Zero, new IntPtr(0x7fffffff), false,
+                    _x11.Atoms.ATOM_PAIR, out _, out var actualFormat, out var nitems, out _, out var prop);
+                if (nitems == IntPtr.Zero)
+                    return IntPtr.Zero;
+                    
+                if (actualFormat == 32)
+                {
+                    var data = (IntPtr*)prop.ToPointer();
+                    for (var c = 0; c < nitems.ToInt32(); c += 2)
+                    {
+                        var subTarget = data[c];
+                        var subProp = data[c + 1];
+                        var converted = WriteTargetToProperty(subTarget, window, subProp);
+                        data[c + 1] = converted;
+                    }
+
+                    XChangeProperty(_x11.Display, window, property, _x11.Atoms.ATOM_PAIR, 32, PropertyMode.Replace,
+                        prop.ToPointer(), nitems.ToInt32());
+                }
+
+                XFree(prop);
+                return property;
+            }
+
+            if (_storedDataObject?.Contains(_x11.Atoms.GetAtomName(target)) == true)
+            {
+                var objValue = _storedDataObject.Get(_x11.Atoms.GetAtomName(target));
+
+                if (!(objValue is byte[] bytes))
+                {
+                    if (objValue is string s)
+                        bytes = Encoding.UTF8.GetBytes(s);
+                    else
+                        return IntPtr.Zero;
+                }
+
+                XChangeProperty(_x11.Display, window, property, target, 8,
+                    PropertyMode.Replace,
+                    bytes, bytes.Length);
+                return property;
+            }
+
+            return IntPtr.Zero;
         }
 
         private Task<IntPtr[]> SendFormatRequest()
