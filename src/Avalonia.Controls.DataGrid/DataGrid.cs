@@ -4161,7 +4161,7 @@ namespace Avalonia.Controls
 
             ResetValidationStatus();
 
-            if (exitEditingMode)
+            if (exitEditingMode && CurrentColumn != null)
             {
                 CurrentColumn.EndCellEditInternal();
                 _editingColumnIndex = -1;

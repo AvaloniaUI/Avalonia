@@ -40,7 +40,7 @@
         <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding SelectedEntityType}" FontStyle="Italic" />
       </Grid>
       
-      <controls:FilterTextBox Grid.Row="1"
+      <controls:FilterTextBox Grid.Row="0"
                               BorderThickness="0"
                               DataContext="{Binding TreePage.PropertiesFilter}"
                               Text="{Binding FilterString}"
@@ -49,47 +49,95 @@
                               UseWholeWordFilter="{Binding UseWholeWordFilter}"
                               UseRegexFilter="{Binding UseRegexFilter}"/>
       
-      <DataGrid 
-                x:Name="DataGrid"
-                ItemsSource="{Binding PropertiesView}"
+      <Grid RowDefinitions="Auto,*" Grid.Row="1">
+        <DataGrid
+                x:Name="FloatingDataGrid"
+                ItemsSource="{Binding PinnedPropertiesView}"
                 Grid.Row="2"
                 BorderThickness="0"
                 RowBackground="Transparent"
-                SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
                 CanUserResizeColumns="true"
-                DoubleTapped="PropertiesGrid_OnDoubleTapped">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
-          <DataGridTemplateColumn Header="Value" Width="100">
+                DoubleTapped="PropertiesGrid_OnDoubleTapped"
+                Height="{Binding FloatingGridHeight}">
+          <DataGrid.Columns>
+            <DataGridCheckBoxColumn Header="Pin Property" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
+            <DataGridTextColumn Header="Property test" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
+            <DataGridTemplateColumn Header="Value" Width="200">
               <DataTemplate>
                 <local:PropertyValueEditorView />
               </DataTemplate>
-          </DataGridTemplateColumn>
-          <DataGridTextColumn Header="Type" Binding="{Binding Type}"
-                              IsReadOnly="True"
-                              IsVisible="{Binding !$parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
-                              x:DataType="vm:PropertyViewModel"
+            </DataGridTemplateColumn>
+            <DataGridTextColumn Header="Type" Binding="{Binding Type}"
+                                IsReadOnly="True"
+                                IsVisible="{Binding !$parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                                x:DataType="vm:PropertyViewModel"
+                                Width="200"
                               />
-          <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
-                              IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
-                              x:DataType="vm:PropertyViewModel"
+            <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
+                                IsReadOnly="True"
+                                IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                                x:DataType="vm:PropertyViewModel"
+                                Width="100"
                               />
-          <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
-                              IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
-                              x:DataType="vm:PropertyViewModel"
+            <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
+                                IsReadOnly="True"
+                                IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                                x:DataType="vm:PropertyViewModel"
+                                Width="300"
                               />
-          <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
-        </DataGrid.Columns>
+            <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </Grid>
+      
+      <Grid RowDefinitions="Auto,*" Grid.Row="2">
+        <DataGrid
+                        x:Name="DataGrid"
+                        ItemsSource="{Binding PropertiesView}"
+                        Grid.Row="2"
+                        BorderThickness="0"
+                        RowBackground="Transparent"
+                        SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
+                        CanUserResizeColumns="true"
+                        DoubleTapped="PropertiesGrid_OnDoubleTapped"
+                        Height="1080"
+                        VerticalAlignment="Stretch">
+          <DataGrid.Columns>
+            <DataGridCheckBoxColumn Header="Pin Property" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
+            <DataGridTextColumn Header="Property test" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
+            <DataGridTemplateColumn Header="Value" Width="200">
+              <DataTemplate>
+                <local:PropertyValueEditorView />
+              </DataTemplate>
+            </DataGridTemplateColumn>
+            <DataGridTextColumn Header="Type" Binding="{Binding Type}"
+                                IsReadOnly="True"
+                                IsVisible="{Binding !$parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                                x:DataType="vm:PropertyViewModel"
+                                Width="200"
+                              />
+            <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
+                                IsReadOnly="True"
+                                IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                                x:DataType="vm:PropertyViewModel"
+                                Width="100"
+                              />
+            <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
+                                IsReadOnly="True"
+                                IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
+                                x:DataType="vm:PropertyViewModel"
+                                Width="300"
+                              />
+            <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
+          </DataGrid.Columns>
 
-        <DataGrid.Styles>
-          <Style Selector="DataGridRow TextBox">
-            <Setter Property="SelectionBrush" Value="LightBlue" />
-          </Style>
-        </DataGrid.Styles>
-      </DataGrid>
-
+          <DataGrid.Styles>
+            <Style Selector="DataGridRow TextBox">
+              <Setter Property="SelectionBrush" Value="LightBlue" />
+            </Style>
+          </DataGrid.Styles>
+        </DataGrid>
+      </Grid>
     </Grid>
 
     <GridSplitter Grid.Column="1"/>

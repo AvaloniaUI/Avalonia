@@ -11,12 +11,14 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract string Name { get; }
         public abstract string Group { get; }
         public abstract Type AssignedType { get; }
+        public abstract bool IsPinned { get; set; }
         public abstract Type? DeclaringType { get; }
         public abstract object? Value { get; set; }
         public abstract string Priority { get; }
         public abstract bool? IsAttached { get; }
         public abstract void Update();
         public abstract Type PropertyType { get; }
+        public abstract event EventHandler IsPinnedChanged;
 
         public string Type => PropertyType == AssignedType ?
             PropertyType.GetTypeName() :

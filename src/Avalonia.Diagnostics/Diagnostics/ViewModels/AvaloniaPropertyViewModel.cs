@@ -7,6 +7,7 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly AvaloniaObject _target;
         private Type _assignedType;
+        private bool _isPinned;
         private object? _value;
         private string _priority;
         private string _group;
@@ -19,6 +20,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _target = o;
             Property = property;
+            _isPinned = false;
 
             Name = property.IsAttached ?
                 $"[{property.OwnerType.Name}.{property.Name}]" :
@@ -33,6 +35,19 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Name { get; }
         public override bool? IsAttached => Property.IsAttached;
         public override string Priority => _priority;
+        public override bool IsPinned
+        {
+            get => _isPinned;
+            set
+            {
+                try
+                {
+                    _isPinned = value;
+                    OnIsPinnedChanged();
+                }
+                catch { }
+            }
+        }
         public override Type AssignedType => _assignedType;
 
         public override object? Value
@@ -56,6 +71,12 @@ namespace Avalonia.Diagnostics.ViewModels
         public override bool IsReadonly => Property.IsReadOnly;
 
         // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
+        public override event EventHandler IsPinnedChanged;
+
+        protected virtual void OnIsPinnedChanged()
+        {
+            IsPinnedChanged?.Invoke(this, EventArgs.Empty);
+        }
         public override void Update()
         {
             if (Property.IsDirect)
