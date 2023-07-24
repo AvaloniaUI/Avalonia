@@ -7,6 +7,7 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly object _target;
         private Type _assignedType;
+        private bool _isPinned;
         private object? _value;
         private readonly Type _propertyType;
 
@@ -17,6 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _target = o;
             Property = property;
+            _isPinned = false;
 
             if (property.DeclaringType == null || !property.DeclaringType.IsInterface)
             {
@@ -41,6 +43,28 @@ namespace Avalonia.Diagnostics.ViewModels
         public override Type AssignedType => _assignedType;
         public override Type PropertyType => _propertyType;
         public override bool IsReadonly => !Property.CanWrite;
+
+        //determines if property is pinned to top in dev tools
+        public override bool IsPinned
+        {
+            get => _isPinned;
+            set
+            {
+                try
+                {
+                    _isPinned = value;
+                    OnIsPinnedChanged();
+                }
+                catch { }
+            }
+        }
+
+        public override event EventHandler IsPinnedChanged;
+
+        protected virtual void OnIsPinnedChanged()
+        {
+            IsPinnedChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         public override object? Value
         {
