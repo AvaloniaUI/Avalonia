@@ -19,13 +19,19 @@ namespace Avalonia.Controls.Notifications
         /// Shows a notification.
         /// </summary>
         /// <param name="content">The content to be displayed.</param>
+        void Show(object content);
+        
+        /// <summary>
+        /// Shows a notification.
+        /// </summary>
+        /// <param name="content">The content to be displayed.</param>
         /// <param name="type">The <see cref="NotificationType"/> of the notification.</param>
         /// <param name="expiration">the expiration time of the notification after which it will automatically close. If the value is <see cref="TimeSpan.Zero"/> then the notification will remain open until the user closes it.</param>
         /// <param name="onClick">an Action to be run when the notification is clicked.</param>
         /// <param name="onClose">an Action to be run when the notification is closed.</param>
         /// <param name="classes">Style-classes to ba added to the notification card</param>
         void Show(object content,
-            NotificationType type = NotificationType.Information,
+            NotificationType type,
             TimeSpan? expiration = null,
             Action? onClick = null,
             Action? onClose = null, 

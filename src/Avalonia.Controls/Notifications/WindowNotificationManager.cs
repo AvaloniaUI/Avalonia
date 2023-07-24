@@ -73,8 +73,8 @@ namespace Avalonia.Controls.Notifications
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
-        /// <param name="host">The visual that will host the control.</param>
-        public WindowNotificationManager(Visual? host) : this()
+        /// <param name="host">The TopLevel that will host the control.</param>
+        public WindowNotificationManager(TopLevel? host) : this()
         {
             Host = host;
         }
@@ -109,8 +109,21 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
+        public async void Show(object content)
+        {
+            if (content is INotification notification)
+            {
+                Show(notification, notification.Type, notification.Expiration, notification.OnClick, notification.OnClose);
+            }
+            else
+            {
+                Show(content, NotificationType.Information);
+            }
+        }
+        
+        /// <inheritdoc/>
         public async void Show(object content, 
-            NotificationType type = NotificationType.Information, 
+            NotificationType type, 
             TimeSpan? expiration = null,
             Action? onClick = null, 
             Action? onClose = null, 
@@ -202,7 +215,7 @@ namespace Avalonia.Controls.Notifications
 
             if (adornerLayer is not null)
             {
-                adornerLayer.Children.Add(this);
+                // adornerLayer.Children.Add(this);
                 AdornerLayer.SetAdornedElement(this, adornerLayer);
             }
         }
