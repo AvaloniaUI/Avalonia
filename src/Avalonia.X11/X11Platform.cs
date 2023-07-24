@@ -36,12 +36,11 @@ namespace Avalonia.X11
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
-        [DllImport("libc")]
-        private static extern void setlocale(int type, string s);
+
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
-            
+
             bool useXim = false;
             if (EnableIme(options))
             {
@@ -49,9 +48,6 @@ namespace Avalonia.X11
                 if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
                     useXim = true;
             }
-
-            // We have problems with text input otherwise
-            setlocale(0, "");
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
@@ -64,7 +60,7 @@ namespace Avalonia.X11
             OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
                 IntPtr.Zero);
             XError.Init();
-            
+
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             //TODO: log
