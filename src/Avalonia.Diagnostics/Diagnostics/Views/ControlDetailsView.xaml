@@ -28,7 +28,7 @@
       <ColumnDefinition Width="320" lb:ColumnDefinition.IsVisible="{Binding Layout, Converter={x:Static ObjectConverters.IsNotNull}}" />
     </Grid.ColumnDefinitions>
     
-    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
+    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*">
 
       <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
         <Button Grid.Column="0" Grid.RowSpan="2" Content="^" 
@@ -60,8 +60,8 @@
                 DoubleTapped="PropertiesGrid_OnDoubleTapped"
                 Height="{Binding FloatingGridHeight}">
           <DataGrid.Columns>
-            <DataGridCheckBoxColumn Header="Pin Property" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
-            <DataGridTextColumn Header="Property test" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
+            <DataGridCheckBoxColumn Header="Pin" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
+            <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
             <DataGridTemplateColumn Header="Value" Width="200">
               <DataTemplate>
                 <local:PropertyValueEditorView />
@@ -103,8 +103,8 @@
                         Height="1080"
                         VerticalAlignment="Stretch">
           <DataGrid.Columns>
-            <DataGridCheckBoxColumn Header="Pin Property" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
-            <DataGridTextColumn Header="Property test" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
+            <DataGridCheckBoxColumn Header="Pin" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
+            <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
             <DataGridTemplateColumn Header="Value" Width="200">
               <DataTemplate>
                 <local:PropertyValueEditorView />
