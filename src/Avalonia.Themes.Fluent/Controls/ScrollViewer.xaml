@@ -27,8 +27,6 @@
           <ScrollContentPresenter Name="PART_ContentPresenter"
                                   Grid.Row="0"
                                   Grid.Column="0"
-                                  Grid.RowSpan="2"
-                                  Grid.ColumnSpan="2"
                                   Background="{TemplateBinding Background}"
                                   HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
                                   VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
@@ -64,6 +62,10 @@
     </Setter>
     <Style Selector="^[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
       <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="^[AllowAutoHide=True] /template/ ScrollContentPresenter#PART_ContentPresenter">
+      <Setter Property="Grid.ColumnSpan" Value="2" />
+      <Setter Property="Grid.RowSpan" Value="2" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>
