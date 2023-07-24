@@ -11,6 +11,7 @@ namespace Avalonia.X11
 {
     internal class X11Clipboard : IClipboard
     {
+        private readonly AvaloniaX11Platform _platform;
         private readonly X11Info _x11;
         private IDataObject _storedDataObject;
         private IntPtr _handle;
@@ -19,11 +20,17 @@ namespace Avalonia.X11
         private TaskCompletionSource<object> _requestedDataTcs;
         private readonly IntPtr[] _textAtoms;
         private readonly IntPtr _avaloniaSaveTargetsAtom;
-        private IntPtr _incrTargetAtom;
-        private readonly List<byte> _incrData;
+        private IntPtr _incrReadTargetAtom;
+        private readonly List<byte> _incrReadData;
+        private IntPtr _incrWriteTargetAtom;
+        private IntPtr _incrWriteWindow;
+        private IntPtr _incrWriteProperty;
+        private byte[] _incrWriteData;
+        private const int MaxRequestSize = 0x40000;
 
         public X11Clipboard(AvaloniaX11Platform platform)
         {
+            _platform = platform;
             _x11 = platform.Info;
             _handle = CreateEventWindow(platform, OnEvent);
             XSelectInput(_x11.Display, _handle, new IntPtr((int)(EventMask.StructureNotifyMask | EventMask.PropertyChangeMask)));
@@ -37,8 +44,12 @@ namespace Avalonia.X11
                 _x11.Atoms.UTF16_STRING
             }.Where(a => a != IntPtr.Zero).ToArray();
 
-            _incrTargetAtom = IntPtr.Zero;
-            _incrData = new List<byte>();
+            _incrReadTargetAtom = IntPtr.Zero;
+            _incrReadData = new List<byte>();
+            _incrWriteTargetAtom = IntPtr.Zero;
+            _incrWriteWindow = IntPtr.Zero;
+            _incrWriteProperty = IntPtr.Zero;
+            _incrWriteData = null;
         }
 
         private bool IsStringAtom(IntPtr atom)
@@ -62,7 +73,11 @@ namespace Avalonia.X11
         {
             if (ev.type == XEventName.SelectionClear)
             {
-                _storeAtomTcs?.TrySetResult(true);
+
+                if (_incrWriteTargetAtom == IntPtr.Zero)
+                {
+                    _storeAtomTcs?.TrySetResult(true);
+                }
                 return;
             }
 
@@ -135,9 +150,9 @@ namespace Avalonia.X11
                                 _requestedDataTcs?.TrySetResult(null);
                             else
                             {
-                                _incrTargetAtom = sel.property;
+                                _incrReadTargetAtom = sel.property;
                                 var total = *((int*)prop.ToPointer());
-                                _incrData.Capacity = total;
+                                _incrReadData.Capacity = total;
                             }
                         }
                         else
@@ -153,28 +168,34 @@ namespace Avalonia.X11
                 return;
             }
 
-            if (ev.type == XEventName.PropertyNotify && (PropertyState)ev.PropertyEvent.state == PropertyState.NewValue)
+            if (ev.type == XEventName.PropertyNotify)
             {
-                if (_incrTargetAtom == ev.PropertyEvent.atom)
+                // System.Diagnostics.Debug.WriteLine($" --- OnEvent 10 XEventName.PropertyNotify atom:{ev.PropertyEvent.atom:X}, state:{(PropertyState)ev.PropertyEvent.state}");
+
+                if (_incrReadTargetAtom == ev.PropertyEvent.atom && (PropertyState)ev.PropertyEvent.state == PropertyState.NewValue)
                 {
-                    XGetWindowProperty(_x11.Display, _handle, _incrTargetAtom, IntPtr.Zero, new IntPtr(0x7fffffff), true, (IntPtr)Atom.AnyPropertyType,
+                    XGetWindowProperty(_x11.Display, _handle, _incrReadTargetAtom, IntPtr.Zero, new IntPtr(0x7fffffff), true, (IntPtr)Atom.AnyPropertyType,
                                 out var actualTypeAtom, out var actualFormat, out var nitems, out var bytes_after, out var prop);
 
-                    if (_incrTargetAtom == actualTypeAtom && (int)nitems > 0)
+                    // System.Diagnostics.Debug.WriteLine($" --- OnEvent 11 total: nitems:{nitems}, atom:{_incrReadTargetAtom:X}|{actualTypeAtom:X}, prop:{prop:X}");
+
+
+                    if (_incrReadTargetAtom == actualTypeAtom && (int)nitems > 0)
                     {
                         var chunkSize = (int)nitems * (actualFormat / 8);
-                        var arrayPool = System.Buffers.ArrayPool<byte>.Shared;
-                        var buffer = arrayPool.Rent(chunkSize);
+                        var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(chunkSize);
                         Marshal.Copy(prop, buffer, 0, chunkSize);
-                        _incrData.AddRange(buffer.Take(chunkSize));
+                        _incrReadData.AddRange(buffer.Take(chunkSize));
+                        // System.Diagnostics.Debug.WriteLine($" ---------- OnEvent 11 nitems:{nitems}, size:{_incrReadData.Count}");
                     }
                     else
                     {
-                        var bytes = _incrData.ToArray();
-                        var textEnc = GetStringEncoding(_incrTargetAtom);
-                        _incrData.Clear();
-                        _incrTargetAtom = IntPtr.Zero;
+                        var bytes = _incrReadData.ToArray();
+                        var textEnc = GetStringEncoding(_incrReadTargetAtom);
+                        _incrReadData.Clear();
+                        _incrReadTargetAtom = IntPtr.Zero;
 
+                        // System.Diagnostics.Debug.WriteLine($" ---------- OnEvent 12 _requestedDataTcs textEnc:{textEnc}, size:{bytes.Length}");
                         if (bytes.Length == 0)
                         {
                             _requestedDataTcs?.TrySetResult(null);
@@ -190,8 +211,33 @@ namespace Avalonia.X11
                         }
                     }
                     XFree(prop);
+                    return;
                 }
+            }
+        }
 
+        private void OnIncrWritePropertyEvent(ref XEvent ev)
+        {
+            // System.Diagnostics.Debug.WriteLine($" ---- OnWritePropertyEvent 1 window:{ev.PropertyEvent.window:X}, atom:{ev.PropertyEvent.atom:X}|{_incrWriteTargetAtom:X}, state:{ev.PropertyEvent.state}");
+
+            if (ev.type == XEventName.PropertyNotify && (PropertyState)ev.PropertyEvent.state == PropertyState.Delete && ev.PropertyEvent.atom == _incrWriteTargetAtom)
+            {
+                if (_incrWriteData?.Length > 0)
+                {
+                    var bytes = _incrWriteData.Take(MaxRequestSize).ToArray();
+                    _incrWriteData = _incrWriteData.Skip(bytes.Length).ToArray();
+                    XChangeProperty(_x11.Display, _incrWriteWindow, _incrWriteProperty, _incrWriteTargetAtom, 8, PropertyMode.Replace, bytes, bytes.Length);
+                    // System.Diagnostics.Debug.WriteLine($" ---- OnWritePropertyEvent 2 INCR target:{_incrWriteTargetAtom:X}, window:{_incrWriteWindow:X}, property:{_incrWriteProperty:X}, size:{bytes.Length}");
+                }
+                else
+                {
+                    _platform.Windows.Remove(_incrWriteWindow);
+                    XChangeProperty(_x11.Display, _incrWriteWindow, _incrWriteProperty, _incrWriteTargetAtom, 8, PropertyMode.Replace, IntPtr.Zero, 0);
+                    _incrWriteTargetAtom = IntPtr.Zero;
+                    _incrWriteData = null;
+                    _storeAtomTcs?.TrySetResult(true);
+                    // System.Diagnostics.Debug.WriteLine($" ---- WriteProperty INCR stop target:{_incrWriteTargetAtom:X}");
+                }
             }
         }
 
@@ -224,6 +270,7 @@ namespace Avalonia.X11
                         var subProp = data[c + 1];
                         var converted = WriteTargetToProperty(subTarget, window, subProp);
                         data[c + 1] = converted;
+                        // System.Diagnostics.Debug.WriteLine($" --- WriteTargetToProperty MULTIPLE subTarget:{subTarget:X}, window:{window:X}, subProp:{subProp:X}, converted:{converted:X}");
                     }
 
                     XChangeProperty(_x11.Display, window, property, _x11.Atoms.ATOM_PAIR, 32, PropertyMode.Replace,
@@ -249,7 +296,23 @@ namespace Avalonia.X11
                         return IntPtr.Zero;
                 }
 
-                XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, bytes, bytes.Length);
+                if (bytes.Length > MaxRequestSize)
+                {
+                    _incrWriteTargetAtom = target;
+                    _incrWriteWindow = window;
+                    _incrWriteProperty = property;
+                    _incrWriteData = bytes;
+                    _platform.Windows[window] = OnIncrWritePropertyEvent;
+                    XSelectInput(_x11.Display, window, new IntPtr((int)EventMask.PropertyChangeMask));
+                    var total = new IntPtr[] { (IntPtr)bytes.Length };
+                    XChangeProperty(_x11.Display, window, property, _x11.Atoms.INCR, 32, PropertyMode.Replace, total, total.Length);
+                    // System.Diagnostics.Debug.WriteLine($" ---- WriteProperty INCR start target:{target:X}, window:{window:X} | {_handle:X}, property:{property:X}, total:{bytes.Length}");
+                }
+                else
+                {
+                    XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, bytes, bytes.Length);
+                }
+
                 return property;
             }
 
