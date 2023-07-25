@@ -26,7 +26,7 @@ namespace Avalonia.X11
         private IntPtr _incrWriteWindow;
         private IntPtr _incrWriteProperty;
         private byte[] _incrWriteData;
-        private const int MaxRequestSize = 0x40000;
+        private int _chunk_size;
 
         public X11Clipboard(AvaloniaX11Platform platform)
         {
@@ -50,6 +50,13 @@ namespace Avalonia.X11
             _incrWriteWindow = IntPtr.Zero;
             _incrWriteProperty = IntPtr.Zero;
             _incrWriteData = null;
+
+            _chunk_size = (int)(XExtendedMaxRequestSize(_x11.Display) / 4);
+            if (_chunk_size == 0)
+            {
+                _chunk_size = (int)(XMaxRequestSize(_x11.Display) / 4);
+            }
+            System.Diagnostics.Debug.WriteLine($"X11Clipboard chunk_size: {_chunk_size}");
         }
 
         private bool IsStringAtom(IntPtr atom)
@@ -224,7 +231,7 @@ namespace Avalonia.X11
             {
                 if (_incrWriteData?.Length > 0)
                 {
-                    var bytes = _incrWriteData.Take(MaxRequestSize).ToArray();
+                    var bytes = _incrWriteData.Take(_chunk_size).ToArray();
                     _incrWriteData = _incrWriteData.Skip(bytes.Length).ToArray();
                     XChangeProperty(_x11.Display, _incrWriteWindow, _incrWriteProperty, _incrWriteTargetAtom, 8, PropertyMode.Replace, bytes, bytes.Length);
                     // System.Diagnostics.Debug.WriteLine($" ---- OnWritePropertyEvent 2 INCR target:{_incrWriteTargetAtom:X}, window:{_incrWriteWindow:X}, property:{_incrWriteProperty:X}, size:{bytes.Length}");
@@ -296,7 +303,7 @@ namespace Avalonia.X11
                         return IntPtr.Zero;
                 }
 
-                if (bytes.Length > MaxRequestSize)
+                if (bytes.Length > _chunk_size)
                 {
                     _incrWriteTargetAtom = target;
                     _incrWriteWindow = window;
