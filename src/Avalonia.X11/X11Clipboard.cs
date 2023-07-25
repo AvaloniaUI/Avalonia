@@ -78,16 +78,6 @@ namespace Avalonia.X11
 
         private unsafe void OnEvent(ref XEvent ev)
         {
-            if (ev.type == XEventName.SelectionClear)
-            {
-
-                if (_incrWriteTargetAtom == IntPtr.Zero)
-                {
-                    _storeAtomTcs?.TrySetResult(true);
-                }
-                return;
-            }
-
             if (ev.type == XEventName.SelectionRequest)
             {
                 var sel = ev.SelectionRequestEvent;
@@ -318,6 +308,7 @@ namespace Avalonia.X11
                 else
                 {
                     XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, bytes, bytes.Length);
+                    _storeAtomTcs?.TrySetResult(true);
                 }
 
                 return property;
@@ -380,26 +371,21 @@ namespace Avalonia.X11
             return atoms.ToArray();
         }
 
-        private Task StoreAtomsInClipboardManager(IDataObject data)
+        private void StoreAtomsInClipboardManager(IDataObject data)
         {
             if (_x11.Atoms.CLIPBOARD_MANAGER != IntPtr.Zero && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
             {
                 var clipboardManager = XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER);
                 if (clipboardManager != IntPtr.Zero)
                 {
-                    if (_storeAtomTcs == null || _storeAtomTcs.Task.IsCompleted)
-                        _storeAtomTcs = new TaskCompletionSource<bool>();
-
                     var atoms = ConvertDataObject(data);
                     XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.XA_ATOM, 32,
                         PropertyMode.Replace,
                         atoms, atoms.Length);
                     XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER, _x11.Atoms.SAVE_TARGETS,
                         _avaloniaSaveTargetsAtom, _handle, IntPtr.Zero);
-                    return _storeAtomTcs.Task;
                 }
             }
-            return Task.CompletedTask;
         }
 
         public Task SetTextAsync(string text)
@@ -417,8 +403,12 @@ namespace Avalonia.X11
         public Task SetDataObjectAsync(IDataObject data)
         {
             _storedDataObject = data;
+            if (_storeAtomTcs == null || _storeAtomTcs.Task.IsCompleted)
+                _storeAtomTcs = new TaskCompletionSource<bool>();
+
             XSetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD, _handle, IntPtr.Zero);
-            return StoreAtomsInClipboardManager(data);
+            StoreAtomsInClipboardManager(data);
+            return _storeAtomTcs.Task;
         }
 
         public async Task<string[]> GetFormatsAsync()
