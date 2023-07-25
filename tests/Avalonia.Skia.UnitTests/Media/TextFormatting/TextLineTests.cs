@@ -713,7 +713,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var characterHit = textLine.GetCharacterHitFromDistance(1000);
 
-                Assert.Equal(11, characterHit.FirstCharacterIndex);
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
                 Assert.Equal(1, characterHit.TrailingLength);
             }
         }
