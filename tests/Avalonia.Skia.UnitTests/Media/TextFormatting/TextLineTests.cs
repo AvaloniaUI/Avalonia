@@ -713,7 +713,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var characterHit = textLine.GetCharacterHitFromDistance(1000);
 
-                Assert.Equal(10, characterHit.FirstCharacterIndex);
+                Assert.Equal(11, characterHit.FirstCharacterIndex);
                 Assert.Equal(1, characterHit.TrailingLength);
             }
         }
@@ -819,6 +819,26 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(9, characterHit.FirstCharacterIndex);
 
                 Assert.Equal(0, characterHit.TrailingLength);
+            }
+        }
+
+        [Fact]
+        public void Should_GetCharacterHitFromDistance_From_Mixed_TextBuffer()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new MixedTextBufferTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 20, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(double.PositiveInfinity);
+
+                Assert.Equal(40, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
             }
         }
 
