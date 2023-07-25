@@ -59,7 +59,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_NCCALCSIZE:
                     {
-                        if (ToInt32(wParam) == 1 && !HasFullDecorations || _isClientAreaExtended)
+                        if (ToInt32(wParam) == 1 && _windowProperties.Decorations == SystemDecorations.None ||  _isClientAreaExtended)
                         {
                             return IntPtr.Zero;
                         }
