@@ -33,7 +33,7 @@ namespace Avalonia.Win32.Automation
                 return null;
 
             var p = WindowImpl.PointToClient(new PixelPoint((int)x, (int)y));
-            var found = InvokeSync(() => Peer.GetPeerFromPoint(p));
+            var found = InvokeSync(() => GetPeerFromPoint(p));
             var result = GetOrCreate(found) as IRawElementProviderFragment;
             return result;
         }
@@ -100,6 +100,16 @@ namespace Avalonia.Win32.Automation
                 Marshal.ThrowExceptionForHR(hr);
                 return result;
             }
+        }
+
+        private AutomationPeer? GetPeerFromPoint(Point p)
+        {
+            var hit = Peer.GetPeerFromPoint(p);
+
+            while (hit != Peer && hit?.GetProvider<IRootProvider>() is { } embeddedRoot)
+                hit = embeddedRoot.GetPeerFromPoint(p);
+                
+            return hit;
         }
     }
 }
