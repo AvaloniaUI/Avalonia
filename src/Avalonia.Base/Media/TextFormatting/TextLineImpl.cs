@@ -216,7 +216,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (_paragraphProperties.FlowDirection == FlowDirection.LeftToRight)
                 {
-                    currentPosition = lineLength - lastRun.Length;
+                    currentPosition = FirstTextSourceIndex + Length - lastRun.Length;
                 }
 
                 return GetRunCharacterHit(lastRun, currentPosition, distance);
