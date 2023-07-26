@@ -381,7 +381,8 @@ namespace Avalonia.X11
                     string str => str.Length,
                     _ => 0
                 };
-                return dataSize > MaxRequestSize;
+                if (dataSize > MaxRequestSize)
+                    return true;
             }
             return false;
         }
