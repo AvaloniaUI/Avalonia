@@ -29,5 +29,9 @@ namespace Avalonia.Input.Raw
         public RawInputModifiers Modifiers { get; set; }
 
         public RawKeyEventType Type { get; set; }
+
+        public PhysicalKey PhysicalKey { get; set; }
+
+        public string? KeySymbol { get; set; }
     }
 }
