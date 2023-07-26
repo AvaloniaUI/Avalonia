@@ -4,6 +4,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Avalonia.Generators</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
+    <DebugType>embedded</DebugType>
     <IsPackable>true</IsPackable>
     <IncludeSymbols>false</IncludeSymbols>
     <IsRoslynComponent>true</IsRoslynComponent>
