@@ -201,7 +201,7 @@ namespace Avalonia.X11
 
         private void OnIncrWritePropertyEvent(ref XEvent ev)
         {
-            if (ev.type == XEventName.PropertyNotify && (PropertyState)ev.PropertyEvent.state == PropertyState.Delete && ev.PropertyEvent.atom == _incrWriteTargetAtom)
+            if (ev.type == XEventName.PropertyNotify && (PropertyState)ev.PropertyEvent.state == PropertyState.Delete)
             {
                 if (_incrWriteData?.Length > 0)
                 {
@@ -277,7 +277,7 @@ namespace Avalonia.X11
                         return IntPtr.Zero;
                 }
 
-                if (bytes.Length > MaxRequestSize)
+                if (bytes.Length > MaxRequestSize && window != _handle)
                 {
                     _incrWriteTargetAtom = target;
                     _incrWriteWindow = window;
