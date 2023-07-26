@@ -72,7 +72,7 @@ namespace Avalonia.Native
             Node = node;
         }
         
-        public int IsRootProvider() => (_inner is IRootProvider).AsComBool();
+        public int IsRootProvider() => (_inner.GetProvider<IRootProvider>() is not null).AsComBool();
 
         public IAvnWindowBase? RootProvider_GetWindow()
         {
@@ -104,7 +104,7 @@ namespace Avalonia.Native
             return Wrap(result);
         }
 
-        public int IsExpandCollapseProvider() => (_inner is IExpandCollapseProvider).AsComBool();
+        public int IsExpandCollapseProvider() => (_inner.GetProvider<IExpandCollapseProvider>() is not null).AsComBool();
 
         public int ExpandCollapseProvider_GetIsExpanded() => ((IExpandCollapseProvider)_inner).ExpandCollapseState switch
         {
@@ -128,14 +128,14 @@ namespace Avalonia.Native
         public double RangeValueProvider_GetLargeChange() => ((IRangeValueProvider)_inner).LargeChange;
         public void RangeValueProvider_SetValue(double value) => ((IRangeValueProvider)_inner).SetValue(value);
 
-        public int IsSelectionItemProvider() => (_inner is ISelectionItemProvider).AsComBool();
+        public int IsSelectionItemProvider() => (_inner.GetProvider<ISelectionItemProvider>() is not null).AsComBool();
         public int SelectionItemProvider_IsSelected() => ((ISelectionItemProvider)_inner).IsSelected.AsComBool();
         
-        public int IsToggleProvider() => (_inner is IToggleProvider).AsComBool();
+        public int IsToggleProvider() => (_inner.GetProvider<IToggleProvider>() is not null).AsComBool();
         public int ToggleProvider_GetToggleState() => (int)((IToggleProvider)_inner).ToggleState;
         public void ToggleProvider_Toggle() => ((IToggleProvider)_inner).Toggle();
 
-        public int IsValueProvider() => (_inner is IValueProvider).AsComBool();
+        public int IsValueProvider() => (_inner.GetProvider<IValueProvider>() is not null).AsComBool();
         public IAvnString ValueProvider_GetValue() => ((IValueProvider)_inner).Value.ToAvnString();
         public void ValueProvider_SetValue(string value) => ((IValueProvider)_inner).SetValue(value);
 
