@@ -62,7 +62,7 @@ namespace Avalonia.Native
                 var peer = _inner;
                 var parent = peer.GetParent();
 
-                while (peer is not IRootProvider && parent is not null)
+                while (peer.GetProvider<IRootProvider>() is null && parent is not null)
                 {
                     peer = parent;
                     parent = peer.GetParent();
