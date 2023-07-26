@@ -10,7 +10,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -18,8 +17,6 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly AvaloniaObject _avaloniaObject;
         private int _floatingGridHeight;
-        private List<PropertyViewModel> _pinnedProperties;
-        private DataGridCollectionView? _pinnedPropertiesView;
         private List<PropertyViewModel> _properties;
         private DataGridCollectionView? _propertiesView;
         private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
@@ -37,7 +34,6 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _avaloniaObject = avaloniaObject;
             _floatingGridHeight = 0;
-            _pinnedProperties = new List<PropertyViewModel>();
             _properties = new List<PropertyViewModel>();
 
             TreePage = treePage;
@@ -165,12 +161,6 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get => _propertiesView;
             private set => RaiseAndSetIfChanged(ref _propertiesView, value);
-        }
-
-        public DataGridCollectionView? PinnedPropertiesView
-        {
-            get => _pinnedPropertiesView;
-            private set => RaiseAndSetIfChanged(ref _pinnedPropertiesView, value);
         }
 
         public int FloatingGridHeight
@@ -510,42 +500,6 @@ namespace Avalonia.Diagnostics.ViewModels
                 RaisePropertyChanged(nameof(CanNavigateToParentProperty));
             }
         }
-        private void OnPropertyViewModelIsPinnedChanged(object? sender, EventArgs e)
-        {
-            if (sender is PropertyViewModel propertyViewModel)
-            {
-                // CustomPropertyViewModel's IsPinned has changed, handle the change here
-                if (propertyViewModel.IsPinned)
-                {
-                    PinProperty(propertyViewModel);
-                }
-                else
-                {
-                    UnpinProperty(propertyViewModel);
-                }
-            }
-        }
-
-        private void UnpinProperty(PropertyViewModel property)
-        {
-            if (_pinnedProperties.Contains(property))
-            {
-                _pinnedProperties.Remove(property);
-                _properties.Add(property);
-                _pinnedProperties.ToArray();
-                UpdatePropertyViews(_properties.ToArray(),_pinnedProperties.ToArray());
-            }
-        }
-
-        private void PinProperty(PropertyViewModel property)
-        {
-            if (_properties.Contains(property))
-            {
-                _properties.Remove(property);
-                _pinnedProperties.Add(property);
-                UpdatePropertyViews(_properties.ToArray(), _pinnedProperties.ToArray());
-            }
-        }
 
         protected void NavigateToProperty(object o, string? entityName)
         {
@@ -578,15 +532,11 @@ namespace Avalonia.Diagnostics.ViewModels
                 .GroupBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.ToArray());
 
-            foreach (var propertyViewModelArray in _propertyIndex.Values)
-            {
-                foreach (var propertyViewModel in propertyViewModelArray)
-                {
-                    propertyViewModel.IsPinnedChanged += OnPropertyViewModelIsPinnedChanged;
-                }
-            }
-
-            UpdatePropertyViews(properties, _pinnedProperties.ToArray());
+            var view = new DataGridCollectionView(properties);
+            view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.IsPinned)));
+            view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
+            view.Filter = FilterProperty;
+            PropertiesView = view;
 
             switch (o)
             {
@@ -598,35 +548,6 @@ namespace Avalonia.Diagnostics.ViewModels
                     inpc2.PropertyChanged += ControlPropertyChanged;
                     break;
             }
-        }
-
-        private void UpdatePropertyViews(PropertyViewModel?[] unpinnedProperties, PropertyViewModel?[] pinnedProperties)
-        {
-            var view = new DataGridCollectionView(unpinnedProperties);
-            view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
-            view.Filter = FilterProperty;
-            PropertiesView = view;
-
-            var pinnedView = new DataGridCollectionView(pinnedProperties);
-            pinnedView.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
-            pinnedView.Filter = FilterProperty;
-            PinnedPropertiesView = pinnedView;
-            switch (pinnedProperties.Length)
-            {
-                case 0:
-                    //hide grid
-                    FloatingGridHeight = 0;
-                    break;
-                case 1:
-                    //enough height to show one entry and headers
-                    FloatingGridHeight = 80;
-                    break;
-                default:
-                    //enough height to show two entries and scroll the rest
-                    FloatingGridHeight = 120;
-                    break;
-            }
-
         }
         
         internal void SelectProperty(AvaloniaProperty property)

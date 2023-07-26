@@ -12,6 +12,7 @@
   <UserControl.Resources>
     <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
     <conv:GetTypeNameConverter x:Key="GetTypeName"/>
+    <conv:PinnedToBoolConverter x:Key="PinnedToBool"/>
   </UserControl.Resources>
 
   <Grid>
@@ -49,52 +50,11 @@
                               UseWholeWordFilter="{Binding UseWholeWordFilter}"
                               UseRegexFilter="{Binding UseRegexFilter}"/>
       
-      <Grid RowDefinitions="Auto,*" Grid.Row="1">
-        <DataGrid
-                x:Name="FloatingDataGrid"
-                ItemsSource="{Binding PinnedPropertiesView}"
-                Grid.Row="2"
-                BorderThickness="0"
-                RowBackground="Transparent"
-                CanUserResizeColumns="true"
-                DoubleTapped="PropertiesGrid_OnDoubleTapped"
-                Height="{Binding FloatingGridHeight}">
-          <DataGrid.Columns>
-            <DataGridCheckBoxColumn Header="Pin" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
-            <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
-            <DataGridTemplateColumn Header="Value" Width="200">
-              <DataTemplate>
-                <local:PropertyValueEditorView />
-              </DataTemplate>
-            </DataGridTemplateColumn>
-            <DataGridTextColumn Header="Type" Binding="{Binding Type}"
-                                IsReadOnly="True"
-                                IsVisible="{Binding !$parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
-                                x:DataType="vm:PropertyViewModel"
-                                Width="200"
-                              />
-            <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
-                                IsReadOnly="True"
-                                IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
-                                x:DataType="vm:PropertyViewModel"
-                                Width="100"
-                              />
-            <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
-                                IsReadOnly="True"
-                                IsVisible="{Binding $parent[UserControl;2].((vm:MainViewModel)DataContext).ShowDetailsPropertyType}"
-                                x:DataType="vm:PropertyViewModel"
-                                Width="300"
-                              />
-            <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
-          </DataGrid.Columns>
-        </DataGrid>
-      </Grid>
-      
       <Grid RowDefinitions="Auto,*" Grid.Row="2">
         <DataGrid
                         x:Name="DataGrid"
                         ItemsSource="{Binding PropertiesView}"
-                        Grid.Row="2"
+                        Grid.Row="1"
                         BorderThickness="0"
                         RowBackground="Transparent"
                         SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
@@ -103,7 +63,7 @@
                         Height="1080"
                         VerticalAlignment="Stretch">
           <DataGrid.Columns>
-            <DataGridCheckBoxColumn Header="Pin" Binding="{Binding IsPinned}" x:DataType="vm:PropertyViewModel"/>
+            <DataGridCheckBoxColumn Header="Pin" Binding="{Binding IsPinned, Converter={StaticResource PinnedToBool}}" x:DataType="vm:PropertyViewModel"/>
             <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" Width="100"/>
             <DataGridTemplateColumn Header="Value" Width="200">
               <DataTemplate>
@@ -139,7 +99,7 @@
         </DataGrid>
       </Grid>
     </Grid>
-
+   
     <GridSplitter Grid.Column="1"/>
 
     <Grid Grid.Column="2" RowDefinitions="*,Auto,*"

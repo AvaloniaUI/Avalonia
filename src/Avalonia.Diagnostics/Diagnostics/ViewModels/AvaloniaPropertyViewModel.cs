@@ -7,11 +7,16 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly AvaloniaObject _target;
         private Type _assignedType;
-        private bool _isPinned;
         private object? _value;
         private string _priority;
         private string _group;
         private readonly Type _propertyType;
+        private enum PinnedStatus
+        {
+            Pinned,
+            Unpinned
+        }
+        private PinnedStatus _isPinned;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -20,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _target = o;
             Property = property;
-            _isPinned = false;
+            _isPinned = PinnedStatus.Unpinned;
 
             Name = property.IsAttached ?
                 $"[{property.OwnerType.Name}.{property.Name}]" :
@@ -35,15 +40,17 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Name { get; }
         public override bool? IsAttached => Property.IsAttached;
         public override string Priority => _priority;
-        public override bool IsPinned
+        public override string IsPinned
         {
-            get => _isPinned;
+            get => _isPinned.ToString();
             set
             {
                 try
                 {
-                    _isPinned = value;
-                    OnIsPinnedChanged();
+                    if (Enum.TryParse(value, out PinnedStatus pinState))
+                    {
+                        _isPinned = pinState;
+                    }
                 }
                 catch { }
             }
@@ -70,13 +77,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public override Type PropertyType => _propertyType;
         public override bool IsReadonly => Property.IsReadOnly;
 
-        // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
-        public override event EventHandler IsPinnedChanged;
-
-        protected virtual void OnIsPinnedChanged()
-        {
-            IsPinnedChanged?.Invoke(this, EventArgs.Empty);
-        }
         public override void Update()
         {
             if (Property.IsDirect)

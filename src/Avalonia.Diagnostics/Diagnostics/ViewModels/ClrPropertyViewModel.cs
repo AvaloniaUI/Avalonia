@@ -7,9 +7,14 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly object _target;
         private Type _assignedType;
-        private bool _isPinned;
         private object? _value;
         private readonly Type _propertyType;
+        private enum PinnedStatus
+        {
+            Pinned,
+            Unpinned
+        }
+        private PinnedStatus _isPinned;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -18,7 +23,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _target = o;
             Property = property;
-            _isPinned = false;
+            _isPinned = PinnedStatus.Unpinned;
 
             if (property.DeclaringType == null || !property.DeclaringType.IsInterface)
             {
@@ -45,27 +50,21 @@ namespace Avalonia.Diagnostics.ViewModels
         public override bool IsReadonly => !Property.CanWrite;
 
         //determines if property is pinned to top in dev tools
-        public override bool IsPinned
+        public override string IsPinned
         {
-            get => _isPinned;
+            get => _isPinned.ToString();
             set
             {
                 try
                 {
-                    _isPinned = value;
-                    OnIsPinnedChanged();
+                    if (Enum.TryParse(value, out PinnedStatus pinState))
+                    {
+                        _isPinned = pinState;
+                    }
                 }
                 catch { }
             }
         }
-
-        public override event EventHandler IsPinnedChanged;
-
-        protected virtual void OnIsPinnedChanged()
-        {
-            IsPinnedChanged?.Invoke(this, EventArgs.Empty);
-        }
-
         public override object? Value
         {
             get => _value;
