@@ -227,6 +227,9 @@ namespace Avalonia.X11
                 var atoms = ConvertDataObject(_storedDataObject);
                 XChangeProperty(_x11.Display, window, property,
                     _x11.Atoms.XA_ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
+
+                if (UseIncrProtocol(_storedDataObject))
+                    _storeAtomTcs?.TrySetResult(true);
                 return property;
             }
 
