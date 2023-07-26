@@ -1387,7 +1387,7 @@ namespace Avalonia.Controls
         /// Walks through the items enumeration. Performance is not going to be
         /// perfect with the current implementation.
         /// </summary>
-        private async void RefreshView()
+        private void RefreshView()
         {
             // If we have a running filter, trigger a request first
             if (_filterInAction)
@@ -1417,54 +1417,48 @@ namespace Avalonia.Controls
             var textFilter = TextFilter;
             var itemFilter = ItemFilter;
             var _newViewItems = new Collection<object>();
-
-            bool success = false;
             
-            await Task.Run(() =>
+            // if the mode is objectFiltering and itemFilter is null, we throw an exception
+            if (objectFiltering && itemFilter is null)
             {
-                foreach (object item in items)
+                // indicate that filtering is not ongoing anymore
+                _filterInAction = false;
+                _cancelRequested = false;
+                
+                throw new Exception(
+                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+            }
+
+            foreach (object item in items)
+            {
+                // Exit the fitter when requested if cancellation is requested
+                if (_cancelRequested)
                 {
-                    // Exit the fitter when requested if cancellation is requested
-                    if (_cancelRequested)
+                    return;
+                }
+
+                bool inResults = !(stringFiltering || objectFiltering);
+
+                if (!inResults)
+                {
+                    if (stringFiltering)
                     {
-                        return;
+                        inResults = textFilter!(text, FormatValue(item));
                     }
-
-                    bool inResults = !(stringFiltering || objectFiltering);
-
-                    if (!inResults)
+                    else if (objectFiltering)
                     {
-                        if (stringFiltering)
-                        {
-                            inResults = textFilter!(text, FormatValue(item));
-                        }
-                        else
-                        {
-                            if (itemFilter is null)
-                            {
-                                throw new Exception(
-                                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
-                            }
-                            inResults = itemFilter(text, item);
-                        }
-                    }
-
-                    if (inResults)
-                    {
-                        _newViewItems.Add(item);
+                        inResults = itemFilter!(text, item);
                     }
                 }
-                
-                // set success to true if we reached the end of the loop
-                success = true;
-            });
 
-            // add new view items if filtering was successful
-            if (success && _view != null)
-            {
-                _view.Clear();
-                _view.AddRange(_newViewItems);
+                if (inResults)
+                {
+                    _newViewItems.Add(item);
+                }
             }
+
+            _view?.Clear();
+            _view?.AddRange(_newViewItems);
 
             // Clear the evaluator to discard a reference to the last item
             if (_valueBindingEvaluator != null)
