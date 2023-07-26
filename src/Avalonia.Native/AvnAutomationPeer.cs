@@ -74,10 +74,11 @@ namespace Avalonia.Native
         
         public int IsRootProvider() => (_inner is IRootProvider).AsComBool();
 
-        public IAvnWindowBase RootProvider_GetWindow()
+        public IAvnWindowBase? RootProvider_GetWindow()
         {
-            var window = (WindowBase)((ControlAutomationPeer)_inner).Owner;
-            return ((WindowBaseImpl)window.PlatformImpl!).Native;
+            if (((IRootProvider)_inner).PlatformImpl is WindowBaseImpl impl)
+                return impl.Native;
+            return null;
         }
         
         public IAvnAutomationPeer? RootProvider_GetFocus() => Wrap(((IRootProvider)_inner).GetFocus());
