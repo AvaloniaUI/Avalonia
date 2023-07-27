@@ -168,9 +168,9 @@ namespace Avalonia.X11
                     if (_incrReadTargetAtom == actualTypeAtom && (int)nitems > 0)
                     {
                         var chunkSize = (int)nitems * (actualFormat / 8);
-                        var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(chunkSize);
+                        var buffer = new byte[chunkSize];
                         Marshal.Copy(prop, buffer, 0, chunkSize);
-                        _incrReadData.AddRange(buffer.Take(chunkSize));
+                        _incrReadData.AddRange(buffer);
                     }
                     else
                     {
