@@ -291,8 +291,8 @@ private:
 
 - (id)accessibilityWindow
 {
-    id topLevel = [self accessibilityTopLevelUIElement];
-    return [topLevel isKindOfClass:[NSWindow class]] ? topLevel : nil;
+    auto rootPeer = _peer->GetVisualRoot();
+    return [AvnAccessibilityElement acquire:rootPeer];
 }
 
 - (BOOL)isAccessibilityExpanded
