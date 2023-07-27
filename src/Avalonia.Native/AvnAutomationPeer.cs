@@ -72,10 +72,11 @@ namespace Avalonia.Native
             }
         }
 
-        private IRootProvider RootProvider => GetProvider<IRootProvider>();
+        private IEmbeddedRootProvider EmbeddedRootProvider => GetProvider<IEmbeddedRootProvider>();
         private IExpandCollapseProvider ExpandCollapseProvider => GetProvider<IExpandCollapseProvider>();
         private IInvokeProvider InvokeProvider => GetProvider<IInvokeProvider>();
         private IRangeValueProvider RangeValueProvider => GetProvider<IRangeValueProvider>();
+        private IRootProvider RootProvider => GetProvider<IRootProvider>();
         private ISelectionItemProvider SelectionItemProvider => GetProvider<ISelectionItemProvider>();
         private IToggleProvider ToggleProvider => GetProvider<IToggleProvider>();
         private IValueProvider ValueProvider => GetProvider<IValueProvider>();
@@ -103,6 +104,32 @@ namespace Avalonia.Native
                     break;
             }
             
+            return Wrap(result);
+        }
+
+
+        public int IsEmbeddedRootProvider() => IsProvider<IEmbeddedRootProvider>();
+
+        public IAvnAutomationPeer? EmbeddedRootProvider_GetFocus() => Wrap(EmbeddedRootProvider.GetFocus());
+
+        public IAvnAutomationPeer? EmbeddedRootProvider_GetPeerFromPoint(AvnPoint point)
+        {
+            var result = EmbeddedRootProvider.GetPeerFromPoint(point.ToAvaloniaPoint());
+
+            if (result is null)
+                return null;
+
+            // The OSX accessibility APIs expect non-ignored elements when hit-testing.
+            while (!result.IsControlElement())
+            {
+                var parent = result.GetParent();
+
+                if (parent is not null)
+                    result = parent;
+                else
+                    break;
+            }
+
             return Wrap(result);
         }
 
