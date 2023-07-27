@@ -4,6 +4,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Avalonia.Analyzers</PackageId>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <DebugType>embedded</DebugType>
     <IsPackable>true</IsPackable>
     <IncludeSymbols>false</IncludeSymbols>
     <IsRoslynComponent>true</IsRoslynComponent>
