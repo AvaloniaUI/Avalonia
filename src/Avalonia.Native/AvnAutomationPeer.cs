@@ -39,6 +39,7 @@ namespace Avalonia.Native
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString Name => _inner.GetName().ToAvnString();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
+        public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
 
         public int HasKeyboardFocus() => _inner.HasKeyboardFocus().AsComBool();
         public int IsContentElement() => _inner.IsContentElement().AsComBool();
