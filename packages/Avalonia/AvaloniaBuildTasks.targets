@@ -144,4 +144,30 @@
     <UpToDateCheckInput Include="@(AvaloniaResource)" />
     <UpToDateCheckInput Include="@(AvaloniaXaml)" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <AvaloniaFilePreviewDependsOn Condition="'$(SkipBuild)'!='True'">Build</AvaloniaFilePreviewDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="AvaloniaFilePreview" DependsOnTargets="$(AvaloniaFilePreviewDependsOn)">
+    <PropertyGroup>
+      <APreviewerUrl>http://127.0.0.1:6001</APreviewerUrl>
+      <APreviewExecutable>$(OutputPath)/$(AssemblyName).dll</APreviewExecutable>
+      <APreviewFile Condition="$(APreviewFile) == ''">MainWindow.axaml</APreviewFile>
+      <APreviewAssembly Condition="$(APreviewAssembly) == ''">$(APreviewExecutable)</APreviewAssembly>
+      <APreviewerDepsJsonPath>$([System.IO.Path]::ChangeExtension('$(APreviewExecutable)', '.deps.json'))</APreviewerDepsJsonPath>
+      <APreviewerRuntimeConfigPath>$([System.IO.Path]::ChangeExtension('$(APreviewExecutable)', '.runtimeconfig.json'))</APreviewerRuntimeConfigPath>
+      <APreviewTransportUrl>$([System.IO.Path]::GetFullPath('$(APreviewFile)'))</APreviewTransportUrl>
+    </PropertyGroup>
+    
+    
+    <Message Importance="high" Text="Launching previewer for"/>
+    <Message Importance="high" Text="File (APreviewFile): $(APreviewTransportUrl)"/>
+    <Message Importance="high" Text="Containing assembly (APreviewAssembly): $(APreviewDefiningAssembly)"/>
+    <Message Importance="high" Text="Executable: $(APreviewExecutable)"/>
+    <Message Importance="high" Text="Url (APreviewerUrl): $(APreviewerUrl)"/>
+    
+    <Exec Command="dotnet exec --runtimeconfig &quot;$(APreviewerRuntimeConfigPath)&quot; --depsfile &quot;$(APreviewerDepsJsonPath)&quot; &quot;$(AvaloniaPreviewerNetCoreToolPath)&quot; --method html --html-url $(APreviewerUrl) --transport $(APreviewTransportUrl)  &quot;$(APreviewExecutable)&quot;"/>
+     
+  </Target>
 </Project>
