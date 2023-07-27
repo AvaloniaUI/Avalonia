@@ -54,25 +54,11 @@ namespace Avalonia.Win32.Automation
             _runtimeId = new int[] { 3, GetHashCode() };
             Peer = peer;
             s_nodes.Add(peer, this);
-            peer.ChildrenChanged += Peer_ChildrenChanged;
-            peer.PropertyChanged += Peer_PropertyChanged;
-        }
+            peer.ChildrenChanged += OnPeerChildrenChanged;
+            peer.PropertyChanged += OnPeerPropertyChanged;
 
-        private void Peer_ChildrenChanged(object? sender, EventArgs e)
-        {
-            ChildrenChanged();
-        }
-
-        private void Peer_PropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
-        {
-            if (s_propertyMap.TryGetValue(e.Property, out var id))
-            {
-                UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
-                    this,
-                    (int)id,
-                    e.OldValue as IConvertible,
-                    e.NewValue as IConvertible);
-            }
+            if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
+                embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
         }
 
         public AutomationPeer Peer { get; protected set; }
@@ -94,15 +80,6 @@ namespace Avalonia.Win32.Automation
 
         public virtual IRawElementProviderSimple? HostRawElementProvider => null;
         public ProviderOptions ProviderOptions => ProviderOptions.ServerSideProvider;
-
-        public void ChildrenChanged()
-        {
-            UiaCoreProviderApi.UiaRaiseStructureChangedEvent(
-                this,
-                StructureChangeType.ChildrenInvalidated,
-                null,
-                0);
-        }
 
         [return: MarshalAs(UnmanagedType.IUnknown)]
         public virtual object? GetPatternProvider(int patternId)
@@ -250,6 +227,21 @@ namespace Avalonia.Win32.Automation
             throw new NotSupportedException();
         }
 
+        protected void RaiseChildrenChanged()
+        {
+            UiaCoreProviderApi.UiaRaiseStructureChangedEvent(
+                this,
+                StructureChangeType.ChildrenInvalidated,
+                null,
+                0);
+        }
+
+        protected void RaiseFocusChanged(AutomationNode? focused)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(
+                focused,
+                (int)UiaEventId.AutomationFocusChanged);
+        }
 
         private AutomationNode? GetRoot()
         {
@@ -265,6 +257,29 @@ namespace Avalonia.Win32.Automation
             }
 
             return peer is object ? GetOrCreate(peer) : null;
+        }
+
+        private void OnPeerChildrenChanged(object? sender, EventArgs e)
+        {
+            RaiseChildrenChanged();
+        }
+
+        private void OnPeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
+        {
+            if (s_propertyMap.TryGetValue(e.Property, out var id))
+            {
+                UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
+                    this,
+                    (int)id,
+                    e.OldValue as IConvertible,
+                    e.NewValue as IConvertible);
+            }
+        }
+
+        private void OnEmbeddedRootFocusChanged(object? sender, EventArgs e)
+        {
+            if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
+                RaiseFocusChanged(GetOrCreate(embeddedRoot.GetFocus()));
         }
 
         private static AutomationNode Create(AutomationPeer peer)

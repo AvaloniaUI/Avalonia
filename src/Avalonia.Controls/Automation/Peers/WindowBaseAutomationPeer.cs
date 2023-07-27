@@ -39,7 +39,7 @@ namespace Avalonia.Automation.Peers
 
             var peer = GetOrCreate(hit);
 
-            while (peer != this && peer.GetProvider<IRootProvider>() is { } embedded)
+            while (peer != this && peer.GetProvider<IEmbeddedRootProvider>() is { } embedded)
             {
                 var embeddedHit = embedded.GetPeerFromPoint(p);
                 if (embeddedHit is null)
