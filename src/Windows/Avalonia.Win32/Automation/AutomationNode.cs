@@ -75,7 +75,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual IRawElementProviderFragmentRoot? FragmentRoot
         {
-            get => InvokeSync(() => GetRoot()) as IRawElementProviderFragmentRoot;
+            get => InvokeSync(() => GetRoot());
         }
 
         public virtual IRawElementProviderSimple? HostRawElementProvider => null;
@@ -243,20 +243,10 @@ namespace Avalonia.Win32.Automation
                 (int)UiaEventId.AutomationFocusChanged);
         }
 
-        private AutomationNode? GetRoot()
+        private RootAutomationNode? GetRoot()
         {
             Dispatcher.UIThread.VerifyAccess();
-
-            var peer = Peer;
-            var parent = peer.GetParent();
-
-            while (peer.GetProvider<AAP.IRootProvider>() is null && parent is object)
-            {
-                peer = parent;
-                parent = peer.GetParent();
-            }
-
-            return peer is object ? GetOrCreate(peer) : null;
+            return GetOrCreate(Peer.GetVisualRoot()) as RootAutomationNode;
         }
 
         private void OnPeerChildrenChanged(object? sender, EventArgs e)

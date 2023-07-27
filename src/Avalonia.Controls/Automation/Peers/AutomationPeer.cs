@@ -115,8 +115,13 @@ namespace Avalonia.Automation.Peers
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
         /// </summary>
-        /// <returns></returns>
         public AutomationPeer? GetParent() => GetParentCore();
+
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> that is the root of this <see cref="AutomationPeer"/>'s
+        /// visual tree.
+        /// </summary>
+        public AutomationPeer? GetVisualRoot() => GetVisualRootCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element that is associated with this automation
@@ -246,6 +251,22 @@ namespace Avalonia.Automation.Peers
         {
             return GetAutomationControlTypeCore();
         }
+
+        protected virtual AutomationPeer? GetVisualRootCore()
+        {
+            var parent = GetParent();
+
+            while (parent != null)
+            {
+                var nextParent = parent.GetParent();
+                if (nextParent == null)
+                    return parent;
+                parent = nextParent;
+            }
+
+            return null;
+        }
+
 
         protected virtual bool IsContentElementOverrideCore()
         {
