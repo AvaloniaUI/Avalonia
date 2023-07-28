@@ -184,7 +184,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Logical_Children_Dont_Duplicated()
+        public void Logical_Children_Should_Not_Be_Duplicated()
         {
             using var app = Start();
             var (target, transition) = CreateTarget("");
@@ -194,18 +194,21 @@ namespace Avalonia.Controls.UnitTests
             target.Content = childControl;
 
             Assert.Equal(1, target.LogicalChildren.Count);
+            Assert.Equal(target.LogicalChildren[0], childControl);
         }
 
         [Fact]
-        public void First_Presenter_Register_TCC_As_Host()
+        public void First_Presenter_Should_Register_TCC_As_His_Host()
         {
             using var app = Start();
             var (target, transition) = CreateTarget("");
+            target.PageTransition = null;
 
             var childControl = new Control();
             target.Presenter!.Content = childControl;
 
-            Assert.Contains(childControl, target.LogicalChildren);
+            Assert.Equal(1, target.LogicalChildren.Count);
+            Assert.Equal(target.LogicalChildren[0], childControl);
         }
 
         private static IDisposable Start()

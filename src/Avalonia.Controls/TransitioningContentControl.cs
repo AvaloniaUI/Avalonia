@@ -36,9 +36,6 @@ public class TransitioningContentControl : ContentControl
         set => SetValue(PageTransitionProperty, value);
     }
 
-    /// <inheritdoc/>
-    protected override bool BypassLogicalChildrenManagement => true;
-
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
@@ -101,12 +98,13 @@ public class TransitioningContentControl : ContentControl
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-
         if (change.Property == ContentProperty)
         {
             UpdateContent(true);
+            return;
         }
+
+        base.OnPropertyChanged(change);
     }
 
     private void UpdateContent(bool withTransition)
