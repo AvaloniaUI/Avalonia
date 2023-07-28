@@ -22,8 +22,8 @@ namespace Avalonia.Native
         {
             _inner = inner;
             _inner.ChildrenChanged += (_, _) => Node?.ChildrenChanged();
-            if (inner is WindowBaseAutomationPeer window)
-                window.FocusChanged += (_, _) => Node?.FocusChanged(); 
+            if (inner is IRootProvider root)
+                root.FocusChanged += (_, _) => Node?.FocusChanged(); 
         }
 
         ~AvnAutomationPeer() => Node?.Dispose();
