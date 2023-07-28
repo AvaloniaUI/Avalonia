@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Automation.Provider;
 
 namespace Avalonia.Automation.Peers
 {
@@ -254,17 +255,16 @@ namespace Avalonia.Automation.Peers
 
         protected virtual AutomationPeer? GetVisualRootCore()
         {
-            var parent = GetParent();
+            var peer = this;
+            var parent = peer.GetParent();
 
-            while (parent != null)
+            while (peer.GetProvider<IRootProvider>() is null && parent is not null)
             {
-                var nextParent = parent.GetParent();
-                if (nextParent == null)
-                    return parent;
-                parent = nextParent;
+                peer = parent;
+                parent = peer.GetParent();
             }
 
-            return null;
+            return peer;
         }
 
 
