@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
+using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
@@ -447,10 +448,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly AvaloniaInputConnection _inputConnection;
 
+        public event EventHandler<int> SelectionChanged;
+
         public EditableWrapper(AvaloniaInputConnection inputConnection)
         {
             _inputConnection = inputConnection;
         }
+
+        public TextSelection CurrentSelection => new TextSelection(Selection.GetSelectionStart(this), Selection.GetSelectionEnd(this));
+        public TextSelection CurrentComposition => new TextSelection(BaseInputConnection.GetComposingSpanStart(this), BaseInputConnection.GetComposingSpanEnd(this));
 
         public bool IgnoreChange { get; set; }
 
@@ -458,8 +464,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if (!IgnoreChange && start != end)
             {
-                var text = tb.SubSequence(0, tb.Length());
-
                 SelectSurroundingTextForDeletion(start, end);
             }
 
@@ -470,8 +474,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if (!IgnoreChange && start != end)
             {
-                var text = tb.SubSequence(tbstart, tbend);
-
                 SelectSurroundingTextForDeletion(start, end);
             }
 
@@ -490,8 +492,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IAndroidInputMethod _inputMethod;
         private readonly EditableWrapper _editable;
         private bool _commitInProgress;
-        private (int Start, int End)? _composingRegion;
-        private TextSelection _selection;
+        private int _batchLevel = 0;
 
         public AvaloniaInputConnection(TopLevelImpl toplevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
@@ -510,63 +511,87 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public TopLevelImpl Toplevel => _toplevel;
 
+        public bool IsInBatchEdit => _batchLevel > 0;
+
         public override bool SetComposingRegion(int start, int end)
         {
-            _composingRegion = new(start, end);
-
             return base.SetComposingRegion(start, end);
         }
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
         {
-            if(_composingRegion != null)
+            BeginBatchEdit();
+            _editable.IgnoreChange = true;
+
+            try
             {
-                // Select the composing region.
-                InputMethod.Client.Selection = new TextSelection(_composingRegion.Value.Start, _composingRegion.Value.End);
+                if (_editable.CurrentComposition.Start > -1)
+                {
+                    // Select the composing region.
+                    InputMethod.Client.Selection = new TextSelection(_editable.CurrentComposition.Start, _editable.CurrentComposition.End);
+                }
+                var compositionText = text.SubSequence(0, text.Length());
+
+                if (_inputMethod.IsActive && !_commitInProgress)
+                {
+                    if (string.IsNullOrEmpty(compositionText))
+                        _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+
+                    else
+                        _toplevel.TextInput(compositionText);
+                }
+                base.SetComposingText(text, newCursorPosition);
             }
-            var compositionText = text.SubSequence(0, text.Length());
-
-            if (_inputMethod.IsActive && !_commitInProgress)
+            finally
             {
-                if (string.IsNullOrEmpty(compositionText))
-                    _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                _editable.IgnoreChange = false;
 
-                else
-                    _toplevel.TextInput(compositionText);
+                EndBatchEdit();
             }
 
             return true;
         }
 
+        public override bool BeginBatchEdit()
+        {
+            _batchLevel = Interlocked.Increment(ref _batchLevel);
+            return base.BeginBatchEdit();
+        }
+
+        public override bool EndBatchEdit()
+        {
+            _batchLevel = Interlocked.Decrement(ref _batchLevel);
+
+            _inputMethod.OnBatchEditedEnded();
+            return base.EndBatchEdit();
+        }
+
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
+            BeginBatchEdit();
             _commitInProgress = true;
+
+            var composingRegion = _editable.CurrentComposition;
 
             var ret = base.CommitText(text, newCursorPosition);
 
-            var committedText = text.SubSequence(0, text.Length());
-
-            if (_inputMethod.IsActive && !string.IsNullOrEmpty(committedText))
+            if(composingRegion.Start != -1)
             {
-                if(_composingRegion != null)
-                {
-                    _inputMethod.Client.Selection = new TextSelection(_composingRegion.Value.Start, _composingRegion.Value.End);
-                }
-
-               _toplevel.TextInput(committedText);
-
-                _composingRegion = null;
+                InputMethod.Client.Selection = composingRegion;
             }
 
+            var committedText = text.SubSequence(0, text.Length());
+
+            if (_inputMethod.IsActive)
+                if (string.IsNullOrEmpty(committedText))
+                    _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+                else
+                    _toplevel.TextInput(committedText);
+
             _commitInProgress = false;
+            EndBatchEdit();
 
-            return ret;
-        }
-
-        public override bool FinishComposingText()
-        {
-            _composingRegion = null;
-            return base.FinishComposingText();
+            return true;
         }
 
         public override bool DeleteSurroundingText(int beforeLength, int afterLength)
@@ -575,11 +600,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 EditableWrapper.IgnoreChange = true;
             }
-            var result = base.DeleteSurroundingText(beforeLength, afterLength);
 
             if (InputMethod.IsActive)
             {
-                var selection = _selection;
+                var selection = _editable.CurrentSelection;
 
                 InputMethod.Client.Selection = new TextSelection(selection.Start - beforeLength, selection.End + afterLength);
 
@@ -588,13 +612,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 EditableWrapper.IgnoreChange = true;
             }
 
-            return result;
-        }
-
-        public override bool SetSelection(int start, int end)
-        {
-            _selection = new TextSelection(start, end);
-            return base.SetSelection(start, end);
+            return true;
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
@@ -630,7 +648,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return null;
             }
 
-            var selection = _selection;
+            var selection = _editable.CurrentSelection;
 
             ExtractedText extract = new ExtractedText
             {

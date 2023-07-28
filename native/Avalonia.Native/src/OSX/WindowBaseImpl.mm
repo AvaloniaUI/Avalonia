@@ -151,6 +151,14 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
+            auto frame = [Window frame];
+
+            AvnPoint point;
+            point.X = frame.origin.x;
+            point.Y = frame.origin.y + frame.size.height;
+
+            lastPositionSet = ConvertPointY(point);
+            hasPosition = true;
             [Window orderOut:Window];
         }
 

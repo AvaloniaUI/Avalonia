@@ -34,6 +34,9 @@ public partial class Dispatcher : IDispatcher
         _controlledImpl = _impl as IControlledDispatcherImpl;
         _pendingInputImpl = _impl as IDispatcherImplWithPendingInput;
         _backgroundProcessingImpl = _impl as IDispatcherImplWithExplicitBackgroundProcessing;
+        _maximumInputStarvationTime = _backgroundProcessingImpl == null ?
+            MaximumInputStarvationTimeInFallbackMode :
+            MaximumInputStarvationTimeInExplicitProcessingExplicitMode;
         if (_backgroundProcessingImpl != null)
             _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
     }

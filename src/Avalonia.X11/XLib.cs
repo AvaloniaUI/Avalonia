@@ -468,7 +468,7 @@ namespace Avalonia.X11
         public static extern unsafe int XLookupString(ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
         
         [DllImport (libX11)]
-        public static extern unsafe int Xutf8LookupString(IntPtr xic, ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out UIntPtr status);
+        public static extern unsafe int Xutf8LookupString(IntPtr xic, ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
         
         [DllImport (libX11)]
         public static extern unsafe int Xutf8LookupString(IntPtr xic, XEvent* xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
