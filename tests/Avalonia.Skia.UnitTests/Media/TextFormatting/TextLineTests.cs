@@ -822,6 +822,26 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetCharacterHitFromDistance_From_Mixed_TextBuffer()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new MixedTextBufferTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 20, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(double.PositiveInfinity);
+
+                Assert.Equal(40, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+            }
+        }
+
         private class MixedTextBufferTextSource : ITextSource
         {
             public TextRun? GetTextRun(int textSourceIndex)

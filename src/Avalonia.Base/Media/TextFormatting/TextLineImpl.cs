@@ -204,7 +204,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (_paragraphProperties.FlowDirection == FlowDirection.RightToLeft)
                 {
-                    currentPosition = Length - firstRun.Length;
+                    currentPosition += lineLength - firstRun.Length;
                 }
 
                 return GetRunCharacterHit(firstRun, currentPosition, 0);
@@ -216,7 +216,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (_paragraphProperties.FlowDirection == FlowDirection.LeftToRight)
                 {
-                    currentPosition = lineLength - lastRun.Length;
+                    currentPosition += lineLength - lastRun.Length;
                 }
 
                 return GetRunCharacterHit(lastRun, currentPosition, distance);
