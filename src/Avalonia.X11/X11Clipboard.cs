@@ -300,7 +300,10 @@ namespace Avalonia.X11
                         bytes = textEnc.GetBytes(s);
                     }
                     else
+                    {
+                        _storeAtomTcs?.TrySetResult(true);
                         return IntPtr.Zero;
+                    }
                 }
 
                 if (bytes.Length > MaxRequestSize && window != _handle)
