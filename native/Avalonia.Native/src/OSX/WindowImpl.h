@@ -39,7 +39,7 @@ BEGIN_INTERFACE_MAP()
 
     ComPtr<IAvnWindowEvents> WindowEvents;
 
-    WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl);
+    WindowImpl(IAvnWindowEvents* events);
 
     virtual HRESULT Show (bool activate, bool isDialog) override;
 

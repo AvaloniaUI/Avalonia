@@ -7,7 +7,6 @@ using Avalonia.Utilities;
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
@@ -499,7 +498,7 @@ namespace Avalonia.Controls
         {
             if (destinationType == null)
             {
-                throw new ArgumentNullException("destinationType");
+                throw new ArgumentNullException(nameof(destinationType));
             }
             if (destinationType != typeof(string))
             {

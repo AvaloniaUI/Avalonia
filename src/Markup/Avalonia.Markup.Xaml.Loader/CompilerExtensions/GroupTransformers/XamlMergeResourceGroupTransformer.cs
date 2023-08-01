@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
-using XamlX.IL.Emitters;
-using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
@@ -24,7 +22,6 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
 
         var mergeResourceIncludeType = context.GetAvaloniaTypes().MergeResourceInclude;
         var mergeSourceNodes = new List<XamlPropertyAssignmentNode>();
-        var mergedResourceWasAdded = false;
         foreach (var manipulationNode in resourceDictionaryManipulation.Children.ToArray())
         {
             void ProcessXamlPropertyAssignmentNode(XamlManipulationGroupNode parent, XamlPropertyAssignmentNode assignmentNode)
@@ -39,7 +36,6 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                         {
                             parent.Children.Remove(assignmentNode);
                             mergeSourceNodes.Add(sourceAssignmentNode);
-                            mergedResourceWasAdded = true;
                         }
                         else
                         {
@@ -85,25 +81,29 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                 return context.ParseError(
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
-            
+
             var targetDocument = context.Documents.FirstOrDefault(d =>
-                    string.Equals(d.Uri, originalAssetPath, StringComparison.InvariantCultureIgnoreCase))
-                ?.XamlDocument.Root as XamlValueWithManipulationNode;
-            if (targetDocument is null)
+                string.Equals(d.Uri, originalAssetPath, StringComparison.InvariantCultureIgnoreCase));
+            if (targetDocument?.XamlDocument.Root is not XamlValueWithManipulationNode targetDocumentRoot)
             {
                 return context.ParseError(
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
 
-            var singleRootObject = ((XamlManipulationGroupNode)targetDocument.Manipulation)
+            var singleRootObject = ((XamlManipulationGroupNode)targetDocumentRoot.Manipulation)
                 .Children.OfType<XamlObjectInitializationNode>().Single();
             if (singleRootObject.Type != resourceDictionaryType)
             {
                 return context.ParseError(
-                    $"MergeResourceInclude can only include another ResourceDictionary", propertyNode, node);
+                    "MergeResourceInclude can only include another ResourceDictionary", propertyNode, node);
             }
             
             manipulationGroup.Add(singleRootObject.Manipulation);
+
+            if (targetDocument.Usage == XamlDocumentUsage.Unknown)
+            {
+                targetDocument.Usage = XamlDocumentUsage.Merged;
+            }
         }
         
         // Order of resources is defined by ResourceDictionary.TryGetResource.

@@ -359,7 +359,7 @@ namespace Avalonia
 
         internal Vector(Vector2 v) : this(v.X, v.Y)
         {
-            
+
         }
 
         /// <summary>
@@ -379,21 +379,27 @@ namespace Avalonia
         /// </summary>
         public static Vector Max(Vector left, Vector right) =>
             new(Math.Max(left.X, right.X), Math.Max(left.Y, right.Y));
-        
+
         /// <summary>
         /// Returns a vector whose elements are the minimum of each of the pairs of elements in two specified vectors
         /// </summary>
         public static Vector Min(Vector left, Vector right) =>
             new(Math.Min(left.X, right.X), Math.Min(left.Y, right.Y));
-        
+
         /// <summary>
         /// Computes the Euclidean distance between the two given points.
         /// </summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The Euclidean distance.</returns>
         public static double Distance(Vector value1, Vector value2) => Math.Sqrt(DistanceSquared(value1, value2));
-        
+
         /// <summary>
         /// Returns the Euclidean distance squared between two specified points
         /// </summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The Euclidean distance squared.</returns>
         public static double DistanceSquared(Vector value1, Vector value2)
         {
             var difference = value1 - value2;

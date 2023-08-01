@@ -1,27 +1,48 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
-using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-    internal class TextBoxTextInputMethodClient : ITextInputMethodClient
+    internal class TextBoxTextInputMethodClient : TextInputMethodClient
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
-        private ITextEditable? _textEditable;
 
-        public Visual TextViewVisual => _presenter!;
+        public override Visual TextViewVisual => _presenter!;
 
-        public bool SupportsPreedit => true;
+        public override string SurroundingText
+        {
+            get
+            {
+                if (_presenter is null || _parent is null)
+                {
+                    return "";
+                }
+                
+                if (_parent.CaretIndex != _presenter.CaretIndex)
+                {
+                    _presenter.SetCurrentValue(TextPresenter.CaretIndexProperty, _parent.CaretIndex);
+                }
 
-        public bool SupportsSurroundingText => true;
+                if (_parent.Text != _presenter.Text)
+                {
+                    _presenter.SetCurrentValue(TextPresenter.TextProperty, _parent.Text);
+                }
+                
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
 
-        public Rect CursorRectangle
+                var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+                var lineText = GetTextLineText(textLine);
+
+                return lineText;
+            }
+        }
+
+        public override Rect CursorRectangle
         {
             get
             {
@@ -37,13 +58,11 @@ namespace Avalonia.Controls
                     return default;
                 }
 
-                var rect = _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
-
-                return rect;
+                return _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
             }
         }
 
-        public TextInputMethodSurroundingText SurroundingText
+        public override TextSelection Selection
         {
             get
             {
@@ -52,82 +71,88 @@ namespace Avalonia.Controls
                     return default;
                 }
 
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
 
                 var textLine = _presenter.TextLayout.TextLines[lineIndex];
 
                 var lineStart = textLine.FirstTextSourceIndex;
 
-                var lineText = GetTextLineText(textLine);
+                var selectionStart = Math.Max(0, _parent.SelectionStart - lineStart);
 
-                var anchorOffset = Math.Max(0, _parent.SelectionStart - lineStart);
+                var selectionEnd = Math.Max(0, _parent.SelectionEnd - lineStart);
 
-                var cursorOffset = Math.Max(0, _presenter.SelectionEnd - lineStart);
-
-                return new TextInputMethodSurroundingText
-                {
-                    Text = lineText ?? "",
-                    AnchorOffset = anchorOffset,
-                    CursorOffset = cursorOffset
-                };
+                return new TextSelection(selectionStart, selectionEnd);
             }
-        }
-
-        public ITextEditable? TextEditable
-        {
-            get => _textEditable; set
+            set
             {
-                if (_textEditable != null)
+                if (_parent is null || _presenter is null)
                 {
-                    _textEditable.TextChanged -= TextEditable_TextChanged;
-                    _textEditable.SelectionChanged -= TextEditable_SelectionChanged;
-                    _textEditable.CompositionChanged -= TextEditable_CompositionChanged;
+                    return;
                 }
 
-                _textEditable = value;
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
 
-                if (_textEditable != null)
-                {
-                    _textEditable.TextChanged += TextEditable_TextChanged;
-                    _textEditable.SelectionChanged += TextEditable_SelectionChanged;
-                    _textEditable.CompositionChanged += TextEditable_CompositionChanged;
+                var textLine = _presenter.TextLayout.TextLines[lineIndex];
 
-                    if (_presenter != null)
-                    {
-                        _textEditable.Text = _presenter.Text;
-                        _textEditable.SelectionStart = _presenter.SelectionStart;
-                        _textEditable.SelectionEnd = _presenter.SelectionEnd;
-                    }
-                }
+                var lineStart = textLine.FirstTextSourceIndex;
+
+                var selectionStart = lineStart + value.Start;
+                var selectionEnd = lineStart + value.End;
+
+                _parent.SelectionStart = selectionStart;
+                _parent.SelectionEnd = selectionEnd;
+
+                RaiseSelectionChanged();
             }
         }
 
-        private void TextEditable_CompositionChanged(object? sender, EventArgs e)
-        {
-            if (_presenter != null && _textEditable != null)
-            {
-                _presenter.SetCurrentValue(TextPresenter.CompositionRegionProperty, new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd));
-            }
-        }
+        public override bool SupportsPreedit => true;
 
-        private void TextEditable_SelectionChanged(object? sender, EventArgs e)
-        {
-            if (_parent != null && _textEditable != null)
-            {
-                _parent.SelectionStart = _textEditable.SelectionStart;
-                _parent.SelectionEnd = _textEditable.SelectionEnd;
-            }
-        }
+        public override bool SupportsSurroundingText => true;
 
-        private void TextEditable_TextChanged(object? sender, EventArgs e)
+        public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
             if (_parent != null)
             {
-                if (_parent.Text != _textEditable?.Text)
-                {
-                    _parent.Text = _textEditable?.Text;
-                }
+                _parent.PropertyChanged -= OnParentPropertyChanged;
             }
+
+            _parent = parent;
+
+            if (_parent != null)
+            {
+                _parent.PropertyChanged += OnParentPropertyChanged;
+            }
+
+            var oldPresenter = _presenter;
+
+            if (oldPresenter != null)
+            {
+                oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
+
+                oldPresenter.CaretBoundsChanged -= (s,e) => RaiseCursorRectangleChanged();
+            }
+
+            _presenter = presenter;
+
+            if (_presenter != null)
+            {
+                _presenter.CaretBoundsChanged += (s, e) => RaiseCursorRectangleChanged();
+            }
+
+            RaiseTextViewVisualChanged();
+
+            RaiseCursorRectangleChanged();
+        }
+
+        public override void SetPreeditText(string? preeditText)
+        {
+            if (_presenter == null || _parent == null)
+            {
+                return;
+            }
+
+            _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
         }
 
         private static string GetTextLineText(TextLine textLine)
@@ -153,166 +178,17 @@ namespace Avalonia.Controls
             return lineText;
         }
 
-        public event EventHandler? TextViewVisualChanged;
-
-        public event EventHandler? CursorRectangleChanged;
-
-        public event EventHandler? SurroundingTextChanged;
-
-        private string? _presenterText;
-        private int _compositionStart;
-
-        public void SetPreeditText(string? preeditText)
-        {
-            if (_presenter == null || _parent == null)
-            {
-                return;
-            }
-
-            if (_presenterText is null)
-            {
-                _presenterText = _parent.Text ?? "";
-                _compositionStart = _parent.CaretIndex;
-            }
-
-            var text = GetText(preeditText);
-
-            _presenter.SetCurrentValue(TextPresenter.TextProperty, text);
-
-            _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
-
-            _presenter.UpdateCaret(new CharacterHit(_compositionStart + (preeditText != null ? preeditText.Length : 0)), false);
-
-            if (string.IsNullOrEmpty(preeditText))
-            {
-                _presenterText = null;
-            }
-        }
-
-        private string? GetText(string? preeditText)
-        {
-            if (string.IsNullOrEmpty(preeditText))
-            {
-                return _presenterText;
-            }
-
-            if (string.IsNullOrEmpty(_presenterText))
-            {
-                return preeditText;
-            }
-
-            var sb = StringBuilderCache.Acquire(_presenterText.Length + preeditText.Length);
-
-            sb.Append(_presenterText);
-            sb.Insert(_compositionStart, preeditText);
-
-            return StringBuilderCache.GetStringAndRelease(sb);
-        }
-
-        public void SetComposingRegion(TextRange? region)
-        {
-            if (_presenter == null)
-            {
-                return;
-            }
-
-            _presenter.SetCurrentValue(TextPresenter.CompositionRegionProperty, region);
-        }
-
-        public void SelectInSurroundingText(int start, int end)
-        {
-            if (_parent is null || _presenter is null)
-            {
-                return;
-            }
-
-            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
-
-            var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-            var lineStart = textLine.FirstTextSourceIndex;
-
-            var selectionStart = lineStart + start;
-            var selectionEnd = lineStart + end;
-
-            _parent.SelectionStart = selectionStart;
-            _parent.SelectionEnd = selectionEnd;
-        }
-
-        public void SetPresenter(TextPresenter? presenter, TextBox? parent)
-        {
-            if (_parent != null)
-            {
-                _parent.PropertyChanged -= OnParentPropertyChanged;
-            }
-
-            _parent = parent;
-
-            if (_parent != null)
-            {
-                _parent.PropertyChanged += OnParentPropertyChanged;
-            }
-
-            if (_presenter != null)
-            {
-                _presenter.ClearValue(TextPresenter.PreeditTextProperty);
-
-                _presenter.ClearValue(TextPresenter.CompositionRegionProperty);
-
-                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
-            }
-
-            _presenter = presenter;
-
-            if (_presenter != null)
-            {
-                _presenter.CaretBoundsChanged += OnCaretBoundsChanged;
-            }
-
-            TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
-
-            OnCaretBoundsChanged(this, EventArgs.Empty);
-        }
-
         private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
-            {
-                if (SupportsSurroundingText)
-                {
-                    SurroundingTextChanged?.Invoke(this, e);
-                }
-                if (_textEditable != null)
-                {
-                    var value = (int)(e.NewValue ?? 0);
-                    if (e.Property == TextBox.SelectionStartProperty)
-                    {
-                        _textEditable.SelectionStart = value;
-                    }
-
-                    if (e.Property == TextBox.SelectionEndProperty)
-                    {
-                        _textEditable.SelectionEnd = value;
-                    }
-                }
-            }
-
             if (e.Property == TextBox.TextProperty)
             {
-                if (_textEditable != null)
-                {
-                    _textEditable.Text = (string?)e.NewValue;
-                }
+                RaiseSurroundingTextChanged();
             }
-        }
 
-        private void OnCaretBoundsChanged(object? sender, EventArgs e)
-        {
-            Dispatcher.UIThread.Post(() =>
+            if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
             {
-                CursorRectangleChanged?.Invoke(this, e);
-
-            }, DispatcherPriority.Input);
+                RaiseSelectionChanged();
+            }
         }
     }
 }

@@ -76,7 +76,10 @@ namespace Avalonia.LinuxFramebuffer
         internal static LinuxFramebufferLifetime Initialize(AppBuilder builder, IOutputBackend outputBackend, IInputBackend? inputBackend)
         {
             var platform = new LinuxFramebufferPlatform(outputBackend);
-            builder.UseSkia().UseWindowingSubsystem(platform.Initialize, "fbdev");
+            builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseSkia()
+                .UseWindowingSubsystem(platform.Initialize, "fbdev");
             return new LinuxFramebufferLifetime(platform._fb, inputBackend);
         }
     }

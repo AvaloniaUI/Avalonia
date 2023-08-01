@@ -10,8 +10,6 @@ using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.VisualTree;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition;
 
 /// <summary>
@@ -144,93 +142,6 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         QueueUpdate();
     }
 
-    private static void SyncChildren(Visual v)
-    {
-        //TODO: Optimize by moving that logic to Visual itself
-        if(v.CompositionVisual == null)
-            return;
-        var compositionChildren = v.CompositionVisual.Children;
-        var visualChildren = (AvaloniaList<Visual>)v.GetVisualChildren();
-        
-        PooledList<(Visual visual, int index)>? sortedChildren = null;
-        if (v.HasNonUniformZIndexChildren && visualChildren.Count > 1)
-        {
-            sortedChildren = new (visualChildren.Count);
-            for (var c = 0; c < visualChildren.Count; c++) 
-                sortedChildren.Add((visualChildren[c], c));
-            
-            // Regular Array.Sort is unstable, we need to provide indices as well to avoid reshuffling elements.
-            sortedChildren.Sort(static (lhs, rhs) =>
-            {
-                var result = lhs.visual.ZIndex.CompareTo(rhs.visual.ZIndex);
-                return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
-            });
-        }
-        
-        var childVisual = v.ChildCompositionVisual;
-        
-        // Check if the current visual somehow got migrated to another compositor
-        if (childVisual != null && childVisual.Compositor != v.CompositionVisual.Compositor)
-            childVisual = null;
-        
-        var expectedCount = visualChildren.Count;
-        if (childVisual != null)
-            expectedCount++;
-        
-        if (compositionChildren.Count == expectedCount)
-        {
-            bool mismatch = false;
-            if (sortedChildren != null)
-                for (var c = 0; c < visualChildren.Count; c++)
-                {
-                    if (!ReferenceEquals(compositionChildren[c], sortedChildren[c].visual.CompositionVisual))
-                    {
-                        mismatch = true;
-                        break;
-                    }
-                }
-            else
-                for (var c = 0; c < visualChildren.Count; c++)
-                    if (!ReferenceEquals(compositionChildren[c], visualChildren[c].CompositionVisual))
-                    {
-                        mismatch = true;
-                        break;
-                    }
-
-            if (childVisual != null &&
-                !ReferenceEquals(compositionChildren[compositionChildren.Count - 1], childVisual))
-                mismatch = true;
-
-            if (!mismatch)
-            {
-                sortedChildren?.Dispose();
-                return;
-            }
-        }
-        
-        compositionChildren.Clear();
-        if (sortedChildren != null)
-        {
-            foreach (var ch in sortedChildren)
-            {
-                var compositionChild = ch.visual.CompositionVisual;
-                if (compositionChild != null)
-                    compositionChildren.Add(compositionChild);
-            }
-            sortedChildren.Dispose();
-        }
-        else
-            foreach (var ch in visualChildren)
-            {
-                var compositionChild = ch.CompositionVisual;
-                if (compositionChild != null)
-                    compositionChildren.Add(compositionChild);
-            }
-
-        if (childVisual != null)
-            compositionChildren.Add(childVisual);
-    }
-
     private void UpdateCore()
     {
         _queuedUpdate = false;
@@ -240,36 +151,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             if(comp == null)
                 continue;
             
-            // TODO: Optimize all of that by moving to the Visual itself, so we won't have to recalculate every time
-            comp.Offset = new (visual.Bounds.Left, visual.Bounds.Top, 0);
-            comp.Size = new (visual.Bounds.Width, visual.Bounds.Height);
-            comp.Visible = visual.IsVisible;
-            comp.Opacity = (float)visual.Opacity;
-            comp.ClipToBounds = visual.ClipToBounds;
-            comp.Clip = visual.Clip?.PlatformImpl;
-
-
-            if (!Equals(comp.OpacityMask, visual.OpacityMask))
-                comp.OpacityMask = visual.OpacityMask?.ToImmutable();
-
-            if (!comp.Effect.EffectEquals(visual.Effect))
-                comp.Effect = visual.Effect?.ToImmutable();
-
-            comp.RenderOptions = visual.RenderOptions;
-
-            var renderTransform = Matrix.Identity;
-
-            if (visual.HasMirrorTransform) 
-                renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
-
-            if (visual.RenderTransform != null)
-            {
-                var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
-                var offset = Matrix.CreateTranslation(origin);
-                renderTransform *= (-offset) * visual.RenderTransform.Value * (offset);
-            }
-
-            comp.TransformMatrix = renderTransform;
+            visual.SynchronizeCompositionProperties();
 
             try
             {
@@ -281,11 +163,11 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 _recorder.Reset();
             }
             
-            SyncChildren(visual);
+            visual.SynchronizeCompositionChildVisuals();
         }
         foreach(var v in _recalculateChildren)
             if (!_dirty.Contains(v))
-                SyncChildren(v);
+                v.SynchronizeCompositionChildVisuals();
         _dirty.Clear();
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
