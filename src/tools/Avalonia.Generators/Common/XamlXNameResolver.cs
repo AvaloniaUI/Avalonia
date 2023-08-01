@@ -38,6 +38,7 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
         {
             if (child is XamlAstXamlPropertyValueNode propertyValueNode &&
                 propertyValueNode.Property is XamlAstNamePropertyReference namedProperty &&
+                !IsAttachedProperty(namedProperty) &&
                 namedProperty.Name == "Name" &&
                 propertyValueNode.Values.Count > 0 &&
                 propertyValueNode.Values[0] is XamlAstTextNode text)
@@ -88,5 +89,10 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
             "notpublic" => "internal",
             _ => _defaultFieldModifier
         };
+    }
+
+    private static bool IsAttachedProperty(XamlAstNamePropertyReference namedProperty)
+    {
+        return !namedProperty.DeclaringType.Equals(namedProperty.TargetType);
     }
 }

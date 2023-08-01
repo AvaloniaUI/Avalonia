@@ -133,13 +133,20 @@ namespace Avalonia.X11
         {
             if (ImeBuffer == IntPtr.Zero)
                 ImeBuffer = Marshal.AllocHGlobal(ImeBufferSize);
-            
-            var len = Xutf8LookupString(_xic, ref ev, ImeBuffer.ToPointer(), ImeBufferSize, 
-                out _, out var istatus);
-            var status = (XLookupStatus)istatus;
+
+            IntPtr istatus;
+            int len;
+            if(_xic != IntPtr.Zero)
+                len = Xutf8LookupString(_xic, ref ev, ImeBuffer.ToPointer(),
+                    ImeBufferSize, out _, out istatus);
+            else
+                len = XLookupString(ref ev, ImeBuffer.ToPointer(), ImeBufferSize,
+                    out _, out istatus);
 
             if (len == 0)
                 return null;
+
+            var status = (XLookupStatus)istatus;
 
             string text;
             if (status == XLookupStatus.XBufferOverflow)
