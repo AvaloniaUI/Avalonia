@@ -8,8 +8,9 @@
 					taskmanage="true"
 					nodisplay="false"
 					launch_mode="single"
-          api-version="10">
-    <label>ControlCatalog.Tizen</label>
+          api-version="10"
+          hw-acceleration="on">
+    <label>Avalonia</label>
     <icon>ControlCatalog.Avalonia.png</icon>
     <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
   </ui-application>
@@ -21,4 +22,6 @@
     <privilege>http://tizen.org/privilege/internet</privilege>
     <privilege>http://tizen.org/privilege/network.get</privilege>
   </privileges>
+  <feature>http://tizen.org/feature/opengles.surfaceless_context</feature>
+  <feature>http://tizen.org/feature/opengles.version.2_0</feature>
 </manifest>

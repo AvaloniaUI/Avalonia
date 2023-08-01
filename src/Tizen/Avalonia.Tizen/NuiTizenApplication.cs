@@ -47,8 +47,9 @@ public class NuiTizenApplication<TApp> : NUIApplication
         _lifetime.View.WidthResizePolicy = ResizePolicyType.FillToParent;
 
         Window.Instance.GetDefaultLayer().Add(_lifetime.View);
-        Window.Instance.RenderingBehavior = RenderingBehaviorType.Continuously;
         Window.Instance.KeyEvent += (s, e) => _lifetime?.View?.KeyboardHandler.Handle(e);
+        Window.Instance.Activate();
+        Window.Instance.Show();
 
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "App builder");
         var builder = AppBuilder.Configure<TApp>().UseTizen();

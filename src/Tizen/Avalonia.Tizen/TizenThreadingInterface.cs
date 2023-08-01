@@ -12,8 +12,8 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
             interval = TimeSpan.FromMilliseconds(10);
 
         var stopped = false;
-        System.Threading.Timer? timer = null;
-        timer = new System.Threading.Timer(_ =>
+        Timer? timer = null;
+        timer = new Timer(_ =>
         {
             if (stopped)
                 return;
@@ -42,11 +42,14 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
 
     private void EnsureInvokeOnMainThread(Action action)
     {
-        MainloopContext.Post(_ => action(), null);
+        if (SynchronizationContext.Current == MainloopContext)
+            action();
+        else
+            MainloopContext.Post(_ => action(), null);
     }
 
     public void Signal(DispatcherPriority prio) =>
-        EnsureInvokeOnMainThread(() => Signaled?.Invoke(null));
+        EnsureInvokeOnMainThread(() => Signaled?.Invoke(prio));
 
     public bool CurrentThreadIsLoopThread => true;
     public event Action<DispatcherPriority?> Signaled;
