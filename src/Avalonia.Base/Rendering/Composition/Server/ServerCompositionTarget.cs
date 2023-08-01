@@ -9,8 +9,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
-// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
-
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -135,7 +133,18 @@ namespace Avalonia.Rendering.Composition.Server
                 _redrawRequested = true;
             }
 
-            _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            try
+            {
+                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                return;
+            }
+            catch (RenderTargetCorruptedException)
+            {
+                return;
+            }
 
             if ((_dirtyRect.Width == 0 && _dirtyRect.Height == 0) && !_redrawRequested)
                 return;

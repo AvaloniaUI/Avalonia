@@ -138,6 +138,7 @@ namespace Avalonia.DesignerSupport.Remote
                 CommandLineArgs args, object obj)
             {
                 var builder = (AppBuilder)obj;
+                builder = builder.UseStandardRuntimePlatformSubsystem();
                 if (args.Method == Methods.AvaloniaRemote)
                     builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
                 if (args.Method == Methods.Html)

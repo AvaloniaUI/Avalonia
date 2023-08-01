@@ -20,7 +20,7 @@ namespace Avalonia.Benchmarks.Styling
             var services = new TestServices(
                 assetLoader: new StandardAssetLoader(),
                 globalClock: new MockGlobalClock(),
-                platform: new AppBuilder().RuntimePlatform,
+                platform: new StandardRuntimePlatform(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
                 theme: () => CreateTheme(),
                 windowingPlatform: new MockWindowingPlatform());

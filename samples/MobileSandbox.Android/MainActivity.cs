@@ -1,5 +1,8 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content.PM;
+using Android.OS;
+using Avalonia;
 using Avalonia.Android;
 
 namespace MobileSandbox.Android

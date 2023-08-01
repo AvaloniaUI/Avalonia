@@ -5,15 +5,12 @@
 
 #include <OpenGL/glext.h>
 #include <OpenGL/gl3.h>
+#include <queue>
 
-@interface IOSurfaceHolder : NSObject
-@end
-
-@implementation IOSurfaceHolder
+@implementation IOSurfaceHolder : NSObject
 {
     @public IOSurfaceRef surface;
     @public AvnPixelSize size;
-    @public bool hasContent;
     @public float scale;
     ComPtr<IAvnGlContext> _context;
     GLuint _framebuffer, _texture, _renderbuffer;
@@ -42,7 +39,6 @@
     self->scale = scale;
     self->size = size;
     self->_context = context;
-    self->hasContent = false;
     return self;
 }
 
@@ -76,7 +72,7 @@
         }
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_EXT, _texture, 0);
     }
-    
+
     if(_renderbuffer == 0)
     {
         glGenRenderbuffers(1, &_renderbuffer);
@@ -84,48 +80,72 @@
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.Width, size.Height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderbuffer);
     }
-    
+
     return S_OK;
 }
 
 -(void) finishDraw
 {
-    ComPtr<IUnknown> release;
-    _context->MakeCurrent(release.getPPV());
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    if(_framebuffer != 0) {
+        glDeleteFramebuffers(1, &_framebuffer);
+        _framebuffer = 0;
+    }
+    if(_texture != 0) {
+        glDeleteTextures(1, &_texture);
+        _texture = 0;
+    }
+    if(_renderbuffer != 0) {
+        glDeleteRenderbuffers(1, &_renderbuffer);
+        _renderbuffer = 0;
+    }
     glFlush();
-    self->hasContent = true;
 }
 
 -(void) dealloc
 {
-    
-    if(_framebuffer != 0)
-    {
-        ComPtr<IUnknown> release;
-        _context->MakeCurrent(release.getPPV());
-        glDeleteFramebuffers(1, &_framebuffer);
-        if(_texture != 0)
-            glDeleteTextures(1, &_texture);
-        if(_renderbuffer != 0)
-            glDeleteRenderbuffers(1, &_renderbuffer);
-    }
-
     if(surface != nullptr)
     {
         CFRelease(surface);
+        surface = nil;
     }
 }
 @end
 
+
 static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* target);
+static IAvnSoftwareRenderTarget* CreateSoftwareRenderTarget(IOSurfaceRenderTarget* target);
+
+static bool SizeEquals(AvnPixelSize& left, AvnPixelSize& right)
+{
+    return left.Width == right.Width && right.Height == left.Height;
+}
+
+class ConsumeSurfacesCallback : public ComSingleObject<IAvnActionCallback, &IID_IAvnActionCallback>
+{
+    IOSurfaceRenderTarget* _target;
+public:
+    FORWARD_IUNKNOWN()
+    ConsumeSurfacesCallback(IOSurfaceRenderTarget* target)
+    {
+        _target = target;
+    }
+
+    void Run() override {
+        [_target consumeSurfaces];
+    }
+};
 
 @implementation IOSurfaceRenderTarget
 {
     CALayer* _layer;
-    @public IOSurfaceHolder* surface;
     @public NSObject* lock;
     ComPtr<IAvnGlContext> _glContext;
+    bool _consumeSurfacesScheduled;
+    std::queue<ObjCWrapper<IOSurfaceHolder>> _surfaces;
+    IOSurfaceHolder* _activeSurface;
+    AvnPixelSize _size;
+    float _scale;
 }
 
 - (IOSurfaceRenderTarget*) initWithOpenGlContext: (IAvnGlContext*) context;
@@ -133,14 +153,10 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
     self = [super init];
     _glContext = context;
     lock = [NSObject new];
-    surface  = nil;
+    _layer = [CALayer new];
     [self resize:{1,1} withScale: 1];
     
     return self;
-}
-
-- (AvnPixelSize) pixelSize {
-    return {1, 1};
 }
 
 - (CALayer *)layer {
@@ -155,57 +171,110 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
         size.Width = 1;
 
     @synchronized (lock) {
-        if(surface == nil
-           || surface->size.Width != size.Width
-           || surface->size.Height != size.Height
-           || surface->scale != scale)
-        {
-            surface = [[IOSurfaceHolder alloc] initWithSize:size withScale:scale withOpenGlContext:_glContext.getRaw()];
-            
-            [self updateLayer];
-        }
+        _size = size;
+        _scale = scale;
     }
 }
 
-- (void)updateLayer {
-    if ([NSThread isMainThread])
+- (void)setSurfaceInUiThreadContext: (IOSurfaceHolder*) surface
+{
+    [CATransaction begin];
+    if(surface == _activeSurface)
+        [_layer setContents: nil];
+    _activeSurface = surface;
+    [_layer setContentsScale: _activeSurface->scale];
+    [_layer setContents: (__bridge IOSurface*) _activeSurface->surface];
+    [CATransaction commit];
+}
+
+- (void)consumeSurfaces {
+    @synchronized (lock) {
+        _consumeSurfacesScheduled = false;
+
+        while(_surfaces.size() > 1)
+            _surfaces.pop();
+
+        if(_surfaces.size() == 0)
+            return;
+
+        auto targetSurface = _surfaces.front();
+        _surfaces.pop();
+
+        [self setSurfaceInUiThreadContext: targetSurface];
+    }
+    // This can trigger event processing on the main thread
+    // which might need to lock the renderer
+    // which can cause a deadlock. So flush call is outside of the lock
+    [CATransaction flush];
+
+}
+
+- (IOSurfaceHolder*) getNextSurfaceInSafeContext
+{
+    IOSurfaceHolder* targetSurface = nil;
+    if([NSThread isMainThread])
     {
-        @synchronized (lock) {
-            if(_layer == nil)
-                return;
-            if(!surface->hasContent)
-                return;
-            [CATransaction begin];
-            [_layer setContents: nil];
-            if(surface != nil)
+        // Drain the surface queue and try to find a surface usable for rendering
+        while(_surfaces.size() > 0)
+        {
+            auto front = _surfaces.front();
+            _surfaces.pop();
+            if(targetSurface == nil && SizeEquals(front.Value->size, _size))
             {
-                [_layer setContentsScale: surface->scale];
-                [_layer setContents: (__bridge IOSurface*) surface->surface];
+                targetSurface = front;
             }
-            [CATransaction commit];
         }
-        // This can trigger event processing on the main thread
-        // which might need to lock the renderer
-        // which can cause a deadlock. So flush call is outside of the lock
-        [CATransaction flush];
+        if(targetSurface == nil && _activeSurface != nil && SizeEquals(_activeSurface->size, _size))
+            targetSurface = _activeSurface;
     }
     else
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self updateLayer];
-        });
+    {
+        // Try to reuse an outdated surface that is still not picked up by the UI thread
+        while(_surfaces.size() > 1)
+        {
+            auto front = _surfaces.front();
+            _surfaces.pop();
+
+            // Simply discard the surface on size mismatch
+            if(SizeEquals(front.Value->size, _size))
+                targetSurface = front;
+        }
+    }
+
+    if(targetSurface == nil)
+        targetSurface = [[IOSurfaceHolder alloc] initWithSize: _size withScale: _scale withOpenGlContext: _glContext];
+    return targetSurface;
 }
 
-- (void) setNewLayer:(CALayer *)layer {
-    _layer = layer;
-    [self updateLayer];
+- (void) presentSurfaceInSafeContext: (IOSurfaceHolder*) surface
+{
+    if([NSThread isMainThread])
+        [self setSurfaceInUiThreadContext: surface];
+    else
+    {
+        _surfaces.push(surface);
+        if(_consumeSurfacesScheduled)
+            return;
+        _consumeSurfacesScheduled = true;
+        __block auto strongSelf = self;
+        ComPtr<ConsumeSurfacesCallback> cb(new ConsumeSurfacesCallback(self), true);
+        PostDispatcherCallback(cb);
+    }
+}
+
+- (void) presentSurface: (IOSurfaceHolder*) surface
+{
+    @synchronized(lock)
+    {
+        [self presentSurfaceInSafeContext: surface];
+    }
 }
 
 - (HRESULT)setSwFrame:(AvnFramebuffer *)fb {
     @synchronized (lock) {
         if(fb->PixelFormat == AvnPixelFormat::kAvnRgb565)
             return E_INVALIDARG;
-        if(surface == nil)
-            return E_FAIL;
+        auto surface = [self getNextSurfaceInSafeContext];
         IOSurfaceRef surf = surface->surface;
         if(IOSurfaceLock(surf, 0, nil))
             return E_FAIL;
@@ -221,8 +290,7 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
             memcpy(pSurface + y*sstride, pFb + y*fstride, wbytes);
         }
         IOSurfaceUnlock(surf, 0, nil);
-        surface->hasContent = true;
-        [self updateLayer];
+        [self presentSurfaceInSafeContext: surface];
         return S_OK;
     }
 }
@@ -230,6 +298,11 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
 -(IAvnGlSurfaceRenderTarget*) createSurfaceRenderTarget
 {
     return CreateGlRenderTarget(self);
+}
+
+-(IAvnSoftwareRenderTarget*) createSoftwareRenderTarget
+{
+    return CreateSoftwareRenderTarget(self);
 }
 
 @end
@@ -241,12 +314,12 @@ class AvnGlRenderingSession : public ComSingleObject<IAvnGlSurfaceRenderingSessi
     IOSurfaceHolder* _surface;
 public:
     FORWARD_IUNKNOWN()
-    AvnGlRenderingSession(IOSurfaceRenderTarget* target, ComPtr<IUnknown> releaseContext)
+    AvnGlRenderingSession(IOSurfaceRenderTarget* target, IOSurfaceHolder* surface, ComPtr<IUnknown> releaseContext)
     {
         _target = target;
         // This happens in a synchronized block set up by AvnRenderTarget, so we take the current surface for this
         // particular render session
-        _surface = _target->surface;
+        _surface = surface;
         _releaseContext = releaseContext;
     }
     
@@ -272,8 +345,9 @@ public:
     
     virtual ~AvnGlRenderingSession()
     {
+        START_ARP_CALL;
         [_surface finishDraw];
-        [_target updateLayer];
+        [_target presentSurface: _surface];
         _releaseContext = nil;
     }
 };
@@ -290,17 +364,15 @@ public:
     
     virtual HRESULT BeginDrawing(IAvnGlSurfaceRenderingSession** ret)  override
     {
-        START_COM_CALL;
-        
+        START_COM_ARP_CALL;
         ComPtr<IUnknown> releaseContext;
         @synchronized (_target->lock) {
-            if(_target->surface == nil)
-                return E_FAIL;
+            auto surface = [_target getNextSurfaceInSafeContext];
             _target->_glContext->MakeCurrent(releaseContext.getPPV());
-            HRESULT res = [_target->surface prepareForGlRender];
+            HRESULT res = [surface prepareForGlRender];
             if(res)
                 return res;
-            *ret = new AvnGlRenderingSession(_target, releaseContext);
+            *ret = new AvnGlRenderingSession(_target, surface, releaseContext);
             return S_OK;
         }
     }
@@ -310,4 +382,27 @@ public:
 static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* target)
 {
     return new AvnGlRenderTarget(target);
-}
+};
+
+
+class AvnSoftwareRenderTarget : public ComSingleObject<IAvnSoftwareRenderTarget, &IID_IAvnSoftwareRenderTarget>
+{
+    IOSurfaceRenderTarget* _target;
+public:
+    FORWARD_IUNKNOWN()
+
+    AvnSoftwareRenderTarget(IOSurfaceRenderTarget *target) {
+        _target = target;
+    }
+
+    HRESULT SetFrame(AvnFramebuffer *fb) override {
+        START_COM_ARP_CALL;
+        [_target setSwFrame: fb];
+        return 0;
+    }
+};
+
+static IAvnSoftwareRenderTarget* CreateSoftwareRenderTarget(IOSurfaceRenderTarget* target)
+{
+    return new AvnSoftwareRenderTarget(target);
+};

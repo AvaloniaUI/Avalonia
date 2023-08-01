@@ -31,7 +31,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>A <see cref="StreamGeometry"/>.</returns>
-        public static new StreamGeometry Parse(string s)
+        public new static StreamGeometry Parse(string s)
         {
             var streamGeometry = new StreamGeometry();
 
@@ -62,7 +62,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        protected override IGeometryImpl? CreateDefiningGeometry()
+        private protected override IGeometryImpl? CreateDefiningGeometry()
         {
             if (_impl == null)
             {

@@ -51,7 +51,7 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
                         throw new ArgumentException("Key already exists in dictionary");
                 }
 
-                if (arr[c].Key == null)
+                if (arr[c].Key == null && free == -1)
                     free = c;
             }
 
@@ -337,11 +337,15 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
             }
             else if (_type == Type.Array)
             {
-                var next = _index + 1;
-                if (_arr!.Length - 1 < next || _arr[next].Key == null)
-                    return false;
-                _index = next;
-                return true;
+                for (var next = _index + 1; next < _arr!.Length; ++next)
+                {
+                    if (_arr[next].Key != null)
+                    {
+                        _index = next;
+                        return true;
+                    }
+                }
+                return false;
             }
             else if (_type == Type.Dictionary)
                 return _inner.MoveNext();

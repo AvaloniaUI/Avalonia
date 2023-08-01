@@ -53,12 +53,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 //no-op
             }
 
-            public ILockedFramebuffer Lock()
-            {
-                return this;
-            }
-
             public void Deallocate() => Marshal.FreeHGlobal(Address);
+            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(() => this);
         }
 
         

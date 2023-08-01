@@ -424,12 +424,12 @@ namespace Avalonia.Media
         /// </returns>
         public CharacterHit GetPreviousCaretCharacterHit(CharacterHit characterHit)
         {
+            var previousCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
+
             if (characterHit.TrailingLength != 0)
             {
-                return new CharacterHit(characterHit.FirstCharacterIndex);
+                return previousCharacterHit;
             }
-
-            var previousCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
 
             return new CharacterHit(previousCharacterHit.FirstCharacterIndex);
         }

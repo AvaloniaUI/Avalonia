@@ -76,7 +76,7 @@ namespace Avalonia.Controls.Utils
             }
 
             var codepoint = new Codepoint(text[index]);
-        
+
             if (!codepoint.IsWhiteSpace)
             {
                 return false;
@@ -85,12 +85,20 @@ namespace Avalonia.Controls.Utils
             // preceeded by lwsp.
             if (index > 0)
             {
-                var nextCodePoint = new Codepoint(text[index + 1]);
+                if (index + 1 < text.Length)
+                {
+                    var nextCodePoint = new Codepoint(text[index + 1]);
 
-                if (nextCodePoint.IsBreakChar)
+                    if (nextCodePoint.IsBreakChar)
+                    {
+                        return true;
+                    }
+                }
+                else
                 {
                     return true;
                 }
+               
             }
 
             switch (codepoint.GeneralCategory)
@@ -125,7 +133,7 @@ namespace Avalonia.Controls.Utils
             }
 
             cursor = Math.Min(cursor, text.Length);
-            
+
             int begin;
             int i;
             int cr;
@@ -181,7 +189,7 @@ namespace Avalonia.Controls.Utils
             {
                 return cursor;
             }
-            
+
             if (cr < text.Length && text[cr] == '\r' && cr + 1 < text.Length && text[cr + 1] == '\n')
             {
                 lf = cr + 1;
@@ -214,9 +222,9 @@ namespace Avalonia.Controls.Utils
             {
                 return i;
             }
-            
+
             var cc = GetCharClass(text[i]);
-            
+
             // skip over the word, punctuation, or run of whitespace
             while (i < cr && GetCharClass(text[i]) == cc)
             {

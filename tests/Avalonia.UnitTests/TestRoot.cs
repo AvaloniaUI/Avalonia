@@ -35,7 +35,6 @@ namespace Avalonia.UnitTests
         public TestRoot(Control child)
             : this(false, child)
         {
-            Child = child;
         }
 
         public TestRoot(bool useGlobalStyles, Control child)
