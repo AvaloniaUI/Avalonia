@@ -42,6 +42,18 @@ namespace Avalonia.Animation
                             new Setter
                             {
                                 Property = Visual.OpacityProperty,
+                                Value = 1d
+                            }
+                        },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
                                 Value = 0d
                             }
                         },
@@ -54,6 +66,18 @@ namespace Avalonia.Animation
             {
                 Children =
                 {
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
+                        Cue = new Cue(0d)
+                    },
                     new KeyFrame()
                     {
                         Setters =
@@ -117,11 +141,13 @@ namespace Avalonia.Animation
 
                 if (from != null)
                 {
+                    from.Opacity = 0f;
                     tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
                 }
 
                 if (to != null)
                 {
+                    to.Opacity = 1f;
                     to.IsVisible = true;
                     tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
                 }
