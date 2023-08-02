@@ -75,6 +75,14 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _ownerSubscriptions?.Dispose();
+            _ownerSubscriptions = null;
+
+            base.OnDetachedFromVisualTree(e);
+        }
+
         protected void SubscribeToOwnerProperties(AvaloniaObject owner)
         {
             _ownerSubscriptions = owner.GetObservable(TabControl.TabStripPlacementProperty).Subscribe(v => TabStripPlacement = v);
