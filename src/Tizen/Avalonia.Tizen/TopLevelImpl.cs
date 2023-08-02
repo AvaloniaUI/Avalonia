@@ -15,18 +15,14 @@ internal class TopLevelImpl : ITopLevelImpl
 {
     private readonly ITizenView _view;
     private readonly NuiClipboardImpl _clipboard;
-    private IStorageProvider _storageProvider;
+    private readonly IStorageProvider _storageProvider;
 
-    public TopLevelImpl(ITizenView view)
+    public TopLevelImpl(ITizenView view, IEnumerable<object> surfaces)
     {
         _view = view;
+        Surfaces = surfaces;
 
         _storageProvider = new TizenStorageProvider();
-        //_insetsManager = new InsetsManager(view);
-        //_insetsManager.DisplayEdgeToEdgeChanged += (sender, b) =>
-        //{
-        //    view._topLevel.Padding = b ? default : _insetsManager.SafeAreaPadding;
-        //};
         _clipboard = new NuiClipboardImpl();
     }
 
@@ -103,11 +99,6 @@ internal class TopLevelImpl : ITopLevelImpl
             return _view.NativeControlHost;
         }
 
-        //if (featureType == typeof(IInsetsManager))
-        //{
-        //    return _insetsManager;
-        //}
-
         if (featureType == typeof(IClipboard))
         {
             return _clipboard;
@@ -118,11 +109,9 @@ internal class TopLevelImpl : ITopLevelImpl
 
     internal void TextInput(string text)
     {
-        if (Input != null)
-        {
-            var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
+        if (Input == null) return;
+        var args = new RawTextInputEventArgs(TizenKeyboardDevice.Instance, (ulong)DateTime.Now.Ticks, _view.InputRoot, text);
 
-            Input(args);
-        }
+        Input(args);
     }
 }

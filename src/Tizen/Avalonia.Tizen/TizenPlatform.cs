@@ -10,17 +10,14 @@ using Avalonia.Threading;
 
 namespace Avalonia.Tizen;
 
-class TizenPlatform
+internal class TizenPlatform
 {
-    public static readonly TizenPlatform Instance = new TizenPlatform();
-    public static TizenPlatformOptions Options { get; private set; }
+    public static readonly TizenPlatform Instance = new();
     internal static NuiGlPlatform GlPlatform { get; set; }
     internal static Compositor Compositor { get; private set; }
 
     public static void Initialize()
-    {
-        Options = AvaloniaLocator.Current.GetService<TizenPlatformOptions>() ?? new TizenPlatformOptions();
-        
+    {   
         AvaloniaLocator.CurrentMutable
             .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
             .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())

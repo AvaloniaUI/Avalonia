@@ -4,7 +4,7 @@ using Avalonia.Rendering;
 namespace Avalonia.Tizen;
 internal class TizenRenderTimer : IRenderTimer
 {
-    private Stopwatch _st = Stopwatch.StartNew();
+    private readonly Stopwatch _st = Stopwatch.StartNew();
     public bool RunsInBackground => true;
 
     public event Action<TimeSpan> Tick;

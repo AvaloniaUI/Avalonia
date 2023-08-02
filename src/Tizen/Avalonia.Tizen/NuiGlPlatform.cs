@@ -14,7 +14,7 @@ internal class NuiGlPlatform : IPlatformGraphics
     public IPlatformGraphicsContext GetSharedContext() => Context;
 
     public bool UsesSharedContext => true;
-    public IPlatformGraphicsContext CreateContext() => throw new System.NotSupportedException();
+    public IPlatformGraphicsContext CreateContext() => throw new NotSupportedException();
     public GlContext Context { get; }
     public static GlVersion GlVersion { get; } = new(GlProfileType.OpenGLES, 3, 0);
 

@@ -36,7 +36,7 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
         return Reactive.Disposable.Create(() =>
         {
             stopped = true;
-            timer?.Dispose();
+            timer.Dispose();
         });
     }
 
@@ -52,5 +52,5 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
         EnsureInvokeOnMainThread(() => Signaled?.Invoke(prio));
 
     public bool CurrentThreadIsLoopThread => true;
-    public event Action<DispatcherPriority?> Signaled;
+    public event Action<DispatcherPriority?>? Signaled;
 }

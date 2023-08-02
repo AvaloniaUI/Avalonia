@@ -13,7 +13,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
     private SingleViewLifetime? _lifetime;
 
-    class SingleViewLifetime : ISingleViewApplicationLifetime
+    private class SingleViewLifetime : ISingleViewApplicationLifetime
     {
         public NuiAvaloniaView View { get; }
 

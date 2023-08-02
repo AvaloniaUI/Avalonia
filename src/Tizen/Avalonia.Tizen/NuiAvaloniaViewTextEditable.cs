@@ -10,13 +10,13 @@ internal class NuiAvaloniaViewTextEditable
     private readonly NuiAvaloniaView _avaloniaView;
 
     private INuiTextInput TextInput => _multiline ? _multiLineTextInput : _singleLineTextInput;
-    private NuiSingleLineTextInput _singleLineTextInput;
-    private NuiMultiLineTextInput _multiLineTextInput;
+    private readonly NuiSingleLineTextInput _singleLineTextInput;
+    private readonly NuiMultiLineTextInput _multiLineTextInput;
     private bool _updating;
     private bool _keyboardPresented;
-    private bool _multiline = false;
+    private bool _multiline;
 
-    private TextInputMethodClient _client;
+    private TextInputMethodClient? _client;
 
     public bool IsActive => _client != null && _keyboardPresented;
 
@@ -60,13 +60,14 @@ internal class NuiAvaloniaViewTextEditable
         switch (e.EventData.EventName)
         {
             case InputMethodContext.EventType.Preedit:
-                _client.SetPreeditText(e.EventData.PredictiveString);
+                _client?.SetPreeditText(e.EventData.PredictiveString);
                 break;
             case InputMethodContext.EventType.Commit:
-                _client.SetPreeditText(null);
+                _client?.SetPreeditText(null);
                 _avaloniaView.TopLevelImpl.TextInput(e.EventData.PredictiveString);
                 break;
         }
+
         return new InputMethodContext.CallbackData();
     }
 
@@ -126,33 +127,33 @@ internal class NuiAvaloniaViewTextEditable
         finally { _updating = false; }
     }
 
-    private void OnClientSelectionChanged(object? sender, EventArgs e) => InvokeUpdate(() =>
+    private void OnClientSelectionChanged(object? sender, EventArgs e) => InvokeUpdate(client =>
     {
-        if (_client.Selection.End == 0 || _client.Selection.Start == _client.Selection.End)
-            TextInput.PrimaryCursorPosition = _client.Selection.Start;
+        if (client.Selection.End == 0 || client.Selection.Start == client.Selection.End)
+            TextInput.PrimaryCursorPosition = client.Selection.Start;
         else
-            TextInput.SelectText(_client.Selection.Start, _client.Selection.End);
+            TextInput.SelectText(client.Selection.Start, client.Selection.End);
     });
 
-    private void OnSurroundingTextChanged(object? sender, EventArgs e) => InvokeUpdate(() =>
+    private void OnSurroundingTextChanged(object? sender, EventArgs e) => InvokeUpdate(client =>
     {
-        TextInput.Text = _client.SurroundingText;
-        TextInput.GetInputMethodContext().SetSurroundingText(_client.SurroundingText);
+        TextInput.Text = client.SurroundingText;
+        TextInput.GetInputMethodContext().SetSurroundingText(client.SurroundingText);
         OnClientSelectionChanged(sender, e);
     });
 
-    private void OnTextViewVisualChanged(object? sender, EventArgs e) => InvokeUpdate(() =>
+    private void OnTextViewVisualChanged(object? sender, EventArgs e) => InvokeUpdate(client =>
     {
-        TextInput.Text = _client.SurroundingText;
+        TextInput.Text = client.SurroundingText;
     });
 
     private void DettachAndHide()
     {
         if (IsActive)
         {
-            _client.TextViewVisualChanged -= OnTextViewVisualChanged;
-            _client.SurroundingTextChanged -= OnSurroundingTextChanged;
-            _client.SelectionChanged -= OnClientSelectionChanged;
+            _client!.TextViewVisualChanged -= OnTextViewVisualChanged;
+            _client!.SurroundingTextChanged -= OnSurroundingTextChanged;
+            _client!.SelectionChanged -= OnClientSelectionChanged;
         }
 
         if (Window.Instance.GetDefaultLayer().Children.Contains((View)TextInput))
@@ -165,7 +166,7 @@ internal class NuiAvaloniaViewTextEditable
         inputContext.HideInputPanel();
     }
 
-    private void InvokeUpdate(Action action)
+    private void InvokeUpdate(Action<TextInputMethodClient> action)
     {
         if (_updating || !IsActive)
             return;
@@ -173,7 +174,7 @@ internal class NuiAvaloniaViewTextEditable
         _updating = true;
         try
         {
-            action();
+            action(_client!);
         }
         finally { _updating = false; }
     }
@@ -195,5 +196,10 @@ internal interface INuiTextInput
     void SelectWholeText();
 }
 
-public class NuiMultiLineTextInput : TextEditor, INuiTextInput { }
-public class NuiSingleLineTextInput : TextField, INuiTextInput { }
+public class NuiMultiLineTextInput : TextEditor, INuiTextInput
+{
+}
+
+public class NuiSingleLineTextInput : TextField, INuiTextInput
+{
+}

@@ -47,7 +47,7 @@ internal class NuiKeyboardHandler
 
         _view.TopLevelImpl.Input?.Invoke(
             new RawKeyEventArgs(
-                TizenKeyboardDevice.Instance!,
+                KeyboardDevice.Instance!,
                 e.Key.Time,
                 _view.InputRoot,
                 type,

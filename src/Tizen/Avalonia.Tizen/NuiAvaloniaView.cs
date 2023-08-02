@@ -12,6 +12,9 @@ using Tizen.NUI.BaseComponents;
 
 namespace Avalonia.Tizen;
 
+/// <summary>
+/// Avalonia View for Tizen NUI controls
+/// </summary>
 public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 {
     private readonly NuiKeyboardHandler _keyboardHandler;
@@ -85,11 +88,8 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
     internal void Initialise()
     {
         _renderTimer = AvaloniaLocator.Current.GetRequiredService<IRenderTimer>() as TizenRenderTimer;
-        _topLevelImpl = new TopLevelImpl(this)
-        {
-            Surfaces = new[] { new NuiGlLayerSurface(this) }
-        };
-
+        _topLevelImpl = new TopLevelImpl(this, new[] { new NuiGlLayerSurface(this) });
+        
         _topLevel = new(_topLevelImpl);
         _topLevel.Prepare();
         _topLevel.StartRendering();

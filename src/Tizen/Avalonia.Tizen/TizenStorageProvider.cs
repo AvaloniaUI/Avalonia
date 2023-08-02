@@ -54,7 +54,7 @@ internal class TizenStorageProvider : IStorageProvider
 
         var fileResults = new List<IStorageFile>();
 
-        AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
+        AppControl.SendLaunchRequest(appControl, (_, reply, result) =>
         {
             if (result == AppControlReplyResult.Succeeded)
             {
@@ -93,7 +93,7 @@ internal class TizenStorageProvider : IStorageProvider
 
         var fileResults = new List<IStorageFolder>();
 
-        AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
+        AppControl.SendLaunchRequest(appControl, (_, reply, result) =>
         {
             if (result == AppControlReplyResult.Succeeded)
             {
