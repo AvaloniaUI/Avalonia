@@ -6,6 +6,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 
@@ -66,12 +67,15 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     private int GlRenderFrame()
     {
-        if (_renderTimer == null)
+        if (_renderTimer == null || _topLevel == null)
             return 0;
 
-        _renderTimer?.Render();
-       
-        return 1;
+        var server = ((CompositingRenderer)((IRenderRoot)_topLevel).Renderer).CompositionTarget.Server;
+        var rev = server.Revision;
+
+        _renderTimer.Render();
+
+        return rev == server.Revision ? 0 : 1;
     }
 
     private void GlTerminate()

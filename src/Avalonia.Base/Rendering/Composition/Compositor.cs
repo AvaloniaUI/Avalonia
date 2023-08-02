@@ -40,6 +40,9 @@ namespace Avalonia.Rendering.Composition
 
         internal IEasing DefaultEasing { get; }
 
+        [PrivateApi]
+        public bool HasPendingBatch => _pendingBatch != null || _nextCommit != null;
+
         private DiagnosticTextRenderer? DiagnosticTextRenderer
         {
             get
@@ -58,7 +61,7 @@ namespace Avalonia.Rendering.Composition
 
         internal event Action? AfterCommit;
 
-        
+
         /// <summary>
         /// Creates a new compositor on a specified render loop that would use a particular GPU
         /// </summary>
@@ -96,7 +99,7 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.UIThread.VerifyAccess();
             if (_nextCommit == null)
             {
-                var next = _nextCommit = new ();
+                var next = _nextCommit = new();
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
@@ -123,21 +126,21 @@ namespace Avalonia.Rendering.Composition
                 AfterCommit?.Invoke();
             }
         }
-        
+
         Batch CommitCore()
         {
             Dispatcher.UIThread.VerifyAccess();
             using var noPump = NonPumpingLockHelper.Use();
-            
+
             var commit = _nextCommit ??= new();
 
             (_invokeBeforeCommitRead, _invokeBeforeCommitWrite) = (_invokeBeforeCommitWrite, _invokeBeforeCommitRead);
             while (_invokeBeforeCommitRead.Count > 0)
                 _invokeBeforeCommitRead.Dequeue()();
-            
+
             using (var writer = new BatchStreamWriter(_nextCommit.Changes, _batchMemoryPool, _batchObjectPool))
             {
-                while(_objectSerializationQueue.TryDequeue(out var obj))
+                while (_objectSerializationQueue.TryDequeue(out var obj))
                 {
                     var serverObject = obj.TryGetServer(this);
                     if (serverObject != null)
@@ -170,10 +173,10 @@ namespace Avalonia.Rendering.Composition
                 }
                 _pendingServerCompositorJobs.Clear();
             }
-            
+
             _nextCommit.CommittedAt = Server.Clock.Elapsed;
             _server.EnqueueBatch(_nextCommit);
-            
+
             lock (_pendingBatchLock)
             {
                 _pendingBatch = _nextCommit;
@@ -186,7 +189,7 @@ namespace Avalonia.Rendering.Composition
                     }
                 }, TaskContinuationOptions.ExecuteSynchronously);
                 _nextCommit = null;
-                
+
                 return commit;
             }
         }
@@ -194,7 +197,7 @@ namespace Avalonia.Rendering.Composition
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {
             Dispatcher.UIThread.VerifyAccess();
-            if(_objectSerializationHashSet.Add(compositionObject))
+            if (_objectSerializationHashSet.Add(compositionObject))
                 _objectSerializationQueue.Enqueue(compositionObject);
             RequestCommitAsync();
         }
@@ -204,7 +207,7 @@ namespace Avalonia.Rendering.Composition
             if (obj is IDisposable disposable && _disposeOnNextBatch.Add(disposable))
                 RequestCommitAsync();
         }
-        
+
         /// <summary>
         /// Enqueues a callback to be called before the next scheduled commit.
         /// If there is no scheduled commit it automatically schedules one
@@ -277,7 +280,7 @@ namespace Avalonia.Rendering.Composition
         internal bool UnitTestIsRegisteredForSerialization(ICompositorSerializable serializable) =>
             _objectSerializationHashSet.Contains(serializable);
     }
-    
+
     internal interface ICompositorScheduler
     {
         void CommitRequested(Compositor compositor);

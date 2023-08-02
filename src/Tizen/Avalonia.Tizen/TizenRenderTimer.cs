@@ -1,14 +1,16 @@
-﻿using Avalonia.Rendering;
+﻿using System.Diagnostics;
+using Avalonia.Rendering;
 
 namespace Avalonia.Tizen;
 internal class TizenRenderTimer : IRenderTimer
 {
-    public bool RunsInBackground => false;
+    private Stopwatch _st = Stopwatch.StartNew();
+    public bool RunsInBackground => true;
 
     public event Action<TimeSpan> Tick;
 
     internal void Render()
     {
-        Tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
+        Tick?.Invoke(_st.Elapsed);
     }
 }

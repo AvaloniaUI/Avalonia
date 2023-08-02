@@ -20,7 +20,7 @@ internal class NuiGlPlatform : IPlatformGraphics
 
     public NuiGlPlatform(NuiAvaloniaView nuiAvaloniaView)
     {
-        const string library = "libGLESv2.so";
+        const string library = "/usr/lib/driver/libGLESv2.so";
         var libGl = NativeLibraryEx.Load(library);
         if (libGl == IntPtr.Zero)
             throw new OpenGlException("Unable to load " + library);
@@ -34,10 +34,9 @@ internal class NuiGlPlatform : IPlatformGraphics
     }
 }
 
-class GlContext : OpenTK.Graphics.BindingsBase, IGlContext, OpenTK.IBindingsContext
+class GlContext : IGlContext
 {
     private readonly NuiAvaloniaView _nuiAvaloniaView;
-      
 
     public GlContext(NuiAvaloniaView nuiAvaloniaView, GlInterface glInterface)
     {
@@ -51,7 +50,6 @@ class GlContext : OpenTK.Graphics.BindingsBase, IGlContext, OpenTK.IBindingsCont
 
     public IDisposable MakeCurrent()
     {
-        _nuiAvaloniaView.RenderOnce();
         return this;
     }
 

@@ -40,8 +40,6 @@ internal class NuiGlLayerSurface : IGlPlatformSurface
 
         public IGlPlatformSurfaceRenderingSession BeginDraw()
         {
-            _ctx.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT);
-
             var restoreContext = _ctx.MakeCurrent();
             return new RenderSession(_ctx, restoreContext, _nuiAvaloniaView);
         }
