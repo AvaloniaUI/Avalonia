@@ -2969,11 +2969,8 @@ namespace Avalonia.Controls
                 var detailsContent = RowDetailsTemplate.Build(dataItem);
                 if (detailsContent != null)
                 {
+                    detailsContent.DataContext = dataItem;
                     _rowsPresenter.Children.Add(detailsContent);
-                    if (dataItem != null)
-                    {
-                        detailsContent.DataContext = dataItem;
-                    }
                     detailsContent.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                     RowDetailsHeightEstimate = detailsContent.DesiredSize.Height;
                     _rowsPresenter.Children.Remove(detailsContent);

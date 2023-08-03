@@ -33,8 +33,7 @@ namespace Avalonia.Win32.Automation
                 return null;
 
             var p = WindowImpl.PointToClient(new PixelPoint((int)x, (int)y));
-            var peer = (WindowBaseAutomationPeer)Peer;
-            var found = InvokeSync(() => peer.GetPeerFromPoint(p));
+            var found = InvokeSync(() => Peer.GetPeerFromPoint(p));
             var result = GetOrCreate(found) as IRawElementProviderFragment;
             return result;
         }

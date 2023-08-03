@@ -60,12 +60,23 @@ namespace Avalonia
         }
 
         /// <inheritdoc cref="GetObservable{T}(AvaloniaObject, AvaloniaProperty{T})"/>
+        /// <typeparam name="TSource">The type of the values held by the <paramref name="property"/>.</typeparam>
+        /// <typeparam name="TResult">The type of the value returned by the <paramref name="converter"/>.</typeparam>
         /// <param name="o"/>
         /// <param name="property"/>
         /// <param name="converter">A method which is executed to convert each property value to <typeparamref name="TResult"/>.</param>
         public static IObservable<TResult> GetObservable<TSource, TResult>(this AvaloniaObject o, AvaloniaProperty<TSource> property, Func<TSource, TResult> converter)
         {
             return new AvaloniaPropertyObservable<TSource, TResult>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)),
+                converter ?? throw new ArgumentNullException(nameof(converter)));
+        }
+
+        /// <inheritdoc cref="GetObservable{TSource,TResult}"/>
+        public static IObservable<TResult> GetObservable<TResult>(this AvaloniaObject o, AvaloniaProperty property, Func<object?, TResult> converter)
+        {
+            return new AvaloniaPropertyObservable<object?, TResult>(
                 o ?? throw new ArgumentNullException(nameof(o)),
                 property ?? throw new ArgumentNullException(nameof(property)),
                 converter ?? throw new ArgumentNullException(nameof(converter)));
@@ -90,6 +101,15 @@ namespace Avalonia
             return new AvaloniaPropertyBindingObservable<object?, object?>(
                 o ?? throw new ArgumentNullException(nameof(o)),
                 property ?? throw new ArgumentNullException(nameof(property)));
+        }
+
+        /// <inheritdoc cref="GetObservable{TSource,TResult}"/>
+        public static IObservable<BindingValue<TResult>> GetBindingObservable<TResult>(this AvaloniaObject o, AvaloniaProperty property, Func<object?, TResult> converter)
+        {
+            return new AvaloniaPropertyBindingObservable<object?, TResult>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)),
+                converter?? throw new ArgumentNullException(nameof(converter)));
         }
 
         /// <summary>

@@ -149,10 +149,10 @@ namespace Avalonia.Controls
                     return;
 
                 var control = args.Sender as Control;
-                if (control is not IClickableControl)
+                if (control is not IClickableControl and not ICommandSource)
                 {
                     Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.Log(control,
-                        $"The element {args.Sender.GetType().Name} does not implement IClickableControl and does not support binding a HotKey ({args.NewValue}).");
+                        $"The element {args.Sender.GetType().Name} does not implement IClickableControl nor ICommandSource and does not support binding a HotKey ({args.NewValue}).");
                     return;
                 }
 

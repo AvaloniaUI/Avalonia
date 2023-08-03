@@ -62,9 +62,15 @@ namespace Avalonia.FreeDesktop.DBusIme
             foreach (var name in _knownNames)
             {
                 var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
-                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
-                var nameOwner = await dbus.GetNameOwnerAsync(name);
-                OnNameChange(null, (name, null, nameOwner));
+                try
+                {
+                    _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
+                    var nameOwner = await dbus.GetNameOwnerAsync(name);
+                    OnNameChange(null, (name, null, nameOwner));
+                }
+                catch (DBusException)
+                {
+                }
             }
         }
 

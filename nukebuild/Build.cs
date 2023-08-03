@@ -279,8 +279,9 @@ partial class Build : NukeBuild
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
-            RefAssemblyGenerator.GenerateRefAsmsInPackage(Parameters.NugetRoot / "Avalonia." +
-                                                          Parameters.Version + ".nupkg");
+            RefAssemblyGenerator.GenerateRefAsmsInPackage(
+                Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.nupkg",
+                Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
     
     Target ValidateApiDiff => _ => _
@@ -288,7 +289,7 @@ partial class Build : NukeBuild
         .Executes(async () =>
         {
             await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot).Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffValidation.ValidatePackage(
                     ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
                     Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
         });

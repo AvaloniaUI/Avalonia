@@ -18,6 +18,8 @@ namespace Avalonia.Android
         public bool IsActive { get; }
 
         public InputMethodManager IMM { get; }
+
+        void OnBatchEditedEnded();
     }
 
     enum CustomImeFlags
@@ -104,6 +106,18 @@ namespace Avalonia.Android
 
         private void _client_SelectionChanged(object sender, EventArgs e)
         {
+            if (_inputConnection.IsInBatchEdit)
+                return;
+            OnSelectionChanged();
+        }
+
+        private void OnSelectionChanged()
+        {
+            if (Client is null)
+            {
+                return;
+            }
+
             var selection = Client.Selection;
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
@@ -113,17 +127,67 @@ namespace Avalonia.Android
 
         private void _client_SurroundingTextChanged(object sender, EventArgs e)
         {
+            if (_inputConnection.IsInBatchEdit)
+                return;
+            OnSurroundingTextChanged();
+        }
+
+        public void OnBatchEditedEnded()
+        {
+            if (_inputConnection.IsInBatchEdit)
+                return;
+
+            OnSurroundingTextChanged();
+            OnSelectionChanged();
+        }
+
+        private void OnSurroundingTextChanged()
+        {
+            if(_client is null)
+            {
+                return;
+            }
+
             var surroundingText = _client.SurroundingText ?? "";
+            var editableText = _inputConnection.EditableWrapper.ToString();
 
-            _inputConnection.EditableWrapper.IgnoreChange = true;
+            if (editableText != surroundingText)
+            {
+                _inputConnection.EditableWrapper.IgnoreChange = true;
 
-            _inputConnection.Editable.Replace(0, _inputConnection.Editable.Length(), surroundingText);
+                var diff = GetDiff();
 
-            _inputConnection.EditableWrapper.IgnoreChange = false;
+                _inputConnection.Editable.Replace(diff.index, editableText.Length, diff.diff);
 
-            var selection = Client.Selection;
+                _inputConnection.EditableWrapper.IgnoreChange = false;
 
-            _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);
+                if(diff.index == 0)
+                {
+                    var selection = _client.Selection;
+                    _client.Selection = new TextSelection(selection.Start, 0);
+                    _client.Selection = selection;
+                }
+            }
+
+            (int index, string diff) GetDiff()
+            {
+                int index = 0;
+
+                var longerLength = Math.Max(surroundingText.Length, editableText.Length);
+
+                for (int i = 0; i < longerLength; i++)
+                {
+                    if (surroundingText.Length == i || editableText.Length == i || surroundingText[i] != editableText[i])
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+
+                var diffString = surroundingText.Substring(index, surroundingText.Length - index);
+
+                return (index, diffString);
+            }
         }
 
         public void SetCursorRect(Rect rect)

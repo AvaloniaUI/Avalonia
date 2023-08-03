@@ -30,7 +30,7 @@ namespace Avalonia
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     [UsableDuringInitialization]
-    public class Visual : StyledElement
+    public partial class Visual : StyledElement
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -317,9 +317,6 @@ namespace Avalonia
         /// </summary>
         protected internal IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
-        internal CompositionDrawListVisual? CompositionVisual { get; private set; }
-        internal CompositionVisual? ChildCompositionVisual { get; set; }
-
         internal RenderOptions RenderOptions { get; set; }
 
         internal bool HasNonUniformZIndexChildren { get; private set; }
@@ -516,20 +513,6 @@ namespace Avalonia
             }
         }
 
-        private protected virtual CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
-            => new CompositionDrawListVisual(compositor,
-                new ServerCompositionDrawListVisual(compositor.Server, this), this);
-        
-        internal CompositionVisual AttachToCompositor(Compositor compositor)
-        {
-            if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
-            {
-                CompositionVisual = CreateCompositionVisual(compositor);
-            }
-
-            return CompositionVisual;
-        }
-
         /// <summary>
         /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
         /// for this control and all of its visual descendants.
@@ -548,14 +531,7 @@ namespace Avalonia
 
             DisableTransitions();
             OnDetachedFromVisualTree(e);
-            if (CompositionVisual != null)
-            {
-                if (ChildCompositionVisual != null)
-                    CompositionVisual.Children.Remove(ChildCompositionVisual);
-                
-                CompositionVisual.DrawList = null;
-                CompositionVisual = null;
-            }
+            DetachFromCompositor();
 
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
