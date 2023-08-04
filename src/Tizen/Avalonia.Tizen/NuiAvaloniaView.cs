@@ -1,4 +1,6 @@
-﻿using Avalonia.Controls;
+﻿using System.Diagnostics;
+using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -7,6 +9,8 @@ using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Threading;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 
@@ -24,6 +28,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
     private TopLevelImpl _topLevelImpl;
     private EmbeddableControlRoot _topLevel;
     private TouchDevice _device = new();
+    private ServerCompositionTarget _compositionTargetServer;
 
     public IInputRoot InputRoot { get; set; }
     public INativeControlHostImpl NativeControlHost { get; }
@@ -44,7 +49,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     public NuiAvaloniaView() : base(ColorFormat.RGBA8888)
     {
-        RenderingMode = GLRenderingMode.Continuous;
+        RenderingMode = GLRenderingMode.OnDemand;
         SetGraphicsConfig(true, true, 0, GLESVersion.Version30);
         RegisterGLCallbacks(GlInit, GlRenderFrame, GlTerminate);
 
@@ -64,7 +69,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     private void GlInit()
     {
-        //SynchronizationContext.SetSynchronizationContext(TizenThreadingInterface.MainloopContext = new SynchronizationContext());
+        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(TizenPlatform.GlPlatform = new NuiGlPlatform(this));
     }
 
@@ -73,12 +78,9 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
         if (_renderTimer == null || _topLevel == null)
             return 0;
 
-        var server = ((CompositingRenderer)((IRenderRoot)_topLevel).Renderer).CompositionTarget.Server;
-        var rev = server.Revision;
-
-        _renderTimer.Render();
-
-        return rev == server.Revision ? 0 : 1;
+        var rev = _compositionTargetServer.Revision;
+        _renderTimer.ManualTick();
+        return rev == _compositionTargetServer.Revision ? 0 : 1;
     }
 
     private void GlTerminate()
@@ -87,14 +89,20 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     internal void Initialise()
     {
-        _renderTimer = AvaloniaLocator.Current.GetRequiredService<IRenderTimer>() as TizenRenderTimer;
         _topLevelImpl = new TopLevelImpl(this, new[] { new NuiGlLayerSurface(this) });
-        
+        _topLevelImpl.Compositor.AfterCommit += RenderOnce;
+        TizenPlatform.ThreadingInterface.TickExecuted += RenderOnce;
+
         _topLevel = new(_topLevelImpl);
         _topLevel.Prepare();
         _topLevel.StartRendering();
 
-       OnResized();
+        _compositionTargetServer = ((CompositingRenderer)((IRenderRoot)_topLevel).Renderer).CompositionTarget.Server;
+
+        _renderTimer = (TizenRenderTimer)AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
+        _renderTimer.RenderTick += RenderOnce;
+
+        OnResized();
     }
 
     #endregion
@@ -126,13 +134,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
         if (Size.Width == 0 || Size.Height == 0)
             return;
 
-        Invalidate();
-    }
-
-    private void Invalidate()
-    {
         _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
-        RenderOnce();
     }
 
     #endregion

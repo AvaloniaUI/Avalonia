@@ -15,6 +15,7 @@ internal class TizenPlatform
     public static readonly TizenPlatform Instance = new();
     internal static NuiGlPlatform GlPlatform { get; set; }
     internal static Compositor Compositor { get; private set; }
+    internal static TizenThreadingInterface ThreadingInterface { get; private set; } = new();
 
     public static void Initialize()
     {   
@@ -23,7 +24,7 @@ internal class TizenPlatform
             .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
             .Bind<IKeyboardDevice>().ToSingleton<TizenKeyboardDevice>()
             .Bind<IPlatformSettings>().ToSingleton<TizenPlatformSettings>()
-            .Bind<IPlatformThreadingInterface>().ToConstant(new TizenThreadingInterface())
+            .Bind<IPlatformThreadingInterface>().ToConstant(ThreadingInterface)
             .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
             .Bind<IRenderTimer>().ToConstant(new TizenRenderTimer())
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();

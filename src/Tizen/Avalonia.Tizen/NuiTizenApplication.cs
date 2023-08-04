@@ -34,10 +34,10 @@ public class NuiTizenApplication<TApp> : NUIApplication
     protected override void OnCreate()
     {
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Creating application");
+        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
 
         base.OnCreate();
 #pragma warning disable CS8601 // Possible null reference assignment.
-        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
 #pragma warning restore CS8601 // Possible null reference assignment.
 
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup view");
@@ -46,6 +46,7 @@ public class NuiTizenApplication<TApp> : NUIApplication
         _lifetime.View.HeightResizePolicy = ResizePolicyType.FillToParent;
         _lifetime.View.WidthResizePolicy = ResizePolicyType.FillToParent;
 
+        Window.Instance.RenderingBehavior = RenderingBehaviorType.Continuously;
         Window.Instance.GetDefaultLayer().Add(_lifetime.View);
         Window.Instance.KeyEvent += (s, e) => _lifetime?.View?.KeyboardHandler.Handle(e);
         Window.Instance.Activate();
