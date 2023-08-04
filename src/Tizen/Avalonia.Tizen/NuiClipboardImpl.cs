@@ -1,8 +1,8 @@
 ﻿using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Threading;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
-using FocusManager = Tizen.NUI.FocusManager;
 
 namespace Avalonia.Tizen;
 
@@ -18,7 +18,7 @@ internal class NuiClipboardImpl : IClipboard
             Position = new Position(-1000, -1000),
             Size = new(1, 1)
         };
-        
+
         Window.Instance.GetDefaultLayer().Add(_textEditor);
         _textEditor.LowerToBottom();
     }
@@ -30,20 +30,39 @@ internal class NuiClipboardImpl : IClipboard
     {
         _textEditor.Show();
         _textEditor.Text = "";
+
+        //The solution suggested by Samsung, The method PasteTo will execute async and need delay
         TextUtils.PasteTo(_textEditor);
-        _textEditor.Hide();
-        return Task.FromResult<string?>(_textEditor.Text);
+
+        return Task.Run<string?>(async () =>
+        {
+            await Task.Delay(10);
+
+            return await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _textEditor.Hide();
+                return _textEditor.Text;
+            });
+        });
     }
 
-    public async Task SetTextAsync(string? text)
+    public Task SetTextAsync(string? text)
     {
         _textEditor.Show();
-        FocusManager.Instance.SetCurrentFocusView(_textEditor);
         _textEditor.Text = text;
+
+        //The solution suggested by Samsung, The method SelectWholeText will execute async and need delay
         _textEditor.SelectWholeText();
-        await Task.Delay(1);
-        TextUtils.CopyToClipboard(_textEditor);
-        _textEditor.Hide();
+
+        return Task.Run(async () =>
+        {
+            await Task.Delay(10);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                TextUtils.CopyToClipboard(_textEditor);
+                _textEditor.Hide();
+            });
+        });
     }
 
     public Task<object?> GetDataAsync(string format) =>
