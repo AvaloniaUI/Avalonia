@@ -9,8 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
-
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Tizen" Version="2.8.2.3" />
   </ItemGroup>
 
 
