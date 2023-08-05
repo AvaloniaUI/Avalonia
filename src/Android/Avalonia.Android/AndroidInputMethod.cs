@@ -5,7 +5,11 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Android
 {
@@ -40,6 +44,8 @@ namespace Avalonia.Android
         private readonly InputMethodManager _imm;
         private TextInputMethodClient _client;
         private AvaloniaInputConnection _inputConnection;
+        private IDisposable _listeningForRefocusDisposer;
+        private WeakReference<IInputElement> _refocusableElement;
 
         public AndroidInputMethod(TView host)
         {
@@ -51,7 +57,6 @@ namespace Avalonia.Android
 
             _host.Focusable = true;
             _host.FocusableInTouchMode = true;
-            _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListener(_host));
         }
 
         public View View => _host;
@@ -97,10 +102,13 @@ namespace Avalonia.Android
 
                 _client.SurroundingTextChanged += _client_SurroundingTextChanged;
                 _client.SelectionChanged += _client_SelectionChanged;
+
+                StartMonitoringRefocus(client);
             }
             else
             {
                 _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
+                StopMonitoringRefocus();
             }
         }
 
@@ -239,6 +247,46 @@ namespace Avalonia.Android
 
                 return _inputConnection;
             });
+        }
+
+        /// <summary>
+        /// 'Refocus' is tapping the input element again after it already has focus. This will reopen the softkeyboard.
+        /// </summary>
+        private void StartMonitoringRefocus(TextInputMethodClient client)
+        {
+            _refocusableElement = new WeakReference<IInputElement>(TopLevel.GetTopLevel(client.TextViewVisual)?.FocusManager?.GetFocusedElement());
+
+            if (_listeningForRefocusDisposer is not null)
+                return;
+
+            _listeningForRefocusDisposer = InputElement.PointerPressedEvent.RouteFinished.Subscribe(RefocusPointerPressed);
+        }
+
+        private void StopMonitoringRefocus()
+        {
+            _refocusableElement = null;
+            _listeningForRefocusDisposer?.Dispose();
+            _listeningForRefocusDisposer = null;
+        }
+
+        private void RefocusPointerPressed(Interactivity.RoutedEventArgs ev)
+        {
+            if (ev.Source is null)
+                return;
+
+            if (_client is null)
+                return;
+
+            if (ev.Route != Interactivity.RoutingStrategies.Bubble)
+                return;
+
+            if (_refocusableElement is not null && _refocusableElement.TryGetTarget(out var refocusableElementTarget))
+            {
+                if ((refocusableElementTarget as Visual)?.IsVisualAncestorOf(ev.Source as Visual) ?? false)
+                {
+                    _imm.ShowSoftInput(_host, ShowFlags.Implicit);
+                }
+            }
         }
     }
 }
