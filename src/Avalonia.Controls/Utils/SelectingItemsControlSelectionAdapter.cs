@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Utils
                 if (_selector != null)
                 {
                     _selector.SelectionChanged -= OnSelectionChanged;
-                    _selector.PointerReleased -= OnSelectorPointerReleased;
+                    _selector.RemoveHandler(InputElement.PointerReleasedEvent, OnSelectorPointerReleased);
                 }
 
                 _selector = value;
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.Utils
                 if (_selector != null)
                 {
                     _selector.SelectionChanged += OnSelectionChanged;
-                    _selector.PointerReleased += OnSelectorPointerReleased;
+                    _selector.AddHandler(InputElement.PointerReleasedEvent, OnSelectorPointerReleased, handledEventsToo: true);
                 }
             }
         }

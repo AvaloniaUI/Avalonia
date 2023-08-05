@@ -762,30 +762,10 @@ namespace Avalonia.Controls
         /// otherwise, false.</returns>
         protected bool HasFocus()
         {
-            Visual? focused = FocusManager.GetFocusManager(this)?.GetFocusedElement() as Visual;
+            if (FocusManager.GetFocusManager(this)?.GetFocusedElement() is not Visual focused)
+                return false;
 
-            while (focused != null)
-            {
-                if (object.ReferenceEquals(focused, this))
-                {
-                    return true;
-                }
-
-                // This helps deal with popups that may not be in the same
-                // visual tree
-                Visual? parent = focused.GetVisualParent();
-                if (parent == null)
-                {
-                    // Try the logical parent.
-                    Control? element = focused as Control;
-                    if (element != null)
-                    {
-                        parent = element.VisualParent;
-                    }
-                }
-                focused = parent;
-            }
-            return false;
+            return this == focused || this.IsVisualAncestorOf(focused) || (DropDownPopup?.IsInsidePopup(focused) ?? false);
         }
 
         /// <summary>
