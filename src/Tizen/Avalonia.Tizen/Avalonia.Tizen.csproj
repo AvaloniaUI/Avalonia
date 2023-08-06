@@ -1,11 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
 
   <PropertyGroup>
-    <TargetFramework>net6.0-tizen</TargetFramework>
+    <TargetFrameworks>net6.0-tizen;tizen10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
+  
+  <Sdk Condition="'$(TargetFramework)' == 'net6.0-tizen'" Name="Microsoft.NET.Sdk"></Sdk>
+  <Sdk Condition="'$(TargetFramework)' == 'tizen10.0'" Name="Tizen.NET.Sdk" Version="1.1.9"></Sdk>
 
   <ItemGroup>
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.3" />

@@ -1,16 +1,12 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
-using Avalonia.Threading;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 

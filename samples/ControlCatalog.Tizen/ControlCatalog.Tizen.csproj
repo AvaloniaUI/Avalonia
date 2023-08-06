@@ -3,8 +3,9 @@
     <TargetFramework>net6.0-tizen</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+  
   <ItemGroup>
-    <TizenSharedResource Remove="shared\res\ControlCatalog.Avalonia.png" />
+    <TizenSharedResource Remove="shared\res\Avalonia.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" />
