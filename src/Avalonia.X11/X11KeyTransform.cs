@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Avalonia.Input;
 
@@ -6,7 +5,217 @@ namespace Avalonia.X11
 {
     internal static class X11KeyTransform
     {
-        private static readonly Dictionary<X11Key, Key> KeyDic = new Dictionary<X11Key, Key>
+        // X scan code to physical key map.
+        // https://github.com/chromium/chromium/blob/main/ui/events/keycodes/dom/dom_code_data.inc
+        // This list has the same order as the PhysicalKey enum.
+        private static readonly Dictionary<byte, PhysicalKey> s_physicalKeyFromScanCode = new(162)
+        {
+            // Writing System Keys
+            { 0x31, PhysicalKey.Backquote },
+            { 0x33, PhysicalKey.Backslash },
+            { 0x22, PhysicalKey.BracketLeft },
+            { 0x23, PhysicalKey.BracketRight },
+            { 0x3B, PhysicalKey.Comma },
+            { 0x13, PhysicalKey.Digit0 },
+            { 0x0A, PhysicalKey.Digit1 },
+            { 0x0B, PhysicalKey.Digit2 },
+            { 0x0C, PhysicalKey.Digit3 },
+            { 0x0D, PhysicalKey.Digit4 },
+            { 0x0E, PhysicalKey.Digit5 },
+            { 0x0F, PhysicalKey.Digit6 },
+            { 0x10, PhysicalKey.Digit7 },
+            { 0x11, PhysicalKey.Digit8 },
+            { 0x12, PhysicalKey.Digit9 },
+            { 0x15, PhysicalKey.Equal },
+            { 0x5E, PhysicalKey.IntlBackslash },
+            { 0x61, PhysicalKey.IntlRo },
+            { 0x84, PhysicalKey.IntlYen },
+            { 0x26, PhysicalKey.KeyA },
+            { 0x38, PhysicalKey.KeyB },
+            { 0x36, PhysicalKey.KeyC },
+            { 0x28, PhysicalKey.KeyD },
+            { 0x1A, PhysicalKey.KeyE },
+            { 0x29, PhysicalKey.KeyF },
+            { 0x2A, PhysicalKey.KeyG },
+            { 0x2B, PhysicalKey.KeyH },
+            { 0x1F, PhysicalKey.KeyI },
+            { 0x2C, PhysicalKey.KeyJ },
+            { 0x2D, PhysicalKey.KeyK },
+            { 0x2E, PhysicalKey.KeyL },
+            { 0x3A, PhysicalKey.KeyM },
+            { 0x39, PhysicalKey.KeyN },
+            { 0x20, PhysicalKey.KeyO },
+            { 0x21, PhysicalKey.KeyP },
+            { 0x18, PhysicalKey.KeyQ },
+            { 0x1B, PhysicalKey.KeyR },
+            { 0x27, PhysicalKey.KeyS },
+            { 0x1C, PhysicalKey.KeyT },
+            { 0x1E, PhysicalKey.KeyU },
+            { 0x37, PhysicalKey.KeyV },
+            { 0x19, PhysicalKey.KeyW },
+            { 0x35, PhysicalKey.KeyX },
+            { 0x1D, PhysicalKey.KeyY },
+            { 0x34, PhysicalKey.KeyZ },
+            { 0x14, PhysicalKey.Minus },
+            { 0x3C, PhysicalKey.Period },
+            { 0x30, PhysicalKey.Quote },
+            { 0x2F, PhysicalKey.Semicolon },
+            { 0x3D, PhysicalKey.Slash },
+
+            // Functional Keys
+            { 0x40, PhysicalKey.AltLeft },
+            { 0x6C, PhysicalKey.AltRight },
+            { 0x16, PhysicalKey.Backspace },
+            { 0x42, PhysicalKey.CapsLock },
+            { 0x87, PhysicalKey.ContextMenu },
+            { 0x25, PhysicalKey.ControlLeft },
+            { 0x69, PhysicalKey.ControlRight },
+            { 0x24, PhysicalKey.Enter },
+            { 0x85, PhysicalKey.MetaLeft },
+            { 0x86, PhysicalKey.MetaRight },
+            { 0x32, PhysicalKey.ShiftLeft },
+            { 0x3E, PhysicalKey.ShiftRight },
+            { 0x41, PhysicalKey.Space },
+            { 0x17, PhysicalKey.Tab },
+            { 0x64, PhysicalKey.Convert },
+            { 0x65, PhysicalKey.KanaMode },
+            { 0x82, PhysicalKey.Lang1 },
+            { 0x83, PhysicalKey.Lang2 },
+            { 0x62, PhysicalKey.Lang3 },
+            { 0x63, PhysicalKey.Lang4 },
+            { 0x5D, PhysicalKey.Lang5 },
+            { 0x66, PhysicalKey.NonConvert },
+
+            // Control Pad Section
+            { 0x77, PhysicalKey.Delete },
+            { 0x73, PhysicalKey.End },
+            { 0x92, PhysicalKey.Help },
+            { 0x6E, PhysicalKey.Home },
+            { 0x76, PhysicalKey.Insert },
+            { 0x75, PhysicalKey.PageDown },
+            { 0x70, PhysicalKey.PageUp },
+
+            // Arrow Pad Section
+            { 0x74, PhysicalKey.ArrowDown },
+            { 0x71, PhysicalKey.ArrowLeft },
+            { 0x72, PhysicalKey.ArrowRight },
+            { 0x6F, PhysicalKey.ArrowUp },
+
+            // Numpad Section
+            { 0x4D, PhysicalKey.NumLock },
+            { 0x5A, PhysicalKey.Numpad0 },
+            { 0x57, PhysicalKey.Numpad1 },
+            { 0x58, PhysicalKey.Numpad2 },
+            { 0x59, PhysicalKey.Numpad3 },
+            { 0x53, PhysicalKey.Numpad4 },
+            { 0x54, PhysicalKey.Numpad5 },
+            { 0x55, PhysicalKey.Numpad6 },
+            { 0x4F, PhysicalKey.Numpad7 },
+            { 0x50, PhysicalKey.Numpad8 },
+            { 0x51, PhysicalKey.Numpad9 },
+            { 0x56, PhysicalKey.NumpadAdd },
+            //{     , PhysicalKey.NumpadBackspace },
+            //{     , PhysicalKey.NumpadClear },
+            //{     , PhysicalKey.NumpadClearEntry },
+            { 0x81, PhysicalKey.NumpadComma },
+            { 0x5B, PhysicalKey.NumpadDecimal },
+            { 0x6A, PhysicalKey.NumpadDivide },
+            { 0x68, PhysicalKey.NumpadEnter },
+            { 0x7D, PhysicalKey.NumpadEqual },
+            //{     , PhysicalKey.NumpadHash },
+            //{     , PhysicalKey.NumpadMemoryAdd },
+            //{     , PhysicalKey.NumpadMemoryClear },
+            //{     , PhysicalKey.NumpadMemoryRecall },
+            //{     , PhysicalKey.NumpadMemoryStore },
+            //{     , PhysicalKey.NumpadMemorySubtract },
+            { 0x3F, PhysicalKey.NumpadMultiply },
+            { 0xBB, PhysicalKey.NumpadParenLeft },
+            { 0xBC, PhysicalKey.NumpadParenRight },
+            //{     , PhysicalKey.NumpadStar },
+            { 0x52, PhysicalKey.NumpadSubtract },
+
+            // Function Section
+            { 0x09, PhysicalKey.Escape },
+            { 0x43, PhysicalKey.F1 },
+            { 0x44, PhysicalKey.F2 },
+            { 0x45, PhysicalKey.F3 },
+            { 0x46, PhysicalKey.F4 },
+            { 0x47, PhysicalKey.F5 },
+            { 0x48, PhysicalKey.F6 },
+            { 0x49, PhysicalKey.F7 },
+            { 0x4A, PhysicalKey.F8 },
+            { 0x4B, PhysicalKey.F9 },
+            { 0x4C, PhysicalKey.F10 },
+            { 0x5F, PhysicalKey.F11 },
+            { 0x60, PhysicalKey.F12 },
+            { 0xBF, PhysicalKey.F13 },
+            { 0xC0, PhysicalKey.F14 },
+            { 0xC1, PhysicalKey.F15 },
+            { 0xC2, PhysicalKey.F16 },
+            { 0xC3, PhysicalKey.F17 },
+            { 0xC4, PhysicalKey.F18 },
+            { 0xC5, PhysicalKey.F19 },
+            { 0xC6, PhysicalKey.F20 },
+            { 0xC7, PhysicalKey.F21 },
+            { 0xC8, PhysicalKey.F22 },
+            { 0xC9, PhysicalKey.F23 },
+            { 0xCA, PhysicalKey.F24 },
+            //{     , PhysicalKey.Fn },
+            //{     , PhysicalKey.FnLock },
+            { 0x6B, PhysicalKey.PrintScreen },
+            { 0x4E, PhysicalKey.ScrollLock },
+            { 0x7F, PhysicalKey.Pause },
+
+            // Media Keys
+            { 0xA6, PhysicalKey.BrowserBack },
+            { 0xA4, PhysicalKey.BrowserFavorites },
+            { 0xA7, PhysicalKey.BrowserForward },
+            { 0xB4, PhysicalKey.BrowserHome },
+            { 0xB5, PhysicalKey.BrowserRefresh },
+            { 0xE1, PhysicalKey.BrowserSearch },
+            { 0x88, PhysicalKey.BrowserStop },
+            { 0xA9, PhysicalKey.Eject },
+            { 0x98, PhysicalKey.LaunchApp1 },
+            { 0x94, PhysicalKey.LaunchApp2 },
+            { 0xA3, PhysicalKey.LaunchMail },
+            { 0xAC, PhysicalKey.MediaPlayPause },
+            { 0xB3, PhysicalKey.MediaSelect },
+            { 0xAE, PhysicalKey.MediaStop },
+            { 0xAB, PhysicalKey.MediaTrackNext },
+            { 0xAD, PhysicalKey.MediaTrackPrevious },
+            { 0x7C, PhysicalKey.Power },
+            { 0x96, PhysicalKey.Sleep },
+            { 0x7A, PhysicalKey.AudioVolumeDown },
+            { 0x79, PhysicalKey.AudioVolumeMute },
+            { 0x7B, PhysicalKey.AudioVolumeUp },
+            { 0x97, PhysicalKey.WakeUp },
+
+            // Legacy Keys
+            //{     , PhysicalKey.Hyper },
+            //{     , PhysicalKey.Super },
+            //{     , PhysicalKey.Turbo },
+            //{     , PhysicalKey.Abort },
+            //{     , PhysicalKey.Resume },
+            //{     , PhysicalKey.Suspend },
+            { 0x89, PhysicalKey.Again },
+            { 0x8D, PhysicalKey.Copy },
+            { 0x91, PhysicalKey.Cut },
+            { 0x90, PhysicalKey.Find },
+            { 0x8E, PhysicalKey.Open },
+            { 0x8F, PhysicalKey.Paste },
+            //{     , PhysicalKey.Props },
+            { 0x8C, PhysicalKey.Select },
+            { 0x8B, PhysicalKey.Undo },
+            //{     , PhysicalKey.Hiragana },
+            //{     , PhysicalKey.Katakana },
+        };
+
+        public static PhysicalKey PhysicalKeyFromScanCode(int scanCode)
+            => scanCode is > 0 and <= 255 && s_physicalKeyFromScanCode.TryGetValue((byte)scanCode, out var result) ?
+                result :
+                PhysicalKey.None;
+
+        private static readonly Dictionary<X11Key, Key> s_keyFromX11Key = new(180)
         {
             {X11Key.Cancel, Key.Cancel},
             {X11Key.BackSpace, Key.Back},
@@ -198,26 +407,15 @@ namespace Avalonia.X11
             {X11Key.grave, Key.OemTilde},
             {X11Key.asciitilde, Key.OemTilde},
             {X11Key.XK_1, Key.D1},
-            {X11Key.exclam, Key.D1},
             {X11Key.XK_2, Key.D2},
-            {X11Key.at, Key.D2},
             {X11Key.XK_3, Key.D3},
-            {X11Key.numbersign, Key.D3},
             {X11Key.XK_4, Key.D4},
-            {X11Key.dollar, Key.D4},
             {X11Key.XK_5, Key.D5},
-            {X11Key.percent, Key.D5},
             {X11Key.XK_6, Key.D6},
-            {X11Key.asciicircum, Key.D6},
             {X11Key.XK_7, Key.D7},
-            {X11Key.ampersand, Key.D7},
             {X11Key.XK_8, Key.D8},
-            {X11Key.asterisk, Key.D8},
             {X11Key.XK_9, Key.D9},
-            {X11Key.parenleft, Key.D9},
             {X11Key.XK_0, Key.D0},
-            {X11Key.parenright, Key.D0},
-
             //{ X11Key.?, Key.AbntC1 }
             //{ X11Key.?, Key.AbntC2 }
             //{ X11Key.?, Key.Oem8 }
@@ -242,8 +440,8 @@ namespace Avalonia.X11
             //{ X11Key.?, Key.DeadCharProcessed }
         };
 
-        public static Key ConvertKey(X11Key key) 
-            => KeyDic.TryGetValue(key, out var result) ? result : Key.None;
+        public static Key KeyFromX11Key(X11Key key)
+            => s_keyFromX11Key.TryGetValue(key, out var result) ? result : Key.None;
     }
     
 }
