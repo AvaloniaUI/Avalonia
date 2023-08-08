@@ -113,6 +113,11 @@ namespace Avalonia.Android
 
         private void OnSelectionChanged()
         {
+            if (Client is null)
+            {
+                return;
+            }
+
             var selection = Client.Selection;
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, selection.Start, selection.End);

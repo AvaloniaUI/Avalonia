@@ -217,7 +217,7 @@ namespace Avalonia.Win32
 
             if (MicroComRuntime.TryUnwrapManagedObject(pDataObj) is DataObject dataObject)
             {
-                return dataObject;
+                return dataObject.Wrapped;
             }
             return new OleDataObject(pDataObj);
         }

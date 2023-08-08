@@ -1,8 +1,10 @@
+#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using ILRepacking;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -10,8 +12,8 @@ public class RefAssemblyGenerator
 {
     class Resolver : DefaultAssemblyResolver, IAssemblyResolver
     {
-        private readonly string _dir;
-        Dictionary<string, AssemblyDefinition> _cache = new();
+        readonly string _dir;
+        readonly Dictionary<string, AssemblyDefinition> _cache = new();
 
         public Resolver(string dir)
         {
@@ -31,17 +33,17 @@ public class RefAssemblyGenerator
     
     public static void PatchRefAssembly(string file)
     {
-        var reader = typeof(RefAssemblyGenerator).Assembly.GetManifestResourceStream("avalonia.snk");
+        var reader = typeof(RefAssemblyGenerator).Assembly.GetManifestResourceStream("avalonia.snk")!;
         var snk = new byte[reader.Length];
-        reader.Read(snk, 0, snk.Length);
+        reader.ReadExactly(snk, 0, snk.Length);
 
         var def = AssemblyDefinition.ReadAssembly(file, new ReaderParameters
         {
             ReadWrite = true,
             InMemory = true,
             ReadSymbols = true,
-            SymbolReaderProvider = new DefaultSymbolReaderProvider(false),
-            AssemblyResolver = new Resolver(Path.GetDirectoryName(file))
+            SymbolReaderProvider = new DefaultSymbolReaderProvider(throwIfNoSymbol: true),
+            AssemblyResolver = new Resolver(Path.GetDirectoryName(file)!)
         });
 
         var obsoleteAttribute = def.MainModule.ImportReference(new TypeReference("System", "ObsoleteAttribute", def.MainModule,
@@ -58,7 +60,7 @@ public class RefAssemblyGenerator
         {
             StrongNameKeyBlob = snk,
             WriteSymbols = def.MainModule.HasSymbols,
-            SymbolWriterProvider = new EmbeddedPortablePdbWriterProvider(),
+            SymbolWriterProvider = new PortablePdbWriterProvider(),
             DeterministicMvid = def.MainModule.HasSymbols
         });
     }
@@ -146,7 +148,7 @@ public class RefAssemblyGenerator
         m.Attributes = ((m.Attributes | dflags) ^ dflags) | MethodAttributes.Assembly;
     }
     
-    static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, ICustomAttribute unstableAttribute)
+    static void MarkAsUnstable(IMemberDefinition def, MethodReference obsoleteCtor, ICustomAttribute? unstableAttribute)
     {
         if (def.CustomAttributes.Any(a => a.AttributeType.FullName == "System.ObsoleteAttribute"))
             return;
@@ -172,43 +174,66 @@ public class RefAssemblyGenerator
         });
     }
     
-    public static void GenerateRefAsmsInPackage(string packagePath)
+    public static void GenerateRefAsmsInPackage(string mainPackagePath, string symbolsPackagePath)
     {
-        using (var archive = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.ReadWrite),
-            ZipArchiveMode.Update))
-        {
-            foreach (var entry in archive.Entries.ToList())
-            {
-                if (entry.FullName.StartsWith("ref/"))
-                    entry.Delete();
-            }
-            
-            foreach (var entry in archive.Entries.ToList())
-            {
-                if (entry.FullName.StartsWith("lib/") && entry.Name.EndsWith(".xml"))
-                {
-                    var newEntry = archive.CreateEntry("ref/" + entry.FullName.Substring(4),
-                        CompressionLevel.Optimal);
-                    using (var src = entry.Open())
-                    using (var dst = newEntry.Open())
-                        src.CopyTo(dst);
-                }
-            }
+        using var mainArchive = OpenPackage(mainPackagePath);
+        using var symbolsArchive = OpenPackage(symbolsPackagePath);
 
-            var libs = archive.Entries.Where(e => e.FullName.StartsWith("lib/") && e.FullName.EndsWith(".dll"))
-                .Select((e => new { s = e.FullName.Split('/'), e = e }))
-                .Select(e => new { Tfm = e.s[1], Name = e.s[2], Entry = e.e })
-                .GroupBy(x => x.Tfm);
-            foreach(var tfm in libs)
-                using (Helpers.UseTempDir(out var temp))
-                {
-                    foreach (var l in tfm) 
-                        l.Entry.ExtractToFile(Path.Combine(temp, l.Name));
-                    foreach (var l in tfm) 
-                        PatchRefAssembly(Path.Combine(temp, l.Name));
-                    foreach (var l in tfm)
-                        archive.CreateEntryFromFile(Path.Combine(temp, l.Name), $"ref/{l.Tfm}/{l.Name}");
-                }
+        foreach (var entry in mainArchive.Entries
+            .Where(e => e.FullName.StartsWith("ref/", StringComparison.Ordinal))
+            .ToArray())
+        {
+            entry.Delete();
         }
+
+        foreach (var libEntry in GetLibEntries(mainArchive, ".xml"))
+        {
+            var refEntry = mainArchive.CreateEntry("ref/" + libEntry.FullName.Substring(4), CompressionLevel.Optimal);
+            using var src = libEntry.Open();
+            using var dst = refEntry.Open();
+            src.CopyTo(dst);
+        }
+
+        var pdbEntries = GetLibEntries(symbolsArchive, ".pdb").ToDictionary(e => e.FullName);
+
+        var libs = GetLibEntries(mainArchive, ".dll")
+            .Select(e => (NameParts: e.FullName.Split('/'), Entry: e))
+            .Select(e => (
+                Tfm: e.NameParts[1],
+                DllName: e.NameParts[2],
+                DllEntry: e.Entry,
+                PdbName: Path.ChangeExtension(e.NameParts[2], ".pdb"),
+                PdbEntry: pdbEntries.TryGetValue(Path.ChangeExtension(e.Entry.FullName, ".pdb"), out var pdbEntry) ?
+                    pdbEntry :
+                    throw new InvalidOperationException($"Missing symbols for {e.Entry.FullName}")))
+            .GroupBy(e => e.Tfm);
+
+        foreach (var tfm in libs)
+        {
+            using var _ = Helpers.UseTempDir(out var temp);
+
+            foreach (var lib in tfm)
+            {
+                var extractedDllPath = Path.Combine(temp, lib.DllName);
+                var extractedPdbPath = Path.Combine(temp, lib.PdbName);
+
+                lib.DllEntry.ExtractToFile(extractedDllPath);
+                lib.PdbEntry.ExtractToFile(extractedPdbPath);
+
+                PatchRefAssembly(extractedDllPath);
+
+                mainArchive.CreateEntryFromFile(extractedDllPath, $"ref/{lib.Tfm}/{lib.DllName}");
+                symbolsArchive.CreateEntryFromFile(extractedPdbPath, $"ref/{lib.Tfm}/{lib.PdbName}");
+            }
+        }
+
+        static ZipArchive OpenPackage(string packagePath)
+            => new(File.Open(packagePath, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update);
+
+        static ZipArchiveEntry[] GetLibEntries(ZipArchive archive, string extension)
+            => archive.Entries
+                .Where(e => e.FullName.StartsWith("lib/", StringComparison.Ordinal)
+                    && e.FullName.EndsWith(extension, StringComparison.Ordinal))
+                .ToArray();
     }
 }
