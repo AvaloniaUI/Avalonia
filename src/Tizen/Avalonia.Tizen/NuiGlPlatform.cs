@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Compatibility;
+﻿using Avalonia.Compatibility;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 
@@ -18,7 +13,7 @@ internal class NuiGlPlatform : IPlatformGraphics
     public GlContext Context { get; }
     public static GlVersion GlVersion { get; } = new(GlProfileType.OpenGLES, 3, 0);
 
-    public NuiGlPlatform(NuiAvaloniaView nuiAvaloniaView)
+    public NuiGlPlatform()
     {
         const string library = "/usr/lib/driver/libGLESv2.so";
         var libGl = NativeLibraryEx.Load(library);
@@ -30,17 +25,14 @@ internal class NuiGlPlatform : IPlatformGraphics
                 return address;
             return default;
         });
-        Context = new(nuiAvaloniaView, iface);
+        Context = new(iface);
     }
 }
 
 class GlContext : IGlContext
 {
-    private readonly NuiAvaloniaView _nuiAvaloniaView;
-
-    public GlContext(NuiAvaloniaView nuiAvaloniaView, GlInterface glInterface)
+    public GlContext(GlInterface glInterface)
     {
-        _nuiAvaloniaView = nuiAvaloniaView;
         GlInterface = glInterface;
     }
 

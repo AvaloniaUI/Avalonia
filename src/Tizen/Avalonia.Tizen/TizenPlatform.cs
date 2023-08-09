@@ -27,7 +27,8 @@ internal class TizenPlatform
             .Bind<IPlatformThreadingInterface>().ToConstant(ThreadingInterface)
             .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
             .Bind<IRenderTimer>().ToConstant(new TizenRenderTimer())
-            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+            .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+            .Bind<IPlatformGraphics>().ToConstant(GlPlatform = new NuiGlPlatform());
 
         Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
     }

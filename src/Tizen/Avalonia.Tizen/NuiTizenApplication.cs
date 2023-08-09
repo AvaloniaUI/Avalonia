@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Tizen.NUI;
 using Window = Tizen.NUI.Window;
 using Avalonia.Logging;
+using Avalonia.Threading;
 
 namespace Avalonia.Tizen;
 
@@ -34,10 +35,10 @@ public class NuiTizenApplication<TApp> : NUIApplication
     protected override void OnCreate()
     {
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Creating application");
-        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
 
         base.OnCreate();
 #pragma warning disable CS8601 // Possible null reference assignment.
+        TizenThreadingInterface.MainloopContext = SynchronizationContext.Current;
 #pragma warning restore CS8601 // Possible null reference assignment.
 
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup view");
@@ -45,20 +46,28 @@ public class NuiTizenApplication<TApp> : NUIApplication
 
         _lifetime.View.HeightResizePolicy = ResizePolicyType.FillToParent;
         _lifetime.View.WidthResizePolicy = ResizePolicyType.FillToParent;
+        _lifetime.View.OnSurfaceInit += ContinueSetupApplication;
 
         Window.Instance.RenderingBehavior = RenderingBehaviorType.Continuously;
         Window.Instance.GetDefaultLayer().Add(_lifetime.View);
         Window.Instance.KeyEvent += (s, e) => _lifetime?.View?.KeyboardHandler.Handle(e);
-        Window.Instance.Activate();
-        Window.Instance.Show();
+    }
+
+    private void ContinueSetupApplication()
+    {
+        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
 
         Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "App builder");
         var builder = AppBuilder.Configure<TApp>().UseTizen();
-        CustomizeAppBuilder(builder);
 
-        builder.AfterSetup(_ => _lifetime.View.Initialise());
+        TizenThreadingInterface.MainloopContext.Post(_ =>
+        {
+            CustomizeAppBuilder(builder);
 
-        Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup lifetime");
-        builder.SetupWithLifetime(_lifetime);
+            builder.AfterSetup(_ => _lifetime.View.Initialise());
+
+            Logger.TryGet(LogEventLevel.Debug, LogKey)?.Log(null, "Setup lifetime");
+            builder.SetupWithLifetime(_lifetime);
+        }, null);
     }
 }

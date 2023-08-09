@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
 using Avalonia.Rendering;
+using Tizen.Account.AccountManager;
 using Tizen.System;
 
 namespace Avalonia.Tizen;
 internal class TizenRenderTimer : IRenderTimer
 {
     private readonly Stopwatch _st = Stopwatch.StartNew();
-    private global::Tizen.NUI.Timer _timer;
+    private Timer _timer;
 
     public bool RunsInBackground => true;
 
@@ -15,28 +16,24 @@ internal class TizenRenderTimer : IRenderTimer
 
     public TizenRenderTimer()
     {
-        _timer = new global::Tizen.NUI.Timer(16);
+        _timer = new Timer(TimerTick, null, 16, 16);
         Display.StateChanged += Display_StateChanged;
-
-        _timer.Tick += TimerTick;
-        _timer.Start();
     }
 
-    private bool TimerTick(object source, global::Tizen.NUI.Timer.TickEventArgs e)
+    private void TimerTick(object? state)
     {
         RenderTick?.Invoke();
-        return true;
     }
 
     private void Display_StateChanged(object? sender, DisplayStateChangedEventArgs e)
     {
         if (e.State == DisplayState.Off)
         {
-            _timer.Stop();
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
-        else if (!_timer.IsRunning())
+        else
         {
-            _timer.Start();
+            _timer.Change(16, 16);
         }
     }
 

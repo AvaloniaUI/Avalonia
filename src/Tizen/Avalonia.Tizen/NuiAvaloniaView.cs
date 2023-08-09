@@ -7,6 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
+using Avalonia.Threading;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 
@@ -43,6 +44,8 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     #region Setup
 
+    public event Action OnSurfaceInit;
+
     public NuiAvaloniaView() : base(ColorFormat.RGBA8888)
     {
         RenderingMode = GLRenderingMode.OnDemand;
@@ -65,8 +68,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
 
     private void GlInit()
     {
-        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-        AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(TizenPlatform.GlPlatform = new NuiGlPlatform(this));
+        OnSurfaceInit?.Invoke();
     }
 
     private int GlRenderFrame()
@@ -130,7 +132,7 @@ public class NuiAvaloniaView : GLView, ITizenView, ITextInputMethodImpl
         if (Size.Width == 0 || Size.Height == 0)
             return;
 
-        _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
+        _topLevelImpl?.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
     }
 
     #endregion
