@@ -32,10 +32,9 @@ namespace Avalonia.Skia.Helpers
 
             var format = GetFormatFromExtension(Path.GetExtension(fileName));
 
-            using (var stream = File.Create(fileName))
-            {
-                SaveImage(image, stream, format, quality);
-            }
+            using var data = image.Encode(format, quality ?? 100) ?? throw new NotSupportedException(format.ToString());
+            using var stream = File.Create(fileName);
+            data.SaveTo(stream);
         }
 
         /// <summary>
@@ -82,6 +81,8 @@ namespace Avalonia.Skia.Helpers
                 throw new ArgumentOutOfRangeException(nameof(quality), "[0, 100]");
 
             using var data = image.Encode(format, quality ?? 100);
+            if (data is null)
+                throw new NotSupportedException(format.ToString());
             data.SaveTo(stream);
         }
 
@@ -90,12 +91,13 @@ namespace Avalonia.Skia.Helpers
             {
                 ".png" => SKEncodedImageFormat.Png,
                 ".jpg" or ".jpeg" or ".jpe" => SKEncodedImageFormat.Jpeg,
-                ".bmp" => SKEncodedImageFormat.Bmp,
-                ".gif" => SKEncodedImageFormat.Gif,
-                ".ico" => SKEncodedImageFormat.Ico,
                 ".webp" => SKEncodedImageFormat.Webp,
-                ".heif" or ".heic" => SKEncodedImageFormat.Heif,
-                ".avif" => SKEncodedImageFormat.Avif,
+                // the following formats are defined but not supported by SkiaSharp
+                //".bmp" => SKEncodedImageFormat.Bmp,
+                //".gif" => SKEncodedImageFormat.Gif,
+                //".ico" => SKEncodedImageFormat.Ico,
+                //".heif" or ".heic" => SKEncodedImageFormat.Heif,
+                //".avif" => SKEncodedImageFormat.Avif,
                 _ => GetFallbackFormat(),
             };
 
