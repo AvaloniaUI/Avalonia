@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Metadata;
 using SharpDX.Direct2D1;
 using SharpDX.WIC;
@@ -42,9 +44,9 @@ namespace Avalonia.Direct2D1.Media
             return new OptionalDispose<Bitmap1>(_direct2DBitmap, false);
         }
 
-        public override void Save(Stream stream, int? quality = null)
+        public override void Save(Stream stream, WicImageFormat format, int? quality = null)
         {
-            using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
+            using (var encoder = format.CreateEncoder(Direct2D1Platform.ImagingFactory, stream))
             using (var frame = new BitmapFrameEncode(encoder))
             using (var bitmapSource = _direct2DBitmap.QueryInterface<BitmapSource>())
             {

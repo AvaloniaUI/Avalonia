@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
+
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
+
 using D2DBitmap = SharpDX.Direct2D1.Bitmap1;
 
 namespace Avalonia.Direct2D1.Media
@@ -15,22 +18,33 @@ namespace Avalonia.Direct2D1.Media
 
         public void Save(string fileName, int? quality = null)
         {
-            if (Path.GetExtension(fileName) != ".png")
-            {
-                // Yeah, we need to support other formats.
-                throw new NotSupportedException("Use PNG, stoopid.");
-            }
-
-            using (FileStream s = new FileStream(fileName, FileMode.Create))
-            {
-                Save(s, quality);
-            }
+            var file = new FileInfo(fileName);
+            var format = GetFormatFromExtension(file.Extension);
+            using var s = new FileStream(fileName, FileMode.Create);
+            Save(s, format, quality);
         }
 
-        public abstract void Save(Stream stream, int? quality = null);
+        public abstract void Save(Stream stream, WicImageFormat format, int? quality = null);
+
+        public void Save(Stream stream, int? quality = null)
+        {
+            Save(stream, WicImageFormat.Png, quality);
+        }
 
         public virtual void Dispose()
         {
+        }
+
+        private static WicImageFormat GetFormatFromExtension(string extension)
+        {
+            return extension.ToLowerInvariant() switch
+            {
+                ".png" => WicImageFormat.Png,
+                ".jpg" or ".jpeg" or ".jpe" => WicImageFormat.Jpeg,
+                ".bmp" => WicImageFormat.Bmp,
+                ".gif" => WicImageFormat.Gif,
+                _ => throw new NotSupportedException("Unsupported image format.")
+            };
         }
     }
 }

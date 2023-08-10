@@ -134,6 +134,16 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public void Save(Stream stream, SKEncodedImageFormat format, int? quality = null)
+        {
+            using (var image = SnapshotImage())
+            {
+                ImageSavingHelper.SaveImage(image, stream, format, quality);
+            }
+        }
+
+        /// <inheritdoc />
+        [Obsolete("Use overloads that take format parameter")]
         public void Save(Stream stream, int? quality = null)
         {
             using (var image = SnapshotImage())

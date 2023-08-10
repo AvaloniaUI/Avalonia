@@ -7,6 +7,7 @@ using AlphaFormat = Avalonia.Platform.AlphaFormat;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap1;
 using Avalonia.Platform;
 using PixelFormat = SharpDX.WIC.PixelFormat;
+using Avalonia.Direct2D1.Media.Imaging;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -189,9 +190,9 @@ namespace Avalonia.Direct2D1.Media
             return new OptionalDispose<D2DBitmap>(d2dBitmap, true);
         }
 
-        public override void Save(Stream stream, int? quality = null)
+        public override void Save(Stream stream, WicImageFormat format, int? quality = null)
         {
-            using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
+            using (var encoder = format.CreateEncoder(Direct2D1Platform.ImagingFactory, stream))
             using (var frame = new BitmapFrameEncode(encoder))
             {
                 frame.Initialize();
