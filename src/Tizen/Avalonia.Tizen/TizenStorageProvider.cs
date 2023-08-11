@@ -71,43 +71,10 @@ internal class TizenStorageProvider : IStorageProvider
         return await tcs.Task;
     }
 
-    public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
+    public Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
-        Permissions.EnsureDeclared(Permissions.AppManagerLaunchPrivilege);
-        if (await Permissions.RequestPrivilegeAsync(Permissions.MediaStoragePrivilege) == false)
-        {
-            throw new SecurityException("Application doesn't have storage permission.");
-        }
-
-        var tcs = new TaskCompletionSource<IReadOnlyList<IStorageFolder>>();
-
-        var appControl = new AppControl
-        {
-            Operation = AppControlOperations.Pick,
-            Mime = "inode/directory"
-        };
-        appControl.ExtraData.Add(AppControlData.SectionMode, options.AllowMultiple ? "multiple" : "single");
-        if (options.SuggestedStartLocation?.Path is { } startupPath)
-            appControl.ExtraData.Add(AppControlData.Path, startupPath.ToString());
-        appControl.LaunchMode = AppControlLaunchMode.Single;
-
-        var fileResults = new List<IStorageFolder>();
-
-        AppControl.SendLaunchRequest(appControl, (_, reply, result) =>
-        {
-            if (result == AppControlReplyResult.Succeeded)
-            {
-                if (reply.ExtraData.Count() > 0)
-                {
-                    var selectedFiles = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList();
-                    fileResults.AddRange(selectedFiles.Select(f => new BclStorageFolder(new System.IO.DirectoryInfo(f))));
-                }
-            }
-
-            tcs.TrySetResult(fileResults);
-        });
-
-        return await tcs.Task;
+        return Task.FromException<IReadOnlyList<IStorageFolder>>(
+            new PlatformNotSupportedException("Open folder is not supported by Tizen"));
     }
 
     public Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)

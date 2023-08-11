@@ -7,7 +7,9 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
     internal event Action? TickExecuted;
     private bool _signaled;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     internal static SynchronizationContext MainloopContext { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
     {
@@ -22,7 +24,7 @@ internal class TizenThreadingInterface : IPlatformThreadingInterface
         if (SynchronizationContext.Current != null)
             action();
         else
-            MainloopContext.Post(_ => action(), null);
+            MainloopContext.Post(static arg => ((Action)arg!).Invoke(), action);
     }
 
     public void Signal(DispatcherPriority prio)

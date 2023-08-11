@@ -8,7 +8,7 @@ namespace Avalonia.Tizen;
 /// </summary>
 public class NuiViewControlHandle : INativeControlHostDestroyableControlHandle
 {
-    internal const string ViewDescriptor = nameof(View);
+    internal const string ViewDescriptor = "NuiView";
 
     /// <summary>
     /// Create handle with native view
