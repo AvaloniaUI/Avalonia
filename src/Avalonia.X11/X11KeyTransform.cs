@@ -114,24 +114,15 @@ namespace Avalonia.X11
             { 0x50, PhysicalKey.Numpad8 },
             { 0x51, PhysicalKey.Numpad9 },
             { 0x56, PhysicalKey.NumpadAdd },
-            //{     , PhysicalKey.NumpadBackspace },
             //{     , PhysicalKey.NumpadClear },
-            //{     , PhysicalKey.NumpadClearEntry },
             { 0x81, PhysicalKey.NumpadComma },
             { 0x5B, PhysicalKey.NumpadDecimal },
             { 0x6A, PhysicalKey.NumpadDivide },
             { 0x68, PhysicalKey.NumpadEnter },
             { 0x7D, PhysicalKey.NumpadEqual },
-            //{     , PhysicalKey.NumpadHash },
-            //{     , PhysicalKey.NumpadMemoryAdd },
-            //{     , PhysicalKey.NumpadMemoryClear },
-            //{     , PhysicalKey.NumpadMemoryRecall },
-            //{     , PhysicalKey.NumpadMemoryStore },
-            //{     , PhysicalKey.NumpadMemorySubtract },
             { 0x3F, PhysicalKey.NumpadMultiply },
             { 0xBB, PhysicalKey.NumpadParenLeft },
             { 0xBC, PhysicalKey.NumpadParenRight },
-            //{     , PhysicalKey.NumpadStar },
             { 0x52, PhysicalKey.NumpadSubtract },
 
             // Function Section
@@ -160,8 +151,6 @@ namespace Avalonia.X11
             { 0xC8, PhysicalKey.F22 },
             { 0xC9, PhysicalKey.F23 },
             { 0xCA, PhysicalKey.F24 },
-            //{     , PhysicalKey.Fn },
-            //{     , PhysicalKey.FnLock },
             { 0x6B, PhysicalKey.PrintScreen },
             { 0x4E, PhysicalKey.ScrollLock },
             { 0x7F, PhysicalKey.Pause },
@@ -191,12 +180,6 @@ namespace Avalonia.X11
             { 0x97, PhysicalKey.WakeUp },
 
             // Legacy Keys
-            //{     , PhysicalKey.Hyper },
-            //{     , PhysicalKey.Super },
-            //{     , PhysicalKey.Turbo },
-            //{     , PhysicalKey.Abort },
-            //{     , PhysicalKey.Resume },
-            //{     , PhysicalKey.Suspend },
             { 0x89, PhysicalKey.Again },
             { 0x8D, PhysicalKey.Copy },
             { 0x91, PhysicalKey.Cut },
@@ -205,9 +188,7 @@ namespace Avalonia.X11
             { 0x8F, PhysicalKey.Paste },
             //{     , PhysicalKey.Props },
             { 0x8C, PhysicalKey.Select },
-            { 0x8B, PhysicalKey.Undo },
-            //{     , PhysicalKey.Hiragana },
-            //{     , PhysicalKey.Katakana },
+            { 0x8B, PhysicalKey.Undo }
         };
 
         public static PhysicalKey PhysicalKeyFromScanCode(int scanCode)

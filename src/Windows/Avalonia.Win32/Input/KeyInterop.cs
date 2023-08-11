@@ -300,24 +300,15 @@ namespace Avalonia.Win32.Input
             { 0x0048, PhysicalKey.Numpad8 },
             { 0x0049, PhysicalKey.Numpad9 },
             { 0x004E, PhysicalKey.NumpadAdd },
-            //{     , PhysicalKey.NumpadBackspace },
             //{     , PhysicalKey.NumpadClear },
-            //{     , PhysicalKey.NumpadClearEntry },
             { 0x007E, PhysicalKey.NumpadComma },
             { 0x0053, PhysicalKey.NumpadDecimal },
             { 0xE035, PhysicalKey.NumpadDivide },
             { 0xE01C, PhysicalKey.NumpadEnter },
             { 0x0059, PhysicalKey.NumpadEqual },
-            //{     , PhysicalKey.NumpadHash },
-            //{     , PhysicalKey.NumpadMemoryAdd },
-            //{     , PhysicalKey.NumpadMemoryClear },
-            //{     , PhysicalKey.NumpadMemoryRecall },
-            //{     , PhysicalKey.NumpadMemoryStore },
-            //{     , PhysicalKey.NumpadMemorySubtract },
             { 0x0037, PhysicalKey.NumpadMultiply },
             //{     , PhysicalKey.NumpadParenLeft },
             //{     , PhysicalKey.NumpadParenRight },
-            //{     , PhysicalKey.NumpadStar },
             { 0x004A, PhysicalKey.NumpadSubtract },
 
             // Function Section
@@ -346,8 +337,6 @@ namespace Avalonia.Win32.Input
             { 0x006D, PhysicalKey.F22 },
             { 0x006E, PhysicalKey.F23 },
             { 0x0076, PhysicalKey.F24 },
-            //{     , PhysicalKey.Fn },
-            //{     , PhysicalKey.FnLock },
             { 0xE037, PhysicalKey.PrintScreen },
             { 0x0046, PhysicalKey.ScrollLock },
             { 0x0045, PhysicalKey.Pause },
@@ -377,13 +366,6 @@ namespace Avalonia.Win32.Input
             { 0xE063, PhysicalKey.WakeUp },
 
             // Legacy Keys
-            //{     , PhysicalKey.Hyper },
-            //{     , PhysicalKey.Super },
-            //{     , PhysicalKey.Turbo },
-            //{     , PhysicalKey.Abort },
-            //{     , PhysicalKey.Resume },
-            //{     , PhysicalKey.Suspend },
-            //{     , PhysicalKey.Again },
             { 0xE018, PhysicalKey.Copy },
             { 0xE017, PhysicalKey.Cut },
             //{     , PhysicalKey.Find },
@@ -392,8 +374,6 @@ namespace Avalonia.Win32.Input
             //{     , PhysicalKey.Props },
             //{     , PhysicalKey.Select },
             { 0xE008, PhysicalKey.Undo },
-            //{     , PhysicalKey.Hiragana },
-            //{     , PhysicalKey.Katakana },
         };
 
         /// <summary>

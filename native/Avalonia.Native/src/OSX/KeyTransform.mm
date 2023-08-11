@@ -121,24 +121,15 @@ const KeyInfo keyInfos[] =
     { 0x5B, AvnPhysicalKeyNumpad8, AvnKeyNumPad8, '8' },
     { 0x5C, AvnPhysicalKeyNumpad9, AvnKeyNumPad9, '9' },
     { 0x45, AvnPhysicalKeyNumpadAdd, AvnKeyAdd, '+' },
-    //{   , AvnPhysicalKeyNumpadBackspace, 0 },
     //{   , AvnPhysicalKeyNumpadClear, 0 },
-    //{   , AvnPhysicalKeyNumpadClearEntry, 0 },
     { 0x5F, AvnPhysicalKeyNumpadComma, AvnKeyAbntC2, 0 },
     { 0x41, AvnPhysicalKeyNumpadDecimal, AvnKeyDecimal, '.' },
     { 0x4B, AvnPhysicalKeyNumpadDivide, AvnKeyDivide, '/' },
     { 0x4C, AvnPhysicalKeyNumpadEnter, AvnKeyEnter, kReturnCharCode },
     { 0x51, AvnPhysicalKeyNumpadEqual, AvnKeyOemPlus, '=' },
-    //{   , AvnPhysicalKeyNumpadHash, 0 },
-    //{   , AvnPhysicalKeyNumpadMemoryAdd, 0 },
-    //{   , AvnPhysicalKeyNumpadMemoryClear, 0 },
-    //{   , AvnPhysicalKeyNumpadMemoryRecall, 0 },
-    //{   , AvnPhysicalKeyNumpadMemoryStore, 0 },
-    //{   , AvnPhysicalKeyNumpadMemorySubtract, 0 },
     { 0x43, AvnPhysicalKeyNumpadMultiply, AvnKeyMultiply, '*' },
     //{   , AvnPhysicalKeyNumpadParenLeft, 0 },
     //{   , AvnPhysicalKeyNumpadParenRight, 0 },
-    //{   , AvnPhysicalKeyNumpadStar, 0 },
     { 0x4E, AvnPhysicalKeyNumpadSubtract, AvnKeySubtract, '-' },
 
     // Function Section
@@ -167,8 +158,6 @@ const KeyInfo keyInfos[] =
     //{   , AvnPhysicalKeyF22, 0 },
     //{   , AvnPhysicalKeyF23, 0 },
     //{   , AvnPhysicalKeyF24, 0 },
-    //{   , AvnPhysicalKeyFn, 0 },
-    //{   , AvnPhysicalKeyFnLock, 0 },
     //{   , AvnPhysicalKeyPrintScreen, 0 },
     //{   , AvnPhysicalKeyScrollLock, 0 },
     //{   , AvnPhysicalKeyPause, 0 },
@@ -198,12 +187,6 @@ const KeyInfo keyInfos[] =
     //{   , AvnPhysicalKeyWakeUp, 0 },
 
     // Legacy Keys
-    //{   , AvnPhysicalKeyHyper, 0 },
-    //{   , AvnPhysicalKeySuper, 0 },
-    //{   , AvnPhysicalKeyTurbo, 0 },
-    //{   , AvnPhysicalKeyAbort, 0 },
-    //{   , AvnPhysicalKeyResume, 0 },
-    //{   , AvnPhysicalKeySuspend, 0 },
     //{   , AvnPhysicalKeyAgain, 0 },
     //{   , AvnPhysicalKeyCopy, 0 },
     //{   , AvnPhysicalKeyCut, 0 },
@@ -212,9 +195,7 @@ const KeyInfo keyInfos[] =
     //{   , AvnPhysicalKeyPaste, 0 },
     //{   , AvnPhysicalKeyProps, 0 },
     //{   , AvnPhysicalKeySelect, 0 },
-    //{   , AvnPhysicalKeyUndo, 0 },
-    //{   , AvnPhysicalKeyHiragana, 0 },
-    //{   , AvnPhysicalKeyKatakana, 0 },
+    //{   , AvnPhysicalKeyUndo, 0 }
 };
 
 std::unordered_map<uint16_t , AvnKey> virtualKeyFromChar =

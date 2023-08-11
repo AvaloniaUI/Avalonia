@@ -82,7 +82,7 @@ public enum PhysicalKey
     Digit6 = 12,
 
     /// <summary>
-    /// <c>7&</c> on a US keyboard.
+    /// <c>7&amp;</c> on a US keyboard.
     /// </summary>
     Digit7 = 13,
 
@@ -548,116 +548,61 @@ public enum PhysicalKey
     NumpadAdd = 95,
 
     /// <summary>
-    /// Numpad <c>Backspace</c>.
-    /// Found on the Microsoft Natural Keyboard.
-    /// </summary>
-    NumpadBackspace = 96,
-
-    /// <summary>
     /// Numpad <c>C</c> or <c>AC</c> (All Clear).
     /// Also for use with numpads that have a <c>Clear</c> key that is separate from the <c>NumLock</c> key.
     /// On the Mac, the numpad <c>Clear</c> key is <see cref="NumLock"/>.
     /// </summary>
-    NumpadClear = 97,
-
-    /// <summary>
-    /// Numpad <c>CE</c> (Clear Entry).
-    /// </summary>
-    NumpadClearEntry = 98,
+    NumpadClear = 96,
 
     /// <summary>
     /// Numpad <c>,</c> (thousands separator).
     /// For locales where the thousands separator is a "." (e.g., Brazil), this key may generate a <c>.</c>.
     /// </summary>
-    NumpadComma = 99,
+    NumpadComma = 97,
 
     /// <summary>
     /// Numpad <c>. Del</c>.
     /// For locales where the decimal separator is "," (e.g., Brazil), this key may generate a <c>,</c>.
     /// </summary>
-    NumpadDecimal = 100,
+    NumpadDecimal = 98,
 
     /// <summary>
     /// Numpad <c>/</c>.
     /// </summary>
-    NumpadDivide = 101,
+    NumpadDivide = 99,
 
     /// <summary>
     /// Numpad <c>Enter</c>.
     /// </summary>
-    NumpadEnter = 102,
+    NumpadEnter = 100,
 
     /// <summary>
     /// Numpad <c>=</c>.
     /// </summary>
-    NumpadEqual = 103,
-
-    /// <summary>
-    /// Numpad <c>#</c> on a phone or remote control device.
-    /// This key is typically found below the <c>9</c> key and to the right of the <c>0</c> key.
-    /// </summary>
-    NumpadHash = 104,
-
-    /// <summary>
-    /// Numpad <c>M+</c>.
-    /// Add current entry to the value stored in memory.
-    /// </summary>
-    NumpadMemoryAdd = 105,
-
-    /// <summary>
-    /// Numpad <c>MC</c>.
-    /// Clear the value stored in memory.
-    /// </summary>
-    NumpadMemoryClear = 106,
-
-    /// <summary>
-    /// Numpad <c>MR</c>.
-    /// Replace the current entry with the value stored in memory.
-    /// </summary>
-    NumpadMemoryRecall = 107,
-
-    /// <summary>
-    /// Numpad <c>MS</c>.
-    /// Replace the value stored in memory with the current entry.
-    /// </summary>
-    NumpadMemoryStore = 108,
-
-    /// <summary>
-    /// Numpad <c>M-</c>.
-    /// Subtract current entry from the value stored in memory.
-    /// </summary>
-    NumpadMemorySubtract = 109,
+    NumpadEqual = 101,
 
     /// <summary>
     /// Numpad <c>*</c> on a keyboard.
     /// For use with numpads that provide mathematical operations (<c>+</c>, <c>-</c>, <c>*</c> and <c>/</c>).
-    /// Use <see cref="NumpadStar"/> for the <c>*</c> key on phones and remote controls.
     /// </summary>
-    NumpadMultiply = 110,
+    NumpadMultiply = 102,
 
     /// <summary>
     /// Numpad <c>(</c>.
     /// Found on the Microsoft Natural Keyboard.
     /// </summary>
-    NumpadParenLeft = 111,
+    NumpadParenLeft = 103,
 
     /// <summary>
     /// Numpad <c>)</c>.
     /// Found on the Microsoft Natural Keyboard.
     /// </summary>
-    NumpadParenRight = 112,
-
-    /// <summary>
-    /// <c>*</c> on a phone or remote control device.
-    /// This key is typically found below the <c>7</c> key and to the left of the <c>0</c> key.
-    /// Use <see cref="NumpadMultiply"/> for the <c>*</c> key on numeric keypads.
-    /// </summary>
-    NumpadStar = 113,
+    NumpadParenRight = 104,
 
     /// <summary>
     /// Numpad <c>-</c>.
     /// </summary>
-    NumpadSubtract = 114,
+    NumpadSubtract = 105,
 
 
     // ################
@@ -667,156 +612,142 @@ public enum PhysicalKey
     /// <summary>
     /// <c>Esc</c> or <c>⎋</c>.
     /// </summary>
-    Escape = 115,
+    Escape = 106,
 
     /// <summary>
     /// <c>F1</c>.
     /// </summary>
-    F1 = 116,
+    F1 = 107,
 
     /// <summary>
     /// <c>F2</c>.
     /// </summary>
-    F2 = 117,
+    F2 = 108,
 
     /// <summary>
     /// <c>F3</c>.
     /// </summary>
-    F3 = 118,
+    F3 = 109,
 
     /// <summary>
     /// <c>F4</c>.
     /// </summary>
-    F4 = 119,
+    F4 = 110,
 
     /// <summary>
     /// <c>F5</c>.
     /// </summary>
-    F5 = 120,
+    F5 = 111,
 
     /// <summary>
     /// <c>F6</c>.
     /// </summary>
-    F6 = 121,
+    F6 = 112,
 
     /// <summary>
     /// <c>F7</c>.
     /// </summary>
-    F7 = 122,
+    F7 = 113,
 
     /// <summary>
     /// <c>F8</c>.
     /// </summary>
-    F8 = 123,
+    F8 = 114,
 
     /// <summary>
     /// <c>F9</c>.
     /// </summary>
-    F9 = 124,
+    F9 = 115,
 
     /// <summary>
     /// <c>F10</c>.
     /// </summary>
-    F10 = 125,
+    F10 = 116,
 
     /// <summary>
     /// <c>F11</c>.
     /// </summary>
-    F11 = 126,
+    F11 = 117,
 
     /// <summary>
     /// <c>F12</c>.
     /// </summary>
-    F12 = 127,
+    F12 = 118,
 
     /// <summary>
     /// <c>F13</c>.
     /// </summary>
-    F13 = 128,
+    F13 = 119,
 
     /// <summary>
     /// <c>F14</c>.
     /// </summary>
-    F14 = 129,
+    F14 = 120,
 
     /// <summary>
     /// <c>F15</c>.
     /// </summary>
-    F15 = 130,
+    F15 = 121,
 
     /// <summary>
     /// <c>F16</c>.
     /// </summary>
-    F16 = 131,
+    F16 = 122,
 
     /// <summary>
     /// <c>F17</c>.
     /// </summary>
-    F17 = 132,
+    F17 = 123,
 
     /// <summary>
     /// <c>F18</c>.
     /// </summary>
-    F18 = 133,
+    F18 = 124,
 
     /// <summary>
     /// <c>F19</c>.
     /// </summary>
-    F19 = 134,
+    F19 = 125,
 
     /// <summary>
     /// <c>F20</c>.
     /// </summary>
-    F20 = 135,
+    F20 = 126,
 
     /// <summary>
     /// <c>F21</c>.
     /// </summary>
-    F21 = 136,
+    F21 = 127,
 
     /// <summary>
     /// <c>F22</c>.
     /// </summary>
-    F22 = 137,
+    F22 = 128,
 
     /// <summary>
     /// <c>F23</c>.
     /// </summary>
-    F23 = 138,
+    F23 = 129,
 
     /// <summary>
     /// <c>F24</c>.
     /// </summary>
-    F24 = 139,
-
-    /// <summary>
-    /// <c>Fn</c>.
-    /// This is typically a hardware key that does not generate a separate code.
-    /// Most keyboards do not place this key in the function section.
-    /// </summary>
-    Fn = 140,
-
-    /// <summary>
-    /// <c>FLock</c> or <c>FnLock</c>.
-    /// Function Lock key.
-    /// Found on the Microsoft Natural Keyboard.
-    /// </summary>
-    FnLock = 141,
+    F24 = 130,
 
     /// <summary>
     /// <c>PrtScr SysRq</c> or <c>Print Screen</c>.
     /// </summary>
-    PrintScreen = 142,
+    PrintScreen = 131,
 
     /// <summary>
     /// <c>Scroll Lock</c>.
     /// </summary>
-    ScrollLock = 143,
+    ScrollLock = 132,
 
     /// <summary>
     /// <c>Pause Break</c>.
     /// </summary>
-    Pause = 144,
+    Pause = 133,
 
 
     // ##########
@@ -827,116 +758,116 @@ public enum PhysicalKey
     /// Browser <c>Back</c>.
     /// Some laptops place this key to the left of the <c>↑</c> key.
     /// </summary>
-    BrowserBack = 145,
+    BrowserBack = 134,
 
     /// <summary>
     /// Browser <c>Favorites</c>.
     /// </summary>
-    BrowserFavorites = 146,
+    BrowserFavorites = 135,
 
     /// <summary>
     /// Browser <c>Forward</c>.
     /// Some laptops place this key to the right of the <c>↑</c> key.
     /// </summary>
-    BrowserForward = 147,
+    BrowserForward = 136,
 
     /// <summary>
     /// Browser <c>Home</c>.
     /// </summary>
-    BrowserHome = 148,
+    BrowserHome = 137,
 
     /// <summary>
     /// Browser <c>Refresh</c>.
     /// </summary>
-    BrowserRefresh = 149,
+    BrowserRefresh = 138,
 
     /// <summary>
     /// Browser <c>Search</c>.
     /// </summary>
-    BrowserSearch = 150,
+    BrowserSearch = 139,
     
     /// <summary>
     /// Browser <c>Stop</c>.
     /// </summary>
-    BrowserStop = 151,
+    BrowserStop = 140,
     
     /// <summary>
     /// <c>Eject</c> or <c>⏏</c>.
     /// This key is placed in the function section on some Apple keyboards.
     /// </summary>
-    Eject = 152,
+    Eject = 141,
 
     /// <summary>
     /// <c>App 1</c>.
     /// Sometimes labelled <c>My Computer</c> on the keyboard.
     /// </summary>
-    LaunchApp1 = 153,
+    LaunchApp1 = 142,
 
     /// <summary>
     /// <c>App 2</c>.
     /// Sometimes labelled <c>Calculator</c> on the keyboard.
     /// </summary>
-    LaunchApp2 = 154,
+    LaunchApp2 = 143,
 
     /// <summary>
     /// <c>Mail</c>.
     /// </summary>
-    LaunchMail = 155,
+    LaunchMail = 144,
 
     /// <summary>
     /// Media <c>Play/Pause</c> or <c>⏵⏸</c>.
     /// </summary>
-    MediaPlayPause = 156,
+    MediaPlayPause = 145,
 
     /// <summary>
     /// Media <c>Select</c>.
     /// </summary>
-    MediaSelect = 157,
+    MediaSelect = 146,
 
     /// <summary>
     /// Media <c>Stop</c> or <c>⏹</c>.
     /// </summary>
-    MediaStop = 158,
+    MediaStop = 147,
 
     /// <summary>
     /// Media <c>Next</c> or <c>⏭</c>.
     /// </summary>
-    MediaTrackNext = 159,
+    MediaTrackNext = 148,
 
     /// <summary>
     /// Media <c>Previous</c> or <c>⏮</c>.
     /// </summary>
-    MediaTrackPrevious = 160,
+    MediaTrackPrevious = 149,
 
     /// <summary>
     /// <c>Power</c>.
     /// </summary>
-    Power = 161,
+    Power = 150,
 
     /// <summary>
     /// <c>Sleep</c>.
     /// </summary>
-    Sleep = 162,
+    Sleep = 151,
 
     /// <summary>
     /// <c>Volume Down</c>.
     /// </summary>
-    AudioVolumeDown = 163,
+    AudioVolumeDown = 152,
 
     /// <summary>
     /// <c>Mute</c>.
     /// </summary>
-    AudioVolumeMute = 164,
+    AudioVolumeMute = 153,
 
     /// <summary>
     /// <c>Volume Up</c>.
     /// </summary>
-    AudioVolumeUp = 165,
+    AudioVolumeUp = 154,
 
     /// <summary>
     /// <c>Wake Up</c>.
     /// </summary>
-    WakeUp = 166,
+    WakeUp = 155,
 
 
     // ###########
@@ -944,114 +875,66 @@ public enum PhysicalKey
     // ###########
 
     /// <summary>
-    /// <c>Hyper</c>.
-    /// Legacy.
-    /// </summary>
-    Hyper = 167,
-
-    /// <summary>
-    /// <c>Super</c>.
-    /// Legacy.
-    /// </summary>
-    Super = 168,
-
-    /// <summary>
-    /// <c>Turbo</c>.
-    /// Legacy.
-    /// </summary>
-    Turbo = 169,
-
-    /// <summary>
-    /// <c>Abort</c>.
-    /// Legacy.
-    /// </summary>
-    Abort = 170,
-
-    /// <summary>
-    /// <c>Resume</c>.
-    /// Legacy.
-    /// </summary>
-    Resume = 171,
-
-    /// <summary>
-    /// <c>Suspend</c>.
-    /// Legacy.
-    /// </summary>
-    Suspend = 172,
-
-    /// <summary>
     /// <c>Again</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Again = 173,
+    Again = 156,
 
     /// <summary>
     /// <c>Copy</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Copy = 174,
+    Copy = 157,
 
     /// <summary>
     /// <c>Cut</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Cut = 175,
+    Cut = 158,
 
     /// <summary>
     /// <c>Find</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Find = 176,
+    Find = 159,
 
     /// <summary>
     /// <c>Open</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Open = 177,
+    Open = 160,
 
     /// <summary>
     /// <c>Paste</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Paste = 178,
+    Paste = 161,
 
     /// <summary>
     /// <c>Props</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Props = 179,
+    Props = 162,
 
     /// <summary>
     /// <c>Select</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Select = 180,
+    Select = 163,
 
     /// <summary>
     /// <c>Undo</c>.
     /// Legacy.
     /// Found on Sun’s USB keyboard.
     /// </summary>
-    Undo = 181,
-
-    /// <summary>
-    /// Use for dedicated <c>ひらがな</c> key found on some Japanese word processing keyboards.
-    /// Legacy.
-    /// </summary>
-    Hiragana = 182,
-
-    /// <summary>
-    /// Use for dedicated <c>カタカナ</c> key found on some Japanese word processing keyboards.
-    /// Legacy.
-    /// </summary>
-    Katakana = 183
+    Undo = 164
 
 }

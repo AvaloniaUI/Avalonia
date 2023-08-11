@@ -119,9 +119,7 @@ public static class PhysicalKeyExtensions
             PhysicalKey.Numpad8 => Key.NumPad8,
             PhysicalKey.Numpad9 => Key.NumPad9,
             PhysicalKey.NumpadAdd => Key.Add,
-            PhysicalKey.NumpadBackspace => Key.Back,
             PhysicalKey.NumpadClear => Key.Clear,
-            PhysicalKey.NumpadClearEntry => Key.Clear,
             PhysicalKey.NumpadComma => Key.AbntC2,
             PhysicalKey.NumpadDecimal => Key.Decimal,
             PhysicalKey.NumpadDivide => Key.Divide,
@@ -197,6 +195,6 @@ public static class PhysicalKeyExtensions
             PhysicalKey.Select => Key.Select,
             PhysicalKey.Undo => Key.None,
 
-            _ => Key.None,
+            _ => Key.None
         };
 }
