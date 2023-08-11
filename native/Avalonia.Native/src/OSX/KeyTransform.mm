@@ -511,13 +511,13 @@ AvnKey VirtualKeyFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFl
     return it == qwertyVirtualKeyFromPhysicalKey.end() ? AvnKeyNone : it->second;
 }
 
-NSString* KeySymbolFromScanCode(uint16_t scanCode)
+NSString* KeySymbolFromScanCode(uint16_t scanCode, NSEventModifierFlags modifierFlags)
 {
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
 
     const UniCharCount charCount = 4;
     UniChar chars[charCount];
-    auto length = CharsFromScanCode(scanCode, 0, kUCKeyActionDisplay, chars, charCount);
+    auto length = CharsFromScanCode(scanCode, modifierFlags, kUCKeyActionDisplay, chars, charCount);
     if (length > 0)
         return [NSString stringWithCharacters:chars length:length];
 

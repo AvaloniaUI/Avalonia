@@ -503,25 +503,29 @@ namespace Avalonia.Win32.Input
         /// <returns>A key symbol, or null if none matched.</returns>
         public static unsafe string? GetKeySymbol(int virtualKey, int keyData)
         {
-            Span<byte> keyStates = stackalloc byte[256];
-            Span<char> chars = stackalloc char[4];
-            keyStates.Clear();
+            const int bufferSize = 4;
+            const uint doNotChangeKeyboardState = 1U << 2;
 
-            fixed (byte* keyStatesPtr = keyStates)
-            fixed (char* charsPtr = chars)
+            fixed (byte* keyStates = stackalloc byte[256])
+            fixed (char* buffer = stackalloc char[bufferSize])
             {
-                const uint doNotChangeKeyboardState = 1U << 2;
+                GetKeyboardState(keyStates);
 
-                var result = ToUnicodeEx(
+                var length = ToUnicodeEx(
                     (uint)virtualKey,
                     GetScanCode(keyData),
-                    keyStatesPtr,
-                    charsPtr,
-                    chars.Length,
+                    keyStates,
+                    buffer,
+                    bufferSize,
                     doNotChangeKeyboardState,
                     GetKeyboardLayout(0));
 
-                return result > 0 ? new string(charsPtr, 0, result) : null;
+                return length switch
+                {
+                    0 => null,
+                    1 when !KeySymbolHelper.IsAllowedAsciiKeySymbol(buffer[0]) => null,
+                    _ => new string(buffer, 0, length)
+                };
             }
         }
     }

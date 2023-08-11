@@ -455,7 +455,7 @@
     auto scanCode = [event keyCode];
     auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
-    auto keySymbol = KeySymbolFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
     auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
 
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);

@@ -124,9 +124,6 @@ namespace Avalonia.X11
             if (x11Key != 0 && key == Key.None)
                 key = physicalKey.ToQwertyKey();
 
-            if (!IsAllowedSymbol(symbol))
-                symbol = null;
-
             return (x11Key, key, symbol);
         }
 
@@ -175,6 +172,9 @@ namespace Avalonia.X11
             if (length == 0)
                 return null;
 
+            if (length == 1 && !KeySymbolHelper.IsAllowedAsciiKeySymbol((char)buffer[0]))
+                return null;
+
             if (extraSize <= 0)
                 return Encoding.UTF8.GetString(buffer, length);
 
@@ -197,35 +197,15 @@ namespace Avalonia.X11
 
             var x11Key = (X11Key)keySym;
             var key = X11KeyTransform.KeyFromX11Key(x11Key);
-            var symbol = length > 0 ? Encoding.UTF8.GetString(buffer, length) : null;
-            return (x11Key, key, symbol);
-        }
 
-        private static bool IsAllowedSymbol(string? symbol)
-        {
-            if (symbol is null || symbol.Length != 1)
-                return true;
-
-            var c = symbol[0];
-
-            if (c < 0x20)
+            var symbol = length switch
             {
-                switch (c)
-                {
-                    case (char)0x08: // backspace
-                    case (char)0x09: // tab
-                    case (char)0x0D: // return
-                    case (char)0x1B: // escape
-                        return true;
-                    default:
-                        return false;
-                }
-            }
+                0 => null,
+                1 when !KeySymbolHelper.IsAllowedAsciiKeySymbol((char)buffer[0]) => null,
+                _ => Encoding.UTF8.GetString(buffer, length)
+            };
 
-            if (c == 0x07) // delete
-                return false;
-
-            return true;
+            return (x11Key, key, symbol);
         }
 
         private const int ImeBufferSize = 64 * 1024;
