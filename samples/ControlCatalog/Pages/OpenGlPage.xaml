@@ -15,6 +15,12 @@
         <Slider Value="{Binding Pitch, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
         <TextBlock>Roll</TextBlock>
         <Slider Value="{Binding Roll, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
+        <TextBlock>Light X</TextBlock>
+        <Slider Value="{Binding LightX, Mode=TwoWay, ElementName=GL}" Minimum="-2" Maximum="2"/>
+        <TextBlock>Light Y</TextBlock>
+        <Slider Value="{Binding LightY, Mode=TwoWay, ElementName=GL}" Minimum="-2" Maximum="2"/>
+        <TextBlock>Light Z</TextBlock>
+        <Slider Value="{Binding LightZ, Mode=TwoWay, ElementName=GL}" Minimum="-2" Maximum="2"/>
         <StackPanel Orientation="Horizontal">
           <TextBlock FontWeight="Bold" Foreground="#C000C0">D</TextBlock>
           <TextBlock FontWeight="Bold" Foreground="#00C090">I</TextBlock>

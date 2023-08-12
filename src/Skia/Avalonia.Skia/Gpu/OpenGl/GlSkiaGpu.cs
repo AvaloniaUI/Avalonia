@@ -109,7 +109,7 @@ namespace Avalonia.Skia
         public IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null) =>
             _glContext.CreateSharedContext(preferredVersions);
 
-        public ICompositionImportableOpenGlSharedTexture CreateSharedTextureForComposition(IGlContext context, PixelSize size)
+        public unsafe ICompositionImportableOpenGlSharedTexture CreateSharedTextureForComposition(IGlContext context, PixelSize size)
         {
             if (!context.IsSharedWith(_glContext))
                 throw new InvalidOperationException("Contexts do not belong to the same share group");
@@ -127,7 +127,7 @@ namespace Avalonia.Skia
                 gl.BindTexture(GL_TEXTURE_2D, tex);
                 gl.TexImage2D(GL_TEXTURE_2D, 0,
                     format, size.Width, size.Height,
-                    0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+                    0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero.ToPointer());
 
                 gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

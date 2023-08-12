@@ -18,7 +18,7 @@ namespace Avalonia.Skia
         private SKSurface? _surface;
 
         private static readonly bool[] TrueFalse = new[] { true, false };
-        public FboSkiaSurface(GlSkiaGpu gpu, GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
+        public unsafe FboSkiaSurface(GlSkiaGpu gpu, GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
         {
             _gpu = gpu;
             _grContext = grContext;
@@ -42,7 +42,7 @@ namespace Avalonia.Skia
             gl.BindTexture(GL_TEXTURE_2D, _texture);
             gl.TexImage2D(GL_TEXTURE_2D, 0,
                 InternalFormat, pixelSize.Width, pixelSize.Height,
-                0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+                0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero.ToPointer());
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);

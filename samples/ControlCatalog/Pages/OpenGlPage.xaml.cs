@@ -68,6 +68,42 @@ namespace ControlCatalog.Pages
             set => SetAndRaise(DiscoProperty, ref _disco, value);
         }
 
+
+        private float _lightX;
+
+        public static readonly DirectProperty<OpenGlPageControl, float> LightXProperty =
+            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("LightX", o => o.LightX, (o, v) => o.LightX = v);
+
+        public float LightX
+        {
+            get => _lightX;
+            set => SetAndRaise(LightXProperty, ref _lightX, value);
+        }
+
+
+        private float _lightY;
+
+        public static readonly DirectProperty<OpenGlPageControl, float> LightYProperty =
+            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("LightY", o => o.LightY, (o, v) => o.LightY = v);
+
+        public float LightY
+        {
+            get => _lightY;
+            set => SetAndRaise(LightYProperty, ref _lightY, value);
+        }
+
+
+        private float _lightZ;
+
+        public static readonly DirectProperty<OpenGlPageControl, float> LightZProperty =
+            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("LightZ", o => o.LightZ, (o, v) => o.LightZ = v);
+
+        public float LightZ
+        {
+            get => _lightZ;
+            set => SetAndRaise(LightZProperty, ref _lightZ, value);
+        }
+
         private string _info = string.Empty;
 
         public static readonly DirectProperty<OpenGlPageControl, string> InfoProperty =
@@ -150,6 +186,7 @@ namespace ControlCatalog.Pages
         uniform float uMinY;
         uniform float uTime;
         uniform float uDisco;
+        uniform vec3 uLightDir;
         //DECLAREGLFRAG
 
         void main()
@@ -168,12 +205,10 @@ namespace ControlCatalog.Pages
 
             float ambientStrength = 0.3;
             vec3 lightColor = vec3(1.0, 1.0, 1.0);
-            vec3 lightPos = vec3(uMaxY * 2.0, uMaxY * 2.0, uMaxY * 2.0);
             vec3 ambient = ambientStrength * lightColor;
 
-
             vec3 norm = normalize(Normal);
-            vec3 lightDir = normalize(lightPos - FragPos);  
+            vec3 lightDir = normalize(uLightDir);
 
             float diff = max(dot(norm, lightDir), 0.0);
             vec3 diffuse = diff * lightColor;
@@ -246,7 +281,7 @@ namespace ControlCatalog.Pages
         {
             int err;
             while ((err = gl.GetError()) != GL_NO_ERROR)
-                Console.WriteLine(err);
+                Console.WriteLine($"OpenGL error: {err}");
         }
 
         protected override unsafe void OnOpenGlInit(GlInterface GL)
@@ -254,6 +289,10 @@ namespace ControlCatalog.Pages
             CheckError(GL);
 
             Info = $"Renderer: {GL.GetString(GL_RENDERER)} Version: {GL.GetString(GL_VERSION)}";
+
+            LightX = -2f;
+            LightY = 2f;
+            LightZ = 2f;
             
             // Load the source of the vertex shader and compile it.
             _vertexShader = GL.CreateShader(GL_VERTEX_SHADER);
@@ -282,22 +321,22 @@ namespace ControlCatalog.Pages
             var vertexSize = Marshal.SizeOf<Vertex>();
             fixed (void* pdata = _points)
                 GL.BufferData(GL_ARRAY_BUFFER, new IntPtr(_points.Length * vertexSize),
-                    new IntPtr(pdata), GL_STATIC_DRAW);
+                    pdata, GL_STATIC_DRAW);
 
             _indexBufferObject = GL.GenBuffer();
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
             CheckError(GL);
             fixed (void* pdata = _indices)
-                GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), new IntPtr(pdata),
+                GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), pdata,
                     GL_STATIC_DRAW);
             CheckError(GL);
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
             CheckError(GL);
             GL.VertexAttribPointer(positionLocation, 3, GL_FLOAT,
-                0, vertexSize, IntPtr.Zero);
+                false, vertexSize, IntPtr.Zero.ToPointer());
             GL.VertexAttribPointer(normalLocation, 3, GL_FLOAT,
-                0, vertexSize, new IntPtr(12));
+                false, vertexSize, new IntPtr(12).ToPointer());
             GL.EnableVertexAttribArray(positionLocation);
             GL.EnableVertexAttribArray(normalLocation);
             CheckError(GL);
@@ -322,13 +361,12 @@ namespace ControlCatalog.Pages
         }
 
         static Stopwatch St = Stopwatch.StartNew();
-        protected override unsafe void OnOpenGlRender(GlInterface gl, int fb)
+        protected override unsafe void OnOpenGlRender(GlInterface GL, int fb)
         {
-            gl.ClearColor(0, 0, 0, 0);
-            gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            gl.Enable(GL_DEPTH_TEST);
-            gl.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
-            var GL = gl;
+            GL.ClearColor(0, 0, 0, 0);
+            GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            GL.Enable(GL_DEPTH_TEST);
+            GL.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
 
             GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
@@ -338,7 +376,7 @@ namespace ControlCatalog.Pages
             var projection =
                 Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)(Bounds.Width / Bounds.Height),
                     0.01f, 1000);
-
+            var lightPos = new Vector3(_lightX, _lightY, _lightZ);
 
             var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, 1, 0));
             var model = Matrix4x4.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
@@ -349,6 +387,7 @@ namespace ControlCatalog.Pages
             var minYLoc = GL.GetUniformLocationString(_shaderProgram, "uMinY");
             var timeLoc = GL.GetUniformLocationString(_shaderProgram, "uTime");
             var discoLoc = GL.GetUniformLocationString(_shaderProgram, "uDisco");
+            var lightDirLoc = GL.GetUniformLocationString(_shaderProgram, "uLightDir");
             GL.UniformMatrix4fv(modelLoc, 1, false, &model);
             GL.UniformMatrix4fv(viewLoc, 1, false, &view);
             GL.UniformMatrix4fv(projectionLoc, 1, false, &projection);
@@ -356,8 +395,9 @@ namespace ControlCatalog.Pages
             GL.Uniform1f(minYLoc, _minY);
             GL.Uniform1f(timeLoc, (float)St.Elapsed.TotalSeconds);
             GL.Uniform1f(discoLoc, _disco);
+            GL.Uniform3fv(lightDirLoc, 1, &lightPos);
             CheckError(GL);
-            GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero);
+            GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero.ToPointer());
 
             CheckError(GL);
             if (_disco > 0.01)
@@ -366,8 +406,10 @@ namespace ControlCatalog.Pages
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (change.Property == YawProperty || change.Property == RollProperty || change.Property == PitchProperty ||
-                change.Property == DiscoProperty)
+            var angleChanged = change.Property == YawProperty || change.Property == RollProperty || change.Property == PitchProperty;
+            var lightChanged = change.Property == LightXProperty || change.Property == LightYProperty || change.Property == LightZProperty;
+            var discoChanged = change.Property == DiscoProperty;
+            if (angleChanged || lightChanged || discoChanged)
                 RequestNextFrameRendering();
             base.OnPropertyChanged(change);
         }
