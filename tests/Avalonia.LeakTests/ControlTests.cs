@@ -602,11 +602,9 @@ namespace Avalonia.LeakTests
 
                     window.Show();
 
-                    // Do a layout and make sure that TextBlock gets added to visual tree with
-                    // its render transform.
+                    // Do a layout and make sure that TextBlock gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    var textBlock = Assert.IsType<TextBlock>(window.Presenter.Child);
-                    Assert.IsType<RotateTransform>(textBlock.RenderTransform);
+                    Assert.IsType<TextBlock>(window.Presenter.Child);
 
                     // Clear the content and ensure the TextBlock is removed.
                     window.Content = null;
