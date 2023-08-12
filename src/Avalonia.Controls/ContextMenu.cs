@@ -227,6 +227,11 @@ namespace Avalonia.Controls
                 control.AttachedToVisualTree += ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
             }
+            
+            if (control.IsAttachedToVisualTree)
+            {
+                AttachControlToContextMenu(control);
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -431,7 +436,12 @@ namespace Avalonia.Controls
         
         private static void ControlOnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            if (sender is Control { ContextMenu: {} contextMenu } control)
+            AttachControlToContextMenu(sender);
+        }
+
+        private static void AttachControlToContextMenu(object? sender)
+        {
+            if (sender is Control { ContextMenu: { } contextMenu } control)
             {
                 contextMenu._attachedControls ??= new List<Control>();
                 contextMenu._attachedControls.Add(control);
