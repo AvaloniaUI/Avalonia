@@ -197,6 +197,14 @@ class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAval
     
 public:
     FORWARD_IUNKNOWN()
+    
+    virtual ~AvaloniaNative() override
+    {
+        ReleaseAvnAppEvents();
+        _deallocator = nullptr;
+        _dispatcher = nullptr;
+    }
+    
     virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator,
             IAvnApplicationEvents* events,
             IAvnDispatcher* dispatcher) override

@@ -473,18 +473,31 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
+            Extent = ComputeExtent(finalSize);
+            _isAnchorElementDirty = true;
 
+            return finalSize;
+        }
+
+        private Size ComputeExtent(Size viewportSize)
+        {
             var childMargin = Child!.Margin;
+
             if (Child.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(Child);
                 childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
             }
 
-            Extent = Child!.Bounds.Size.Inflate(childMargin);
-            _isAnchorElementDirty = true;
+            var extent = Child!.Bounds.Size.Inflate(childMargin);
 
-            return finalSize;
+            if (MathUtilities.AreClose(extent.Width, viewportSize.Width, LayoutHelper.LayoutEpsilon))
+                extent = extent.WithWidth(viewportSize.Width);
+
+            if (MathUtilities.AreClose(extent.Height, viewportSize.Height, LayoutHelper.LayoutEpsilon))
+                extent = extent.WithHeight(viewportSize.Height);
+
+            return extent;
         }
 
         private void OnScrollGesture(object? sender, ScrollGestureEventArgs e)
