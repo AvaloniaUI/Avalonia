@@ -63,8 +63,8 @@ internal class VulkanSupport
             hinstance =  UnmanagedMethods.GetModuleHandle(null),
             hwnd = window
         };
-        vulkanWin32.vkCreateWin32SurfaceKHR(instance.Handle, ref createInfo, IntPtr.Zero, out var surface)
-            .ThrowOnError("vkCreateXlibSurfaceKHR");
+        VulkanException.ThrowOnError("vkCreateWin32SurfaceKHR",
+            vulkanWin32.vkCreateWin32SurfaceKHR(instance.Handle, ref createInfo, IntPtr.Zero, out var surface));
         return surface;
     }
 }

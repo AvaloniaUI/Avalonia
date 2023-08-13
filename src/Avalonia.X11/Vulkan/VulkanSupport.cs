@@ -86,8 +86,8 @@ internal class VulkanSupport
             dpy = display,
             window = window
         };
-        vulkanXlib.vkCreateXlibSurfaceKHR(instance.Handle, ref createInfo, IntPtr.Zero, out var surface)
-            .ThrowOnError("vkCreateXlibSurfaceKHR");
+        VulkanException.ThrowOnError("vkCreateXlibSurfaceKHR",
+            vulkanXlib.vkCreateXlibSurfaceKHR(instance.Handle, ref createInfo, IntPtr.Zero, out var surface));
         return surface;
     }
 }

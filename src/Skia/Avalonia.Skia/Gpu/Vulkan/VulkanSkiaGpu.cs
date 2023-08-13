@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia.Vulkan;
 
-internal class VulkanSkiaGpu : ISkiaGpu, IVulkanSharedDeviceGraphicsContextFeature
+internal class VulkanSkiaGpu : ISkiaGpu
 {
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }
     public GRContext GrContext { get; private set; }
@@ -16,7 +16,6 @@ internal class VulkanSkiaGpu : ISkiaGpu, IVulkanSharedDeviceGraphicsContextFeatu
     {
         Vulkan = vulkan;
         var device = vulkan.Device;
-        SharedDevice = new VulkanSharedDevice(device);
         using (Vulkan.EnsureCurrent())
         {
             IntPtr GetProcAddressWrapper(string name, IntPtr instance, IntPtr device)
@@ -63,8 +62,6 @@ internal class VulkanSkiaGpu : ISkiaGpu, IVulkanSharedDeviceGraphicsContextFeatu
 
     public object? TryGetFeature(Type featureType)
     {
-        if (featureType == typeof(IVulkanSharedDeviceGraphicsContextFeature))
-            return this;
         return null;
     }
 
@@ -80,20 +77,4 @@ internal class VulkanSkiaGpu : ISkiaGpu, IVulkanSharedDeviceGraphicsContextFeatu
 
     
     public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session) => null;
-
-    class VulkanSharedDevice : IVulkanSharedDevice
-    {
-        public VulkanSharedDevice(IVulkanDevice device)
-        {
-            Device = device;
-        }
-
-        public IVulkanDevice Device { get; }
-    }
-    
-    public IVulkanSharedDevice SharedDevice { get; }
-    public IBitmapImpl CreateBitmapFromVulkanImage(IVulkanBitmapSourceImage image)
-    {
-        return new VulkanBitmapImpl(this, image);
-    }
 }

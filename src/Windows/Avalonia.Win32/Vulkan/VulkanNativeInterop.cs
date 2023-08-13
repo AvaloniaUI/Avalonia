@@ -12,7 +12,7 @@ partial class Win32VulkanInterface
     }
 
     [GetProcAddress("vkCreateWin32SurfaceKHR")]
-    public partial VkResult vkCreateWin32SurfaceKHR(IntPtr instance, ref VkWin32SurfaceCreateInfoKHR pCreateInfo,
+    public partial int vkCreateWin32SurfaceKHR(IntPtr instance, ref VkWin32SurfaceCreateInfoKHR pCreateInfo,
         IntPtr pAllocator, out ulong pSurface);
 }
 

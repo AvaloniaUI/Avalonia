@@ -10,14 +10,21 @@ public class VulkanException : Exception
     {
         
     }
+
+    public VulkanException(string funcName, int res) : this(funcName, (VkResult)res)
+    {
+        
+    }
     
-    public VulkanException(string funcName, VkResult res) : base($"{funcName} returned {res}")
+    internal VulkanException(string funcName, VkResult res) : base($"{funcName} returned {res}")
     {
 
     }
+
+    public static void ThrowOnError(string funcName, int res) => ((VkResult)res).ThrowOnError(funcName);
 }
 
-public static class VulkanExceptionExtensions
+internal static class VulkanExceptionExtensions
 {
     public static void ThrowOnError(this VkResult res, string funcName)
     {
