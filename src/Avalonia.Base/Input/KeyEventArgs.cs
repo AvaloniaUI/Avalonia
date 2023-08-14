@@ -22,6 +22,15 @@ public class KeyEventArgs : RoutedEventArgs
     /// - <see cref="Input.PhysicalKey.KeyZ"/> for a Russian (JCUKEN) layout
     /// </para>
     /// </summary>
+    /// <remarks>
+    /// This property should be used for letter-related shortcuts only.<br/>
+    /// Prefer using <see cref="PhysicalKey"/> if you need to refer to a key given its position on the keyboard (a
+    /// common usage is moving the player with WASD-like keys in games), or <see cref="KeySymbol"/> if you want to know
+    /// which character the key will output.<br/>
+    /// Avoid using this for shortcuts related to punctuation keys, as they differ wildly depending on keyboard layouts.
+    /// </remarks>
+    /// <seealso cref="PhysicalKey"/>
+    /// <seealso cref="KeySymbol"/>
     public Key Key { get; init; }
 
     /// <summary>
@@ -38,6 +47,12 @@ public class KeyEventArgs : RoutedEventArgs
     /// US English QWERTY keyboard.
     /// </para>
     /// </summary>
+    /// <remarks>
+    /// Use this property if you need to refer to a key given its position on the keyboard (a common usage is moving the
+    /// player with WASD-like keys).
+    /// </remarks>
+    /// <seealso cref="Key"/>
+    /// <seealso cref="KeySymbol"/>
     public PhysicalKey PhysicalKey { get; init; }
 
     /// <summary>
@@ -53,5 +68,7 @@ public class KeyEventArgs : RoutedEventArgs
     /// - <c>Я</c> for a Russian (JCUKEN) layout
     /// </para>
     /// </summary>
+    /// <see cref="Key"/>
+    /// <see cref="PhysicalKey"/>
     public string? KeySymbol { get; init; }
 }

@@ -77,9 +77,9 @@ namespace Avalonia.Headless.Vnc
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (args.Pressed)
-                        Window?.KeyPress(key.Value, _keyState);
+                        Window?.KeyPress(key.Value, _keyState, PhysicalKey.None, null);
                     else
-                        Window?.KeyRelease(key.Value, _keyState);
+                        Window?.KeyRelease(key.Value, _keyState, PhysicalKey.None, null);
 
                     if (inputText != null)
                         Window?.KeyTextInput(inputText);

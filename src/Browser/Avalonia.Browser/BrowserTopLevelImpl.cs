@@ -139,11 +139,16 @@ namespace Avalonia.Browser
             var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
             var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
 
-            var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, key, modifiers)
-            {
-                PhysicalKey = physicalKey,
-                KeySymbol = keySymbol
-            };
+            var args = new RawKeyEventArgs(
+                KeyboardDevice,
+                Timestamp,
+                _inputRoot,
+                type,
+                key,
+                modifiers,
+                physicalKey,
+                keySymbol
+            );
 
             Input?.Invoke(args);
 

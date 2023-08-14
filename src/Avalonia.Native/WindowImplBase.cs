@@ -341,11 +341,9 @@ namespace Avalonia.Native
                 _inputRoot,
                 (RawKeyEventType)type,
                 (Key)key,
-                (RawInputModifiers)modifiers)
-            {
-                PhysicalKey = (PhysicalKey)physicalKey,
-                KeySymbol = keySymbol
-            };
+                (RawInputModifiers)modifiers,
+                (PhysicalKey)physicalKey,
+                keySymbol);
 
             Input?.Invoke(args);
 

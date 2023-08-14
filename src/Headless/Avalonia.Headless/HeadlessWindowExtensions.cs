@@ -43,14 +43,30 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
+    [Obsolete("Use the overload that takes a physical key and key symbol instead.")]
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        RunJobsOnImpl(topLevel, w => w.KeyPress(key, modifiers));
+        KeyPress(topLevel, key, modifiers, PhysicalKey.None, null);
+
+    /// <summary>
+    /// Simulates keyboard press on the headless window/toplevel.
+    /// </summary>
+    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
+        string? keySymbol) =>
+        RunJobsOnImpl(topLevel, w => w.KeyPress(key, modifiers, physicalKey, keySymbol));
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
     /// </summary>
+    [Obsolete("Use the overload that takes a physical key and key symbol instead.")]
     public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        RunJobsOnImpl(topLevel, w => w.KeyRelease(key, modifiers));
+        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, null);
+
+    /// <summary>
+    /// Simulates keyboard release on the headless window/toplevel.
+    /// </summary>
+    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
+        string? keySymbol) =>
+        RunJobsOnImpl(topLevel, w => w.KeyRelease(key, modifiers, physicalKey, keySymbol));
 
     /// <summary>
     /// Simulates a text input event on the headless window/toplevel

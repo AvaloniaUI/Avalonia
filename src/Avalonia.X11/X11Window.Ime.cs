@@ -96,18 +96,29 @@ namespace Avalonia.X11
         {
             var physicalKey = X11KeyTransform.PhysicalKeyFromScanCode(ev.KeyEvent.keycode);
             var (x11Key, key, symbol) = LookupKey(ref ev.KeyEvent, physicalKey);
-
             var modifiers = TranslateModifiers(ev.KeyEvent.state);
             var timestamp = (ulong)ev.KeyEvent.time.ToInt64();
-            var args =
-                ev.type == XEventName.KeyPress
-                    ? new RawKeyEventArgsWithText(_keyboard, timestamp, InputRoot, RawKeyEventType.KeyDown,
-                        key, modifiers, TranslateEventToString(ref ev, symbol))
-                    : new RawKeyEventArgs(_keyboard, timestamp, InputRoot, RawKeyEventType.KeyUp, key,
-                        modifiers);
 
-            args.PhysicalKey = physicalKey;
-            args.KeySymbol = symbol;
+            var args = ev.type == XEventName.KeyPress ?
+                new RawKeyEventArgsWithText(
+                    _keyboard,
+                    timestamp,
+                    InputRoot,
+                    RawKeyEventType.KeyDown,
+                    key,
+                    modifiers,
+                    physicalKey,
+                    symbol,
+                    TranslateEventToString(ref ev, symbol)) :
+                new RawKeyEventArgs(
+                    _keyboard,
+                    timestamp,
+                    InputRoot,
+                    RawKeyEventType.KeyUp,
+                    key,
+                    modifiers,
+                    physicalKey,
+                    symbol);
 
             ScheduleKeyInput(args, ref ev, (int)x11Key, ev.KeyEvent.keycode);
         }
@@ -292,13 +303,21 @@ namespace Avalonia.X11
         // This class is used to attach the text value of the key to an asynchronously dispatched KeyDown event
         private class RawKeyEventArgsWithText : RawKeyEventArgs
         {
-            public RawKeyEventArgsWithText(IKeyboardDevice device, ulong timestamp, IInputRoot root,
-                RawKeyEventType type, Key key, RawInputModifiers modifiers, string? text) :
-                base(device, timestamp, root, type, key, modifiers)
+            public RawKeyEventArgsWithText(
+                IKeyboardDevice device,
+                ulong timestamp,
+                IInputRoot root,
+                RawKeyEventType type,
+                Key key,
+                RawInputModifiers modifiers,
+                PhysicalKey physicalKey,
+                string? keySymbol,
+                string? text)
+                : base(device, timestamp, root, type, key, modifiers, physicalKey, keySymbol)
             {
                 Text = text;
             }
-            
+
             public string? Text { get; }
         }
     }

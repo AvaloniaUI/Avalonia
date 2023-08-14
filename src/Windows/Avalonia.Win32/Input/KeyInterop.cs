@@ -191,7 +191,7 @@ namespace Avalonia.Win32.Input
         // https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#scan-codes
         // https://github.com/chromium/chromium/blob/main/ui/events/keycodes/dom/dom_code_data.inc
         // This list has the same order as the PhysicalKey enum.
-        private static readonly Dictionary<uint, PhysicalKey> s_physicalKeyFromExtendedScanCode = new(155)
+        private static readonly Dictionary<ushort, PhysicalKey> s_physicalKeyFromExtendedScanCode = new(155)
         {
             // Writing System Keys
             { 0x0029, PhysicalKey.Backquote },
@@ -487,9 +487,10 @@ namespace Avalonia.Win32.Input
             if (IsExtended(keyData))
                 scanCode |= 0xE000;
 
-            s_physicalKeyFromExtendedScanCode.TryGetValue(scanCode, out var result);
-
-            return result;
+            return scanCode is > 0 and <= 0xE0FF
+                && s_physicalKeyFromExtendedScanCode.TryGetValue((ushort)scanCode, out var result) ?
+                    result :
+                    PhysicalKey.None;
         }
 
         /// <summary>

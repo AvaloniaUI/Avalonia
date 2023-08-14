@@ -1155,17 +1155,17 @@ namespace Avalonia.Win32
             if (key == Key.None && physicalKey == PhysicalKey.None)
                 return null;
 
+            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
             return new RawKeyEventArgs(
                 WindowsKeyboardDevice.Instance,
                 timestamp,
                 Owner,
                 eventType,
                 key,
-                WindowsKeyboardDevice.Instance.Modifiers)
-            {
-                PhysicalKey = physicalKey,
-                KeySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData)
-            };
+                WindowsKeyboardDevice.Instance.Modifiers,
+                physicalKey,
+                keySymbol);
         }
     }
 }
