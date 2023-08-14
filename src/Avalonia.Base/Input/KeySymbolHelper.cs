@@ -8,9 +8,9 @@ internal static class KeySymbolHelper
         {
             switch (c)
             {
-                case (char)0x08: // backspace
-                case (char)0x09: // tab
-                case (char)0x0D: // return
+                case '\b': // backspace
+                case '\t': // tab
+                case '\r': // return
                 case (char)0x1B: // escape
                     return true;
                 default:
