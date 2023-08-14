@@ -471,6 +471,9 @@ namespace Avalonia.X11
         public static extern int Xutf8LookupString(IntPtr xic, ref XKeyEvent xevent, byte* buffer, int num_bytes, out nint keysym, out XLookupStatus status);
 
         [DllImport (libX11)]
+        public static extern byte* XKeysymToString(nint keysym);
+
+        [DllImport (libX11)]
         public static extern bool XkbLibraryVersion(ref int libMajor, ref int libMinor);
 
         [DllImport (libX11)]

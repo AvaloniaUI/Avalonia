@@ -81,13 +81,24 @@ namespace Avalonia.X11
                 _imeControl.Commit += s =>
                     ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
                         InputRoot, s));
-                _imeControl.ForwardKey += ev =>
-                {
-                    ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
-                        InputRoot, ev.Type, X11KeyTransform.KeyFromX11Key((X11Key)ev.KeyVal),
-                        (RawInputModifiers)ev.Modifiers));
-                };
+                _imeControl.ForwardKey += OnImeControlForwardKey;
             }
+        }
+
+        private void OnImeControlForwardKey(X11InputMethodForwardedKey forwardedKey)
+        {
+            var x11Key = (X11Key)forwardedKey.KeyVal;
+            var keySymbol = _x11.HasXkb ? GetKeySymbolXkb(x11Key) : GetKeySymbolXCore(x11Key);
+
+            ScheduleInput(new RawKeyEventArgs(
+                _keyboard,
+                (ulong)_x11.LastActivityTimestamp.ToInt64(),
+                InputRoot,
+                forwardedKey.Type,
+                X11KeyTransform.KeyFromX11Key(x11Key),
+                (RawInputModifiers)forwardedKey.Modifiers,
+                PhysicalKey.None,
+                keySymbol));
         }
 
         private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(_position ?? default, RenderScaling);
@@ -217,6 +228,22 @@ namespace Avalonia.X11
             };
 
             return (x11Key, key, symbol);
+        }
+
+        private static unsafe string? GetKeySymbolXCore(X11Key x11Key)
+        {
+            var bytes = XKeysymToString((nint)x11Key);
+            if (bytes is null)
+                return null;
+
+            var length = 0;
+            for (var p = bytes; *p != 0; ++p)
+                ++length;
+
+            if (length == 0)
+                return null;
+
+            return Encoding.UTF8.GetString(bytes, length);
         }
 
         private const int ImeBufferSize = 64 * 1024;
