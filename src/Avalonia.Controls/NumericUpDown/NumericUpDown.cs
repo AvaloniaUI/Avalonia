@@ -126,6 +126,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<NumericUpDown>();
 
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property
+        /// </summary>
+        public static readonly StyledProperty<Media.TextAlignment> TextAlignmentProperty =
+            TextBox.TextAlignmentProperty.AddOwner<NumericUpDown>();
+
         private IDisposable? _textBoxTextChangedSubscription;
 
         private bool _internalValueSet;
@@ -297,6 +303,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Media.TextAlignment"/> of the <see cref="NumericUpDown"/>
+        /// </summary>
+        public Media.TextAlignment TextAlignment
+        {
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
         /// <summary>

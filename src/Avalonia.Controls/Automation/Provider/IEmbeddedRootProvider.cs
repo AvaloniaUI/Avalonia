@@ -1,25 +1,19 @@
 ﻿using System;
 using Avalonia.Automation.Peers;
-using Avalonia.Platform;
 
 namespace Avalonia.Automation.Provider
 {
     /// <summary>
-    /// Exposes methods and properties to support UI Automation client access to the root of an
-    /// automation tree.
+    /// Exposure methods and properties to support UI Automation client access to the root of an
+    /// automation tree hosted by another UI framework.
     /// </summary>
     /// <remarks>
-    /// This interface is implemented by the <see cref="AutomationPeer"/> class, and should only
-    /// be implemented on true root elements, such as Windows. To embed an automation tree, use
-    /// <see cref="IEmbeddedRootProvider"/> instead.
+    /// This interface is implemented by the <see cref="AutomationPeer"/> class, and can be used
+    /// to embed an automation tree from a 3rd party UI framework that wishes to use Avalonia's
+    /// automation support.
     /// </remarks>
-    public interface IRootProvider
+    public interface IEmbeddedRootProvider
     {
-        /// <summary>
-        /// Gets the platform implementation of the TopLevel for the element.
-        /// </summary>
-        ITopLevelImpl? PlatformImpl { get; }
-
         /// <summary>
         /// Gets the currently focused element.
         /// </summary>

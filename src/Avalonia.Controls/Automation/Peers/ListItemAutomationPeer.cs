@@ -22,7 +22,7 @@ namespace Avalonia.Automation.Peers
                 if (Owner.Parent is Control parent)
                 {
                     var parentPeer = GetOrCreate(parent);
-                    return parentPeer as ISelectionProvider;
+                    return parentPeer.GetProvider<ISelectionProvider>();
                 }
 
                 return null;
