@@ -13,7 +13,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
 [assembly: SupportedOSPlatform("browser")]
@@ -131,32 +130,24 @@ namespace Avalonia.Browser
             return false;
         }
 
-        public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
+        public bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
         {
-            if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
+            if (_inputRoot is null)
+                return false;
+
+            var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
+            var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
+            var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
+
+            var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, key, modifiers)
             {
-                if (_inputRoot is { })
-                {
-                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+                PhysicalKey = physicalKey,
+                KeySymbol = keySymbol
+            };
 
-                    Input?.Invoke(args);
+            Input?.Invoke(args);
 
-                    return args.Handled;
-                }
-            }
-            else if (Keycodes.KeyCodes.TryGetValue(key, out avkey))
-            {
-                if (_inputRoot is { })
-                {
-                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
-
-                    Input?.Invoke(args);
-
-                    return args.Handled;
-                }
-            }
-
-            return false;
+            return args.Handled;
         }
 
         public bool RawTextEvent(string text)
