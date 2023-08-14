@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.Interop.UnmanagedMethods.VirtualKeyStates;
@@ -522,8 +519,10 @@ namespace Avalonia.Win32.Input
 
                 return length switch
                 {
+                    < 0 => new string(buffer, 0, -length), // dead key
                     0 => null,
                     1 when !KeySymbolHelper.IsAllowedAsciiKeySymbol(buffer[0]) => null,
+                    2 when buffer[0] == buffer[1] => new string(buffer, 0, 1), // dead key second press repeats symbol
                     _ => new string(buffer, 0, length)
                 };
             }
