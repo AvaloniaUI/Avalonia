@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
@@ -11,6 +12,7 @@ namespace Avalonia.Input.Raw
     [PrivateApi]
     public class RawKeyEventArgs : RawInputEventArgs
     {
+        [Obsolete("Use the overload that takes a physical key and key symbol instead.")]
         public RawKeyEventArgs(
             IKeyboardDevice device,
             ulong timestamp,
