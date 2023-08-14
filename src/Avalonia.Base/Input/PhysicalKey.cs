@@ -1,4 +1,8 @@
-﻿namespace Avalonia.Input;
+﻿#if AVALONIA_REMOTE_PROTOCOL
+namespace Avalonia.Remote.Protocol.Input;
+#else
+namespace Avalonia.Input;
+#endif
 
 /// <summary>
 /// Represents a keyboard physical key.<br/>
