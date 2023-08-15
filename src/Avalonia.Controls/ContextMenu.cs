@@ -230,7 +230,7 @@ namespace Avalonia.Controls
             
             if (control.IsAttachedToVisualTree)
             {
-                AttachControlToContextMenu(control);
+                AttachControlToContextMenu(control); 
             }
         }
 
