@@ -450,12 +450,20 @@ static UniCharCount CharsFromScanCode(UInt16 scanCode, NSEventModifierFlags modi
 
     UInt32 deadKeyState = 0;
     UniCharCount length = 0;
+    
+    int glyphModifiers = 0;
+    if (modifierFlags & NSEventModifierFlagShift)
+        glyphModifiers |= shiftKey;
+    if (modifierFlags & NSEventModifierFlagCapsLock)
+        glyphModifiers |= alphaLock;
+    if (modifierFlags & NSEventModifierFlagOption)
+        glyphModifiers |= optionKey;
 
     auto result = UCKeyTranslate(
         keyboardLayout,
         scanCode,
         keyAction,
-        (modifierFlags >> 8) & 0xFF,
+        (glyphModifiers >> 8) & 0xFF,
         LMGetKbdType(),
         kUCKeyTranslateNoDeadKeysBit,
         &deadKeyState,

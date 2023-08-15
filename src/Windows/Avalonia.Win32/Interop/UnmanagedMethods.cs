@@ -1205,8 +1205,7 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern uint GetDoubleClickTime();
 
-        [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true)]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetKeyboardState(byte* lpKeyState);
 
@@ -1404,7 +1403,6 @@ namespace Avalonia.Win32.Interop
         public static extern bool DeleteTimerQueueTimer(IntPtr TimerQueue, IntPtr Timer, IntPtr CompletionEvent);
 
         [DllImport("user32.dll", ExactSpelling = true)]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern int ToUnicodeEx(
             uint wVirtKey,
             uint wScanCode,

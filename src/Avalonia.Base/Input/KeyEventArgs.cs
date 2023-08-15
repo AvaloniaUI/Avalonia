@@ -16,10 +16,10 @@ public class KeyEventArgs : RoutedEventArgs
     /// <para>
     /// For example, when pressing the key located at the <c>Z</c> position on standard US English QWERTY keyboard,
     /// this property returns:<br/>
-    /// - <see cref="Input.PhysicalKey.KeyZ"/> for an English (QWERTY) layout<br/>
-    /// - <see cref="Input.PhysicalKey.KeyW"/> for a French (AZERTY) layout<br/>
-    /// - <see cref="Input.PhysicalKey.KeyY"/> for a German (QWERTZ) layout<br/>
-    /// - <see cref="Input.PhysicalKey.KeyZ"/> for a Russian (JCUKEN) layout
+    /// - <see cref="Input.Key.Z"/> for an English (QWERTY) layout<br/>
+    /// - <see cref="Input.Key.W"/> for a French (AZERTY) layout<br/>
+    /// - <see cref="Input.Key.Y"/> for a German (QWERTZ) layout<br/>
+    /// - <see cref="Input.Key.Z"/> for a Russian (JCUKEN) layout
     /// </para>
     /// </summary>
     /// <remarks>
@@ -62,10 +62,10 @@ public class KeyEventArgs : RoutedEventArgs
     /// <para>
     /// For example, when pressing the key located at the <c>Z</c> position on standard US English QWERTY keyboard,
     /// this property returns:<br/>
-    /// - <c>Z</c> for an English (QWERTY) layout<br/>
-    /// - <c>W</c> for a French (AZERTY) layout<br/>
-    /// - <c>Y</c> for a German (QWERTZ) layout<br/>
-    /// - <c>Я</c> for a Russian (JCUKEN) layout
+    /// - <c>z</c> for an English (QWERTY) layout<br/>
+    /// - <c>w</c> for a French (AZERTY) layout<br/>
+    /// - <c>y</c> for a German (QWERTZ) layout<br/>
+    /// - <c>я</c> for a Russian (JCUKEN) layout
     /// </para>
     /// </summary>
     /// <see cref="Key"/>
