@@ -79,8 +79,12 @@ public class TransitioningContentControl : ContentControl
 
     protected override bool RegisterContentPresenter(ContentPresenter presenter)
     {
-        if (!base.RegisterContentPresenter(presenter) &&
-            presenter is ContentPresenter p &&
+        if (base.RegisterContentPresenter(presenter))
+        {
+            return true;
+        }
+
+        if (presenter is ContentPresenter p &&
             p.Name == "PART_ContentPresenter2")
         {
             _presenter2 = p;
@@ -94,12 +98,13 @@ public class TransitioningContentControl : ContentControl
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-
         if (change.Property == ContentProperty)
         {
             UpdateContent(true);
+            return;
         }
+
+        base.OnPropertyChanged(change);
     }
 
     private void UpdateContent(bool withTransition)
