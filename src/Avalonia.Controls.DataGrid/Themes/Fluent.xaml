@@ -170,7 +170,7 @@
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="PART_ColumnHeaderRoot" ColumnDefinitions="*,Auto">
 
-              <StackPanel Margin="{TemplateBinding Padding}"
+              <Panel Margin="{TemplateBinding Padding}"
                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                 <Grid>
@@ -191,7 +191,7 @@
                         Fill="{TemplateBinding Foreground}"
                         Stretch="Uniform" />
                 </Grid>
-              </StackPanel>
+              </Panel>
 
               <Rectangle Name="VerticalSeparator"
                          Grid.Column="1"
