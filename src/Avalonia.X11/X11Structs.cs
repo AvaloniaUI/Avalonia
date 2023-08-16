@@ -1109,7 +1109,7 @@ namespace Avalonia.X11 {
 
 		public override string ToString ()
 		{
-			return string.Format("MotifWmHints <flags={0}, functions={1}, decorations={2}, input_mode={3}, status={4}", (MotifFlags) flags.ToInt32 (), (MotifFunctions) functions.ToInt32 (), (MotifDecorations) decorations.ToInt32 (), (MotifInputMode) input_mode.ToInt32 (), status.ToInt32 ());
+			return $"MotifWmHints <flags={(MotifFlags)flags.ToInt32()}, functions={(MotifFunctions)functions.ToInt32()}, decorations={(MotifDecorations)decorations.ToInt32()}, input_mode={(MotifInputMode)input_mode.ToInt32()}, status={status.ToInt32()}";
 		}
 	}
 
@@ -1707,8 +1707,7 @@ namespace Avalonia.X11 {
 
 		public override string ToString ()
 		{
-			return string.Format ("XCursorImage (version: {0}, size: {1}, width: {2}, height: {3}, xhot: {4}, yhot: {5}, delay: {6}, pixels: {7}", 
-				version, size, width, height, xhot, yhot, delay, pixels);
+			return $"XCursorImage (version: {version}, size: {size}, width: {width}, height: {height}, xhot: {xhot}, yhot: {yhot}, delay: {delay}, pixels: {pixels}";
 		}
 	} ;
 

@@ -126,6 +126,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<NumericUpDown>();
 
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property
+        /// </summary>
+        public static readonly StyledProperty<Media.TextAlignment> TextAlignmentProperty =
+            TextBox.TextAlignmentProperty.AddOwner<NumericUpDown>();
+
         private IDisposable? _textBoxTextChangedSubscription;
 
         private bool _internalValueSet;
@@ -297,6 +303,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Media.TextAlignment"/> of the <see cref="NumericUpDown"/>
+        /// </summary>
+        public Media.TextAlignment TextAlignment
+        {
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
         /// <summary>
@@ -1113,11 +1128,11 @@ namespace Avalonia.Controls
             }
             if (value < Minimum)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be greater than Minimum value of {0}", Minimum));
+                throw new ArgumentOutOfRangeException(nameof(value), $"Value must be greater than Minimum value of {Minimum}");
             }
             else if (value > Maximum)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be less than Maximum value of {0}", Maximum));
+                throw new ArgumentOutOfRangeException(nameof(value), $"Value must be less than Maximum value of {Maximum}");
             }
         }
 

@@ -74,6 +74,8 @@ abstract class CompositionGpuImportedObjectBase : ICompositionGpuImportedObject
     public abstract void Dispose();
 
     public Task ImportCompleted { get; }
+
+    public Task ImportCompeted => ImportCompleted;
     public bool IsLost => Context.IsLost;
 
     public ValueTask DisposeAsync() => new(Compositor.InvokeServerJobAsync(() =>
