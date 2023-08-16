@@ -12,7 +12,6 @@
       <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
   </ItemGroup>
   
-  <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\NullableEnable.props" />
 </Project>
