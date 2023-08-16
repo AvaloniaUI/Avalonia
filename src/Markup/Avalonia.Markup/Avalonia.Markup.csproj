@@ -13,7 +13,6 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\System.Memory.props" />
-  <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />

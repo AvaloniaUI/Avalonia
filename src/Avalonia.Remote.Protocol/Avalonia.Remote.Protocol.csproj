@@ -10,6 +10,5 @@
     <Compile Include="..\Avalonia.Base\Input\Key.cs" />
     <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
-  <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>
