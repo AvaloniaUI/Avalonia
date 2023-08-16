@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Rule Name="Avalonia" DisplayName="Avalonia" Order="70" PageTemplate="generic" xmlns="http://schemas.microsoft.com/build/2009/properties">
+
+  <Rule.Categories>
+    <Category Name="Compiling" DisplayName="Compiling" />
+    <Category Name="Debug" DisplayName="Debugging" />
+    <Category Name="NameGenerator" DisplayName="Nameming Generator" />
+  </Rule.Categories>
+
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" HasConfigurationCondition="false" Label="Avalonia" />
+  </Rule.DataSource>
+
+  <!-- Compiling -->
+  <BoolProperty Name="AvaloniaUseExternalMSBuild"
+                DisplayName="External MSBuild"
+                Description="Use dotnet build instead of MSBuild"
+                Category="Compiling" />
+
+  <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
+              DisplayName="Use CompiledBindings"
+              Description="Use by default CompiledBindings"
+              Category="Compiling" />
+
+  <BoolProperty Name="AvaloniaAccessUnstablePrivateApis"
+            DisplayName="Use Private Apis"
+            Description="Enable access to unstable private APIs (not recommended)"
+            Category="Compiling" />
+
+  <!-- Debug -->
+
+  <BoolProperty Name="AvaloniaXamlIlDebuggerLaunch"
+          DisplayName="Debug Xaml Compaliler"
+          Description="Allow debug Xaml compilation."
+          Category="Debug" />
+
+
+  <EnumProperty Name="AvaloniaXamlReportImportance"
+                DisplayName="Xaml Report Importance"
+                Description="Provides levels of importance for Xaml Compiler messages"
+                Category="Debug">
+    <EnumValue Name="Low" DisplayName="Low" Description="Set Xaml Compiler report message to Low importance" />
+    <EnumValue Name="Normal" DisplayName="Normal" Description="Set Xaml Compiler report message to Normal importance" />
+    <EnumValue Name="High" DisplayName="High" Description="Set Xaml Compiler report message to High importance" />
+  </EnumProperty>
+
+  <!-- NameGenerator -->
+
+  <BoolProperty Name="AvaloniaNameGeneratorIsEnabled"
+              DisplayName="Use Name Generator"
+              Description="Enable/Disable Avalalina Name Source Generator"
+              Category="NameGenerator" />
+
+  <EnumProperty Name="AvaloniaNameGeneratorBehavior"
+                DisplayName="Generator Behavior"
+                Description="Customize behavior of name generator"
+                Category="NameGenerator">
+    <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="The binding of the name to the control is done only once in InitializeComponent and is stored in a field." />
+    <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generator generate a Properties to binding name to control" />
+  </EnumProperty>
+
+  <EnumProperty Name="AvaloniaNameGeneratorDefaultFieldModifier"
+              DisplayName="Default Class Field/Property Modifier"
+              Description="Customize visibility Modifier of Class Field/Property"
+              Category="NameGenerator">
+    <EnumValue Name="Internal" DisplayName="Internal" Description="The type or member can be accessed by any code in the same assembly, but not from another assembly. In other words, internal types or members can be accessed from code that is part of the same compilation." />
+    <EnumValue Name="Public" DisplayName="Public" Description="The type or member can be accessed by any other code in the same assembly or another assembly that references it. The accessibility level of public members of a type is controlled by the accessibility level of the type itself." />
+    <EnumValue Name="Protected" DisplayName="Protected" Description="The type or member can be accessed only by code in the same class, or in a class that is derived from that class." />
+    <EnumValue Name="Private" DisplayName="Private" Description="TThe type or member can be accessed by types derived from the class that are declared within its containing assembly." />
+  </EnumProperty>
+
+  <StringProperty Name="AvaloniaNameGeneratorFilterByPath"
+                  DisplayName="Filter By Path"
+                  Description="Specifies the Glob pattern to filter the class for which to generate name binding (Default is *).."
+                  Category="NameGenerator" />
+
+  <StringProperty Name="AvaloniaNameGeneratorFilterByNamespace"
+                DisplayName="Filter By Namespace"
+                Description="Specifies the Glob pattern to filter the class by namespcace for which to generate name binding (Default is *).."
+                Category="NameGenerator" />
+</Rule>
