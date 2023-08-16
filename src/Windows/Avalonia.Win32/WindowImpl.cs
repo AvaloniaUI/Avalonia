@@ -97,7 +97,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
-        private bool _ignoreWmChar;
+        internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
 
         private const int MaxPointerHistorySize = 512;
@@ -106,6 +106,7 @@ namespace Avalonia.Win32
         private static POINTER_PEN_INFO[]? s_historyPenInfos;
         private static POINTER_INFO[]? s_historyInfos;
         private static MOUSEMOVEPOINT[]? s_mouseHistoryInfos;
+        private PlatformThemeVariant _currentThemeVariant;
 
         public WindowImpl()
         {
@@ -186,7 +187,7 @@ namespace Avalonia.Win32
             s_instances.Add(this);
         }
 
-        private IInputRoot Owner
+        internal IInputRoot Owner
             => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
 
         public Action? Activated { get; set; }
@@ -474,7 +475,12 @@ namespace Avalonia.Win32
                 return;
 
             SetUseHostBackdropBrush(false);
-            _blurHost?.SetBlur(BlurEffect.Mica);
+            _blurHost?.SetBlur(_currentThemeVariant switch
+            {
+                PlatformThemeVariant.Light => BlurEffect.MicaLight,
+                PlatformThemeVariant.Dark => BlurEffect.MicaDark,
+                _ => throw new ArgumentOutOfRangeException()
+            });
         }
 
         private void SetAccentState(AccentState state)
@@ -778,6 +784,7 @@ namespace Avalonia.Win32
 
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
+            _currentThemeVariant = themeVariant;
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {
                 var pvUseBackdropBrush = themeVariant == PlatformThemeVariant.Dark ? 1 : 0;
@@ -786,6 +793,10 @@ namespace Avalonia.Win32
                     (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
                     &pvUseBackdropBrush,
                     sizeof(int));
+                if (TransparencyLevel == WindowTransparencyLevel.Mica)
+                {
+                    SetTransparencyMica(Win32Platform.WindowsVersion);
+                }
             }
         }
         
@@ -1329,14 +1340,12 @@ namespace Avalonia.Win32
 
                 if (!_isFullScreenActive)
                 {
-                    var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
-
                     var margins = new MARGINS
                     {
-                        cyBottomHeight = margin,
-                        cxRightWidth = margin,
-                        cxLeftWidth = margin,
-                        cyTopHeight = margin
+                        cyBottomHeight = 0,
+                        cxRightWidth = 0,
+                        cxLeftWidth = 0,
+                        cyTopHeight = 0
                     };
 
                     DwmExtendFrameIntoClientArea(_hwnd, ref margins);

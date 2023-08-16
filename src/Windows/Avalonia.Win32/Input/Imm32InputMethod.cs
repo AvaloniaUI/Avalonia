@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Threading;
 
@@ -22,7 +24,9 @@ namespace Avalonia.Win32.Input
         private ushort _langId;
         private const int CaretMargin = 1;
 
-        public ITextInputMethodClient? Client { get; private set; }
+        private bool _ignoreComposition;
+
+        public TextInputMethodClient? Client { get; private set; }
 
         [MemberNotNullWhen(true, nameof(Client))]
         public bool IsActive => Client != null;
@@ -121,19 +125,35 @@ namespace Avalonia.Win32.Input
             {
                 var himc = ImmGetContext(Hwnd);
 
-                if (IsComposing)
+                if (himc != IntPtr.Zero)
                 {
-                    ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
-                   
-                    IsComposing = false;
-                }
+                    _ignoreComposition = true;
 
-                ImmReleaseContext(Hwnd, himc);
+                    if (_parent != null)
+                    {
+                        _parent._ignoreWmChar = true;
+                    }
+
+                    ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+
+                    ImmReleaseContext(Hwnd, himc);
+
+                    IsComposing = false;
+
+                    Composition = null;
+                }
             });
         }
 
-        public void SetClient(ITextInputMethodClient? client)
+        public void SetClient(TextInputMethodClient? client)
         {
+            if(Client != null)
+            {
+                Composition = null;
+
+                Client.SetPreeditText(null);
+            }
+
             Client = client;
 
             Dispatcher.UIThread.Post(() =>
@@ -295,6 +315,100 @@ namespace Avalonia.Win32.Input
             var himc = ImmGetContext(Hwnd);
 
             return ImmGetCompositionString(himc, flag);
+        }
+
+        public void HandleCompositionStart()
+        {
+            Composition = null;
+
+            if (IsActive)
+            {
+                Client.SetPreeditText(null);
+
+                if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
+                {
+                    KeyPress(Key.Delete);
+                }
+            }
+
+            IsComposing = true;
+        }
+
+        public void HandleCompositionEnd()
+        {
+            //Cleanup composition state.
+            IsComposing = false;
+
+            Composition = null;
+
+            if (IsActive)
+            {
+                Client.SetPreeditText(null);
+            }
+        }
+
+        public void HandleComposition(IntPtr wParam, IntPtr lParam, uint timestamp)
+        {
+            if (_ignoreComposition)
+            {
+                _ignoreComposition = false;
+
+                return;
+            }
+
+            var flags = (GCS)ToInt32(lParam);
+
+            if ((flags & GCS.GCS_RESULTSTR) != 0)
+            {
+                var resultString = GetCompositionString(GCS.GCS_RESULTSTR);
+
+                if (_parent != null && !string.IsNullOrEmpty(resultString))
+                {
+                    Composition = null;
+
+                    if (IsActive)
+                    {
+                        Client.SetPreeditText(null);
+                    }
+
+                    var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
+
+                    if (_parent.Input != null)
+                    {
+                        _parent.Input(e);
+
+                        _parent._ignoreWmChar = true;
+                    }
+                }
+            }
+
+            if ((flags & GCS.GCS_COMPSTR) != 0)
+            {
+                var compositionString = GetCompositionString(GCS.GCS_COMPSTR);
+
+                CompositionChanged(compositionString);
+            }
+        }
+
+        private static int ToInt32(IntPtr ptr)
+        {
+            if (IntPtr.Size == 4)
+                return ptr.ToInt32();
+
+            return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+        private void KeyPress(Key key)
+        {
+            if (_parent?.Input != null)
+            {
+                _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
+                RawKeyEventType.KeyDown, key, RawInputModifiers.None));
+
+                _parent.Input(new RawKeyEventArgs(KeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, _parent.Owner,
+                RawKeyEventType.KeyUp, key, RawInputModifiers.None));
+
+            }
         }
 
         ~Imm32InputMethod()

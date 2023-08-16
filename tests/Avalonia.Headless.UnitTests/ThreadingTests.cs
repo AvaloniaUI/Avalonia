@@ -18,7 +18,7 @@ public class ThreadingTests
     }
 
 #if NUNIT
-    [AvaloniaTest(Ignore = "This test should always fail, enable to test if it fails")]
+    [AvaloniaTest, Ignore("This test should always fail, enable to test if it fails")]
 #elif XUNIT
     [AvaloniaFact(Skip = "This test should always fail, enable to test if it fails")]
 #endif

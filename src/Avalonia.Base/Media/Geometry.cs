@@ -28,6 +28,11 @@ namespace Avalonia.Media
             TransformProperty.Changed.AddClassHandler<Geometry>((x,e) => x.TransformChanged(e));
         }
 
+        internal Geometry()
+        {
+            
+        }
+        
         /// <summary>
         /// Raised when the geometry changes.
         /// </summary>
@@ -134,7 +139,7 @@ namespace Avalonia.Media
         /// Creates the platform implementation of the geometry, without the transform applied.
         /// </summary>
         /// <returns></returns>
-        protected abstract IGeometryImpl? CreateDefiningGeometry();
+        private protected abstract IGeometryImpl? CreateDefiningGeometry();
 
         /// <summary>
         /// Invalidates the platform implementation of the geometry.

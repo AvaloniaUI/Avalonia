@@ -28,6 +28,9 @@
       </ResourceDictionary.ThemeDictionaries>
 
       <!-- Styles attached dynamically depending on current theme (simple or fluent) -->
+      <FluentTheme x:Key="FluentTheme">
+      </FluentTheme>
+      <SimpleTheme x:Key="SimpleTheme" />
       <StyleInclude x:Key="DataGridFluent" Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
       <StyleInclude x:Key="DataGridSimple" Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml" />
       <StyleInclude x:Key="ColorPickerFluent" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />

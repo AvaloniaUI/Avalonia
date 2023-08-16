@@ -2,9 +2,9 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -16,7 +16,8 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    internal class LayoutManager : ILayoutManager, IDisposable
+    [PrivateApi]
+    public class LayoutManager : ILayoutManager, IDisposable
     {
         private const int MaxPasses = 10;
         private readonly Layoutable _owner;

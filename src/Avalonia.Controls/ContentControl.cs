@@ -40,11 +40,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             AvaloniaProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
-        static ContentControl()
-        {
-            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
-        }
-
         /// <summary>
         /// Gets or sets the content to display.
         /// </summary>
@@ -99,6 +94,16 @@ namespace Avalonia.Controls
         bool IContentPresenterHost.RegisterContentPresenter(ContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
+        }
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ContentProperty)
+            {
+                ContentChanged(change);
+            }
         }
 
         /// <summary>

@@ -3,7 +3,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
-    [NotClientImplementable]
+    [PrivateApi]
     public interface IPointerDevice : IInputDevice
     {
         /// <summary>

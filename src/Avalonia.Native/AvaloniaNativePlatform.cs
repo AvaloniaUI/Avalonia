@@ -3,9 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -19,7 +17,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions? _options;
-        private AvaloniaNativeGlPlatformGraphics? _platformGl;
+        private IPlatformGraphics? _platformGraphics;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -88,14 +86,17 @@ namespace Avalonia.Native
 
             var applicationPlatform = new AvaloniaNativeApplicationPlatform();
 
-            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
+            
+            if (_factory.MacOptions != null)
+                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
+
+            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform, new AvnDispatcher());
+            
             if (_factory.MacOptions != null)
             {
-                var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
-
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
-                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
@@ -108,37 +109,66 @@ namespace Avalonia.Native
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
-            
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-            if (hotkeys is not null)
-            {
-                hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
-                hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-                hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
-                hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-            }
-            
-            if (_options.UseGpu)
-            {
-                try
-                {
-                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
 
-                }
-                catch (Exception)
+            var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
+            hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
+            hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+            hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
+            hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+
+            AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
+
+            foreach (var mode in _options.RenderingMode)
+            {
+                if (mode == AvaloniaNativeRenderingMode.OpenGl)
                 {
-                    // ignored
+                    try
+                    {
+                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
                 }
+#pragma warning disable CS0618
+                else if (mode == AvaloniaNativeRenderingMode.Metal)
+#pragma warning restore CS0618
+                {
+                    try
+                    {
+                        var metal = new MetalPlatformGraphics(_factory);
+                        metal.CreateContext().Dispose();
+                        _platformGraphics = metal;
+                    }
+                    catch
+                    {
+                        // Ignored
+                    }
+                }
+                else if (mode == AvaloniaNativeRenderingMode.Software)
+                    break;
             }
+
+            if (_platformGraphics != null)
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IPlatformGraphics>().ToConstant(_platformGraphics);
             
-            Compositor = new Compositor(_platformGl, true);
+
+            Compositor = new Compositor(_platformGraphics, true);
+
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        }
+
+        private void OnProcessExit(object? sender, EventArgs e)
+        {
+            AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+            _factory.Dispose();
         }
 
         public ITrayIconImpl CreateTrayIcon()
@@ -148,7 +178,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options, _platformGl);
+            return new WindowImpl(_factory, _options);
         }
 
         public IWindowImpl CreateEmbeddableWindow()

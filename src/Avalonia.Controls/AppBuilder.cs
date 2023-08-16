@@ -12,23 +12,23 @@ namespace Avalonia
     /// <summary>
     /// Initializes platform-specific services for an <see cref="Application"/>.
     /// </summary>
-    public class AppBuilder
+    public sealed class AppBuilder
     {
         private static bool s_setupWasAlreadyCalled;
         private Action? _optionsInitializers;
         private Func<Application>? _appFactory;
         private IApplicationLifetime? _lifetime;
-        
-        /// <summary>
-        /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
-        /// </summary>
-        public IRuntimePlatform RuntimePlatform { get; set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the runtime platform services (e. g. AssetLoader)
         /// </summary>
-        public Action RuntimePlatformServicesInitializer { get; private set; }
+        public Action? RuntimePlatformServicesInitializer { get; private set; }
 
+        /// <summary>
+        /// Gets the name of the currently selected windowing subsystem.
+        /// </summary>
+        public string? RuntimePlatformServicesName { get; private set; }
+        
         /// <summary>
         /// Gets the <see cref="Application"/> instance being initialized.
         /// </summary>
@@ -70,21 +70,10 @@ namespace Avalonia
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBuilder"/> class.
         /// </summary>
-        public AppBuilder()
-            : this(new StandardRuntimePlatform(),
-                builder => StandardRuntimePlatformServices.Register(builder.ApplicationType?.Assembly))
+        private AppBuilder()
         {
         }
         
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AppBuilder"/> class.
-        /// </summary>
-        protected AppBuilder(IRuntimePlatform platform, Action<AppBuilder> platformServices)
-        {
-            RuntimePlatform = platform;
-            RuntimePlatformServicesInitializer = () => platformServices(this);
-        }
-
         /// <summary>
         /// Begin configuring an <see cref="Application"/>.
         /// </summary>
@@ -96,7 +85,6 @@ namespace Avalonia
             return new AppBuilder()
             {
                 ApplicationType = typeof(TApp),
-                // Needed for CoreRT compatibility
                 _appFactory = () => new TApp()
             };
         }
@@ -151,11 +139,11 @@ namespace Avalonia
             }
 
             throw new InvalidOperationException(
-                $"Unable to create AppBuilder from type {entryPointType.Name}." +
+                $"Unable to create AppBuilder from type \"{entryPointType.FullName}\". " +
                 $"Input type either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application type.");
         }
         
-        protected AppBuilder Self => this;
+        private AppBuilder Self => this;
 
         public AppBuilder AfterSetup(Action<AppBuilder> callback)
         {
@@ -223,6 +211,30 @@ namespace Avalonia
         {
             RenderingSubsystemInitializer = initializer;
             RenderingSubsystemName = name;
+            return Self;
+        }
+        
+        /// <summary>
+        /// Specifies a runtime platform subsystem to use.
+        /// </summary>
+        /// <param name="initializer">The method to call to initialize the runtime platform subsystem.</param>
+        /// <param name="name">The name of the runtime platform subsystem.</param>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder UseRuntimePlatformSubsystem(Action initializer, string name = "")
+        {
+            RuntimePlatformServicesInitializer = initializer;
+            RuntimePlatformServicesName = name;
+            return Self;
+        }
+        
+        /// <summary>
+        /// Specifies a standard runtime platform subsystem to use.
+        /// </summary>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder UseStandardRuntimePlatformSubsystem()
+        {
+            RuntimePlatformServicesInitializer = () => StandardRuntimePlatformServices.Register(ApplicationType?.Assembly);
+            RuntimePlatformServicesName = nameof(StandardRuntimePlatform);
             return Self;
         }
 

@@ -44,6 +44,7 @@ namespace Avalonia.Diagnostics.ViewModels
             SelectedTab = 0;
             if (root is TopLevel topLevel)
             {
+                _pointerOverRoot = topLevel;
                 _pointerOverSubscription = topLevel.GetObservable(TopLevel.PointerOverElementProperty)
                     .Subscribe(x => PointerOverElement = x);
 

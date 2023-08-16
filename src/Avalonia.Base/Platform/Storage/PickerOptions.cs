@@ -6,7 +6,7 @@
 public class PickerOptions
 {
     /// <summary>
-    /// Gets or sets the text that appears in the title bar of a folder dialog.
+    /// Gets or sets the text that appears in the title bar of a picker.
     /// </summary>
     public string? Title { get; set; }
 

@@ -57,12 +57,11 @@ namespace Avalonia.Browser
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return GetRuntimePlatform()
-                .StartSystemTimer(interval, () =>
-                {
-                    Dispatcher.UIThread.RunJobs(priority);
-                    tick();
-                });
+            return new Timer(_ =>
+            {
+                Dispatcher.UIThread.RunJobs(priority);
+                tick();
+            }, null, interval, interval);
         }
 
         public void Signal(DispatcherPriority priority)
@@ -71,18 +70,16 @@ namespace Avalonia.Browser
                 return;
 
             _signaled = true;
+            var interval = TimeSpan.FromMilliseconds(1);
 
             IDisposable? disp = null;
+            disp = new Timer(_ =>
+            {
+                _signaled = false;
+                disp?.Dispose();
 
-            disp = GetRuntimePlatform()
-                .StartSystemTimer(TimeSpan.FromMilliseconds(1),
-                    () =>
-                    {
-                        _signaled = false;
-                        disp?.Dispose();
-
-                        Signaled?.Invoke(null);
-                    });
+                Signaled?.Invoke(null);
+            }, null, interval, interval);
         }
 
         public bool CurrentThreadIsLoopThread
@@ -94,10 +91,5 @@ namespace Avalonia.Browser
         }
 
         public event Action<DispatcherPriority?>? Signaled;
-
-        private static IRuntimePlatform GetRuntimePlatform()
-        {
-            return AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
-        }
     }
 }

@@ -394,6 +394,14 @@ namespace Avalonia.Controls
             _isEmbeddedInMenu = parent?.FindLogicalAncestorOfType<IMenu>(true) != null;
         }
 
+        /// <inheritdoc />
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            
+            TryUpdateCanExecute();
+        }
+
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             // This will cause the hotkey manager to dispose the observer and the reference to this control

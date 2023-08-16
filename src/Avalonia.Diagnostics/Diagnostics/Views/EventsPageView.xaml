@@ -77,21 +77,23 @@
         <ListBox.ItemTemplate>
           <DataTemplate>
             <ListBoxItem Classes.handled="{Binding IsHandled}">
-              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+              <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
 
-                <StackPanel Grid.Column="0" Spacing="2" Orientation="Horizontal" >
+                <TextBlock Grid.Column="0"  Text="{Binding TriggerTime, StringFormat={}{0:HH:mm:ss.fff}}"/>
+
+                <StackPanel Margin="10,0,0,0" Grid.Column="1" Spacing="2" Orientation="Horizontal" >
                   <TextBlock Tag="{Binding Event}" DoubleTapped="NavigateTo" Text="{Binding Event.Name}" FontWeight="Bold" Classes="nav" />
                   <TextBlock Text="on" />
                   <TextBlock Tag="{Binding Originator}" DoubleTapped="NavigateTo" Text="{Binding Originator.HandlerName}" Classes="nav" />
                 </StackPanel>
 
-                <StackPanel Margin="2,0,0,0" Grid.Column="1" Spacing="2" Orientation="Horizontal" IsVisible="{Binding IsHandled}" >
+                <StackPanel Margin="2,0,0,0" Grid.Column="2" Spacing="2" Orientation="Horizontal" IsVisible="{Binding IsHandled}" >
                   <TextBlock Text="::" />
                   <TextBlock Text="Handled by" />
                   <TextBlock Tag="{Binding HandledBy}" DoubleTapped="NavigateTo" Text="{Binding HandledBy.HandlerName}" Classes="nav" />
                 </StackPanel>
 
-                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
                   <TextBlock Text="Routing (" />
                   <TextBlock Text="{Binding Event.RoutingStrategies}"/>
                   <TextBlock Text=")"/>

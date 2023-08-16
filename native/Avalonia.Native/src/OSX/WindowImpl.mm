@@ -9,7 +9,7 @@
 #include "automation.h"
 #include "WindowProtocol.h"
 
-WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
+WindowImpl::WindowImpl(IAvnWindowEvents *events) : WindowBaseImpl(events) {
     _isEnabled = true;
     _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;

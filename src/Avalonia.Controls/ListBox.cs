@@ -9,6 +9,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -127,7 +128,7 @@ namespace Avalonia.Controls
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
             var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             if (!ctrl &&
@@ -147,7 +148,7 @@ namespace Avalonia.Controls
             }
             else if (e.Key == Key.Space || e.Key == Key.Enter)
             {
-                e.Handled |= UpdateSelectionFromEventSource(
+                UpdateSelectionFromEventSource(
                     e.Source,
                     true,
                     e.KeyModifiers.HasFlag(KeyModifiers.Shift),
@@ -165,7 +166,7 @@ namespace Avalonia.Controls
 
         internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
         {
-            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
             var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             return UpdateSelectionFromEventSource(

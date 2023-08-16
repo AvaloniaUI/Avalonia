@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -250,7 +251,7 @@ namespace Avalonia.Controls
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
                 {
-                    var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Back;
+                    var keymap = PlatformSettings?.HotkeyConfiguration.Back;
 
                     if (keymap != null)
                     {
@@ -391,7 +392,7 @@ namespace Avalonia.Controls
         /// An <see cref="IPlatformHandle"/> describing the window handle, or null if the handle
         /// could not be retrieved.
         /// </returns>
-        public IPlatformHandle? TryGetPlatformHandle() => ((IWindowBaseImpl?) PlatformImpl)?.Handle;
+        public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
 
         /// <summary>
         /// Gets the renderer for the window.
@@ -487,6 +488,9 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 
+        /// <inheritdoc />
+        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -532,7 +536,16 @@ namespace Avalonia.Controls
                     return Disposable.Create(() => { });
             }
         }
-
+        
+        /// <summary>
+        /// Enqueues a callback to be called on the next animation tick
+        /// </summary>
+        public void RequestAnimationFrame(Action<TimeSpan> action)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            MediaContext.Instance.RequestAnimationFrame(action);
+        }
+        
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -578,6 +591,7 @@ namespace Avalonia.Controls
             Renderer.SceneInvalidated -= SceneInvalidated;
             // We need to wait for the renderer to complete any in-flight operations
             Renderer.Dispose();
+            StopRendering();
             
             Debug.Assert(PlatformImpl != null);
             // The PlatformImpl is completely invalid at this point

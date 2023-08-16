@@ -31,6 +31,7 @@
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                    IsReadOnly="{TemplateBinding IsReadOnly}"
                    Text="{TemplateBinding Text}"
+                   TextAlignment="{TemplateBinding TextAlignment}"
                    TextWrapping="NoWrap"
                    Watermark="{TemplateBinding Watermark}" />
         </ButtonSpinner>

@@ -15,7 +15,6 @@ using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
 using Avalonia.Threading;
 
@@ -32,20 +31,17 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Cut action
         /// </summary>
-        public static KeyGesture? CutGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
+        public static KeyGesture? CutGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Cut.FirstOrDefault();
 
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Copy action
         /// </summary>
-        public static KeyGesture? CopyGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Copy.FirstOrDefault();
+        public static KeyGesture? CopyGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Copy.FirstOrDefault();
 
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Paste action
         /// </summary>
-        public static KeyGesture? PasteGesture { get; } = AvaloniaLocator.Current
-            .GetService<PlatformHotkeyConfiguration>()?.Paste.FirstOrDefault();
+        public static KeyGesture? PasteGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Paste.FirstOrDefault();
 
         /// <summary>
         /// Defines the <see cref="AcceptsReturn"/> property
@@ -816,9 +812,14 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if (IsFocused)
+            if (_presenter != null)
             {
-                _presenter?.ShowCaret();
+                if (IsFocused)
+                {
+                    _presenter.ShowCaret();
+                }
+
+                _presenter.PropertyChanged += PresenterPropertyChanged;
             }
         }
 
@@ -826,7 +827,27 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
+            if (_presenter != null)
+            {
+                _presenter.HideCaret();
+
+                _presenter.PropertyChanged -= PresenterPropertyChanged;
+            }
+
             _imClient.SetPresenter(null, null);
+        }
+
+        private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if(e.Property == TextPresenter.PreeditTextProperty)
+            {
+                if(string.IsNullOrEmpty(e.OldValue as string) && !string.IsNullOrEmpty(e.NewValue as string))
+                {
+                    PseudoClasses.Set(":empty", false);
+
+                    DeleteSelection();
+                }
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -979,7 +1000,9 @@ namespace Avalonia.Controls
 
                 textBuilder.Insert(caretIndex, input);
 
-                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
+                var text = StringBuilderCache.GetStringAndRelease(textBuilder);
+
+                SetCurrentValue(TextProperty, text);
 
                 ClearSelection();
 
@@ -1103,7 +1126,7 @@ namespace Avalonia.Controls
             var handled = false;
             var modifiers = e.KeyModifiers;
 
-            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
             bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);
@@ -1215,6 +1238,34 @@ namespace Avalonia.Controls
                 SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
                 movement = true;
                 selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.PageLeft))
+            {
+                MovePageLeft();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageRight))
+            {
+                MovePageRight();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageUp))
+            {
+                MovePageUp();
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.PageDown))
+            {
+                MovePageDown();
+                movement = true;
+                selection = false;
                 handled = true;
             }
             else
@@ -1406,8 +1457,6 @@ namespace Avalonia.Controls
                 !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
-
-                var oldIndex = CaretIndex;
 
                 _presenter.MoveCaretToPoint(point);
 
@@ -1739,6 +1788,25 @@ namespace Avalonia.Controls
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
+        }
+
+        private void MovePageRight()
+        {
+            _scrollViewer?.PageRight();
+        }
+
+        private void MovePageLeft()
+        {
+            _scrollViewer?.PageLeft();
+        }
+        private void MovePageUp()
+        {
+            _scrollViewer?.PageUp();
+        }
+
+        private void MovePageDown()
+        {
+            _scrollViewer?.PageDown();
         }
 
         /// <summary>

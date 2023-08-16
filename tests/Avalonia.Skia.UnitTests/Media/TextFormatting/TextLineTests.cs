@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
-using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
@@ -196,7 +194,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 for (var i = 0; i < clusters.Count; i++)
                 {
                     var expectedCluster = clusters[i];
-                    var actualCluster = nextCharacterHit.FirstCharacterIndex;
+                    var actualCluster = nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength;
 
                     Assert.Equal(expectedCluster, actualCluster);
 
@@ -280,16 +278,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Assert.Equal(clusters[i],
                         previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
                 }
-
-                firstCharacterHit = previousCharacterHit;
-
-                firstCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
-
-                previousCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
-
-                Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
-
-                Assert.Equal(0, previousCharacterHit.TrailingLength);
             }
         }
 
@@ -730,6 +718,130 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetNextCaretCharacterHit_From_Mixed_TextBuffer()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new MixedTextBufferTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(9, 1));
+
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+                Assert.Equal(11, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(19, 1));
+
+                Assert.Equal(20, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(10));
+
+                Assert.Equal(11, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, characterHit.TrailingLength);
+
+                characterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+                Assert.Equal(12, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, characterHit.TrailingLength);
+
+                characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(20));
+
+                Assert.Equal(21, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, characterHit.TrailingLength);
+            }
+        }
+
+        [Fact]
+        public void Should_GetPreviousCaretCharacterHit_From_Mixed_TextBuffer()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new MixedTextBufferTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(20, 1));
+
+                Assert.Equal(19, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(10, 1));
+
+                Assert.Equal(9, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetPreviousCaretCharacterHit(characterHit);
+
+                Assert.Equal(8, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(21));
+
+                Assert.Equal(20, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, characterHit.TrailingLength);
+
+                characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(11));
+
+                Assert.Equal(10, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, characterHit.TrailingLength);
+
+                characterHit = textLine.GetPreviousCaretCharacterHit(characterHit);
+
+                Assert.Equal(9, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, characterHit.TrailingLength);
+            }
+        }
+
+        [Fact]
+        public void Should_GetCharacterHitFromDistance_From_Mixed_TextBuffer()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new MixedTextBufferTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 20, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(double.PositiveInfinity);
+
+                Assert.Equal(40, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+            }
+        }
+
         private class MixedTextBufferTextSource : ITextSource
         {
             public TextRun? GetTextRun(int textSourceIndex)
@@ -1072,7 +1184,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
-        public void Should_GetTextBounds_BiDi()
+        public void Should_GetTextBounds_Bidi()
         {
             var text = "אבגדה 12345 ABCDEF אבגדה";
 
@@ -1114,9 +1226,36 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 bounds = textLine.GetTextBounds(0, 25);
 
-                Assert.Equal(5, bounds.Count);
+                Assert.Equal(4, bounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, bounds.Last().Rectangle.Right);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_Bidi_2()
+        {
+            var text = "אבג ABC אבג 123";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                var bounds = textLine.GetTextBounds(0, text.Length);
+
+                Assert.Equal(4, bounds.Count);
+
+                var right = bounds.Last().Rectangle.Right;
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, right);
             }
         }
 

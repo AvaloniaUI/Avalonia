@@ -51,11 +51,16 @@ namespace Avalonia.Headless
 
         private class HeadlessWindowingPlatform : IWindowingPlatform
         {
-            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false);
+            readonly PixelFormat _frameBufferFormat;
+            public HeadlessWindowingPlatform(PixelFormat frameBufferFormat)
+            {
+                _frameBufferFormat = frameBufferFormat;
+            }
+            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false, _frameBufferFormat);
 
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
-            public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
+            public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true, _frameBufferFormat);
 
             public ITrayIconImpl? CreateTrayIcon() => null;
         }
@@ -70,7 +75,7 @@ namespace Avalonia.Headless
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
-                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
+                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             Compositor = new Compositor( null);
         }
@@ -92,6 +97,7 @@ namespace Avalonia.Headless
     public class AvaloniaHeadlessPlatformOptions
     {
         public bool UseHeadlessDrawing { get; set; } = true;
+        public PixelFormat FrameBufferFormat { get; set; } = PixelFormat.Rgba8888;
     }
 
     public static class AvaloniaHeadlessPlatformExtensions
@@ -99,8 +105,10 @@ namespace Avalonia.Headless
         public static AppBuilder UseHeadless(this AppBuilder builder, AvaloniaHeadlessPlatformOptions opts)
         {
             if(opts.UseHeadlessDrawing)
-                builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
-            return builder.UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
+                builder = builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
+            return builder
+                .UseStandardRuntimePlatformSubsystem()
+                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
         }
     }
 }

@@ -27,8 +27,13 @@ namespace Avalonia.UnitTests
 
         public void Move(Interactive target, Interactive source, in Point position, KeyModifiers modifiers = default)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
-                Timestamp(), PointerPointProperties.None, modifiers));
+            var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
+                Timestamp(), PointerPointProperties.None, modifiers);
+            if (_pointer.CapturedGestureRecognizer != null)
+                _pointer.CapturedGestureRecognizer.PointerMovedInternal(e);
+            else
+                target.RaiseEvent(e);
+
         }
 
         public void Up(Interactive target, Point position = default, KeyModifiers modifiers = default)
@@ -36,9 +41,16 @@ namespace Avalonia.UnitTests
 
         public void Up(Interactive target, Interactive source, Point position = default, KeyModifiers modifiers = default)
         {
-            source.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (Visual)target, position, Timestamp(), PointerPointProperties.None,
-                modifiers, MouseButton.None));
+            var e = new PointerReleasedEventArgs(source, _pointer, (Visual)target, position, Timestamp(), PointerPointProperties.None,
+                modifiers, MouseButton.None);
+
+            if (_pointer.CapturedGestureRecognizer != null)
+                _pointer.CapturedGestureRecognizer.PointerReleasedInternal(e);
+            else
+                source.RaiseEvent(e);
+
             _pointer.Capture(null);
+            _pointer.CaptureGestureRecognizer(null);
         }
 
         public void Tap(Interactive target, Point position = default,  KeyModifiers modifiers = default)

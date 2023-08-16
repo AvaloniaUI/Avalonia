@@ -41,7 +41,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         private PixelRect? _lastReportedRect;
         private double _scaling = 1;
         private PixelPoint _windowPosition;
-        private ITextInputMethodClient? _client;
+        private TextInputMethodClient? _client;
 
         protected bool IsConnected => _currentName != null;
 
@@ -53,7 +53,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             _ = WatchAsync();
         }
 
-        public ITextInputMethodClient Client => _client;
+        public TextInputMethodClient Client => _client;
 
         public bool IsActive => _client is not null;
 
@@ -62,9 +62,15 @@ namespace Avalonia.FreeDesktop.DBusIme
             foreach (var name in _knownNames)
             {
                 var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
-                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
-                var nameOwner = await dbus.GetNameOwnerAsync(name);
-                OnNameChange(null, (name, null, nameOwner));
+                try
+                {
+                    _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
+                    var nameOwner = await dbus.GetNameOwnerAsync(name);
+                    OnNameChange(null, (name, null, nameOwner));
+                }
+                catch (DBusException)
+                {
+                }
             }
         }
 
@@ -210,7 +216,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             UpdateActive();
         }
 
-        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
+        void ITextInputMethodImpl.SetClient(TextInputMethodClient? client)
         {
             _client = client;
             UpdateActive();

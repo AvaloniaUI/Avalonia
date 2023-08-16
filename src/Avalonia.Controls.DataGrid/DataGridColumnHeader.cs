@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                     DataGrid owningGrid = OwningGrid;
                     DataGridSortDescription newSort;
 
-                    KeyboardHelper.GetMetaKeyState(keyModifiers, out bool ctrl, out bool shift);
+                    KeyboardHelper.GetMetaKeyState(this, keyModifiers, out bool ctrl, out bool shift);
 
                     DataGridSortDescription sort = OwningColumn.GetSortDescription();
                     IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
@@ -785,7 +785,9 @@ namespace Avalonia.Controls
                 double desiredWidth = _originalWidth + mouseDelta;
 
                 desiredWidth = Math.Max(_dragColumn.ActualMinWidth, Math.Min(_dragColumn.ActualMaxWidth, desiredWidth));
-                _dragColumn.Resize(_dragColumn.Width.Value, _dragColumn.Width.UnitType, _dragColumn.Width.DesiredValue, desiredWidth, true);
+                _dragColumn.Resize(_dragColumn.Width,
+                    new(_dragColumn.Width.Value, _dragColumn.Width.UnitType, _dragColumn.Width.DesiredValue, desiredWidth), 
+                    true);
 
                 OwningGrid.UpdateHorizontalOffset(_originalHorizontalOffset);
 

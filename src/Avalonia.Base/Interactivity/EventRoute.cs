@@ -120,11 +120,6 @@ namespace Avalonia.Interactivity
                 return;
             }
 
-            if (e.Source is null)
-            {
-                throw new ArgumentException("Event source may not be null", nameof(e));
-            }
-
             Interactive? lastTarget = null;
             var start = 0;
             var end = _route.Count;

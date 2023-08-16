@@ -16,12 +16,6 @@ namespace Avalonia.Media
         public Color Color { get; set; }
         public bool IsInset { get; set; }
 
-        static BoxShadow()
-        {
-            Animation.Animation.RegisterAnimator<BoxShadowAnimator>(prop =>
-                typeof(BoxShadow).IsAssignableFrom(prop.PropertyType));
-        }
-        
         public bool Equals(in BoxShadow other)
         {
             return OffsetX.Equals(other.OffsetX) && OffsetY.Equals(other.OffsetY) && Blur.Equals(other.Blur) && Spread.Equals(other.Spread) && Color.Equals(other.Color);
@@ -79,40 +73,44 @@ namespace Avalonia.Media
         public override string ToString()
         {
             var sb = StringBuilderCache.Acquire();
+            ToString(sb);
+            return StringBuilderCache.GetStringAndRelease(sb);
+        }
 
+        internal void ToString(StringBuilder sb)
+        {
             if (this == default)
             {
-                return "none";
+                sb.Append("none");
+                return;
             }
 
             if (IsInset)
             {
-                sb.Append("inset");
+                sb.Append("inset ");
             }
 
             if (OffsetX != 0.0)
             {
-                sb.AppendFormat(" {0}", OffsetX.ToString(CultureInfo.InvariantCulture));
+                sb.AppendFormat("{0} ", OffsetX.ToString(CultureInfo.InvariantCulture));
             }
 
             if (OffsetY != 0.0)
             {
-                sb.AppendFormat(" {0}", OffsetY.ToString(CultureInfo.InvariantCulture));
+                sb.AppendFormat("{0} ", OffsetY.ToString(CultureInfo.InvariantCulture));
             }
-            
+
             if (Blur != 0.0)
             {
-                sb.AppendFormat(" {0}", Blur.ToString(CultureInfo.InvariantCulture));
+                sb.AppendFormat("{0} ", Blur.ToString(CultureInfo.InvariantCulture));
             }
 
             if (Spread != 0.0)
             {
-                sb.AppendFormat(" {0}", Spread.ToString(CultureInfo.InvariantCulture));
+                sb.AppendFormat("{0} ", Spread.ToString(CultureInfo.InvariantCulture));
             }
 
-            sb.AppendFormat(" {0}", Color.ToString());
-
-            return StringBuilderCache.GetStringAndRelease(sb);
+            sb.AppendFormat("{0}", Color.ToString());
         }
 
         public static unsafe BoxShadow Parse(string s)

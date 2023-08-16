@@ -35,7 +35,6 @@ namespace Avalonia.UnitTests
         public TestRoot(Control child)
             : this(false, child)
         {
-            Child = child;
         }
 
         public TestRoot(bool useGlobalStyles, Control child)
@@ -67,6 +66,7 @@ namespace Avalonia.UnitTests
 
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
         public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement PointerOverElement { get; set; }
         

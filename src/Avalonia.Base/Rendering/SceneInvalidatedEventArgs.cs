@@ -1,11 +1,13 @@
 ﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Rendering
 {
     /// <summary>
     /// Provides data for the <see cref="IRenderer.SceneInvalidated"/> event.
     /// </summary>
-    internal class SceneInvalidatedEventArgs : EventArgs
+    [PrivateApi]
+    public class SceneInvalidatedEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SceneInvalidatedEventArgs"/> class.

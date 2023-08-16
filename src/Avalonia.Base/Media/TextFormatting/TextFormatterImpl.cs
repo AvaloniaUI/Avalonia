@@ -684,7 +684,9 @@ namespace Avalonia.Media.TextFormatting
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
             var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+
             line.FinalizeLine();
+
             return line;
         }
 

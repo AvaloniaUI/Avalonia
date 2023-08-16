@@ -18,7 +18,7 @@ namespace Avalonia.Automation.Peers
 
         public ControlAutomationPeer(Control owner)
         {
-            Owner = owner ?? throw new ArgumentNullException("owner");
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             Initialize();
         }
 
@@ -118,6 +118,13 @@ namespace Avalonia.Automation.Peers
         {
             EnsureConnected();
             return _parent;
+        }
+
+        protected override AutomationPeer? GetVisualRootCore()
+        {
+            if (Owner.GetVisualRoot() is Control c)
+                return CreatePeerForElement(c);
+            return null;
         }
 
         /// <summary>

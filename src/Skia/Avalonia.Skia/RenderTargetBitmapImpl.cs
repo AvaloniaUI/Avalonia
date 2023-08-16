@@ -28,4 +28,6 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
         _renderTarget.Dispose();
         base.Dispose();
     }
+
+    public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
 }

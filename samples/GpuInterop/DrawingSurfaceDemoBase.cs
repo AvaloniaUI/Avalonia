@@ -48,7 +48,7 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
             
             Surface = _compositor.CreateDrawingSurface();
             _visual = _compositor.CreateSurfaceVisual();
-            _visual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+            _visual.Size = new (Bounds.Width, Bounds.Height);
             _visual.Surface = Surface;
             ElementComposition.SetElementChildVisual(this, _visual);
             var (res, info) = await DoInitialize(_compositor, Surface);
@@ -72,7 +72,7 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
         if (root == null)
             return;
         
-        _visual!.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+        _visual!.Size = new (Bounds.Width, Bounds.Height);
         var size = PixelSize.FromSize(Bounds.Size, root.RenderScaling);
         RenderFrame(size);
         if (SupportsDisco && Disco > 0)

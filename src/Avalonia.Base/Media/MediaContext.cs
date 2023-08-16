@@ -131,12 +131,11 @@ internal partial class MediaContext : ICompositorScheduler
         // We are doing several iterations when it happens
         for (var c = 0; c < 10; c++)
         {
-            _clock.HasNewSubscriptions = false;
             FireInvokeOnRenderCallbacks();
             
             if (_clock.HasNewSubscriptions)
             {
-                _clock.Pulse(now);
+                _clock.PulseNewSubscriptions();
                 continue;
             }
 
@@ -212,7 +211,12 @@ internal partial class MediaContext : ICompositorScheduler
         }
         while (count > 0);
     }
-    
+
+    /// <summary>
+    /// Executes the <paramref name="callback">callback</paramref> in the next iteration of the current UI-thread
+    /// render loop / layout pass that.
+    /// </summary>
+    /// <param name="callback"></param>
     public void BeginInvokeOnRender(Action callback)
     {
         if (_invokeOnRenderCallbacks == null)

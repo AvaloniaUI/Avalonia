@@ -1,11 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:local="using:ControlCatalog.Models"
+             xmlns:lc="using:ControlCatalog.Converter"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pages="clr-namespace:ControlCatalog.Pages"
              x:Class="ControlCatalog.Pages.DataGridPage"
              x:DataType="pages:DataGridPage">
   <UserControl.Resources>
+
     <local:GDPValueConverter x:Key="GDPConverter" />
+    <local:GDPdLengthConverter x:Key="GDPWidthConverter"/>
     <DataTemplate x:Key="Demo.DataTemplates.CountryHeader" x:DataType="local:Country">
       <StackPanel Orientation="Horizontal" Spacing="5">
         <PathIcon Height="12" Data="M 255 116 A 1 1 0 0 0 254 117 L 254 130 A 1 1 0 0 0 255 131 A 1 1 0 0 0 256 130 L 256 123.87109 C 256.1125 123.90694 256.2187 123.94195 256.33984 123.97852 C 257.18636 124.23404 258.19155 124.5 259 124.5 C 259.80845 124.5 260.52133 124.2168 261.17773 123.9668 C 261.83414 123.7168 262.43408 123.5 263 123.5 C 263.56592 123.5 264.5612 123.73404 265.37109 123.97852 C 266.18098 124.22299 266.82227 124.4668 266.82227 124.4668 A 0.50005 0.50005 0 0 0 267.5 124 L 267.5 118 A 0.50005 0.50005 0 0 0 267.17773 117.5332 C 267.17773 117.5332 266.50667 117.27701 265.66016 117.02148 C 264.81364 116.76596 263.80845 116.5 263 116.5 C 262.19155 116.5 261.47867 116.7832 260.82227 117.0332 C 260.16586 117.2832 259.56592 117.5 259 117.5 C 258.43408 117.5 257.4388 117.26596 256.62891 117.02148 C 256.39123 116.94974 256.17716 116.87994 255.98047 116.81445 A 1 1 0 0 0 255 116 z M 263 117.5 C 263.56592 117.5 264.5612 117.73404 265.37109 117.97852 C 266.00097 118.16865 266.29646 118.28239 266.5 118.35742 L 266.5 120.29297 C 266.25708 120.21012 265.97978 120.11797 265.66016 120.02148 C 264.81364 119.76596 263.80845 119.5 263 119.5 C 262.19155 119.5 261.47867 119.7832 260.82227 120.0332 C 260.16586 120.2832 259.56592 120.5 259 120.5 C 258.43408 120.5 257.4388 120.26596 256.62891 120.02148 C 256.39971 119.9523 256.19148 119.88388 256 119.82031 L 256 117.87109 C 256.1125 117.90694 256.2187 117.94195 256.33984 117.97852 C 257.18636 118.23404 258.19155 118.5 259 118.5 C 259.80845 118.5 260.52133 118.2168 261.17773 117.9668 C 261.83414 117.7168 262.43408 117.5 263 117.5 z M 263 120.5 C 263.56592 120.5 264.5612 120.73404 265.37109 120.97852 C 265.8714 121.12954 266.2398 121.25641 266.5 121.34961 L 266.5 123.30469 C 266.22286 123.20649 266.12863 123.1629 265.66016 123.02148 C 264.81364 122.76596 263.80845 122.5 263 122.5 C 262.19155 122.5 261.47867 122.7832 260.82227 123.0332 C 260.16586 123.2832 259.56592 123.5 259 123.5 C 258.43408 123.5 257.4388 123.26596 256.62891 123.02148 C 256.39971 122.9523 256.19148 122.88388 256 122.82031 L 256 120.87109 C 256.1125 120.90694 256.2187 120.94195 256.33984 120.97852 C 257.18636 121.23404 258.19155 121.5 259 121.5 C 259.80845 121.5 260.52133 121.2168 261.17773 120.9668 C 261.83414 120.7168 262.43408 120.5 263 120.5 z" />
@@ -28,19 +31,31 @@
     <TabControl Grid.Row="2">
       <TabItem Header="DataGrid">
         <DockPanel>
-          <CheckBox x:Name="ShowGDP"  IsChecked="True"  Content="Toggle GDP Column Visibility"
-                    DockPanel.Dock="Top"/>
+          <StackPanel Orientation="Horizontal"
+                      DockPanel.Dock="Top"
+                      Spacing="5">
+            <CheckBox x:Name="ShowGDP" IsChecked="True" Content="Toggle GDP Column Visibility"/>
+            <TextBlock Text="GDP Width:" VerticalAlignment="Center"/>
+            <NumericUpDown x:Name="GDPWidth"
+                    Minimum="200"
+                    Maximum="350"
+                    Width="200"
+                    Increment="10"
+                    Value="200"/>
+          </StackPanel>
           <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All"
                     RowBackground="#1000">
             <DataGrid.Columns>
               <!-- Using HeaderTemplate -->
-              <DataGridTextColumn Header="Country" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}"  Width="6*" x:DataType="local:Country" />
+              <DataGridTextColumn Header="Country or Region" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}"  Width="6*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" x:DataType="local:Country" />
-              <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*"
+              <DataGridTextColumn Header="GDP" Binding="{Binding GDP}"
+                                  Width="{Binding #GDPWidth.Value, Mode=TwoWay, Converter={StaticResource GDPWidthConverter}}"
                                   CellTheme="{StaticResource GdpCell}"
                                   MinWidth="200"
+                                  MaxWidth="350"
                                   IsVisible="{Binding #ShowGDP.IsChecked}"
                                   x:DataType="local:Country" />
             </DataGrid.Columns>
@@ -68,7 +83,7 @@
       <TabItem Header="Grouping">
         <DataGrid Name="dataGridGrouping" Margin="12">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" x:DataType="local:Country" />
+            <DataGridTextColumn Header="Country or Region" Binding="{Binding Name}" Width="6*" x:DataType="local:Country" />
             <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" x:DataType="local:Country" />
             <DataGridTextColumn DisplayIndex="3" Header="Population" Binding="{Binding Population}" Width="3*" x:DataType="local:Country" />
             <DataGridTextColumn DisplayIndex="2" Header="Area" Binding="{Binding Area}" Width="3*" x:DataType="local:Country" />

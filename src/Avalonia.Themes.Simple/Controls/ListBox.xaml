@@ -27,8 +27,6 @@
                         HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Margin="{TemplateBinding Padding}"
-                            AreVerticalSnapPointsRegular="{TemplateBinding AreVerticalSnapPointsRegular}"
-                            AreHorizontalSnapPointsRegular="{TemplateBinding AreHorizontalSnapPointsRegular}"
                             ItemsPanel="{TemplateBinding ItemsPanel}" />
           </ScrollViewer>
         </Border>

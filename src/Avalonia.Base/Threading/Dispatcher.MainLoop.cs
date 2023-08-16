@@ -49,7 +49,7 @@ public partial class Dispatcher
         try
         {
             _frames.Push(frame);
-            using (AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Normal))
+            using (AvaloniaSynchronizationContext.Ensure(this, DispatcherPriority.Normal))
                 frame.Run(_controlledImpl);
         }
         finally

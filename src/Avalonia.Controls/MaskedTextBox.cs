@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -204,7 +205,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 

@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.ObjectModel;
+using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -28,6 +29,40 @@ public class RenderingTests
             },
             SizeToContent = SizeToContent.WidthAndHeight
         };
+
+        window.Show();
+
+        var frame = window.CaptureRenderedFrame();
+
+        Assert.NotNull(frame);
+    }
+
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
+    public void Should_Not_Hang_With_Non_Trivial_Layout()
+    {
+        var window = new Window
+        {
+            Content = new ContentControl
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Padding = new Thickness(1),
+                Content = new ListBox
+                {
+                    ItemsSource = new ObservableCollection<string>()
+                    {
+                        "Test 1",
+                        "Test 2"
+                    }
+                }
+            },
+            SizeToContent = SizeToContent.WidthAndHeight
+        };
+
         window.Show();
 
         var frame = window.CaptureRenderedFrame();
