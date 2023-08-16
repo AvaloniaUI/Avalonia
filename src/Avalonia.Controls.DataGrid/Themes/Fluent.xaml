@@ -170,26 +170,28 @@
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="PART_ColumnHeaderRoot" ColumnDefinitions="*,Auto">
 
-              <Grid Margin="{TemplateBinding Padding}"
+              <Panel Margin="{TemplateBinding Padding}"
                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" MinWidth="{DynamicResource DataGridSortIconMinWidth}" />
-                </Grid.ColumnDefinitions>
-
-                <ContentPresenter Content="{TemplateBinding Content}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-                <Path Name="SortIcon"
-                      IsVisible="False"
-                      Grid.Column="1"
-                      Height="12"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Fill="{TemplateBinding Foreground}"
-                      Stretch="Uniform" />
-              </Grid>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" MinWidth="{DynamicResource DataGridSortIconMinWidth}" />
+                  </Grid.ColumnDefinitions>
+                
+                  <ContentPresenter Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                
+                  <Path Name="SortIcon"
+                        IsVisible="False"
+                        Grid.Column="1"
+                        Height="12"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Fill="{TemplateBinding Foreground}"
+                        Stretch="Uniform" />
+                </Grid>
+              </Panel>
 
               <Rectangle Name="VerticalSeparator"
                          Grid.Column="1"
