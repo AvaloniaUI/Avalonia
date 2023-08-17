@@ -38,6 +38,7 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
 
             Root!.RenderedVisuals++;
+            Root!.DebugEvents?.IncrementRenderedVisuals();
 
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
 

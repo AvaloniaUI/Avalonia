@@ -89,6 +89,13 @@ public class CompositorTestServices : IDisposable
         Events.Rects.Clear();
     }
 
+    public void AssertRenderedVisuals(int renderVisuals)
+    {
+        RunJobs();
+        Assert.Equal(Events.RenderedVisuals, renderVisuals);
+        Events.Rects.Clear();
+    }
+
     public void AssertHitTest(double x, double y, Func<Visual, bool> filter, params object[] expected)
         => AssertHitTest(new Point(x, y), filter, expected);
 
@@ -110,6 +117,13 @@ public class CompositorTestServices : IDisposable
     {
         public List<Rect> Rects = new();
 
+        public int RenderedVisuals { get; private set; }
+
+        public void IncrementRenderedVisuals()
+        {
+            RenderedVisuals++;
+        }
+
         public void RectInvalidated(Rect rc)
         {
             Rects.Add(rc);
@@ -118,6 +132,7 @@ public class CompositorTestServices : IDisposable
         public void Reset()
         {
             Rects.Clear();
+            RenderedVisuals = 0;
         }
     }
 
