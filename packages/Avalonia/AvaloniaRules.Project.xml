@@ -12,6 +12,11 @@
   </Rule.DataSource>
 
   <!-- Compile -->
+  
+  <BoolProperty Name="EnableAvaloniaXamlCompilation"
+                DisplayName="XAML Compiling"
+                Description="Enable/Disable XAML Compiling"
+                Category="Compile" />
   <BoolProperty Name="AvaloniaUseExternalMSBuild"
                 DisplayName="External MSBuild"
                 Description="Use dotnet build instead of MSBuild"
