@@ -198,7 +198,7 @@ const KeyInfo keyInfos[] =
     //{   , AvnPhysicalKeyUndo, 0 }
 };
 
-std::unordered_map<uint16_t , AvnKey> virtualKeyFromChar =
+std::unordered_map<uint16_t, AvnKey> virtualKeyFromChar =
 {
     // Alphabetic keys
     { 'A', AvnKeyA },
@@ -339,9 +339,9 @@ static PhysicalKeyArray BuildPhysicalKeyFromScanCode()
 
 PhysicalKeyArray physicalKeyFromScanCode = BuildPhysicalKeyFromScanCode();
 
-static std::unordered_map<AvnPhysicalKey, AvnKey> BuildQwertyVirtualKeyFromPhysicalKey()
+static std::unordered_map<AvnPhysicalKey, AvnKey, std::hash<int>> BuildQwertyVirtualKeyFromPhysicalKey()
 {
-    std::unordered_map<AvnPhysicalKey, AvnKey> result;
+    std::unordered_map<AvnPhysicalKey, AvnKey, std::hash<int>> result;
     result.reserve(sizeof(keyInfos) / sizeof(keyInfos[0]));
 
     for (auto& keyInfo : keyInfos)
@@ -352,11 +352,11 @@ static std::unordered_map<AvnPhysicalKey, AvnKey> BuildQwertyVirtualKeyFromPhysi
     return result;
 }
 
-std::unordered_map<AvnPhysicalKey, AvnKey> qwertyVirtualKeyFromPhysicalKey = BuildQwertyVirtualKeyFromPhysicalKey();
+std::unordered_map<AvnPhysicalKey, AvnKey, std::hash<int>> qwertyVirtualKeyFromPhysicalKey = BuildQwertyVirtualKeyFromPhysicalKey();
 
-static std::unordered_map<AvnKey, uint16_t> BuildMenuCharFromVirtualKey()
+static std::unordered_map<AvnKey, uint16_t, std::hash<int>> BuildMenuCharFromVirtualKey()
 {
-    std::unordered_map<AvnKey, uint16_t> result;
+    std::unordered_map<AvnKey, uint16_t, std::hash<int>> result;
     result.reserve(100);
     
     for (auto& keyInfo : keyInfos)
@@ -368,7 +368,7 @@ static std::unordered_map<AvnKey, uint16_t> BuildMenuCharFromVirtualKey()
     return result;
 }
 
-std::unordered_map<AvnKey, uint16_t> menuCharFromVirtualKey = BuildMenuCharFromVirtualKey();
+std::unordered_map<AvnKey, uint16_t, std::hash<int>> menuCharFromVirtualKey = BuildMenuCharFromVirtualKey();
 
 static bool IsNumpadOrNumericKey(AvnPhysicalKey physicalKey)
 {
