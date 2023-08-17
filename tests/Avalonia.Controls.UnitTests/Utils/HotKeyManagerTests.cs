@@ -89,7 +89,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a"));
 
                 Assert.True(expectedParameter == commandResult, $"{factoryName} HotKey did not carry the CommandParameter.");
@@ -132,7 +132,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a"));
 
                 Assert.True(isExecuted == false, $"{factoryName} Execution raised when IsEnabled is false.");
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a"));
 
                 element.IsEnabled = false;
@@ -187,7 +187,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a"));
 
 
@@ -238,7 +238,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a"));
 
                 element.IsEnabled = false;
@@ -249,7 +249,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a"));
 
                 Assert.True(commandExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");

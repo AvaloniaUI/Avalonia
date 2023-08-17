@@ -212,7 +212,7 @@ namespace Avalonia.Controls.UnitTests
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.None,
-                    PhysicalKey.KeyA,
+                    PhysicalKey.A,
                     "a");
 
                 impl.Object.Input(input);

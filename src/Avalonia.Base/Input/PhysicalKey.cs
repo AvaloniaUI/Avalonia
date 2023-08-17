@@ -128,137 +128,137 @@ public enum PhysicalKey
     /// <c>a</c> on a US keyboard.
     /// <c>q</c> on an AZERTY (e.g., French) keyboard.
     /// </summary>
-    KeyA = 20,
+    A = 20,
 
     /// <summary>
     /// <c>b</c> on a US keyboard.
     /// </summary>
-    KeyB = 21,
+    B = 21,
 
     /// <summary>
     /// <c>c</c> on a US keyboard.
     /// </summary>
-    KeyC = 22,
+    C = 22,
 
     /// <summary>
     /// <c>d</c> on a US keyboard.
     /// </summary>
-    KeyD = 23,
+    D = 23,
 
     /// <summary>
     /// <c>e</c> on a US keyboard.
     /// </summary>
-    KeyE = 24,
+    E = 24,
 
     /// <summary>
     /// <c>f</c> on a US keyboard.
     /// </summary>
-    KeyF = 25,
+    F = 25,
 
     /// <summary>
     /// <c>g</c> on a US keyboard.
     /// </summary>
-    KeyG = 26,
+    G = 26,
 
     /// <summary>
     /// <c>h</c> on a US keyboard.
     /// </summary>
-    KeyH = 27,
+    H = 27,
 
     /// <summary>
     /// <c>i</c> on a US keyboard.
     /// </summary>
-    KeyI = 28,
+    I = 28,
 
     /// <summary>
     /// <c>j</c> on a US keyboard.
     /// </summary>
-    KeyJ = 29,
+    J = 29,
 
     /// <summary>
     /// <c>k</c> on a US keyboard.
     /// </summary>
-    KeyK = 30,
+    K = 30,
 
     /// <summary>
     /// <c>l</c> on a US keyboard.
     /// </summary>
-    KeyL = 31,
+    L = 31,
 
     /// <summary>
     /// <c>m</c> on a US keyboard.
     /// </summary>
-    KeyM = 32,
+    M = 32,
 
     /// <summary>
     /// <c>n</c> on a US keyboard.
     /// </summary>
-    KeyN = 33,
+    N = 33,
 
     /// <summary>
     /// <c>o</c> on a US keyboard.
     /// </summary>
-    KeyO = 34,
+    O = 34,
 
     /// <summary>
     /// <c>p</c> on a US keyboard.
     /// </summary>
-    KeyP = 35,
+    P = 35,
 
     /// <summary>
     /// <c>q</c> on a US keyboard.
     /// <c>a</c> on an AZERTY (e.g., French) keyboard.
     /// </summary>
-    KeyQ = 36,
+    Q = 36,
 
     /// <summary>
     /// <c>r</c> on a US keyboard.
     /// </summary>
-    KeyR = 37,
+    R = 37,
 
     /// <summary>
     /// <c>s</c> on a US keyboard.
     /// </summary>
-    KeyS = 38,
+    S = 38,
 
     /// <summary>
     /// <c>t</c> on a US keyboard.
     /// </summary>
-    KeyT = 39,
+    T = 39,
 
     /// <summary>
     /// <c>u</c> on a US keyboard.
     /// </summary>
-    KeyU = 40,
+    U = 40,
 
     /// <summary>
     /// <c>v</c> on a US keyboard.
     /// </summary>
-    KeyV = 41,
+    V = 41,
 
     /// <summary>
     /// <c>w</c> on a US keyboard.
     /// <c>z</c> on an AZERTY (e.g., French) keyboard.
     /// </summary>
-    KeyW = 42,
+    W = 42,
 
     /// <summary>
     /// <c>x</c> on a US keyboard.
     /// </summary>
-    KeyX = 43,
+    X = 43,
 
     /// <summary>
     /// <c>y</c> on a US keyboard.
     /// <c>z</c> on a QWERTZ (e.g., German) keyboard.
     /// </summary>
-    KeyY = 44,
+    Y = 44,
 
     /// <summary>
     /// <c>z</c> on a US keyboard.
     /// <c>w</c> on an AZERTY (e.g., French) keyboard.
     /// <c>y</c> on a QWERTZ (e.g., German) keyboard.
     /// </summary>
-    KeyZ = 45,
+    Z = 45,
 
     /// <summary>
     /// <c>-_</c> on a US keyboard.
@@ -476,137 +476,137 @@ public enum PhysicalKey
     ArrowUp = 83,
 
 
-    // ##############
-    // Numpad Section
-    // ##############
+    // ######################
+    // Numeric Keypad Section
+    // ######################
 
     /// <summary>
-    /// Numpad <c>Num Lock</c>.
+    /// Numeric keypad <c>Num Lock</c>.
     /// On the Mac, this is used for the numpad <c>Clear</c> key.
     /// </summary>
     NumLock = 84,
 
     /// <summary>
-    /// Numpad <c>0 Ins</c> on a keyboard.
+    /// Numeric keypad <c>0 Ins</c> on a keyboard.
     /// <c>0</c> on a phone or remote control.
     /// </summary>
-    Numpad0 = 85,
+    NumPad0 = 85,
 
     /// <summary>
-    /// Numpad <c>1 End</c> on a keyboard.
+    /// Numeric keypad <c>1 End</c> on a keyboard.
     /// <c>1</c> or <c>1 QZ</c> on a phone or remote control.
     /// </summary>
-    Numpad1 = 86,
+    NumPad1 = 86,
 
     /// <summary>
-    /// Numpad <c>2 ↓</c> on a keyboard.
+    /// Numeric keypad <c>2 ↓</c> on a keyboard.
     /// <c>2 ABC</c> on a phone or remote control.
     /// </summary>
-    Numpad2 = 87,
+    NumPad2 = 87,
 
     /// <summary>
-    /// Numpad <c>3 PgDn</c> on a keyboard.
+    /// Numeric keypad <c>3 PgDn</c> on a keyboard.
     /// <c>3 DEF</c> on a phone or remote control.
     /// </summary>
-    Numpad3 = 88,
+    NumPad3 = 88,
 
     /// <summary>
-    /// Numpad <c>4 ←</c> on a keyboard.
+    /// Numeric keypad <c>4 ←</c> on a keyboard.
     /// <c>4 GHI</c> on a phone or remote control.
     /// </summary>
-    Numpad4 = 89,
+    NumPad4 = 89,
 
     /// <summary>
-    /// Numpad <c>5</c> on a keyboard.
+    /// Numeric keypad <c>5</c> on a keyboard.
     /// <c>5 JKL</c> on a phone or remote control.
     /// </summary>
-    Numpad5 = 90,
+    NumPad5 = 90,
 
     /// <summary>
-    /// Numpad <c>6 →</c> on a keyboard.
+    /// Numeric keypad <c>6 →</c> on a keyboard.
     /// <c>6 MNO</c> on a phone or remote control.
     /// </summary>
-    Numpad6 = 91,
+    NumPad6 = 91,
 
     /// <summary>
-    /// Numpad <c>7 Home</c> on a keyboard.
+    /// Numeric keypad <c>7 Home</c> on a keyboard.
     /// <c>7 PQRS</c> or <c>7 PRS</c> on a phone or remote control.
     /// </summary>
-    Numpad7 = 92,
+    NumPad7 = 92,
 
     /// <summary>
-    /// Numpad <c>8 ↑</c> on a keyboard.
+    /// Numeric keypad <c>8 ↑</c> on a keyboard.
     /// <c>8 TUV</c> on a phone or remote control.
     /// </summary>
-    Numpad8 = 93,
+    NumPad8 = 93,
 
     /// <summary>
-    /// Numpad <c>9 PgUp</c> on a keyboard.
+    /// Numeric keypad <c>9 PgUp</c> on a keyboard.
     /// <c>9 WXYZ</c> or <c>9 WXY</c> on a phone or remote control.
     /// </summary>
-    Numpad9 = 94,
+    NumPad9 = 94,
 
     /// <summary>
-    /// Numpad <c>+</c>.
+    /// Numeric keypad <c>+</c>.
     /// </summary>
-    NumpadAdd = 95,
+    NumPadAdd = 95,
 
     /// <summary>
-    /// Numpad <c>C</c> or <c>AC</c> (All Clear).
+    /// Numeric keypad <c>C</c> or <c>AC</c> (All Clear).
     /// Also for use with numpads that have a <c>Clear</c> key that is separate from the <c>NumLock</c> key.
     /// On the Mac, the numpad <c>Clear</c> key is <see cref="NumLock"/>.
     /// </summary>
-    NumpadClear = 96,
+    NumPadClear = 96,
 
     /// <summary>
-    /// Numpad <c>,</c> (thousands separator).
+    /// Numeric keypad <c>,</c> (thousands separator).
     /// For locales where the thousands separator is a "." (e.g., Brazil), this key may generate a <c>.</c>.
     /// </summary>
-    NumpadComma = 97,
+    NumPadComma = 97,
 
     /// <summary>
-    /// Numpad <c>. Del</c>.
+    /// Numeric keypad <c>. Del</c>.
     /// For locales where the decimal separator is "," (e.g., Brazil), this key may generate a <c>,</c>.
     /// </summary>
-    NumpadDecimal = 98,
+    NumPadDecimal = 98,
 
     /// <summary>
-    /// Numpad <c>/</c>.
+    /// Numeric keypad <c>/</c>.
     /// </summary>
-    NumpadDivide = 99,
+    NumPadDivide = 99,
 
     /// <summary>
-    /// Numpad <c>Enter</c>.
+    /// Numeric keypad <c>Enter</c>.
     /// </summary>
-    NumpadEnter = 100,
+    NumPadEnter = 100,
 
     /// <summary>
-    /// Numpad <c>=</c>.
+    /// Numeric keypad <c>=</c>.
     /// </summary>
-    NumpadEqual = 101,
+    NumPadEqual = 101,
 
     /// <summary>
-    /// Numpad <c>*</c> on a keyboard.
+    /// Numeric keypad <c>*</c> on a keyboard.
     /// For use with numpads that provide mathematical operations (<c>+</c>, <c>-</c>, <c>*</c> and <c>/</c>).
     /// </summary>
-    NumpadMultiply = 102,
+    NumPadMultiply = 102,
 
     /// <summary>
-    /// Numpad <c>(</c>.
+    /// Numeric keypad <c>(</c>.
     /// Found on the Microsoft Natural Keyboard.
     /// </summary>
-    NumpadParenLeft = 103,
+    NumPadParenLeft = 103,
 
     /// <summary>
-    /// Numpad <c>)</c>.
+    /// Numeric keypad <c>)</c>.
     /// Found on the Microsoft Natural Keyboard.
     /// </summary>
-    NumpadParenRight = 104,
+    NumPadParenRight = 104,
 
     /// <summary>
-    /// Numpad <c>-</c>.
+    /// Numeric keypad <c>-</c>.
     /// </summary>
-    NumpadSubtract = 105,
+    NumPadSubtract = 105,
 
 
     // ################

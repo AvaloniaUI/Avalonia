@@ -37,32 +37,32 @@ const KeyInfo keyInfos[] =
     { 0x0A, AvnPhysicalKeyIntlBackslash, AvnKeyOem102, 0 },
     { 0x5E, AvnPhysicalKeyIntlRo, AvnKeyOem102, 0 },
     { 0x5D, AvnPhysicalKeyIntlYen, AvnKeyOem5, 0 },
-    { 0x00, AvnPhysicalKeyKeyA, AvnKeyA, 'a' },
-    { 0x0B, AvnPhysicalKeyKeyB, AvnKeyB, 'b' },
-    { 0x08, AvnPhysicalKeyKeyC, AvnKeyC, 'c' },
-    { 0x02, AvnPhysicalKeyKeyD, AvnKeyD, 'd' },
-    { 0x0E, AvnPhysicalKeyKeyE, AvnKeyE, 'e' },
-    { 0x03, AvnPhysicalKeyKeyF, AvnKeyF, 'f' },
-    { 0x05, AvnPhysicalKeyKeyG, AvnKeyG, 'g' },
-    { 0x04, AvnPhysicalKeyKeyH, AvnKeyH, 'h' },
-    { 0x22, AvnPhysicalKeyKeyI, AvnKeyI, 'i' },
-    { 0x26, AvnPhysicalKeyKeyJ, AvnKeyJ, 'j' },
-    { 0x28, AvnPhysicalKeyKeyK, AvnKeyK, 'k' },
-    { 0x25, AvnPhysicalKeyKeyL, AvnKeyL, 'l' },
-    { 0x2E, AvnPhysicalKeyKeyM, AvnKeyM, 'm' },
-    { 0x2D, AvnPhysicalKeyKeyN, AvnKeyN, 'n' },
-    { 0x1F, AvnPhysicalKeyKeyO, AvnKeyO, 'o' },
-    { 0x23, AvnPhysicalKeyKeyP, AvnKeyP, 'p' },
-    { 0x0C, AvnPhysicalKeyKeyQ, AvnKeyQ, 'q' },
-    { 0x0F, AvnPhysicalKeyKeyR, AvnKeyR, 'r' },
-    { 0x01, AvnPhysicalKeyKeyS, AvnKeyS, 's' },
-    { 0x11, AvnPhysicalKeyKeyT, AvnKeyT, 't' },
-    { 0x20, AvnPhysicalKeyKeyU, AvnKeyU, 'u' },
-    { 0x09, AvnPhysicalKeyKeyV, AvnKeyV, 'v' },
-    { 0x0D, AvnPhysicalKeyKeyW, AvnKeyW, 'w' },
-    { 0x07, AvnPhysicalKeyKeyX, AvnKeyX, 'x' },
-    { 0x10, AvnPhysicalKeyKeyY, AvnKeyY, 'y' },
-    { 0x06, AvnPhysicalKeyKeyZ, AvnKeyZ, 'z' },
+    { 0x00, AvnPhysicalKeyA, AvnKeyA, 'a' },
+    { 0x0B, AvnPhysicalKeyB, AvnKeyB, 'b' },
+    { 0x08, AvnPhysicalKeyC, AvnKeyC, 'c' },
+    { 0x02, AvnPhysicalKeyD, AvnKeyD, 'd' },
+    { 0x0E, AvnPhysicalKeyE, AvnKeyE, 'e' },
+    { 0x03, AvnPhysicalKeyF, AvnKeyF, 'f' },
+    { 0x05, AvnPhysicalKeyG, AvnKeyG, 'g' },
+    { 0x04, AvnPhysicalKeyH, AvnKeyH, 'h' },
+    { 0x22, AvnPhysicalKeyI, AvnKeyI, 'i' },
+    { 0x26, AvnPhysicalKeyJ, AvnKeyJ, 'j' },
+    { 0x28, AvnPhysicalKeyK, AvnKeyK, 'k' },
+    { 0x25, AvnPhysicalKeyL, AvnKeyL, 'l' },
+    { 0x2E, AvnPhysicalKeyM, AvnKeyM, 'm' },
+    { 0x2D, AvnPhysicalKeyN, AvnKeyN, 'n' },
+    { 0x1F, AvnPhysicalKeyO, AvnKeyO, 'o' },
+    { 0x23, AvnPhysicalKeyP, AvnKeyP, 'p' },
+    { 0x0C, AvnPhysicalKeyQ, AvnKeyQ, 'q' },
+    { 0x0F, AvnPhysicalKeyR, AvnKeyR, 'r' },
+    { 0x01, AvnPhysicalKeyS, AvnKeyS, 's' },
+    { 0x11, AvnPhysicalKeyT, AvnKeyT, 't' },
+    { 0x20, AvnPhysicalKeyU, AvnKeyU, 'u' },
+    { 0x09, AvnPhysicalKeyV, AvnKeyV, 'v' },
+    { 0x0D, AvnPhysicalKeyW, AvnKeyW, 'w' },
+    { 0x07, AvnPhysicalKeyX, AvnKeyX, 'x' },
+    { 0x10, AvnPhysicalKeyY, AvnKeyY, 'y' },
+    { 0x06, AvnPhysicalKeyZ, AvnKeyZ, 'z' },
     { 0x1B, AvnPhysicalKeyMinus, AvnKeyOemMinus, '-' },
     { 0x2F, AvnPhysicalKeyPeriod, AvnKeyOemPeriod, '.' },
     { 0x27, AvnPhysicalKeyQuote, AvnKeyOem7, '\'' },
@@ -110,27 +110,27 @@ const KeyInfo keyInfos[] =
 
     // Numpad Section
     { 0x47, AvnPhysicalKeyNumLock, AvnKeyClear, kClearCharCode },
-    { 0x52, AvnPhysicalKeyNumpad0, AvnKeyNumPad0, '0' },
-    { 0x53, AvnPhysicalKeyNumpad1, AvnKeyNumPad1, '1' },
-    { 0x54, AvnPhysicalKeyNumpad2, AvnKeyNumPad2, '2' },
-    { 0x55, AvnPhysicalKeyNumpad3, AvnKeyNumPad3, '3' },
-    { 0x56, AvnPhysicalKeyNumpad4, AvnKeyNumPad4, '4' },
-    { 0x57, AvnPhysicalKeyNumpad5, AvnKeyNumPad5, '5' },
-    { 0x58, AvnPhysicalKeyNumpad6, AvnKeyNumPad6, '6' },
-    { 0x59, AvnPhysicalKeyNumpad7, AvnKeyNumPad7, '7' },
-    { 0x5B, AvnPhysicalKeyNumpad8, AvnKeyNumPad8, '8' },
-    { 0x5C, AvnPhysicalKeyNumpad9, AvnKeyNumPad9, '9' },
-    { 0x45, AvnPhysicalKeyNumpadAdd, AvnKeyAdd, '+' },
-    //{   , AvnPhysicalKeyNumpadClear, 0 },
-    { 0x5F, AvnPhysicalKeyNumpadComma, AvnKeyAbntC2, 0 },
-    { 0x41, AvnPhysicalKeyNumpadDecimal, AvnKeyDecimal, '.' },
-    { 0x4B, AvnPhysicalKeyNumpadDivide, AvnKeyDivide, '/' },
-    { 0x4C, AvnPhysicalKeyNumpadEnter, AvnKeyEnter, kReturnCharCode },
-    { 0x51, AvnPhysicalKeyNumpadEqual, AvnKeyOemPlus, '=' },
-    { 0x43, AvnPhysicalKeyNumpadMultiply, AvnKeyMultiply, '*' },
-    //{   , AvnPhysicalKeyNumpadParenLeft, 0 },
-    //{   , AvnPhysicalKeyNumpadParenRight, 0 },
-    { 0x4E, AvnPhysicalKeyNumpadSubtract, AvnKeySubtract, '-' },
+    { 0x52, AvnPhysicalKeyNumPad0, AvnKeyNumPad0, '0' },
+    { 0x53, AvnPhysicalKeyNumPad1, AvnKeyNumPad1, '1' },
+    { 0x54, AvnPhysicalKeyNumPad2, AvnKeyNumPad2, '2' },
+    { 0x55, AvnPhysicalKeyNumPad3, AvnKeyNumPad3, '3' },
+    { 0x56, AvnPhysicalKeyNumPad4, AvnKeyNumPad4, '4' },
+    { 0x57, AvnPhysicalKeyNumPad5, AvnKeyNumPad5, '5' },
+    { 0x58, AvnPhysicalKeyNumPad6, AvnKeyNumPad6, '6' },
+    { 0x59, AvnPhysicalKeyNumPad7, AvnKeyNumPad7, '7' },
+    { 0x5B, AvnPhysicalKeyNumPad8, AvnKeyNumPad8, '8' },
+    { 0x5C, AvnPhysicalKeyNumPad9, AvnKeyNumPad9, '9' },
+    { 0x45, AvnPhysicalKeyNumPadAdd, AvnKeyAdd, '+' },
+    //{   , AvnPhysicalKeyNumPadClear, 0 },
+    { 0x5F, AvnPhysicalKeyNumPadComma, AvnKeyAbntC2, 0 },
+    { 0x41, AvnPhysicalKeyNumPadDecimal, AvnKeyDecimal, '.' },
+    { 0x4B, AvnPhysicalKeyNumPadDivide, AvnKeyDivide, '/' },
+    { 0x4C, AvnPhysicalKeyNumPadEnter, AvnKeyEnter, kReturnCharCode },
+    { 0x51, AvnPhysicalKeyNumPadEqual, AvnKeyOemPlus, '=' },
+    { 0x43, AvnPhysicalKeyNumPadMultiply, AvnKeyMultiply, '*' },
+    //{   , AvnPhysicalKeyNumPadParenLeft, 0 },
+    //{   , AvnPhysicalKeyNumPadParenRight, 0 },
+    { 0x4E, AvnPhysicalKeyNumPadSubtract, AvnKeySubtract, '-' },
 
     // Function Section
     { 0x35, AvnPhysicalKeyEscape, AvnKeyEscape, kEscapeCharCode },
@@ -372,41 +372,8 @@ std::unordered_map<AvnKey, uint16_t> menuCharFromVirtualKey = BuildMenuCharFromV
 
 static bool IsNumpadOrNumericKey(AvnPhysicalKey physicalKey)
 {
-    switch (physicalKey)
-    {
-        case AvnPhysicalKeyDigit0:
-        case AvnPhysicalKeyDigit1:
-        case AvnPhysicalKeyDigit2:
-        case AvnPhysicalKeyDigit3:
-        case AvnPhysicalKeyDigit4:
-        case AvnPhysicalKeyDigit5:
-        case AvnPhysicalKeyDigit6:
-        case AvnPhysicalKeyDigit7:
-        case AvnPhysicalKeyDigit8:
-        case AvnPhysicalKeyDigit9:
-        case AvnPhysicalKeyNumLock:
-        case AvnPhysicalKeyNumpad0:
-        case AvnPhysicalKeyNumpad1:
-        case AvnPhysicalKeyNumpad2:
-        case AvnPhysicalKeyNumpad3:
-        case AvnPhysicalKeyNumpad4:
-        case AvnPhysicalKeyNumpad5:
-        case AvnPhysicalKeyNumpad6:
-        case AvnPhysicalKeyNumpad7:
-        case AvnPhysicalKeyNumpad8:
-        case AvnPhysicalKeyNumpad9:
-        case AvnPhysicalKeyNumpadAdd:
-        case AvnPhysicalKeyNumpadComma:
-        case AvnPhysicalKeyNumpadDecimal:
-        case AvnPhysicalKeyNumpadDivide:
-        case AvnPhysicalKeyNumpadEnter:
-        case AvnPhysicalKeyNumpadEqual:
-        case AvnPhysicalKeyNumpadMultiply:
-        case AvnPhysicalKeyNumpadSubtract:
-            return true;
-        default:
-            return false;
-    }
+    return (physicalKey >= AvnPhysicalKeyDigit0 && physicalKey <= AvnPhysicalKeyDigit9)
+        || (physicalKey >= AvnPhysicalKeyNumLock && physicalKey <= AvnPhysicalKeyNumPadSubtract);
 }
 
 AvnPhysicalKey PhysicalKeyFromScanCode(uint16_t scanCode)

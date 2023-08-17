@@ -115,7 +115,7 @@ namespace Avalonia.Controls.UnitTests
                     RawKeyEventType.KeyDown,
                     Key.F,
                     RawInputModifiers.Control,
-                    PhysicalKey.KeyF,
+                    PhysicalKey.F,
                     "f"));
             
             Assert.True(hotKeyedTextBox.IsFocused);
