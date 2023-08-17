@@ -5,6 +5,7 @@
     <AvaloniaNameGeneratorDefaultFieldModifier Condition="'$(AvaloniaNameGeneratorDefaultFieldModifier)' == ''">internal</AvaloniaNameGeneratorDefaultFieldModifier>
     <AvaloniaNameGeneratorFilterByPath Condition="'$(AvaloniaNameGeneratorFilterByPath)' == ''">*</AvaloniaNameGeneratorFilterByPath>
     <AvaloniaNameGeneratorFilterByNamespace Condition="'$(AvaloniaNameGeneratorFilterByNamespace)' == ''">*</AvaloniaNameGeneratorFilterByNamespace>
+    <AvaloniaNameGeneratorViewFileNamingStrategy Condition="'$(AvaloniaNameGeneratorViewFileNamingStrategy)' == ''">NamespaceAndClassName</AvaloniaNameGeneratorViewFileNamingStrategy>
   </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup"/>
