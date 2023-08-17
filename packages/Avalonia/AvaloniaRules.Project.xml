@@ -23,11 +23,6 @@
                 Description="Enable/Disable Verify IL after XAML Compiling"
                 Category="Compile" />
 
-  <BoolProperty Name="AvaloniaUseExternalMSBuild"
-                DisplayName="External MSBuild"
-                Description="Use dotnet build instead of MSBuild"
-                Category="Compile" />
-
   <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
               DisplayName="Use CompiledBindings"
               Description="Use by default CompiledBindings"
