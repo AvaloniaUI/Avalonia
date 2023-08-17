@@ -2,66 +2,61 @@
 <Rule Name="Avalonia" DisplayName="Avalonia" Order="70" PageTemplate="generic" xmlns="http://schemas.microsoft.com/build/2009/properties">
 
   <Rule.Categories>
-    <Category Name="Compiling" DisplayName="Compiling" />
-    <Category Name="Debug" DisplayName="Debugging" />
-    <Category Name="NameGenerator" DisplayName="Nameming Generator" />
+    <Category Name="Compile" DisplayName="Compiling" />
+    <Category Name="Debug" DisplayName="Debug" />
+    <Category Name="NameGenerator" DisplayName="Name Generator" />
   </Rule.Categories>
 
   <Rule.DataSource>
     <DataSource Persistence="ProjectFile" HasConfigurationCondition="false" Label="Avalonia" />
   </Rule.DataSource>
 
-  <!-- Compiling -->
+  <!-- Compile -->
   <BoolProperty Name="AvaloniaUseExternalMSBuild"
                 DisplayName="External MSBuild"
                 Description="Use dotnet build instead of MSBuild"
-                Category="Compiling" />
+                Category="Compile" />
 
   <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
               DisplayName="Use CompiledBindings"
               Description="Use by default CompiledBindings"
-              Category="Compiling" />
-
-  <BoolProperty Name="AvaloniaAccessUnstablePrivateApis"
-            DisplayName="Use Private Apis"
-            Description="Enable access to unstable private APIs (not recommended)"
-            Category="Compiling" />
+              Category="Compile" />
 
   <!-- Debug -->
 
   <BoolProperty Name="AvaloniaXamlIlDebuggerLaunch"
-          DisplayName="Debug Xaml Compaliler"
-          Description="Allow debug Xaml compilation."
+          DisplayName="Debug XAML Compaliler"
+          Description="Allow debug XAML compilation."
           Category="Debug" />
 
 
   <EnumProperty Name="AvaloniaXamlReportImportance"
-                DisplayName="Xaml Report Importance"
-                Description="Provides levels of importance for Xaml Compiler messages"
+                DisplayName="XAML Report Importance"
+                Description="Provides levels of importance for XAML Compiler messages"
                 Category="Debug">
-    <EnumValue Name="Low" DisplayName="Low" Description="Set Xaml Compiler report message to Low importance" />
-    <EnumValue Name="Normal" DisplayName="Normal" Description="Set Xaml Compiler report message to Normal importance" />
-    <EnumValue Name="High" DisplayName="High" Description="Set Xaml Compiler report message to High importance" />
+    <EnumValue Name="Low" DisplayName="Low" Description="Set XAML Compiler report message to Low importance" />
+    <EnumValue Name="Normal" DisplayName="Normal" Description="Set XAML Compiler report message to Normal importance" />
+    <EnumValue Name="High" DisplayName="High" Description="Set XAML Compiler report message to High importance" />
   </EnumProperty>
 
   <!-- NameGenerator -->
 
   <BoolProperty Name="AvaloniaNameGeneratorIsEnabled"
               DisplayName="Use Name Generator"
-              Description="Enable/Disable Avalalina Name Source Generator"
+              Description="Enable/Disable Avalonia Name Source Generator"
               Category="NameGenerator" />
 
   <EnumProperty Name="AvaloniaNameGeneratorBehavior"
                 DisplayName="Generator Behavior"
                 Description="Customize behavior of name generator"
                 Category="NameGenerator">
-    <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="The binding of the name to the control is done only once in InitializeComponent and is stored in a field." />
-    <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generator generate a Properties to binding name to control" />
+    <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="Generates get-only properties to access controls by name and an InitializeComponent method to set them automatically. This is closest to other XAML UI framework functionality." />
+    <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generates get-only properties to access controls by name but does not generate an InitializeComponent method to set them. This allows custom InitializeComponent method implementations." />
   </EnumProperty>
 
   <EnumProperty Name="AvaloniaNameGeneratorDefaultFieldModifier"
               DisplayName="Default Class Field/Property Modifier"
-              Description="Customize visibility Modifier of Class Field/Property"
+              Description="Defines the access modifiers used for generated members"
               Category="NameGenerator">
     <EnumValue Name="Internal" DisplayName="Internal" Description="The type or member can be accessed by any code in the same assembly, but not from another assembly. In other words, internal types or members can be accessed from code that is part of the same compilation." />
     <EnumValue Name="Public" DisplayName="Public" Description="The type or member can be accessed by any other code in the same assembly or another assembly that references it. The accessibility level of public members of a type is controlled by the accessibility level of the type itself." />
@@ -71,11 +66,21 @@
 
   <StringProperty Name="AvaloniaNameGeneratorFilterByPath"
                   DisplayName="Filter By Path"
-                  Description="Specifies the Glob pattern to filter the class for which to generate name binding (Default is *).."
+                  Description="The generator will process only XAML files with paths matching the specified glob pattern(s). Example: */Views/*View.xaml, *View.axaml;*Control.axaml"
                   Category="NameGenerator" />
 
   <StringProperty Name="AvaloniaNameGeneratorFilterByNamespace"
                 DisplayName="Filter By Namespace"
-                Description="Specifies the Glob pattern to filter the class by namespcace for which to generate name binding (Default is *).."
+                Description="The generator will process only XAML files with base classes' namespaces matching the specified glob pattern(s).
+Example: MyApp.Presentation.*, MyApp.Presentation.Views;MyApp.Presentation.Controls"
                 Category="NameGenerator" />
+
+  <EnumProperty Name="AvaloniaNameGeneratorViewFileNamingStrategy"
+              DisplayName="File Naming Strategy"
+              Description="Determines how the automatically generated view files should be named"
+              Category="NameGenerator">
+    <EnumValue Name="ClassName" DisplayName="ClassName" Description="Only Class name" />
+    <EnumValue Name="NamespaceAndClassName" DisplayName="NamespaceAndClassName" Description="Namespace And ClassName" />
+  </EnumProperty>
+
 </Rule>
