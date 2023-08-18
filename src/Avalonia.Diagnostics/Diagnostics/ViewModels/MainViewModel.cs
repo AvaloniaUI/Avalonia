@@ -8,6 +8,8 @@ using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
+using Avalonia.Media;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -27,9 +29,12 @@ namespace Avalonia.Diagnostics.ViewModels
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
         private IScreenshotHandler? _screenshotHandler;
-        private bool _showPropertyType;        
+        private bool _showPropertyType;
         private bool _showImplementedInterfaces;
-        
+        private IBrush? _FocusHighlighter;
+        private IDisposable? _FocusObserver = default;
+        private IDisposable? _currentFocusHighlightAdorner = default;
+
         public MainViewModel(AvaloniaObject root)
         {
             _root = root;
@@ -208,10 +213,10 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
-        public IInputRoot? PointerOverRoot 
-        { 
+        public IInputRoot? PointerOverRoot
+        {
             get => _pointerOverRoot;
-            private  set => RaiseAndSetIfChanged( ref _pointerOverRoot , value); 
+            private set => RaiseAndSetIfChanged(ref _pointerOverRoot, value);
         }
 
         public IInputElement? PointerOverElement
@@ -271,7 +276,16 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateFocusedControl()
         {
-            FocusedControl = KeyboardDevice.Instance?.FocusedElement?.GetType().Name;
+            var element = KeyboardDevice.Instance?.FocusedElement;
+            FocusedControl = element?.GetType().Name;
+            _currentFocusHighlightAdorner?.Dispose();
+            if (FocusHighlighter is IBrush brush 
+                && element is InputElement input 
+                && TopLevel.GetTopLevel(input) is { } topLevel 
+                && topLevel.GetType().FullName != "Avalonia.Diagnostics.Views.MainWindow")
+            {
+                _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
+            }
         }
 
         private void KeyboardPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -297,7 +311,7 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public int? StartupScreenIndex { get; private set; } = default;
-        
+
         [DependsOn(nameof(TreePageViewModel.SelectedNode))]
         [DependsOn(nameof(Content))]
         public bool CanShot(object? parameter)
@@ -331,12 +345,13 @@ namespace Avalonia.Diagnostics.ViewModels
             _screenshotHandler = options.ScreenshotHandler;
             StartupScreenIndex = options.StartupScreenIndex;
             ShowImplementedInterfaces = options.ShowImplementedInterfaces;
+            FocusHighlighter = options.FocusHighlighterBrush;
         }
 
-        public bool ShowImplementedInterfaces 
-        { 
-            get => _showImplementedInterfaces; 
-            private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
+        public bool ShowImplementedInterfaces
+        {
+            get => _showImplementedInterfaces;
+            private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces, value);
         }
 
         public void ToggleShowImplementedInterfaces(object parameter)
@@ -349,14 +364,53 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public bool ShowDetailsPropertyType
-        { 
-            get => _showPropertyType; 
-            private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
+        {
+            get => _showPropertyType;
+            private set => RaiseAndSetIfChanged(ref _showPropertyType, value);
         }
 
         public void ToggleShowDetailsPropertyType(object parameter)
         {
             ShowDetailsPropertyType = !ShowDetailsPropertyType;
         }
+
+        public IBrush? FocusHighlighter
+        {
+            get => _FocusHighlighter;
+            private set => RaiseAndSetIfChanged(ref _FocusHighlighter, value);
+        }
+
+        public void SelectFocusHighlighter(object parameter)
+        {
+            FocusHighlighter = parameter as IBrush;
+        }
+
+        //protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        //{
+        //    base.OnPropertyChanged(e);
+        //    if (e.PropertyName == nameof(FocusHighlighter))
+        //    {
+        //        _FocusObserver?.Dispose();
+        //        _FocusObserver = null;
+        //        _currentFocusHighlightAdorner?.Dispose();
+        //        _currentFocusHighlightAdorner = null;
+        //        if (FocusHighlighter is IBrush highlighter)
+        //        {
+        //            _FocusObserver = InputElement.GotFocusEvent.AddClassHandler<InputElement>(GotFocusEventHandler,handledEventsToo:true);
+        //        }
+
+        //    }
+
+        //    void GotFocusEventHandler(InputElement control, GotFocusEventArgs args)
+        //    {
+        //        if (control is InputElement c)
+        //        {
+        //            _currentFocusHighlightAdorner?.Dispose();
+        //            _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(c, FocusHighlighter!);
+        //        }
+
+        //    }
+
+        //}
     }
 }
