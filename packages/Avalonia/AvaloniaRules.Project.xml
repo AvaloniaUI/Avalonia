@@ -31,10 +31,9 @@
   <!-- Debug -->
 
   <BoolProperty Name="AvaloniaXamlIlDebuggerLaunch"
-          DisplayName="Debug XAML Compaliler"
-          Description="Allow debug XAML compilation."
+          DisplayName="Debug XAML Compiler"
+          Description="Allow debug XAML compilation"
           Category="Debug" />
-
 
   <EnumProperty Name="AvaloniaXamlReportImportance"
                 DisplayName="XAML Report Importance"
@@ -56,18 +55,18 @@
                 DisplayName="Generator Behavior"
                 Description="Customize behavior of name generator"
                 Category="NameGenerator">
-    <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="Generates get-only properties to access controls by name and an InitializeComponent method to set them automatically. This is closest to other XAML UI framework functionality." />
-    <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generates get-only properties to access controls by name but does not generate an InitializeComponent method to set them. This allows custom InitializeComponent method implementations." />
+    <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="Generates get-only properties to access controls by name and an InitializeComponent method to set them automatically. This is closest to other XAML UI framework functionality" />
+    <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generates get-only properties to access controls by name but does not generate an InitializeComponent method to set them. This allows custom InitializeComponent method implementations" />
   </EnumProperty>
 
   <EnumProperty Name="AvaloniaNameGeneratorDefaultFieldModifier"
               DisplayName="Default Class Field/Property Modifier"
               Description="Defines the access modifiers used for generated members"
               Category="NameGenerator">
-    <EnumValue Name="Internal" DisplayName="Internal" Description="The type or member can be accessed by any code in the same assembly, but not from another assembly. In other words, internal types or members can be accessed from code that is part of the same compilation." />
-    <EnumValue Name="Public" DisplayName="Public" Description="The type or member can be accessed by any other code in the same assembly or another assembly that references it. The accessibility level of public members of a type is controlled by the accessibility level of the type itself." />
-    <EnumValue Name="Protected" DisplayName="Protected" Description="The type or member can be accessed only by code in the same class, or in a class that is derived from that class." />
-    <EnumValue Name="Private" DisplayName="Private" Description="TThe type or member can be accessed by types derived from the class that are declared within its containing assembly." />
+    <EnumValue Name="Internal" DisplayName="Internal" Description="The type or member can be accessed by any code in the same assembly, but not from another assembly. In other words, internal types or members can be accessed from code that is part of the same compilation" />
+    <EnumValue Name="Public" DisplayName="Public" Description="The type or member can be accessed by any other code in the same assembly or another assembly that references it. The accessibility level of public members of a type is controlled by the accessibility level of the type itself" />
+    <EnumValue Name="Protected" DisplayName="Protected" Description="The type or member can be accessed only by code in the same class, or in a class that is derived from that class" />
+    <EnumValue Name="Private" DisplayName="Private" Description="TThe type or member can be accessed by types derived from the class that are declared within its containing assembly" />
   </EnumProperty>
 
   <StringProperty Name="AvaloniaNameGeneratorFilterByPath"
