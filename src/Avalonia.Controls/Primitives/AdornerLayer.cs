@@ -295,7 +295,7 @@ namespace Avalonia.Controls.Primitives
             if (adorner.CompositionVisual != null)
             {
                 adorner.CompositionVisual.AdornedVisual = adorned?.CompositionVisual;
-                adorner.CompositionVisual.AdornerIsClipped = GetIsClipEnabled(adorner);
+                adorner.CompositionVisual.AdornerIsClipped = GetIsClipEnabled(adorned);
             }
 
             var info = adorner.GetValue(s_adornedElementInfoProperty);
