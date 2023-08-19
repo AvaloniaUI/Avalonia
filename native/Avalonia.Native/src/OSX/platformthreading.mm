@@ -17,7 +17,6 @@ public:
         Cancelled = true;
         if(Running)
         {
-            Running = false;
             if(![NSThread isMainThread])
             {
                 AddRef();
@@ -28,22 +27,22 @@ public:
                 });
                 return;
             };
+
+            Running = false;
             if(IsApp)
                 [NSApp stop:nil];
-            else
-            {
-                // Wakeup the event loop
-                NSEvent* event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
-                                                    location:NSMakePoint(0, 0)
-                                               modifierFlags:0
-                                                   timestamp:0
-                                                windowNumber:0
-                                                     context:nil
-                                                     subtype:0
-                                                       data1:0
-                                                       data2:0];
-                [NSApp postEvent:event atStart:YES];
-            }
+
+            // Wakeup the event loop
+            NSEvent* event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                                location:NSMakePoint(0, 0)
+                                            modifierFlags:0
+                                                timestamp:0
+                                            windowNumber:0
+                                                    context:nil
+                                                    subtype:0
+                                                    data1:0
+                                                    data2:0];
+            [NSApp postEvent:event atStart:YES];
         }
     };
 };
