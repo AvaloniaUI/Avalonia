@@ -190,7 +190,7 @@ namespace Avalonia.Skia
 
             var paint = SKPaintCache.Shared.Get();
 
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * currentOpacity));
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
@@ -433,7 +433,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
