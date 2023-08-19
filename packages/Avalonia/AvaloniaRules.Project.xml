@@ -25,7 +25,7 @@
 
   <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
               DisplayName="Use CompiledBindings"
-              Description="Use by default CompiledBindings"
+              Description="Use compiled bindings by default"
               Category="Compile" />
 
   <!-- Debug -->
