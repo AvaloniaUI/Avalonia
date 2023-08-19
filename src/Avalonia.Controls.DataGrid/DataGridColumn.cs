@@ -39,6 +39,15 @@ namespace Avalonia.Controls
         private bool _setWidthInternalNoCallback;
 
         /// <summary>
+        /// Occurs when the pointer is pressed over the column's header
+        /// </summary>
+        public event EventHandler<PointerPressedEventArgs> HeaderPointerPressed;
+        /// <summary>
+        /// Occurs when the pointer is released over the column's header
+        /// </summary>
+        public event EventHandler<PointerReleasedEventArgs> HeaderPointerReleased;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridColumn" /> class.
         /// </summary>
         protected internal DataGridColumn()
@@ -911,6 +920,8 @@ namespace Avalonia.Controls
                 result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.Template);
             }
 
+            result.PointerPressed += (s, e) => { HeaderPointerPressed?.Invoke(this, e); };
+            result.PointerReleased += (s, e) => { HeaderPointerReleased?.Invoke(this, e); };
             return result;
         }
 
