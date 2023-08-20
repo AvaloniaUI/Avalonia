@@ -196,6 +196,26 @@ namespace Avalonia.Skia
             }
         }
 
+        public static SKStrokeCap ToSKStrokeCap(this PenLineCap cap)
+        {
+            return cap switch
+            {
+                PenLineCap.Round => SKStrokeCap.Round,
+                PenLineCap.Square => SKStrokeCap.Square,
+                _ => SKStrokeCap.Butt
+            };
+        }
+
+        public static SKStrokeJoin ToSKStrokeJoin(this PenLineJoin join)
+        {
+            return join switch
+            {
+                PenLineJoin.Bevel => SKStrokeJoin.Bevel,
+                PenLineJoin.Round => SKStrokeJoin.Round,
+                _ => SKStrokeJoin.Miter
+            };
+        }
+
         public static TextAlignment ToAvalonia(this SKTextAlign a)
         {
             switch (a)
