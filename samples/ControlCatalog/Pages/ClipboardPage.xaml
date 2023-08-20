@@ -12,6 +12,9 @@
     <Button Click="CopyFilesDataObject" Content="Copy files to clipboard (data object)" />
     <Button Click="PasteFilesDataObject" Content="Paste files from clipboard (data object)" />
 
+    <Button Click="CopyBitmapDataObject" Content="Copy image to clipboard (data object)" ToolTip.Tip="CF_BITMAP, CF_DIB, image/bmp, image/png, image/jpeg" />
+    <Button Click="PasteBitmapDataObject" Content="Paste image from clipboard (data object)" ToolTip.Tip="CF_BITMAP, CF_DIB, image/bmp, image/png, image/jpeg" />
+
     <Button Click="GetFormats" Content="Get clipboard formats" />
     <Button Click="Clear" Content="Clear clipboard" />
 

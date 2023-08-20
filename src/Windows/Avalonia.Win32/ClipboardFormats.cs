@@ -33,6 +33,13 @@ namespace Avalonia.Win32
 #pragma warning disable CS0618 // Type or member is obsolete
             new ClipboardFormat(DataFormats.FileNames, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP),
 #pragma warning restore CS0618 // Type or member is obsolete
+
+            new ClipboardFormat("Bitmap", (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP),
+            new ClipboardFormat("MetafilePict", (ushort)UnmanagedMethods.ClipboardFormat.CF_METAFILEPICT),
+            new ClipboardFormat("Dib", (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIBV5),
+            new ClipboardFormat("EnhancedMetafile", (ushort)UnmanagedMethods.ClipboardFormat.CF_ENHMETAFILE),
+            new ClipboardFormat("Palette", (ushort)UnmanagedMethods.ClipboardFormat.CF_PALETTE),
+            new ClipboardFormat("PenData", (ushort)UnmanagedMethods.ClipboardFormat.CF_PENDATA),
         };
 
 
