@@ -1247,31 +1247,8 @@ namespace Avalonia.Skia
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
             // TODO: Still something is off, dashes are now present, but don't look the same as D2D ones.
 
-            switch (pen.LineCap)
-            {
-                case PenLineCap.Round:
-                    paint.StrokeCap = SKStrokeCap.Round;
-                    break;
-                case PenLineCap.Square:
-                    paint.StrokeCap = SKStrokeCap.Square;
-                    break;
-                default:
-                    paint.StrokeCap = SKStrokeCap.Butt;
-                    break;
-            }
-
-            switch (pen.LineJoin)
-            {
-                case PenLineJoin.Miter:
-                    paint.StrokeJoin = SKStrokeJoin.Miter;
-                    break;
-                case PenLineJoin.Round:
-                    paint.StrokeJoin = SKStrokeJoin.Round;
-                    break;
-                default:
-                    paint.StrokeJoin = SKStrokeJoin.Bevel;
-                    break;
-            }
+            paint.StrokeCap = pen.LineCap.ToSKStrokeCap();
+            paint.StrokeJoin = pen.LineJoin.ToSKStrokeJoin();
 
             paint.StrokeMiter = (float) pen.MiterLimit;
 
