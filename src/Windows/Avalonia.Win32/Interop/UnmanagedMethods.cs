@@ -2135,37 +2135,17 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             CF_BITMAP = 2,
             /// <summary>
-            /// Handle to a metafile picture format as defined by the METAFILEPICT structure. When passing a CF_METAFILEPICT handle by means of DDE, the application responsible for deleting hMem should also free the metafile referred to by the CF_METAFILEPICT handle.
-            /// </summary>
-            CF_METAFILEPICT = 3,
-            /// <summary>
             /// A memory object containing a BITMAPINFO structure followed by the bitmap bits.
             /// </summary>
-            CF_DIB = 8,
-            /// <summary>
-            /// Handle to a color palette.
-            /// </summary>
-            CF_PALETTE = 9,
-            /// <summary>
-            /// Data for the pen extensions to the Microsoft Windows for Pen Computing.
-            /// </summary>
-            CF_PENDATA = 10,
+            CF_DIB = 3,
             /// <summary>
             /// Unicode text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data.
             /// </summary>
             CF_UNICODETEXT = 13,
             /// <summary>
-            /// A handle to an enhanced metafile (HENHMETAFILE).
-            /// </summary>
-            CF_ENHMETAFILE = 14,
-            /// <summary>
             /// A handle to type HDROP that identifies a list of files. 
             /// </summary>
             CF_HDROP = 15,
-            /// <summary>
-            /// A memory object containing a BITMAPV5HEADER structure followed by the bitmap color space information and the bitmap bits.
-            /// </summary>
-            CF_DIBV5 = 17,
         }
 
         public struct MSG
