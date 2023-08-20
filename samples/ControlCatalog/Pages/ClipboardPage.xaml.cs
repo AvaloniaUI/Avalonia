@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
@@ -119,82 +118,12 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private async void CopyBitmapDataObject(object? sender, RoutedEventArgs args)
-        {
-            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-            {
-                var lines = (ClipboardContent.Text ?? string.Empty)
-                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                if (lines.Length < 3)
-                {
-                    return;
-                }
-                var format = lines[0];
-                var hexLine = string.Join(" ", lines.Skip(2));
-                var hexBytes = hexLine.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
-                var bytes = hexBytes.Select(x => Convert.ToByte(x, 16)).ToArray();
-                var dataObject = new DataObject();
-                dataObject.Set(format, bytes);
-                await clipboard.SetDataObjectAsync(dataObject);
-            }
-        }
-
-        private async void PasteBitmapDataObject(object? sender, RoutedEventArgs args)
-        {
-            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-            {
-                var format = "Bitmap";
-                var obj = await clipboard.GetDataAsync(format);
-                var bytes = obj as IEnumerable<byte>;
-                if (bytes == null)
-                {
-                    format = "Dib";
-                    obj = await clipboard.GetDataAsync(format);
-                    bytes = obj as IEnumerable<byte>;
-                }
-                if (bytes == null)
-                {
-                    format = "image/bmp";
-                    obj = await clipboard.GetDataAsync(format);
-                    bytes = obj as IEnumerable<byte>;
-                }
-                if (bytes == null)
-                {
-                    format = "image/png";
-                    obj = await clipboard.GetDataAsync(format);
-                    bytes = obj as IEnumerable<byte>;
-                }
-                if (bytes == null)
-                {
-                    format = "image/jpeg";
-                    obj = await clipboard.GetDataAsync(format);
-                    bytes = obj as IEnumerable<byte>;
-                }
-
-                if (bytes != null)
-                {
-                    var printable = bytes.ToArray();
-                    var sb = new StringBuilder(256 + printable.Length * 3);
-                    sb.AppendLine($"{format}");
-                    sb.AppendLine($"{printable.Length} bytes");
-                    sb.Append(BitConverter.ToString(printable).Replace('-', ' '));
-                    ClipboardContent.TextWrapping = Avalonia.Media.TextWrapping.NoWrap;
-                    ClipboardContent.Text = sb.ToString();
-                    ClipboardContent.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
-                }
-                else
-                {
-                    ClipboardContent.Text = string.Empty;
-                }
-            }
-        }
-
         private async void GetFormats(object sender, RoutedEventArgs args)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var formats = await clipboard.GetFormatsAsync();
-                ClipboardContent.Text = formats != null ? string.Join(Environment.NewLine, formats) : string.Empty;
+                ClipboardContent.Text = string.Join(Environment.NewLine, formats);
             }
         }
 
