@@ -189,7 +189,8 @@ namespace Avalonia.Skia
             var d = destRect.ToSKRect();
 
             var paint = SKPaintCache.Shared.Get();
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * (_useOpacitySaveLayer ? 1 : _currentOpacity)));
+
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
@@ -375,7 +376,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && !boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
@@ -432,7 +433,7 @@ namespace Avalonia.Skia
             {
                 if (boxShadow != default && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
@@ -592,8 +593,16 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            if(_useOpacitySaveLayer)
+            _opacityStack.Push(_currentOpacity);
+
+            var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
+
+            if (useOpacitySaveLayer)
             {
+                opacity = _currentOpacity * opacity; //Take current multiplied opacity
+
+                _currentOpacity = 1; //Opacity is applied via layering
+
                 if (bounds.HasValue)
                 {
                     var rect = bounds.Value.ToSKRect();
@@ -606,7 +615,6 @@ namespace Avalonia.Skia
             }
             else
             {
-                _opacityStack.Push(_currentOpacity);
                 _currentOpacity *= opacity;
             }
         }
@@ -616,14 +624,14 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            if(_useOpacitySaveLayer)
+            var useOpacitySaveLayer = _useOpacitySaveLayer || RenderOptions.RequiresFullOpacityHandling == true;
+
+            if (useOpacitySaveLayer)
             {
                 Canvas.Restore();
             }
-            else
-            {
-                _currentOpacity = _opacityStack.Pop();
-            }    
+
+            _currentOpacity = _opacityStack.Pop();
         }
 
         /// <inheritdoc />
