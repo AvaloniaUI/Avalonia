@@ -38,6 +38,7 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
 
             Root!.RenderedVisuals++;
+            Root!.DebugEvents?.IncrementRenderedVisuals();
 
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
 
@@ -182,11 +183,24 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (_clipSizeDirty || positionChanged)
             {
-                _transformedClipBounds = ClipToBounds
-                    ? new Rect(new Size(Size.X, Size.Y))
-                        .TransformToAABB(GlobalTransformMatrix)
-                    : null;
+                Rect? transformedVisualBounds = null;
+                Rect? transformedClipBounds = null;
                 
+                if (ClipToBounds)
+                    transformedVisualBounds = new Rect(new Size(Size.X, Size.Y)).TransformToAABB(GlobalTransformMatrix);
+                
+                 if (Clip != null)
+                     transformedClipBounds = Clip.Bounds.TransformToAABB(GlobalTransformMatrix);
+
+                 if (transformedVisualBounds != null && transformedClipBounds != null)
+                     _transformedClipBounds = transformedVisualBounds.Value.Intersect(transformedClipBounds.Value);
+                 else if (transformedVisualBounds != null)
+                     _transformedClipBounds = transformedVisualBounds;
+                 else if (transformedClipBounds != null)
+                     _transformedClipBounds = transformedClipBounds;
+                 else
+                     _transformedClipBounds = null;
+                 
                 _clipSizeDirty = false;
             }
 
