@@ -189,19 +189,18 @@ namespace Avalonia.Skia
             {
                 if (isStroked)
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
 
                     Stroke.LineTo((float)point.X, (float)point.Y);
-                    if (Duplicate)
-                        Fill.LineTo((float)point.X, (float)point.Y);
                 }
                 else
                 {
+                    if (Stroke == Fill)
+                        _geometryImpl._fillPath = Stroke.Clone();
+
                     Stroke.MoveTo((float)point.X, (float)point.Y);
-                    if (Duplicate)
-                        Fill.MoveTo((float)point.X, (float)point.Y);
                 }
+                if (Duplicate)
+                    Fill.LineTo((float)point.X, (float)point.Y);
             }
         }
     }
