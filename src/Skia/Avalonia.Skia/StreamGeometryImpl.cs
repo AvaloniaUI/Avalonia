@@ -77,7 +77,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// A Skia implementation of a <see cref="IStreamGeometryContextImpl"/>.
         /// </summary>
-        private class StreamContext : IStreamGeometryContextImpl
+        private class StreamContext : IStreamGeometryContextImpl, IGeometryContextEx
         {
             private readonly StreamGeometryImpl _geometryImpl;
             private SKPath Stroke => _geometryImpl._strokePath;
@@ -93,7 +93,7 @@ namespace Avalonia.Skia
             {
                 _geometryImpl = geometryImpl;
             }
-            
+
             /// <inheritdoc />
             /// <remarks>Will update bounds of passed geometry.</remarks>
             public void Dispose()
@@ -117,7 +117,7 @@ namespace Avalonia.Skia
                     sweep,
                     (float)point.X,
                     (float)point.Y);
-                if(Duplicate)
+                if (Duplicate)
                     Fill.ArcTo(
                         (float)size.Width,
                         (float)size.Height,
@@ -136,10 +136,10 @@ namespace Avalonia.Skia
                     if (Stroke == Fill)
                         _geometryImpl._fillPath = Stroke.Clone();
                 }
-                
+
                 _isFilled = isFilled;
                 Stroke.MoveTo((float)startPoint.X, (float)startPoint.Y);
-                if(Duplicate)
+                if (Duplicate)
                     Fill.MoveTo((float)startPoint.X, (float)startPoint.Y);
             }
 
@@ -147,7 +147,7 @@ namespace Avalonia.Skia
             public void CubicBezierTo(Point point1, Point point2, Point point3)
             {
                 Stroke.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
-                if(Duplicate)
+                if (Duplicate)
                     Fill.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
             }
 
@@ -155,7 +155,7 @@ namespace Avalonia.Skia
             public void QuadraticBezierTo(Point point1, Point point2)
             {
                 Stroke.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
-                if(Duplicate)
+                if (Duplicate)
                     Fill.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
             }
 
@@ -163,7 +163,7 @@ namespace Avalonia.Skia
             public void LineTo(Point point)
             {
                 Stroke.LineTo((float)point.X, (float)point.Y);
-                if(Duplicate)
+                if (Duplicate)
                     Fill.LineTo((float)point.X, (float)point.Y);
             }
 
@@ -182,6 +182,26 @@ namespace Avalonia.Skia
             public void SetFillRule(FillRule fillRule)
             {
                 Fill.FillType = fillRule == FillRule.EvenOdd ? SKPathFillType.EvenOdd : SKPathFillType.Winding;
+            }
+
+            /// <inheritdoc />
+            public void LineTo(Point point, bool isStroked)
+            {
+                if (isStroked)
+                {
+                    if (Stroke == Fill)
+                        _geometryImpl._fillPath = Stroke.Clone();
+
+                    Stroke.LineTo((float)point.X, (float)point.Y);
+                    if (Duplicate)
+                        Fill.LineTo((float)point.X, (float)point.Y);
+                }
+                else
+                {
+                    Stroke.MoveTo((float)point.X, (float)point.Y);
+                    if (Duplicate)
+                        Fill.MoveTo((float)point.X, (float)point.Y);
+                }
             }
         }
     }

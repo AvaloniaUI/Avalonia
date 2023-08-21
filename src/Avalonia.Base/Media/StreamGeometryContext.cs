@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// of <see cref="StreamGeometryContext"/> is obtained by calling
     /// <see cref="StreamGeometry.Open"/>.
     /// </remarks>
-    public class StreamGeometryContext : IGeometryContext
+    public class StreamGeometryContext : IGeometryContext, IGeometryContextEx
     {
         private readonly IStreamGeometryContextImpl _impl;
 
@@ -101,6 +101,21 @@ namespace Avalonia.Media
         public void Dispose()
         {
             _impl.Dispose();
+        }
+
+        /// <summary>
+        /// Draws a line to the specified point.
+        /// </summary>
+        /// <param name="point">The destination point.</param>
+        /// <param name="isStroked">Whether the segment is stroked</param>
+        public void LineTo(Point point, bool isStroked)
+        {
+            if (_impl is IGeometryContextEx contextEx)
+                contextEx.LineTo(point, isStroked);
+            else
+                _impl.LineTo(point);
+
+            _currentPoint = point;
         }
     }
 }
