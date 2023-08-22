@@ -665,12 +665,10 @@ namespace Avalonia.Controls
         {
             var itemContainerTheme = ItemContainerTheme;
 
-            if (itemContainerTheme is not null &&
-                !container.IsSet(ThemeProperty) &&
-                StyledElement.GetStyleKey(container) == itemContainerTheme.TargetType)
-            {
+            if (itemContainerTheme is null)
+                container.Theme = null;
+            else if (GetStyleKey(container) == itemContainerTheme.TargetType)
                 container.Theme = itemContainerTheme;
-            }
 
             if (item is not Control)
                 container.DataContext = item;
