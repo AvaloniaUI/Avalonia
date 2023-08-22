@@ -240,6 +240,45 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ItemContainerTheme_Should_Not_Override_LocalValue_Theme()
+        {
+            using var app = Start();
+
+            var theme1 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var theme2 = new ControlTheme
+            {
+                TargetType = typeof(Control),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Green) }
+            };
+
+            var items = new object[]
+            {
+                new ContentPresenter(),
+                new ContentPresenter
+                {
+                    Theme = theme2
+                },
+            };
+
+            var target = CreateTarget(
+                itemsSource: items,
+                itemContainerTheme: theme1);
+
+            Assert.Same(theme1, GetContainer(target, 0).Theme);
+            Assert.Same(theme2, GetContainer(target, 1).Theme);
+
+            target.ItemContainerTheme = null;
+
+            Assert.Null(GetContainer(target, 0).Theme);
+            Assert.Same(theme2, GetContainer(target, 1).Theme);
+        }
+
+        [Fact]
         public void Container_Should_Have_LogicalParent_Set_To_ItemsControl()
         {
             using var app = UnitTestApplication.Start(TestServices.StyledWindow);

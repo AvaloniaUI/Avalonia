@@ -67,6 +67,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
             AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
 
+        private static readonly AttachedProperty<ControlTheme?> AppliedItemContainerTheme =
+            AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("HasAppliedItemContainerTheme");
+
         /// <summary>
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
@@ -663,12 +666,27 @@ namespace Avalonia.Controls
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
-            var itemContainerTheme = ItemContainerTheme;
+            // If the container has no theme set, or we've already applied our ItemContainerTheme
+            // (and it hasn't changed since) then we're in control of the container's Theme and may
+            // need to update it.
+            if (!container.IsSet(ThemeProperty) || container.GetValue(AppliedItemContainerTheme) == container.Theme)
+            {
+                var itemContainerTheme = ItemContainerTheme;
 
-            if (itemContainerTheme is null)
-                container.Theme = null;
-            else if (itemContainerTheme.TargetType?.IsAssignableFrom(GetStyleKey(container)) == true)
-                container.Theme = itemContainerTheme;
+                if (itemContainerTheme?.TargetType?.IsAssignableFrom(GetStyleKey(container)) == true)
+                {
+                    // We have an ItemContainerTheme and it matches the container. Set the Theme
+                    // property, and mark the container as having had ItemContainerTheme applied.
+                    container.SetCurrentValue(ThemeProperty, itemContainerTheme);
+                    container.SetValue(AppliedItemContainerTheme, itemContainerTheme);
+                }
+                else
+                {
+                    // Otherwise clear the theme and the HasAppliedItemContainerTheme property.
+                    container.ClearValue(ThemeProperty);
+                    container.ClearValue(AppliedItemContainerTheme);
+                }
+            }
 
             if (item is not Control)
                 container.DataContext = item;
