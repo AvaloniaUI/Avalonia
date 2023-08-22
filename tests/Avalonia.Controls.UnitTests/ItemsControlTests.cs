@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -126,6 +127,102 @@ namespace Avalonia.Controls.UnitTests
             var container = GetContainer(target);
 
             Assert.Same(container.Theme, theme);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Can_Be_Changed()
+        {
+            using var app = Start();
+            
+            var theme1 = new ControlTheme 
+            { 
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var theme2 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Green) }
+            };
+
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme1);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme1);
+            Assert.Equal(container.Background, Brushes.Red);
+
+            target.ItemContainerTheme = theme2;
+
+            container = GetContainer(target);
+            Assert.Same(container.Theme, theme2);
+            Assert.Equal(container.Background, Brushes.Green);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Can_Be_Changed_Virtualizing()
+        {
+            using var app = Start();
+
+            var theme1 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var theme2 = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Green) }
+            };
+
+            var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme1,
+                itemsPanel: itemsPanel);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme1);
+            Assert.Equal(container.Background, Brushes.Red);
+
+            target.ItemContainerTheme = theme2;
+            Layout(target);
+
+            container = GetContainer(target);
+            Assert.Same(container.Theme, theme2);
+            Assert.Equal(container.Background, Brushes.Green);
+        }
+
+        [Fact]
+        public void ItemContainerTheme_Can_Be_Cleared()
+        {
+            using var app = Start();
+
+            var theme = new ControlTheme
+            {
+                TargetType = typeof(ContentPresenter),
+                Setters = { new Setter(ContentPresenter.BackgroundProperty, Brushes.Red) }
+            };
+
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme);
+            Assert.Equal(container.Background, Brushes.Red);
+
+            target.ItemContainerTheme = null;
+
+            container = GetContainer(target);
+            Assert.Null(container.Theme);
+            Assert.Null(container.Background);
         }
 
         [Fact]
@@ -851,6 +948,7 @@ namespace Avalonia.Controls.UnitTests
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
             IDataTemplate? itemTemplate = null,
+            ITemplate<Panel?>? itemsPanel = null,
             IEnumerable<IDataTemplate>? dataTemplates = null,
             bool performLayout = true)
         {
@@ -861,6 +959,7 @@ namespace Avalonia.Controls.UnitTests
                 itemsSource: itemsSource,
                 itemContainerTheme: itemContainerTheme,
                 itemTemplate: itemTemplate,
+                itemsPanel: itemsPanel,
                 dataTemplates: dataTemplates,
                 performLayout: performLayout);
         }
