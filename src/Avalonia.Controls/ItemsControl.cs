@@ -682,7 +682,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    // Otherwise clear the theme and the HasAppliedItemContainerTheme property.
+                    // Otherwise clear the theme and the AppliedItemContainerTheme property.
                     container.ClearValue(ThemeProperty);
                     container.ClearValue(AppliedItemContainerTheme);
                 }
