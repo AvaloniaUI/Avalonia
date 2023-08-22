@@ -98,6 +98,8 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
             }
+            
+            var timerFps = macOpts?.DefaultRenderTimerFps ?? 60;
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>()
@@ -108,7 +110,7 @@ namespace Avalonia.Native
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(timerFps))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)

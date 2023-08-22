@@ -107,5 +107,7 @@ namespace Avalonia
         /// Disabling this can be useful in some scenarios like when running as a plugin inside an existing macOS application.
         /// </summary>
         public bool DisableAvaloniaAppDelegate { get; set; }
+        
+        public int DefaultRenderTimerFps { get; set; } = 60;
     }
 }
