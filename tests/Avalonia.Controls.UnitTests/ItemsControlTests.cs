@@ -130,6 +130,20 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Container_Should_Have_Theme_Set_To_ItemContainerTheme_With_Base_TargetType()
+        {
+            using var app = Start();
+            var theme = new ControlTheme { TargetType = typeof(Control) };
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemContainerTheme: theme);
+
+            var container = GetContainer(target);
+
+            Assert.Same(container.Theme, theme);
+        }
+
+        [Fact]
         public void ItemContainerTheme_Can_Be_Changed()
         {
             using var app = Start();

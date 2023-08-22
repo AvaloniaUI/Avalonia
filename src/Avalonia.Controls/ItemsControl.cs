@@ -667,7 +667,7 @@ namespace Avalonia.Controls
 
             if (itemContainerTheme is null)
                 container.Theme = null;
-            else if (GetStyleKey(container) == itemContainerTheme.TargetType)
+            else if (itemContainerTheme.TargetType?.IsAssignableFrom(GetStyleKey(container)) == true)
                 container.Theme = itemContainerTheme;
 
             if (item is not Control)
