@@ -68,7 +68,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
 
         private static readonly AttachedProperty<ControlTheme?> AppliedItemContainerTheme =
-            AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("HasAppliedItemContainerTheme");
+            AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("AppliedItemContainerTheme");
 
         /// <summary>
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
