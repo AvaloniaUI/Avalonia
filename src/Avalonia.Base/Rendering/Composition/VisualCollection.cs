@@ -15,7 +15,7 @@ namespace Avalonia.Rendering.Composition
             InitializeDefaults();
         }
         
-        public void InsertAbove(CompositionVisual newChild, CompositionVisual sibling)
+        public void Insert_Above(CompositionVisual newChild, CompositionVisual sibling)
         {
             var idx = _list.IndexOf(sibling);
             if (idx == -1)
