@@ -1282,10 +1282,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
-                if (lineHeight > height)
-                {
-                    height = lineHeight;
-                }
+                height = lineHeight;
             }
 
             return new TextLineMetrics
