@@ -6,18 +6,13 @@ namespace Avalonia.Controls.Shapes
     public class Polygon : Shape
     {
         public static readonly StyledProperty<IList<Point>> PointsProperty =
-            AvaloniaProperty.Register<Polygon, IList<Point>>("Points");
+            AvaloniaProperty.Register<Polygon, IList<Point>>("Points", new Points());
 
         static Polygon()
         {
             AffectsGeometry<Polygon>(PointsProperty);
         }
 
-        public Polygon()
-        {
-            Points = new Points();
-        }
-        
         public IList<Point> Points
         {
             get => GetValue(PointsProperty);

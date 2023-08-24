@@ -3,20 +3,15 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.Shapes
 {
-    public class Polyline: Shape
+    public class Polyline : Shape
     {
         public static readonly StyledProperty<IList<Point>> PointsProperty =
-            AvaloniaProperty.Register<Polyline, IList<Point>>("Points");
+            AvaloniaProperty.Register<Polyline, IList<Point>>("Points", new Points());
 
         static Polyline()
         {
             StrokeThicknessProperty.OverrideDefaultValue<Polyline>(1);
             AffectsGeometry<Polyline>(PointsProperty);
-        }
-
-        public Polyline()
-        {
-            Points = new Points();
         }
 
         public IList<Point> Points
