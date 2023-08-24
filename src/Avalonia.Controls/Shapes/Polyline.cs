@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Shapes
 {
@@ -12,6 +13,11 @@ namespace Avalonia.Controls.Shapes
         {
             StrokeThicknessProperty.OverrideDefaultValue<Polyline>(1);
             AffectsGeometry<Polyline>(PointsProperty);
+        }
+
+        public Polyline()
+        {
+            SetValue(PointsProperty, new Points(), BindingPriority.Template);
         }
 
         public IList<Point> Points
