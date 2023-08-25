@@ -99,7 +99,6 @@ namespace Avalonia.Input
 
             if (gestureRecognizer != null)
             {
-                gestureRecognizer.GestureRecognizerCollection?.HandleCaptureLost(this);
                 Capture(null);
             }
         }
