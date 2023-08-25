@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-    <RootNamespace>Avalonia.Skia</RootNamespace>
-    <AssemblyName>Avalonia.Skia</AssemblyName>
-    <PackageId>Avalonia.Skia</PackageId>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
     <IncludeWasmSkia>true</IncludeWasmSkia>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
