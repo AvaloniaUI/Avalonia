@@ -91,12 +91,17 @@ namespace Avalonia.Input
         internal void CaptureGestureRecognizer(GestureRecognizer? gestureRecognizer)
         {
             if (CapturedGestureRecognizer != gestureRecognizer)
+            {
                 CapturedGestureRecognizer?.PointerCaptureLostInternal(this);
-
-            if (gestureRecognizer != null)
-                Capture(null);
+            }
 
             CapturedGestureRecognizer = gestureRecognizer;
+
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.GestureRecognizerCollection?.HandleCaptureLost(this);
+                Capture(null);
+            }
         }
     }
 }

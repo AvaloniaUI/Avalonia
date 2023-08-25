@@ -1,4 +1,5 @@
-﻿using Avalonia.Input.GestureRecognizers;
+﻿using System.Diagnostics;
+using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
@@ -61,6 +62,7 @@ namespace Avalonia.Input
         {
             if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
+                Debug.WriteLine($"Pointer with ID: {e.Pointer.Id} pressed");
                 if (_firstContact == null)
                 {
                     _firstContact = e.Pointer;
@@ -110,6 +112,9 @@ namespace Avalonia.Input
 
                     _secondContact = null;
                 }
+
+                Debug.WriteLine($"Pointer with ID: {pointer.Id} removed");
+
                 Target?.RaiseEvent(new PinchEndedEventArgs());
             }
         }

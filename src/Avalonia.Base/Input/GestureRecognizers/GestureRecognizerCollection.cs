@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -24,8 +25,14 @@ namespace Avalonia.Input.GestureRecognizers
                 _recognizers = new List<GestureRecognizer>();
             }
 
+            if(recognizer.GestureRecognizerCollection != null && recognizer.GestureRecognizerCollection != this)
+            {
+                throw new InvalidOperationException("The gesture recognizer has already been added to a gesture recognizer collection");
+            }
+
             _recognizers.Add(recognizer);
             recognizer.Target = _inputElement;
+            recognizer.GestureRecognizerCollection = this;
 
             // Hacks to make bindings work
 
@@ -57,6 +64,20 @@ namespace Avalonia.Input.GestureRecognizers
             }
 
             return e.Handled;
+        }
+
+        internal void HandleCaptureLost(IPointer pointer)
+        {
+            if (_recognizers == null || pointer is not Pointer p)
+                return;
+
+            foreach (var r in _recognizers)
+            {
+                if (p.CapturedGestureRecognizer == r)
+                    continue;
+
+                r.PointerCaptureLostInternal(pointer);
+            }
         }
 
         internal bool HandlePointerReleased(PointerReleasedEventArgs e)
