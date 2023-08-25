@@ -3,7 +3,6 @@
     public abstract class GestureRecognizer : StyledElement
     {
         protected internal IInputElement? Target { get; internal set; }
-        protected internal GestureRecognizerCollection? GestureRecognizerCollection { get; internal set; }
 
         protected abstract void PointerPressed(PointerPressedEventArgs e);
         protected abstract void PointerReleased(PointerReleasedEventArgs e);

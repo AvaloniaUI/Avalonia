@@ -25,14 +25,8 @@ namespace Avalonia.Input.GestureRecognizers
                 _recognizers = new List<GestureRecognizer>();
             }
 
-            if(recognizer.GestureRecognizerCollection != null && recognizer.GestureRecognizerCollection != this)
-            {
-                throw new InvalidOperationException("The gesture recognizer has already been added to a gesture recognizer collection");
-            }
-
             _recognizers.Add(recognizer);
             recognizer.Target = _inputElement;
-            recognizer.GestureRecognizerCollection = this;
 
             // Hacks to make bindings work
 
