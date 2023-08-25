@@ -1509,7 +1509,7 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
-        [DllImport("ole32.dll", PreserveSig = false)]
+        [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleGetClipboard(out IntPtr dataObject);
 
         [DllImport("ole32.dll", PreserveSig = true)]

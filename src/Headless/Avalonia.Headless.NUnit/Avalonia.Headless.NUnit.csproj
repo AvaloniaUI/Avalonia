@@ -12,8 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Headless\Avalonia.Headless.csproj" />
   </ItemGroup>
-
-  <Import Project="..\..\..\build\ApiDiff.props" />
+  
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
 </Project>

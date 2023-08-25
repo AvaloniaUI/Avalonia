@@ -103,6 +103,7 @@ namespace Avalonia.Win32
 
 
         private IDataObject _wrapped;
+        public IDataObject Wrapped => _wrapped;
 
         public DataObject(IDataObject wrapped)
         {

@@ -538,10 +538,10 @@
 {
     _lastKeyHandled = false;
         
-    [[self inputContext] handleEvent:event];
+    [self keyboardEvent:event withType:KeyDown];
     
     if(!_lastKeyHandled){
-        [self keyboardEvent:event withType:KeyDown];
+        [[self inputContext] handleEvent:event];
     }
 }
 
