@@ -58,6 +58,7 @@ namespace Avalonia.FreeDesktop
 
             private DBusMenuExporterImpl()
             {
+                BackingProperties.Version = 4;
                 BackingProperties.Status = string.Empty;
                 BackingProperties.TextDirection = string.Empty;
                 BackingProperties.IconThemePath = Array.Empty<string>();
