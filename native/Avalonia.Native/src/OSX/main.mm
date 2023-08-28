@@ -446,6 +446,17 @@ public:
             return S_OK;
         }
     }
+    
+    virtual HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreatePlatformRenderTimer();
+            return S_OK;
+        }
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
