@@ -60,9 +60,9 @@
     <EnumValue Name="InitializeComponent" DisplayName="InitializeComponent" Description="Generates get-only properties to access controls by name and an InitializeComponent method to set them automatically. This is closest to other XAML UI framework functionality" />
     <EnumValue Name="OnlyProperties" DisplayName="OnlyProperties" Description="Generates get-only properties to access controls by name but does not generate an InitializeComponent method to set them. This allows custom InitializeComponent method implementations" />
     <EnumProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
       <NameValuePair Name="VisibilityCondition">
-        <NameValuePair Name="DependsOn" Value="Application::AvaloniaNameGeneratorIsEnabled" />
-        <NameValuePair.Value>(has-evaluated-value "Application" "AvaloniaNameGeneratorIsEnabled" "true")</NameValuePair.Value>
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
       </NameValuePair>
     </EnumProperty.Metadata>
   </EnumProperty>
@@ -76,9 +76,9 @@
     <EnumValue Name="Protected" DisplayName="Protected" Description="The type or member can be accessed only by code in the same class, or in a class that is derived from that class" />
     <EnumValue Name="Private" DisplayName="Private" Description="TThe type or member can be accessed by types derived from the class that are declared within its containing assembly" />
     <EnumProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
       <NameValuePair Name="VisibilityCondition">
-        <NameValuePair Name="DependsOn" Value="Application::AvaloniaNameGeneratorIsEnabled" />
-        <NameValuePair.Value>(has-evaluated-value "Application" "AvaloniaNameGeneratorIsEnabled" "true")</NameValuePair.Value>
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
       </NameValuePair>
     </EnumProperty.Metadata>
   </EnumProperty>
@@ -88,9 +88,9 @@
                   Description="The generator will process only XAML files with paths matching the specified glob pattern(s). Example: */Views/*View.xaml, *View.axaml;*Control.axaml"
                   Category="NameGenerator">
     <StringProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
       <NameValuePair Name="VisibilityCondition">
-        <NameValuePair Name="DependsOn" Value="Application::AvaloniaNameGeneratorIsEnabled" />
-        <NameValuePair.Value>(has-evaluated-value "Application" "AvaloniaNameGeneratorIsEnabled" "true")</NameValuePair.Value>
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
       </NameValuePair>
     </StringProperty.Metadata>
   </StringProperty>
@@ -101,9 +101,9 @@
 Example: MyApp.Presentation.*, MyApp.Presentation.Views;MyApp.Presentation.Controls"
                 Category="NameGenerator">
     <StringProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
       <NameValuePair Name="VisibilityCondition">
-        <NameValuePair Name="DependsOn" Value="Application::AvaloniaNameGeneratorIsEnabled" />
-        <NameValuePair.Value>(has-evaluated-value "Application" "AvaloniaNameGeneratorIsEnabled" "true")</NameValuePair.Value>
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
       </NameValuePair>
     </StringProperty.Metadata>
   </StringProperty>
@@ -115,9 +115,9 @@ Example: MyApp.Presentation.*, MyApp.Presentation.Views;MyApp.Presentation.Contr
     <EnumValue Name="ClassName" DisplayName="ClassName" Description="Only Class name" />
     <EnumValue Name="NamespaceAndClassName" DisplayName="NamespaceAndClassName" Description="Namespace And ClassName" />
     <EnumProperty.Metadata>
+      <NameValuePair Name="DependsOn" Value="Avalonia::AvaloniaNameGeneratorIsEnabled" />
       <NameValuePair Name="VisibilityCondition">
-        <NameValuePair Name="DependsOn" Value="Application::AvaloniaNameGeneratorIsEnabled" />
-        <NameValuePair.Value>(has-evaluated-value "Application" "AvaloniaNameGeneratorIsEnabled" "true")</NameValuePair.Value>
+        <NameValuePair.Value>(has-evaluated-value  "Avalonia" "AvaloniaNameGeneratorIsEnabled" True)</NameValuePair.Value>
       </NameValuePair>
     </EnumProperty.Metadata>
   </EnumProperty>
