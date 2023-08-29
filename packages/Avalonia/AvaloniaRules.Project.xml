@@ -26,6 +26,7 @@
   <BoolProperty Name="AvaloniaUseCompiledBindingsByDefault"
               DisplayName="Use CompiledBindings"
               Description="Use compiled bindings by default"
+              HelpUrl="https://docs.avaloniaui.net/docs/next/basics/data/data-binding/compiled-bindings"
               Category="Compile" />
 
   <!-- Debug -->
@@ -49,6 +50,7 @@
   <BoolProperty Name="AvaloniaNameGeneratorIsEnabled"
               DisplayName="Use Name Generator"
               Description="Enable/Disable Avalonia Name Source Generator"
+              HelpUrl="https://github.com/AvaloniaUI/Avalonia/blob/master/src/tools/Avalonia.Generators/README.md"
               Category="NameGenerator" />
 
   <EnumProperty Name="AvaloniaNameGeneratorBehavior"
