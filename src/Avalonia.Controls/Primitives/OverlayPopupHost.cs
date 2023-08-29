@@ -78,7 +78,7 @@ namespace Avalonia.Controls.Primitives
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
-                gravity, constraintAdjustment, rect, FlowDirection);
+                gravity, constraintAdjustment | PopupPositionerConstraintAdjustment.All, rect, FlowDirection);
             UpdatePosition();
         }
 
@@ -110,6 +110,13 @@ namespace Avalonia.Controls.Primitives
             get
             {
                 var rc = new Rect(default, _overlayLayer.AvailableSize);
+                var topLevel = TopLevel.GetTopLevel(this);
+                if(topLevel != null)
+                {
+                    var padding = topLevel.InsetsManager?.SafeAreaPadding ?? default;
+                    rc = rc.Deflate(padding);
+                }
+
                 return new[] {new ManagedPopupPositionerScreenInfo(rc, rc)};
             }
         }

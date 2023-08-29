@@ -202,5 +202,26 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, target.Inlines.Count);
             }
         }
+        
+        [Fact]
+        public void Setting_TextDecorations_Should_Update_Inlines()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new Run("Hello World"));
+
+                Assert.Equal(1, target.Inlines.Count);
+
+                Assert.Null(target.Inlines[0].TextDecorations);
+
+                var underline = TextDecorations.Underline;
+
+                target.TextDecorations = underline;
+
+                Assert.Equal(underline, target.Inlines[0].TextDecorations);
+            }
+        }
     }
 }
