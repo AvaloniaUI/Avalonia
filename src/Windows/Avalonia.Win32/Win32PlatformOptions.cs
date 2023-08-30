@@ -26,6 +26,27 @@ public enum Win32RenderingMode
 }
 
 /// <summary>
+/// Represents the DPI Awareness for the application.
+/// </summary>
+public enum Win32DpiAwareness
+{
+    /// <summary>
+    /// The application is DPI unaware.
+    /// </summary>
+    Unaware,
+
+    /// <summary>
+    /// The application is system DPI aware. It will query DPI once and will not adjust to new DPI changes
+    /// </summary>
+    SystemDpiAware,
+
+    /// <summary>
+    /// The application is per-monitor DPI aware. It adjust its scale factor whenever DPI changes.
+    /// </summary>
+    PerMonitorDpiAware
+}
+
+/// <summary>
 /// Represents the Win32 window composition mode.
 /// </summary>
 public enum Win32CompositionMode
@@ -137,4 +158,6 @@ public class Win32PlatformOptions
     /// and <see cref="CompositionMode"/> only accepts null or <see cref="Win32CompositionMode.RedirectionSurface"/>.
     /// </summary>
     public IPlatformGraphics? CustomPlatformGraphics { get; set; }
+
+    public Win32DpiAwareness DpiAwareness { get; set; } = Win32DpiAwareness.PerMonitorDpiAware;
 }
