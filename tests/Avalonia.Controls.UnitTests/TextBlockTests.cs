@@ -170,6 +170,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Inlines.Add("123456");
 
                 target.Measure(Size.Infinity);
+                target.Arrange(new Rect(target.DesiredSize));
 
                 Assert.True(button.IsMeasureValid);
                 Assert.Equal(80, button.DesiredSize.Width);
