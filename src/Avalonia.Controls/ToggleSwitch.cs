@@ -243,10 +243,6 @@ namespace Avalonia.Controls
                 }
                 UpdateKnobTransitions();
             }
-            else
-            {
-                base.Toggle();
-            }
 
             _isDragging = false;
 
@@ -273,14 +269,6 @@ namespace Avalonia.Controls
                 {
                     Canvas.SetLeft(_knobsPanel!, System.Math.Min(_switchKnob!.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
                 }
-            }
-        }
-
-        protected override void Toggle()
-        {
-            if ((_switchKnob != null) && (!_switchKnob.IsPointerOver))
-            {
-                base.Toggle();
             }
         }
 
