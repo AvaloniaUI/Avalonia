@@ -1440,6 +1440,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Binding_SelectedIndex_Selects_Correct_Item()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Issue #4496 (part 2)
             var items = new ObservableCollection<string>();
 
@@ -1469,6 +1471,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Binding_SelectedItem_Selects_Correct_Item()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Issue #4496 (part 2)
             var items = new ObservableCollection<string>();
 
@@ -1911,6 +1915,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Does_The_Best_It_Can_With_AutoSelecting_ViewModel()
         {
+            using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             // Tests the following scenario:
             //
             // - Items changes from empty to having 1 item

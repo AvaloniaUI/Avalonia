@@ -43,7 +43,6 @@ namespace Avalonia.Controls
 
         static ContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
             TemplateProperty.OverrideDefaultValue<ContentControl>(new FuncControlTemplate((_, ns) => new ContentPresenter
             {
                 Name = "PART_ContentPresenter",
