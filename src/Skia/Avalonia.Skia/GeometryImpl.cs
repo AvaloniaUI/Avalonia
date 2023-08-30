@@ -78,7 +78,7 @@ namespace Avalonia.Skia
 
         public IGeometryImpl GetWidenedGeometry(IPen pen)
         {
-            var cache = new PathCache();
+            using var cache = new PathCache();
             cache.UpdateIfNeeded(StrokePath, pen);
 
             if (cache.ExpandedPath is { } path)
@@ -160,7 +160,7 @@ namespace Avalonia.Skia
             _pathCache = default;
         }
 
-        private struct PathCache
+        private struct PathCache : IDisposable
         {
             private double _width, _miterLimit;
             private PenLineCap _cap;
