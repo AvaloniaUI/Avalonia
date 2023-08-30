@@ -25,42 +25,6 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public NotificationCard()
         {
-            this.GetObservable(IsClosedProperty)
-                .Subscribe(x =>
-                {
-                    if (!IsClosing && !IsClosed)
-                    {
-                        return;
-                    }
-
-                    RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
-                });
-
-            this.GetObservable(ContentProperty)
-                .Subscribe(x =>
-                {
-                    if (x is INotification notification)
-                    {
-                        switch (notification.Type)
-                        {
-                            case NotificationType.Error:
-                                PseudoClasses.Add(":error");
-                                break;
-
-                            case NotificationType.Information:
-                                PseudoClasses.Add(":information");
-                                break;
-
-                            case NotificationType.Success:
-                                PseudoClasses.Add(":success");
-                                break;
-
-                            case NotificationType.Warning:
-                                PseudoClasses.Add(":warning");
-                                break;
-                        }
-                    }
-                });
             UpdateNotificationType();
         }
 
