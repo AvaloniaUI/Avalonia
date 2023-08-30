@@ -135,7 +135,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TextDecorations"/> property.
         /// </summary>
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
-            AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
+            Inline.TextDecorationsProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
