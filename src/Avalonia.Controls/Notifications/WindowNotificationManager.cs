@@ -121,7 +121,15 @@ namespace Avalonia.Controls.Notifications
             }
         }
         
-        /// <inheritdoc/>
+        /// <summary>
+        /// Shows a Notification
+        /// </summary>
+        /// <param name="content">the content of the notification</param>
+        /// <param name="type">the type of the notification</param>
+        /// <param name="expiration">the expiration time of the notification after which it will automatically close. If the value is Zero then the notification will remain open until the user closes it</param>
+        /// <param name="onClick">an Action to be run when the notification is clicked</param>
+        /// <param name="onClose">an Action to be run when the notification is closed</param>
+        /// <param name="classes">style classes to apply</param>
         public async void Show(object content, 
             NotificationType type, 
             TimeSpan? expiration = null,
