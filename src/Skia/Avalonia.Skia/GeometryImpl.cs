@@ -79,7 +79,7 @@ namespace Avalonia.Skia
         public IGeometryImpl GetWidenedGeometry(IPen pen)
         {
             using var cache = new PathCache();
-            cache.UpdateIfNeeded(StrokePath, pen);
+            cache.UpdateIfNeeded(StrokePath, pen, includeDashStyle: true);
 
             if (cache.ExpandedPath is { } path)
             {
@@ -173,7 +173,7 @@ namespace Avalonia.Skia
             public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).Bounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 
-            public void UpdateIfNeeded(SKPath? strokePath, IPen? pen)
+            public void UpdateIfNeeded(SKPath? strokePath, IPen? pen, bool includeDashStyle = false)
             {
                 var strokeWidth = pen?.Thickness ?? 0;
                 var miterLimit = pen?.MiterLimit ?? 0;
@@ -209,7 +209,7 @@ namespace Avalonia.Skia
                 paint.StrokeJoin = join.ToSKStrokeJoin();
                 paint.StrokeMiter = (float)miterLimit;
 
-                if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
+                if (includeDashStyle && DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
                     paint.PathEffect = dashEffect;
 
                 _path = new SKPath();
