@@ -323,6 +323,7 @@ namespace Avalonia.Controls
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            FocusManager.IsFocusableWithTouchProperty.OverrideDefaultValue(typeof(TextBox), true);
             TextInputMethodClientRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
             {
                 if (!tb.IsReadOnly)

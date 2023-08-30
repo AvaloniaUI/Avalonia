@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -19,6 +20,8 @@ namespace Avalonia.Input
         /// </summary>
         private readonly ConditionalWeakTable<IFocusScope, IInputElement?> _focusScopes =
             new ConditionalWeakTable<IFocusScope, IInputElement?>();
+
+        public static readonly AttachedProperty<bool> IsFocusableWithTouchProperty = AvaloniaProperty.RegisterAttached<FocusManager, InputElement, bool>("IsFocusableWithTouch", false);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FocusManager"/> class.
@@ -245,14 +248,23 @@ namespace Avalonia.Input
             var ev = (PointerPressedEventArgs)e;
             var visual = (Visual)sender;
 
+
             if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
             {
                 Visual? element = ev.Pointer?.Captured as Visual ?? e.Source as Visual;
+
+                var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
 
                 while (element != null)
                 {
                     if (element is IInputElement inputElement && CanFocus(inputElement))
                     {
+                        if(settings.EnableTouchFocusChecks && ev.Pointer?.Type == PointerType.Touch && !(inputElement is InputElement iE && GetIsFocusableWithTouch(iE)))
+                        {
+                            element = element.VisualParent;
+                            continue;
+                        }
+
                         inputElement.Focus(NavigationMethod.Pointer, ev.KeyModifiers);
 
                         break;
@@ -264,5 +276,15 @@ namespace Avalonia.Input
         }
 
         private static bool IsVisible(IInputElement e) => (e as Visual)?.IsEffectivelyVisible ?? true;
+
+        public static bool GetIsFocusableWithTouch(InputElement inputElement)
+        {
+            return inputElement.GetValue(IsFocusableWithTouchProperty);
+        }
+
+        public static void SetIsFocusableWithTouch(InputElement inputElement, bool value)
+        {
+            inputElement.SetValue(IsFocusableWithTouchProperty, value);
+        }
     }
 }

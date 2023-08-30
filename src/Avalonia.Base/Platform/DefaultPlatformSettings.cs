@@ -36,6 +36,8 @@ namespace Avalonia.Platform
         public PlatformHotkeyConfiguration HotkeyConfiguration =>
             AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
 
+        public bool EnableTouchFocusChecks { get; set; } = false;
+
         public virtual PlatformColorValues GetColorValues()
         {
             return new PlatformColorValues

@@ -20,6 +20,8 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
     public AndroidPlatformSettings()
     {
         _latestValues = base.GetColorValues();
+
+        EnableTouchFocusChecks = false;
     }
 
     public override PlatformColorValues GetColorValues()
