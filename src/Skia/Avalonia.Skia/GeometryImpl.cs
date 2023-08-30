@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -73,6 +74,22 @@ namespace Avalonia.Skia
         {
             _pathCache.UpdateIfNeeded(StrokePath, pen);
             return _pathCache.RenderBounds;
+        }
+
+        public IGeometryImpl GetWidenedGeometry(IPen pen)
+        {
+            var cache = new PathCache();
+            cache.UpdateIfNeeded(StrokePath, pen);
+
+            if (cache.ExpandedPath is { } path)
+            {
+                // The path returned to us by skia here does not have closed figures.
+                // Fix that by calling CreateClosedPath.
+                var closed = SKPathHelper.CreateClosedPath(path);
+                return new StreamGeometryImpl(closed, closed);
+            }
+            
+            return new StreamGeometryImpl(new SKPath(), null);
         }
 
         /// <inheritdoc />
@@ -191,6 +208,10 @@ namespace Avalonia.Skia
                 paint.StrokeCap = cap.ToSKStrokeCap();
                 paint.StrokeJoin = join.ToSKStrokeJoin();
                 paint.StrokeMiter = (float)miterLimit;
+
+                if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
+                    paint.PathEffect = dashEffect;
+
                 _path = new SKPath();
                 paint.GetFillPath(strokePath, _path);
 

@@ -6,6 +6,7 @@ using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Skia.Helpers;
 using Avalonia.Utilities;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
@@ -1252,25 +1253,10 @@ namespace Avalonia.Skia
 
             paint.StrokeMiter = (float) pen.MiterLimit;
 
-            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
             {
-                var srcDashes = pen.DashStyle.Dashes;
-
-                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
-
-                var dashesArray = new float[count];
-
-                for (var i = 0; i < count; ++i)
-                {
-                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
-                }
-
-                var offset = (float)(pen.DashStyle.Offset * pen.Thickness);
-
-                var pe = SKPathEffect.CreateDash(dashesArray, offset);
-
-                paint.PathEffect = pe;
-                rv.AddDisposable(pe);
+                paint.PathEffect = dashEffect;
+                rv.AddDisposable(dashEffect);
             }
 
             return rv;
