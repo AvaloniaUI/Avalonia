@@ -159,5 +159,8 @@ public class Win32PlatformOptions
     /// </summary>
     public IPlatformGraphics? CustomPlatformGraphics { get; set; }
 
+    /// <summary>
+    /// Gets or sets the application's DPI awareness.
+    /// </summary>
     public Win32DpiAwareness DpiAwareness { get; set; } = Win32DpiAwareness.PerMonitorDpiAware;
 }
