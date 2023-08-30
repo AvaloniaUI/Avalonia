@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using HarfBuzzSharp;
@@ -6,7 +8,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class GlyphTypefaceImpl : IGlyphTypeface
+    internal class GlyphTypefaceImpl : IGlyphTypeface, IGlyphTypeface2
     {
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
@@ -197,6 +199,42 @@ namespace Avalonia.Skia
         public bool TryGetTable(uint tag, out byte[] table)
         {
             return _typeface.TryGetTableData(tag, out table);
+        }
+
+        public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
+        {
+            try
+            {
+                var asset = _typeface.OpenStream();
+                var size = asset.Length;
+                var memoryBase = asset.GetMemoryBase();
+
+                if (memoryBase != IntPtr.Zero)
+                {
+                    unsafe
+                    {
+                        stream = new UnmanagedMemoryStream((byte*)memoryBase, size);
+
+                        return true;
+                    }
+                }
+                else
+                {
+                    var buffer = new byte[size];
+
+                    asset.Read(buffer, size);
+
+                    stream = new MemoryStream(buffer);
+
+                    return true;
+                }
+            }
+            catch
+            {
+                stream = null;
+
+                return false;
+            }
         }
     }
 }
