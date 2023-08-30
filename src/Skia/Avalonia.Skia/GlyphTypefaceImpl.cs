@@ -207,27 +207,13 @@ namespace Avalonia.Skia
             {
                 var asset = _typeface.OpenStream();
                 var size = asset.Length;
-                var memoryBase = asset.GetMemoryBase();
+                var buffer = new byte[size];
 
-                if (memoryBase != IntPtr.Zero)
-                {
-                    unsafe
-                    {
-                        stream = new UnmanagedMemoryStream((byte*)memoryBase, size);
+                asset.Read(buffer, size);
 
-                        return true;
-                    }
-                }
-                else
-                {
-                    var buffer = new byte[size];
+                stream = new MemoryStream(buffer);
 
-                    asset.Read(buffer, size);
-
-                    stream = new MemoryStream(buffer);
-
-                    return true;
-                }
+                return true;
             }
             catch
             {
