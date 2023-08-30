@@ -71,6 +71,9 @@
         <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
       </Style>
+      <Style Selector="^:pointerover /template/ PathIcon#DropDownGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
+      </Style>
 
       <!--  Pressed State  -->
       <Style Selector="^:pressed">
@@ -81,6 +84,9 @@
         <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
+      </Style>
+      <Style Selector="^:pressed /template/ PathIcon#DropDownGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
       </Style>
 
       <!--  Disabled State  -->
