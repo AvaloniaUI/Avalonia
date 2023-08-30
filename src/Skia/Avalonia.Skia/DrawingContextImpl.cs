@@ -191,10 +191,9 @@ namespace Avalonia.Skia
             var paint = SKPaintCache.Shared.Get();
 
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
-            paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
-            drawableImage.Draw(this, s, d, paint);
+            drawableImage.Draw(this, s, d, RenderOptions.BitmapInterpolationMode.ToSKSamplingOptions(), paint);
             SKPaintCache.Shared.ReturnReset(paint);
         }
 
@@ -1070,7 +1069,6 @@ namespace Avalonia.Skia
             using (var shader = picture.ToShader(tileX, tileY, paintTransform,
                        new SKRect(0, 0, picture.CullRect.Width, picture.CullRect.Height)))
             {
-                paintWrapper.Paint.FilterQuality = SKFilterQuality.None;
                 paintWrapper.Paint.Shader = shader;
             }
         }

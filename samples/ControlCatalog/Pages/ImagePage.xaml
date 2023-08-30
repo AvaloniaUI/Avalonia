@@ -17,7 +17,8 @@
           <ComboBoxItem>UniformToFill</ComboBoxItem>
         </ComboBox>
         <Image Name="bitmapImage"
-               Source="/Assets/delicate-arch-896885_640.jpg"/>
+               RenderOptions.BitmapInterpolationMode="HighQuality"
+               Source="/Assets/edge_image123.png"/>
       </DockPanel>
 
       <DockPanel Grid.Column="1" Grid.Row="1" Margin="16">
