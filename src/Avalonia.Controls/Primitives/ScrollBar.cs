@@ -195,14 +195,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Locates the first <see cref="ScrollViewer"/> ancestor and binds to its properties. Properties which have been set through other means are not bound.
+        /// Try to attach to TemplatedParent if it is a <see cref="ScrollViewer"/> and binds to its properties.
+        /// Properties which have been set through other means are not bound.
         /// </summary>
         /// <remarks>
         /// This method is automatically called when the control is attached to a visual tree.
         /// </remarks>
         internal void AttachToScrollViewer()
         {
-            var owner = this.FindAncestorOfType<ScrollViewer>();
+            var owner = this.TemplatedParent as ScrollViewer;
 
             if (owner == null)
             {
