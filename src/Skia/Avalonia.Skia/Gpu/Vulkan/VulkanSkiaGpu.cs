@@ -9,6 +9,7 @@ namespace Avalonia.Skia.Vulkan;
 
 internal class VulkanSkiaGpu : ISkiaGpu
 {
+    private readonly VulkanSkiaExternalObjectsFeature? _externalObjects;
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }
     public GRContext GrContext { get; private set; }
 
@@ -53,6 +54,9 @@ internal class VulkanSkiaGpu : ISkiaGpu
             if (maxResourceBytes.HasValue)
                 GrContext.SetResourceCacheLimit(maxResourceBytes.Value);
         }
+
+        if (vulkan.TryGetFeature<IVulkanContextExternalObjectsFeature>(out var externalObjects))
+            _externalObjects = new VulkanSkiaExternalObjectsFeature(this, vulkan, externalObjects);
     }
     
     public void Dispose()
@@ -62,6 +66,8 @@ internal class VulkanSkiaGpu : ISkiaGpu
 
     public object? TryGetFeature(Type featureType)
     {
+        if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
+            return _externalObjects;
         return null;
     }
 

@@ -7,7 +7,7 @@ namespace Avalonia.Vulkan.Interop;
 internal class VulkanCommandBufferPool : IDisposable
 {
     private readonly IVulkanPlatformGraphicsContext _context;
-    private readonly List<VulkanCommandBuffer> _commandBuffers = new();
+    private readonly Queue<VulkanCommandBuffer> _commandBuffers = new();
     private VkCommandPool _handle;
     public VkCommandPool Handle => _handle;
 
@@ -26,9 +26,20 @@ internal class VulkanCommandBufferPool : IDisposable
 
     public void FreeUsedCommandBuffers()
     {
-        foreach (var usedCommandBuffer in _commandBuffers)
-            usedCommandBuffer.Dispose();
-        _commandBuffers.Clear();
+        while (_commandBuffers.Count > 0)
+            _commandBuffers.Dequeue().Dispose();
+    }
+    
+    public void FreeFinishedCommandBuffers()
+    {
+        while (_commandBuffers.Count > 0)
+        {
+            var next = _commandBuffers.Peek();
+            if(!next.IsFinished)
+                return;
+            _commandBuffers.Dequeue();
+            next.Dispose();
+        }
     }
 
     public void Dispose()
@@ -56,5 +67,5 @@ internal class VulkanCommandBufferPool : IDisposable
         return new VulkanCommandBuffer(this, bufferHandle, _context);
     }
     
-    public void AddSubmittedCommandBuffer(VulkanCommandBuffer buffer) => _commandBuffers.Add(buffer);
+    public void AddSubmittedCommandBuffer(VulkanCommandBuffer buffer) => _commandBuffers.Enqueue(buffer);
 }

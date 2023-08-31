@@ -65,16 +65,21 @@ internal unsafe partial class VulkanDevice
             pQueuePriorities = queuePriorities,
         };
 
-        using var enabledExtensions = new Utf8BufferArray(options.DeviceExtensions
-            .Intersect(dev.Extensions).Append(VK_KHR_swapchain).Distinct());
+        var enableExtensions =
+            new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions));
+
+        var enabledExtensions = enableExtensions
+            .Intersect(dev.Extensions).Append(VK_KHR_swapchain).Distinct().ToArray();
+
+        using var pEnabledExtensions = new Utf8BufferArray(enabledExtensions);
 
         var createInfo = new VkDeviceCreateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             queueCreateInfoCount = 1,
             pQueueCreateInfos = &queueCreateInfo,
-            ppEnabledExtensionNames = enabledExtensions,
-            enabledExtensionCount = enabledExtensions.UCount,
+            ppEnabledExtensionNames = pEnabledExtensions,
+            enabledExtensionCount = pEnabledExtensions.UCount,
         };
 
         api.CreateDevice(dev.PhysicalDevice, ref createInfo, IntPtr.Zero, out var createdDevice)
@@ -83,7 +88,7 @@ internal unsafe partial class VulkanDevice
         api.GetDeviceQueue(createdDevice, dev.QueueFamilyIndex, 0, out var createdQueue);
 
         return new VulkanDevice(api.Instance, createdDevice, dev.PhysicalDevice, createdQueue,
-            dev.QueueFamilyIndex);
+            dev.QueueFamilyIndex, enabledExtensions);
 
     }
 
@@ -122,14 +127,9 @@ internal unsafe partial class VulkanDevice
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);
 
         var supportedExtensions = GetDeviceExtensions(instance, physicalDevice);
-        var foundSwapchain = false;
-        foreach (var ext in supportedExtensions)
-            if (ext == VK_KHR_swapchain)
-                foundSwapchain = true;
-
-        if (!foundSwapchain)
+        if (!supportedExtensions.Contains(VK_KHR_swapchain))
             return null;
-
+        
         uint familyCount = 0;
         instance.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref familyCount, null);
         var familyProperties = stackalloc VkQueueFamilyProperties[(int)familyCount];

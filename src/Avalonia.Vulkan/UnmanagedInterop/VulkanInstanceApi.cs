@@ -74,4 +74,9 @@ internal unsafe partial class VulkanInstanceApi
     [GetProcAddress("vkGetPhysicalDeviceSurfacePresentModesKHR")]
     public partial VkResult GetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
         ref uint32_t pPresentModeCount, VkPresentModeKHR* pPresentModes);
+    
+    [GetProcAddress("vkGetPhysicalDeviceProperties2", true)]
+    public partial void GetPhysicalDeviceProperties2(
+        VkPhysicalDevice                            physicalDevice,
+        VkPhysicalDeviceProperties2*                pProperties);
 }

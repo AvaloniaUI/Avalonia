@@ -22,6 +22,12 @@ class VulkanSemaphore : IDisposable
             .ThrowOnError("vkCreateSemaphore");
     }
 
+    public VulkanSemaphore(IVulkanPlatformGraphicsContext context, VkSemaphore handle)
+    {
+        _context = context;
+        _handle = handle;
+    }
+
     public void Dispose()
     {
         if (_handle.Handle != 0)

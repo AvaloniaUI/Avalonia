@@ -211,7 +211,23 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkPhysicalDeviceLimits limits;
         public VkPhysicalDeviceSparseProperties sparseProperties;
     }
-
+    
+    unsafe struct VkPhysicalDeviceProperties2 {
+        public VkStructureType               sType;
+        public void*                         pNext;
+        public VkPhysicalDeviceProperties    properties;
+    }
+    
+    unsafe struct VkPhysicalDeviceIDProperties {
+        public VkStructureType    sType;
+        public void*              pNext;
+        public fixed uint8_t            deviceUUID[16];
+        public fixed uint8_t            driverUUID[16];
+        public fixed uint8_t            deviceLUID[8];
+        public uint32_t           deviceNodeMask;
+        public VkBool32           deviceLUIDValid;
+    } 
+    
     unsafe struct VkPhysicalDeviceLimits
     {
         public uint32_t maxImageDimension1D;
@@ -549,7 +565,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
     unsafe struct VkImageCreateInfo
     {
         public VkStructureType sType;
-        public IntPtr pNext;
+        public void* pNext;
         public VkImageCreateFlags flags;
         public VkImageType imageType;
         public VkFormat format;
@@ -575,7 +591,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
     struct VkMemoryAllocateInfo
     {
         public VkStructureType sType;
-        IntPtr pNext;
+        public IntPtr pNext;
         public VkDeviceSize allocationSize;
         public uint32_t memoryTypeIndex;
     }
@@ -694,5 +710,58 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkSwapchainKHR* pSwapchains;
         public uint32_t* pImageIndices;
         public VkResult* pResults;
+    }
+
+    unsafe struct VkImportSemaphoreFdInfoKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkSemaphore semaphore;
+        public VkSemaphoreImportFlags flags;
+        public VkExternalSemaphoreHandleTypeFlags handleType;
+        public int fd;
+    }
+
+    unsafe struct VkImportSemaphoreWin32HandleInfoKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkSemaphore semaphore;
+        public VkSemaphoreImportFlags flags;
+        public VkExternalSemaphoreHandleTypeFlags handleType;
+        public IntPtr handle;
+        public IntPtr name;
+    }
+
+    unsafe struct VkImportMemoryFdInfoKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkExternalMemoryHandleTypeFlagBits handleType;
+        public int fd;
+    }
+
+    unsafe struct VkImportMemoryWin32HandleInfoKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkExternalMemoryHandleTypeFlagBits handleType;
+        public IntPtr handle;
+        public IntPtr name;
+    }
+
+    unsafe struct VkMemoryDedicatedAllocateInfo
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkImage image;
+        public IntPtr buffer;
+    }
+
+    unsafe struct VkExternalMemoryImageCreateInfo
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkExternalMemoryHandleTypeFlagBits handleTypes;
     }
 }

@@ -50,6 +50,9 @@ internal unsafe partial class VulkanDeviceApi
     public partial VkResult WaitForFences(VkDevice device, uint32_t fenceCount, VkFence* pFences, VkBool32 waitAll,
         uint64_t timeout);
 
+    [GetProcAddress("vkGetFenceStatus")]
+    public partial VkResult GetFenceStatus(VkDevice device, VkFence fence);
+    
     [GetProcAddress("vkBeginCommandBuffer")]
     public partial VkResult BeginCommandBuffer(VkCommandBuffer commandBuffer, ref VkCommandBufferBeginInfo pBeginInfo);
 
@@ -139,4 +142,13 @@ internal unsafe partial class VulkanDeviceApi
 
     [GetProcAddress("vkQueuePresentKHR")]
     public partial VkResult vkQueuePresentKHR(VkQueue queue, ref VkPresentInfoKHR pPresentInfo);
+
+    [GetProcAddress("vkImportSemaphoreFdKHR", true)]
+    public partial VkResult ImportSemaphoreFdKHR(VkDevice device, VkImportSemaphoreFdInfoKHR* pImportSemaphoreFdInfo);
+
+    [GetProcAddress("vkImportSemaphoreWin32HandleKHR", true)]
+    public partial VkResult ImportSemaphoreWin32HandleKHR(VkDevice device,
+        VkImportSemaphoreWin32HandleInfoKHR* pImportSemaphoreWin32HandleInfo);
+    
+    
 }

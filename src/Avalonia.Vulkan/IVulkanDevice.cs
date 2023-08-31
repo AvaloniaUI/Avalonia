@@ -14,6 +14,15 @@ public interface IVulkanDevice : IDisposable, IOptionalFeatureProvider
     public IVulkanInstance Instance { get; }
     bool IsLost { get; }
     public IDisposable Lock();
+    public IEnumerable<string> EnabledExtensions { get; }
+}
+
+public interface IVulkanInstance
+{
+    public IntPtr Handle { get; }
+    public IntPtr GetInstanceProcAddress(IntPtr instance, string name);
+    public IntPtr GetDeviceProcAddress(IntPtr device, string name);
+    public IEnumerable<string> EnabledExtensions { get; }
 }
 
 [NotClientImplementable]
@@ -29,11 +38,4 @@ public interface IVulkanPlatformGraphicsContext : IPlatformGraphicsContext
     internal VkQueue MainQueueHandle { get; }
     internal uint GraphicsQueueFamilyIndex { get; }
     IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
-}
-
-public interface IVulkanInstance
-{
-    public IntPtr Handle { get; }
-    public IntPtr GetInstanceProcAddress(IntPtr instance, string name);
-    public IntPtr GetDeviceProcAddress(IntPtr device, string name);
 }

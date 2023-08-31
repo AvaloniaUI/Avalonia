@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Reactive;
 using System.Threading;
 using Avalonia.Platform;
@@ -17,13 +18,14 @@ internal partial class VulkanDevice : IVulkanDevice
     private int _lockCount;
 
     private VulkanDevice(IVulkanInstance instance, VkDevice handle, VkPhysicalDevice physicalDeviceHandle,
-        VkQueue mainQueue, uint graphicsQueueIndex)
+        VkQueue mainQueue, uint graphicsQueueIndex, string[] enabledExtensions)
     {
         _handle = handle;
         _physicalDeviceHandle = physicalDeviceHandle;
         _mainQueue = mainQueue;
         _graphicsQueueIndex = graphicsQueueIndex;
         Instance = instance;
+        EnabledExtensions = enabledExtensions;
     }
 
     T CheckAccess<T>(T f)
@@ -46,6 +48,8 @@ internal partial class VulkanDevice : IVulkanDevice
             Monitor.Exit(_lock);
         });
     }
+
+    public IEnumerable<string> EnabledExtensions { get; }
 
     public bool IsLost => false;
     public IntPtr Handle => _handle.Handle;

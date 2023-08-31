@@ -1,12 +1,15 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Vulkan;
 
+[NotClientImplementable]
 public interface IVulkanRenderTarget : IDisposable
 {
     IVulkanRenderSession BeginDraw();
 }
 
+[NotClientImplementable]
 public interface IVulkanRenderSession : IDisposable
 {
     double Scaling { get; }

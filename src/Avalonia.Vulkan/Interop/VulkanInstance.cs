@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
@@ -12,11 +14,12 @@ internal class VulkanInstance : IVulkanInstance
     private readonly VkGetInstanceProcAddressDelegate _getProcAddress;
     private readonly VulkanInstanceApi _api;
 
-    public VulkanInstance(VkInstance handle, VkGetInstanceProcAddressDelegate getProcAddress)
+    public VulkanInstance(VkInstance handle, VkGetInstanceProcAddressDelegate getProcAddress, string[] enabledExtensions)
     {
         Handle = handle;
         _getProcAddress = getProcAddress;
         _api = new VulkanInstanceApi(this);
+        EnabledExtensions = enabledExtensions;
     }
 
     internal static unsafe IVulkanInstance Create(
@@ -32,7 +35,8 @@ internal class VulkanInstance : IVulkanInstance
         using var engineName = new Utf8Buffer("AvaloniaUI");
 
         var gapi = new UnmanagedInterop.VulkanGlobalApi(getProcAddress);
-        
+
+        var supportedExtensions = GetSupportedExtensions(gapi);
         var appInfo = new VkApplicationInfo()
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -43,16 +47,28 @@ internal class VulkanInstance : IVulkanInstance
             pEngineName = engineName,
         };
 
-        var enabledExtensions = options.InstanceExtensions.Concat(platformOptions.RequiredInstanceExtensions)
-            .Append("VK_KHR_surface").ToList();
+        var enabledExtensions = new HashSet<string>(options.InstanceExtensions
+            .Concat(platformOptions.RequiredInstanceExtensions)
+            .Append("VK_KHR_surface"));
+        
         var enabledLayers = options.EnabledLayers.ToList();
+
+        void AddExtensionsIfSupported(params string[] names)
+        {
+            if(names.All(n=>supportedExtensions.Contains(n)))
+                foreach (var n in names)
+                    enabledExtensions.Add(n);
+        }
+        
         if (options.UseDebug)
         {
-            enabledExtensions.Add("VK_EXT_debug_utils");
+            AddExtensionsIfSupported("VK_EXT_debug_utils");
             if (IsLayerAvailable(gapi, "VK_LAYER_KHRONOS_validation"))
                 enabledLayers.Add("VK_LAYER_KHRONOS_validation");
         }
 
+        AddExtensionsIfSupported(VulkanExternalObjectsFeature.RequiredInstanceExtensions);
+        
         using var enabledExtensionBuffers = new Utf8BufferArray(
             enabledExtensions
                 .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -76,7 +92,7 @@ internal class VulkanInstance : IVulkanInstance
         gapi.vkCreateInstance(ref createInfo, IntPtr.Zero, out var pInstance)
             .ThrowOnError(nameof(gapi.vkCreateInstance));
         
-        var instance = new VulkanInstance(pInstance, getProcAddress);
+        var instance = new VulkanInstance(pInstance, getProcAddress, enabledExtensions.ToArray());
         var instanceApi = new VulkanInstanceApi(instance);
 
         if (options.UseDebug)
@@ -96,7 +112,7 @@ internal class VulkanInstance : IVulkanInstance
 
             instanceApi.CreateDebugUtilsMessengerEXT(pInstance, ref debugCreateInfo, IntPtr.Zero, out var messenger);
         }
-
+        
         return instance;
     }
 
@@ -124,6 +140,31 @@ internal class VulkanInstance : IVulkanInstance
         return false;
     }
 
+    private static unsafe HashSet<string> GetSupportedExtensions(VulkanGlobalApi api)
+    {
+        var supportedExtensions = new HashSet<string>();
+        uint supportedExtensionCount = 0;
+        api.vkEnumerateInstanceExtensionProperties(IntPtr.Zero, &supportedExtensionCount, null);
+        if (supportedExtensionCount > 0)
+        {
+            var ptr = (VkExtensionProperties*)Marshal.AllocHGlobal(Unsafe.SizeOf<VkExtensionProperties>() *
+                                                                   (int)supportedExtensionCount);
+            try
+            {
+                api.vkEnumerateInstanceExtensionProperties(IntPtr.Zero, &supportedExtensionCount, ptr)
+                    .ThrowOnError("vkEnumerateInstanceExtensionProperties");
+                for (var c = 0; c < supportedExtensionCount; c++)
+                    supportedExtensions.Add(Marshal.PtrToStringAnsi((IntPtr)ptr[c].extensionName) ?? "");
+            }
+            finally
+            {
+                Marshal.FreeHGlobal((IntPtr)ptr);
+            }
+        }
+
+        return supportedExtensions;
+    }
+
     public VkInstance Handle { get; }
     IntPtr IVulkanInstance.Handle => Handle.Handle;
     
@@ -133,4 +174,6 @@ internal class VulkanInstance : IVulkanInstance
         using var buf = new Utf8Buffer(name);
         return _api.GetDeviceProcAddr(new(device), buf);
     }
+
+    public IEnumerable<string> EnabledExtensions { get; }
 }

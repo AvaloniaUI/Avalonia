@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan;
@@ -7,6 +8,7 @@ namespace Avalonia.Vulkan;
 internal class VulkanContext : IVulkanPlatformGraphicsContext
 {
     private readonly IVulkanKhrSurfacePlatformSurfaceFactory? _surfaceFactory;
+    private readonly VulkanExternalObjectsFeature? _externalObjectsFeature;
     public IVulkanDevice Device { get; }
     public IVulkanInstance Instance => Device.Instance;
     
@@ -20,6 +22,13 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
             if (platformFeatures.TryGetValue(typeof(IVulkanKhrSurfacePlatformSurfaceFactory), out var factory))
                 _surfaceFactory = (IVulkanKhrSurfacePlatformSurfaceFactory)factory;
         }
+
+        if (
+            VulkanExternalObjectsFeature.RequiredInstanceExtensions.All(ext => Instance.EnabledExtensions.Contains(ext))
+            && VulkanExternalObjectsFeature.RequiredDeviceExtensions.All(ext => Device.EnabledExtensions.Contains(ext)))
+        {
+            _externalObjectsFeature = new VulkanExternalObjectsFeature(this);
+        }
     }
     
     public void Dispose()
@@ -27,7 +36,12 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
         
     }
 
-    public object? TryGetFeature(Type featureType) => null;
+    public object? TryGetFeature(Type featureType)
+    {
+        if (featureType == typeof(IVulkanContextExternalObjectsFeature))
+            return _externalObjectsFeature;
+        return null;
+    }
 
     public bool IsLost => Device.IsLost;
     public IDisposable EnsureCurrent() => Device.Lock();

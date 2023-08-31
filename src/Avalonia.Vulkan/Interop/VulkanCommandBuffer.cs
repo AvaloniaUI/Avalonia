@@ -34,6 +34,8 @@ internal class VulkanCommandBuffer : IDisposable
         }
     }
 
+    public bool IsFinished => _fence.IsSignaled;
+
     public void BeginRecording()
     {
         if (_hasStarted)
