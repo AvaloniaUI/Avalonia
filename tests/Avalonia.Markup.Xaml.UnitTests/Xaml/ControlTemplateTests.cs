@@ -287,6 +287,24 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ControlTemplate_With_String_TargetType()
+        {
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui' 
+                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                 TargetType='ContentControl'>
+    <ContentPresenter Content='{TemplateBinding Content}' />
+</ControlTemplate>
+";
+            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
+
+            Assert.Equal(typeof(ContentControl), template.TargetType);
+
+            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Result);
+        }
+
+
+        [Fact]
         public void ControlTemplate_With_Panel_Children_Are_Added()
         {
             var xaml = @"
