@@ -542,6 +542,16 @@ namespace Avalonia.Headless
             {
                 
             }
+
+            public void PushRenderOptions(RenderOptions renderOptions)
+            {
+               
+            }
+
+            public void PopRenderOptions()
+            {
+               
+            }
         }
 
         private class HeadlessRenderTarget : IRenderTarget
