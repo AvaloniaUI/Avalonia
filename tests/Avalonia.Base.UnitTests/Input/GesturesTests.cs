@@ -488,6 +488,40 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Gestures_Should_Be_Cancelled_When_Pointer_Capture_Is_Lost()
+        {
+            Border border = new Border()
+            {
+                Width = 100,
+                Height = 100,
+                Background = new SolidColorBrush(Colors.Red)
+            };
+            border.GestureRecognizers.Add(new PinchGestureRecognizer());
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var raised = false;
+
+            root.AddHandler(Gestures.PinchEvent, (_, _) => raised = true);
+
+            var firstPoint = new Point(5, 5);
+            var secondPoint = new Point(10, 10);
+
+            var firstTouch = new TouchTestHelper();
+            var secondTouch = new TouchTestHelper();
+
+            firstTouch.Down(border, position: firstPoint);
+
+            firstTouch.Cancel();
+
+            secondTouch.Down(border, position: secondPoint);
+            secondTouch.Move(border, position: new Point(20, 20));
+
+            Assert.False(raised);
+        }
+
+        [Fact]
         public void Scrolling_Should_Start_After_Start_Distance_Is_Exceeded()
         {
             Border border = new Border()

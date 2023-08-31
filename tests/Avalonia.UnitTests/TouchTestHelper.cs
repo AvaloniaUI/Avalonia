@@ -61,5 +61,11 @@ namespace Avalonia.UnitTests
             Down(target, source, position, modifiers);
             Up(target, source, position, modifiers);
         }
+
+        public void Cancel()
+        {
+            _pointer.Capture(null);
+            _pointer.CaptureGestureRecognizer(null);
+        }
     }
 }
