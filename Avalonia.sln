@@ -91,7 +91,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.NetCore", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
-		build\ApiDiff.props = build\ApiDiff.props
 		build\AvaloniaPublicKey.props = build\AvaloniaPublicKey.props
 		build\Base.props = build\Base.props
 		build\Binding.props = build\Binding.props

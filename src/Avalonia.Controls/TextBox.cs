@@ -1880,6 +1880,37 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Returns the sum of any vertical whitespace added between the <see cref="ScrollViewer"/> and <see cref="TextPresenter"/> in the control template.
+        /// </summary>
+        /// <returns>The total vertical whitespace.</returns>
+        private double GetVerticalSpaceBetweenScrollViewerAndPresenter()
+        {
+            var verticalSpace = 0.0;
+            if (_presenter != null)
+            {
+                Visual? visual = _presenter;
+                while ((visual != null) && (visual != this))
+                {
+                    if (visual == _scrollViewer)
+                    {
+                        // ScrollViewer is a stopping point and should only include the Padding
+                        verticalSpace += _scrollViewer.Padding.Top + _scrollViewer.Padding.Bottom;
+                        break;
+                    }
+
+                    var margin = visual.GetValue<Thickness>(Layoutable.MarginProperty);
+                    var padding = visual.GetValue<Thickness>(Decorator.PaddingProperty);
+                    
+                    verticalSpace += margin.Top + padding.Top + padding.Bottom + margin.Bottom;
+
+                    visual = visual.VisualParent;
+                }
+            }
+
+            return verticalSpace;
+        }
+
+        /// <summary>
         /// Raises both the <see cref="TextChanging"/> and <see cref="TextChanged"/> events.
         /// </summary>
         /// <remarks>
@@ -2032,8 +2063,9 @@ namespace Avalonia.Controls
                     var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default);
                     var textLayout = new TextLayout(new MaxLinesTextSource(MaxLines), paragraphProperties);
+                    var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
 
-                    maxHeight = Math.Ceiling(textLayout.Height);
+                    maxHeight = Math.Ceiling(textLayout.Height + verticalSpace);
                 }
 
                 _scrollViewer.SetCurrentValue(MaxHeightProperty, maxHeight);

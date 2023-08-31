@@ -38,6 +38,7 @@ partial class ServerCompositionVisual
         CompositionVisualChangedFields.Size
         | CompositionVisualChangedFields.SizeAnimated
         | CompositionVisualChangedFields.ClipToBounds
+        | CompositionVisualChangedFields.Clip
         | CompositionVisualChangedFields.ClipToBoundsAnimated;
         
     partial void OnFieldsDeserialized(CompositionVisualChangedFields changed)

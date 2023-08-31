@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Notifications
             this.GetObservable(ContentProperty)
                 .Subscribe(x =>
                 {
-                    if (x is Notification notification)
+                    if (x is INotification notification)
                     {
                         switch (notification.Type)
                         {

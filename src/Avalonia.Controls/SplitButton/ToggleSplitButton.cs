@@ -2,6 +2,7 @@
 
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
@@ -36,8 +37,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsChecked"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsCheckedProperty =
-            AvaloniaProperty.Register<ToggleSplitButton, bool>(
-                nameof(IsChecked));
+            AvaloniaProperty.Register<ToggleSplitButton, bool>(nameof(IsChecked), false, defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToggleSplitButton"/> class.
