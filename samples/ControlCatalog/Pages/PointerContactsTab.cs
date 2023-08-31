@@ -72,6 +72,7 @@ public class PointerContactsTab : Control
         UpdatePointer(e);
         e.Pointer.Capture(this);
         e.Handled = true;
+        e.PreventGestureRecognition();
         base.OnPointerPressed(e);
     }
 

@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -164,6 +164,16 @@ namespace Avalonia.Controls
         /// SetValue, etc.
         /// </summary>
         private bool _allowWrite;
+
+        /// <summary>
+        /// A boolean indicating if a cancellation was requested
+        /// </summary>
+        private bool _cancelRequested;
+
+        /// <summary>
+        /// A boolean indicating if filtering is in action
+        /// </summary>
+        private bool _filterInAction;
 
         /// <summary>
         /// The TextBox template part.
@@ -1379,6 +1389,15 @@ namespace Avalonia.Controls
         /// </summary>
         private void RefreshView()
         {
+            // If we have a running filter, trigger a request first
+            if (_filterInAction)
+            {
+                _cancelRequested = true;
+            }
+
+            // Indicate that filtering is ongoing
+            _filterInAction = true;
+
             if (_items == null)
             {
                 ClearView();
@@ -1391,79 +1410,65 @@ namespace Avalonia.Controls
             // Determine if any filtering mode is on
             bool stringFiltering = TextFilter != null;
             bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
-
-            int view_index = 0;
-            int view_count = _view!.Count;
+            
             List<object> items = _items;
+
+            // cache properties
+            var textFilter = TextFilter;
+            var itemFilter = ItemFilter;
+            var _newViewItems = new Collection<object>();
+            
+            // if the mode is objectFiltering and itemFilter is null, we throw an exception
+            if (objectFiltering && itemFilter is null)
+            {
+                // indicate that filtering is not ongoing anymore
+                _filterInAction = false;
+                _cancelRequested = false;
+                
+                throw new Exception(
+                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+            }
+
             foreach (object item in items)
             {
+                // Exit the fitter when requested if cancellation is requested
+                if (_cancelRequested)
+                {
+                    return;
+                }
+
                 bool inResults = !(stringFiltering || objectFiltering);
+
                 if (!inResults)
                 {
                     if (stringFiltering)
                     {
-                        inResults = TextFilter!(text, FormatValue(item));
+                        inResults = textFilter!(text, FormatValue(item));
                     }
-                    else
+                    else if (objectFiltering)
                     {
-                        if (ItemFilter is null)
-                        {
-                            throw new Exception("ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
-                        }
-                        else
-                        {
-                            inResults = ItemFilter(text, item);
-                        }
+                        inResults = itemFilter!(text, item);
                     }
                 }
 
-                if (view_count > view_index && inResults && _view[view_index] == item)
+                if (inResults)
                 {
-                    // Item is still in the view
-                    view_index++;
-                }
-                else if (inResults)
-                {
-                    // Insert the item
-                    if (view_count > view_index && _view[view_index] != item)
-                    {
-                        // Replace item
-                        // Unfortunately replacing via index throws a fatal
-                        // exception: View[view_index] = item;
-                        // Cost: O(n) vs O(1)
-                        _view.RemoveAt(view_index);
-                        _view.Insert(view_index, item);
-                        view_index++;
-                    }
-                    else
-                    {
-                        // Add the item
-                        if (view_index == view_count)
-                        {
-                            // Constant time is preferred (Add).
-                            _view.Add(item);
-                        }
-                        else
-                        {
-                            _view.Insert(view_index, item);
-                        }
-                        view_index++;
-                        view_count++;
-                    }
-                }
-                else if (view_count > view_index && _view[view_index] == item)
-                {
-                    // Remove the item
-                    _view.RemoveAt(view_index);
-                    view_count--;
+                    _newViewItems.Add(item);
                 }
             }
+
+            _view?.Clear();
+            _view?.AddRange(_newViewItems);
 
             // Clear the evaluator to discard a reference to the last item
             if (_valueBindingEvaluator != null)
             {
                 _valueBindingEvaluator.ClearDataContext();
             }
+
+            // indicate that filtering is not ongoing anymore
+            _filterInAction = false;
+            _cancelRequested = false;
         }
 
         /// <summary>
