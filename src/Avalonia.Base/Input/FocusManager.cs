@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Compatibility;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -253,13 +254,11 @@ namespace Avalonia.Input
             {
                 Visual? element = ev.Pointer?.Captured as Visual ?? e.Source as Visual;
 
-                var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
-
                 while (element != null)
                 {
                     if (element is IInputElement inputElement && CanFocus(inputElement))
                     {
-                        if(settings.EnableTouchFocusChecks && ev.Pointer?.Type == PointerType.Touch && !(inputElement is InputElement iE && GetIsFocusableWithTouch(iE)))
+                        if(PlatformOptions.EnableTouchFocusChecks && ev.Pointer?.Type == PointerType.Touch && !(inputElement is InputElement iE && GetIsFocusableWithTouch(iE)))
                         {
                             element = element.VisualParent;
                             continue;

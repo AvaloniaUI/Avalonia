@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Provider;
 using Android.Views.Accessibility;
 using AndroidX.Core.Content.Resources;
+using Avalonia.Compatibility;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Color = Avalonia.Media.Color;
@@ -21,7 +22,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
     {
         _latestValues = base.GetColorValues();
 
-        EnableTouchFocusChecks = false;
+        PlatformOptions.EnableTouchFocusChecks = true;
     }
 
     public override PlatformColorValues GetColorValues()

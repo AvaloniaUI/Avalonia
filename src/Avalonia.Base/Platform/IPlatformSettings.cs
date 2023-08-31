@@ -52,7 +52,5 @@ namespace Avalonia.Platform
         /// Raises when current system color values are changed. Including changing of a dark mode and accent colors.
         /// </summary>
         event EventHandler<PlatformColorValues>? ColorValuesChanged;
-
-        bool EnableTouchFocusChecks { get; set; }
     }
 }
