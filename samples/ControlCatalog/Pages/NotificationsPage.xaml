@@ -6,6 +6,5 @@
   <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
         <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
         <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
-        <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
-    </StackPanel>
+  </StackPanel>
 </UserControl>
