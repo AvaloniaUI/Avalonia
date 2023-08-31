@@ -9,7 +9,7 @@ namespace Avalonia.Rendering
     /// The render loop is responsible for advancing the animation timer and updating the scene
     /// graph for visible windows.
     /// </remarks>
-    [NotClientImplementable]
+    [PrivateApi]
     internal interface IRenderLoop
     {
         /// <summary>

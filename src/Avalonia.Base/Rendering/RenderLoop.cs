@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Avalonia.Logging;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering
@@ -14,6 +15,7 @@ namespace Avalonia.Rendering
     /// The render loop is responsible for advancing the animation timer and updating the scene
     /// graph for visible windows.
     /// </remarks>
+    [PrivateApi]
     internal class RenderLoop : IRenderLoop
     {
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();

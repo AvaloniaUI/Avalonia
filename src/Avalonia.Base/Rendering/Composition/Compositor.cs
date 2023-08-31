@@ -275,7 +275,8 @@ namespace Avalonia.Rendering.Composition
         internal bool UnitTestIsRegisteredForSerialization(ICompositorSerializable serializable) =>
             _objectSerializationHashSet.Contains(serializable);
     }
-    
+
+    [PrivateApi]
     internal interface ICompositorScheduler
     {
         void CommitRequested(Compositor compositor);
