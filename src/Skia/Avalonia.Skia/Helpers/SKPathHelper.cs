@@ -61,6 +61,7 @@ internal static class SKPathHelper
 
         var result = new SKPath();
         paint.GetFillPath(path, result);
+        paint.PathEffect?.Dispose();
         SKPaintCache.Shared.ReturnReset(paint);
         return result;
     }
