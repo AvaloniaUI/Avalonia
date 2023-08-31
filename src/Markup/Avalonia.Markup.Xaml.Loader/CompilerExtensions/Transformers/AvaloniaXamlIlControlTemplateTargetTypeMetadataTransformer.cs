@@ -1,6 +1,7 @@
 using System.Linq;
 using XamlX.Ast;
 using XamlX.Transform;
+using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
@@ -22,26 +23,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IXamlAstTypeReference targetType;
 
             var templatableBaseType = context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control");
-            
-            if ((tt?.Values.FirstOrDefault() is XamlTypeExtensionNode tn))
+
+            targetType = tt?.Values.FirstOrDefault() switch
             {
-                targetType = tn.Value;
-            }
-            else
-            {
-                var parentScope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
-                    .FirstOrDefault();
-                if (parentScope?.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style)
-                    targetType = parentScope.TargetType;
-                else if (context.ParentNodes().Skip(1).FirstOrDefault() is XamlAstObjectNode directParentNode
-                         && templatableBaseType.IsAssignableFrom(directParentNode.Type.GetClrType()))
-                    targetType = directParentNode.Type;
-                else
-                    targetType = new XamlAstClrTypeReference(node,
-                        templatableBaseType, false);
-            }
-                
-                
+                XamlTypeExtensionNode tn => tn.Value,
+                XamlAstTextNode textNode => TypeReferenceResolver.ResolveType(context, textNode.Text, false, textNode, true),
+                _ when context.ParentNodes()
+                    .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                    .FirstOrDefault() is { ScopeType: AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style } parentScope => parentScope.TargetType,
+                _ when context.ParentNodes().Skip(1).FirstOrDefault() is XamlAstObjectNode directParentNode
+                         && templatableBaseType.IsAssignableFrom(directParentNode.Type.GetClrType()) => directParentNode.Type,
+                _ => new XamlAstClrTypeReference(node,
+                        templatableBaseType, false)
+            };
 
             return new AvaloniaXamlIlTargetTypeMetadataNode(on, targetType,
                 AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate);
@@ -59,7 +53,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ControlTemplate,
             Transitions
         }
-        
+
         public AvaloniaXamlIlTargetTypeMetadataNode(IXamlAstValueNode value, IXamlAstTypeReference targetType,
             ScopeTypes type)
             : base(value, value)

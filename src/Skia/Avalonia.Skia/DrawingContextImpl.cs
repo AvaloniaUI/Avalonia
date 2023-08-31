@@ -23,6 +23,7 @@ namespace Avalonia.Skia
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
+        private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
@@ -632,6 +633,21 @@ namespace Avalonia.Skia
             }
 
             _currentOpacity = _opacityStack.Pop();
+        }
+
+        /// <inheritdoc />
+        public void PushRenderOptions(RenderOptions renderOptions)
+        {
+            CheckLease();
+
+            _renderOptionsStack.Push(RenderOptions);
+
+            RenderOptions = RenderOptions.MergeWith(renderOptions);
+        }
+
+        public void PopRenderOptions()
+        {
+            RenderOptions = _renderOptionsStack.Pop();
         }
 
         /// <inheritdoc />

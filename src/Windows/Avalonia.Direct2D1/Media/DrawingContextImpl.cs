@@ -24,6 +24,8 @@ namespace Avalonia.Direct2D1.Media
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
 
+        private readonly Stack<RenderOptions> _renderOptionsStack = new();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
         /// </summary>
@@ -486,6 +488,18 @@ namespace Avalonia.Direct2D1.Media
         public void PopOpacity()
         {
             PopLayer();
+        }
+
+        public void PushRenderOptions(RenderOptions renderOptions)
+        {
+            _renderOptionsStack.Push(RenderOptions);
+
+            RenderOptions = RenderOptions.MergeWith(renderOptions);
+        }
+
+        public void PopRenderOptions()
+        {
+            RenderOptions = _renderOptionsStack.Pop();
         }
 
         private void PopLayer()
