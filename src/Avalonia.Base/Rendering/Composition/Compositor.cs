@@ -68,11 +68,13 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
+        [PrivateApi]
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
             : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false)
         {
         }
 
+        [PrivateApi]
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
             ICompositorScheduler scheduler, bool reclaimBuffersImmediately)
