@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
@@ -17,8 +19,6 @@ namespace Avalonia.Controls.Notifications
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
-        private AdornerLayer? adornerLayer;
-
         /// <summary>
         /// Defines the <see cref="Position"/> property.
         /// </summary>
@@ -49,34 +49,14 @@ namespace Avalonia.Controls.Notifications
             get { return GetValue(MaxItemsProperty); }
             set { SetValue(MaxItemsProperty, value); }
         }
-
-        /// <summary>
-        /// Defines the <see cref="Host" /> property
-        /// </summary>
-        public static readonly DirectProperty<WindowNotificationManager, Visual?> HostProperty =
-            AvaloniaProperty.RegisterDirect<WindowNotificationManager, Visual?>(
-                nameof(Host),
-                o => o.Host,
-                (o, v) => o.Host = v);
-
-        private Visual? _Host;
-
-        /// <summary>
-        /// The Host that this NotificationManger should register to. If the Host is null, the Parent will be used.
-        /// </summary>
-        public Visual? Host
-        {
-            get { return _Host; }
-            set { SetAndRaise(HostProperty, ref _Host, value); }
-        }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
         /// <param name="host">The TopLevel that will host the control.</param>
-        public WindowNotificationManager(TopLevel? host) : this()
+        public WindowNotificationManager(TopLevel host) : this()
         {
-            Host = host;
+            InstallFromTopLevel(host);
         }
 
         /// <summary>
@@ -137,6 +117,8 @@ namespace Avalonia.Controls.Notifications
             Action? onClose = null, 
             string[]? classes = null)
         {
+            Dispatcher.UIThread.VerifyAccess();
+            
             var notificationControl = new NotificationCard
             {
                 Content = content,
@@ -194,38 +176,34 @@ namespace Avalonia.Controls.Notifications
             {
                 UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
             }
-
-            if (change.Property == HostProperty)
-            {
-                Install();
-            }
         }
 
         /// <summary>
         /// Installs the <see cref="WindowNotificationManager"/> within the <see cref="AdornerLayer"/>
         /// </summary>
-        private void Install()
+        private void InstallFromTopLevel(TopLevel topLevel)
         {
-            // unregister from AdornerLayer if this control was already installed
-            if (adornerLayer is not null && !adornerLayer.Children.Contains(this))
+            topLevel.TemplateApplied += TopLevelOnTemplateApplied;
+            var adorner = topLevel.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
+            if (adorner is not null)
+            {
+                adorner.Children.Add(this);
+                AdornerLayer.SetAdornedElement(this, adorner);
+            }
+        }
+
+        private void TopLevelOnTemplateApplied(object? sender, TemplateAppliedEventArgs e)
+        {
+            if (Parent is AdornerLayer adornerLayer)
             {
                 adornerLayer.Children.Remove(this);
+                AdornerLayer.SetAdornedElement(this, null);
             }
             
-            // Try to get the host. If host was null, use the TopLevel instead.
-            var host = Host ?? Parent as Visual;
-
-            if (host is null) throw new InvalidOperationException("NotificationControl cannot be installed. Host was not found.");
-
-            adornerLayer = host is TopLevel 
-                ? host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer 
-                : AdornerLayer.GetAdornerLayer(host);
-
-            if (adornerLayer is not null)
-            {
-                adornerLayer.Children.Add(this);
-                AdornerLayer.SetAdornedElement(this, adornerLayer);
-            }
+            // Reinstall notification manager on template reapplied.
+            var topLevel = (TopLevel)sender!;
+            topLevel.TemplateApplied -= TopLevelOnTemplateApplied;
+            InstallFromTopLevel(topLevel);
         }
 
         private void UpdatePseudoClasses(NotificationPosition position)
