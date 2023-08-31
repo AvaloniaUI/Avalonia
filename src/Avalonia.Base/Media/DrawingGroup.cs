@@ -21,9 +21,6 @@ namespace Avalonia.Media
         public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
             AvaloniaProperty.Register<DrawingGroup, IBrush?>(nameof(OpacityMask));
 
-        public static readonly StyledProperty<RenderOptions?> RenderOptionsProperty =
-    AvaloniaProperty.Register<DrawingGroup, RenderOptions?>(nameof(RenderOptions));
-
         public static readonly DirectProperty<DrawingGroup, DrawingCollection> ChildrenProperty =
             AvaloniaProperty.RegisterDirect<DrawingGroup, DrawingCollection>(
                 nameof(Children),
@@ -56,11 +53,7 @@ namespace Avalonia.Media
             set => SetValue(OpacityMaskProperty, value);
         }
 
-        public RenderOptions? RenderOptions
-        {
-            get => GetValue(RenderOptionsProperty);
-            set => SetValue(RenderOptionsProperty, value);
-        }
+        internal RenderOptions? RenderOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
