@@ -54,9 +54,12 @@ namespace Avalonia.Controls.Notifications
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
         /// <param name="host">The TopLevel that will host the control.</param>
-        public WindowNotificationManager(TopLevel host) : this()
+        public WindowNotificationManager(TopLevel? host) : this()
         {
-            InstallFromTopLevel(host);
+            if (host is not null)
+            {
+                InstallFromTopLevel(host);
+            }
         }
 
         /// <summary>
