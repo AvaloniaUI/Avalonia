@@ -16,7 +16,7 @@ namespace Avalonia.Rendering
     /// graph for visible windows.
     /// </remarks>
     [PrivateApi]
-    internal class RenderLoop : IRenderLoop
+    public class RenderLoop : IRenderLoop
     {
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();

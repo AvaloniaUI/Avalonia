@@ -69,13 +69,13 @@ namespace Avalonia.Rendering.Composition
         }
 
         [PrivateApi]
-        internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
+        public Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
             : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false)
         {
         }
 
         [PrivateApi]
-        internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
+        public Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
             ICompositorScheduler scheduler, bool reclaimBuffersImmediately)
         {
@@ -279,7 +279,7 @@ namespace Avalonia.Rendering.Composition
     }
 
     [PrivateApi]
-    internal interface ICompositorScheduler
+    public interface ICompositorScheduler
     {
         void CommitRequested(Compositor compositor);
     }

@@ -6,7 +6,7 @@ using Avalonia.Metadata;
 namespace Avalonia.Rendering
 {
     [PrivateApi]
-    internal interface IRenderLoopTask
+    public interface IRenderLoopTask
     {
         void Render();
     }

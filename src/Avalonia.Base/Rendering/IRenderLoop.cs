@@ -10,7 +10,7 @@ namespace Avalonia.Rendering
     /// graph for visible windows.
     /// </remarks>
     [PrivateApi]
-    internal interface IRenderLoop
+    public interface IRenderLoop
     {
         /// <summary>
         /// Adds an update task.
