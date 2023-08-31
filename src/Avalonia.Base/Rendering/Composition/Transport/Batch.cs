@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Avalonia.Metadata;
+
 namespace Avalonia.Rendering.Composition.Transport
 {
     /// <summary>
     /// Represents a group of serialized changes from the UI thread to be atomically applied at the render thread
     /// </summary>
-    internal class Batch
+    [PrivateApi]
+    public class Batch
     {
         private static long _nextSequenceId = 1;
         private static ConcurrentBag<BatchStreamData> _pool = new();

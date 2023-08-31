@@ -110,7 +110,8 @@ namespace Avalonia.Rendering.Composition
             return _nextCommit.Processed;
         }
 
-        internal Batch Commit()
+        [PrivateApi]
+        public Batch Commit()
         {
             try
             {

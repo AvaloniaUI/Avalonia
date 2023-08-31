@@ -89,7 +89,8 @@ namespace Avalonia.Threading
         /// A special priority to synchronize native control host positions, IME, etc
         /// We should probably have a better API for that, so the priority is internal
         /// </summary>
-        internal static readonly DispatcherPriority AfterRender = new(UiThreadRender + 1);
+        [PrivateApi]
+        public static readonly DispatcherPriority AfterRender = new(UiThreadRender + 1);
         
         /// <summary>
         /// The job will be processed with the same priority as render.
