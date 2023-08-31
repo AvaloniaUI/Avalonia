@@ -110,6 +110,13 @@ namespace Avalonia.Controls.Primitives
             get
             {
                 var rc = new Rect(default, _overlayLayer.AvailableSize);
+                var topLevel = TopLevel.GetTopLevel(this);
+                if(topLevel != null)
+                {
+                    var padding = topLevel.InsetsManager?.SafeAreaPadding ?? default;
+                    rc = rc.Deflate(padding);
+                }
+
                 return new[] {new ManagedPopupPositionerScreenInfo(rc, rc)};
             }
         }

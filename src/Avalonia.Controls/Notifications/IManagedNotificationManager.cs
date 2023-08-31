@@ -1,4 +1,5 @@
-﻿using Avalonia.Metadata;
+﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Notifications
 {

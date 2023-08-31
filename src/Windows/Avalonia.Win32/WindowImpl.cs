@@ -552,7 +552,7 @@ namespace Avalonia.Win32
             get
             {
                 // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
-                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations)
+                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations || GetStyle().HasFlag(WindowStyles.WS_POPUP))
                 {
                     return PixelSize.Empty;
                 }
@@ -683,8 +683,9 @@ namespace Avalonia.Win32
             if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
             {
                 parentHwnd = OffscreenParentWindow.Handle;
-                _hiddenWindowIsParent = true;
             }
+
+            _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
         }

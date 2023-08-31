@@ -230,6 +230,7 @@ namespace Avalonia.Input
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerPressed(e), handledEventsToo: true);
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerReleased(e), handledEventsToo: true);
+            PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerCaptureLost(e), handledEventsToo: true);
         }
 
         public InputElement()
@@ -613,6 +614,11 @@ namespace Avalonia.Input
                 {
                     e.Handled = true;
                 }
+        }
+
+        private void OnGesturePointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            _gestureRecognizers?.HandleCaptureLost(e.Pointer);
         }
 
         private void OnGesturePointerPressed(PointerPressedEventArgs e)

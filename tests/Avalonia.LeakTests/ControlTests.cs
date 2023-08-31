@@ -583,6 +583,46 @@ namespace Avalonia.LeakTests
                     Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
             }
         }
+        
+        [Fact]
+        public void Attached_Control_From_ContextMenu_Is_Freed()
+        {
+            using (Start())
+            {
+                var contextMenu = new ContextMenu();
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new TextBlock
+                        {
+                            ContextMenu = contextMenu
+                        }
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that TextBlock gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<TextBlock>(window.Presenter.Child);
+
+                    // Clear the content and ensure the TextBlock is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount));
+            }
+        }
 
         [Fact]
         public void Standalone_ContextMenu_Is_Freed()

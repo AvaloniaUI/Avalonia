@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Primitives
             ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
             IncreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             DecreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
-            AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
+            AffectsArrange<Track>(IsDirectionReversedProperty, MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
         public Track()

@@ -72,6 +72,7 @@ Position: ??? ???";
     {
         e.Pointer.Capture(sender as Border);
         e.Handled = true;
+        e.PreventGestureRecognition();
     }
 
     private void InitializeComponent()

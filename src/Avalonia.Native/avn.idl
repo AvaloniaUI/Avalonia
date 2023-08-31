@@ -507,6 +507,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
      HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
+     HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -921,6 +922,7 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* GetLabeledBy();
      IAvnString* GetName();
      IAvnAutomationPeer* GetParent();
+     IAvnAutomationPeer* GetVisualRoot();
      bool HasKeyboardFocus();
      bool IsContentElement();
      bool IsControlElement();
@@ -935,7 +937,11 @@ interface IAvnAutomationPeer : IUnknown
      IAvnWindowBase* RootProvider_GetWindow();
      IAvnAutomationPeer* RootProvider_GetFocus();
      IAvnAutomationPeer* RootProvider_GetPeerFromPoint(AvnPoint point);
-     
+
+     bool IsEmbeddedRootProvider();
+     IAvnAutomationPeer* EmbeddedRootProvider_GetFocus();
+     IAvnAutomationPeer* EmbeddedRootProvider_GetPeerFromPoint(AvnPoint point);
+
      bool IsExpandCollapseProvider();
      bool ExpandCollapseProvider_GetIsExpanded();
      bool ExpandCollapseProvider_GetShowsMenu();
@@ -993,4 +999,13 @@ interface IAvnPlatformSettings : IUnknown
 interface IAvnPlatformBehaviorInhibition : IUnknown
 {
     void SetInhibitAppSleep(bool inhibitAppSleep, char* reason);
+}
+
+[uuid(22edf20d-5803-2d3f-9247-b4842e5e9322)]
+interface IAvnPlatformRenderTimer : IUnknown
+{
+    HRESULT RegisterTick(IAvnActionCallback* callback);
+    void Start();
+    void Stop();
+    bool RunsInBackground();
 }
