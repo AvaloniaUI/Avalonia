@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+using Avalonia.Metadata;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 
@@ -14,7 +16,8 @@ namespace Avalonia.Rendering.Composition.Transport;
 /// - structs: blittable types like int, Matrix, Color
 /// Each "stream" consists of memory segments that are pooled 
 /// </summary>
-internal class BatchStreamData
+[PrivateApi]
+public class BatchStreamData
 {
     public Queue<BatchStreamSegment<object?[]>> Objects { get; } = new();
     public Queue<BatchStreamSegment<IntPtr>> Structs { get; } = new();
