@@ -64,7 +64,7 @@ namespace Avalonia.X11
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
-        private X11FocusProxy _focus_proxy;
+        private X11FocusProxy _focusProxy;
 
         private enum XSyncState
         {
@@ -158,8 +158,8 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
 
             Handle = new PlatformHandle(_handle, "XID");
-            _focus_proxy = new X11FocusProxy(platform, _handle, OnEvent);
-            SetWmClass(_focus_proxy._handle, "FocusProxy");
+            _focusProxy = new X11FocusProxy(platform, _handle, OnEvent);
+            SetWmClass(_focusProxy._handle, "FocusProxy");
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -554,7 +554,7 @@ namespace Avalonia.X11
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS)
                     {
                         IntPtr time = ev.ClientMessageEvent.ptr2;
-                        XSetInputFocus(_x11.Display, _focus_proxy._handle, RevertTo.Parent, time);
+                        XSetInputFocus(_x11.Display, _focusProxy._handle, RevertTo.Parent, time);
                     }
                 }
             }
@@ -931,8 +931,8 @@ namespace Avalonia.X11
                 _renderHandle = IntPtr.Zero;
             }
 
-            if (_focus_proxy != null) {
-                _focus_proxy = null;
+            if (_focusProxy != null) {
+                _focusProxy = null;
             }
         }
 
@@ -1089,7 +1089,7 @@ namespace Avalonia.X11
             else
             {
                 XRaiseWindow(_x11.Display, _handle);
-                XSetInputFocus(_x11.Display, _focus_proxy._handle, 0, IntPtr.Zero);
+                XSetInputFocus(_x11.Display, _focusProxy._handle, 0, IntPtr.Zero);
             }
         }
 
