@@ -71,6 +71,25 @@ public partial class Dispatcher
         }
     }
 
+    internal bool TryRunOneJob(DispatcherPriority minimumPriority)
+    {
+        if (DisabledProcessingCount > 0)
+            throw new InvalidOperationException(
+                "Cannot perform this operation while dispatcher processing is suspended.");
+        var priority = minimumPriority;
+        if (priority < DispatcherPriority.MinimumActiveValue)
+            priority = DispatcherPriority.MinimumActiveValue;
+        DispatcherOperation? job;
+        lock (InstanceLock)
+            job = _queue.Peek();
+        if (job == null)
+            return false;
+        if (job.Priority < priority)
+            return false;
+        ExecuteJob(job);
+        return true;
+    }
+
     class DummyShuttingDownUnitTestDispatcherImpl : IDispatcherImpl
     {
         public bool CurrentThreadIsLoopThread => true;

@@ -116,6 +116,12 @@ public class DispatcherFrame
 
             try
             {
+                while (!_cancellationTokenSource.IsCancellationRequested 
+                       && Dispatcher.TryRunOneJob(DispatcherPriority.MinimumForegroundPriority))
+                {
+                    // Draining high priority jobs before passing control to the OS
+                    // Needed for some edge cases on mac
+                }
                 // Wake up the dispatcher in case it has pending jobs
                 Dispatcher.RequestProcessing();
                 impl.RunLoop(_cancellationTokenSource.Token);
