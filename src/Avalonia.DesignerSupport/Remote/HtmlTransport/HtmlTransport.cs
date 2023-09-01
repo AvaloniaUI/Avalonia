@@ -25,7 +25,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private object _lock = new object();
         private Uri _listenUri;
         private Guid _secretCookie;
-        private bool _isFirstMessage = true;
         private AutoResetEvent _wakeup = new AutoResetEvent(false);
         private FrameMessage _lastFrameMessage = null;
         private FrameMessage _lastSentFrameMessage = null;
@@ -136,12 +135,12 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         {
             try
             {
-                if(_isFirstMessage && (await socket.ReceiveMessage().ConfigureAwait(false)).AsString() != _secretCookie.ToString())
+                if((await socket.ReceiveMessage().ConfigureAwait(false)).AsString() != _secretCookie.ToString())
                 {
                     socket.Dispose();
                     return;
                 }
-                _isFirstMessage = false;
+
                 while (true)
                 {
                     var msg = await socket.ReceiveMessage().ConfigureAwait(false);
