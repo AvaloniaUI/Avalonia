@@ -1,11 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              x:Class="ControlCatalog.Pages.NotificationsPage"
              x:DataType="viewModels:NotificationViewModel">
-  <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
-        <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
-        <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
-        <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
+  <DockPanel>
+    <TextBlock DockPanel.Dock="Top"
+               Margin="2" Classes="h2" TextWrapping="Wrap">TopLevel bound notification manager.</TextBlock>
+    <StackPanel DockPanel.Dock="Top"
+                Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
+      <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
+      <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
     </StackPanel>
+    
+    <TextBlock DockPanel.Dock="Top"
+               Margin="2" Classes="h2" TextWrapping="Wrap">XAML only notification manager.</TextBlock>
+    <Button DockPanel.Dock="Top"
+            Content="Show XAML only Notification" Command="{Binding #ControlNotifications.Show}">
+      <Button.CommandParameter>
+        <Notification Title="Title" Message="Message" OnClick="NotificationOnClick" />
+      </Button.CommandParameter>
+    </Button>
+    <Border Padding="10" BorderBrush="{DynamicResource SystemAccentColor}">
+      <WindowNotificationManager x:Name="ControlNotifications" />
+    </Border>
+  </DockPanel>
 </UserControl>

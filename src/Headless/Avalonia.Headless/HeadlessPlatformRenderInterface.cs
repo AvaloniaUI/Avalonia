@@ -182,6 +182,8 @@ namespace Avalonia.Headless
                 return Bounds.Inflate(pen.Thickness / 2);
             }
 
+            public IGeometryImpl GetWidenedGeometry(IPen pen) => this;
+
             public bool StrokeContains(IPen? pen, Point point)
             {
                 return false;
