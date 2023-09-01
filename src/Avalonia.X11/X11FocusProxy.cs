@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -16,17 +15,17 @@ namespace Avalonia.X11
     /// </remarks>
     /// 
     /// <see href="https://specifications.freedesktop.org/xembed-spec/xembed-spec-latest.html" />
-    /// <see href="https://gitlab.gnome.org/GNOME/gtk/-/blob/3.22.30/gdk/x11/gdkwindow-x11.c#L823 />
+    /// <see href="https://gitlab.gnome.org/GNOME/gtk/-/blob/3.22.30/gdk/x11/gdkwindow-x11.c#L823" />
     internal class X11FocusProxy
     {
         private const int InvisibleBorder = 0;
         private const int DepthCopyFromParent = 0;
-        private readonly IntPtr VisualCopyFromParent = IntPtr.Zero;
-        private readonly (int X, int Y) OutOfScreen = (-1, -1);
-        private readonly (int Width, int Height) Smallest = (1, 1);
+        private readonly IntPtr _visualCopyFromParent = IntPtr.Zero;
+        private readonly (int X, int Y) _outOfScreen = (-1, -1);
+        private readonly (int Width, int Height) _smallest = (1, 1);
 
-        internal readonly IntPtr handle;
-        private readonly X11PlatformThreading.EventHandler ownerEventHandler;
+        internal readonly IntPtr _handle;
+        private readonly X11PlatformThreading.EventHandler _ownerEventHandler;
 
         /// <summary>
         ///     Initializes instance and creates the underlying X window.
@@ -37,20 +36,20 @@ namespace Avalonia.X11
         /// <param name="eventHandler">An event handler that will handle X events that come to the proxy.</param>
         public X11FocusProxy(AvaloniaX11Platform platform, IntPtr parent, X11PlatformThreading.EventHandler eventHandler)
         {
-            handle = PrepareXWindow(platform.Info.Display, parent);
-            ownerEventHandler = eventHandler;
-            platform.Windows[this.handle] = OnEvent;
+            _handle = PrepareXWindow(platform.Info.Display, parent);
+            _ownerEventHandler = eventHandler;
+            platform.Windows[_handle] = OnEvent;
         }
 
         private void OnEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.FocusIn || ev.type == XEventName.FocusOut)
             {
-                this.ownerEventHandler(ref ev);
+                this._ownerEventHandler(ref ev);
             }
             if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {
-                this.ownerEventHandler(ref ev);
+                this._ownerEventHandler(ref ev);
             }
         }
 
@@ -62,12 +61,12 @@ namespace Avalonia.X11
                             | EventMask.KeyReleaseMask;
             var attrs = new XSetWindowAttributes();
             var handle = XCreateWindow(display, parent,
-                                 OutOfScreen.X, OutOfScreen.Y,
-                                 Smallest.Width, Smallest.Height,
+                                 _outOfScreen.X, _outOfScreen.Y,
+                                 _smallest.Width, _smallest.Height,
                                  InvisibleBorder,
                                  DepthCopyFromParent,
                                  (int)CreateWindowArgs.InputOutput,
-                                 VisualCopyFromParent,
+                                 _visualCopyFromParent,
                                  new UIntPtr((uint)valueMask),
                                  ref attrs);
             XMapWindow(display, handle);
