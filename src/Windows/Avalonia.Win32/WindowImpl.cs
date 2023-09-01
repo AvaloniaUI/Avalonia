@@ -908,16 +908,6 @@ namespace Avalonia.Win32
                 
                 _savedWindowInfo.WindowRect = clientRect;
 
-                var current = GetStyle();
-                var currentEx = GetExtendedStyle();
-
-                _savedWindowInfo.Style = current;
-                _savedWindowInfo.ExStyle = currentEx;
-
-                // Set new window style and size.
-                SetStyle(current & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME), false);
-                SetExtendedStyle(currentEx & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);
-
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
                 MONITORINFO monitor_info = MONITORINFO.Create();
@@ -936,10 +926,6 @@ namespace Avalonia.Win32
                 // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
                 // repainted.  Better-looking methods welcome.
                 _isFullScreenActive = false;
-
-                var windowStates = GetWindowStateStyles();
-                SetStyle((_savedWindowInfo.Style & ~WindowStateMask) | windowStates, false);
-                SetExtendedStyle(_savedWindowInfo.ExStyle, false);
 
                 // On restore, resize to the previous saved rect size.
                 var newClientRect = _savedWindowInfo.WindowRect.ToPixelRect();
@@ -1256,10 +1242,10 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
+            var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (_isUsingComposition ? WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0);
+
             if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
             {
-                var exStyle = GetExtendedStyle();
-
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
@@ -1293,79 +1279,99 @@ namespace Avalonia.Win32
 
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
-
-                SetExtendedStyle(exStyle);
             }
 
-            WindowStyles style;
-            if ((oldProperties.IsResizable != newProperties.IsResizable) || forceChanges)
+            if (newProperties.ShowInTaskbar)
             {
-                style = GetStyle();
-
-                if (newProperties.IsResizable)
-                {
-                    style |= WindowStyles.WS_SIZEFRAME;
-                    style |= WindowStyles.WS_MAXIMIZEBOX;
-                }
-                else
-                {
-                    style &= ~WindowStyles.WS_SIZEFRAME;
-                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
-                }
-
-                SetStyle(style);
+                exStyle |= WindowStyles.WS_EX_APPWINDOW;
             }
+            else
+            {
+                exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+            }
+
+            WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
+
+            if (IsWindowVisible(_hwnd))
+                style |= WindowStyles.WS_VISIBLE;
+
+            if (newProperties.IsResizable)
+            {
+                style |= WindowStyles.WS_SIZEFRAME;
+                style |= WindowStyles.WS_MAXIMIZEBOX;
+            }
+            else
+            {
+                style &= ~WindowStyles.WS_SIZEFRAME;
+                style &= ~WindowStyles.WS_MAXIMIZEBOX;
+            }
+
+            const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+
+            if (newProperties.Decorations == SystemDecorations.Full)
+            {
+                style |= fullDecorationFlags;
+            }
+            else
+            {
+                style &= ~fullDecorationFlags;
+
+                if (newProperties.Decorations == SystemDecorations.BorderOnly)
+                {
+                    style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                }
+            }
+
+            if(newProperties.IsFullScreen)
+            {
+                style &= ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME);
+                exStyle &= ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE);
+            }
+            else
+            {
+                var windowStates = GetWindowStateStyles();
+                style &= ~WindowStateMask;
+                style |= windowStates;
+
+                _savedWindowInfo.Style = style;
+                _savedWindowInfo.ExStyle = exStyle;
+            }
+
+            SetStyle(style);
+            SetExtendedStyle(exStyle);
 
             if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
-            {
                 SetFullScreen(newProperties.IsFullScreen);
-            }
 
-            if ((oldProperties.Decorations != newProperties.Decorations) || forceChanges)
+            if (!_isFullScreenActive)
             {
-                style = GetStyle();
+                var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+                var margins = new MARGINS
+                {
+                    cyBottomHeight = margin,
+                    cxRightWidth = margin,
+                    cxLeftWidth = margin,
+                    cyTopHeight = margin
+                };
+
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                GetClientRect(_hwnd, out var oldClientRect);
+                var oldClientRectOrigin = new POINT();
+                ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                oldClientRect.Offset(oldClientRectOrigin);
+
+                var newRect = oldClientRect;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
-                    style |= fullDecorationFlags;
-                }
-                else
-                {
-                    style &= ~fullDecorationFlags;
+                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
                 }
 
-                SetStyle(style);
-
-                if (!_isFullScreenActive)
-                {
-                    var margins = new MARGINS
-                    {
-                        cyBottomHeight = 0,
-                        cxRightWidth = 0,
-                        cxLeftWidth = 0,
-                        cyTopHeight = 0
-                    };
-
-                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-
-                    GetClientRect(_hwnd, out var oldClientRect);
-                    var oldClientRectOrigin = new POINT();
-                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                    oldClientRect.Offset(oldClientRectOrigin);
-
-                    var newRect = oldClientRect;
-
-                    if (newProperties.Decorations == SystemDecorations.Full)
-                    {
-                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                    }
-
-                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                        SetWindowPosFlags.SWP_FRAMECHANGED);
-                }
+                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                    SetWindowPosFlags.SWP_FRAMECHANGED);
             }
         }
 
