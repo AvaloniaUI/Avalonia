@@ -49,6 +49,7 @@ namespace Avalonia.X11
             if (_handle != IntPtr.Zero)
             {
                 _platform.Windows.Remove(_handle);
+                _handle = IntPtr.Zero;
             }
         }
 
