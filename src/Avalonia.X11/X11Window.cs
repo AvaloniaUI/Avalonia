@@ -1185,9 +1185,9 @@ namespace Avalonia.X11
         {
             // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
             // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]
-            var appId = Environment.GetEnvironmentVariable("RESOURCE_NAME")
+            var appId = Environment.GetEnvironmentVariable("RESOURCE_NAME") 
                         ?? Process.GetCurrentProcess().ProcessName;
-
+            
             var encodedAppId = Encoding.ASCII.GetBytes(appId);
             var encodedWmClass = Encoding.ASCII.GetBytes(wmClass ?? appId);
 
