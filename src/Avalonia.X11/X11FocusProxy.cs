@@ -24,7 +24,7 @@ namespace Avalonia.X11
         private readonly (int X, int Y) _outOfScreen = (-1, -1);
         private readonly (int Width, int Height) _smallest = (1, 1);
 
-        internal readonly IntPtr _handle;
+        internal IntPtr _handle;
         private readonly AvaloniaX11Platform _platform;
         private readonly X11PlatformThreading.EventHandler _ownerEventHandler;
 
@@ -44,7 +44,7 @@ namespace Avalonia.X11
             _platform.Windows[_handle] = OnEvent;
         }
 
-        internal void CleanUp()
+        internal void Cleanup()
         {
             if (_handle != IntPtr.Zero)
             {
