@@ -25,6 +25,7 @@ namespace Avalonia.X11
         private readonly (int Width, int Height) _smallest = (1, 1);
 
         internal readonly IntPtr _handle;
+        private readonly AvaloniaX11Platform _platform;
         private readonly X11PlatformThreading.EventHandler _ownerEventHandler;
 
         /// <summary>
@@ -34,22 +35,31 @@ namespace Avalonia.X11
         /// <param name="platform">The X11 platform.</param>
         /// <param name="parent">The parent window to proxy the focus for.</param>
         /// <param name="eventHandler">An event handler that will handle X events that come to the proxy.</param>
-        public X11FocusProxy(AvaloniaX11Platform platform, IntPtr parent,
+        internal X11FocusProxy(AvaloniaX11Platform platform, IntPtr parent,
             X11PlatformThreading.EventHandler eventHandler)
         {
             _handle = PrepareXWindow(platform.Info.Display, parent);
+            _platform = platform;
             _ownerEventHandler = eventHandler;
-            platform.Windows[_handle] = OnEvent;
+            _platform.Windows[_handle] = OnEvent;
+        }
+
+        internal void CleanUp()
+        {
+            if (_handle != IntPtr.Zero)
+            {
+                _platform.Windows.Remove(_handle);
+            }
         }
 
         private void OnEvent(ref XEvent ev)
         {
-            if (ev.type == XEventName.FocusIn || ev.type == XEventName.FocusOut)
+            if (ev.type is XEventName.FocusIn or XEventName.FocusOut)
             {
                 this._ownerEventHandler(ref ev);
             }
 
-            if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
+            if (ev.type is XEventName.KeyPress or XEventName.KeyRelease)
             {
                 this._ownerEventHandler(ref ev);
             }

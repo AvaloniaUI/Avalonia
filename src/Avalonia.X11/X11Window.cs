@@ -931,9 +931,7 @@ namespace Avalonia.X11
                 _renderHandle = IntPtr.Zero;
             }
 
-            if (_focusProxy != null) {
-                _focusProxy = null;
-            }
+            _focusProxy.CleanUp();
         }
 
         private bool ActivateTransientChildIfNeeded()
