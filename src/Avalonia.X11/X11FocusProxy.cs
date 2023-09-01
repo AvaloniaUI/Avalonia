@@ -34,7 +34,8 @@ namespace Avalonia.X11
         /// <param name="platform">The X11 platform.</param>
         /// <param name="parent">The parent window to proxy the focus for.</param>
         /// <param name="eventHandler">An event handler that will handle X events that come to the proxy.</param>
-        public X11FocusProxy(AvaloniaX11Platform platform, IntPtr parent, X11PlatformThreading.EventHandler eventHandler)
+        public X11FocusProxy(AvaloniaX11Platform platform, IntPtr parent,
+            X11PlatformThreading.EventHandler eventHandler)
         {
             _handle = PrepareXWindow(platform.Info.Display, parent);
             _ownerEventHandler = eventHandler;
@@ -47,6 +48,7 @@ namespace Avalonia.X11
             {
                 this._ownerEventHandler(ref ev);
             }
+
             if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {
                 this._ownerEventHandler(ref ev);
@@ -61,14 +63,14 @@ namespace Avalonia.X11
                             | EventMask.KeyReleaseMask;
             var attrs = new XSetWindowAttributes();
             var handle = XCreateWindow(display, parent,
-                                 _outOfScreen.X, _outOfScreen.Y,
-                                 _smallest.Width, _smallest.Height,
-                                 InvisibleBorder,
-                                 DepthCopyFromParent,
-                                 (int)CreateWindowArgs.InputOutput,
-                                 _visualCopyFromParent,
-                                 new UIntPtr((uint)valueMask),
-                                 ref attrs);
+                _outOfScreen.X, _outOfScreen.Y,
+                _smallest.Width, _smallest.Height,
+                InvisibleBorder,
+                DepthCopyFromParent,
+                (int)CreateWindowArgs.InputOutput,
+                _visualCopyFromParent,
+                new UIntPtr((uint)valueMask),
+                ref attrs);
             XMapWindow(display, handle);
             XSelectInput(display, handle, new IntPtr((uint)valueMask));
             return handle;
