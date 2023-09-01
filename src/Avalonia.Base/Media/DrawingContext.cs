@@ -283,7 +283,8 @@ namespace Avalonia.Media
                 Opacity,
                 Clip,
                 GeometryClip,
-                OpacityMask
+                OpacityMask,
+                RenderOptions
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -308,6 +309,8 @@ namespace Avalonia.Media
                     _context.PopGeometryClipCore();
                 else if (_type == PushedStateType.OpacityMask)
                     _context.PopOpacityMaskCore();
+                else if (_type == PushedStateType.RenderOptions)
+                    _context.PopRenderOptionsCore();
             }
         }
 
@@ -400,6 +403,20 @@ namespace Avalonia.Media
             return new PushedState(this);
         }
 
+        /// <summary>
+        /// Pushes render options.
+        /// </summary>
+        /// <param name="renderOptions">The render options.</param>
+        /// <returns>A disposable to undo the render options.</returns>
+        public PushedState PushRenderOptions(RenderOptions renderOptions)
+        {
+            PushRenderOptionsCore(renderOptions);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.RenderOptions));
+            return new PushedState(this);
+        }
+        protected abstract void PushRenderOptionsCore(RenderOptions renderOptions);
+
         [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
         public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
         [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
@@ -415,6 +432,7 @@ namespace Avalonia.Media
         protected abstract void PopOpacityCore();
         protected abstract void PopOpacityMaskCore();
         protected abstract void PopTransformCore();
+        protected abstract void PopRenderOptionsCore();
         
         private static bool PenIsVisible(IPen? pen)
         {

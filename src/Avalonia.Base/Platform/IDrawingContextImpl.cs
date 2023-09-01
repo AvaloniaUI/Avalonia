@@ -161,6 +161,17 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
+        /// Pushes render options.
+        /// </summary>
+        /// <param name="renderOptions">The render options.</param>
+        void PushRenderOptions(RenderOptions renderOptions);
+
+        /// <summary>
+        /// Pops the latest render options.
+        /// </summary>
+        void PopRenderOptions();
+
+        /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation.
         /// </summary>
         object? GetFeature(Type t);
