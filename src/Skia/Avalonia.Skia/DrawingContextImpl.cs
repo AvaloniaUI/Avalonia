@@ -6,6 +6,7 @@ using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Skia.Helpers;
 using Avalonia.Utilities;
 using SkiaSharp;
 using ISceneBrush = Avalonia.Media.ISceneBrush;
@@ -23,6 +24,7 @@ namespace Avalonia.Skia
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
+        private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
@@ -632,6 +634,21 @@ namespace Avalonia.Skia
             }
 
             _currentOpacity = _opacityStack.Pop();
+        }
+
+        /// <inheritdoc />
+        public void PushRenderOptions(RenderOptions renderOptions)
+        {
+            CheckLease();
+
+            _renderOptionsStack.Push(RenderOptions);
+
+            RenderOptions = RenderOptions.MergeWith(renderOptions);
+        }
+
+        public void PopRenderOptions()
+        {
+            RenderOptions = _renderOptionsStack.Pop();
         }
 
         /// <inheritdoc />
@@ -1252,25 +1269,10 @@ namespace Avalonia.Skia
 
             paint.StrokeMiter = (float) pen.MiterLimit;
 
-            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            if (DrawingContextHelper.TryCreateDashEffect(pen, out var dashEffect))
             {
-                var srcDashes = pen.DashStyle.Dashes;
-
-                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
-
-                var dashesArray = new float[count];
-
-                for (var i = 0; i < count; ++i)
-                {
-                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
-                }
-
-                var offset = (float)(pen.DashStyle.Offset * pen.Thickness);
-
-                var pe = SKPathEffect.CreateDash(dashesArray, offset);
-
-                paint.PathEffect = pe;
-                rv.AddDisposable(pe);
+                paint.PathEffect = dashEffect;
+                rv.AddDisposable(dashEffect);
             }
 
             return rv;
