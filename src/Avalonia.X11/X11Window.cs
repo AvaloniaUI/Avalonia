@@ -159,7 +159,7 @@ namespace Avalonia.X11
 
             Handle = new PlatformHandle(_handle, "XID");
             _focus_proxy = new X11FocusProxy(platform, _handle, OnEvent);
-            SetWmClass(_focus_proxy.handle, "FocusProxy");
+            SetWmClass(_focus_proxy._handle, "FocusProxy");
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -554,7 +554,7 @@ namespace Avalonia.X11
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_TAKE_FOCUS)
                     {
                         IntPtr time = ev.ClientMessageEvent.ptr2;
-                        int result = XSetInputFocus(_x11.Display, _focus_proxy.handle, RevertTo.Parent, time);
+                        XSetInputFocus(_x11.Display, _focus_proxy._handle, RevertTo.Parent, time);
                     }
                 }
             }
@@ -1089,7 +1089,7 @@ namespace Avalonia.X11
             else
             {
                 XRaiseWindow(_x11.Display, _handle);
-                XSetInputFocus(_x11.Display, _focus_proxy.handle, 0, IntPtr.Zero);
+                XSetInputFocus(_x11.Display, _focus_proxy._handle, 0, IntPtr.Zero);
             }
         }
 
