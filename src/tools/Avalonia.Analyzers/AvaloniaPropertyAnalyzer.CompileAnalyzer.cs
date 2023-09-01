@@ -168,9 +168,9 @@ public partial class AvaloniaPropertyAnalyzer
 
                             foreach (var descendant in node.DescendantNodes().Where(n => n.IsKind(SyntaxKind.SimpleAssignmentExpression)))
                             {
-                                var assignmentOperation = (IAssignmentOperation)model.GetOperation(descendant, cancellationToken)!;
 
-                                if (GetReferencedFieldOrProperty(assignmentOperation.Target) is { } target)
+                                if (model.GetOperation(descendant, cancellationToken) is IAssignmentOperation assignmentOperation &&
+                                    GetReferencedFieldOrProperty(assignmentOperation.Target) is { } target)
                                 {
                                     RegisterAssignment(target, assignmentOperation.Value);
                                 }
