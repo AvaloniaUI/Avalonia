@@ -898,16 +898,6 @@ namespace Avalonia.Win32
         {
             if (fullscreen)
             {
-                GetWindowRect(_hwnd, out var windowRect);
-                GetClientRect(_hwnd, out var clientRect);
-
-                clientRect.left += windowRect.left;
-                clientRect.right += windowRect.left;
-                clientRect.top += windowRect.top;
-                clientRect.bottom += windowRect.top;
-                
-                _savedWindowInfo.WindowRect = clientRect;
-
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
                 MONITORINFO monitor_info = MONITORINFO.Create();
@@ -1322,8 +1312,24 @@ namespace Avalonia.Win32
                 }
             }
 
-            if(newProperties.IsFullScreen)
+            if (newProperties.IsFullScreen)
             {
+                // Apply styles here, then save the client rect for when we resume from full screen
+                if (!oldProperties.IsFullScreen)
+                {
+                    SetStyle(style);
+                    SetExtendedStyle(exStyle);
+                    GetWindowRect(_hwnd, out var windowRect);
+                    GetClientRect(_hwnd, out var clientRect);
+
+                    clientRect.left += windowRect.left;
+                    clientRect.right += windowRect.left;
+                    clientRect.top += windowRect.top;
+                    clientRect.bottom += windowRect.top;
+
+                    _savedWindowInfo.WindowRect = clientRect;
+                }
+
                 style &= ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME);
                 exStyle &= ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE);
             }
