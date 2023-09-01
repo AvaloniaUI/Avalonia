@@ -1181,7 +1181,7 @@ namespace Avalonia.X11
             }
         }
 
-        private void SetWmClass(IntPtr handle, string wmClass)
+        public void SetWmClass(IntPtr handle, string wmClass)
         {
             // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
             // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]
