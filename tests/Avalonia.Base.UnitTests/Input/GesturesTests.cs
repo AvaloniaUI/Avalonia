@@ -475,6 +475,28 @@ namespace Avalonia.Base.UnitTests.Input
             
             Assert.Equal(0, border.GestureRecognizers.Count);
         }
+        
+        [Fact]
+        public void GestureRecognizer_Should_Not_Be_Part_Of_GestureRecognizers_After_RemoveAll()
+        {
+            Border border = new Border()
+            {
+                Width = 100,
+                Height = 100,
+                Background = new SolidColorBrush(Colors.Red)
+            };
+
+            var pinchGestureRecognizer = new PinchGestureRecognizer();
+            border.GestureRecognizers.Add(pinchGestureRecognizer);
+            var scrollGestureRecognizer = new ScrollGestureRecognizer();
+            border.GestureRecognizers.Add(scrollGestureRecognizer);
+            
+            Assert.Equal(2, border.GestureRecognizers.Count);
+            
+            border.GestureRecognizers.RemoveAll();
+            
+            Assert.Equal(0, border.GestureRecognizers.Count);
+        }
 
         [Fact]
         public void Pinched_Should_Be_Raised_For_Two_Pointers_Moving()

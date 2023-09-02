@@ -47,6 +47,18 @@ namespace Avalonia.Input.GestureRecognizers
             _recognizers.Remove(recognizer);
             recognizer.Target = null;
         }
+        
+        public void RemoveAll()
+        {
+            if (_recognizers == null)
+                return;
+
+            foreach (var r in _recognizers)
+            {
+                r.Target = null;
+            }
+            _recognizers.Clear();
+        }
 
         static readonly List<GestureRecognizer> s_Empty = new List<GestureRecognizer>();
 
