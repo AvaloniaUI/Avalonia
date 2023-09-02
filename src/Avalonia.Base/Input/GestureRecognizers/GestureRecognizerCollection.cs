@@ -38,6 +38,15 @@ namespace Avalonia.Input.GestureRecognizers
                     styleableParent.GetObservable(StyledElement.TemplatedParentProperty).Subscribe(parent => styleableRecognizer.TemplatedParent = parent);
             }
         }
+        
+        public void Remove(GestureRecognizer recognizer)
+        {
+            if (_recognizers == null)
+                return;
+
+            _recognizers.Remove(recognizer);
+            recognizer.Target = null;
+        }
 
         static readonly List<GestureRecognizer> s_Empty = new List<GestureRecognizer>();
 
