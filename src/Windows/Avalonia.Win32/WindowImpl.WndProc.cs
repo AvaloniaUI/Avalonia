@@ -4,7 +4,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
