@@ -14,11 +14,11 @@ namespace Avalonia.Controls.Platform
         /// <summary>
         /// Sets a callback to set the window's style.
         /// </summary>
-        /// <param name="topLevelImpl">The top level's <see cref="ITopLevelImpl"/> implementation</param>
+        /// <param name="topLevel">The window implementation</param>
         /// <param name="callback">The callback</param>
-        public static void SetWindowStylesCallback(ITopLevelImpl topLevelImpl, CustomWindowStylesCallback? callback)
+        public static void SetWindowStylesCallback(TopLevel topLevel, CustomWindowStylesCallback? callback)
         {
-            if (topLevelImpl is IWin32OptionsTopLevelImpl toplevelImpl)
+            if (topLevel.PlatformImpl is IWin32OptionsTopLevelImpl toplevelImpl)
             {
                 toplevelImpl.WindowStylesCallback = callback;
             }
@@ -27,11 +27,11 @@ namespace Avalonia.Controls.Platform
         /// <summary>
         /// Sets a custom callback for the window's WndProc
         /// </summary>
-        /// <param name="topLevelImpl"></param>
+        /// <param name="topLevel">The window</param>
         /// <param name="callback"></param>
-        public static void SetWndProcHookCallback(ITopLevelImpl topLevelImpl, CustomWndProcHookCallback? callback)
+        public static void SetWndProcHookCallback(TopLevel topLevel, CustomWndProcHookCallback? callback)
         {
-            if (topLevelImpl is IWin32OptionsTopLevelImpl toplevelImpl)
+            if (topLevel.PlatformImpl is IWin32OptionsTopLevelImpl toplevelImpl)
             {
                 toplevelImpl.WndProcHookCallback = callback;
             }
