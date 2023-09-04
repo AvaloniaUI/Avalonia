@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform;
-using static Avalonia.Win32.IWin32OptionsTopLevelImpl;
+using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 
-namespace Avalonia.Win32
+namespace Avalonia.Controls.Platform
 {
     public class Win32SpecificOptions
     {
@@ -18,7 +18,7 @@ namespace Avalonia.Win32
         /// <param name="callback">The callback</param>
         public static void SetWindowStylesCallback(ITopLevelImpl topLevelImpl, CustomWindowStylesCallback? callback)
         {
-            if(topLevelImpl is IWin32OptionsTopLevelImpl toplevelImpl)
+            if (topLevelImpl is IWin32OptionsTopLevelImpl toplevelImpl)
             {
                 toplevelImpl.WindowStylesCallback = callback;
             }

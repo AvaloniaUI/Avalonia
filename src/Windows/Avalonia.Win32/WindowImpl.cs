@@ -26,7 +26,7 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
-using static Avalonia.Win32.IWin32OptionsTopLevelImpl;
+using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 
 namespace Avalonia.Win32
 {
@@ -1477,7 +1477,7 @@ namespace Avalonia.Win32
         public CustomWindowStylesCallback? WindowStylesCallback { get; set; }
 
         /// <inheritdoc/>
-        public CustomWndProcHookCallback WndProcHookCallback { get; set; }
+        public CustomWndProcHookCallback? WndProcHookCallback { get; set; }
 
         private ResizeReasonScope SetResizeReason(WindowResizeReason reason)
         {

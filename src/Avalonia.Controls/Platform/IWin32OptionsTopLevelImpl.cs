@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 
-namespace Avalonia.Win32
+namespace Avalonia.Controls.Platform
 {
     [PrivateApi]
     public interface IWin32OptionsTopLevelImpl : ITopLevelImpl
@@ -17,11 +17,11 @@ namespace Avalonia.Win32
         /// <summary>
         /// Gets or sets a callback to set the window styles. 
         /// </summary>
-        public CustomWindowStylesCallback? WindowStylesCallback { get; internal set; }
+        public CustomWindowStylesCallback? WindowStylesCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a custom callback for the window's WndProc
         /// </summary>
-        public CustomWndProcHookCallback WndProcHookCallback { get; internal set; }
+        public CustomWndProcHookCallback? WndProcHookCallback { get; set; }
     }
 }
