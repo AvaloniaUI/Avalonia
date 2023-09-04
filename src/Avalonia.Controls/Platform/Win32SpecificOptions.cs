@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 
 namespace Avalonia.Controls.Platform
 {
+    [Unstable]
     public class Win32SpecificOptions
     {
         /// <summary>

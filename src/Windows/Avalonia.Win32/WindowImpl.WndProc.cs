@@ -23,7 +23,7 @@ namespace Avalonia.Win32
                 lRet = AppWndProc(hWnd, msg, wParam, lParam);
             }
 
-            if (this is IWin32OptionsTopLevelImpl impl && impl.WndProcHookCallback is { } wndProc)
+            if (WndProcHookCallback is { } wndProc)
             {
                 lRet = wndProc(hWnd, msg, wParam, lParam, lRet);
             }
