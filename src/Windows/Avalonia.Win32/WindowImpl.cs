@@ -26,13 +26,14 @@ using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
+using static Avalonia.Win32.IWin32OptionsTopLevelImpl;
 
 namespace Avalonia.Win32
 {
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo, IWin32OptionsTopLevelImpl
     {
         private static readonly List<WindowImpl> s_instances = new();
 
@@ -1343,6 +1344,14 @@ namespace Avalonia.Win32
                 _savedWindowInfo.ExStyle = exStyle;
             }
 
+            if(WindowStylesCallback is { } callback)
+            {
+                var (s, e) = callback((uint)style, (uint)exStyle);
+
+                style = (WindowStyles)s;
+                exStyle = (WindowStyles)e;
+            }
+
             SetStyle(style);
             SetExtendedStyle(exStyle);
 
@@ -1463,6 +1472,12 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
+
+        /// <inheritdoc/>
+        public CustomWindowStylesCallback? WindowStylesCallback { get; set; }
+
+        /// <inheritdoc/>
+        public CustomWndProcHookCallback WndProcHookCallback { get; set; }
 
         private ResizeReasonScope SetResizeReason(WindowResizeReason reason)
         {
