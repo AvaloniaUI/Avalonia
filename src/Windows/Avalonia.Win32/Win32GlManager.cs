@@ -45,9 +45,9 @@ static class Win32GlManager
                 
             if (renderingMode == Win32RenderingMode.AngleEgl)
             {
-                var egl = AngleWin32PlatformGraphics.TryCreate(AvaloniaLocator.Current.GetService<AngleOptions>() ?? new());
+                var egl = AngleWin32PlatformGraphicsFactory.TryCreate(AvaloniaLocator.Current.GetService<AngleOptions>() ?? new());
 
-                if (egl != null && egl.PlatformApi == AngleOptions.PlatformApi.DirectX11)
+                if (egl is D3D11AngleWin32PlatformGraphics)
                 {
                     TryRegisterComposition(opts);
                     return egl;

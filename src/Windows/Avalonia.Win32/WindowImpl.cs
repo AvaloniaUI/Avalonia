@@ -135,8 +135,7 @@ namespace Avalonia.Win32
 
             var compositionConnector = AvaloniaLocator.Current.GetService<WinUiCompositorConnection>();
 
-            var isUsingAngleDX11 = glPlatform is AngleWin32PlatformGraphics angle &&
-                          angle.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            var isUsingAngleDX11 = glPlatform is D3D11AngleWin32PlatformGraphics;
             _isUsingComposition = compositionConnector is { } && isUsingAngleDX11;
 
             DxgiConnection? dxgiConnection = null;
@@ -172,7 +171,7 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    if (glPlatform is AngleWin32PlatformGraphics)
+                    if (glPlatform is D3D11AngleWin32PlatformGraphics or D3D9AngleWin32PlatformGraphics)
                         _gl = new EglGlPlatformSurface(this);
                     else if (glPlatform is WglPlatformOpenGlInterface)
                         _gl = new WglGlPlatformSurface(this);
