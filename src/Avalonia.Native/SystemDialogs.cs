@@ -32,6 +32,7 @@ namespace Avalonia.Native
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
             using var events = new SystemDialogEvents();
+            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter);
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
@@ -41,7 +42,7 @@ namespace Avalonia.Native
                                     options.Title ?? string.Empty,
                                     suggestedDirectory,
                                     string.Empty,
-                                    PrepareFilterParameter(options.FileTypeFilter));
+                                    fileTypes);
 
             var result = await events.Task.ConfigureAwait(false);
 
@@ -52,6 +53,7 @@ namespace Avalonia.Native
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
             using var events = new SystemDialogEvents();
+            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices);
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
@@ -60,7 +62,7 @@ namespace Avalonia.Native
                         options.Title ?? string.Empty,
                         suggestedDirectory,
                         options.SuggestedFileName ?? string.Empty,
-                        PrepareFilterParameter(options.FileTypeChoices));
+                        fileTypes);
 
             var result = await events.Task.ConfigureAwait(false);
             return result.FirstOrDefault() is string file
@@ -80,29 +82,39 @@ namespace Avalonia.Native
             return result?.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray()
                    ?? Array.Empty<IStorageFolder>();
         }
-
-        private static string PrepareFilterParameter(IReadOnlyList<FilePickerFileType>? fileTypes)
-        {
-            return string.Join(";",
-                fileTypes?.SelectMany(f =>
-                {
-                    // On the native side we will try to parse identifiers or mimetypes.
-                    if (f.AppleUniformTypeIdentifiers?.Any() == true)
-                    {
-                        return f.AppleUniformTypeIdentifiers;
-                    }
-                    else if (f.MimeTypes?.Any() == true)
-                    {
-                        // MacOS doesn't accept "all" type, so it's pointless to pass it.
-                        return f.MimeTypes.Where(t => t != "*/*");
-                    }
-
-                    return Array.Empty<string>();
-                }) ??
-                Array.Empty<string>());
-        }
     }
 
+    internal class FilePickerFileTypesWrapper : NativeCallbackBase, IFilePickerFileTypes
+    {
+        private readonly IReadOnlyList<FilePickerFileType>? _types;
+
+        public FilePickerFileTypesWrapper(IReadOnlyList<FilePickerFileType>? types)
+        {
+            _types = types;
+        }
+
+        public int Count => _types?.Count ?? 0;
+        public IAvnString GetName(int index)
+        {
+            return _types![index].Name.ToAvnString();
+        }
+
+        public IAvnStringArray GetPatterns(int index)
+        {
+            return new AvnStringArray(_types![index].Patterns);
+        }
+
+        public IAvnStringArray GetMimeTypes(int index)
+        {
+            return new AvnStringArray(_types![index].MimeTypes);
+        }
+
+        public IAvnStringArray GetAppleUniformTypeIdentifiers(int index)
+        {
+            return new AvnStringArray(_types![index].AppleUniformTypeIdentifiers);
+        }
+    }
+    
     internal unsafe class SystemDialogEvents : NativeCallbackBase, IAvnSystemDialogEvents
     {
         private readonly TaskCompletionSource<string[]> _tcs;

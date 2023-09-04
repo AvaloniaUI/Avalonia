@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -60,6 +62,21 @@ namespace Avalonia.Native.Interop
                 ptr[_nativeLen] = 0;
             }
         }
+    }
+
+    internal class AvnStringArray : NativeCallbackBase, IAvnStringArray
+    {
+        private readonly IReadOnlyList<string> _items;
+
+        public AvnStringArray(IReadOnlyList<string> items)
+        {
+            _items = items;
+        }
+
+        public string[] ToStringArray() => (_items as string[] ?? _items.ToArray());
+
+        public uint Count => (uint)_items.Count;
+        public IAvnString Get(uint index) => _items[(int)index].ToAvnString();
     }
 }
 namespace Avalonia.Native.Interop.Impl

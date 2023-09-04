@@ -696,14 +696,24 @@ interface IAvnSystemDialogs : IUnknown
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
-                                 [const] char* filters);
+                                 IFilePickerFileTypes* filters);
     
      void SaveFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
-                                 [const] char* filters);
+                                 IFilePickerFileTypes* filters);
+}
+
+[uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
+interface IFilePickerFileTypes : IUnknown
+{
+    int GetCount();
+    IAvnString* GetName(int index);
+    HRESULT GetPatterns(int index, IAvnStringArray**ppv);
+    HRESULT GetMimeTypes(int index, IAvnStringArray**ppv);
+    HRESULT GetAppleUniformTypeIdentifiers(int index, IAvnStringArray**ppv);
 }
 
 [uuid(9a52bc7a-d8c7-4230-8d34-704a0b70a933)]
