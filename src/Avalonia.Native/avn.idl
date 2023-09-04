@@ -696,18 +696,18 @@ interface IAvnSystemDialogs : IUnknown
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
-                                 IFilePickerFileTypes* filters);
+                                 IAvnFilePickerFileTypes* filters);
     
      void SaveFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
                                  [const] char* initialFile,
-                                 IFilePickerFileTypes* filters);
+                                 IAvnFilePickerFileTypes* filters);
 }
 
 [uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
-interface IFilePickerFileTypes : IUnknown
+interface IAvnFilePickerFileTypes : IUnknown
 {
     int GetCount();
     IAvnString* GetName(int index);

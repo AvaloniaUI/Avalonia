@@ -187,7 +187,7 @@ public:
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* initialFile,
-                                 const char* filters) override
+                                 IFilePickerFileTypes* filters) override
     {
         @autoreleasepool
         {

@@ -84,7 +84,7 @@ namespace Avalonia.Native
         }
     }
 
-    internal class FilePickerFileTypesWrapper : NativeCallbackBase, IFilePickerFileTypes
+    internal class FilePickerFileTypesWrapper : NativeCallbackBase, IAvnFilePickerFileTypes
     {
         private readonly IReadOnlyList<FilePickerFileType>? _types;
 
