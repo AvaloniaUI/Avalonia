@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Platform
     public interface IWin32OptionsTopLevelImpl : ITopLevelImpl
     {
         public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
-        public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, IntPtr ret);
+        public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
 
         /// <summary>
         /// Gets or sets a callback to set the window styles. 

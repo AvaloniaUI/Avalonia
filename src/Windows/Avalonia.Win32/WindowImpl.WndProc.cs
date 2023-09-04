@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
@@ -21,11 +23,6 @@ namespace Avalonia.Win32
             if (callDwp)
             {
                 lRet = AppWndProc(hWnd, msg, wParam, lParam);
-            }
-
-            if (WndProcHookCallback is { } wndProc)
-            {
-                lRet = wndProc(hWnd, msg, wParam, lParam, lRet);
             }
 
             return lRet;
