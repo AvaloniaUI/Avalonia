@@ -140,5 +140,29 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // 2 * 2 grid
             Assert.Equal(new Size(2 * 50, 2 * 70), target.Bounds.Size);
         }
+
+        [Fact]
+        public void Grid_Expands_For_Row_And_Column_Spacing()
+        {
+            var target = new MyUniformGrid()
+            {
+                Rows = 2,
+                Columns = 2,
+                RowSpacing = 10,
+                ColumnSpacing = 10,
+                Children =
+                {
+                    new Border { Width = 50, Height = 50 },
+                    new Border { Width = 50, Height = 50 },
+                    new Border { Width = 50, Height = 50 },
+                    new Border { Width = 50, Height = 50 },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(110, 110), target.Bounds.Size);
+        }
     }
 }

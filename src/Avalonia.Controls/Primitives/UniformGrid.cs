@@ -25,12 +25,28 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<int> FirstColumnProperty =
             AvaloniaProperty.Register<UniformGrid, int>(nameof(FirstColumn));
 
+        /// <summary>
+        /// Defines the <see cref="RowSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> RowSpacingProperty =
+            AvaloniaProperty.Register<UniformGrid, double>(nameof(RowSpacing));
+
+        /// <summary>
+        /// Defines the <see cref="ColumnSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ColumnSpacingProperty =
+            AvaloniaProperty.Register<UniformGrid, double>(nameof(ColumnSpacing));
+
         private int _rows;
         private int _columns;
 
         static UniformGrid()
         {
-            AffectsMeasure<UniformGrid>(RowsProperty, ColumnsProperty, FirstColumnProperty);
+            AffectsMeasure<UniformGrid>(RowsProperty,
+                                        ColumnsProperty,
+                                        FirstColumnProperty,
+                                        RowSpacingProperty,
+                                        ColumnSpacingProperty);
         }
 
         /// <summary>
@@ -60,6 +76,24 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(FirstColumnProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the size of the row spacing to place between child controls.
+        /// </summary>
+        public double RowSpacing
+        {
+            get => GetValue(RowSpacingProperty);
+            set => SetValue(RowSpacingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the size of the column spacing to place between child controls.
+        /// </summary>
+        public double ColumnSpacing
+        {
+            get => GetValue(ColumnSpacingProperty);
+            set => SetValue(ColumnSpacingProperty, value);
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             UpdateRowsAndColumns();
@@ -84,7 +118,16 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            return new Size(maxWidth * _columns, maxHeight * _rows);
+            var desiredWidth = maxWidth * _columns;
+            var desiredHeight = maxHeight * _rows;
+
+            if (desiredWidth > 0d)
+                desiredWidth += (_columns - 1) * ColumnSpacing;
+
+            if (desiredHeight > 0d)
+                desiredHeight += (_rows - 1) * RowSpacing;
+
+            return new Size(desiredWidth, desiredHeight);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -92,8 +135,11 @@ namespace Avalonia.Controls.Primitives
             var x = FirstColumn;
             var y = 0;
 
-            var width = finalSize.Width / _columns;
-            var height = finalSize.Height / _rows;
+            var columnSpacing = ColumnSpacing;
+            var rowSpacing = RowSpacing;
+
+            var width = Math.Max(0d, (finalSize.Width - (_columns - 1) * columnSpacing) / _columns);
+            var height = Math.Max(0d, (finalSize.Height - (_rows - 1) * rowSpacing) / _rows);
 
             foreach (var child in Children)
             {
@@ -102,7 +148,7 @@ namespace Avalonia.Controls.Primitives
                     continue;
                 }
 
-                child.Arrange(new Rect(x * width, y * height, width, height));
+                child.Arrange(new Rect(x * (width + columnSpacing), y * (height + rowSpacing), width, height));
 
                 x++;
 
@@ -125,6 +171,10 @@ namespace Avalonia.Controls.Primitives
             {
                 SetCurrentValue(FirstColumnProperty, 0);
             }
+
+            // return if no shuold calculate
+            if (_rows > 0 && _columns > 0)
+                return;
 
             var itemCount = FirstColumn;
 
