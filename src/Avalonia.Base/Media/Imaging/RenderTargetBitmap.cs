@@ -62,10 +62,16 @@ namespace Avalonia.Media.Imaging
             return factory.CreateRenderTargetBitmap(size, dpi);
         }
 
-        public DrawingContext CreateDrawingContext()
+        /// <summary>
+        /// Creates a <see cref="DrawingContext"/> for drawing to the <see cref="RenderTargetBitmap"/>.
+        /// </summary>
+        /// <param name="clear">Indicates if the image should be cleared.</param>
+        /// <returns>The drawing context.</returns>
+        public DrawingContext CreateDrawingContext(bool clear = true)
         {
             var platform = PlatformImpl.Item.CreateDrawingContext();
-            platform.Clear(Colors.Transparent);
+            if(clear)
+                platform.Clear(Colors.Transparent);
             return new PlatformDrawingContext(platform);
         }
 
