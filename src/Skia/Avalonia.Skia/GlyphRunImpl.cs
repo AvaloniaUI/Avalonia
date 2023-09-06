@@ -25,12 +25,13 @@ namespace Avalonia.Skia
                 throw new ArgumentNullException(nameof(glyphTypeface));
             }
 
-            _glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
-
             if (glyphInfos == null)
             {
                 throw new ArgumentNullException(nameof(glyphInfos));
             }
+
+            _glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
+            FontRenderingEmSize = fontRenderingEmSize;
 
             var count = glyphInfos.Count;
             _glyphIndices = new ushort[count];
@@ -50,16 +51,21 @@ namespace Avalonia.Skia
                 currentX += glyphInfos[i].GlyphAdvance;
             }
 
-            _glyphTypefaceImpl.SKFont.Size = (float)fontRenderingEmSize;
+            // Ideally the requested edging should be passed to the glyph run.
+            // Currently the edging is computed dynamically inside the drawing context, so we can't know it in advance.
+            // But the bounds depends on the edging: for now, always use SubpixelAntialias so we have consistent values.
+            // The resulting bounds may be shifted by 1px on some fonts:
+            // "F" text with Inter size 14 has a 0px left bound with SubpixelAntialias but 1px with Antialias.
+            using var font = CreateFont(SKFontEdging.SubpixelAntialias);
 
             var runBounds = new Rect();
-            var glyphBounds = ArrayPool<SKRect>.Shared.Rent(glyphInfos.Count);
+            var glyphBounds = ArrayPool<SKRect>.Shared.Rent(count);
 
-            _glyphTypefaceImpl.SKFont.GetGlyphWidths(_glyphIndices, null, glyphBounds);
+            font.GetGlyphWidths(_glyphIndices, null, glyphBounds.AsSpan(0, count));
 
             currentX = 0;
 
-            for (var i = 0; i < glyphInfos.Count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var gBounds = glyphBounds[i];
                 var advance = glyphInfos[i].GlyphAdvance;
@@ -71,7 +77,6 @@ namespace Avalonia.Skia
 
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
-            FontRenderingEmSize = fontRenderingEmSize;
             BaselineOrigin = baselineOrigin;
             Bounds = runBounds;
         }
@@ -103,12 +108,7 @@ namespace Avalonia.Skia
 
             return _textBlobCache.GetOrAdd(edging, (_) =>
             {
-                var font = _glyphTypefaceImpl.SKFont;
-
-                font.Hinting = SKFontHinting.Full;
-                font.Subpixel = edging == SKFontEdging.SubpixelAntialias;
-                font.Edging = edging;
-                font.Size = (float)FontRenderingEmSize;
+                using var font = CreateFont(edging);
 
                 var builder = SKTextBlobBuilderCache.Shared.Get();
 
@@ -123,6 +123,17 @@ namespace Avalonia.Skia
 
                 return textBlob;
             });
+        }
+
+        private SKFont CreateFont(SKFontEdging edging)
+        {
+            var font = _glyphTypefaceImpl.CreateSKFont((float)FontRenderingEmSize);
+
+            font.Hinting = SKFontHinting.Full;
+            font.Subpixel = edging == SKFontEdging.SubpixelAntialias;
+            font.Edging = edging;
+
+            return font;
         }
 
         public void Dispose()
