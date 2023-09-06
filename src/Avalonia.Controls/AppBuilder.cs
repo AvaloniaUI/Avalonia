@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Linq;
@@ -267,6 +267,12 @@ namespace Avalonia
             {
                 action?.Invoke(FontManager.Current);
             });
+        }
+
+        public AppBuilder WithDefaultRenderOptions(RenderOptions renderOptions)
+        {
+            Visual.DefaultRenderOptions = renderOptions;
+            return Self;
         }
 
         /// <summary>
