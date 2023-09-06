@@ -15,13 +15,6 @@ namespace Avalonia.Skia
         {
             _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
-            SKFont = new SKFont(typeface)
-            {
-                LinearMetrics = true,
-                Embolden = (fontSimulations & FontSimulations.Bold) != 0,
-                SkewX = (fontSimulations & FontSimulations.Oblique) != 0 ? -0.2f : 0
-            };
-
             Face = new Face(GetTable)
             {
                 UnitsPerEm = typeface.UnitsPerEm
@@ -66,8 +59,6 @@ namespace Avalonia.Skia
         public Face Face { get; }
 
         public Font Font { get; }
-
-        public SKFont SKFont { get; }
 
         public FontSimulations FontSimulations { get; }
 
@@ -169,6 +160,13 @@ namespace Avalonia.Skia
             return _typeface.TryGetTableData(tag, 0, size, data) ?
                 new Blob(data, size, MemoryMode.ReadOnly, releaseDelegate) : null;
         }
+
+        public SKFont CreateSKFont(float size)
+            => new(_typeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.2f : 0.0f)
+            {
+                LinearMetrics = true,
+                Embolden = (FontSimulations & FontSimulations.Bold) != 0
+            };
 
         private void Dispose(bool disposing)
         {
