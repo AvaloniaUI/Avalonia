@@ -122,10 +122,14 @@ namespace Avalonia.Controls.Primitives
             var desiredHeight = maxHeight * _rows;
 
             if (desiredWidth > 0d)
+            {
                 desiredWidth += (_columns - 1) * ColumnSpacing;
+            }
 
             if (desiredHeight > 0d)
+            {
                 desiredHeight += (_rows - 1) * RowSpacing;
+            }
 
             return new Size(desiredWidth, desiredHeight);
         }
@@ -174,7 +178,9 @@ namespace Avalonia.Controls.Primitives
 
             // return if no shuold calculate
             if (_rows > 0 && _columns > 0)
+            {
                 return;
+            }
 
             var itemCount = FirstColumn;
 
