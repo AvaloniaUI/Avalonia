@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -26,20 +27,13 @@ namespace Avalonia.Media
         {
             PlatformImpl = platformImpl;
 
-            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
+            AddFontCollection(new SystemFontCollection(this));
 
+            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
 
-            var defaultFontFamilyName = options?.DefaultFamilyName ?? PlatformImpl.GetDefaultFontFamilyName();
-
-            if (string.IsNullOrEmpty(defaultFontFamilyName))
-            {
-                throw new InvalidOperationException("Default font family name can't be null or empty.");
-            }
-
+            var defaultFontFamilyName = GetDefaultFontFamilyName(options);
             DefaultFontFamily = new FontFamily(defaultFontFamilyName);
-
-            AddFontCollection(new SystemFontCollection(this));
         }
 
         /// <summary>
@@ -95,7 +89,7 @@ namespace Avalonia.Media
 
             var fontFamily = typeface.FontFamily;
 
-            if(typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
+            if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
@@ -151,7 +145,7 @@ namespace Avalonia.Media
                 }
             }
 
-            if(typeface.FontFamily == DefaultFontFamily)
+            if (typeface.FontFamily == DefaultFontFamily)
             {
                 return false;
             }
@@ -248,6 +242,25 @@ namespace Avalonia.Media
 
             //Try to find a match with the system font manager
             return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
+        }
+
+        private string GetDefaultFontFamilyName(FontManagerOptions? options)
+        {
+            var defaultFontFamilyName = options?.DefaultFamilyName
+                ?? PlatformImpl.GetDefaultFontFamilyName();
+
+            if (string.IsNullOrEmpty(defaultFontFamilyName) && this.SystemFonts.Any())
+            {
+                defaultFontFamilyName = this.SystemFonts.First().Name;
+            }
+
+            if (string.IsNullOrEmpty(defaultFontFamilyName))
+            {
+                throw new InvalidOperationException(
+                    "Default font family name can't be null or empty.");
+            }
+
+            return defaultFontFamilyName;
         }
     }
 }
