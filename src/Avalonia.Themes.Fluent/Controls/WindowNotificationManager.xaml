@@ -42,7 +42,7 @@
       <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
 
-    <Style Selector="^:topright /template/ ReversibleStackPanel#PART_Items">
+    <Style Selector="^:topcenter /template/ ReversibleStackPanel#PART_Items">
       <Setter Property="VerticalAlignment" Value="Top" />
       <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
