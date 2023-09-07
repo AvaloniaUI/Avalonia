@@ -144,7 +144,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Grid_Expands_For_Row_And_Column_Spacing()
         {
-            var target = new MyUniformGrid()
+            var target = new UniformGrid()
             {
                 Rows = 2,
                 Columns = 2,
