@@ -7,7 +7,7 @@ namespace Avalonia.Input;
 /// <summary>
 /// Defines a pointer input combination.
 /// </summary>
-public class PointerGesture : IEquatable<PointerGesture>
+public sealed class PointerGesture : IEquatable<PointerGesture>
 {
     public PointerGesture(MouseButton button, KeyModifiers modifiers = KeyModifiers.None)
     {
