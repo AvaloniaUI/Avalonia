@@ -115,6 +115,7 @@ namespace Avalonia.Controls
         private void ControlPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             StopTimer();
+            (sender as AvaloniaObject)?.ClearValue(ToolTip.IsOpenProperty);
         }
 
         private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
