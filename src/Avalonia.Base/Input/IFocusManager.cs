@@ -22,14 +22,8 @@ namespace Avalonia.Input
         void ClearFocus();
 
         /// <summary>
-        /// Clears focus from control while keeping focus in another scopes.
+        /// Returns list of focused controls in all focus scopes inside specified root.
         /// </summary>
-        /// <param name="control">Control which should lose focus</param>
-        /// <param name="parent">Optional control parent (for cases when it is not available from control itself, i.e. detaching from tree)</param>
-        void ClearFocus(IInputElement control, IInputElement? parent);
-
-        void UpdateFocusWithin(IRenderRoot root);
-
         IEnumerable<IInputElement> GetFocusedElements(IRenderRoot root);
     }
 }

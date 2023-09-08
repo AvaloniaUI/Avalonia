@@ -54,7 +54,7 @@ namespace Avalonia.Input
             private set;
         }
 
-        public void ClearFocus(IInputElement control, IInputElement? parent)
+        internal void ClearFocus(IInputElement control, IInputElement? parent)
         {
             var currentControl = control;
             while (currentControl != null)
@@ -220,7 +220,7 @@ namespace Avalonia.Input
             return true;
         }
 
-        public void UpdateFocusWithin(IRenderRoot root)
+        internal void UpdateFocusWithin(IRenderRoot root)
         {
             HashSet<Visual>? setFocusWithin = null;
             if (_focusedControls.TryGetValue(root, out var oldFocusedControls))
