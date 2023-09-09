@@ -176,7 +176,7 @@ namespace Avalonia.Controls.Primitives
                 SetCurrentValue(FirstColumnProperty, 0);
             }
 
-            // return if no shuold calculate
+            // Return if no calculation required
             if (_rows > 0 && _columns > 0)
             {
                 return;
