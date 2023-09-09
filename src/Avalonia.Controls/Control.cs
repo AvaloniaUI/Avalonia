@@ -497,7 +497,6 @@ namespace Avalonia.Controls
 
             if (e.Source == this
                 && !e.Handled
-                && e.InitialPressMouseButton == MouseButton.Right
                 && contextGestures?.Any(x => x.Matches(e)) == true)
             {
                 var args = new ContextRequestedEventArgs(e);
