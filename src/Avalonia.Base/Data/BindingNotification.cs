@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Avalonia.Data
 {
@@ -55,6 +56,7 @@ namespace Avalonia.Data
         /// <param name="value">The binding value.</param>
         public BindingNotification(object? value)
         {
+            Debug.Assert(value is not BindingNotification);
             _value = value;
         }
 
@@ -160,6 +162,31 @@ namespace Avalonia.Data
         {
             var notification = o as BindingNotification;
             return notification is not null ? notification.Value : o;
+        }
+
+        /// <summary>
+        /// Updates the value of an object that may be a <see cref="BindingNotification"/>.
+        /// </summary>
+        /// <param name="o">The object that may be a binding notification.</param>
+        /// <param name="value">The new value.</param>
+        /// <returns>
+        /// The updated binding notification if <paramref name="o"/> is a binding notification;
+        /// otherwise <paramref name="value"/>.
+        /// </returns>
+        /// <remarks>
+        /// If <paramref name="o"/> is a <see cref="BindingNotification"/> then sets its value
+        /// to <paramref name="value"/>. If <paramref name="value"/> is a
+        /// <see cref="BindingNotification"/> then the value will first be extracted.
+        /// </remarks>
+        public static object? UpdateValue(object o, object value)
+        {
+            if (o is BindingNotification { } n)
+            {
+                n.SetValue(ExtractValue(value));
+                return n;
+            }
+
+            return value;
         }
 
         /// <summary>

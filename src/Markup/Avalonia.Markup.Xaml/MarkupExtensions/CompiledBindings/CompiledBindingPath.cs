@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
+using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Data.Core.Plugins.Reflection;
 using Avalonia.Markup.Parsers;
-using Avalonia.Markup.Parsers.Nodes;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
@@ -23,57 +23,74 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             RawSource = rawSource;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.CompiledBindingSafeSupressWarningMessage)]
-        internal ExpressionNode BuildExpression(bool enableValidation)
+        internal void BuildExpression(List<ExpressionNode> result, out bool isRooted)
         {
-            ExpressionNode? pathRoot = null;
-            ExpressionNode? path = null;
+            var negated = 0;
+
+            isRooted = false;
+
             foreach (var element in _elements)
             {
                 ExpressionNode? node;
                 switch (element)
                 {
                     case NotExpressionPathElement:
-                        node = new LogicalNotNode();
+                        ++negated;
+                        node = null;
                         break;
                     case PropertyElement prop:
-                        node = new PropertyAccessorNode(prop.Property.Name, enableValidation, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
+                        node = new PropertyAccessorNode(prop.Property.Name, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
                         break;
                     case MethodAsCommandElement methodAsCommand:
-                        node = new PropertyAccessorNode(methodAsCommand.MethodName, enableValidation, new CommandAccessorPlugin(methodAsCommand.ExecuteMethod, methodAsCommand.CanExecuteMethod, methodAsCommand.DependsOnProperties));
+                        node = new MethodCommandNode(
+                            methodAsCommand.MethodName,
+                            methodAsCommand.ExecuteMethod,
+                            methodAsCommand.CanExecuteMethod,
+                            methodAsCommand.DependsOnProperties);
                         break;
                     case MethodAsDelegateElement methodAsDelegate:
-                        node = new PropertyAccessorNode(methodAsDelegate.Method.Name, enableValidation, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType));
+                        node = new PropertyAccessorNode(methodAsDelegate.Method.Name, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType));
                         break;
                     case ArrayElementPathElement arr:
-                        node = new PropertyAccessorNode(CommonPropertyNames.IndexerName, enableValidation, new ArrayElementPlugin(arr.Indices, arr.ElementType));
+                        node = new ArrayIndexerNode(arr.Indices);
                         break;
                     case VisualAncestorPathElement visualAncestor:
-                        node = new FindVisualAncestorNode(visualAncestor.AncestorType, visualAncestor.Level);
+                        node = new VisualAncestorElementNode(visualAncestor.AncestorType, visualAncestor.Level);
+                        isRooted = true;
                         break;
                     case AncestorPathElement ancestor:
-                        node = new FindAncestorNode(ancestor.AncestorType, ancestor.Level);
+                        node = new LogicalAncestorElementNode(ancestor.AncestorType, ancestor.Level);
+                        isRooted = true;
                         break;
                     case SelfPathElement:
-                        node = new SelfNode();
+                        node = null;
+                        isRooted = true;
                         break;
                     case ElementNameElement name:
-                        node = new ElementNameNode(name.NameScope, name.Name);
+                        node = new NamedElementNode(name.NameScope, name.Name);
+                        isRooted = true;
                         break;
                     case IStronglyTypedStreamElement stream:
                         node = new StreamNode(stream.CreatePlugin());
                         break;
                     case ITypeCastElement typeCast:
-                        node = new StrongTypeCastNode(typeCast.Type, typeCast.Cast);
+                        node = new FuncTransformNode(typeCast.Cast);
+                        break;
+                    case TemplatedParentPathElement:
+                        node = new TemplatedParentNode();
+                        isRooted = true;
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown binding path element type {element.GetType().FullName}");
                 }
 
-                path = pathRoot is null ? (pathRoot = node) : path!.Next = node;
+                if (node is not null)
+                    result.Add(node);
             }
 
-            return pathRoot ?? new EmptyExpressionNode();
+
+            for (var i = 0; i < negated; ++i)
+                result.Add(new LogicalNotNode());
         }
 
         internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
@@ -140,6 +157,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _elements.Add(new AncestorPathElement(ancestorType, level));
             return this;
         }
+
         public CompiledBindingPathBuilder VisualAncestor(Type ancestorType, int level)
         {
             _elements.Add(new VisualAncestorPathElement(ancestorType, level));
@@ -161,6 +179,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPathBuilder TypeCast<T>()
         {
             _elements.Add(new TypeCastPathElement<T>());
+            return this;
+        }
+
+        public CompiledBindingPathBuilder TemplatedParent()
+        {
+            _elements.Add(new TemplatedParentPathElement());
             return this;
         }
 
@@ -307,6 +331,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public override string ToString()
             => $"#{Name}";
+    }
+
+    internal class TemplatedParentPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
+    {
+        public override string ToString()
+            => $"$templatedParent";
     }
 
     internal class ArrayElementPathElement : ICompiledBindingPathElement

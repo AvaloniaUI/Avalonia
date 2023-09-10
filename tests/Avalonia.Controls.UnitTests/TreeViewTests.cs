@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -45,6 +46,25 @@ namespace Avalonia.Controls.UnitTests
             var itemTemplate = new FuncTreeDataTemplate<Node>(
                 (_, _) => new Canvas(),
                 x => x.Children);
+            var target = CreateTarget(itemTemplate: itemTemplate);
+
+            var items = target.GetRealizedTreeContainers()
+                .OfType<TreeViewItem>()
+                .ToList();
+
+            Assert.Equal(5, items.Count);
+            Assert.All(items, x => Assert.IsType<Canvas>(x.HeaderPresenter?.Child));
+        }
+
+        [Fact]
+        public void Items_Should_Be_Created_Using_ItemTemplate_If_Present_2()
+        {
+            using var app = Start();
+            var itemTemplate = new TreeDataTemplate
+            {
+                Content = (IServiceProvider? _) => new TemplateResult<Control>(new Canvas(), new NameScope()),
+                ItemsSource = new Binding("Children"),
+            };
             var target = CreateTarget(itemTemplate: itemTemplate);
 
             var items = target.GetRealizedTreeContainers()
@@ -1826,7 +1846,7 @@ namespace Avalonia.Controls.UnitTests
 
             public InstancedBinding ItemsSelector(object item)
             {
-                var obs = ExpressionObserver.Create(item, o => ((Node)o).Children);
+                var obs = BindingExpression.Create(item, o => ((Node)o).Children);
                 return InstancedBinding.OneWay(obs);
             }
 

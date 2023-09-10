@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Data.Core.Plugins.Reflection;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Data
@@ -17,7 +18,7 @@ namespace Avalonia.Benchmarks.Data
             _oldPlugins = new List<IPropertyAccessorPlugin>
             {
                 new AvaloniaPropertyAccessorPlugin(),
-                new MethodAccessorPlugin(),
+                new ReflectionMethodAccessorPlugin(),
                 new InpcPropertyAccessorPlugin()
             };
 
@@ -25,7 +26,7 @@ namespace Avalonia.Benchmarks.Data
             {
                 new AvaloniaPropertyAccessorPlugin(),
                 new InpcPropertyAccessorPlugin(),
-                new MethodAccessorPlugin()
+                new ReflectionMethodAccessorPlugin()
             };
         }
 

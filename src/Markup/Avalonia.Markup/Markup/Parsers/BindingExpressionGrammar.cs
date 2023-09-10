@@ -62,6 +62,11 @@ namespace Avalonia.Markup.Parsers
                 }
             }
 
+            if (!r.End)
+            {
+                throw new ExpressionParseException(r.Position, "Expected end of expression.");
+            }
+
             if (state == State.BeforeMember)
             {
                 throw new ExpressionParseException(r.Position, "Unexpected end of expression.");

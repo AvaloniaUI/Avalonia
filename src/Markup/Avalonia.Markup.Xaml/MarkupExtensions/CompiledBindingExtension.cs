@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Data.Core;
+using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Markup.Parsers;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -35,40 +37,73 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             };
         }
 
-        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
+        public override InstancedBinding? Initiate(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
+            bool enableDataValidation = false)
         {
-            if (Source != null)
-            {
-                return CreateSourceObserver(
-                    Source,
-                    Path.BuildExpression(enableDataValidation));
-            }
+            var nodes = new List<ExpressionNode>();
 
-            if (Path.RawSource != null)
-            {
-                return CreateSourceObserver(
-                    Path.RawSource,
-                    Path.BuildExpression(enableDataValidation));
-            }
+            // Build the expression nodes from the binding path.
+            Path.BuildExpression(nodes, out var isRooted);
 
-            if (Path.SourceMode == SourceMode.Data)
-            {
-                return CreateDataContextObserver(
-                    target,
-                    Path.BuildExpression(enableDataValidation),
-                    targetProperty == StyledElement.DataContextProperty,
-                    anchor);
-            }
-            else
-            {
-                var styledElement = target as StyledElement
-                    ?? anchor as StyledElement
-                    ?? throw new ArgumentException($"Cannot find a valid {nameof(StyledElement)} to use as the binding source.");
+            // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
+            // #elementName etc.) then we need to add a data context source node.
+            if (Source is null && !isRooted)
+                nodes.Insert(0, ExpressionNodeFactory.CreateDataContext(targetProperty));
 
-                return CreateSourceObserver(
-                    styledElement,
-                    Path.BuildExpression(enableDataValidation));
-            }
+            // If the first node is an ISourceNode then allow it to select the source; otherwise
+            // use the binding source if specified, falling back to the target.
+            var source = nodes.Count > 0 && nodes[0] is ISourceNode sn
+                ? sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target)
+                : Source ?? target;
+
+            // Create the binding expression and wrap it in an InstancedBinding.
+            var expression = new BindingExpression(
+                source,
+                nodes,
+                FallbackValue,
+                converter: Converter,
+                converterParameter: ConverterParameter,
+                enableDataValidation: enableDataValidation,
+                mode: ResolveBindingMode(target, targetProperty),
+                stringFormat: StringFormat,
+                target: target,
+                targetNullValue: TargetNullValue,
+                targetProperty: targetProperty,
+                targetTypeConverter: TargetTypeConverter.GetDefaultConverter());
+
+            return new InstancedBinding(expression, Mode, Priority);
+        }
+
+        /// <summary>
+        /// Hack for TreeDataTemplate to create a binding expression for an item.
+        /// </summary>
+        /// <param name="source">The item.</param>
+        /// <remarks>
+        /// Ideally we'd do this in a more generic way but didn't have time to refactor
+        /// ITreeDataTemplate in time for 11.0. We should revisit this in 12.0.
+        /// </remarks>
+        internal BindingExpression CreateObservableForTreeDataTemplate(object source)
+        {
+            if (Source is not null)
+                throw new NotSupportedException("Source bindings are not supported in this context.");
+
+            var nodes = new List<ExpressionNode>();
+
+            Path.BuildExpression(nodes, out var isRooted);
+
+            if (isRooted)
+                throw new NotSupportedException("Rooted binding paths are not supported in this context.");
+
+            return new BindingExpression(
+                source,
+                nodes,
+                FallbackValue,
+                converter: Converter,
+                converterParameter: ConverterParameter,
+                targetNullValue: TargetNullValue);
         }
 
         [ConstructorArgument("path")]

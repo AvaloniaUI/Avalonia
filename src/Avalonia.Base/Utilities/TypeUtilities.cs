@@ -129,6 +129,12 @@ namespace Avalonia.Utilities
         [RequiresUnreferencedCode(TrimmingMessages.TypeConversionRequiresUnreferencedCodeMessage)]
         public static bool TryConvert(Type to, object? value, CultureInfo? culture, out object? result)
         {
+            if (to == typeof(object))
+            {
+                result = value;
+                return true;
+            }
+
             if (value == null)
             {
                 result = null;

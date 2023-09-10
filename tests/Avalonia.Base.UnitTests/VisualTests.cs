@@ -290,7 +290,7 @@ namespace Avalonia.Base.UnitTests
                     Assert.Equal("Error in binding to {Target}.{Property}: {Message}", mt);
                     Assert.Same(target, pv[0]);
                     Assert.Equal(Decorator.TagProperty, pv[1]);
-                    Assert.Equal("Could not find a matching property accessor for 'Foo' on 'foo'", pv[2]);
+                    Assert.Equal("An error occured binding to 'Foo' at 'Foo': 'Could not find a matching property accessor for 'Foo' on 'foo''", pv[2]);
                     ++called;
                 }
             };

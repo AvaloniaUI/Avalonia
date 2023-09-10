@@ -1,5 +1,5 @@
 ﻿using System;
-using Avalonia.Data.Core.Plugins;
+using Avalonia.Data.Core.Plugins.Reflection;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Data
@@ -8,7 +8,7 @@ namespace Avalonia.Benchmarks.Data
     public class PropertyAccessorBenchmarks
     {
         private readonly InpcPropertyAccessorPlugin _inpcPlugin = new InpcPropertyAccessorPlugin();
-        private readonly MethodAccessorPlugin _methodPlugin = new MethodAccessorPlugin();
+        private readonly ReflectionMethodAccessorPlugin _methodPlugin = new ReflectionMethodAccessorPlugin();
         private readonly AccessorTestObject _targetStrongRef = new AccessorTestObject();
         private readonly WeakReference<object> _targetWeakRef;
 

@@ -1,92 +1,27 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Reactive;
-using System.Reflection;
 
-namespace Avalonia.Data.Core.Plugins
+namespace Avalonia.Data.Core.Plugins;
+
+internal class ObservableStreamPlugin<T> : IStreamPlugin
 {
-    /// <summary>
-    /// Handles binding to <see cref="IObservable{T}"/>s for the '^' stream binding operator.
-    /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
-    internal class ObservableStreamPlugin : IStreamPlugin
+    public bool Match(WeakReference<object?> reference)
     {
-        private static MethodInfo? s_observableGeneric;
-        private static MethodInfo? s_observableSelect;
+        return reference.TryGetTarget(out var target) && target is IObservable<T>;
+    }
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, "Avalonia.Data.Core.Plugins.ObservableStreamPlugin", "Avalonia.Base")]
-        public ObservableStreamPlugin()
+    public IObservable<object?> Start(WeakReference<object?> reference)
+    {
+        if (!(reference.TryGetTarget(out var target) && target is IObservable<T> obs))
         {
-            
+            return Observable.Empty<object?>();
         }
-        
-        /// <summary>
-        /// Checks whether this plugin handles the specified value.
-        /// </summary>
-        /// <param name="reference">A weak reference to the value.</param>
-        /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        public virtual bool Match(WeakReference<object?> reference)
+        else if (target is IObservable<object?> obj)
         {
-            reference.TryGetTarget(out var target);
-
-            return target != null && target.GetType().GetInterfaces().Any(x =>
-              x.IsGenericType &&
-              x.GetGenericTypeDefinition() == typeof(IObservable<>));
+            return obj;
         }
 
-        /// <summary>
-        /// Starts producing output based on the specified value.
-        /// </summary>
-        /// <param name="reference">A weak reference to the object.</param>
-        /// <returns>
-        /// An observable that produces the output for the value.
-        /// </returns>
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        public virtual IObservable<object?> Start(WeakReference<object?> reference)
-        {
-            if (!reference.TryGetTarget(out var target) || target is null)
-                return Observable.Empty<object?>();
-
-            // If the observable returns a reference type then we can cast it.
-            if (target is IObservable<object?> result)
-            {
-                return result;
-            }
-
-            // If the observable returns a value type then we need to call Observable.Select on it.
-            // First get the type of T in `IObservable<T>`.
-            var sourceType = target.GetType().GetInterfaces().First(x =>
-                  x.IsGenericType &&
-                  x.GetGenericTypeDefinition() == typeof(IObservable<>)).GetGenericArguments()[0];
-
-            // Get the BoxObservable<T> method.
-            var select = GetBoxObservable(sourceType);
-
-            // Call BoxObservable(target);
-            return (IObservable<object?>)select.Invoke(
-                null,
-                new[] { target })!;
-        }
-
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        private static MethodInfo GetBoxObservable(Type source)
-        {
-            return (s_observableGeneric ??= GetBoxObservable()).MakeGenericMethod(source);
-        }
-
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        private static MethodInfo GetBoxObservable()
-        {
-            return s_observableSelect
-               ??= typeof(ObservableStreamPlugin).GetMethod(nameof(BoxObservable), BindingFlags.Static | BindingFlags.NonPublic)
-               ?? throw new InvalidOperationException("BoxObservable method was not found.");
-        }
-
-        private static IObservable<object?> BoxObservable<T>(IObservable<T> source)
-        {
-            return source.Select(v => (object?)v);
-        }
+        return obs.Select(x => (object?)x);
     }
 }

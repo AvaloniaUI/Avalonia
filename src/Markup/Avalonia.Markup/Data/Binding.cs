@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Markup.Parsers;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data
 {
@@ -55,85 +59,122 @@ namespace Avalonia.Data
         /// </summary>
         public Func<string?, string, Type>? TypeResolver { get; set; }
 
-        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
+        public override InstancedBinding? Initiate(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
+            bool enableDataValidation = false)
         {
-            _ = target ?? throw new ArgumentNullException(nameof(target));
+            var nodes = new List<ExpressionNode>();
+            var isRooted = false;
 
-            anchor ??= DefaultAnchor?.Target;
-            enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
-
-            INameScope? nameScope = null;
-            NameScope?.TryGetTarget(out nameScope);
-
-            var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver, nameScope);
-
-            if (node is null)
+            // Build the expression nodes from the binding path.
+            if (!string.IsNullOrEmpty(Path))
             {
-                throw new InvalidOperationException("Could not parse binding expression.");
-            }
-
-            StyledElement GetSource()
-            {
-                return target as StyledElement ??
-                    anchor as StyledElement ??
-                    throw new ArgumentException("Could not find binding source: either target or anchor must be an StyledElement.");
+                var reader = new CharacterReader(Path.AsSpan());
+                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
+                ExpressionNodeFactory.CreateFromAst(
+                    astNodes,
+                    TypeResolver,
+                    GetNameScope(),
+                    nodes,
+                    out isRooted);
             }
 
-            if (ElementName != null)
-            {
-                return CreateElementObserver(
-                    GetSource(),
-                    ElementName,
-                    node);
-            }
-            else if (Source != null)
-            {
-                return CreateSourceObserver(Source, node);
-            }
-            else if (RelativeSource == null)
-            {
-                if (mode == SourceMode.Data)
-                {
-                    return CreateDataContextObserver(
-                        target,
-                        node,
-                        targetProperty == StyledElement.DataContextProperty,
-                        anchor);
-                }
-                else
-                {
-                    return CreateSourceObserver(GetSource(), node);
-                }
-            }
-            else if (RelativeSource.Mode == RelativeSourceMode.DataContext)
-            {
-                return CreateDataContextObserver(
-                    target,
-                    node,
-                    targetProperty == StyledElement.DataContextProperty,
-                    anchor);
-            }
-            else if (RelativeSource.Mode == RelativeSourceMode.Self)
-            {
-                return CreateSourceObserver(GetSource(), node);
-            }
-            else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
-            {
-                return CreateTemplatedParentObserver(GetSource(), node);
-            }
-            else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
-            {
-                if (RelativeSource.Tree == TreeType.Visual && RelativeSource.AncestorType == null)
-                {
-                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceMode.FindAncestor when searching the visual tree.");
-                }
+            // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
+            // #elementName etc.) then we need to add a source node. The type of source node will
+            // depend on the ElementName and RelativeSource properties of the binding and if
+            // neither of those are set will default to a data context node.
+            if (Source is null && !isRooted &&  CreateSourceNode(targetProperty) is { } sourceNode)
+                nodes.Insert(0, sourceNode);
 
-                return CreateFindAncestorObserver(GetSource(), RelativeSource, node);
-            }
-            else
+            // If the first node is an ISourceNode then allow it to select the source; otherwise
+            // use the binding source if specified, falling back to the target.
+            var source = nodes.Count > 0 && nodes[0] is ISourceNode sn
+                ? sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target)
+                : Source ?? target;
+
+            // Create the binding expression and wrap it in an InstancedBinding.
+            var expression = new BindingExpression(
+                source,
+                nodes,
+                FallbackValue,
+                converter: Converter,
+                converterParameter: ConverterParameter,
+                enableDataValidation: enableDataValidation,
+                mode: ResolveBindingMode(target, targetProperty),
+                stringFormat: StringFormat,
+                target: target,
+                targetNullValue: TargetNullValue,
+                targetProperty: targetProperty,
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
+            return new InstancedBinding(expression, Mode, Priority);
+        }
+
+        /// <summary>
+        /// Hack for TreeDataTemplate to create a binding expression for an item.
+        /// </summary>
+        /// <param name="source">The item.</param>
+        /// <remarks>
+        /// Ideally we'd do this in a more generic way but didn't have time to refactor
+        /// ITreeDataTemplate in time for 11.0. We should revisit this in 12.0.
+        /// </remarks>
+        internal BindingExpression CreateObservableForTreeDataTemplate(object source)
+        {
+            if (!string.IsNullOrEmpty(ElementName))
+                throw new NotSupportedException("ElementName bindings are not supported in this context.");
+            if (RelativeSource is not null && RelativeSource.Mode != RelativeSourceMode.DataContext)
+                throw new NotSupportedException("RelativeSource bindings are not supported in this context.");
+            if (Source is not null)
+                throw new NotSupportedException("Source bindings are not supported in this context.");
+
+            var nodes = new List<ExpressionNode>();
+            var isRooted = false;
+
+            if (!string.IsNullOrEmpty(Path))
             {
-                throw new NotSupportedException();
+                var reader = new CharacterReader(Path.AsSpan());
+                var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);
+                ExpressionNodeFactory.CreateFromAst(
+                    astNodes,
+                    TypeResolver,
+                    GetNameScope(),
+                    nodes,
+                    out isRooted);
             }
+
+            if (isRooted)
+                throw new NotSupportedException("Rooted binding paths are not supported in this context.");
+
+            return new BindingExpression(
+                source,
+                nodes,
+                FallbackValue,
+                converter: Converter,
+                converterParameter: ConverterParameter,
+                targetNullValue: TargetNullValue);
+        }
+
+        private INameScope? GetNameScope()
+        {
+            INameScope? result = null;
+            NameScope?.TryGetTarget(out result);
+            return result;
+        }
+
+        private ExpressionNode? CreateSourceNode(AvaloniaProperty? targetProperty)
+        {
+            if (!string.IsNullOrEmpty(ElementName))
+            {
+                var nameScope = GetNameScope() ?? throw new InvalidOperationException(
+                    "Cannot create ElementName binding when NameScope is null");
+                return new NamedElementNode(nameScope, ElementName);
+            }
+
+            if (RelativeSource is not null)
+                return ExpressionNodeFactory.CreateRelativeSource(RelativeSource);
+
+            return ExpressionNodeFactory.CreateDataContext(targetProperty);
         }
     }
 }

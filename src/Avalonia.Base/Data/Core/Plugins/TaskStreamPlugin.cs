@@ -1,86 +1,49 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Reactive;
 
-namespace Avalonia.Data.Core.Plugins
+namespace Avalonia.Data.Core.Plugins;
+
+internal class TaskStreamPlugin<T> : IStreamPlugin
 {
-    /// <summary>
-    /// Handles binding to <see cref="Task"/>s for the '^' stream binding operator.
-    /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
-    internal class TaskStreamPlugin : IStreamPlugin
+    public bool Match(WeakReference<object?> reference)
     {
-        /// <summary>
-        /// Checks whether this plugin handles the specified value.
-        /// </summary>
-        /// <param name="reference">A weak reference to the value.</param>
-        /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        public virtual bool Match(WeakReference<object?> reference)
+        return reference.TryGetTarget(out var target) && target is Task<T>;
+    }
+
+    public IObservable<object?> Start(WeakReference<object?> reference)
+    {
+        if (!(reference.TryGetTarget(out var target) && target is Task<T> task))
         {
-            reference.TryGetTarget(out var target);
-
-            return target is Task;
-        }
-
-        /// <summary>
-        /// Starts producing output based on the specified value.
-        /// </summary>
-        /// <param name="reference">A weak reference to the object.</param>
-        /// <returns>
-        /// An observable that produces the output for the value.
-        /// </returns>
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        public virtual IObservable<object?> Start(WeakReference<object?> reference)
-        {
-            reference.TryGetTarget(out var target);
-
-            if (target is Task task)
-            {
-                var resultProperty = task.GetType().GetRuntimeProperty("Result");
-
-                if (resultProperty != null)
-                {
-                    switch (task.Status)
-                    {
-                        case TaskStatus.RanToCompletion:
-                        case TaskStatus.Faulted:
-                            return HandleCompleted(task);
-                        default:
-                            var subject = new LightweightSubject<object?>();
-                            task.ContinueWith(
-                                    x => HandleCompleted(task).Subscribe(subject),
-                                    TaskScheduler.FromCurrentSynchronizationContext())
-                                .ConfigureAwait(false);
-                            return subject;
-                    }
-                }
-            }
-
             return Observable.Empty<object?>();
         }
 
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
-        private static IObservable<object?> HandleCompleted(Task task)
+        switch (task.Status)
         {
-            var resultProperty = task.GetType().GetRuntimeProperty("Result");
-            
-            if (resultProperty != null)
-            {
-                switch (task.Status)
-                {
-                    case TaskStatus.RanToCompletion:
-                        return Observable.Return(resultProperty.GetValue(task));
-                    case TaskStatus.Faulted:
-                        return Observable.Return(new BindingNotification(task.Exception!, BindingErrorType.Error));
-                    default:
-                        throw new AvaloniaInternalException("HandleCompleted called for non-completed Task.");
-                }
-            }
+            case TaskStatus.RanToCompletion:
+            case TaskStatus.Faulted:
+                return HandleCompleted(task);
+            default:
+                var subject = new LightweightSubject<object?>();
+                task.ContinueWith(
+                        _ => HandleCompleted(task).Subscribe(subject),
+                        TaskScheduler.FromCurrentSynchronizationContext())
+                    .ConfigureAwait(false);
+                return subject;
+        }
+    }
 
-            return Observable.Empty<object>();
+
+    private static IObservable<object?> HandleCompleted(Task<T> task)
+    {
+        switch (task.Status)
+        {
+            case TaskStatus.RanToCompletion:
+                return Observable.Return((object?)task.Result);
+            case TaskStatus.Faulted:
+                return Observable.Return(new BindingNotification(task.Exception!, BindingErrorType.Error));
+            default:
+                throw new AvaloniaInternalException("HandleCompleted called for non-completed Task.");
         }
     }
 }
