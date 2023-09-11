@@ -28,17 +28,17 @@ namespace Avalonia
         /// Gets the name of the currently selected windowing subsystem.
         /// </summary>
         public string? RuntimePlatformServicesName { get; private set; }
-        
+
         /// <summary>
         /// Gets the <see cref="Application"/> instance being initialized.
         /// </summary>
         public Application? Instance { get; private set; }
-        
+
         /// <summary>
         /// Gets the type of the Instance (even if it's not created yet)
         /// </summary>
         public Type? ApplicationType { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
@@ -66,14 +66,14 @@ namespace Avalonia
 
 
         public Action<AppBuilder> AfterPlatformServicesSetupCallback { get; private set; } = builder => { };
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBuilder"/> class.
         /// </summary>
         private AppBuilder()
         {
         }
-        
+
         /// <summary>
         /// Begin configuring an <see cref="Application"/>.
         /// </summary>
@@ -82,11 +82,7 @@ namespace Avalonia
         public static AppBuilder Configure<TApp>()
             where TApp : Application, new()
         {
-            return new AppBuilder()
-            {
-                ApplicationType = typeof(TApp),
-                _appFactory = () => new TApp()
-            };
+            return new AppBuilder() { ApplicationType = typeof(TApp), _appFactory = () => new TApp() };
         }
 
         /// <summary>
@@ -99,11 +95,7 @@ namespace Avalonia
         public static AppBuilder Configure<TApp>(Func<TApp> appFactory)
             where TApp : Application
         {
-            return new AppBuilder()
-            {
-                ApplicationType = typeof(TApp),
-                _appFactory = appFactory
-            };
+            return new AppBuilder() { ApplicationType = typeof(TApp), _appFactory = appFactory };
         }
 
         /// <summary>
@@ -116,7 +108,9 @@ namespace Avalonia
         /// </param>
         /// <returns>An <see cref="AppBuilder"/> instance. If can't be created, thrown an exception.</returns>
         internal static AppBuilder Configure(
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods |
+                                        DynamicallyAccessedMemberTypes.NonPublicMethods |
+                                        DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
             Type entryPointType)
         {
             var appBuilderObj = entryPointType
@@ -142,7 +136,7 @@ namespace Avalonia
                 $"Unable to create AppBuilder from type \"{entryPointType.FullName}\". " +
                 $"Input type either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application type.");
         }
-        
+
         private AppBuilder Self => this;
 
         public AppBuilder AfterSetup(Action<AppBuilder> callback)
@@ -150,16 +144,17 @@ namespace Avalonia
             AfterSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;
         }
-        
-        
+
+
         public AppBuilder AfterPlatformServicesSetup(Action<AppBuilder> callback)
         {
-            AfterPlatformServicesSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
+            AfterPlatformServicesSetupCallback =
+                (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
             return Self;
         }
 
         public delegate void AppMainDelegate(Application app, string[] args);
-        
+
         public void Start(AppMainDelegate main, string[] args)
         {
             Setup();
@@ -187,7 +182,7 @@ namespace Avalonia
             Setup();
             return Self;
         }
-        
+
         /// <summary>
         /// Specifies a windowing subsystem to use.
         /// </summary>
@@ -213,7 +208,7 @@ namespace Avalonia
             RenderingSubsystemName = name;
             return Self;
         }
-        
+
         /// <summary>
         /// Specifies a runtime platform subsystem to use.
         /// </summary>
@@ -226,14 +221,15 @@ namespace Avalonia
             RuntimePlatformServicesName = name;
             return Self;
         }
-        
+
         /// <summary>
         /// Specifies a standard runtime platform subsystem to use.
         /// </summary>
         /// <returns>An <see cref="AppBuilder"/> instance.</returns>
         public AppBuilder UseStandardRuntimePlatformSubsystem()
         {
-            RuntimePlatformServicesInitializer = () => StandardRuntimePlatformServices.Register(ApplicationType?.Assembly);
+            RuntimePlatformServicesInitializer =
+                () => StandardRuntimePlatformServices.Register(ApplicationType?.Assembly);
             RuntimePlatformServicesName = nameof(StandardRuntimePlatform);
             return Self;
         }
@@ -246,7 +242,7 @@ namespace Avalonia
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToConstant(options); };
             return Self;
         }
-        
+
         /// <summary>
         /// Configures platform-specific options
         /// </summary>
@@ -268,12 +264,7 @@ namespace Avalonia
                 action?.Invoke(FontManager.Current);
             });
         }
-
-        public AppBuilder WithDefaultRenderOptions(RenderOptions renderOptions)
-        {
-            Visual.DefaultRenderOptions = renderOptions;
-            return Self;
-        }
+        
 
         /// <summary>
         /// Sets up the platform-specific services for the <see cref="Application"/>.

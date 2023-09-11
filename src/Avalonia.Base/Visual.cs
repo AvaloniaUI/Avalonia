@@ -316,15 +316,7 @@ namespace Avalonia
         /// </summary>
         protected internal IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
-        internal static RenderOptions DefaultRenderOptions = default;
-
-        private RenderOptions? _renderOptions;
-
-        internal RenderOptions RenderOptions
-        {
-            get => _renderOptions ?? DefaultRenderOptions;
-            set => _renderOptions = value;
-        }
+        internal RenderOptions RenderOptions { get; set; }
 
         internal bool HasNonUniformZIndexChildren { get; private set; }
 
