@@ -648,6 +648,7 @@ namespace Avalonia.X11
                     SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
                         IntPtr.Zero);
                 }
+                WindowStateChanged?.Invoke(value);
             }
         }
 
