@@ -11,6 +11,13 @@ namespace Avalonia.Media
         public bool? RequiresFullOpacityHandling { get; init; }
 
         /// <summary>
+        /// Defines the <see cref="BitmapInterpolationMode" /> attached property
+        /// </summary>
+        public static readonly AttachedProperty<BitmapInterpolationMode> BitmapInterpolationModeProperty =
+            AvaloniaProperty
+                .RegisterAttached<RenderOptions, Visual, BitmapInterpolationMode>("BitmapInterpolationMode");
+        
+        /// <summary>
         /// Gets the value of the BitmapInterpolationMode attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
