@@ -90,6 +90,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
         _impl.Transform = matrix * current;
     }
 
+    protected override void PushRenderOptionsCore(RenderOptions renderOptions) => _impl.PushRenderOptions(renderOptions);
+
     protected override void PopClipCore() => _impl.PopClip();
 
     protected override void PopGeometryClipCore() => _impl.PopGeometryClip();
@@ -101,6 +103,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
     protected override void PopTransformCore() =>
         _impl.Transform =
             (_transforms ?? throw new ObjectDisposedException(nameof(PlatformDrawingContext))).Pop();
+
+    protected override void PopRenderOptionsCore() => _impl.PopRenderOptions();
 
     protected override void DisposeCore()
     {

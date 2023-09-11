@@ -74,6 +74,7 @@ public class PointerCanvas : Control
         public void HandleEvent(PointerEventArgs e, Visual v)
         {
             e.Handled = true;
+            e.PreventGestureRecognition();
             var currentPoint = e.GetCurrentPoint(v);
             if (e.RoutedEvent == PointerPressedEvent)
                 AddPoint(currentPoint.Position, Brushes.Green, 10);
