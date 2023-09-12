@@ -826,7 +826,6 @@ namespace Avalonia.Controls
             }
             else
             {
-                SetCurrentValue(IsDropDownOpenProperty, false);
                 _userCalledPopulate = false;
                 ClearTextBoxSelection();
             }
