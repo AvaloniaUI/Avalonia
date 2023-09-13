@@ -318,6 +318,7 @@ namespace Avalonia.Controls
         private int _wordSelectionStart = -1;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
+        private static bool _isHolding;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -821,6 +822,36 @@ namespace Avalonia.Controls
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
             }
+
+            AddHandler(Gestures.HoldingEvent, OnHolding);
+        }
+
+        private void OnHolding(object? sender, HoldingRoutedEventArgs e)
+        {
+            if (e.Handled || e.HoldingState != HoldingState.Started)
+                return;
+
+            var start = SelectionStart;
+            var end = SelectionEnd;
+            var caret = CaretIndex;
+            var text = Text;
+
+            if (text != null)
+            {
+                if (!StringUtils.IsEndOfWord(text, caret))
+                {
+                    start = StringUtils.IsStartOfWord(text, caret) ? caret : StringUtils.PreviousWord(text, caret);
+
+                    end = StringUtils.NextWord(text, caret);
+
+                    SetCurrentValue(SelectionStartProperty, start);
+                    SetCurrentValue(SelectionEndProperty, end);
+                }
+
+                _isHolding = true;
+
+                e.Handled = true;
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -835,6 +866,8 @@ namespace Avalonia.Controls
             }
 
             _imClient.SetPresenter(null, null);
+            
+            RemoveHandler(Gestures.HoldingEvent, OnHolding);
         }
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -1491,7 +1524,6 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
-
                         if (!StringUtils.IsStartOfWord(text, caretIndex))
                         {
                             selectionStart = StringUtils.PreviousWord(text, caretIndex);
@@ -1525,7 +1557,7 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter == null)
+            if (_presenter == null || _isHolding)
             {
                 return;
             }
@@ -1595,6 +1627,16 @@ namespace Avalonia.Controls
 
             if (e.Pointer.Captured != _presenter)
             {
+                return;
+            }
+
+            // Selection has been handled by the Holding event handler. We do not update selection in this case
+            if (_isHolding)
+            {
+                _isHolding = false;
+
+                RaiseEvent(new ContextRequestedEventArgs(e));
+
                 return;
             }
 
