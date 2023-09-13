@@ -28,13 +28,6 @@ namespace Avalonia.Platform
         Size GetDoubleTapSize(PointerType type);
 
         /// <summary>
-        /// The size of the rectangle around the location of a pointer that must be held
-        /// in order to register a hold gesture, in device-independent pixels.
-        /// </summary>
-        /// <param name="type">The pointer type.</param>
-        Size GetHoldSize(PointerType type);
-
-        /// <summary>
         /// Gets the maximum time that may occur between the first and second click of a double-
         /// tap gesture.
         /// </summary>

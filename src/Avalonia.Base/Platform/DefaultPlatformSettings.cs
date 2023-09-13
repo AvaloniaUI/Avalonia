@@ -31,8 +31,6 @@ namespace Avalonia.Platform
             };
         }
 
-        public virtual Size GetHoldSize(PointerType type) => new Size(4, 4);
-
         public virtual TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
 
         public virtual TimeSpan HoldWaitDuration => TimeSpan.FromMilliseconds(300);

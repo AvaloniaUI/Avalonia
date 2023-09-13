@@ -264,7 +264,7 @@ namespace Avalonia.Input
                     {
                         var point = e.GetCurrentPoint((Visual)target);
                         var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
-                        var holdSize = settings?.GetHoldSize(point.Pointer.Type) ?? new Size(4, 4);
+                        var holdSize = new Size(4, 4);
                         var holdRect = new Rect(s_lastPressPoint, new Size())
                             .Inflate(new Thickness(holdSize.Width, holdSize.Height));
 
