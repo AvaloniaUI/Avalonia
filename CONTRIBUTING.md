@@ -39,7 +39,7 @@ Features that introduce new controls should consider the following:
 ## PR description
 
 - The PR template contains sections to fill in. These are discretionary and are intended to provide guidance rather than being prescritive: feel free to delete sections that do not apply, or add additional sections
-- **Please** provide a good description of the PR. Not doing so **will** delay review of the PR at a minimum, or may cause it to be closed. If English isn't your first language, consider using ChatGPT or another tool to write the description
+- **Please** provide a good description of the PR. Not doing so **will** delay review of the PR at a minimum, or may cause it to be closed. If English isn't your first language, consider using ChatGPT or another tool to write the description. If you're looking for a good example of a PR description see https://github.com/AvaloniaUI/Avalonia/pull/12765 for example.
 - Link any fixed issues with a `Fixes #1234` comment
 
 ## Breaking changes
@@ -62,6 +62,8 @@ While it's tempting to fix style issues you encounter, don't do it:
 - It causes the reviewer to get distracted by unrelated changes
 - It makes finding the cause of any later issue more difficult (blame/bisect is made more difficult)
 - As the code churns, style issues will be resolved anyway
+
+Separate PRs for style issues may be accepted if agreed with the core team in advance.
 
 ### Style
 
