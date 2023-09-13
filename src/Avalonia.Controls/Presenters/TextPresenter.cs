@@ -838,6 +838,8 @@ namespace Avalonia.Controls.Presenters
             else
             {
                 UpdateCaret(new CharacterHit(CaretIndex + preeditText.Length), false);
+                InvalidateMeasure();
+                CaretChanged();
             }
         }
 
