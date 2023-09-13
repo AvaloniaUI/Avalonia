@@ -18,13 +18,13 @@ namespace Avalonia.Input
         /// Defines the IsHoldingEnabled attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> IsHoldingEnabledProperty =
-            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldingEnabled", typeof(Gestures), true);
+            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldingEnabled", typeof(Gestures), true, inherits: true);
 
         /// <summary>
         /// Defines the IsHoldWithMouseEnabled attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> IsHoldWithMouseEnabledProperty =
-            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldWithMouseEnabled", typeof(Gestures), false);
+            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldWithMouseEnabled", typeof(Gestures), false, inherits: true);
 
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
@@ -264,11 +264,11 @@ namespace Avalonia.Input
                     {
                         var point = e.GetCurrentPoint((Visual)target);
                         var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
-                        var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
-                        var tapRect = new Rect(s_lastPressPoint, new Size())
-                            .Inflate(new Thickness(tapSize.Width, tapSize.Height));
+                        var holdSize = settings?.GetHoldSize(point.Pointer.Type) ?? new Size(4, 4);
+                        var holdRect = new Rect(s_lastPressPoint, new Size())
+                            .Inflate(new Thickness(holdSize.Width, holdSize.Height));
 
-                        if (tapRect.ContainsExclusive(point.Position))
+                        if (holdRect.ContainsExclusive(point.Position))
                         {
                             return;
                         }
