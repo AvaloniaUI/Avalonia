@@ -826,6 +826,15 @@ namespace Avalonia.Controls
             }
             else
             {
+                // Check if we still have focus in the parent's focus scope
+                if (FocusManager.GetFocusScope(this) is { } scope &&
+                    (FocusManager.GetFocusManager(this)?.GetFocusedElement(scope) is not { } focused ||
+                    (focused != this &&
+                    (focused is Visual v && !this.IsVisualAncestorOf(v)))))
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+
                 _userCalledPopulate = false;
                 ClearTextBoxSelection();
             }
