@@ -1358,7 +1358,7 @@ namespace Avalonia.Win32
                 _savedWindowInfo.ExStyle = exStyle;
             }
 
-            if(WindowStylesCallback is { } callback)
+            if (WindowStylesCallback is { } callback)
             {
                 var (s, e) = callback((uint)style, (uint)exStyle);
 
@@ -1402,6 +1402,10 @@ namespace Avalonia.Win32
                     SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                     SetWindowPosFlags.SWP_FRAMECHANGED);
             }
+
+            // Ensure window state if decorations change
+            if (oldProperties.Decorations != newProperties.Decorations)
+                ShowWindow(WindowState, false);
         }
 
         private const int MF_BYCOMMAND = 0x0;
