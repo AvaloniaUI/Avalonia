@@ -192,7 +192,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="element">The element to get the closest focus scope for</param>
         /// <returns>The focus scope</returns>
-        public static IFocusScope? GetFocusScope(IInputElement element)
+        internal static IFocusScope? GetFocusScope(IInputElement element)
         {
             if (element == null)
                 throw new ArgumentNullException(nameof(element));
