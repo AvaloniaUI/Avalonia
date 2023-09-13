@@ -50,7 +50,7 @@ Features that introduce new controls should consider the following:
 
 ### Commits
 
-In addition to the guidance in the `Bug Fixes` section, please follow these guidelines:
+In addition to the guidance in the `Bug Fixes` section, following these guidelines may help to get your PR reviewed in a timely manner:
 
 - Rebase your changes to remove extraneous commits. Ideally the commit history should tell a clean story of how the PR was implemented (even though the process was probably not clean!)
 - Provide meaningful commit comments
