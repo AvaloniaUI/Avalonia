@@ -16,12 +16,12 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     private int _subscriberCount;
     private bool _registered;
 
-    public ThreadProxyRenderTimer(IRenderTimer inner)
+    public ThreadProxyRenderTimer(IRenderTimer inner, int maxStackSize = 1 * 1024 * 1024)
     {
         _inner = inner;
         _stopwatch = new Stopwatch();
         _autoResetEvent = new AutoResetEvent(false);
-        _timerThread = new Thread(RenderTimerThreadFunc) { Name = "RenderTimerLoop", IsBackground = true };
+        _timerThread = new Thread(RenderTimerThreadFunc, maxStackSize) { Name = "RenderTimerLoop", IsBackground = true };
     }
 
     public event Action<TimeSpan> Tick
