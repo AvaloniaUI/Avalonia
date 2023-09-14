@@ -98,6 +98,7 @@ namespace Avalonia.Controls.Presenters
         private Point _navigationPosition;
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
+        private ImmutablePen? _caretPen;
 
         static TextPresenter()
         {
@@ -397,29 +398,11 @@ namespace Avalonia.Controls.Presenters
                 return;
             }
 
-            var caretBrush = CaretBrush?.ToImmutable();
-
-            if (caretBrush is null)
-            {
-                var backgroundColor = (Background as ISolidColorBrush)?.Color;
-
-                if (backgroundColor.HasValue)
-                {
-                    var red = (byte)~(backgroundColor.Value.R);
-                    var green = (byte)~(backgroundColor.Value.G);
-                    var blue = (byte)~(backgroundColor.Value.B);
-
-                    caretBrush = new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue));
-                }
-                else
-                {
-                    caretBrush = Brushes.Black;
-                }
-            }
+            _caretPen ??= new(GetCaretBrush(CaretBrush, Background));
 
             var (p1, p2) = GetCaretPoints();
 
-            context.DrawLine(new ImmutablePen(caretBrush), p1, p2);
+            context.DrawLine(_caretPen, p1, p2);
         }
 
         internal (Point, Point) GetCaretPoints()
@@ -939,6 +922,12 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
+            if (change.Property == CaretBrushProperty)
+            {
+                var caretBrush = GetCaretBrush(CaretBrush, Background);
+                _caretPen = new ImmutablePen(caretBrush);
+            }
+
             switch (change.Property.Name)
             {
                 case nameof(PreeditText):
@@ -968,6 +957,30 @@ namespace Avalonia.Controls.Presenters
                         break;
                     }
             }
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private static IImmutableBrush GetCaretBrush(IBrush? caretBrush, IBrush? background)
+        {
+            if (caretBrush is null)
+            {
+                var backgroundColor = (background as ISolidColorBrush)?.Color;
+
+                if (backgroundColor.HasValue)
+                {
+                    var red = (byte)~(backgroundColor.Value.R);
+                    var green = (byte)~(backgroundColor.Value.G);
+                    var blue = (byte)~(backgroundColor.Value.B);
+                    KnownColor known = (KnownColor)(0xFF << 24 | red << 16 | green << 8 | blue);
+
+                    caretBrush = KnownColors.ToBrush(known);
+                }
+                else
+                {
+                    caretBrush = Brushes.Black;
+                }
+            }
+            return caretBrush.ToImmutable();
         }
     }
 }
