@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -289,9 +288,9 @@ namespace Avalonia.Media
             var defaultFontFamilyName = options?.DefaultFamilyName
                 ?? PlatformImpl.GetDefaultFontFamilyName();
 
-            if (string.IsNullOrEmpty(defaultFontFamilyName) && SystemFonts.Any())
+            if (string.IsNullOrEmpty(defaultFontFamilyName) && SystemFonts.Count > 0)
             {
-                defaultFontFamilyName = SystemFonts.First().Name;
+                defaultFontFamilyName = SystemFonts[0].Name;
             }
 
             if (string.IsNullOrEmpty(defaultFontFamilyName))
