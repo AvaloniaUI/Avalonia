@@ -22,7 +22,11 @@ public enum Win32RenderingMode
     /// <summary>
     /// Avalonia would try to use native Widows OpenGL with GPU rendering.
     /// </summary>
-    Wgl = 3
+    Wgl = 3,
+    /// <summary>
+    /// Avalonia would try to use native Widows Vulkan with GPU rendering.
+    /// </summary>
+    Vulkan = 4
 }
 
 /// <summary>
