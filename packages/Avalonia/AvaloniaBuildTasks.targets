@@ -6,6 +6,19 @@
     <_AvaloniaSkipXamlCompilation Condition="'$(_AvaloniaSkipXamlCompilation)' == ''">false</_AvaloniaSkipXamlCompilation>
     <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == ''">false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
+  
+  
+
+  <PropertyGroup>
+    <!-- Enable property page if VisualStudioVersion is great or equal 17.0 and Language is'not VB.NET -->
+    <AvaloniaEnablePropertyPage Condition="'$(AvaloniaEnablePropertyPage)' == '' and '$(VisualStudioVersion)' &gt;= '17.0' and '$(Language)' != 'VB'">true</AvaloniaEnablePropertyPage>
+  </PropertyGroup>
+
+  <ItemGroup Label="Avalonia Property Page">
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)\AvaloniaRules.Project.xml" Condition="'$(AvaloniaEnablePropertyPage)' == 'true'">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
 
   <!-- Unfortunately we have to update default items in .targets since custom nuget props are improted before Microsoft.NET.Sdk.DefaultItems.props -->
   <ItemGroup Condition="'$(EnableDefaultItems)'=='True'">
