@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.Fonts;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -34,19 +36,42 @@ namespace Avalonia.Media
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var fontFamilySegment = GetFontFamilyIdentifier(name);
+            var fontSources = GetFontSourceIdentifier(name);
 
-            if (fontFamilySegment.Source != null)
+            FamilyNames = new FamilyNameCollection(fontSources);
+
+            if (fontSources.Count == 1)
             {
-                if (baseUri != null && !baseUri.IsAbsoluteUri)
+                if(fontSources[0].Source is Uri source)
                 {
-                    throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+                    if (baseUri != null && !baseUri.IsAbsoluteUri)
+                    {
+                        throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+                    }
+
+                    Key = new FontFamilyKey(source, baseUri);
+                }
+            }
+            else
+            {
+                var keys = new FontFamilyKey[fontSources.Count];
+
+                for (int i = 0; i < fontSources.Count; i++)
+                {
+                    var fontSource = fontSources[i];
+
+                    if(fontSource.Source is not null)
+                    {
+                        keys[i] = new FontFamilyKey(fontSource.Source, baseUri);
+                    }
+                    else
+                    {
+                        keys[i] = new FontFamilyKey(new Uri(FontManager.SystemFontScheme + ":" + fontSource.Name, UriKind.Absolute));
+                    }
                 }
 
-                Key = new FontFamilyKey(fontFamilySegment.Source, baseUri);
+                Key = new CompositeFontFamilyKey(new Uri(FontManager.CompositeFontScheme + ":" + name, UriKind.Absolute), keys);
             }
-
-            FamilyNames = new FamilyNameCollection(fontFamilySegment.Name);
         }
 
         /// <summary>
@@ -88,44 +113,49 @@ namespace Avalonia.Media
             return new FontFamily(s);
         }
 
-        private struct FontFamilyIdentifier
+        private static FrugalStructList<FontSourceIdentifier> GetFontSourceIdentifier(string name)
         {
-            public FontFamilyIdentifier(string name, Uri? source)
+            var result = new FrugalStructList<FontSourceIdentifier>(1);
+
+            var segments = name.Split(',');
+
+            for (int i = 0; i < segments.Length; i++)
             {
-                Name = name;
-                Source = source;
+                var segment = segments[i];
+                var innerSegments = segment.Split('#');
+
+                FontSourceIdentifier identifier;
+
+                switch (innerSegments.Length)
+                {
+                    case 1:
+                        {
+                            identifier = new FontSourceIdentifier(innerSegments[0].Trim(), null);
+                            break;
+                        }
+
+                    case 2:
+                        {
+                            var source = innerSegments[0].StartsWith("/", StringComparison.Ordinal)
+                                ? new Uri(innerSegments[0], UriKind.Relative)
+                                : new Uri(innerSegments[0], UriKind.RelativeOrAbsolute);
+
+                            identifier = new FontSourceIdentifier(innerSegments[1].Trim(), source);
+
+                            break;
+                        }
+
+                    default:
+                        {
+                            identifier = new FontSourceIdentifier(name, null);
+                            break;
+                        }
+                }
+
+                result.Add(identifier);
             }
 
-            public string Name { get; }
-
-            public Uri? Source { get; }
-        }
-
-        private static FontFamilyIdentifier GetFontFamilyIdentifier(string name)
-        {
-            var segments = name.Split('#');
-
-            switch (segments.Length)
-            {
-                case 1:
-                    {
-                        return new FontFamilyIdentifier(segments[0], null);
-                    }
-
-                case 2:
-                    {
-                        var source = segments[0].StartsWith("/", StringComparison.Ordinal)
-                            ? new Uri(segments[0], UriKind.Relative)
-                            : new Uri(segments[0], UriKind.RelativeOrAbsolute);
-
-                        return new FontFamilyIdentifier(segments[1], source);
-                    }
-
-                default:
-                    {
-                        return new FontFamilyIdentifier(name, null);
-                    }
-            }
+            return result;
         }
 
         /// <summary>
