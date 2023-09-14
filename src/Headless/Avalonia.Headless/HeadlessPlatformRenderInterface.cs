@@ -404,7 +404,10 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
+            public PixelFormat? Format { get; }
+            public AlphaFormat? AlphaFormat { get; }
             public int Version { get; set; }
+
             public void Save(string fileName, int? quality = null)
             {
 
@@ -415,7 +418,6 @@ namespace Avalonia.Headless
 
             }
 
-            public PixelFormat? Format { get; }
 
             public ILockedFramebuffer Lock()
             {
