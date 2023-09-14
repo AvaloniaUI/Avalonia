@@ -77,8 +77,6 @@ public:
         
         @autoreleasepool
         {
-            Clear();
-            
             auto string = [NSString stringWithUTF8String:(const char*)utf8String];
             auto typeString = [NSString stringWithUTF8String:(const char*)type];
             if(_item == nil)

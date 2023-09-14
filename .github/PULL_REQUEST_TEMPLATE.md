@@ -1,3 +1,5 @@
+<!--- See CONTRIBUTING.md for general guidelines on contributions -->
+
 ## What does the pull request do?
 <!--- Give a bit of background on the PR here, together with links to with related issues etc. -->
 
@@ -18,7 +20,7 @@
 
 - [ ] Added unit tests (if possible)?
 - [ ] Added XML documentation to any related classes?
-- [ ] Consider submitting a PR to https://github.com/AvaloniaUI/Documentation with user documentation
+- [ ] Consider submitting a PR to https://github.com/AvaloniaUI/avalonia-docs with user documentation
 
 ## Breaking changes
 <!--- List any breaking changes here. -->

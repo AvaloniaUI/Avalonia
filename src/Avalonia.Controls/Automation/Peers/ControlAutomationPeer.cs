@@ -120,6 +120,13 @@ namespace Avalonia.Automation.Peers
             return _parent;
         }
 
+        protected override AutomationPeer? GetVisualRootCore()
+        {
+            if (Owner.GetVisualRoot() is Control c)
+                return CreatePeerForElement(c);
+            return null;
+        }
+
         /// <summary>
         /// Invalidates the peer's children and causes a re-read from <see cref="GetChildrenCore"/>.
         /// </summary>

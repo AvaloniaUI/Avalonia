@@ -19,5 +19,4 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

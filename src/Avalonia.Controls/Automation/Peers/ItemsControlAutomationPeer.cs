@@ -28,7 +28,7 @@ namespace Avalonia.Automation.Peers
                 if (!_searchedForScrollable)
                 {
                     if (Owner.GetValue(ListBox.ScrollProperty) is Control scrollable)
-                        _scroller = GetOrCreate(scrollable) as IScrollProvider;
+                        _scroller = GetOrCreate(scrollable).GetProvider<IScrollProvider>();
                     _searchedForScrollable = true;
                 }
 
