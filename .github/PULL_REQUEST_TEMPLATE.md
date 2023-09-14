@@ -1,3 +1,5 @@
+<!--- See CONTRIBUTING.md for general guidelines on contributions -->
+
 ## What does the pull request do?
 <!--- Give a bit of background on the PR here, together with links to with related issues etc. -->
 
