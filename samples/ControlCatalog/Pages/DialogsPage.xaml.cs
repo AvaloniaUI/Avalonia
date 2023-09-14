@@ -76,21 +76,30 @@ namespace ControlCatalog.Pages
                     MimeTypes = new[] { "application/binlog", "application/buildlog" },
                     AppleUniformTypeIdentifiers = new[] { "public.data" }
                 };
-                var onlyExtensionType = new FilePickerFileType("Binary Log ext")
-                {
-                    Patterns = new[] { "*.binlog", "*.buildlog" }
-                };
 
                 return selectedItem switch
                 {
                     "All + TXT + BinLog" => new List<FilePickerFileType>
                     {
-                        FilePickerFileTypes.All,
-                        FilePickerFileTypes.TextPlain,
-                        binLogType
+                        FilePickerFileTypes.All, FilePickerFileTypes.TextPlain, binLogType
                     },
                     "Binlog" => new List<FilePickerFileType> { binLogType },
-                    "TXT extension only" => new List<FilePickerFileType> { onlyExtensionType },
+                    "TXT extension only" => new List<FilePickerFileType>
+                    {
+                        new("TXT") { Patterns = FilePickerFileTypes.TextPlain.Patterns }
+                    },
+                    "TXT mime only" => new List<FilePickerFileType>
+                    {
+                        new("TXT") { MimeTypes = FilePickerFileTypes.TextPlain.MimeTypes }
+                    },
+                    "TXT apple type id only" => new List<FilePickerFileType>
+                    {
+                        new("TXT")
+                        {
+                            AppleUniformTypeIdentifiers =
+                                FilePickerFileTypes.TextPlain.AppleUniformTypeIdentifiers
+                        }
+                    },
                     _ => null
                 };
             }

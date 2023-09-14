@@ -130,6 +130,10 @@ namespace ControlCatalog.NetCore
                     UseDBusMenu = true,
                     EnableIme = true
                 })
+                .With(new AvaloniaNativePlatformOptions
+                { RenderingMode = new [] { AvaloniaNativeRenderingMode.Metal },
+                 //   AvaloniaNativeLibraryPath = "/Users/maxkatz6/Library/Developer/Xcode/DerivedData/Avalonia.Native.OSX-bqmvvyrkwxumoraoyoinxeraehru/Build/Products/Debug/libAvalonia.Native.OSX.dylib"
+                })
                 .UseSkia()
                 .WithInterFont()
                 .AfterSetup(builder =>

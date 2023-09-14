@@ -32,7 +32,7 @@ namespace Avalonia.Native
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
             using var events = new SystemDialogEvents();
-            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter);
+            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null);
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
@@ -53,7 +53,7 @@ namespace Avalonia.Native
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
             using var events = new SystemDialogEvents();
-            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices);
+            using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension);
 
             var suggestedDirectory = options.SuggestedStartLocation?.TryGetLocalPath() ?? string.Empty;
 
@@ -87,13 +87,25 @@ namespace Avalonia.Native
     internal class FilePickerFileTypesWrapper : NativeCallbackBase, IAvnFilePickerFileTypes
     {
         private readonly IReadOnlyList<FilePickerFileType>? _types;
+        private readonly string? _defaultExtension;
 
-        public FilePickerFileTypesWrapper(IReadOnlyList<FilePickerFileType>? types)
+        public FilePickerFileTypesWrapper(
+            IReadOnlyList<FilePickerFileType>? types,
+            string? defaultExtension)
         {
             _types = types;
+            _defaultExtension = defaultExtension;
         }
 
         public int Count => _types?.Count ?? 0;
+
+        public int IsDefaultType(int index) => (_defaultExtension is not null &&
+            _types![index].TryGetExtensions()?.Any(ext => _defaultExtension.EndsWith(ext)) == true).AsComBool();
+        
+        public int IsAnyType(int index) =>
+            (_types![index].Patterns?.Contains("*.*") == true || _types[index].MimeTypes?.Contains("*.*") == true)
+            .AsComBool();
+        
         public IAvnString GetName(int index)
         {
             return _types![index].Name.ToAvnString();
@@ -101,17 +113,22 @@ namespace Avalonia.Native
 
         public IAvnStringArray GetPatterns(int index)
         {
-            return new AvnStringArray(_types![index].Patterns);
+            return new AvnStringArray(_types![index].Patterns ?? Array.Empty<string>());
+        }
+
+        public IAvnStringArray GetExtensions(int index)
+        {
+            return new AvnStringArray(_types![index].TryGetExtensions() ?? Array.Empty<string>());
         }
 
         public IAvnStringArray GetMimeTypes(int index)
         {
-            return new AvnStringArray(_types![index].MimeTypes);
+            return new AvnStringArray(_types![index].MimeTypes ?? Array.Empty<string>());
         }
 
         public IAvnStringArray GetAppleUniformTypeIdentifiers(int index)
         {
-            return new AvnStringArray(_types![index].AppleUniformTypeIdentifiers);
+            return new AvnStringArray(_types![index].AppleUniformTypeIdentifiers ?? Array.Empty<string>());
         }
     }
     

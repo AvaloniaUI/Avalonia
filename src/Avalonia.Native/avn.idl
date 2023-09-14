@@ -709,9 +709,12 @@ interface IAvnSystemDialogs : IUnknown
 [uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
 interface IAvnFilePickerFileTypes : IUnknown
 {
-    int GetCount();
+    int GetCount(); 
+    bool IsDefaultType(int index);
+    bool IsAnyType(int index);
     IAvnString* GetName(int index);
     HRESULT GetPatterns(int index, IAvnStringArray**ppv);
+    HRESULT GetExtensions(int index, IAvnStringArray**ppv);
     HRESULT GetMimeTypes(int index, IAvnStringArray**ppv);
     HRESULT GetAppleUniformTypeIdentifiers(int index, IAvnStringArray**ppv);
 }

@@ -28,6 +28,8 @@
       <ComboBoxItem>All + TXT + BinLog</ComboBoxItem>
       <ComboBoxItem>Binlog</ComboBoxItem>
       <ComboBoxItem>TXT extension only</ComboBoxItem>
+      <ComboBoxItem>TXT mime only</ComboBoxItem>
+      <ComboBoxItem>TXT apple type id only</ComboBoxItem>
     </ComboBox>
     <Expander Header="FilePicker API">
       <StackPanel Spacing="4">
