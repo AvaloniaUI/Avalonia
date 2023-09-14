@@ -101,11 +101,11 @@ namespace Avalonia.Native
 
         public int IsDefaultType(int index) => (_defaultExtension is not null &&
             _types![index].TryGetExtensions()?.Any(ext => _defaultExtension.EndsWith(ext)) == true).AsComBool();
-        
+
         public int IsAnyType(int index) =>
             (_types![index].Patterns?.Contains("*.*") == true || _types[index].MimeTypes?.Contains("*.*") == true)
             .AsComBool();
-        
+
         public IAvnString GetName(int index)
         {
             return _types![index].Name.ToAvnString();
@@ -131,7 +131,7 @@ namespace Avalonia.Native
             return new AvnStringArray(_types![index].AppleUniformTypeIdentifiers ?? Array.Empty<string>());
         }
     }
-    
+
     internal unsafe class SystemDialogEvents : NativeCallbackBase, IAvnSystemDialogEvents
     {
         private readonly TaskCompletionSource<string[]> _tcs;

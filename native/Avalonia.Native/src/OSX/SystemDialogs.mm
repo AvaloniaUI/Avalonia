@@ -66,6 +66,8 @@ const int kFileTypePopupTag = 10975;
 
 class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemDialogs>
 {
+    ExtensionDropdownHandler* __strong _extension_dropdown_handler;
+    
 public:
     FORWARD_IUNKNOWN()
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
@@ -311,6 +313,7 @@ private:
                                                           pullsDown:NO];
         popup.translatesAutoresizingMaskIntoConstraints = NO;
         popup.tag = kFileTypePopupTag;
+        [popup setAutoenablesItems:NO];
         
         // A view to group the label and popup together. The top-level view used as
         // the accessory view will be stretched horizontally to match the width of
@@ -412,6 +415,9 @@ private:
         
         for (int i = 0; i < filters->GetCount(); i++)
         {
+            NSString* type_description = GetNSStringAndRelease(filters->GetName(i));
+            [popup addItemWithTitle:type_description];
+
             // If any type is included, enable allowsOtherFileTypes, and skip this filter on save panel.
             if (filters->IsAnyType(i)) {
                 panel.allowsOtherFileTypes = YES;
@@ -420,10 +426,7 @@ private:
             if (filters->IsDefaultType(i)) {
                 default_extension_index = i;
             }
-            
-            NSString* type_description = GetNSStringAndRelease(filters->GetName(i));
-            [popup addItemWithTitle:type_description];
-            
+
             IAvnStringArray* array;
             IAvnString* arrayItem;
             
@@ -432,8 +435,12 @@ private:
             if (@available(macOS 11, *)) {
                 NSMutableArray* file_uttype_array = [NSMutableArray array];
                 bool typeCompleted = false;
-                
-                if (filters->GetExtensions(i, &array) == 0) {
+
+                if (filters->IsAnyType(i)) {
+                    UTType* type = [UTType typeWithIdentifier:@"public.item"];
+                    [file_uttype_array addObject:type];
+                }
+                else if (filters->GetExtensions(i, &array) == 0) {
                     for (int j = 0; j < array->GetCount(); j++) {
                         if (array->Get(j, &arrayItem) == 0) {
                             NSString* ext = GetNSStringAndRelease(arrayItem);
@@ -476,7 +483,10 @@ private:
                 [file_uttype_lists addObject:file_uttype_array];
             } else {
                 NSMutableArray<NSString*>* file_type_array = [NSMutableArray array];
-                if (filters->GetExtensions(i, &array) == 0) {
+                if (filters->IsAnyType(i)) {
+                    [file_type_array addObject:@"*.*"];
+                }
+                else if (filters->GetExtensions(i, &array) == 0) {
                     for (int j = 0; j < array->GetCount(); j++) {
                         if (array->Get(j, &arrayItem)) {
                             NSString* ext = GetNSStringAndRelease(arrayItem);
@@ -491,18 +501,15 @@ private:
             }
         }
         
-        ExtensionDropdownHandler* extension_dropdown_handler;
         if (@available(macOS 11, *))
-            extension_dropdown_handler = [[ExtensionDropdownHandler alloc] initWithDialog:panel
+            _extension_dropdown_handler = [[ExtensionDropdownHandler alloc] initWithDialog:panel
                                                                           fileUTTypeLists:file_uttype_lists];
         else
-            extension_dropdown_handler = [[ExtensionDropdownHandler alloc] initWithDialog:panel
+            _extension_dropdown_handler = [[ExtensionDropdownHandler alloc] initWithDialog:panel
                                                                             fileTypeLists:file_type_lists];
         
-        // This establishes a weak reference to handler. Hence we persist it as part
-        // of `dialog_data_list_`.
-        popup.target = extension_dropdown_handler;
-        popup.action = @selector(popupAction:);
+        [popup setTarget: _extension_dropdown_handler];
+        [popup setAction: @selector(popupAction:)];
         
         if (default_extension_index != -1) {
             [popup selectItemAtIndex:default_extension_index];
@@ -510,7 +517,7 @@ private:
             // Select the first item.
             [popup selectItemAtIndex:0];
         }
-        [extension_dropdown_handler popupAction:popup];
+        [_extension_dropdown_handler popupAction:popup];
         
         if (popup.numberOfItems > 0) {
             panel.accessoryView = accessory_view;
