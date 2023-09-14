@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -28,20 +29,13 @@ namespace Avalonia.Media
         {
             PlatformImpl = platformImpl;
 
-            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
+            AddFontCollection(new SystemFontCollection(this));
 
+            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
 
-            var defaultFontFamilyName = options?.DefaultFamilyName ?? PlatformImpl.GetDefaultFontFamilyName();
-
-            if (string.IsNullOrEmpty(defaultFontFamilyName))
-            {
-                throw new InvalidOperationException("Default font family name can't be null or empty.");
-            }
-
+            var defaultFontFamilyName = GetDefaultFontFamilyName(options);
             DefaultFontFamily = new FontFamily(defaultFontFamilyName);
-
-            AddFontCollection(new SystemFontCollection(this));
         }
 
         /// <summary>
@@ -111,8 +105,8 @@ namespace Avalonia.Media
                         var key = compositeKey.Keys[i];
 
                         var familyName = fontFamily.FamilyNames[i];
-                        
-                        if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) && 
+
+                        if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
                             glyphTypeface.FamilyName.Contains(familyName))
                         {
                             return true;
@@ -165,7 +159,7 @@ namespace Avalonia.Media
                 source = new Uri(key.BaseUri, source);
             }
 
-            if (TryGetFontCollection(source, out var fontCollection) && 
+            if (TryGetFontCollection(source, out var fontCollection) &&
                 fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
             {
                 if (glyphTypeface.FamilyName.Contains(familyName))
@@ -270,7 +264,7 @@ namespace Avalonia.Media
 
         private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
         {
-            if(source.Scheme == SystemFontScheme)
+            if (source.Scheme == SystemFontScheme)
             {
                 source = SystemFontsKey;
             }
@@ -288,6 +282,25 @@ namespace Avalonia.Media
             }
 
             return fontCollection != null;
+        }
+
+        private string GetDefaultFontFamilyName(FontManagerOptions? options)
+        {
+            var defaultFontFamilyName = options?.DefaultFamilyName
+                ?? PlatformImpl.GetDefaultFontFamilyName();
+
+            if (string.IsNullOrEmpty(defaultFontFamilyName) && SystemFonts.Any())
+            {
+                defaultFontFamilyName = SystemFonts.First().Name;
+            }
+
+            if (string.IsNullOrEmpty(defaultFontFamilyName))
+            {
+                throw new InvalidOperationException(
+                    "Default font family name can't be null or empty.");
+            }
+
+            return defaultFontFamilyName;
         }
     }
 }
