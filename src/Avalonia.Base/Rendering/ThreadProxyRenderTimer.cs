@@ -21,7 +21,7 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
         _inner = inner;
         _stopwatch = new Stopwatch();
         _autoResetEvent = new AutoResetEvent(false);
-        _timerThread = new Thread(RenderTimerThreadFunc) { Name = "RenderTimerLoop" };
+        _timerThread = new Thread(RenderTimerThreadFunc) { Name = "RenderTimerLoop", IsBackground = true };
     }
 
     public event Action<TimeSpan> Tick
