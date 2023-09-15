@@ -5,6 +5,8 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 
 internal class DataContextNode : ExpressionNode, ISourceNode
 {
+    public bool ShouldLogErrors => Value is not null;
+
     public override void BuildString(StringBuilder builder)
     {
         // Nothing to add.
@@ -12,7 +14,7 @@ internal class DataContextNode : ExpressionNode, ISourceNode
 
     public object SelectSource(object? source, object target, object? anchor)
     {
-        if (source is not null)
+        if (source != AvaloniaProperty.UnsetValue)
             throw new NotSupportedException(
                 "DataContextNode is invalid in conjunction with a binding source.");
         if (target is IDataContextProvider and AvaloniaObject)

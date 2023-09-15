@@ -50,14 +50,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
             // #elementName etc.) then we need to add a data context source node.
-            if (Source is null && !isRooted)
+            if (Source == AvaloniaProperty.UnsetValue && !isRooted)
                 nodes.Insert(0, ExpressionNodeFactory.CreateDataContext(targetProperty));
 
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.
             var source = nodes.Count > 0 && nodes[0] is ISourceNode sn
                 ? sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target)
-                : Source ?? target;
+                : Source != AvaloniaProperty.UnsetValue? Source : target;
 
             // Create the binding expression and wrap it in an InstancedBinding.
             var expression = new BindingExpression(
@@ -87,7 +87,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         /// </remarks>
         internal BindingExpression CreateObservableForTreeDataTemplate(object source)
         {
-            if (Source is not null)
+            if (Source != AvaloniaProperty.UnsetValue)
                 throw new NotSupportedException("Source bindings are not supported in this context.");
 
             var nodes = new List<ExpressionNode>();
@@ -109,7 +109,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         [ConstructorArgument("path")]
         public CompiledBindingPath Path { get; set; }
 
-        public object? Source { get; set; }
+        public object? Source { get; set; } = AvaloniaProperty.UnsetValue;
 
         public Type? DataType { get; set; }
     }

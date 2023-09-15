@@ -47,7 +47,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the source for the binding.
         /// </summary>
-        public object? Source { get; set; }
+        public object? Source { get; set; } = AvaloniaProperty.UnsetValue;
 
         /// <summary>
         /// Gets or sets the binding path.
@@ -85,14 +85,14 @@ namespace Avalonia.Data
             // #elementName etc.) then we need to add a source node. The type of source node will
             // depend on the ElementName and RelativeSource properties of the binding and if
             // neither of those are set will default to a data context node.
-            if (Source is null && !isRooted &&  CreateSourceNode(targetProperty) is { } sourceNode)
+            if (Source == AvaloniaProperty.UnsetValue && !isRooted && CreateSourceNode(targetProperty) is { } sourceNode)
                 nodes.Insert(0, sourceNode);
 
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.
-            var source = nodes.Count > 0 && nodes[0] is ISourceNode sn
-                ? sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target)
-                : Source ?? target;
+            var source = nodes.Count > 0 && nodes[0] is ISourceNode sn ?
+                sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target) :
+                Source != AvaloniaProperty.UnsetValue ? Source : target;
 
             // Create the binding expression and wrap it in an InstancedBinding.
             var expression = new BindingExpression(
@@ -125,7 +125,7 @@ namespace Avalonia.Data
                 throw new NotSupportedException("ElementName bindings are not supported in this context.");
             if (RelativeSource is not null && RelativeSource.Mode != RelativeSourceMode.DataContext)
                 throw new NotSupportedException("RelativeSource bindings are not supported in this context.");
-            if (Source is not null)
+            if (Source != AvaloniaProperty.UnsetValue)
                 throw new NotSupportedException("Source bindings are not supported in this context.");
 
             var nodes = new List<ExpressionNode>();

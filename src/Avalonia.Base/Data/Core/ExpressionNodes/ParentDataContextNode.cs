@@ -19,7 +19,7 @@ internal class ParentDataContextNode : ExpressionNode, ISourceNode
 
     public object SelectSource(object? source, object target, object? anchor)
     {
-        if (source is not null)
+        if (source != AvaloniaProperty.UnsetValue)
             throw new NotSupportedException(
                 "ParentDataContextNode is invalid in conjunction with a binding source.");
         if (target is IDataContextProvider and AvaloniaObject)

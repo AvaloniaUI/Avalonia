@@ -12,7 +12,7 @@ internal class TemplatedParentNode : ExpressionNode, ISourceNode
 
     public object SelectSource(object? source, object target, object? anchor)
     {
-        if (source is not null)
+        if (source != AvaloniaProperty.UnsetValue)
             throw new NotSupportedException(
                 "TemplatedParentNode is invalid in conjunction with a binding source.");
         if (target is StyledElement)
