@@ -5,6 +5,9 @@
     <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\tools\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
     <AvaloniaUseExternalMSBuild>false</AvaloniaUseExternalMSBuild>
     <UsedAvaloniaProducts>$(UsedAvaloniaProducts);AvaloniaUI</UsedAvaloniaProducts>
+    <EnableAvaloniaXamlCompilation Condition="'$(EnableAvaloniaXamlCompilation)'==''">true</EnableAvaloniaXamlCompilation>
+    <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)'==''">false</AvaloniaXamlIlVerifyIl>
+    <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)'==''">true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\Avalonia.Generators.props"/>

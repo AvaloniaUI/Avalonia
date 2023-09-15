@@ -122,6 +122,11 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
         _impl.PushOpacityMask(mask, bounds);
     }
 
+    public void PushRenderOptions(RenderOptions renderOptions)
+    {
+        _impl.PushRenderOptions(renderOptions);
+    }
+
     public void PopOpacityMask()
     {
         _impl.PopOpacityMask();
@@ -135,6 +140,11 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl,
     public void PopGeometryClip()
     {
         _impl.PopGeometryClip();
+    }
+
+    public void PopRenderOptions()
+    {
+        _impl.PopRenderOptions();
     }
 
     public object? GetFeature(Type t) => _impl.GetFeature(t);
