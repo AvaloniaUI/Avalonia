@@ -8,6 +8,7 @@
     <!--<AvaloniaXamlIlDebuggerLaunch>true</AvaloniaXamlIlDebuggerLaunch>-->
     <EnableAvaloniaXamlCompilation>false</EnableAvaloniaXamlCompilation>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
