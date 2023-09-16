@@ -6,7 +6,7 @@ using Avalonia.Controls;
 
 namespace Avalonia.X11
 {
-    internal class TransparencyHelper :  IDisposable, X11Globals.IGlobalsSubscriber
+    internal class TransparencyHelper :  IDisposable
     {
         private readonly X11Info _x11;
         private readonly IntPtr _window;
@@ -35,7 +35,8 @@ namespace Avalonia.X11
             _x11 = x11;
             _window = window;
             _globals = globals;
-            _globals.AddSubscriber(this);
+            _globals.CompositionChanged += UpdateTransparency;
+            _globals.WindowManagerChanged += UpdateTransparency;
         }
 
         public void SetTransparencyRequest(IReadOnlyList<WindowTransparencyLevel> levels)
@@ -106,11 +107,8 @@ namespace Avalonia.X11
         
         public void Dispose()
         {
-            _globals.RemoveSubscriber(this);
+            _globals.WindowManagerChanged -= UpdateTransparency;
+            _globals.CompositionChanged -= UpdateTransparency;
         }
-
-        void X11Globals.IGlobalsSubscriber.WmChanged(string wmName) => UpdateTransparency();
-
-        void X11Globals.IGlobalsSubscriber.CompositionChanged(bool compositing) => UpdateTransparency();
     }
 }
