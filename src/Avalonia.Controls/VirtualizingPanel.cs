@@ -183,7 +183,7 @@ namespace Avalonia.Controls
         {
             var itemsControl = EnsureItemsControl();
             
-            for (var i = 0; i < count; ++i)
+            for (var i = index; i < count; ++i)
             {
                 var c = Children[i];
                 itemsControl.RemoveLogicalChild(c);

@@ -230,6 +230,8 @@ namespace Avalonia.X11
                 () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this)
             });
+
+            platform.X11Screens.Changed += OnScreensChanged;
         }
 
         private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -585,6 +587,11 @@ namespace Avalonia.X11
             return extents;
         }
 
+        private void OnScreensChanged()
+        {
+            UpdateScaling();
+        }
+
         private bool UpdateScaling(bool skipResize = false)
         {
             double newScaling;
@@ -592,7 +599,7 @@ namespace Avalonia.X11
                 newScaling = _scalingOverride.Value;
             else
             {
-                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.Scaling)
+                var monitor = _platform.X11Screens.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(_position ?? default));
                 newScaling = monitor?.Scaling ?? RenderScaling;
             }
@@ -648,6 +655,7 @@ namespace Avalonia.X11
                     SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
                         IntPtr.Zero);
                 }
+                WindowStateChanged?.Invoke(value);
             }
         }
 
@@ -925,6 +933,8 @@ namespace Avalonia.X11
                 if (!fromDestroyNotification)
                     XDestroyWindow(_x11.Display, handle);
             }
+
+            _platform.X11Screens.Changed -= OnScreensChanged;
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
@@ -1094,7 +1104,7 @@ namespace Avalonia.X11
 
         public IScreenImpl Screen => _platform.Screens;
 
-        public Size MaxAutoSizeHint => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
+        public Size MaxAutoSizeHint => _platform.X11Screens.AllScreens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 
