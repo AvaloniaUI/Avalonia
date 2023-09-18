@@ -384,33 +384,5 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             FocusHighlighter = parameter as IBrush;
         }
-
-        //protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-        //{
-        //    base.OnPropertyChanged(e);
-        //    if (e.PropertyName == nameof(FocusHighlighter))
-        //    {
-        //        _FocusObserver?.Dispose();
-        //        _FocusObserver = null;
-        //        _currentFocusHighlightAdorner?.Dispose();
-        //        _currentFocusHighlightAdorner = null;
-        //        if (FocusHighlighter is IBrush highlighter)
-        //        {
-        //            _FocusObserver = InputElement.GotFocusEvent.AddClassHandler<InputElement>(GotFocusEventHandler,handledEventsToo:true);
-        //        }
-
-        //    }
-
-        //    void GotFocusEventHandler(InputElement control, GotFocusEventArgs args)
-        //    {
-        //        if (control is InputElement c)
-        //        {
-        //            _currentFocusHighlightAdorner?.Dispose();
-        //            _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(c, FocusHighlighter!);
-        //        }
-
-        //    }
-
-        //}
     }
 }
