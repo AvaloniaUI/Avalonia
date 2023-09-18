@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
@@ -121,7 +122,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 void AddType(IXamlType type, IXamlType conv) 
                     => _converters.Add(new KeyValuePair<IXamlType, IXamlType>(type, conv));
 
-                void Add(string type, string conv)
+                void Add([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] string type, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] string conv)
                     => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
                 
                 Add("Avalonia.Media.IImage","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
