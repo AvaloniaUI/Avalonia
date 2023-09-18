@@ -484,7 +484,7 @@ namespace Avalonia.Build.Tasks
 
                             var foundXamlLoader = false;
                             // Find AvaloniaXamlLoader.Load(this) or AvaloniaXamlLoader.Load(sp, this) and replace it with !XamlIlPopulateTrampoline(this)
-                            foreach (var method in classTypeDefinition.Methods.ToArray())
+                            foreach (var method in classTypeDefinition.Methods.Where(m => m.Body is not null).ToArray())
                             {
                                 var i = method.Body.Instructions;
                                 for (var c = 1; c < i.Count; c++)
