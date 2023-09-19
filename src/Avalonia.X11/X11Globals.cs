@@ -12,11 +12,15 @@ namespace Avalonia.X11
         private readonly X11Info _x11;
         private readonly IntPtr _rootWindow;
         private readonly IntPtr _compositingAtom;
-        private readonly List<IGlobalsSubscriber> _subscribers = new List<IGlobalsSubscriber>();
         
         private string _wmName;
         private IntPtr _compositionAtomOwner;
         private bool _isCompositionEnabled;
+
+        public event Action WindowManagerChanged;
+        public event Action CompositionChanged;
+        public event Action<IntPtr> RootPropertyChanged;
+        public event Action RootGeometryChangedChanged;
 
         public X11Globals(AvaloniaX11Platform plat)
         {
@@ -40,9 +44,7 @@ namespace Avalonia.X11
                 if (_wmName != value)
                 {
                     _wmName = value;
-                    // The collection might change during enumeration
-                    foreach (var s in _subscribers.ToArray()) 
-                        s.WmChanged(value);
+                    WindowManagerChanged?.Invoke();
                 }
             }
         }
@@ -68,9 +70,7 @@ namespace Avalonia.X11
                 if (_isCompositionEnabled != value)
                 {
                     _isCompositionEnabled = value;
-                    // The collection might change during enumeration
-                    foreach (var s in _subscribers.ToArray()) 
-                        s.CompositionChanged(value);
+                    CompositionChanged?.Invoke();
                 }
             }
         }
@@ -160,6 +160,12 @@ namespace Avalonia.X11
             {
                 if(ev.PropertyEvent.atom == _x11.Atoms._NET_SUPPORTING_WM_CHECK)
                     UpdateWmName();
+                RootPropertyChanged?.Invoke(ev.PropertyEvent.atom);
+            }
+
+            if (ev.type == XEventName.ConfigureNotify)
+            {
+                RootGeometryChangedChanged?.Invoke();
             }
 
             if (ev.type == XEventName.ClientMessage)
@@ -169,14 +175,5 @@ namespace Avalonia.X11
                     UpdateCompositingAtomOwner();
             }
         }
-        
-        public interface IGlobalsSubscriber
-        {
-            void WmChanged(string wmName);
-            void CompositionChanged(bool compositing);
-        }
-
-        public void AddSubscriber(IGlobalsSubscriber subscriber) => _subscribers.Add(subscriber);
-        public void RemoveSubscriber(IGlobalsSubscriber subscriber) => _subscribers.Remove(subscriber);
     }
 }
