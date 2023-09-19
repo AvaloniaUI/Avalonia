@@ -17,6 +17,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -29,12 +30,13 @@ namespace Avalonia.X11
             new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
-        public IX11Screens X11Screens { get; private set; }
+        public X11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        public XResources Resources { get; private set; }
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
 
         public void Initialize(X11PlatformOptions options)
@@ -63,6 +65,7 @@ namespace Avalonia.X11
 
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
+            Resources = new XResources(this);
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
@@ -80,8 +83,7 @@ namespace Avalonia.X11
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = X11.X11Screens.Init(this);
-            Screens = new X11Screens(X11Screens);
+            Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
                 var xi2 = new XI2Manager();
