@@ -429,8 +429,8 @@ namespace Avalonia.Browser
                 return false;
 
             IsComposing = false;
+
             _client.SetPreeditText(null);
-            _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
 
             return false;
         }
