@@ -279,10 +279,11 @@ namespace Avalonia.Diagnostics.ViewModels
             var element = KeyboardDevice.Instance?.FocusedElement;
             FocusedControl = element?.GetType().Name;
             _currentFocusHighlightAdorner?.Dispose();
-            if (FocusHighlighter is IBrush brush 
-                && element is InputElement input 
-                && TopLevel.GetTopLevel(input) is { } topLevel 
-                && topLevel.GetType().FullName != "Avalonia.Diagnostics.Views.MainWindow")
+            if (FocusHighlighter is IBrush brush
+                && element is InputElement input
+                && TopLevel.GetTopLevel(input) is { } topLevel
+                && topLevel is not Avalonia.Diagnostics.Views.MainWindow
+                )
             {
                 _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
             }
