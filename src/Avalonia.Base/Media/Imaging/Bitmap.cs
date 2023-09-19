@@ -241,7 +241,7 @@ namespace Avalonia.Media.Imaging
                 throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
             }
 
-            if (readable.Format != Format || readable.AlphaFormat != alphaFormat)
+            if (buffer.Format != readable.Format || alphaFormat != readable.AlphaFormat)
             {
                 using (var fb = readable.Lock())
                 {
