@@ -32,7 +32,6 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showPropertyType;
         private bool _showImplementedInterfaces;
         private IBrush? _FocusHighlighter;
-        private IDisposable? _FocusObserver = default;
         private IDisposable? _currentFocusHighlightAdorner = default;
 
         public MainViewModel(AvaloniaObject root)
