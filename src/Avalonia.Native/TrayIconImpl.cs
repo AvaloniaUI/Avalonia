@@ -50,7 +50,7 @@ namespace Avalonia.Native
 
         public void SetToolTipText(string? text)
         {
-            // NOP
+            _native.SetToolTipText(text);
         }
 
         public void SetIsVisible(bool visible)
