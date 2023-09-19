@@ -281,9 +281,12 @@ namespace Avalonia.Diagnostics.ViewModels
             if (FocusHighlighter is IBrush brush
                 && element is InputElement input
                 && TopLevel.GetTopLevel(input) is { } topLevel
-                && topLevel is not Avalonia.Diagnostics.Views.MainWindow
-                )
+                && (topLevel is not Avalonia.Diagnostics.Views.MainWindow))
             {
+                if (topLevel is PopupRoot pr && pr.ParentTopLevel is Avalonia.Diagnostics.Views.MainWindow)
+                {
+                    return;
+                }
                 _currentFocusHighlightAdorner = Controls.ControlHighlightAdorner.Add(input, brush);
             }
         }
