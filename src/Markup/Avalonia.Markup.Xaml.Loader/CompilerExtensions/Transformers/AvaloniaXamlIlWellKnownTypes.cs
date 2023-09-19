@@ -123,6 +123,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
+            // WARNING: Don't forget to add any new type to the CompilerDynamicDependencies.cs, so runtime loader won't crash with trimming.
+
             RuntimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
 
             XamlIlTypes = cfg.WellKnownTypes;

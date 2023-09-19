@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Platform;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.TypeSystem;
@@ -23,9 +24,13 @@ using Mono.Cecil;
 using XamlX.Ast;
 using XamlX.IL.Cecil;
 #endif
+
 namespace Avalonia.Markup.Xaml.XamlIl
 {
-    static class AvaloniaXamlIlRuntimeCompiler
+#if !RUNTIME_XAML_CECIL
+    [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
+    internal static class AvaloniaXamlIlRuntimeCompiler
     {
 #if !RUNTIME_XAML_CECIL
         private static SreTypeSystem _sreTypeSystem;
@@ -58,6 +63,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
         }
 
+        [CompilerDynamicDependencies]
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
         static void InitializeSre()
         {
@@ -158,7 +164,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 new object[] { name }));
         }
 
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
         static object LoadSre(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
         {
             var success = false;
@@ -175,7 +180,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
         }
 
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
         static IReadOnlyList<object> LoadGroupSre(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents,
             RuntimeXamlLoaderConfiguration configuration)
         {
@@ -194,7 +198,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
         static IReadOnlyList<object> LoadGroupSreCore(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents, RuntimeXamlLoaderConfiguration configuration)
         {
             InitializeSre();
@@ -275,7 +278,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 .ToArray();
         }
 
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
         static object LoadSreCore(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
         {
             return LoadGroupSreCore(new[] { document }, configuration).Single();
@@ -331,9 +333,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
         }
 
-#if !RUNTIME_XAML_CECIL
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
-#endif
         public static object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
         {
 #if RUNTIME_XAML_CECIL
@@ -346,9 +345,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
 #endif
         }
 
-#if !RUNTIME_XAML_CECIL
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
-#endif
         public static IReadOnlyList<object> LoadGroup(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents, RuntimeXamlLoaderConfiguration configuration)
         {
 #if RUNTIME_XAML_CECIL
@@ -383,6 +379,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         private static XamlIlXmlnsMappings _cecilXmlns;
         private static bool _cecilInitialized;
 
+        [CompilerDynamicDependencies]
         static void InitializeCecil()
         {
             if(_cecilInitialized)

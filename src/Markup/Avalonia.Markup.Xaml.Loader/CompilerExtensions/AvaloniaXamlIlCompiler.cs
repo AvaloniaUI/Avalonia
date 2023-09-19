@@ -16,9 +16,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class AvaloniaXamlIlCompiler : XamlILCompiler
     {
-        internal const string DynamicXamlReference =
-            "x:Class directive type and XAML dependencies are referenced dynamically and might be trimmed.";
-
         private readonly IXamlType _contextType;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
         private readonly AvaloniaBindingExtensionTransformer _bindingTransformer;
@@ -147,7 +144,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        [RequiresUnreferencedCode(DynamicXamlReference)]
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public XamlDocument Parse(string xaml, IXamlType overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -197,7 +196,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 fileSource);
         }
 
-        [RequiresUnreferencedCode(DynamicXamlReference)]
+#if !XAMLX_CECIL_INTERNAL
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+#endif
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);

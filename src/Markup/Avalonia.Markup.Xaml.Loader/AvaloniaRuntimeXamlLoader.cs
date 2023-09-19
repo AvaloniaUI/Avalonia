@@ -21,7 +21,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="uri">The URI of the XAML being loaded.</param>
         /// <param name="designMode">Indicates whether the XAML is being loaded in design mode.</param>
         /// <returns>The loaded object.</returns>
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
         public static object Load(string xaml, Assembly? localAssembly = null, object? rootInstance = null, Uri? uri = null, bool designMode = false)
         {
             xaml = xaml ?? throw new ArgumentNullException(nameof(xaml));
@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="uri">The URI of the XAML being loaded.</param>
         /// <param name="designMode">Indicates whether the XAML is being loaded in design mode.</param>
         /// <returns>The loaded object.</returns>
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
         public static object Load(Stream stream, Assembly? localAssembly = null, object? rootInstance = null, Uri? uri = null,
             bool designMode = false)
             => AvaloniaXamlIlRuntimeCompiler.Load(new RuntimeXamlLoaderDocument(uri, rootInstance, stream),
@@ -53,7 +53,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="document">The stream containing the XAML.</param>
         /// <param name="configuration">Xaml loader configuration.</param>
         /// <returns>The loaded object.</returns>
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
         public static object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration? configuration = null)
             => AvaloniaXamlIlRuntimeCompiler.Load(document, configuration ?? new RuntimeXamlLoaderConfiguration());
 
@@ -63,7 +63,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="documents">Collection of documents.</param>
         /// <param name="configuration">Xaml loader configuration.</param>
         /// <returns>The loaded objects per each input document. If document was removed, the element by index is null.</returns>
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
         public static IReadOnlyList<object?> LoadGroup(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents, RuntimeXamlLoaderConfiguration? configuration = null)
             => AvaloniaXamlIlRuntimeCompiler.LoadGroup(documents, configuration ?? new RuntimeXamlLoaderConfiguration());
 
@@ -73,7 +73,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="xaml">The string containing the XAML.</param>
         /// <param name="localAssembly">Default assembly for clr-namespace:.</param>
         /// <returns>The loaded object.</returns>
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
         public static object Parse(string xaml, Assembly? localAssembly = null)
             => Load(xaml, localAssembly);
 
@@ -84,7 +84,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="xaml">>The string containing the XAML.</param>
         /// <param name="localAssembly">>Default assembly for clr-namespace:.</param>
         /// <returns>The loaded object.</returns>
-        [RequiresUnreferencedCode(AvaloniaXamlIlCompiler.DynamicXamlReference)]
+        [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
         public static T Parse<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(string xaml, Assembly? localAssembly = null)
             => (T)Parse(xaml, localAssembly);
     }
