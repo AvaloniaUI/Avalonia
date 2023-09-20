@@ -5,15 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
 namespace Avalonia.Controls.Platform
 {
     [PrivateApi]
     public interface IWin32OptionsTopLevelImpl : ITopLevelImpl
     {
-        public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
-        public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
-
         /// <summary>
         /// Gets or sets a callback to set the window styles. 
         /// </summary>
