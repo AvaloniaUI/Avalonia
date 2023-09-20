@@ -27,6 +27,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Input.Platform;
 using System.Diagnostics;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
+using static Avalonia.Controls.Platform.Win32SpecificOptions;
 
 namespace Avalonia.Win32
 {
