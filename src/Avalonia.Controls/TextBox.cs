@@ -316,9 +316,13 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
+        private bool _touchDragStarted;
+        private bool _inTouchDrag;
+        private Point _touchDragStartPoint;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private static bool _isHolding;
+        private int _currentClickCount;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -848,10 +852,10 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionEndProperty, end);
                 }
 
-                _isHolding = true;
-
                 e.Handled = true;
             }
+
+            _isHolding = true;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -1489,7 +1493,20 @@ namespace Avalonia.Controls
             if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
+                var isTouch = e.Pointer.Type == PointerType.Touch;
+
+                _currentClickCount = e.ClickCount;
                 var point = e.GetPosition(_presenter);
+
+                if(isTouch && e.ClickCount == 1)
+                {
+                    _wordSelectionStart = -1;
+                    _touchDragStarted = true;
+                    _touchDragStartPoint = point;
+                    e.Pointer.Capture(_presenter);
+                    e.Handled = true;
+                    return;
+                }
 
                 _presenter.MoveCaretToPoint(point);
 
@@ -1571,6 +1588,16 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
+                if(_touchDragStarted)
+                {
+                    _touchDragStarted = false;
+                    _inTouchDrag = true;
+
+                    _presenter.MoveCaretToPoint(_touchDragStartPoint);
+                    _touchDragStartPoint = default;
+                    SetCurrentValue(SelectionStartProperty, _presenter.CaretIndex);
+                }
+
                 _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;
@@ -1625,6 +1652,12 @@ namespace Avalonia.Controls
                 return;
             }
 
+            _touchDragStarted = false;
+            _touchDragStartPoint = default;
+
+            var isInTouchDrag = _inTouchDrag;
+            _inTouchDrag = false;
+
             if (e.Pointer.Captured != _presenter)
             {
                 return;
@@ -1634,13 +1667,8 @@ namespace Avalonia.Controls
             if (_isHolding)
             {
                 _isHolding = false;
-
-                RaiseEvent(new ContextRequestedEventArgs(e));
-
-                return;
             }
-
-            if (e.InitialPressMouseButton == MouseButton.Right)
+            else if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1659,6 +1687,24 @@ namespace Avalonia.Controls
                     SetCurrentValue(CaretIndexProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                     SetCurrentValue(SelectionStartProperty, caretIndex);
+                }
+            }
+            else if (e.Pointer.Type == PointerType.Touch)
+            {
+                if (_currentClickCount == 1 && !isInTouchDrag)
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                }
+
+                if(SelectionStart != SelectionEnd)
+                {
+                    RaiseEvent(new ContextRequestedEventArgs(e));
                 }
             }
 

@@ -389,7 +389,7 @@ namespace Avalonia.Controls
             if (!e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
-                RaiseEvent(new ContextRequestedEventArgs());
+                RaiseEvent(e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs());
             }
         }
 

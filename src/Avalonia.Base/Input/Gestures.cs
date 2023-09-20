@@ -18,13 +18,13 @@ namespace Avalonia.Input
         /// Defines the IsHoldingEnabled attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> IsHoldingEnabledProperty =
-            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldingEnabled", typeof(Gestures), true, inherits: true);
+            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldingEnabled", typeof(Gestures), true);
 
         /// <summary>
         /// Defines the IsHoldWithMouseEnabled attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> IsHoldWithMouseEnabledProperty =
-            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldWithMouseEnabled", typeof(Gestures), false, inherits: true);
+            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldWithMouseEnabled", typeof(Gestures), false);
 
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
@@ -163,7 +163,7 @@ namespace Avalonia.Input
                 {
                     if(s_isHolding && ev.Source is Interactive i)
                     {
-                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer.Type));
+                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer.Type, e));
                     }
                     s_holdCancellationToken?.Cancel();
                     s_holdCancellationToken?.Dispose();
@@ -191,7 +191,7 @@ namespace Avalonia.Input
                             if (!token.IsCancellationRequested && e.Source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
                             {
                                 s_isHolding = true;
-                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type));
+                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type, e));
                             }
                         }, settings.HoldWaitDuration);
                     }
@@ -231,7 +231,7 @@ namespace Avalonia.Input
                         if(s_isHolding)
                         {
                             s_isHolding = false;
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_lastPointer!.Type));
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_lastPointer!.Type, e));
                         }
                         else if (e.InitialPressMouseButton == MouseButton.Right)
                         {
@@ -275,7 +275,7 @@ namespace Avalonia.Input
 
                         if (s_isHolding)
                         {
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type));
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type, e));
                         }
                     }
                 }
