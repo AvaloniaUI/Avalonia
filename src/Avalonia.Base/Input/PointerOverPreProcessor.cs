@@ -50,7 +50,7 @@ namespace Avalonia.Input
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
                         args.InputModifiers.ToKeyModifiers());
                 }
-                else if (args.Type is RawPointerEventType.TouchBegin && args.Root is Visual visual)
+                else if (args.Type is RawPointerEventType.TouchBegin or RawPointerEventType.TouchUpdate && args.Root is Visual visual)
                 {
                     _lastKnownPosition = visual.PointToScreen(args.Position);
                 }
@@ -62,7 +62,8 @@ namespace Avalonia.Input
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
                         args.InputModifiers.ToKeyModifiers());
                 }
-                else if (pointerDevice.TryGetPointer(args) is { } pointer)
+                else if (pointerDevice.TryGetPointer(args) is { } pointer &&
+                    pointer.Type != PointerType.Touch)
                 {
                     var element = pointer.Captured ?? args.InputHitTestResult;
 
