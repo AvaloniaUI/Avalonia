@@ -775,12 +775,19 @@ namespace Avalonia.Win32
 
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
-                    // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
-                    // be ignored. This should be safe to do as WM_CHAR should only be produced in
-                    // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
-                    // is handled.
-                    _ignoreWmChar = e.Handled;
-                }
+                    if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    {
+                        _ignoreWmChar = true;
+                    }
+                    else
+                    {
+                        // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
+                        // be ignored. This should be safe to do as WM_CHAR should only be produced in
+                        // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
+                        // is handled.
+                        _ignoreWmChar = e.Handled;
+                    }
+                 }
 
                 if (s_intermediatePointsPooledList.Count > 0)
                 {
