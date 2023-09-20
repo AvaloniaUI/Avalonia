@@ -10,8 +10,7 @@ using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
 
 namespace Avalonia.Controls.Platform
 {
-    [Unstable]
-    public class Win32SpecificOptions
+    public static class Win32SpecificOptions
     {
         public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
         public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
