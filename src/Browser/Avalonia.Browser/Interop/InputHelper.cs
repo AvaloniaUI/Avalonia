@@ -20,8 +20,6 @@ internal static partial class InputHelper
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Number, JSType.Number, JSType.Boolean>>]
         Func<JSObject, int, int, bool> onBeforeInput,
-        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Boolean>>]
-        Func<string, string?, bool> onInput,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> onCompositionStart,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
