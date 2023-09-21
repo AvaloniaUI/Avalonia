@@ -64,7 +64,7 @@ internal class DynamicPluginPropertyAccessorNode : ExpressionNode, IPropertyAcce
         else
         {
             SetError(
-                $"Could not find a matching property accessor for '{PropertyName}' on '{source}'");
+                $"Could not find a matching property accessor for '{PropertyName}' on '{source.GetType()}'.");
         }
     }
 

@@ -3,14 +3,14 @@ using System.Text;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class TemplatedParentNode : ExpressionNode, ISourceNode
+internal class TemplatedParentNode : SourceNode
 {
     public override void BuildString(StringBuilder builder)
     {         
         builder.Append("$templatedParent");
     }
 
-    public object SelectSource(object? source, object target, object? anchor)
+    public override object? SelectSource(object? source, object target, object? anchor)
     {
         if (source != AvaloniaProperty.UnsetValue)
             throw new NotSupportedException(
@@ -31,7 +31,7 @@ internal class TemplatedParentNode : ExpressionNode, ISourceNode
         }
         else
         {
-            SetError(new InvalidCastException($"Unable to read TemplatedParent from '{source.GetType()}'."));
+            SetError($"Unable to read TemplatedParent from '{source.GetType()}'.");
         }
     }
 

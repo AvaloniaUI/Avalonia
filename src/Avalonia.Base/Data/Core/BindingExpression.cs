@@ -7,6 +7,7 @@ using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Logging;
 
 namespace Avalonia.Data.Core;
 
@@ -22,7 +23,6 @@ internal class BindingExpression : IObservable<object?>,
     IDescription,
     IDisposable
 {
-    private const string NullValueMessage = "Value is null.";
     private static readonly WeakReference<object?> NullReference = new(null);
     private readonly WeakReference<object?>? _source;
     private readonly WeakReference<AvaloniaObject?> _target;
@@ -307,7 +307,7 @@ internal class BindingExpression : IObservable<object?>,
         }
         else if (value is null)
         {
-            OnNodeError(nodeIndex, NullValueMessage);
+            OnNodeError(nodeIndex, "Value is null.");
         }
         else
         {
@@ -338,11 +338,59 @@ internal class BindingExpression : IObservable<object?>,
 
         // Build a string describing the binding chain up to the node that errored.
         var errorPoint = new StringBuilder();
+
         if (nodeIndex >= 0)
             _nodes[nodeIndex].BuildString(errorPoint);
+        else
+            errorPoint.Append("(source)");
+
+        LogWarningIfNecessary(error, errorPoint.ToString());
 
         var e = new BindingChainException(error, Description, errorPoint.ToString());
-        _observer?.OnNext(new BindingNotification(e, BindingErrorType.Error, FallbackValue));
+        _observer.OnNext(new BindingNotification(
+            e, 
+            BindingErrorType.Error, 
+            ConvertFallback(FallbackValue, nameof(FallbackValue))));
+    }
+
+    private void LogWarningIfNecessary(string error, string errorPoint)
+    {
+        if (!_target.TryGetTarget(out var target))
+            return;
+
+        if (_nodes.Count > 0 &&
+            _nodes[0] is SourceNode sourceNode &&
+            !sourceNode.ShouldLogErrors(target))
+            return;
+
+        Log(target, error, errorPoint);
+    }
+
+    private void Log(AvaloniaObject target, string error, LogEventLevel level = LogEventLevel.Warning)
+    {
+        if (!Logger.TryGet(level, LogArea.Binding, out var log))
+            return;
+
+        log.Log(
+            target,
+            "An error occurred binding {Property} to {Expression}: {Message}",
+            (object?)_targetProperty ?? "(unknown)",
+            Description,
+            error);
+    }
+
+    private void Log(AvaloniaObject target, string error, string errorPoint, LogEventLevel level = LogEventLevel.Warning)
+    {
+        if (!Logger.TryGet(level, LogArea.Binding, out var log))
+            return;
+
+        log.Log(
+            target,
+            "An error occurred binding {Property} to {Expression} at {ExpressionErrorPoint}: {Message}",
+            (object?)_targetProperty ?? "(unknown)",
+            Description,
+            errorPoint,
+            error);
     }
 
     private void Start()
@@ -369,7 +417,7 @@ internal class BindingExpression : IObservable<object?>,
         }
         else
         {
-            OnNodeError(-1, NullValueMessage);
+            OnNodeError(-1, "Binding Source is null.");
         }
     }
 
@@ -396,7 +444,7 @@ internal class BindingExpression : IObservable<object?>,
         var valueOrNotification = _nodes.Count > 0 ? _nodes[_nodes.Count - 1].Value : null;
         var value = BindingNotification.ExtractValue(valueOrNotification);
         var notification = valueOrNotification as BindingNotification;
-        var isFallback = false;
+        var isTargetNullValue = false;
 
         // All values other than DoNothing should be passed to the converter.
         if (value != BindingOperations.DoNothing && Converter is { } converter)
@@ -418,8 +466,8 @@ internal class BindingExpression : IObservable<object?>,
         // was a binding error so we don't want to use TargetNullValue in that case.
         if (value is null && TargetNullValue != AvaloniaProperty.UnsetValue)
         {
-            value = TargetNullValue;
-            isFallback = true;
+            value = UpdateAndUnwrap(ConvertFallback(TargetNullValue, nameof(TargetNullValue)), ref notification);
+            isTargetNullValue = true;
         }
 
         // If we have a value, try to convert it to the target type.
@@ -427,9 +475,9 @@ internal class BindingExpression : IObservable<object?>,
         {
             if (StringFormat is { } stringFormat &&
                 (TargetType == typeof(object) || TargetType == typeof(string)) &&
-                !isFallback)
+                !isTargetNullValue)
             {
-                // The string format applies we're targeting a type that can accept a string
+                // The string format applies if we're targeting a type that can accept a string
                 // and the value isn't the TargetNullValue.
                 value = string.Format(CultureInfo.CurrentCulture, stringFormat, value);
             }
@@ -443,13 +491,7 @@ internal class BindingExpression : IObservable<object?>,
         // FallbackValue applies if the result from the binding, converter or target type converter
         // is UnsetValue.
         if (value == AvaloniaProperty.UnsetValue && FallbackValue != AvaloniaProperty.UnsetValue)
-        {
-            value = FallbackValue;
-
-            // If we have a target type converter, convert the fallback value to the target type.
-            if (_targetTypeConverter is not null && value is not null)
-                value = UpdateAndUnwrap(ConvertFrom(_targetTypeConverter, value, true), ref notification);
-        }
+            value = UpdateAndUnwrap(ConvertFallback(FallbackValue, nameof(FallbackValue)), ref notification);
 
         // Store the value and publish the notification/value to the observer.
         _value = value is null ? NullReference : new(value);
@@ -503,6 +545,20 @@ internal class BindingExpression : IObservable<object?>,
             return new BindingNotification(ex, BindingErrorType.Error);
         }
     }
+
+    private object? ConvertFallback(object? fallback, string fallbackName)
+    {
+        if (_targetTypeConverter is null || TargetType == typeof(object) || fallback == AvaloniaProperty.UnsetValue)
+            return fallback;
+
+        if (_targetTypeConverter.TryConvert(fallback, TargetType, CultureInfo.CurrentCulture, out var result))
+            return result;
+
+        if (_target.TryGetTarget(out var target))
+            Log(target, $"Could not convert {fallbackName} '{fallback}' to '{TargetType}'.", LogEventLevel.Error);
+
+        return AvaloniaProperty.UnsetValue;
+   }
 
     private object? ConvertFrom(TargetTypeConverter? converter, object value, bool isFallback)
     {

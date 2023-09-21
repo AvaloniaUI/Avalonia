@@ -609,22 +609,6 @@ namespace Avalonia
         internal IReadOnlyList<AvaloniaObject>? GetInheritanceChildren() => _inheritanceChildren;
 
         /// <summary>
-        /// Gets a logger to which a binding warning may be written.
-        /// </summary>
-        /// <param name="property">The property that the error occurred on.</param>
-        /// <param name="e">The binding exception, if any.</param>
-        /// <remarks>
-        /// This is overridden in <see cref="Visual"/> to prevent logging binding errors when a
-        /// control is not attached to the visual tree.
-        /// </remarks>
-        internal virtual ParametrizedLogger? GetBindingWarningLogger(
-            AvaloniaProperty property,
-            Exception? e)
-        {
-            return Logger.TryGet(LogEventLevel.Warning, LogArea.Binding);
-        }
-
-        /// <summary>
         /// Called to update the validation state for properties for which data validation is
         /// enabled.
         /// </summary>
@@ -757,8 +741,6 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         internal void SetDirectValueUnchecked<T>(DirectPropertyBase<T> property, BindingValue<T> value)
         {
-            LoggingUtils.LogIfNecessary(this, property, value);
-
             switch (value.Type)
             {
                 case BindingValueType.UnsetValue:

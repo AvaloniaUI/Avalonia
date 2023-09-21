@@ -1,33 +1,13 @@
-﻿using System;
-using System.Text;
-
-namespace Avalonia.Data.Core.ExpressionNodes;
+﻿namespace Avalonia.Data.Core.ExpressionNodes;
 
 /// <summary>
 /// A node in an <see cref="BindingExpression"/> which selects the value of the visual
 /// parent's DataContext.
 /// </summary>
-internal class ParentDataContextNode : ExpressionNode, ISourceNode
+internal class ParentDataContextNode : DataContextNodeBase
 {
-    private static AvaloniaObject s_Unset = new();
-    private AvaloniaObject? _parent = s_Unset;
-
-    public override void BuildString(StringBuilder builder)
-    {
-        // Nothing to add.
-    }
-
-    public object SelectSource(object? source, object target, object? anchor)
-    {
-        if (source != AvaloniaProperty.UnsetValue)
-            throw new NotSupportedException(
-                "ParentDataContextNode is invalid in conjunction with a binding source.");
-        if (target is IDataContextProvider and AvaloniaObject)
-            return target;
-        if (anchor is IDataContextProvider and AvaloniaObject)
-            return anchor;
-        throw new InvalidOperationException("Cannot find a DataContext to bind to.");
-    }
+    private static readonly AvaloniaObject s_unset = new();
+    private AvaloniaObject? _parent = s_unset;
 
     protected override void OnSourceChanged(object source)
     {

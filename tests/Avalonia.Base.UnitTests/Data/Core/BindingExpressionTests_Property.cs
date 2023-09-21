@@ -61,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             Assert.Equal(
                 new BindingNotification(
-                        new BindingChainException("Value is null.", "Foo", string.Empty),
+                        new BindingChainException("Binding Source is null.", "Foo", "(source)"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
@@ -75,7 +75,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             Assert.Equal(
                 new BindingNotification(
-                        new BindingChainException("Value is null.", "Foo", string.Empty),
+                        new BindingChainException("Binding Source is null.", "Foo", "(source)"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
@@ -288,7 +288,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                             "bar",
                             new BindingNotification(
                                 new BindingChainException(
-                                    $"Could not find a matching property accessor for '{nameof(Class2.Bar)}' on '{typeof(WithoutBar)}'",
+                                    $"Could not find a matching property accessor for '{nameof(Class2.Bar)}' on '{typeof(WithoutBar)}'.",
                                     "Next.Bar",
                                     "Bar"),
                                 BindingErrorType.Error),

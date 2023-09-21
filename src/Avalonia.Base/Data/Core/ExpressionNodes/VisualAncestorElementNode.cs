@@ -5,7 +5,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class VisualAncestorElementNode : ExpressionNode
+internal class VisualAncestorElementNode : SourceNode
 {
     private readonly Type? _ancestorType;
     private readonly int _ancestorLevel;
@@ -39,12 +39,29 @@ internal class VisualAncestorElementNode : ExpressionNode
         }
     }
 
+    public override object? SelectSource(object? source, object target, object? anchor)
+    {
+        if (source != AvaloniaProperty.UnsetValue)
+            throw new NotSupportedException(
+                "VisualAncestorNode is invalid in conjunction with a binding source.");
+        if (target is Visual)
+            return target;
+        if (anchor is Visual)
+            return anchor;
+        throw new InvalidOperationException("Cannot find an ILogical to get a visual ancestor.");
+    }
+
+    public override bool ShouldLogErrors(object target)
+    {
+        return target is Visual visual && visual.IsAttachedToVisualTree;
+    }
+
     protected override void OnSourceChanged(object source)
     {
         if (source is Visual visual)
         {
             var locator = VisualLocator.Track(visual, _ancestorLevel, _ancestorType);
-            _subscription = locator.Subscribe(x => SetValue(x));
+            _subscription = locator.Subscribe(TrackedControlChanged);
         }
     }
 
@@ -52,5 +69,18 @@ internal class VisualAncestorElementNode : ExpressionNode
     {
         _subscription?.Dispose();
         _subscription = null;
+    }
+
+
+    private void TrackedControlChanged(Visual? control)
+    {
+        if (control is not null)
+        {
+            SetValue(control);
+        }
+        else
+        {
+            SetError("Ancestor not found.");
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
             Assert.Equal(
                 new BindingNotification(
-                    new BindingChainException("Could not find a matching property accessor for 'Baz' on '1'", "Foo.Bar.Baz", "Baz"),
+                    new BindingChainException("Could not find a matching property accessor for 'Baz' on 'System.Int32'.", "Foo.Bar.Baz", "Baz"),
                     BindingErrorType.Error),
                 result);
 

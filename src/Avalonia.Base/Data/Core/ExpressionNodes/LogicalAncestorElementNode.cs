@@ -5,7 +5,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class LogicalAncestorElementNode : ExpressionNode
+internal class LogicalAncestorElementNode : SourceNode
 {
     private readonly Type? _ancestorType;
     private readonly int _ancestorLevel;
@@ -39,12 +39,29 @@ internal class LogicalAncestorElementNode : ExpressionNode
         }
     }
 
+    public override object? SelectSource(object? source, object target, object? anchor)
+    {
+        if (source != AvaloniaProperty.UnsetValue)
+            throw new NotSupportedException(
+                "LogicalAncestorNode is invalid in conjunction with a binding source.");
+        if (target is ILogical)
+            return target;
+        if (anchor is ILogical)
+            return anchor;
+        throw new InvalidOperationException("Cannot find an ILogical to get a logical ancestor.");
+    }
+
+    public override bool ShouldLogErrors(object target)
+    {
+        return target is ILogical logical && logical.IsAttachedToLogicalTree;
+    }
+
     protected override void OnSourceChanged(object source)
     {
         if (source is ILogical logical)
         {
             var locator = ControlLocator.Track(logical, _ancestorLevel, _ancestorType);
-            _subscription = locator.Subscribe(SetValue);
+            _subscription = locator.Subscribe(TrackedControlChanged);
         }
     }
 
@@ -52,5 +69,17 @@ internal class LogicalAncestorElementNode : ExpressionNode
     {
         _subscription?.Dispose();
         _subscription = null;
+    }
+
+    private void TrackedControlChanged(ILogical? control)
+    {
+        if (control is not null)
+        {
+            SetValue(control);
+        }
+        else
+        {
+            SetError("Ancestor not found.");
+        }
     }
 }

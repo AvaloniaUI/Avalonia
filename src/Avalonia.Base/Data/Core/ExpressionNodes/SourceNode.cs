@@ -1,9 +1,10 @@
 ﻿namespace Avalonia.Data.Core.ExpressionNodes;
 
 /// <summary>
-/// An <see cref="ExpressionNode"/> which selects the source of a binding expression.
+/// A node in a binding expression which represents the source of the binding, e.g. DataContext,
+/// logical ancestor.
 /// </summary>
-internal interface ISourceNode
+internal abstract class SourceNode : ExpressionNode
 {
     /// <summary>
     /// Selects the source for the binding expression based on the binding source, target and
@@ -13,5 +14,13 @@ internal interface ISourceNode
     /// <param name="target">The binding target.</param>
     /// <param name="anchor">The anchor.</param>
     /// <returns>The source for the binding expression.</returns>
-    object SelectSource(object? source, object target, object? anchor);
+    public virtual object? SelectSource(object? source, object target, object? anchor)
+    {
+        return source != AvaloniaProperty.UnsetValue ? source : target;
+    }
+
+    public virtual bool ShouldLogErrors(object target)
+    {
+        return Value is not null;
+    }
 }

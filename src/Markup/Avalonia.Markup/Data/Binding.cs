@@ -90,7 +90,7 @@ namespace Avalonia.Data
 
             // If the first node is an ISourceNode then allow it to select the source; otherwise
             // use the binding source if specified, falling back to the target.
-            var source = nodes.Count > 0 && nodes[0] is ISourceNode sn ?
+            var source = nodes.Count > 0 && nodes[0] is SourceNode sn ?
                 sn.SelectSource(Source, target, anchor ?? DefaultAnchor?.Target) :
                 Source != AvaloniaProperty.UnsetValue ? Source : target;
 

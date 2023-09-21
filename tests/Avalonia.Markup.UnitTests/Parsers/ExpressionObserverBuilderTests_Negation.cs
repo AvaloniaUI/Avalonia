@@ -110,13 +110,13 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public async Task Should_Pass_Through_BindingNotification_Error()
         {
-            var data = new { };
+            var data = new object();
             var target = Build(data, "!Foo", enableDataValidation: true);
             var result = await target.Take(1);
 
             Assert.Equal(
                 new BindingNotification(
-                    new BindingChainException("Could not find a matching property accessor for 'Foo' on '{ }'", "!Foo", "Foo"),
+                    new BindingChainException("Could not find a matching property accessor for 'Foo' on 'System.Object'.", "!Foo", "Foo"),
                     BindingErrorType.Error),
                 result);
 
@@ -135,24 +135,6 @@ namespace Avalonia.Markup.UnitTests.Parsers
                     new DataValidationException("Test error"),
                     BindingErrorType.DataValidationError,
                     true),
-                result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public async Task Should_Add_Error_To_BindingNotification_For_FallbackValue_Not_Convertible_To_Boolean()
-        {
-            var data = new Test { Bar = new object(), DataValidationError = "Test error" };
-            var target = Build(data, "!Bar", enableDataValidation: true);
-            var result = await target.Take(1);
-
-            Assert.Equal(
-                new BindingNotification(
-                    new AggregateException(
-                        new DataValidationException("Test error"),
-                        new BindingChainException($"Unable to convert 'System.Object' to bool.", "!Bar", "Bar")),
-                    BindingErrorType.Error),
                 result);
 
             GC.KeepAlive(data);

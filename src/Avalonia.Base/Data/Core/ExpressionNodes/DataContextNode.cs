@@ -1,29 +1,9 @@
 ﻿using System;
-using System.Text;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
-internal class DataContextNode : ExpressionNode, ISourceNode
+internal class DataContextNode : DataContextNodeBase
 {
-    public bool ShouldLogErrors => Value is not null;
-
-    public override void BuildString(StringBuilder builder)
-    {
-        // Nothing to add.
-    }
-
-    public object SelectSource(object? source, object target, object? anchor)
-    {
-        if (source != AvaloniaProperty.UnsetValue)
-            throw new NotSupportedException(
-                "DataContextNode is invalid in conjunction with a binding source.");
-        if (target is IDataContextProvider and AvaloniaObject)
-            return target;
-        if (anchor is IDataContextProvider and AvaloniaObject)
-            return anchor;
-        throw new InvalidOperationException("Cannot find a DataContext to bind to.");
-    }
-
     protected override void OnSourceChanged(object source)
     {
         if (source is IDataContextProvider && source is AvaloniaObject ao)
@@ -33,7 +13,7 @@ internal class DataContextNode : ExpressionNode, ISourceNode
         }
         else
         {
-            SetError(new InvalidCastException($"Unable to read DataContext from '{source.GetType()}'."));
+            SetError($"Unable to read DataContext from '{source.GetType()}'.");
         }
     }
 

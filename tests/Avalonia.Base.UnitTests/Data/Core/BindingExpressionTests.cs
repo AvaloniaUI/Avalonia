@@ -143,51 +143,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public async Task Should_Return_BindingNotification_For_Invalid_FallbackValue()
-        {
-            var data = new Class1 { StringValue = "foo" };
-            var target = BindingExpression.Create(
-                data, 
-                o => o.StringValue,
-                fallbackValue: "bar",
-                targetProperty: TargetTypeInt);
-            var result = await target.Take(1);
-
-            Assert.Equal(
-                new BindingNotification(
-                    new AggregateException(
-                        new InvalidCastException("Cannot convert 'foo' (System.String) to 'System.Int32'."),
-                        new InvalidCastException("Cannot convert fallback value 'bar' (System.String) to 'System.Int32'.")),
-                    BindingErrorType.Error),
-                result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public async Task Should_Return_BindingNotification_For_Invalid_FallbackValue_With_Data_Validation()
-        {
-            var data = new Class1 { StringValue = "foo" };
-            var target = BindingExpression.Create(
-                data, 
-                o => o.StringValue,
-                enableDataValidation: true,
-                fallbackValue: "bar",
-                targetProperty: TargetTypeInt);
-            var result = await target.Take(1);
-
-            Assert.Equal(
-                new BindingNotification(
-                    new AggregateException(
-                        new InvalidCastException("Cannot convert 'foo' (System.String) to 'System.Int32'."),
-                        new InvalidCastException("Cannot convert fallback value 'bar' (System.String) to 'System.Int32'.")),
-                    BindingErrorType.Error),
-                result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
         public void Setting_Invalid_Double_String_Should_Not_Change_Target()
         {
             var data = new Class1 { DoubleValue = 5.6 };

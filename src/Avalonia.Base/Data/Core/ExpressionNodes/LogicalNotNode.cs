@@ -37,7 +37,7 @@ internal class LogicalNotNode : ExpressionNode, ISettableNode
             SetValue(BindingNotification.UpdateValue(source, !value));
         }
         else
-            SetError(new InvalidCastException($"Unable to convert '{source}' to bool."));
+            SetError($"Unable to convert '{source}' to bool.");
     }
 
     private static bool TryConvert(object? value, out bool result)

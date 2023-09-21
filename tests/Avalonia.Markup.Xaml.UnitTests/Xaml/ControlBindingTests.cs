@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Logging;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -25,43 +24,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
 
                 Assert.Equal(3, progressBar.Value);
-            }
-        }
-
-        [Fact]
-        public void Invalid_FallbackValue_Logs_Error()
-        {
-            var called = false;
-
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
-            {
-                if (level == LogEventLevel.Warning &&
-                    area == LogArea.Binding &&
-                    mt == "Error in binding to {Target}.{Property}: {Message}" &&
-                    pv.Length == 3 &&
-                    pv[0] is ProgressBar &&
-                    object.ReferenceEquals(pv[1], ProgressBar.ValueProperty) &&
-                    (string)pv[2] == "Could not convert FallbackValue 'bar' to 'System.Double'")
-                {
-                    called = true;
-                }
-            };
-
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (TestLogSink.Start(checkLogMessage))
-            {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'>
-    <ProgressBar Maximum='10' Value='{Binding Value, FallbackValue=bar}'/>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var progressBar = (ProgressBar)window.Content;
-
-                window.DataContext = new { Value = "foo" };
-                window.ApplyTemplate();
-
-                Assert.Equal(0, progressBar.Value);
-                Assert.True(called);
             }
         }
 
