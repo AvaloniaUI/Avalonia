@@ -1,4 +1,5 @@
-﻿using Avalonia.Input.GestureRecognizers;
+﻿using System.Diagnostics;
+using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
@@ -110,6 +111,7 @@ namespace Avalonia.Input
 
                     _secondContact = null;
                 }
+
                 Target?.RaiseEvent(new PinchEndedEventArgs());
             }
         }

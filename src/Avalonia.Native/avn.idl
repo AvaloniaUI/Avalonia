@@ -681,6 +681,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
      HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
+     HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -984,6 +985,7 @@ interface IAvnTrayIcon : IUnknown
     HRESULT SetIcon(void* data, size_t length);
     HRESULT SetMenu(IAvnMenu* menu);
     HRESULT SetIsVisible(bool isVisible);
+    HRESULT SetToolTipText(char* text);
 }
 
 [uuid(a7724dc1-cf6b-4fa8-9d23-228bf2593edc)]
@@ -1173,4 +1175,13 @@ interface IAvnPlatformSettings : IUnknown
 interface IAvnPlatformBehaviorInhibition : IUnknown
 {
     void SetInhibitAppSleep(bool inhibitAppSleep, char* reason);
+}
+
+[uuid(22edf20d-5803-2d3f-9247-b4842e5e9322)]
+interface IAvnPlatformRenderTimer : IUnknown
+{
+    HRESULT RegisterTick(IAvnActionCallback* callback);
+    void Start();
+    void Stop();
+    bool RunsInBackground();
 }
