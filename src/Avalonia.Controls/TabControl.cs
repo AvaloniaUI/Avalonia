@@ -312,9 +312,14 @@ namespace Avalonia.Controls
 
         private void UpdateTabStripPlacement()
         {
-            for (int i = 0; i < Items.Count; i++)
+            var controls = ItemsPresenterPart?.Panel?.Children;
+            if (controls is null)
             {
-                var control = ContainerFromIndex(i);
+                return;
+            }
+
+            foreach (var control in controls)
+            {
                 if (control is TabItem tabItem)
                 {
                     tabItem.TabStripPlacement = TabStripPlacement;
