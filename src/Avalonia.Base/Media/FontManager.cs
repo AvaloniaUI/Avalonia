@@ -150,11 +150,6 @@ namespace Avalonia.Media
         {
             var source = key.Source;
 
-            if (source.Scheme == SystemFontScheme)
-            {
-                return SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
-            }
-
             if (!source.IsAbsoluteUri)
             {
                 if (key.BaseUri == null)
@@ -165,7 +160,12 @@ namespace Avalonia.Media
                 source = new Uri(key.BaseUri, source);
             }
 
-            if (TryGetFontCollection(source, out var fontCollection) && 
+            if (source.Scheme == SystemFontScheme)
+            {
+                return SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface);
+            }
+
+            if (TryGetFontCollection(source, out var fontCollection) &&
                 fontCollection.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
             {
                 if (glyphTypeface.FamilyName.Contains(familyName))
