@@ -72,6 +72,8 @@ namespace Avalonia.Controls
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
+        private Control? _realizingElement;
+        private int _realizingIndex = -1;
 
         public VirtualizingStackPanel()
         {
@@ -336,6 +338,8 @@ namespace Avalonia.Controls
                 return _scrollToElement;
             if (_focusedIndex == index)
                 return _focusedElement;
+            if (index == _realizingIndex)
+                return _realizingElement;
             if (GetRealizedElement(index) is { } realized)
                 return realized;
             if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
@@ -349,6 +353,8 @@ namespace Avalonia.Controls
                 return _scrollToIndex;
             if (container == _focusedElement)
                 return _focusedIndex;
+            if (container == _realizingElement)
+                return _realizingIndex;
             return _realizedElements?.GetIndex(container) ?? -1;
         }
 
@@ -532,7 +538,9 @@ namespace Avalonia.Controls
             // Start at the anchor element and move forwards, realizing elements.
             do
             {
+                _realizingIndex = index;
                 var e = GetOrCreateElement(items, index);
+                _realizingElement = e;
                 e.Measure(availableSize);
 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
@@ -543,6 +551,8 @@ namespace Avalonia.Controls
 
                 u += sizeU;
                 ++index;
+                _realizingIndex = -1;
+                _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
 
             // Store the last index and end U position for the desired size calculation.
