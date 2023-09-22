@@ -12,6 +12,7 @@ using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
 using Key = Avalonia.Input.Key;
+using PhysicalKey = Avalonia.Input.PhysicalKey;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 using ProtocolMouseButton = Avalonia.Remote.Protocol.Input.MouseButton;
 
@@ -226,7 +227,9 @@ namespace Avalonia.Controls.Remote.Server
                                 InputRoot!,
                                 key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                                 (Key)key.Key,
-                                GetAvaloniaRawInputModifiers(key.Modifiers)));
+                                GetAvaloniaRawInputModifiers(key.Modifiers),
+                                (PhysicalKey)key.PhysicalKey,
+                                key.KeySymbol));
                         }, DispatcherPriority.Input);
                         break;
 

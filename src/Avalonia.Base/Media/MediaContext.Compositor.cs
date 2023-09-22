@@ -16,7 +16,7 @@ partial class MediaContext
     /// Actually sends the current batch to the compositor and does the required housekeeping
     /// This is the only place that should be allowed to call Commit
     /// </summary>
-    private Batch CommitCompositor(Compositor compositor)
+    private CompositionBatch CommitCompositor(Compositor compositor)
     {
         var commit = compositor.Commit();
         _requestedCommits.Remove(compositor);
@@ -29,7 +29,7 @@ partial class MediaContext
     /// <summary>
     /// Handles batch completion, required to re-schedule a render pass if one was skipped due to compositor throttling
     /// </summary>
-    private void CompositionBatchFinished(Compositor compositor, Batch batch)
+    private void CompositionBatchFinished(Compositor compositor, CompositionBatch batch)
     {
         // Check if it was the last commited batch, since sometimes we are forced to send a new
         // one without waiting for the previous one to complete  

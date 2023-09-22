@@ -440,5 +440,80 @@ namespace Avalonia.Base.UnitTests.Animation
             cancellationTokenSource.Cancel();
             animationRun.Wait();
         }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/12582
+        [Fact]
+        public void Interpolator_Is_Not_Called_After_Last_Iteration()
+        {
+            var animator = new FakeAnimator();
+
+            Setter CreateWidthSetter(double value)
+            {
+                var setter = new Setter(Layoutable.WidthProperty, value);
+                Animation.SetAnimator(setter, animator);
+                return setter;
+            }
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(1),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters = { CreateWidthSetter(100d) },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters = { CreateWidthSetter(200d) },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
+
+            var border = new Border
+            {
+                Height = 100d,
+                Width = 50d
+            };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(1, animator.CallCount);
+            Assert.Equal(0.0d, animator.LastProgress);
+            animator.LastProgress = double.NaN;
+
+            clock.Step(TimeSpan.FromSeconds(0.5d));
+            Assert.Equal(2, animator.CallCount);
+            Assert.Equal(0.5d, animator.LastProgress);
+            animator.LastProgress = double.NaN;
+
+            clock.Step(TimeSpan.FromSeconds(1.5d));
+            Assert.Equal(3, animator.CallCount);
+            Assert.Equal(1.0d, animator.LastProgress);
+
+            animationRun.Wait();
+        }
+
+        private sealed class FakeAnimator : InterpolatingAnimator<double>
+        {
+            public double LastProgress { get; set; } = double.NaN;
+
+            public int CallCount { get; set; }
+
+            public override double Interpolate(double progress, double oldValue, double newValue)
+            {
+                ++CallCount;
+                LastProgress = progress;
+                return newValue;
+            }
+        }
     }
 }
