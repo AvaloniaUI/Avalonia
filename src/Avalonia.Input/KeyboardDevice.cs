@@ -43,7 +43,7 @@ namespace Avalonia.Input
                 {
                     _focusedRoot = null;
                 }
-                
+
                 RaisePropertyChanged();
                 _textInputManager.SetFocusedElement(value);
             }
@@ -162,7 +162,7 @@ namespace Avalonia.Input
                 }
                 
                 SetIsFocusWithin(FocusedElement, element);
-                
+
                 FocusedElement = element;
 
                 interactive?.RaiseEvent(new RoutedEventArgs
@@ -203,13 +203,15 @@ namespace Avalonia.Input
                             ? InputElement.KeyDownEvent
                             : InputElement.KeyUpEvent;
 
-                        KeyEventArgs ev = new KeyEventArgs
+                        var ev = new KeyEventArgs
                         {
                             RoutedEvent = routedEvent,
                             Device = this,
                             Key = keyInput.Key,
                             KeyModifiers = KeyModifiersUtils.ConvertToKey(keyInput.Modifiers),
-                            Source = element,
+                            PhysicalKey = keyInput.PhysicalKey,
+                            KeySymbol = keyInput.KeySymbol,
+                            Source = element
                         };
 
                         IVisual? currentHandler = element;

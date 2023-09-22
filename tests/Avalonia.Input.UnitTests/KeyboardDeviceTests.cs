@@ -24,7 +24,9 @@ namespace Avalonia.Input.UnitTests
                     root.Object,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.None));
+                    RawInputModifiers.None,
+                    PhysicalKey.A,
+                    "a"));
 
             root.Verify(x => x.RaiseEvent(It.IsAny<KeyEventArgs>()));
         }
@@ -48,7 +50,9 @@ namespace Avalonia.Input.UnitTests
                     root,
                     RawKeyEventType.KeyDown,
                     Key.A,
-                    RawInputModifiers.None));
+                    RawInputModifiers.None,
+                    PhysicalKey.A,
+                    "a"));
 
             focused.Verify(x => x.RaiseEvent(It.IsAny<KeyEventArgs>()));
         }
@@ -117,7 +121,9 @@ namespace Avalonia.Input.UnitTests
                     root,
                     RawKeyEventType.KeyDown,
                     Key.O,
-                    RawInputModifiers.Control));
+                    RawInputModifiers.Control,
+                    PhysicalKey.O,
+                    "o"));
 
             Assert.Equal(1, raised);
         }

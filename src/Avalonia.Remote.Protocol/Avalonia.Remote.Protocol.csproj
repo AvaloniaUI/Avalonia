@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Input\Key.cs" />
+    <Compile Include="..\Avalonia.Input\PhysicalKey.cs" />
   </ItemGroup>
   <Import Project="..\..\build\ApiDiff.props" />
 </Project>
