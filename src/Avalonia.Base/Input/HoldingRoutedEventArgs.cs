@@ -31,7 +31,10 @@ namespace Avalonia.Input
             Position = position;
             PointerType = pointerType;
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HoldingRoutedEventArgs"/> class.
+        /// </summary>
         internal HoldingRoutedEventArgs(HoldingState holdingState, Point position, PointerType pointerType, PointerEventArgs pointerEventArgs) : this(holdingState, position, pointerType)
         {
             PointerEventArgs = pointerEventArgs;

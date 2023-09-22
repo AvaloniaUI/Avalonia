@@ -835,26 +835,6 @@ namespace Avalonia.Controls
             if (e.Handled || e.HoldingState != HoldingState.Started)
                 return;
 
-            var start = SelectionStart;
-            var end = SelectionEnd;
-            var caret = CaretIndex;
-            var text = Text;
-
-            if (text != null)
-            {
-                if (!StringUtils.IsEndOfWord(text, caret))
-                {
-                    start = StringUtils.IsStartOfWord(text, caret) ? caret : StringUtils.PreviousWord(text, caret);
-
-                    end = StringUtils.NextWord(text, caret);
-
-                    SetCurrentValue(SelectionStartProperty, start);
-                    SetCurrentValue(SelectionEndProperty, end);
-                }
-
-                e.Handled = true;
-            }
-
             _isHolding = true;
         }
 
@@ -1663,7 +1643,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            // Selection has been handled by the Holding event handler. We do not update selection in this case
+            // Don't update selection if the pointer was held
             if (_isHolding)
             {
                 _isHolding = false;
