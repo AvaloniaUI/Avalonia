@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
@@ -57,6 +58,11 @@ namespace Avalonia.Controls
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
+
+        [Obsolete("Owner manages its children properties by itself")]
+        protected void SubscribeToOwnerProperties(AvaloniaObject owner)
+        {
+        }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
