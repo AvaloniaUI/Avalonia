@@ -328,8 +328,8 @@ namespace Avalonia.Diagnostics.ViewModels
                     _focusTemplate.FocusBrush = brush;
                     CompositeDisposable disposables = new()
                     {
-                        topLevel.SetValue(InputElement.FocusHighlighterProperty, true, Data.BindingPriority.Animation),
-                        adornerLayer.SetValue(AdornerLayer.DefaultFocusAdornerProperty, _focusTemplate, Data.BindingPriority.Animation),
+                        topLevel.SetValue(InputElement.FocusHighlighterProperty, true, Data.BindingPriority.Animation)!,
+                        adornerLayer.SetValue(AdornerLayer.DefaultFocusAdornerProperty, _focusTemplate!, Data.BindingPriority.Animation)!,
                     };
                     _currentFocusHighlightAdorner = disposables;
                 }
