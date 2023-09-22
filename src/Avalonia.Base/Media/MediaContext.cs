@@ -22,7 +22,7 @@ internal partial class MediaContext : ICompositorScheduler
     private readonly Action _render;
     private readonly Action _inputMarkerHandler;
     private readonly HashSet<Compositor> _requestedCommits = new();
-    private readonly Dictionary<Compositor, Batch> _pendingCompositionBatches = new();
+    private readonly Dictionary<Compositor, CompositionBatch> _pendingCompositionBatches = new();
     private record  TopLevelInfo(Compositor Compositor, CompositingRenderer Renderer, ILayoutManager LayoutManager);
 
     private List<Action>? _invokeOnRenderCallbacks;
