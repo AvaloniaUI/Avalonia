@@ -316,9 +316,9 @@ namespace Avalonia.Diagnostics.ViewModels
             if (FocusHighlighter is IBrush brush
                 && element is Control input
                 && TopLevel.GetTopLevel(input) is { } topLevel
-                && (topLevel is not Avalonia.Diagnostics.Views.MainWindow))
+                && (topLevel is not Views.MainWindow))
             {
-                if (topLevel is PopupRoot pr && pr.ParentTopLevel is Avalonia.Diagnostics.Views.MainWindow)
+                if (topLevel is PopupRoot pr && pr.ParentTopLevel is Views.MainWindow)
                 {
                     return;
                 }
