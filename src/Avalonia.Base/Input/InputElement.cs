@@ -207,6 +207,12 @@ namespace Avalonia.Input
         private GestureRecognizerCollection? _gestureRecognizers;
 
         /// <summary>
+        /// When <c>True</c> enable force show FocusAdorner on got focus
+        /// </summary>
+        internal static readonly AttachedProperty<bool> FocusHighlighterProperty =
+            AvaloniaProperty.RegisterAttached<InputElement, InputElement, bool>("FocusHighlighter", inherits: true);
+
+        /// <summary>
         /// Initializes static members of the <see cref="InputElement"/> class.
         /// </summary>
         static InputElement()
