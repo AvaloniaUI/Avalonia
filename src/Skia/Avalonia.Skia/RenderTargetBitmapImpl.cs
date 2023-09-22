@@ -14,7 +14,7 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
     
     public RenderTargetBitmapImpl(PixelSize size, Vector dpi) : base(size, dpi, 
         SKImageInfo.PlatformColorType == SKColorType.Rgba8888 ? PixelFormats.Rgba8888 : PixelFormat.Bgra8888,
-        AlphaFormat.Premul)
+        Platform.AlphaFormat.Premul)
     {
         _renderTarget = new FramebufferRenderTarget(this);
     }

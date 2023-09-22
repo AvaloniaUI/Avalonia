@@ -148,6 +148,8 @@ namespace Avalonia.Skia
 
         public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
 
+        public AlphaFormat? AlphaFormat => _bitmap.AlphaType.ToAlphaFormat();
+
         /// <inheritdoc />
         public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);
 

@@ -176,6 +176,7 @@ namespace Avalonia.Animation
                 var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
                 _lastInterpValue = _interpolator(easedTime, _neutralValue);
                 DoComplete();
+                return;
             }
 
             if (playbackTime <= iterDuration)

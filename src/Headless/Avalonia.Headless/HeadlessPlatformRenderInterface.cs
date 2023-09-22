@@ -182,6 +182,8 @@ namespace Avalonia.Headless
                 return Bounds.Inflate(pen.Thickness / 2);
             }
 
+            public IGeometryImpl GetWidenedGeometry(IPen pen) => this;
+
             public bool StrokeContains(IPen? pen, Point point)
             {
                 return false;
@@ -404,7 +406,10 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
+            public PixelFormat? Format { get; }
+            public AlphaFormat? AlphaFormat { get; }
             public int Version { get; set; }
+
             public void Save(string fileName, int? quality = null)
             {
 
@@ -415,7 +420,6 @@ namespace Avalonia.Headless
 
             }
 
-            public PixelFormat? Format { get; }
 
             public ILockedFramebuffer Lock()
             {
@@ -541,6 +545,16 @@ namespace Avalonia.Headless
             public void PushClip(RoundedRect clip)
             {
                 
+            }
+
+            public void PushRenderOptions(RenderOptions renderOptions)
+            {
+               
+            }
+
+            public void PopRenderOptions()
+            {
+               
             }
         }
 

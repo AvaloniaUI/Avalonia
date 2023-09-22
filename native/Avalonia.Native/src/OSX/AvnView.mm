@@ -537,11 +537,13 @@
 - (void)keyDown:(NSEvent *)event
 {
     _lastKeyHandled = false;
+    
+    [self keyboardEvent:event withType:KeyDown];
         
-    [[self inputContext] handleEvent:event];
+    BOOL isKeyDownConsumed = [[self inputContext] handleEvent:event];
     
     if(!_lastKeyHandled){
-        [self keyboardEvent:event withType:KeyDown];
+        _lastKeyHandled = isKeyDownConsumed == YES;
     }
 }
 
@@ -552,7 +554,6 @@
 }
 
 - (void) doCommandBySelector:(SEL)selector{
-    
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -599,8 +600,6 @@
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-    _lastKeyHandled = true;
-    
     NSString* markedText;
         
     if([string isKindOfClass:[NSAttributedString class]])
@@ -669,8 +668,7 @@
         
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
         
-    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
-    
+    _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point

@@ -97,7 +97,6 @@ namespace Avalonia.Controls.Presenters
         public TextPresenter()
         {
             _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-            _caretTimer.Tick += CaretTimerTick;
         }
 
         public event EventHandler? CaretBoundsChanged;
@@ -477,7 +476,7 @@ namespace Avalonia.Controls.Presenters
             var caretIndex = CaretIndex;
             var preeditText = PreeditText;
             var text = GetCombinedText(Text, caretIndex, preeditText);
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -814,6 +813,13 @@ namespace Avalonia.Controls.Presenters
             return _caretBounds;
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            _caretTimer.Tick += CaretTimerTick;
+        }
+
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
@@ -832,6 +838,8 @@ namespace Avalonia.Controls.Presenters
             else
             {
                 UpdateCaret(new CharacterHit(CaretIndex + preeditText.Length), false);
+                InvalidateMeasure();
+                CaretChanged();
             }
         }
 

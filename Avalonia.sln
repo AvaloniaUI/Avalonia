@@ -91,7 +91,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.NetCore", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
-		build\ApiDiff.props = build\ApiDiff.props
 		build\AvaloniaPublicKey.props = build\AvaloniaPublicKey.props
 		build\Base.props = build\Base.props
 		build\Binding.props = build\Binding.props
@@ -279,7 +278,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Tizen", "src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj", "{DFFBDBF5-5DBE-47ED-9EAE-D40B75AC99E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Tizen", "samples\ControlCatalog.Tizen\ControlCatalog.Tizen.csproj", "{A0B29221-2B6F-4B29-A4D5-2227811B5915}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Metal", "src\Avalonia.Metal\Avalonia.Metal.csproj", "{60B4ED1F-ECFA-453B-8A70-1788261C8355}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Metal", "src\Avalonia.Metal\Avalonia.Metal.csproj", "{60B4ED1F-ECFA-453B-8A70-1788261C8355}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Build.Tasks.UnitTest", "tests\Avalonia.Build.Tasks.UnitTest\Avalonia.Build.Tasks.UnitTest.csproj", "{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestFiles", "TestFiles", "{9D6AEF22-221F-4F4B-B335-A4BA510F002C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildTasks", "BuildTasks", "{5BF0C3B8-E595-4940-AB30-2DA206C2F085}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PInvoke", "tests\TestFiles\BuildTasks\PInvoke\PInvoke.csproj", "{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -682,6 +690,14 @@ Global
 		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60B4ED1F-ECFA-453B-8A70-1788261C8355}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -766,6 +782,10 @@ Global
 		{43FCC14E-EEBE-44B3-BCBC-F1C537EECBF8} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{DFFBDBF5-5DBE-47ED-9EAE-D40B75AC99E8} = {D1300000-7217-4693-8B0F-57CBD5814302}
 		{A0B29221-2B6F-4B29-A4D5-2227811B5915} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{B0FD6A48-FBAB-4676-B36A-DE76B0922B12} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{9D6AEF22-221F-4F4B-B335-A4BA510F002C} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{5BF0C3B8-E595-4940-AB30-2DA206C2F085} = {9D6AEF22-221F-4F4B-B335-A4BA510F002C}
+		{0A948D71-99C5-43E9-BACB-B0BA59EA25B4} = {5BF0C3B8-E595-4940-AB30-2DA206C2F085}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
