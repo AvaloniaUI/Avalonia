@@ -153,6 +153,20 @@ namespace Avalonia.Controls
                     }
                 }
             });
+
+            PointerOverElementProperty.Changed.AddClassHandler<TopLevel>((topLevel, e) =>
+            {
+                if (e.OldValue is InputElement oldInputElement)
+                {
+                    oldInputElement.PropertyChanged -= topLevel.PointerOverElementOnPropertyChanged;
+                }
+
+                if (e.NewValue is InputElement newInputElement)
+                {
+                    topLevel.PlatformImpl?.SetCursor(newInputElement.Cursor?.PlatformImpl);
+                    newInputElement.PropertyChanged += topLevel.PointerOverElementOnPropertyChanged;
+                }
+            });
         }
 
         /// <summary>
@@ -214,11 +228,6 @@ namespace Avalonia.Controls
 
             ClientSize = impl.ClientSize;
             FrameSize = impl.FrameSize;
-
-            this.GetObservable(PointerOverElementProperty)
-                .Select(
-                    x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
@@ -748,6 +757,14 @@ namespace Avalonia.Controls
                 Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
                     this,
                     "PlatformImpl is null, couldn't handle input.");
+            }
+        }
+
+        private void PointerOverElementOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == CursorProperty && sender is InputElement inputElement)
+            {
+                PlatformImpl?.SetCursor(inputElement.Cursor?.PlatformImpl);
             }
         }
 
