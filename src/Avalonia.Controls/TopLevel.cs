@@ -258,7 +258,9 @@ namespace Avalonia.Controls
                         var keyEvent = new KeyEventArgs()
                         {
                             KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
-                            Key = rawKeyEventArgs.Key
+                            Key = rawKeyEventArgs.Key,
+                            PhysicalKey = rawKeyEventArgs.PhysicalKey,
+                            KeySymbol = rawKeyEventArgs.KeySymbol
                         };
 
                         backRequested = keymap.Any( key => key.Matches(keyEvent));

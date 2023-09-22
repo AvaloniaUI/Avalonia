@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -13,12 +15,11 @@ namespace Avalonia.X11
 {
     internal partial class X11Window
     {
-        private ITextInputMethodImpl _ime;
-        private IX11InputMethodControl _imeControl;
+        private ITextInputMethodImpl? _ime;
+        private IX11InputMethodControl? _imeControl;
         private bool _processingIme;
 
-        private Queue<(RawKeyEventArgs args, XEvent xev, int keyval, int keycode)> _imeQueue =
-            new Queue<(RawKeyEventArgs args, XEvent xev, int keyVal, int keyCode)>();
+        private readonly Queue<(RawKeyEventArgs args, XEvent xev, int keyval, int keycode)> _imeQueue = new();
 
         private unsafe void CreateIC()
         {
@@ -79,93 +80,210 @@ namespace Avalonia.X11
                 (_ime, _imeControl) = ime.Value;
                 _imeControl.Commit += s =>
                     ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
-                        _inputRoot, s));
-                _imeControl.ForwardKey += ev =>
-                {
-                    ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
-                        _inputRoot, ev.Type, X11KeyTransform.ConvertKey((X11Key)ev.KeyVal),
-                        (RawInputModifiers)ev.Modifiers));
-                };
+                        InputRoot, s));
+                _imeControl.ForwardKey += OnImeControlForwardKey;
             }
+        }
+
+        private void OnImeControlForwardKey(X11InputMethodForwardedKey forwardedKey)
+        {
+            var x11Key = (X11Key)forwardedKey.KeyVal;
+            var keySymbol = _x11.HasXkb ? GetKeySymbolXkb(x11Key) : GetKeySymbolXCore(x11Key);
+
+            ScheduleInput(new RawKeyEventArgs(
+                _keyboard,
+                (ulong)_x11.LastActivityTimestamp.ToInt64(),
+                InputRoot,
+                forwardedKey.Type,
+                X11KeyTransform.KeyFromX11Key(x11Key),
+                (RawInputModifiers)forwardedKey.Modifiers,
+                PhysicalKey.None,
+                keySymbol));
         }
 
         private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(_position ?? default, RenderScaling);
 
         private void HandleKeyEvent(ref XEvent ev)
         {
-            var index = ev.KeyEvent.state.HasAllFlags(XModifierMask.ShiftMask);
-
-            // We need the latin key, since it's mainly used for hotkeys, we use a different API for text anyway
-            var key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
-                
-            // Manually switch the Shift index for the keypad,
-            // there should be a proper way to do this
-            if (ev.KeyEvent.state.HasAllFlags(XModifierMask.Mod2Mask)
-                && key > X11Key.Num_Lock && key <= X11Key.KP_9)
-                key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
-
-            var convertedKey = X11KeyTransform.ConvertKey(key);
+            var physicalKey = X11KeyTransform.PhysicalKeyFromScanCode(ev.KeyEvent.keycode);
+            var (x11Key, key, symbol) = LookupKey(ref ev.KeyEvent, physicalKey);
             var modifiers = TranslateModifiers(ev.KeyEvent.state);
             var timestamp = (ulong)ev.KeyEvent.time.ToInt64();
-            RawKeyEventArgs args =
-                ev.type == XEventName.KeyPress
-                    ? new RawKeyEventArgsWithText(_keyboard, timestamp, _inputRoot, RawKeyEventType.KeyDown,
-                        convertedKey, modifiers, TranslateEventToString(ref ev))
-                    : new RawKeyEventArgs(_keyboard, timestamp, _inputRoot, RawKeyEventType.KeyUp, convertedKey,
-                        modifiers);
 
-            ScheduleKeyInput(args, ref ev, (int)key, ev.KeyEvent.keycode);
+            var args = ev.type == XEventName.KeyPress ?
+                new RawKeyEventArgsWithText(
+                    _keyboard,
+                    timestamp,
+                    InputRoot,
+                    RawKeyEventType.KeyDown,
+                    key,
+                    modifiers,
+                    physicalKey,
+                    symbol,
+                    TranslateEventToString(ref ev, symbol)) :
+                new RawKeyEventArgs(
+                    _keyboard,
+                    timestamp,
+                    InputRoot,
+                    RawKeyEventType.KeyUp,
+                    key,
+                    modifiers,
+                    physicalKey,
+                    symbol);
+
+            ScheduleKeyInput(args, ref ev, (int)x11Key, ev.KeyEvent.keycode);
         }
 
-        private void TriggerClassicTextInputEvent(ref XEvent ev)
+        private (X11Key x11Key, Key key, string? symbol) LookupKey(ref XKeyEvent keyEvent, PhysicalKey physicalKey)
         {
-            var text = TranslateEventToString(ref ev);
-            if (text != null)
-                ScheduleInput(
-                    new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot, text),
-                    ref ev);
+            var (x11Key, key, symbol) = _x11.HasXkb ? LookUpKeyXkb(ref keyEvent) : LookupKeyXCore(ref keyEvent);
+
+            // Always use digits keys if possible, matching Windows/macOS.
+            if (physicalKey is >= PhysicalKey.Digit0 and <= PhysicalKey.Digit9)
+                key = physicalKey.ToQwertyKey();
+
+            // No key sym matched a key (e.g. non-latin keyboard without US fallback): fallback to a basic QWERTY map.
+            if (x11Key != 0 && key == Key.None)
+                key = physicalKey.ToQwertyKey();
+
+            return (x11Key, key, symbol);
+        }
+
+        private (X11Key x11Key, Key key, string? symbol) LookUpKeyXkb(ref XKeyEvent keyEvent)
+        {
+            // First lookup using the current keyboard layout group (contained in state).
+            var state = (int)keyEvent.state;
+            if (!XkbLookupKeySym(_x11.Display, keyEvent.keycode, state, out _, out var originalKeySym))
+                return (0, Key.None, null);
+
+            var x11Key = (X11Key)originalKeySym;
+            var symbol = GetKeySymbolXkb(x11Key);
+
+            var key = X11KeyTransform.KeyFromX11Key(x11Key);
+            if (key != Key.None)
+                return (x11Key, key, symbol);
+
+            var originalGroup = XkbGetGroupForCoreState(state);
+
+            // We got a KeySym that doesn't match a key: try the other groups.
+            // This is needed to get a latin key for non-latin keyboard layouts.
+            for (var group = 0; group < 4; ++group)
+            {
+                if (group == originalGroup)
+                    continue;
+
+                var newState = XkbSetGroupForCoreState(state, group);
+                if (XkbLookupKeySym(_x11.Display, keyEvent.keycode, newState, out _, out var groupKeySym))
+                {
+                    key = X11KeyTransform.KeyFromX11Key((X11Key)groupKeySym);
+                    if (key != Key.None)
+                        return (x11Key, key, symbol);
+                }
+            }
+
+            return (x11Key, Key.None, null);
+        }
+
+        private unsafe string? GetKeySymbolXkb(X11Key x11Key)
+        {
+            var keySym = (nint)x11Key;
+            const int bufferSize = 4;
+            var buffer = stackalloc byte[bufferSize];
+            var length = XkbTranslateKeySym(_x11.Display, ref keySym, 0, buffer, bufferSize, out var extraSize);
+
+            if (length == 0)
+                return null;
+
+            if (length == 1 && !KeySymbolHelper.IsAllowedAsciiKeySymbol((char)buffer[0]))
+                return null;
+
+            if (extraSize <= 0)
+                return Encoding.UTF8.GetString(buffer, length);
+
+            // A symbol should normally fit in 4 bytes, so this path isn't expected to be taken.
+            var heapBuffer = new byte[length + extraSize];
+            fixed (byte* heapBufferPtr = heapBuffer)
+                length = XkbTranslateKeySym(_x11.Display, ref keySym, 0, heapBufferPtr, heapBuffer.Length, out _);
+
+            return Encoding.UTF8.GetString(heapBuffer, 0, length);
+        }
+
+        private static unsafe (X11Key x11Key, Key key, string? symbol) LookupKeyXCore(ref XKeyEvent keyEvent)
+        {
+            const int bufferSize = 4;
+            var buffer = stackalloc byte[bufferSize];
+
+            // We don't have Xkb enabled, which should be rare: use XLookupString which will map to the first keyboard
+            // while handling modifiers for us (XKeycodeToKeysym doesn't).
+            var length = XLookupString(ref keyEvent, buffer, bufferSize, out var keySym, IntPtr.Zero);
+
+            var x11Key = (X11Key)keySym;
+            var key = X11KeyTransform.KeyFromX11Key(x11Key);
+
+            var symbol = length switch
+            {
+                0 => null,
+                1 when !KeySymbolHelper.IsAllowedAsciiKeySymbol((char)buffer[0]) => null,
+                _ => Encoding.UTF8.GetString(buffer, length)
+            };
+
+            return (x11Key, key, symbol);
+        }
+
+        private static unsafe string? GetKeySymbolXCore(X11Key x11Key)
+        {
+            var bytes = XKeysymToString((nint)x11Key);
+            if (bytes is null)
+                return null;
+
+            var length = 0;
+            for (var p = bytes; *p != 0; ++p)
+                ++length;
+
+            if (length == 0)
+                return null;
+
+            return Encoding.UTF8.GetString(bytes, length);
         }
 
         private const int ImeBufferSize = 64 * 1024;
         [ThreadStatic] private static IntPtr ImeBuffer;
 
-        private unsafe string TranslateEventToString(ref XEvent ev)
+        private unsafe string? TranslateEventToString(ref XEvent ev, string? symbol)
         {
-            if (ImeBuffer == IntPtr.Zero)
-                ImeBuffer = Marshal.AllocHGlobal(ImeBufferSize);
+            string? text;
 
-            IntPtr istatus;
-            int len;
-            if(_xic != IntPtr.Zero)
-                len = Xutf8LookupString(_xic, ref ev, ImeBuffer.ToPointer(),
-                    ImeBufferSize, out _, out istatus);
+            if (!_x11.HasXkb && _xic == IntPtr.Zero)
+                text = symbol; // We already got the symbol from XLookupString, no need to call it again.
             else
-                len = XLookupString(ref ev, ImeBuffer.ToPointer(), ImeBufferSize,
-                    out _, out istatus);
+            {
+                if (ImeBuffer == IntPtr.Zero)
+                    ImeBuffer = Marshal.AllocHGlobal(ImeBufferSize);
 
-            if (len == 0)
+                var imeBufferPtr = (byte*)ImeBuffer.ToPointer();
+                XLookupStatus status = 0;
+
+                var len = _xic == IntPtr.Zero ?
+                    XLookupString(ref ev.KeyEvent, imeBufferPtr, ImeBufferSize, out _, IntPtr.Zero) :
+                    Xutf8LookupString(_xic, ref ev.KeyEvent, imeBufferPtr, ImeBufferSize, out _, out status);
+
+                if (len == 0 || status == XLookupStatus.XBufferOverflow)
+                    return null;
+
+                text = Encoding.UTF8.GetString(imeBufferPtr, len);
+            }
+
+            if (text is null)
                 return null;
 
-            var status = (XLookupStatus)istatus;
-
-            string text;
-            if (status == XLookupStatus.XBufferOverflow)
-                return null;
-            else
-                text = Encoding.UTF8.GetString((byte*)ImeBuffer.ToPointer(), len);
-
-            if (text == null)
-                return null;
-            
             if (text.Length == 1)
             {
-                if (text[0] < ' ' || text[0] == 0x7f) //Control codes or DEL
+                if (text[0] < ' ' || text[0] == 0x7f) // Control codes or DEL
                     return null;
             }
 
             return text;
         }
-
 
         private void ScheduleKeyInput(RawKeyEventArgs args, ref XEvent xev, int keyval, int keycode)
         {
@@ -212,14 +330,22 @@ namespace Avalonia.X11
         // This class is used to attach the text value of the key to an asynchronously dispatched KeyDown event
         private class RawKeyEventArgsWithText : RawKeyEventArgs
         {
-            public RawKeyEventArgsWithText(IKeyboardDevice device, ulong timestamp, IInputRoot root,
-                RawKeyEventType type, Key key, RawInputModifiers modifiers, string text) :
-                base(device, timestamp, root, type, key, modifiers)
+            public RawKeyEventArgsWithText(
+                IKeyboardDevice device,
+                ulong timestamp,
+                IInputRoot root,
+                RawKeyEventType type,
+                Key key,
+                RawInputModifiers modifiers,
+                PhysicalKey physicalKey,
+                string? keySymbol,
+                string? text)
+                : base(device, timestamp, root, type, key, modifiers, physicalKey, keySymbol)
             {
                 Text = text;
             }
-            
-            public string Text { get; }
+
+            public string? Text { get; }
         }
     }
 }

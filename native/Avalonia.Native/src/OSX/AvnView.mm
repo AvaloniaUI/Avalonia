@@ -447,24 +447,25 @@
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput: false])
+    if([self ignoreUserInput: false] || _parent == nullptr)
     {
         return;
     }
 
-    auto key = s_KeyMap[[event keyCode]];
+    auto scanCode = [event keyCode];
+    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+    auto physicalKey = PhysicalKeyFromScanCode(scanCode);
+    auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
+    auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
 
-    uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
+    auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    if(_parent != nullptr)
-    {
-        auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
-        if (key != LeftCtrl && key != RightCtrl) {
-          _lastKeyHandled = handled;
-        } else {
-          _lastKeyHandled = false;
-        }
+    auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    if (key != AvnKeyLeftCtrl && key != AvnKeyRightCtrl) {
+      _lastKeyHandled = handled;
+    } else {
+      _lastKeyHandled = false;
     }
 }
 

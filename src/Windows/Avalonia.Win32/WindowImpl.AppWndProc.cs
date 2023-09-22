@@ -151,18 +151,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
                     {
-                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
-
-                        if (key != Key.None)
-                        {
-                            e = new RawKeyEventArgs(
-                                WindowsKeyboardDevice.Instance,
-                                timestamp,
-                                Owner,
-                                RawKeyEventType.KeyDown,
-                                key,
-                                WindowsKeyboardDevice.Instance.Modifiers);
-                        }
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam);
                         break;
                     }
 
@@ -181,18 +170,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
                     {
-                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
-
-                        if (key != Key.None)
-                        {
-                            e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            Owner,
-                            RawKeyEventType.KeyUp,
-                            key,
-                            WindowsKeyboardDevice.Instance.Modifiers);
-                        }
+                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam);
                         break;
                     }
                 case WindowsMessage.WM_CHAR:
@@ -1172,6 +1150,29 @@ namespace Avalonia.Win32
             }
 
             return modifiers;
+        }
+
+        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam)
+        {
+            var virtualKey = ToInt32(wParam);
+            var keyData = ToInt32(lParam);
+            var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
+            var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
+
+            if (key == Key.None && physicalKey == PhysicalKey.None)
+                return null;
+
+            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            return new RawKeyEventArgs(
+                WindowsKeyboardDevice.Instance,
+                timestamp,
+                Owner,
+                eventType,
+                key,
+                WindowsKeyboardDevice.Instance.Modifiers,
+                physicalKey,
+                keySymbol);
         }
     }
 }
