@@ -34,7 +34,7 @@ public class TransitioningContentControl : ContentControl
     /// </summary>
     public static readonly StyledProperty<bool> IsTransitionReversedProperty =
         AvaloniaProperty.Register<TransitioningContentControl, bool>(
-            nameof(PageTransition),
+            nameof(IsTransitionReversed),
             defaultValue: false);
 
     /// <summary>
