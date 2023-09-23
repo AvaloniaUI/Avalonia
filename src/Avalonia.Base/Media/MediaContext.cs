@@ -20,7 +20,7 @@ internal partial class MediaContext : ICompositorScheduler
     private readonly Action _inputMarkerHandler;
     private readonly HashSet<Compositor> _requestedCommits = new();
     private readonly Dictionary<Compositor, CompositionBatch> _pendingCompositionBatches = new();
-    private readonly Dispatcher _uiThreadDispatcher;
+    private readonly Dispatcher _dispatcher;
     private record  TopLevelInfo(Compositor Compositor, CompositingRenderer Renderer, ILayoutManager LayoutManager);
 
     private List<Action>? _invokeOnRenderCallbacks;
@@ -36,12 +36,12 @@ internal partial class MediaContext : ICompositorScheduler
 
     private Dictionary<object, TopLevelInfo> _topLevels = new();
 
-    private MediaContext(Dispatcher uiThreadDispatcher)
+    private MediaContext(Dispatcher dispatcher)
     {
         _render = Render;
         _inputMarkerHandler = InputMarkerHandler;
         _clock = new(this);
-        _uiThreadDispatcher = uiThreadDispatcher;
+        _dispatcher = dispatcher;
         _animationsTimer.Tick += (_, _) =>
         {
             _animationsTimer.Stop();
@@ -83,7 +83,7 @@ internal partial class MediaContext : ICompositorScheduler
         
         if (_inputMarkerOp == null)
         {
-            _inputMarkerOp = _uiThreadDispatcher.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
+            _inputMarkerOp = _dispatcher.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
             _inputMarkerAddedAt = _time.Elapsed;
         }
         else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
@@ -92,7 +92,7 @@ internal partial class MediaContext : ICompositorScheduler
         }
         
 
-        _nextRenderOp = _uiThreadDispatcher.InvokeAsync(_render, priority);
+        _nextRenderOp = _dispatcher.InvokeAsync(_render, priority);
     }
     
     /// <summary>

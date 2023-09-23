@@ -31,12 +31,12 @@ internal partial class MediaContext
         public IDisposable Subscribe(IObserver<TimeSpan> observer)
         {
             _parent.ScheduleRender(false);
-            _parent._uiThreadDispatcher.VerifyAccess();
+            _parent._dispatcher.VerifyAccess();
             _observers.Add(observer);
             _newObservers.Add(observer);
             return Disposable.Create(() =>
             {
-                _parent._uiThreadDispatcher.VerifyAccess();
+                _parent._dispatcher.VerifyAccess();
                 _observers.Remove(observer);
             });
         }
