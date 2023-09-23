@@ -9,11 +9,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
-using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
@@ -271,14 +268,30 @@ namespace Avalonia.Headless
             return null;
         }
 
-        void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
+        void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol)
         {
-            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyDown, key, modifiers));
+            Input?.Invoke(new RawKeyEventArgs(
+                _keyboard,
+                Timestamp,
+                InputRoot!,
+                RawKeyEventType.KeyDown,
+                key,
+                modifiers,
+                physicalKey,
+                keySymbol));
         }
 
-        void IHeadlessWindow.KeyRelease(Key key, RawInputModifiers modifiers)
+        void IHeadlessWindow.KeyRelease(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, string? keySymbol)
         {
-            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot!, RawKeyEventType.KeyUp, key, modifiers));
+            Input?.Invoke(new RawKeyEventArgs(
+                _keyboard,
+                Timestamp,
+                InputRoot!,
+                RawKeyEventType.KeyUp,
+                key,
+                modifiers,
+                physicalKey,
+                keySymbol));
         }
 
         void IHeadlessWindow.TextInput(string text)

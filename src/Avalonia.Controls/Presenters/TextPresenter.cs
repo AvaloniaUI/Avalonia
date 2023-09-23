@@ -476,7 +476,7 @@ namespace Avalonia.Controls.Presenters
             var caretIndex = CaretIndex;
             var preeditText = PreeditText;
             var text = GetCombinedText(Text, caretIndex, preeditText);
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);

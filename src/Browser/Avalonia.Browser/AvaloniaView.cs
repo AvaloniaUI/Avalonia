@@ -101,7 +101,6 @@ namespace Avalonia.Browser
             InputHelper.SubscribeTextEvents(
                 _inputElement,
                 OnBeforeInput,
-                OnTextInput,
                 OnCompositionStart,
                 OnCompositionUpdate,
                 OnCompositionEnd);
@@ -368,16 +367,6 @@ namespace Avalonia.Browser
             return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
         }
 
-        private bool OnTextInput (string type, string? data)
-        {
-            if(data == null || IsComposing)
-            {
-                return false;
-            }
-
-            return _topLevelImpl.RawTextEvent(data);
-        }
-
         private bool OnBeforeInput(JSObject arg, int start, int end)
         {
             var type = arg.GetPropertyAsString("inputType");
@@ -429,8 +418,15 @@ namespace Avalonia.Browser
                 return false;
 
             IsComposing = false;
+
             _client.SetPreeditText(null);
-            _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
+
+            var text = args.GetPropertyAsString("data");
+
+            if(text != null)
+            {
+                return _topLevelImpl.RawTextEvent(text);
+            }
 
             return false;
         }
