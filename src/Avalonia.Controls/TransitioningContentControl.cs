@@ -14,6 +14,8 @@ namespace Avalonia.Controls;
 /// </summary>
 public class TransitioningContentControl : ContentControl
 {
+    private const string _PcReversed = ":reversed";
+
     private CancellationTokenSource? _currentTransition;
     private ContentPresenter? _presenter2;
     private bool _isFirstFull;
@@ -28,12 +30,30 @@ public class TransitioningContentControl : ContentControl
             defaultValue: new ImmutableCrossFade(TimeSpan.FromMilliseconds(125)));
 
     /// <summary>
+    /// Defines the <see cref="IsTransitionReversed"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsTransitionReversedProperty =
+        AvaloniaProperty.Register<TransitioningContentControl, bool>(
+            nameof(PageTransition),
+            defaultValue: false);
+
+    /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
     public IPageTransition? PageTransition
     {
         get => GetValue(PageTransitionProperty);
         set => SetValue(PageTransitionProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the control will be animated in the reverse direction.
+    /// </summary>
+    /// <remarks>May not apply to all transitions.</remarks>
+    public bool IsTransitionReversed
+    {
+        get => GetValue(IsTransitionReversedProperty);
+        set => SetValue(IsTransitionReversedProperty, value);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -56,7 +76,7 @@ public class TransitioningContentControl : ContentControl
                 var from = _isFirstFull ? _presenter2 : presenter;
                 var to = _isFirstFull ? presenter : _presenter2;
 
-                transition.Start(from, to, true, cancel.Token).ContinueWith(x =>
+                transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(x =>
                 {
                     if (!cancel.IsCancellationRequested)
                     {
@@ -101,6 +121,11 @@ public class TransitioningContentControl : ContentControl
         if (change.Property == ContentProperty)
         {
             UpdateContent(true);
+            return;
+        }
+        else if (change.Property == IsTransitionReversedProperty)
+        {
+            PseudoClasses.Set(_PcReversed, IsTransitionReversed);
             return;
         }
 
