@@ -188,19 +188,6 @@ namespace Avalonia.Input
         public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
 
         /// <summary>
-        /// Determines the closest ancestor of the specified element that is an IFocusScope.
-        /// </summary>
-        /// <param name="element">The element to get the closest focus scope for</param>
-        /// <returns>The focus scope</returns>
-        internal static IFocusScope? GetFocusScope(IInputElement element)
-        {
-            if (element == null)
-                throw new ArgumentNullException(nameof(element));
-
-            return GetFocusScopeAncestors(element).FirstOrDefault();
-        }
-
-        /// <summary>
         /// Public API customers should use TopLevel.GetTopLevel(control).FocusManager.
         /// But since we have split projects, we can't access TopLevel from Avalonia.Base.
         /// That's why we need this helper method instead.
