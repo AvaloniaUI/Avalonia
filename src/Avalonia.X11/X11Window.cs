@@ -838,7 +838,8 @@ namespace Avalonia.X11
 
         }
 
-        public IInputRoot? InputRoot => _inputRoot;
+        public IInputRoot InputRoot
+            => _inputRoot ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
         
         public void SetInputRoot(IInputRoot inputRoot)
         {
