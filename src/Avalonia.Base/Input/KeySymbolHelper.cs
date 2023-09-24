@@ -18,7 +18,7 @@ internal static class KeySymbolHelper
             }
         }
 
-        if (c == 0x07) // delete
+        if (c == 0x7F) // delete
             return false;
 
         return true;
