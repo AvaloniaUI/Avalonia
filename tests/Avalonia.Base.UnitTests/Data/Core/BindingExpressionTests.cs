@@ -125,7 +125,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 42,
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -147,7 +148,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 42,
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -169,7 +171,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 "bar",
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -192,7 +195,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(int),
                 "bar",
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
             var result = await target.Take(1);
 
             Assert.Equal(
@@ -228,7 +232,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(string),
                 "9.8",
                 AvaloniaProperty.UnsetValue,
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
 
             target.OnNext("foo");
 
@@ -260,6 +265,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 converter.Object,
+                CultureInfo.CurrentCulture,
                 converterParameter: "foo");
 
             target.Subscribe(_ => { });
@@ -278,6 +284,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 converter.Object,
+                CultureInfo.CurrentCulture,
                 converterParameter: "foo");
 
             target.OnNext("bar");
@@ -340,7 +347,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 typeof(string),
                 AvaloniaProperty.UnsetValue,
                 "bar",
-                DefaultValueConverter.Instance);
+                DefaultValueConverter.Instance,
+                CultureInfo.InvariantCulture);
 
             object result = null;
             target.Subscribe(x => result = x);
