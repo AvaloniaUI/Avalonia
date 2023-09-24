@@ -121,6 +121,7 @@ namespace Avalonia.Controls
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
+        private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -211,6 +212,13 @@ namespace Avalonia.Controls
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
+
+            CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
+            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
+            {
+                variant ??= ThemeVariant.Default;
+                PlatformImpl.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
+            });
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -405,6 +413,22 @@ namespace Avalonia.Controls
         /// </returns>
         public IPlatformHandle? TryGetPlatformHandle() => (PlatformImpl as IWindowBaseImpl)?.Handle;
 
+        private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
+        {
+            _platformImplBindings.TryGetValue(property, out var actions);
+            _platformImplBindings[property] = actions + UpdatePlatformImpl;
+
+            UpdatePlatformImpl(); // execute the action now to handle the default value, which may have been overridden
+
+            void UpdatePlatformImpl()
+            {
+                if (PlatformImpl is not null)
+                {
+                    onValue(GetValue(property));
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
@@ -561,18 +585,9 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == TransparencyLevelHintProperty)
+            if (_platformImplBindings.TryGetValue(change.Property, out var bindingAction))
             {
-                if (PlatformImpl != null)
-                {
-                    PlatformImpl.SetTransparencyLevelHint(
-                        change.GetNewValue<IReadOnlyList<WindowTransparencyLevel>>() ?? Array.Empty<WindowTransparencyLevel>());
-                }
-            }
-            else if (change.Property == ActualThemeVariantProperty)
-            {
-                var newThemeVariant = change.GetNewValue<ThemeVariant?>() ?? ThemeVariant.Default;
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)newThemeVariant ?? PlatformThemeVariant.Light);
+                bindingAction();
             }
         }
         
