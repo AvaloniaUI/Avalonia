@@ -56,7 +56,7 @@ public class CompositionDrawingSurface : CompositionSurface, IDisposable
 
     ~CompositionDrawingSurface()
     {
-        Dispatcher.UIThread.Post(Dispose);
+        Compositor.Dispatcher.Post(Dispose);
     }
 
     public new void Dispose() => base.Dispose();
