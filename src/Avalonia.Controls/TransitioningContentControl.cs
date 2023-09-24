@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -12,6 +13,7 @@ namespace Avalonia.Controls;
 /// Displays <see cref="ContentControl.Content"/> according to an <see cref="IDataTemplate"/>,
 /// using a <see cref="PageTransition"/> to move between the old and new content. 
 /// </summary>
+[PseudoClasses(_PcReversed)]
 public class TransitioningContentControl : ContentControl
 {
     private const string _PcReversed = ":reversed";
