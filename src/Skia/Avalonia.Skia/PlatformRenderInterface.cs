@@ -81,9 +81,8 @@ namespace Avalonia.Skia
 
             var fontRenderingEmSize = (float)glyphRun.FontRenderingEmSize;
 
-            var skFont = glyphTypeface.SKFont;
+            using var skFont = glyphTypeface.CreateSKFont(fontRenderingEmSize);
 
-            skFont.Size = fontRenderingEmSize;
             skFont.Hinting = SKFontHinting.None;
 
             SKPath path = new SKPath();

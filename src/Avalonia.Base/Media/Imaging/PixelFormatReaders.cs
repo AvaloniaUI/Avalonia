@@ -2,22 +2,46 @@ using System;
 using Avalonia.Platform;
 namespace Avalonia.Media.Imaging;
 
-internal struct Rgba8888Pixel
+internal record struct Rgba64Pixel
 {
+    public Rgba64Pixel(ushort r, ushort g, ushort b, ushort a)
+    {
+        R = r;
+        G = g;
+        B = b;
+        A = a;
+    }
+
+    public ushort R;
+    public ushort G;
+    public ushort B;
+    public ushort A;
+}
+
+internal record struct Rgba8888Pixel
+{
+    public Rgba8888Pixel(byte r, byte g, byte b, byte a)
+    {
+        R = r;
+        G = g;
+        B = b;
+        A = a;
+    }
+
     public byte R;
     public byte G;
     public byte B;
     public byte A;
 }
 
-static unsafe class PixelFormatReader
+internal interface IPixelFormatReader
 {
-    public interface IPixelFormatReader
-    {
-        Rgba8888Pixel ReadNext();
-        void Reset(IntPtr address);
-    }
-    
+    Rgba8888Pixel ReadNext();
+    void Reset(IntPtr address);
+}
+
+internal static unsafe class PixelFormatReader
+{
     private static readonly Rgba8888Pixel s_white = new Rgba8888Pixel
     {
         A = 255,
@@ -25,7 +49,7 @@ static unsafe class PixelFormatReader
         G = 255,
         R = 255
     };
-    
+
     private static readonly Rgba8888Pixel s_black = new Rgba8888Pixel
     {
         A = 255,
@@ -34,7 +58,7 @@ static unsafe class PixelFormatReader
         R = 0
     };
 
-    public unsafe struct BlackWhitePixelReader : IPixelFormatReader
+    public unsafe struct BlackWhitePixelFormatReader : IPixelFormatReader
     {
         private int _bit;
         private byte* _address;
@@ -58,8 +82,8 @@ static unsafe class PixelFormatReader
             return value == 1 ? s_white : s_black;
         }
     }
-    
-    public unsafe struct Gray2PixelReader : IPixelFormatReader
+
+    public unsafe struct Gray2PixelFormatReader : IPixelFormatReader
     {
         private int _bit;
         private byte* _address;
@@ -88,7 +112,7 @@ static unsafe class PixelFormatReader
         {
             var shift = 6 - _bit;
             var value = (byte)((*_address >> shift));
-            value = (byte)((value & 3)); 
+            value = (byte)((value & 3));
             _bit += 2;
             if (_bit == 8)
             {
@@ -99,8 +123,8 @@ static unsafe class PixelFormatReader
             return Palette[value];
         }
     }
-    
-    public unsafe struct Gray4PixelReader : IPixelFormatReader
+
+    public unsafe struct Gray4PixelFormatReader : IPixelFormatReader
     {
         private int _bit;
         private byte* _address;
@@ -133,8 +157,8 @@ static unsafe class PixelFormatReader
             };
         }
     }
-    
-    public unsafe struct Gray8PixelReader : IPixelFormatReader
+
+    public unsafe struct Gray8PixelFormatReader : IPixelFormatReader
     {
         private byte* _address;
         public void Reset(IntPtr address)
@@ -156,8 +180,8 @@ static unsafe class PixelFormatReader
             };
         }
     }
-    
-    public unsafe struct Gray16PixelReader : IPixelFormatReader
+
+    public unsafe struct Gray16PixelFormatReader : IPixelFormatReader
     {
         private ushort* _address;
         public Rgba8888Pixel ReadNext()
@@ -177,7 +201,7 @@ static unsafe class PixelFormatReader
         public void Reset(IntPtr address) => _address = (ushort*)address;
     }
 
-    public unsafe struct Gray32FloatPixelReader : IPixelFormatReader
+    public unsafe struct Gray32FloatPixelFormatReader : IPixelFormatReader
     {
         private byte* _address;
         public Rgba8888Pixel ReadNext()
@@ -199,19 +223,10 @@ static unsafe class PixelFormatReader
         public void Reset(IntPtr address) => _address = (byte*)address;
     }
 
-    struct Rgba64
-    {
-#pragma warning disable CS0649
-        public ushort R;
-        public ushort G;
-        public ushort B;
-        public ushort A;
-#pragma warning restore CS0649
-    }
 
     public unsafe struct Rgba64PixelFormatReader : IPixelFormatReader
     {
-        private Rgba64* _address;
+        private Rgba64Pixel* _address;
         public Rgba8888Pixel ReadNext()
         {
             var value = *_address;
@@ -226,9 +241,9 @@ static unsafe class PixelFormatReader
             };
         }
 
-        public void Reset(IntPtr address) => _address = (Rgba64*)address;
+        public void Reset(IntPtr address) => _address = (Rgba64Pixel*)address;
     }
-    
+
     public unsafe struct Rgb24PixelFormatReader : IPixelFormatReader
     {
         private byte* _address;
@@ -247,7 +262,7 @@ static unsafe class PixelFormatReader
 
         public void Reset(IntPtr address) => _address = (byte*)address;
     }
-    
+
     public unsafe struct Bgr24PixelFormatReader : IPixelFormatReader
     {
         private byte* _address;
@@ -267,58 +282,105 @@ static unsafe class PixelFormatReader
         public void Reset(IntPtr address) => _address = (byte*)address;
     }
 
-    public static void Transcode(IntPtr dst, IntPtr src, PixelSize size, int strideSrc, int strideDst,
-        PixelFormat format)
+    public unsafe struct Bgr555PixelFormatReader : IPixelFormatReader
     {
-        if (format == PixelFormats.BlackWhite)
-            Transcode<BlackWhitePixelReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Gray2)
-            Transcode<Gray2PixelReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Gray4)
-            Transcode<Gray4PixelReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Gray8)
-            Transcode<Gray8PixelReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Gray16)
-            Transcode<Gray16PixelReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Rgb24)
-            Transcode<Rgb24PixelFormatReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Bgr24)
-            Transcode<Bgr24PixelFormatReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Gray32Float)
-            Transcode<Gray32FloatPixelReader>(dst, src, size, strideSrc, strideDst);
-        else if (format == PixelFormats.Rgba64)
-            Transcode<Rgba64PixelFormatReader>(dst, src, size, strideSrc, strideDst);
-        else
-            throw new NotSupportedException($"Pixel format {format} is not supported");
-    }
-    
-    public static bool SupportsFormat(PixelFormat format)
-    {
-        return format == PixelFormats.BlackWhite
-               || format == PixelFormats.Gray2
-               || format == PixelFormats.Gray4
-               || format == PixelFormats.Gray8
-               || format == PixelFormats.Gray16
-               || format == PixelFormats.Gray32Float
-               || format == PixelFormats.Rgba64
-               || format == PixelFormats.Bgr24
-               || format == PixelFormats.Rgb24;
-    }
-    
-    public static void Transcode<TReader>(IntPtr dst, IntPtr src, PixelSize size, int strideSrc, int strideDst) where TReader : struct, IPixelFormatReader
-    {
-        var w = size.Width;
-        var h = size.Height;
-        TReader reader = default;
-        for (var y = 0; y < h; y++)
+        private byte* _address;
+        public Rgba8888Pixel ReadNext()
         {
-            reader.Reset(src + strideSrc * y);
-            var dstRow = (Rgba8888Pixel*)(dst + strideDst * y);
-            for (var x = 0; x < w; x++)
-            {
-                *dstRow = reader.ReadNext();
-                dstRow++;
-            }
+            var addr = (ushort*)_address;
+
+            _address += 2;
+
+            return UnPack(*addr);
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+
+        private static Rgba8888Pixel UnPack(ushort value)
+        {
+            var r = (byte)Math.Round(((value >> 10) & 0x1F) / 31F * 255);
+            var g = (byte)Math.Round(((value >> 5) & 0x1F) / 31F * 255);
+            var b = (byte)Math.Round(((value >> 0) & 0x1F) / 31F * 255);
+
+            return new Rgba8888Pixel(r, g, b, 255);
         }
     }
+
+    public unsafe struct Bgr565PixelFormatReader : IPixelFormatReader
+    {
+        private byte* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var addr = (ushort*)_address;
+
+            _address += 2;
+
+            return UnPack(*addr);
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+
+        private static Rgba8888Pixel UnPack(ushort value)
+        {
+            var r = (byte)Math.Round(((value >> 11) & 0x1F) / 31F * 255);
+            var g = (byte)Math.Round(((value >> 5) & 0x3F) / 63F * 255);
+            var b = (byte)Math.Round(((value >> 0) & 0x1F) / 31F * 255);
+
+            return new Rgba8888Pixel(r, g, b, 255);
+        }
+    }
+
+    public unsafe struct Rgba8888PixelFormatReader : IPixelFormatReader
+    {
+        private Rgba8888Pixel* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var value = *_address;
+
+            _address++;
+
+            return value;
+        }
+
+        public void Reset(IntPtr address) => _address = (Rgba8888Pixel*)address;
+    }
+
+    public unsafe struct Bgra8888PixelFormatReader : IPixelFormatReader
+    {
+        private byte* _address;
+        public Rgba8888Pixel ReadNext()
+        {
+            var addr = _address;
+
+            _address += 4;
+
+            return new Rgba8888Pixel(addr[2], addr[1], addr[0], addr[3]);
+        }
+
+        public void Reset(IntPtr address) => _address = (byte*)address;
+    }
+
+    public static bool SupportsFormat(PixelFormat format)
+    {
+        switch (format.FormatEnum)
+        {
+            case PixelFormatEnum.Rgb565:
+            case PixelFormatEnum.Rgba8888:
+            case PixelFormatEnum.Bgra8888:
+            case PixelFormatEnum.BlackWhite:
+            case PixelFormatEnum.Gray2:
+            case PixelFormatEnum.Gray4:
+            case PixelFormatEnum.Gray8:
+            case PixelFormatEnum.Gray16:
+            case PixelFormatEnum.Gray32Float:
+            case PixelFormatEnum.Rgba64:
+            case PixelFormatEnum.Rgb24:
+            case PixelFormatEnum.Bgr24:
+            case PixelFormatEnum.Bgr555:
+            case PixelFormatEnum.Bgr565:
+                return true;
+            default:
+                return false;
+        }
+    } 
 }

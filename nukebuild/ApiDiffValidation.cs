@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -27,7 +28,10 @@ public static class ApiDiffValidation
             Directory.CreateDirectory(suppressionFilesFolder!);
         }
 
-        await using (var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion))
+        await using var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion);
+        if (baselineStream == null) 
+            return;
+
         using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
         using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
         using (Helpers.UseTempDir(out var tempFolder))
@@ -138,6 +142,10 @@ public static class ApiDiffValidation
             await stream.CopyToAsync(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
+        }
+        catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
         }
         catch (Exception ex)
         {

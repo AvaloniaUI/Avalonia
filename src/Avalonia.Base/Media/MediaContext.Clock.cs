@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Animation;
 using Avalonia.Reactive;
-using Avalonia.Threading;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media;
 
@@ -33,12 +31,12 @@ internal partial class MediaContext
         public IDisposable Subscribe(IObserver<TimeSpan> observer)
         {
             _parent.ScheduleRender(false);
-            Dispatcher.UIThread.VerifyAccess();
+            _parent._dispatcher.VerifyAccess();
             _observers.Add(observer);
             _newObservers.Add(observer);
             return Disposable.Create(() =>
             {
-                Dispatcher.UIThread.VerifyAccess();
+                _parent._dispatcher.VerifyAccess();
                 _observers.Remove(observer);
             });
         }

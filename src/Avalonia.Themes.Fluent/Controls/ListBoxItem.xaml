@@ -14,9 +14,12 @@
     </Border>
   </Design.PreviewWith>
   <Thickness x:Key="ListBoxItemPadding">12,9,12,12</Thickness>
+  <FontWeight x:Key="ListBoxItemFontWeight">Normal</FontWeight>
   <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
+    <Setter Property="FontWeight" Value="{DynamicResource ListBoxItemFontWeight}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
@@ -26,8 +29,8 @@
                           CornerRadius="{TemplateBinding CornerRadius}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
-                          FontWeight="Normal"
-                          FontSize="{DynamicResource ControlContentThemeFontSize}"
+                          FontWeight="{TemplateBinding FontWeight}"
+                          FontSize="{TemplateBinding FontSize}"
                           Padding="{TemplateBinding Padding}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />

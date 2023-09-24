@@ -108,7 +108,7 @@ namespace Avalonia.Direct2D1.RenderTests
             var timer = new ManualRenderTimer();
 
             var compositor = new Compositor(new RenderLoop(timer), null, true,
-                new DispatcherCompositorScheduler(), true);
+                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
             {
                 var root = new TestRenderRoot(dpiVector.X / 96, null!);

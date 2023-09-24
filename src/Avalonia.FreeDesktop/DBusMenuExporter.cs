@@ -58,6 +58,7 @@ namespace Avalonia.FreeDesktop
 
             private DBusMenuExporterImpl()
             {
+                BackingProperties.Version = 4;
                 BackingProperties.Status = string.Empty;
                 BackingProperties.TextDirection = string.Empty;
                 BackingProperties.IconThemePath = Array.Empty<string>();
@@ -280,11 +281,9 @@ namespace Avalonia.FreeDesktop
                             if (loader is not null)
                             {
                                 var icon = loader.LoadIcon(item.Icon.PlatformImpl.Item);
-
                                 using var ms = new MemoryStream();
                                 icon.Save(ms);
-                                return new DBusVariantItem("ay",
-                                    new DBusArrayItem(DBusType.Byte, ms.ToArray().Select(static x => new DBusByteItem(x))));
+                                return new DBusVariantItem("ay", new DBusByteArrayItem(ms.ToArray()));
                             }
                         }
                     }
@@ -325,7 +324,7 @@ namespace Avalonia.FreeDesktop
                         children[c] = new DBusVariantItem("(ia{sv}av)", new DBusStructItem(new DBusItem[]
                         {
                             new DBusInt32Item(layout.Item1),
-                            new DBusArrayItem(DBusType.DictEntry, layout.Item2.Select(static x => new DBusDictEntryItem(new DBusStringItem(x.Key), x.Value))),
+                            new DBusArrayItem(DBusType.DictEntry, layout.Item2.Select(static x => new DBusDictEntryItem(new DBusStringItem(x.Key), x.Value)).ToArray()),
                             new DBusArrayItem(DBusType.Variant, layout.Item3)
                         }));
                     }

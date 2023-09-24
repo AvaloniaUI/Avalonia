@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -49,6 +50,29 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     target.TextLayout.TextLines.SelectMany(x => x.TextRuns).Select(x => x.Text.ToString()));
 
                 Assert.Equal("****", actual);
+            }
+        }
+        
+        [Theory]
+        [InlineData(FontStretch.Condensed)]
+        [InlineData(FontStretch.Expanded)]
+        [InlineData(FontStretch.Normal)]
+        [InlineData(FontStretch.ExtraCondensed)]
+        [InlineData(FontStretch.SemiCondensed)]
+        [InlineData(FontStretch.ExtraExpanded)]
+        [InlineData(FontStretch.SemiExpanded)]
+        [InlineData(FontStretch.UltraCondensed)]
+        [InlineData(FontStretch.UltraExpanded)]
+        public void TextPresenter_Should_Use_FontStretch_Property(FontStretch fontStretch)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter { FontStretch = fontStretch, Text = "test" };
+                Assert.NotNull(presenter.TextLayout);
+                Assert.Equal(1, presenter.TextLayout.TextLines.Count);
+                Assert.Equal(1, presenter.TextLayout.TextLines[0].TextRuns.Count);
+                Assert.NotNull(presenter.TextLayout.TextLines[0].TextRuns[0].Properties);
+                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties.Typeface.Stretch);
             }
         }
     }

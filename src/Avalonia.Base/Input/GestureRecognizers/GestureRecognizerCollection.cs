@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -57,6 +58,20 @@ namespace Avalonia.Input.GestureRecognizers
             }
 
             return e.Handled;
+        }
+
+        internal void HandleCaptureLost(IPointer pointer)
+        {
+            if (_recognizers == null || pointer is not Pointer p)
+                return;
+
+            foreach (var r in _recognizers)
+            {
+                if (p.CapturedGestureRecognizer == r)
+                    continue;
+
+                r.PointerCaptureLostInternal(pointer);
+            }
         }
 
         internal bool HandlePointerReleased(PointerReleasedEventArgs e)

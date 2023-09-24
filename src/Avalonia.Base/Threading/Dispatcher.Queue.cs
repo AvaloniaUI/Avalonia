@@ -108,6 +108,7 @@ public partial class Dispatcher
                 job = s_uiThread._queue.Peek();
             if (job == null || job.Priority <= DispatcherPriority.Inactive)
             {
+                s_uiThread.ShutdownImpl();
                 s_uiThread = null;
                 return;
             }

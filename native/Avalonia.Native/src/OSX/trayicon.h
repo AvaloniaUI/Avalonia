@@ -28,6 +28,8 @@ public:
     virtual HRESULT SetMenu (IAvnMenu* menu) override;
     
     virtual HRESULT SetIsVisible (bool isVisible) override;
+    
+    virtual HRESULT SetToolTipText (char* text) override;
 };
 
 #endif /* trayicon_h */

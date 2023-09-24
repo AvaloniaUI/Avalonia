@@ -41,13 +41,17 @@ export class PreviewerServerConnection {
 
         const onMessage = this.onMessage;
         conn.onmessage = msg => onMessage(msg);
-
+        conn.onopen = open => this.onOpen(open);
         const onClose = () => this.setFrame(null);
         conn.onclose = () => onClose();
         conn.onerror = (err: Event) => {
             onClose();
             console.log("Connection error: " + err);
         }
+    }
+
+    private onOpen(open: Event) {
+        this.conn.send(window["avaloniaPreviewerSecurityCookie"]);
     }
 
     private onMessage = (msg: MessageEvent) => {
