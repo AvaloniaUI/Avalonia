@@ -6,7 +6,6 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
-  
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>

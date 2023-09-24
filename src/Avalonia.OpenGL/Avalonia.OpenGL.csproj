@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-      <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+  </ItemGroup>
 
-    <Import Project="..\..\build\DevAnalyzers.props" />
-    <Import Project="..\..\build\SourceGenerators.props" />
-    <Import Project="..\..\build\TrimmingEnable.props" />
-    <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\build\SourceGenerators.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 
   <ItemGroup>
     <Compile Remove="..\Shared\SourceGeneratorAttributes.cs" />
