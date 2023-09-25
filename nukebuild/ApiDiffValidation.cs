@@ -13,6 +13,12 @@ public static class ApiDiffValidation
 {
     private static readonly HttpClient s_httpClient = new();
 
+    private static readonly Dictionary<(string target, string asmName), (string target, string asmName)> s_assemblyRedirects = new()
+    {
+        [("net6.0-android31.0", "Avalonia.Android.dll")] = ("net7.0-android33.0", "Avalonia.Android.dll"),
+        [("net6.0-ios16.1", "Avalonia.iOS.dll")] = ("net7.0-ios16.1", "Avalonia.iOS.dll")
+    };
+
     public static async Task ValidatePackage(
         Tool apiCompatTool, string packagePath, string baselineVersion,
         string suppressionFilesFolder, bool updateSuppressionFile)
@@ -58,8 +64,13 @@ public static class ApiDiffValidation
                     await baselineDll.entry.Open().CopyToAsync(baselineDllFile);
                 }
 
+                if (!s_assemblyRedirects.TryGetValue((baselineDll.target, baselineDll.entry.Name), out var lookupPair))
+                {
+                    lookupPair = (baselineDll.target, baselineDll.entry.Name);
+                }
+
                 var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target == baselineDll.target && e.entry.Name == baselineDll.entry.Name);
+                    e.target == lookupPair.target && e.entry.Name == lookupPair.asmName);
                 if (targetDll.entry is null)
                 {
                     throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
