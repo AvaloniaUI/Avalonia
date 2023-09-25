@@ -20,7 +20,7 @@ namespace Avalonia.Input
         /// </summary>
         public PointerType PointerType { get; }
 
-        public PointerEventArgs? PointerEventArgs { get; }
+        internal PointerEventArgs? PointerEventArgs { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HoldingRoutedEventArgs"/> class.
