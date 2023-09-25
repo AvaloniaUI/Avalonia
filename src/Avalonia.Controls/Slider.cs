@@ -136,8 +136,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <summary>
@@ -149,8 +149,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsDirectionReversed
         {
-            get { return GetValue(IsDirectionReversedProperty); }
-            set { SetValue(IsDirectionReversedProperty, value); }
+            get => GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         /// <summary>
@@ -158,8 +158,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSnapToTickEnabled
         {
-            get { return GetValue(IsSnapToTickEnabledProperty); }
-            set { SetValue(IsSnapToTickEnabledProperty, value); }
+            get => GetValue(IsSnapToTickEnabledProperty);
+            set => SetValue(IsSnapToTickEnabledProperty, value);
         }
 
         /// <summary>
@@ -167,8 +167,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double TickFrequency
         {
-            get { return GetValue(TickFrequencyProperty); }
-            set { SetValue(TickFrequencyProperty, value); }
+            get => GetValue(TickFrequencyProperty);
+            set => SetValue(TickFrequencyProperty, value);
         }
 
         /// <summary>
@@ -177,8 +177,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TickPlacement TickPlacement
         {
-            get { return GetValue(TickPlacementProperty); }
-            set { SetValue(TickPlacementProperty, value); }
+            get => GetValue(TickPlacementProperty);
+            set => SetValue(TickPlacementProperty, value);
         }
 
         /// <summary>

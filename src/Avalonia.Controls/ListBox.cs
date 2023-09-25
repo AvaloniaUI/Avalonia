@@ -73,8 +73,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IScrollable? Scroll
         {
-            get { return _scroll; }
-            private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
+            get => _scroll;
+            private set => SetAndRaise(ScrollProperty, ref _scroll, value);
         }
 
         /// <inheritdoc/>
@@ -102,8 +102,8 @@ namespace Avalonia.Controls
             Justification = "This property is owned by SelectingItemsControl, but protected there. ListBox changes its visibility.")]
         public new SelectionMode SelectionMode
         {
-            get { return base.SelectionMode; }
-            set { base.SelectionMode = value; }
+            get => base.SelectionMode;
+            set => base.SelectionMode = value;
         }
 
         /// <summary>

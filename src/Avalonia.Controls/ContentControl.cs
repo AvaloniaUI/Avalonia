@@ -47,8 +47,8 @@ namespace Avalonia.Controls
         [DependsOn(nameof(ContentTemplate))]
         public object? Content
         {
-            get { return GetValue(ContentProperty); }
-            set { SetValue(ContentProperty, value); }
+            get => GetValue(ContentProperty);
+            set => SetValue(ContentProperty, value);
         }
 
         /// <summary>
@@ -56,8 +56,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
-            get { return GetValue(ContentTemplateProperty); }
-            set { SetValue(ContentTemplateProperty, value); }
+            get => GetValue(ContentTemplateProperty);
+            set => SetValue(ContentTemplateProperty, value);
         }
 
         /// <summary>
@@ -74,8 +74,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         /// <inheritdoc/>
