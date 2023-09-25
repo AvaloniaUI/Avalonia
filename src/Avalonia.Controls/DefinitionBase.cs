@@ -72,7 +72,7 @@ namespace Avalonia.Controls
             LayoutWasUpdated = true;
 
             //  defer verification for shared definitions
-            if (_sharedState != null) { _sharedState.EnsureDeferredValidation(grid); }
+            _sharedState?.EnsureDeferredValidation(grid);
         }
 
         /// <summary>

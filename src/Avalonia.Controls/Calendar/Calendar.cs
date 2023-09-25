@@ -2059,10 +2059,7 @@ namespace Avalonia.Controls
             Debug.Assert(e.NewValue is bool, "NewValue should be a boolean!");
             bool isEnabled = (bool)e.NewValue;
 
-            if (MonthControl != null)
-            {
-                MonthControl.UpdateDisabled(isEnabled);
-            }
+            MonthControl?.UpdateDisabled(isEnabled);
         }
 
         static Calendar()
