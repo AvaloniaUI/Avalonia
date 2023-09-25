@@ -8,7 +8,7 @@ namespace Avalonia.Dialogs.Internal
         private string _path;
         private DateTime _modified;
         private string _type;
-        private readonly long _size;
+        private long _size;
         private ManagedFileChooserItemType _itemType;
 
         public string DisplayName
