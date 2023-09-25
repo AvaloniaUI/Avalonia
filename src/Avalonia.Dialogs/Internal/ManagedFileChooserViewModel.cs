@@ -1,3 +1,15 @@
+using System;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using Avalonia.Reactive;
+using System.Runtime.InteropServices;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Controls.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+
 namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserViewModel : AvaloniaDialogsInternalViewModelBase

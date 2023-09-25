@@ -1,3 +1,11 @@
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using Avalonia.Controls.Platform;
+using Avalonia.Utilities;
+
+
 namespace Avalonia.Dialogs.Internal
 {
     internal class ManagedFileChooserSources

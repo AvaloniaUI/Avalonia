@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserItemViewModel : AvaloniaDialogsInternalViewModelBase
