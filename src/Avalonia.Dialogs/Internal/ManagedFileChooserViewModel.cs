@@ -1,15 +1,3 @@
-using System;
-using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
-using Avalonia.Reactive;
-using System.Runtime.InteropServices;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
-using Avalonia.Platform.Storage;
-using Avalonia.Threading;
-
 namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserViewModel : AvaloniaDialogsInternalViewModelBase
@@ -33,14 +21,14 @@ namespace Avalonia.Dialogs.Internal
 
         string _location;
         string _fileName;
-        private bool _showHiddenFiles;
+        private readonly bool _showHiddenFiles;
         private ManagedFileChooserFilterViewModel _selectedFilter;
-        private bool _selectingDirectory;
-        private bool _savingFile;
+        private readonly bool _selectingDirectory;
+        private readonly bool _savingFile;
         private bool _scheduledSelectionValidation;
         private bool _alreadyCancelled = false;
         private string _defaultExtension;
-        private bool _overwritePrompt;
+        private readonly bool _overwritePrompt;
         private CompositeDisposable _disposables;
 
         public string Location

@@ -1,14 +1,12 @@
-using System;
-
 namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserItemViewModel : AvaloniaDialogsInternalViewModelBase
     {
         private string _displayName;
         private string _path;
-         private DateTime _modified;
+        private DateTime _modified;
         private string _type;
-        private long _size;
+        private readonly long _size;
         private ManagedFileChooserItemType _itemType;
 
         public string DisplayName
