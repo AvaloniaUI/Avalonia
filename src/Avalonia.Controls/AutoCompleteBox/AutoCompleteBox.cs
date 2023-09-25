@@ -933,8 +933,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
         /// <summary>

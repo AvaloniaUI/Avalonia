@@ -83,8 +83,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -92,8 +92,8 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Dock TabStripPlacement
         {
-            get { return GetValue(TabStripPlacementProperty); }
-            set { SetValue(TabStripPlacementProperty, value); }
+            get => GetValue(TabStripPlacementProperty);
+            set => SetValue(TabStripPlacementProperty, value);
         }
 
         /// <summary>
@@ -110,8 +110,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ContentTemplate
         {
-            get { return GetValue(ContentTemplateProperty); }
-            set { SetValue(ContentTemplateProperty, value); }
+            get => GetValue(ContentTemplateProperty);
+            set => SetValue(ContentTemplateProperty, value);
         }
 
         /// <summary>

@@ -260,8 +260,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public SizeToContent SizeToContent
         {
-            get { return GetValue(SizeToContentProperty); }
-            set { SetValue(SizeToContentProperty, value); }
+            get => GetValue(SizeToContentProperty);
+            set => SetValue(SizeToContentProperty, value);
         }
 
         /// <summary>
@@ -269,8 +269,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Title
         {
-            get { return GetValue(TitleProperty); }
-            set { SetValue(TitleProperty, value); }
+            get => GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
         }
 
         /// <summary>
@@ -278,8 +278,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ExtendClientAreaToDecorationsHint
         {
-            get { return GetValue(ExtendClientAreaToDecorationsHintProperty); }
-            set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }
+            get => GetValue(ExtendClientAreaToDecorationsHintProperty);
+            set => SetValue(ExtendClientAreaToDecorationsHintProperty, value);
         }
 
         /// <summary>
@@ -338,8 +338,8 @@ namespace Avalonia.Controls
         /// </summary>
         public SystemDecorations SystemDecorations
         {
-            get { return GetValue(SystemDecorationsProperty); }
-            set { SetValue(SystemDecorationsProperty, value); }
+            get => GetValue(SystemDecorationsProperty);
+            set => SetValue(SystemDecorationsProperty, value);
         }
 
         /// <summary>
@@ -347,8 +347,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowActivated
         {
-            get { return GetValue(ShowActivatedProperty); }
-            set { SetValue(ShowActivatedProperty, value); }
+            get => GetValue(ShowActivatedProperty);
+            set => SetValue(ShowActivatedProperty, value);
         }
 
         /// <summary>
@@ -357,8 +357,8 @@ namespace Avalonia.Controls
         /// 
         public bool ShowInTaskbar
         {
-            get { return GetValue(ShowInTaskbarProperty); }
-            set { SetValue(ShowInTaskbarProperty, value); }
+            get => GetValue(ShowInTaskbarProperty);
+            set => SetValue(ShowInTaskbarProperty, value);
         }
 
         /// <summary>
@@ -366,8 +366,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowState WindowState
         {
-            get { return GetValue(WindowStateProperty); }
-            set { SetValue(WindowStateProperty, value); }
+            get => GetValue(WindowStateProperty);
+            set => SetValue(WindowStateProperty, value);
         }
 
         /// <summary>
@@ -375,8 +375,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanResize
         {
-            get { return GetValue(CanResizeProperty); }
-            set { SetValue(CanResizeProperty, value); }
+            get => GetValue(CanResizeProperty);
+            set => SetValue(CanResizeProperty, value);
         }
 
         /// <summary>
@@ -384,8 +384,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowIcon? Icon
         {
-            get { return GetValue(IconProperty); }
-            set { SetValue(IconProperty, value); }
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }
 
         /// <summary>
@@ -402,11 +402,8 @@ namespace Avalonia.Controls
         /// </summary>
         public PixelPoint Position
         {
-            get { return PlatformImpl?.Position ?? PixelPoint.Origin; }
-            set
-            {
-                PlatformImpl?.Move(value);
-            }
+            get => PlatformImpl?.Position ?? PixelPoint.Origin;
+            set => PlatformImpl?.Move(value);
         }
 
         /// <summary>

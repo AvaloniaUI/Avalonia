@@ -105,10 +105,10 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsActive
         {
-            get { return _isActive; }
-            private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
+            get => _isActive;
+            private set => SetAndRaise(IsActiveProperty, ref _isActive, value);
         }
-        
+
         public Screens Screens { get; }
 
         /// <summary>
@@ -116,8 +116,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowBase? Owner
         {
-            get { return _owner; }
-            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            get => _owner;
+            protected set => SetAndRaise(OwnerProperty, ref _owner, value);
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool Topmost
         {
-            get { return GetValue(TopmostProperty); }
-            set { SetValue(TopmostProperty, value); }
+            get => GetValue(TopmostProperty);
+            set => SetValue(TopmostProperty, value);
         }
 
         /// <summary>

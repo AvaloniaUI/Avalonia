@@ -68,8 +68,8 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public bool IsClosing
         {
-            get { return _isClosing; }
-            private set { SetAndRaise(IsClosingProperty, ref _isClosing, value); }
+            get => _isClosing;
+            private set => SetAndRaise(IsClosingProperty, ref _isClosing, value);
         }
 
         /// <summary>
@@ -94,6 +94,21 @@ namespace Avalonia.Controls.Notifications
             AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsClosed));
 
         /// <summary>
+        /// Gets or sets the type of the notification
+        /// </summary>
+        public NotificationType NotificationType
+        {
+            get => GetValue(NotificationTypeProperty);
+            set => SetValue(NotificationTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="NotificationType" /> property
+        /// </summary>
+        public static readonly StyledProperty<NotificationType> NotificationTypeProperty =
+            AvaloniaProperty.Register<NotificationCard, NotificationType>(nameof(NotificationType));
+
+        /// <summary>
         /// Defines the <see cref="NotificationClosed"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> NotificationClosedEvent =
@@ -105,8 +120,8 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public event EventHandler<RoutedEventArgs>? NotificationClosed
         {
-            add { AddHandler(NotificationClosedEvent, value); }
-            remove { RemoveHandler(NotificationClosedEvent, value); }
+            add => AddHandler(NotificationClosedEvent, value);
+            remove => RemoveHandler(NotificationClosedEvent, value);
         }
 
         public static bool GetCloseOnClick(Button obj)

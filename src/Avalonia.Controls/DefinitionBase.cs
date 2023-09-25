@@ -23,8 +23,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? SharedSizeGroup
         {
-            get { return GetValue(SharedSizeGroupProperty); }
-            set { SetValue(SharedSizeGroupProperty, value); }
+            get => GetValue(SharedSizeGroupProperty);
+            set => SetValue(SharedSizeGroupProperty, value);
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool IsShared
         {
-            get { return (_sharedState != null); }
+            get => (_sharedState != null);
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal GridLength UserSize
         {
-            get { return (_sharedState != null ? _sharedState.UserSize : UserSizeValueCache); }
+            get => (_sharedState != null ? _sharedState.UserSize : UserSizeValueCache);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal double UserMinSize
         {
-            get { return (UserMinSizeValueCache); }
+            get => (UserMinSizeValueCache);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal double UserMaxSize
         {
-            get { return (UserMaxSizeValueCache); }
+            get => (UserMaxSizeValueCache);
         }
 
         /// <summary>
@@ -178,10 +178,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal int Index
         {
-            get
-            {
-                return (_parentIndex);
-            }
+            get => (_parentIndex);
             set
             {
                 Debug.Assert(value >= -1);
@@ -194,8 +191,8 @@ namespace Avalonia.Controls
         /// </summary>
         internal Grid.LayoutTimeSizeType SizeType
         {
-            get { return (_sizeType); }
-            set { _sizeType = value; }
+            get => (_sizeType);
+            set => _sizeType = value;
         }
 
         /// <summary>
@@ -203,8 +200,8 @@ namespace Avalonia.Controls
         /// </summary>
         internal double MeasureSize
         {
-            get { return (_measureSize); }
-            set { _measureSize = value; }
+            get => (_measureSize);
+            set => _measureSize = value;
         }
 
         /// <summary>
@@ -232,8 +229,8 @@ namespace Avalonia.Controls
         /// </summary>
         internal double SizeCache
         {
-            get { return (_sizeCache); }
-            set { _sizeCache = value; }
+            get => (_sizeCache);
+            set => _sizeCache = value;
         }
 
         /// <summary>
@@ -277,8 +274,8 @@ namespace Avalonia.Controls
         /// </summary>
         internal double FinalOffset
         {
-            get { return _offset; }
-            set { _offset = value; }
+            get => _offset;
+            set => _offset = value;
         }
 
         /// <summary>
@@ -417,8 +414,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool UseSharedMinimum
         {
-            get { return (CheckFlagsAnd(Flags.UseSharedMinimum)); }
-            set { SetFlags(value, Flags.UseSharedMinimum); }
+            get => (CheckFlagsAnd(Flags.UseSharedMinimum));
+            set => SetFlags(value, Flags.UseSharedMinimum);
         }
 
         /// <summary>
@@ -426,8 +423,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool LayoutWasUpdated
         {
-            get { return (CheckFlagsAnd(Flags.LayoutWasUpdated)); }
-            set { SetFlags(value, Flags.LayoutWasUpdated); }
+            get => (CheckFlagsAnd(Flags.LayoutWasUpdated));
+            set => SetFlags(value, Flags.LayoutWasUpdated);
         }
 
         private Flags _flags;                           //  flags reflecting various aspects of internal state

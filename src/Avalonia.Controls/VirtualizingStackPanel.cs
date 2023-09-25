@@ -119,8 +119,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+            get => GetValue(AreHorizontalSnapPointsRegularProperty);
+            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+            get => GetValue(AreVerticalSnapPointsRegularProperty);
+            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
         /// <summary>

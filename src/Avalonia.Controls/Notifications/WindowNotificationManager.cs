@@ -31,8 +31,8 @@ namespace Avalonia.Controls.Notifications
         /// <seealso cref="NotificationPosition"/>
         public NotificationPosition Position
         {
-            get { return GetValue(PositionProperty); }
-            set { SetValue(PositionProperty, value); }
+            get => GetValue(PositionProperty);
+            set => SetValue(PositionProperty, value);
         }
 
         /// <summary>
@@ -46,8 +46,8 @@ namespace Avalonia.Controls.Notifications
         /// </summary>
         public int MaxItems
         {
-            get { return GetValue(MaxItemsProperty); }
-            set { SetValue(MaxItemsProperty, value); }
+            get => GetValue(MaxItemsProperty);
+            set => SetValue(MaxItemsProperty, value);
         }
 
         /// <summary>
