@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Platform
         /// Adds a custom callback for the window's WndProc
         /// </summary>
         /// <param name="topLevel">The window</param>
-        /// <param name="callback"></param>
+        /// <param name="callback">The callback</param>
         public static void AddWndProcHookCallback(TopLevel topLevel, CustomWndProcHookCallback? callback)
         {
             if (topLevel.PlatformImpl is IWin32OptionsTopLevelImpl toplevelImpl)
@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Platform
         /// Removes a custom callback for the window's WndProc
         /// </summary>
         /// <param name="topLevel">The window</param>
-        /// <param name="callback"></param>
+        /// <param name="callback">The callback</param>
         public static void RemoveWndProcHookCallback(TopLevel topLevel, CustomWndProcHookCallback? callback)
         {
             if (topLevel.PlatformImpl is IWin32OptionsTopLevelImpl toplevelImpl)
