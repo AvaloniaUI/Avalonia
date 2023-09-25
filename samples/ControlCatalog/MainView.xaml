@@ -189,6 +189,17 @@
       <TabItem Header="Window Customizations">
         <pages:WindowCustomizationsPage />
       </TabItem>
+      <TabItem Header="HeaderedContentControl">
+        <HeaderedContentControl Header="Look a header!" 
+                                FontSize="20" 
+                                FontWeight="Bold"
+                                BorderBrush="Blue" 
+                                BorderThickness="26"
+                                CornerRadius="3"
+                                Background="Green">
+          <TextBlock Text="Some content"></TextBlock>
+        </HeaderedContentControl>
+      </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>
           <StackPanel Width="152" Spacing="8">
